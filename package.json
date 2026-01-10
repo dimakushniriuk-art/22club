@@ -121,7 +121,7 @@
     "@fullcalendar/daygrid": "^6.1.19",
     "@fullcalendar/interaction": "^6.1.19",
     "@fullcalendar/list": "^6.1.19",
-    "@fullcalendar/react": "^6.1.19",
+    "@fullcalendar/react": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.19",
     "@radix-ui/react-slot": "^1.2.3",
     "@sentry/nextjs": "^10.20.0",
