@@ -1,0 +1,43 @@
+{
+  "cookies": [
+    {
+      "name": "__next_hmr_refresh_hash__",
+      "value": "c2b9aceb5e6081368f09261bc71684ac633457081244afec",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sb-icibqnmtacibgnhaidlz-auth-token",
+      "value": "base64-eyJhY2Nlc3NfdG9rZW4iOiJleUpoYkdjaU9pSklVekkxTmlJc0ltdHBaQ0k2SWpWTE5UQTNNMVUxVERCV2FrOVRObW9pTENKMGVYQWlPaUpLVjFRaWZRLmV5SnBjM01pT2lKb2RIUndjem92TDJsamFXSnhibTEwWVdOcFltZHVhR0ZwWkd4NkxuTjFjR0ZpWVhObExtTnZMMkYxZEdndmRqRWlMQ0p6ZFdJaU9pSTRaVFJqWkRaaVpDMHhNRE0xTFRSbE9USXRZVGhoTXkwellURTFOV1EzTmpOaVl6RWlMQ0poZFdRaU9pSmhkWFJvWlc1MGFXTmhkR1ZrSWl3aVpYaHdJam94TnpZM056ZzROek16TENKcFlYUWlPakUzTmpjM09EVXhNek1zSW1WdFlXbHNJam9pWVdSdGFXNUFNakpqYkhWaUxtbDBJaXdpY0dodmJtVWlPaUlpTENKaGNIQmZiV1YwWVdSaGRHRWlPbnNpYjNKblgybGtJam9pWkdWbVlYVnNkQzF2Y21jaUxDSndjbTkyYVdSbGNpSTZJbVZ0WVdsc0lpd2ljSEp2ZG1sa1pYSnpJanBiSW1WdFlXbHNJbDBzSW5KdmJHVWlPaUpoWkcxcGJpSjlMQ0oxYzJWeVgyMWxkR0ZrWVhSaElqcDdJbVZ0WVdsc1gzWmxjbWxtYVdWa0lqcDBjblZsTENKdmNtZGZhV1FpT2lKa1pXWmhkV3gwTFc5eVp5SXNJbkp2YkdVaU9pSmhaRzFwYmlKOUxDSnliMnhsSWpvaVlYVjBhR1Z1ZEdsallYUmxaQ0lzSW1GaGJDSTZJbUZoYkRFaUxDSmhiWElpT2x0N0ltMWxkR2h2WkNJNkluQmhjM04zYjNKa0lpd2lkR2x0WlhOMFlXMXdJam94TnpZM056ZzFNVE16ZlYwc0luTmxjM05wYjI1ZmFXUWlPaUl5TWpGaU1UWTFaQzFqWlRSakxUUmlORE10T0RjNU9TMW1ZelkzWmpRNFlUWTVOR1lpTENKcGMxOWhibTl1ZVcxdmRYTWlPbVpoYkhObGZRLktiMWl5QW5VWUZOdFZqekpWXzRKSHQ1S2FGYnZERFRoWUlnNkg2VTk3VEEiLCJ0b2tlbl90eXBlIjoiYmVhcmVyIiwiZXhwaXJlc19pbiI6MzYwMCwiZXhwaXJlc19hdCI6MTc2Nzc4ODczMywicmVmcmVzaF90b2tlbiI6IjNyYWk1eXpvZ203ZCIsInVzZXIiOnsiaWQiOiI4ZTRjZDZiZC0xMDM1LTRlOTItYThhMy0zYTE1NWQ3NjNiYzEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJlbWFpbCI6ImFkbWluQDIyY2x1Yi5pdCIsImVtYWlsX2NvbmZpcm1lZF9hdCI6IjIwMjUtMTItMjlUMTg6NTc6MTUuNDg2MTAzWiIsInBob25lIjoiIiwiY29uZmlybWVkX2F0IjoiMjAyNS0xMi0yOVQxODo1NzoxNS40ODYxMDNaIiwibGFzdF9zaWduX2luX2F0IjoiMjAyNi0wMS0wN1QxMToyNTozMy4xMzk5MTc1MTlaIiwiYXBwX21ldGFkYXRhIjp7Im9yZ19pZCI6ImRlZmF1bHQtb3JnIiwicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdLCJyb2xlIjoiYWRtaW4ifSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwib3JnX2lkIjoiZGVmYXVsdC1vcmciLCJyb2xlIjoiYWRtaW4ifSwiaWRlbnRpdGllcyI6W10sImNyZWF0ZWRfYXQiOiIyMDI1LTEyLTI5VDE4OjM4OjEwLjU1Mjk4NVoiLCJ1cGRhdGVkX2F0IjoiMjAyNi0wMS0wN1QxMToyNTozMy4xNDIzNTFaIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0sIndlYWtfcGFzc3dvcmQiOm51bGx9",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1802345134.343499,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "cache_clienti-stats",
+          "value": "{\"data\":{\"totali\":2,\"attivi\":2,\"inattivi\":0,\"nuovi_mese\":0,\"documenti_scadenza\":0},\"expiresAt\":1767785256543,\"version\":\"1.0.0\"}"
+        },
+        {
+          "name": "sidebar-collapsed",
+          "value": "false"
+        },
+        {
+          "name": "cache_frequent-query:clienti-list",
+          "value": "{\"data\":[{\"id\":\"d30eca8c-9eae-47a9-9da8-3b5b75a211c9\",\"user_id\":\"b0c41599-20b3-4e92-9cef-49df7396b574\",\"nome\":\"Olha\",\"cognome\":\"Totscoinova\",\"first_name\":\"Olha\",\"last_name\":\"Totscoinova\",\"email\":\"ilha@gmail.com\",\"phone\":null,\"data_iscrizione\":\"2025-12-29T20:48:29.08811\",\"stato\":\"attivo\",\"documenti_scadenza\":false,\"created_at\":\"2025-12-29T20:48:29.08811+00:00\",\"updated_at\":\"2025-12-29T20:48:29.08811+00:00\",\"role\":\"athlete\",\"avatar\":null,\"avatar_url\":null,\"ultimo_accesso\":null,\"note\":null},{\"id\":\"25b279e7-6b70-47b6-973b-1ee1f98ed02d\",\"user_id\":\"decf0dcc-6f88-4d40-8e24-e277acf48292\",\"nome\":\"Dmytro\",\"cognome\":\"Kushniriuk\",\"first_name\":\"Dmytro\",\"last_name\":\"Kushniriuk\",\"email\":\"dima.kushniriuk@gmail.com\",\"phone\":\"3519951554\",\"data_iscrizione\":\"2025-12-29T00:00:00\",\"stato\":\"attivo\",\"documenti_scadenza\":false,\"created_at\":\"2025-12-29T19:29:46.313993+00:00\",\"updated_at\":\"2026-01-07T04:47:32.034071+00:00\",\"role\":\"atleta\",\"avatar\":\"https://icibqnmtacibgnhaidlz.supabase.co/storage/v1/object/public/avatars/decf0dcc-6f88-4d40-8e24-e277acf48292/avatar.png\",\"avatar_url\":\"https://icibqnmtacibgnhaidlz.supabase.co/storage/v1/object/public/avatars/decf0dcc-6f88-4d40-8e24-e277acf48292/avatar.png\",\"ultimo_accesso\":null,\"note\":null}],\"expiresAt\":1767785436339,\"version\":\"1.0.0\"}"
+        }
+      ]
+    }
+  ]
+}

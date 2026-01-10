@@ -1,0 +1,146 @@
+{
+  "name": "22Club - Fitness Management",
+  "short_name": "22Club",
+  "description": "Gestione completa per centri fitness: atleti, allenamenti, documenti e pagamenti",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0F12",
+  "theme_color": "#02B3BF",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "it",
+  "dir": "ltr",
+  "categories": ["fitness", "health", "sports", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home atleta - Allenamenti"
+    },
+    {
+      "src": "/screenshot-mobile-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard staff - Statistiche"
+    },
+    {
+      "src": "/screenshot-tablet-1.png",
+      "sizes": "1024x768",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard staff - Tablet"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Allenamenti",
+      "short_name": "Allenamenti",
+      "description": "Vai ai tuoi allenamenti",
+      "url": "/home/allenamenti",
+      "icons": [
+        {
+          "src": "/shortcut-workouts.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Progressi",
+      "short_name": "Progressi",
+      "description": "Visualizza i tuoi progressi",
+      "url": "/home/progressi",
+      "icons": [
+        {
+          "src": "/shortcut-progress.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Documenti",
+      "short_name": "Documenti",
+      "description": "Gestisci i tuoi documenti",
+      "url": "/home/documenti",
+      "icons": [
+        {
+          "src": "/shortcut-documents.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Notifiche",
+      "short_name": "Notifiche",
+      "description": "Vedi le tue notifiche",
+      "url": "/notifiche",
+      "icons": [
+        {
+          "src": "/shortcut-notifications.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "protocol_handlers": [
+    {
+      "protocol": "web+22club",
+      "url": "/?action=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/home/documenti/upload",
+      "accept": {
+        "application/pdf": [".pdf"],
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/home/documenti/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/pdf", "image/jpeg", "image/png"]
+        }
+      ]
+    }
+  }
+}

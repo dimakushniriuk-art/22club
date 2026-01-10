@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-01-07T16:18:56.245Z",
+  "summary": {
+    "ok": 5,
+    "errors": 0,
+    "warnings": 0,
+    "total": 5
+  },
+  "results": [
+    {
+      "service": "Next.js Server",
+      "status": "ok",
+      "message": "Server attivo su porta 3001",
+      "details": {
+        "status": "healthy",
+        "uptime": 450.569118,
+        "environment": "development",
+        "checks": {
+          "memory": {
+            "status": "ok",
+            "used": {
+              "rss": 1591558144,
+              "heapTotal": 1092575232,
+              "heapUsed": 922657720,
+              "external": 303382138,
+              "arrayBuffers": 297689374
+            }
+          },
+          "database": {
+            "status": "ok",
+            "connected": true
+          },
+          "api": {
+            "status": "ok",
+            "responseTime": 0
+          }
+        }
+      }
+    },
+    {
+      "service": "Supabase Config",
+      "status": "ok",
+      "message": "Configurazione completa",
+      "details": {
+        "url": "https://icibqnmtacibgnhaidlz.supabase.co...",
+        "projectId": "icibqnmtacibgnhaidlz",
+        "keyLength": 208
+      }
+    },
+    {
+      "service": "Supabase Database",
+      "status": "ok",
+      "message": "Connessione riuscita - 0 profili trovati",
+      "details": {
+        "profileCount": 0
+      }
+    },
+    {
+      "service": "Supabase RLS",
+      "status": "ok",
+      "message": "RLS policies funzionanti"
+    },
+    {
+      "service": "Profili",
+      "status": "ok",
+      "message": "0 profili trovati",
+      "details": {
+        "count": 0
+      }
+    }
+  ]
+}

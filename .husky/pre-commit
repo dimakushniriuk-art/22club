@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Pre-commit: Verifica rapida codice..."
+
+# 1. Formatta codice automaticamente
+echo "📝 Formattazione codice..."
+npm run format --silent || {
+  echo "❌ Formattazione fallita"
+  exit 1
+}
+
+# 2. Fix ESLint automatici
+echo "🔧 Fix ESLint automatici..."
+npm run lint:fix --silent || {
+  echo "⚠️  Alcuni problemi ESLint non corretti automaticamente"
+}
+
+# 3. TypeScript check
+echo "📘 Verifica TypeScript..."
+npm run typecheck || {
+  echo "❌ Errori TypeScript rilevati - commit bloccato"
+  echo "💡 Correggi con: npm run typecheck"
+  exit 1
+}
+
+# 4. ESLint check (dopo fix)
+echo "✅ Verifica ESLint finale..."
+npm run lint || {
+  echo "❌ Errori ESLint rimanenti - commit bloccato"
+  echo "💡 Correggi con: npm run lint:fix"
+  exit 1
+}
+
+echo "✅ Pre-commit: Tutti i controlli passati!"

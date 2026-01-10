@@ -1,0 +1,39 @@
+{
+  "cookies": [
+    {
+      "name": "__next_hmr_refresh_hash__",
+      "value": "3673088bee77dbcc8f09261bc71684ac633457081244afec",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sb-icibqnmtacibgnhaidlz-auth-token",
+      "value": "base64-eyJhY2Nlc3NfdG9rZW4iOiJleUpoYkdjaU9pSklVekkxTmlJc0ltdHBaQ0k2SWpWTE5UQTNNMVUxVERCV2FrOVRObW9pTENKMGVYQWlPaUpLVjFRaWZRLmV5SnBjM01pT2lKb2RIUndjem92TDJsamFXSnhibTEwWVdOcFltZHVhR0ZwWkd4NkxuTjFjR0ZpWVhObExtTnZMMkYxZEdndmRqRWlMQ0p6ZFdJaU9pSmlaVFF6WmpZeVppMWlPVFJoTFRSbE5HUXRPRFZrTUMxaFpXUTJabVUwWlRVNU5XRWlMQ0poZFdRaU9pSmhkWFJvWlc1MGFXTmhkR1ZrSWl3aVpYaHdJam94TnpZM056ZzROekkzTENKcFlYUWlPakUzTmpjM09EVXhNamNzSW1WdFlXbHNJam9pWWk1bWNtRnVZMlZ6WTI5QU1qSmpiSFZpTG1sMElpd2ljR2h2Ym1VaU9pSWlMQ0poY0hCZmJXVjBZV1JoZEdFaU9uc2liM0puWDJsa0lqb2laR1ZtWVhWc2RDMXZjbWNpTENKd2NtOTJhV1JsY2lJNkltVnRZV2xzSWl3aWNISnZkbWxrWlhKeklqcGJJbVZ0WVdsc0lsMHNJbkp2YkdVaU9pSjBjbUZwYm1WeUluMHNJblZ6WlhKZmJXVjBZV1JoZEdFaU9uc2lZMjluYm05dFpTSTZJa0psY201dmRIUnZJaXdpWlcxaGFXeGZkbVZ5YVdacFpXUWlPblJ5ZFdVc0ltNXZiV1VpT2lKR2NtRnVZMlZ6WTI4aUxDSnZjbWRmYVdRaU9pSmtaV1poZFd4MExXOXlaeUlzSW5KdmJHVWlPaUowY21GcGJtVnlJbjBzSW5KdmJHVWlPaUpoZFhSb1pXNTBhV05oZEdWa0lpd2lZV0ZzSWpvaVlXRnNNU0lzSW1GdGNpSTZXM3NpYldWMGFHOWtJam9pY0dGemMzZHZjbVFpTENKMGFXMWxjM1JoYlhBaU9qRTNOamMzT0RVeE1qZDlYU3dpYzJWemMybHZibDlwWkNJNklqazVNVEF4TTJSakxXUTFabUV0TkdJNU1DMWhNak0yTFdOaU5XRTROalkxWVRNMllTSXNJbWx6WDJGdWIyNTViVzkxY3lJNlptRnNjMlY5LmVMZGFPbHR0cW9fa3Ffb0cwMWpPYUhfQXNZNTNLUjQ1OExmOTROQVVwZmMiLCJ0b2tlbl90eXBlIjoiYmVhcmVyIiwiZXhwaXJlc19pbiI6MzYwMCwiZXhwaXJlc19hdCI6MTc2Nzc4ODcyNywicmVmcmVzaF90b2tlbiI6IjU1M3VkZ2V3azRwZCIsInVzZXIiOnsiaWQiOiJiZTQzZjYyZi1iOTRhLTRlNGQtODVkMC1hZWQ2ZmU0ZTU5NWEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJlbWFpbCI6ImIuZnJhbmNlc2NvQDIyY2x1Yi5pdCIsImVtYWlsX2NvbmZpcm1lZF9hdCI6IjIwMjUtMTItMjlUMTk6MjI6NDAuNzg0MjMxWiIsInBob25lIjoiIiwiY29uZmlybWVkX2F0IjoiMjAyNS0xMi0yOVQxOToyMjo0MC43ODQyMzFaIiwibGFzdF9zaWduX2luX2F0IjoiMjAyNi0wMS0wN1QxMToyNToyNy45Nzc2MTQzMjFaIiwiYXBwX21ldGFkYXRhIjp7Im9yZ19pZCI6ImRlZmF1bHQtb3JnIiwicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdLCJyb2xlIjoidHJhaW5lciJ9LCJ1c2VyX21ldGFkYXRhIjp7ImNvZ25vbWUiOiJCZXJub3R0byIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJub21lIjoiRnJhbmNlc2NvIiwib3JnX2lkIjoiZGVmYXVsdC1vcmciLCJyb2xlIjoidHJhaW5lciJ9LCJmYWN0b3JzIjpbeyJpZCI6IjQyYjIwOWI5LWU1MWYtNGFjNS05OTI0LTFiZDA0OTliMjJjOCIsImNyZWF0ZWRfYXQiOiIyMDI1LTEyLTI5VDIzOjM1OjUxLjMxODU4OFoiLCJ1cGRhdGVkX2F0IjoiMjAyNS0xMi0yOVQyMzozNTo1MS42ODE1OTlaIiwic3RhdHVzIjoidW52ZXJpZmllZCIsImZhY3Rvcl90eXBlIjoidG90cCIsInBob25lIjoiIiwibGFzdF9jaGFsbGVuZ2VkX2F0IjoiMjAyNS0xMi0yOVQyMzozNTo1MS42NzU5MzhaIn1dLCJpZGVudGl0aWVzIjpbeyJpZGVudGl0eV9pZCI6ImVhZmUyYTY4LTZiZmUtNDUxYi1iZThiLTMyNjcxZGQ4ZWU2ZSIsImlkIjoiYmU0M2Y2MmYtYjk0YS00ZTRkLTg1ZDAtYWVkNmZlNGU1OTVhIiwidXNlcl9pZCI6ImJlNDNmNjJmLWI5NGEtNGU0ZC04NWQwLWFlZDZmZTRlNTk1YSIsImlkZW50aXR5X2RhdGEiOnsiZW1haWwiOiJiLmZyYW5jZXNjb0AyMmNsdWIuaXQiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiYmU0M2Y2MmYtYjk0YS00ZTRkLTg1ZDAtYWVkNmZlNGU1OTVhIn0sInByb3ZpZGVyIjoiZW1haWwiLCJsYXN0X3NpZ25faW5fYXQiOiIyMDI1LTEyLTI5VDE5OjIyOjQwLjc2OTQxOFoiLCJjcmVhdGVkX2F0IjoiMjAyNS0xMi0yOVQxOToyMjo0MC43Njk0OVoiLCJ1cGRhdGVkX2F0IjoiMjAyNS0xMi0yOVQxOToyMjo0MC43Njk0OVoiLCJlbWFpbCI6ImIuZnJhbmNlc2NvQDIyY2x1Yi5pdCJ9XSwiY3JlYXRlZF9hdCI6IjIwMjUtMTItMjlUMTk6MjI6NDAuNjY2MjA2WiIsInVwZGF0ZWRfYXQiOiIyMDI2LTAxLTA3VDExOjI1OjI3Ljk3OTM2NVoiLCJpc19hbm9ueW1vdXMiOmZhbHNlfSwid2Vha19wYXNzd29yZCI6bnVsbH0",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1802345129.16818,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "cache_frequent-query:clienti-list",
+          "value": "{\"data\":[{\"id\":\"d30eca8c-9eae-47a9-9da8-3b5b75a211c9\",\"user_id\":\"b0c41599-20b3-4e92-9cef-49df7396b574\",\"nome\":\"Olha\",\"cognome\":\"Totscoinova\",\"first_name\":\"Olha\",\"last_name\":\"Totscoinova\",\"email\":\"ilha@gmail.com\",\"phone\":null,\"data_iscrizione\":\"2025-12-29T20:48:29.08811\",\"stato\":\"attivo\",\"documenti_scadenza\":false,\"created_at\":\"2025-12-29T20:48:29.08811+00:00\",\"updated_at\":\"2025-12-29T20:48:29.08811+00:00\",\"role\":\"athlete\",\"avatar\":null,\"avatar_url\":null,\"ultimo_accesso\":null,\"note\":null},{\"id\":\"25b279e7-6b70-47b6-973b-1ee1f98ed02d\",\"user_id\":\"decf0dcc-6f88-4d40-8e24-e277acf48292\",\"nome\":\"Dmytro\",\"cognome\":\"Kushniriuk\",\"first_name\":\"Dmytro\",\"last_name\":\"Kushniriuk\",\"email\":\"dima.kushniriuk@gmail.com\",\"phone\":\"3519951554\",\"data_iscrizione\":\"2025-12-29T00:00:00\",\"stato\":\"attivo\",\"documenti_scadenza\":false,\"created_at\":\"2025-12-29T19:29:46.313993+00:00\",\"updated_at\":\"2026-01-07T04:47:32.034071+00:00\",\"role\":\"atleta\",\"avatar\":\"https://icibqnmtacibgnhaidlz.supabase.co/storage/v1/object/public/avatars/decf0dcc-6f88-4d40-8e24-e277acf48292/avatar.png\",\"avatar_url\":\"https://icibqnmtacibgnhaidlz.supabase.co/storage/v1/object/public/avatars/decf0dcc-6f88-4d40-8e24-e277acf48292/avatar.png\",\"ultimo_accesso\":null,\"note\":null}],\"expiresAt\":1767785430739,\"version\":\"1.0.0\"}"
+        },
+        {
+          "name": "sidebar-collapsed",
+          "value": "false"
+        }
+      ]
+    }
+  ]
+}

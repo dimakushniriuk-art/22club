@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reimposta Password - 22 PERSONAL TRAINING Club</title>
+  <style>
+    body {
+      font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #0a0f12 0%, #1a2024 100%);
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 64px;
+      font-weight: bold;
+      color: #eaf0f2;
+      margin-bottom: 10px;
+      letter-spacing: -2px;
+    }
+    .logo-subtitle {
+      color: #a5afb4;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .logo-club {
+      color: #02b3bf;
+      font-size: 28px;
+      font-style: italic;
+      font-family: serif;
+    }
+    .content {
+      padding: 40px 30px;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0a0f12;
+      margin-bottom: 16px;
+    }
+    .text {
+      font-size: 16px;
+      color: #4a5568;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .button-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+    .button {
+      display: inline-block;
+      background-color: #02b3bf;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #019aa6;
+    }
+    .divider {
+      height: 1px;
+      background-color: #e2e8f0;
+      margin: 32px 0;
+    }
+    .footer {
+      background-color: #f7fafc;
+      padding: 24px 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #718096;
+    }
+    .footer-link {
+      color: #02b3bf;
+      text-decoration: none;
+    }
+    .warning {
+      background-color: #fff5f5;
+      border-left: 4px solid #fc8181;
+      padding: 16px;
+      margin: 24px 0;
+      border-radius: 4px;
+    }
+    .warning-text {
+      color: #742a2a;
+      font-size: 14px;
+      margin: 0;
+    }
+    .link-fallback {
+      word-break: break-all;
+      color: #02b3bf;
+      font-size: 12px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">22</div>
+      <div class="logo-subtitle">PERSONAL TRAINING</div>
+      <div class="logo-club">Club</div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <h1 class="title">Reimposta la tua password</h1>
+      
+      <p class="text">
+        Ciao,
+      </p>
+      
+      <p class="text">
+        Abbiamo ricevuto una richiesta per reimpostare la password del tuo account 22 PERSONAL TRAINING Club.
+      </p>
+      
+      <p class="text">
+        Clicca sul pulsante qui sotto per reimpostare la tua password. Il link sarà valido per 1 ora.
+      </p>
+
+      <div class="button-container">
+        <a href="{{ .ConfirmationURL }}" class="button">Reimposta Password</a>
+      </div>
+
+      <div class="link-fallback">
+        Se il pulsante non funziona, copia e incolla questo link nel tuo browser:<br>
+        <a href="{{ .ConfirmationURL }}" style="color: #02b3bf;">{{ .ConfirmationURL }}</a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="warning">
+        <p class="warning-text">
+          <strong>Non hai richiesto il reset della password?</strong><br>
+          Se non hai fatto questa richiesta, ignora questa email. La tua password rimarrà invariata.
+        </p>
+      </div>
+
+      <p class="text" style="font-size: 14px; color: #718096;">
+        Per motivi di sicurezza, questo link scadrà tra 1 ora. Se hai bisogno di un nuovo link, puoi richiederlo dalla pagina di login.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        Questo è un messaggio automatico, per favore non rispondere a questa email.
+      </p>
+      <p style="margin-top: 8px;">
+        © 2026 22 PERSONAL TRAINING Club. Tutti i diritti riservati.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

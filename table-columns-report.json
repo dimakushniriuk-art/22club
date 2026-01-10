@@ -1,0 +1,90 @@
+{
+  "timestamp": "2025-12-07T00:51:36.141Z",
+  "results": [
+    {
+      "table": "appointments",
+      "existingColumns": [],
+      "requiredColumns": ["athlete_id", "trainer_id", "staff_id"],
+      "missingColumns": ["athlete_id", "trainer_id", "staff_id"]
+    },
+    {
+      "table": "payments",
+      "existingColumns": [
+        "id",
+        "athlete_id",
+        "amount",
+        "method_text",
+        "lessons_purchased",
+        "created_by_staff_id",
+        "created_at",
+        "is_reversal",
+        "ref_payment_id",
+        "org_id",
+        "status",
+        "currency",
+        "payment_date",
+        "notes",
+        "updated_at",
+        "payment_method",
+        "invoice_url"
+      ],
+      "requiredColumns": ["athlete_id", "trainer_id"],
+      "missingColumns": ["trainer_id"]
+    },
+    {
+      "table": "inviti_atleti",
+      "existingColumns": [
+        "id",
+        "codice",
+        "qr_url",
+        "pt_id",
+        "nome_atleta",
+        "email",
+        "stato",
+        "created_at",
+        "accepted_at",
+        "expires_at",
+        "token",
+        "status",
+        "invited_by",
+        "updated_at"
+      ],
+      "requiredColumns": ["trainer_id", "pt_id", "invited_by"],
+      "missingColumns": ["trainer_id"]
+    },
+    {
+      "table": "workout_plans",
+      "existingColumns": [],
+      "requiredColumns": ["athlete_id", "trainer_id", "created_by"],
+      "missingColumns": ["athlete_id", "trainer_id", "created_by"]
+    },
+    {
+      "table": "workout_logs",
+      "existingColumns": [],
+      "requiredColumns": ["athlete_id", "atleta_id", "workout_plan_id"],
+      "missingColumns": ["athlete_id", "atleta_id", "workout_plan_id"]
+    }
+  ],
+  "tablesWithIssues": [
+    {
+      "table": "appointments",
+      "missingColumns": ["athlete_id", "trainer_id", "staff_id"]
+    },
+    {
+      "table": "payments",
+      "missingColumns": ["trainer_id"]
+    },
+    {
+      "table": "inviti_atleti",
+      "missingColumns": ["trainer_id"]
+    },
+    {
+      "table": "workout_plans",
+      "missingColumns": ["athlete_id", "trainer_id", "created_by"]
+    },
+    {
+      "table": "workout_logs",
+      "missingColumns": ["athlete_id", "atleta_id", "workout_plan_id"]
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+/**
+ * 📱 TABLET LANDSCAPE OPTIMIZATIONS
+ * =================================
+ * CSS personalizzato per ottimizzazioni specifiche su tablet 10+ landscape
+ * Breakpoint: 1024px - 1280px (tablet-landscape)
+ */
+
+/* =====================================================
+   🎯 DASHBOARD GRID LAYOUT - TABLET LANDSCAPE
+   ===================================================== */
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  /* Grid ottimizzato per dashboard su tablet landscape */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* KPI Cards - layout 2x2 su tablet landscape */
+  .dashboard-kpi {
+    min-height: 120px;
+  }
+
+  /* Agenda occupa full width sotto i KPI */
+  .dashboard-agenda {
+    grid-column: 1 / -1;
+  }
+
+  /* Stats sidebar ottimizzata */
+  .dashboard-stats {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* =====================================================
+     🏠 ATHLETE HOME - TABLET LANDSCAPE
+     ===================================================== */
+
+  /* Hero section con spazio ottimizzato */
+  .athlete-hero {
+    padding: 2rem 0;
+  }
+
+  /* Card progressi affiancate in modo ottimale */
+  .athlete-progress-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  /* Workout card con dimensioni ottimizzate */
+  .athlete-workout-card {
+    min-height: 180px;
+    padding: 1.5rem;
+  }
+
+  /* =====================================================
+     🎨 TYPOGRAPHY ADJUSTMENTS
+     ===================================================== */
+
+  /* Titoli leggermente più grandi su tablet landscape */
+  .hero-title-tablet {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+
+  .card-title-tablet {
+    font-size: 1.375rem;
+    line-height: 1.3;
+  }
+
+  .card-description-tablet {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* =====================================================
+     🔘 BUTTON OPTIMIZATIONS
+     ===================================================== */
+
+  /* Bottoni con padding ottimizzato per touch */
+  .btn-tablet-optimal {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    min-height: 48px; /* Accessibilità touch */
+  }
+
+  .btn-tablet-large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    min-height: 52px;
+  }
+
+  /* =====================================================
+     📱 TAB BAR ADJUSTMENTS
+     ===================================================== */
+
+  /* Tab bar con dimensioni ottimizzate per tablet */
+  .tab-bar-tablet {
+    height: 80px;
+    padding: 0 2rem;
+  }
+
+  .tab-item-tablet {
+    min-width: 80px;
+    padding: 0.75rem;
+  }
+
+  /* =====================================================
+     🎯 SPACING OPTIMIZATIONS
+     ===================================================== */
+
+  /* Container con max-width ottimizzata */
+  .container-tablet-optimal {
+    max-width: 1200px;
+    padding: 0 2rem;
+  }
+
+  /* Sezioni con spacing ottimizzato */
+  .section-spacing-tablet {
+    margin: 2rem 0;
+  }
+
+  .card-spacing-tablet {
+    margin: 1.5rem 0;
+  }
+
+  /* =====================================================
+     🖼️ CARD ENHANCEMENTS
+     ===================================================== */
+
+  /* Card con border radius e shadow ottimizzati */
+  .card-tablet-enhanced {
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .card-tablet-enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.5);
+  }
+
+  /* =====================================================
+     ⚡ PERFORMANCE OPTIMIZATIONS
+     ===================================================== */
+
+  /* Ottimizzazioni per smooth scrolling su tablet */
+  .smooth-scroll-tablet {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevenire zoom accidentale sui form */
+  .form-input-tablet {
+    font-size: 16px; /* Previene zoom su iOS */
+  }
+}
+
+/* =====================================================
+   📊 LANDSCAPE ORIENTATION SPECIFIC
+   ===================================================== */
+
+@media (orientation: landscape) and (min-width: 1024px) {
+  /* Layout specifico per landscape */
+  .landscape-optimal {
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* Grid per massimizzare uso dello spazio orizzontale */
+  .landscape-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    height: 100vh;
+    gap: 2rem;
+  }
+
+  /* Sidebar ottimizzata per landscape */
+  .landscape-sidebar {
+    position: sticky;
+    top: 0;
+    height: fit-content;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+/* =====================================================
+   🎯 UTILITIES FOR TABLET LANDSCAPE
+   ===================================================== */
+
+/* Show/hide per tablet landscape */
+.show-tablet-landscape {
+  display: none;
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .show-tablet-landscape {
+    display: block;
+  }
+
+  .hide-tablet-landscape {
+    display: none;
+  }
+}
+
+/* Grid utilities per tablet landscape */
+.grid-tablet-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.grid-tablet-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+/* Flex utilities per tablet landscape */
+.flex-tablet-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+.flex-tablet-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

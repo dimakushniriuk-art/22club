@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-12-07T00:51:16.034Z",
+  "total": 10,
+  "existing": 10,
+  "missing": 0,
+  "existingTables": [
+    "profiles",
+    "exercises",
+    "appointments",
+    "payments",
+    "notifications",
+    "chat_messages",
+    "inviti_atleti",
+    "pt_atleti",
+    "workout_plans",
+    "workout_logs"
+  ],
+  "missingTables": [],
+  "details": [
+    {
+      "table": "profiles",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "exercises",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "appointments",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "payments",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "notifications",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "chat_messages",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "inviti_atleti",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "pt_atleti",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "workout_plans",
+      "exists": true,
+      "columns": []
+    },
+    {
+      "table": "workout_logs",
+      "exists": true,
+      "columns": []
+    }
+  ]
+}

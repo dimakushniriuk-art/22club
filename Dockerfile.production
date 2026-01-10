@@ -1,0 +1,53 @@
+# Dockerfile ottimizzato per produzione
+
+# Stage 1: Build
+FROM node:20-alpine AS builder
+
+# Installa dipendenze necessarie per build
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copia package files
+COPY package.json package-lock.json* ./
+
+# Installa dipendenze
+RUN npm ci --only=production && npm cache clean --force
+
+# Copia source code
+COPY . .
+
+# Build dell'applicazione
+RUN npm run build:prod
+
+# Stage 2: Runtime
+FROM node:20-alpine AS runner
+
+# Crea utente non-root per sicurezza
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+
+# Copia built application
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Configura utente
+USER nextjs
+
+# Espone porta
+EXPOSE 3001
+
+# Configura environment
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV HOSTNAME="0.0.0.0"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3001/api/health || exit 1
+
+# Avvia applicazione
+CMD ["node", "server.js"]
