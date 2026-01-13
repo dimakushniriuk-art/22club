@@ -31,27 +31,6 @@ export function useNavigationState() {
         return prev
       }
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'use-navigation-state.ts:useEffect:pathname',
-          message: 'Pathname changed',
-          data: {
-            previousPath: prev.currentPath,
-            newPath: pathname,
-            wasLoading: prev.isLoading,
-            pendingPath: prev.pendingPath,
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'H',
-        }),
-      }).catch(() => {})
-      // #endregion
-
       // Se stiamo caricando e il path è cambiato, termina il loading
       if (prev.isLoading && prev.currentPath !== pathname) {
         return {

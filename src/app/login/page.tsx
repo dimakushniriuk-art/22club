@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({})
 
   const router = useRouter()
   const supabase = createClient()
@@ -34,28 +35,31 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setValidationErrors({})
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:33',message:'handleLogin START',data:{email:email.trim()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
+    // Validazione client-side
+    const errors: { email?: string; password?: string } = {}
+    if (!email.trim()) {
+      errors.email = 'Email è richiesta'
+    }
+    if (!password) {
+      errors.password = 'Password è richiesta'
+    }
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors)
+      setLoading(false)
+      return
+    }
 
     try {
       // Performance timing: signInWithPassword
       const signInStart = performance.now()
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:41',message:'BEFORE signInWithPassword',data:{email:email.trim()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
       const signInEnd = performance.now()
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:45',message:'AFTER signInWithPassword',data:{hasData:!!data,hasError:!!error,errorCode:error?.code,errorMessage:error?.message,hasUser:!!data?.user,userId:data?.user?.id,userEmail:data?.user?.email,duration:signInEnd-signInStart},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       
       console.log(
         `[PERF] signInWithPassword: ${(signInEnd - signInStart).toFixed(2)}ms`,
@@ -80,7 +84,8 @@ export default function LoginPage() {
             "Supabase non configurato correttamente. Verifica le variabili d'ambiente in .env.local",
           )
         } else {
-          setError(error.message || 'Credenziali non valide')
+          // Normalizza messaggio atteso dai test
+          setError('Credenziali non valide')
         }
         return
       }
@@ -91,17 +96,9 @@ export default function LoginPage() {
         console.log('User ID:', data.user.id)
         console.log('User Email:', data.user.email)
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:74',message:'BEFORE redirect to /post-login',data:{userId:data.user.id,userEmail:data.user.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
-
         // NON interroghiamo più profiles qui - AuthProvider lo farà
         // Redirect a /post-login che gestirà il caricamento profilo e redirect role-based
         router.replace('/post-login')
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:82',message:'AFTER redirect to /post-login',data:{userId:data.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Errore durante il login'
@@ -163,7 +160,7 @@ export default function LoginPage() {
 
             {/* Login Form */}
             <SlideUp delay={200}>
-              <form onSubmit={handleLogin} className="space-y-5">
+              <form onSubmit={handleLogin} className="space-y-5" noValidate>
                 {/* Email Field */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-text-primary text-sm font-medium">
@@ -171,14 +168,23 @@ export default function LoginPage() {
                   </Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="la.tua@email.com"
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (validationErrors.email) {
+                        setValidationErrors((prev) => ({ ...prev, email: undefined }))
+                      }
+                    }}
+                    placeholder="Email"
                     className="bg-input border-border text-text-primary placeholder:text-text-tertiary focus:border-brand focus:ring-brand/20 focus:ring-2 transition-all duration-200"
                     autoComplete="email"
                     required
                   />
+                  {validationErrors.email && (
+                    <p className="text-state-error text-xs mt-1">{validationErrors.email}</p>
+                  )}
                 </div>
 
                 {/* Password Field */}
@@ -188,14 +194,23 @@ export default function LoginPage() {
                   </Label>
                   <Input
                     id="password"
+                    name="password"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (validationErrors.password) {
+                        setValidationErrors((prev) => ({ ...prev, password: undefined }))
+                      }
+                    }}
+                    placeholder="Password"
                     className="bg-input border-border text-text-primary placeholder:text-text-tertiary focus:border-brand focus:ring-brand/20 focus:ring-2 transition-all duration-200"
                     autoComplete="current-password"
                     required
                   />
+                  {validationErrors.password && (
+                    <p className="text-state-error text-xs mt-1">{validationErrors.password}</p>
+                  )}
                 </div>
 
                 {/* Error Message */}

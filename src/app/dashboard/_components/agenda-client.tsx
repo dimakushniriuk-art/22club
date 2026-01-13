@@ -51,33 +51,6 @@ export function AgendaClient({ initialEvents, hasMoreAppointments = false, appoi
     }
   }, [loadError, addToast])
 
-  // Sposta fetch agent log in client-side (non blocca render server)
-  useEffect(() => {
-    // Fire-and-forget: fetch async senza bloccare render
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'agenda-client.tsx',
-        message: 'AgendaClient - component mounted',
-        data: {
-          initialEventsLength: initialEvents?.length ?? 0,
-          hasMoreAppointments,
-          appointmentsTotalCount,
-          timestamp: Date.now(),
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'A',
-      }),
-      // Timeout per non bloccare se endpoint non disponibile
-      signal: AbortSignal.timeout(2000),
-    }).catch(() => {
-      // Ignora errori di fetch log (non critico)
-    })
-  }, [initialEvents?.length, hasMoreAppointments, appointmentsTotalCount])
-
   const handleDeleteClick = (eventId: string) => {
     setEventToDelete(eventId)
     setDeleteDialogOpen(true)

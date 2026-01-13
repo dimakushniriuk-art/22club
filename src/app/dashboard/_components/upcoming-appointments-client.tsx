@@ -27,45 +27,7 @@ export function UpcomingAppointmentsClient({ initialData }: UpcomingAppointments
     const interval = setInterval(async () => {
       setLoading(true)
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'upcoming-appointments-client.tsx:30',
-            message: 'Before fetch /api/dashboard/appointments',
-            data: {},
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'B',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         const res = await fetch('/api/dashboard/appointments')
-
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'upcoming-appointments-client.tsx:32',
-            message: 'After fetch /api/dashboard/appointments',
-            data: {
-              ok: res.ok,
-              status: res.status,
-              statusText: res.statusText,
-              contentType: res.headers.get('content-type'),
-              hasBody: !!res.body,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'B',
-          }),
-        }).catch(() => {})
-        // #endregion
 
         if (res.ok) {
           // Proteggi da risposte vuote che causano "Unexpected end of JSON input"
@@ -76,73 +38,10 @@ export function UpcomingAppointmentsClient({ initialData }: UpcomingAppointments
             return
           }
 
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'upcoming-appointments-client.tsx:33',
-              message: 'Before JSON.parse - response text',
-              data: {
-                textLength: text.length,
-                textPreview: text.substring(0, 200),
-                isEmpty: text.length === 0,
-                isWhitespace: text.trim().length === 0,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'B',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           const data = JSON.parse(text)
-
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'upcoming-appointments-client.tsx:34',
-              message: 'After JSON.parse - parsed data',
-              data: {
-                dataType: typeof data,
-                isArray: Array.isArray(data),
-                dataLength: Array.isArray(data) ? data.length : 'N/A',
-                dataSample: Array.isArray(data) ? data.slice(0, 2) : data,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'B',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           setAppointments(data)
         }
       } catch (err) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'upcoming-appointments-client.tsx:36',
-            message: 'Error refreshing appointments',
-            data: {
-              errorType: err instanceof Error ? err.constructor.name : typeof err,
-              errorMessage: err instanceof Error ? err.message : String(err),
-              isJSONError: err instanceof SyntaxError && err.message.includes('JSON'),
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'B',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         logger.error('Error refreshing appointments', err)
       } finally {
         setLoading(false)

@@ -528,21 +528,6 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                 key={action.href}
                 href={action.href}
                 onClick={() => {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      location: 'sidebar.tsx:Link:quickAction',
-                      message: 'Quick action link clicked',
-                      data: { href: action.href, pathname },
-                      timestamp: Date.now(),
-                      sessionId: 'debug-session',
-                      runId: 'run1',
-                      hypothesisId: 'H',
-                    }),
-                  }).catch(() => {})
-                  // #endregion
                   onClose?.()
                 }}
                 className={cn(
@@ -587,21 +572,6 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                 href={item.href}
                 prefetch
                 onClick={() => {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      location: 'sidebar.tsx:Link:sidebarItem',
-                      message: 'Sidebar item link clicked',
-                      data: { href: item.href, pathname },
-                      timestamp: Date.now(),
-                      sessionId: 'debug-session',
-                      runId: 'run1',
-                      hypothesisId: 'H',
-                    }),
-                  }).catch(() => {})
-                  // #endregion
                   onClose?.()
                 }}
                 className={cn(

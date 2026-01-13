@@ -13,8 +13,11 @@ function getEnvVar(name: string): string {
   return value
 }
 
-export async function createClient() {
-  const cookieStore = await cookies()
+type CookieStore = Awaited<ReturnType<typeof cookies>>
+
+export async function createClient(passedCookieStore?: CookieStore) {
+  // Next 15 richiede di awaitare cookies()
+  const cookieStore = passedCookieStore ?? (await cookies())
   const supabaseUrl = getEnvVar('NEXT_PUBLIC_SUPABASE_URL')
   const supabaseAnonKey = getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 

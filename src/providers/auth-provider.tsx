@@ -87,50 +87,7 @@ function mapRole(rawRole: string | null | undefined): UserRole | null {
     rawRoleTrimmedIsPt: rawRole?.trim() === 'pt',
   })
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'auth-provider.tsx:72',
-      message: 'mapRole called',
-      data: {
-        rawRole,
-        rawRoleType: typeof rawRole,
-        rawRoleLength: rawRole?.length,
-        rawRoleCharCodes: rawRole
-          ? (Array.from(rawRole) as string[]).map((c: string) => c.charCodeAt(0))
-          : null,
-        isPt: rawRole === 'pt',
-        isPtStrict: rawRole === 'pt',
-        rawRoleTrimmed: rawRole?.trim(),
-        rawRoleTrimmedIsPt: rawRole?.trim() === 'pt',
-        isAtleta: rawRole === 'atleta',
-        isTrainer: rawRole === 'trainer',
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'B',
-    }),
-  }).catch(() => {})
-  // #endregion
   if (!rawRole) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'auth-provider.tsx:73',
-        message: 'mapRole - no rawRole, returning null',
-        data: {},
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'B',
-      }),
-    }).catch(() => {})
-    // #endregion
     return null
   }
   // Normalizza il ruolo - usa trim() per sicurezza
@@ -150,63 +107,12 @@ function mapRole(rawRole: string | null | undefined): UserRole | null {
     isAthlete: normalized === 'athlete',
   })
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'auth-provider.tsx:79',
-      message: 'mapRole - normalized',
-      data: {
-        rawRole,
-        normalized,
-        isOwner: normalized === 'owner',
-        isStaff: normalized === 'staff',
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'B',
-    }),
-  }).catch(() => {})
-  // #endregion
-
   if (normalized === 'owner') return 'admin'
   if (normalized === 'staff') return 'trainer'
   if (normalized === 'trainer' || normalized === 'admin' || normalized === 'athlete') {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'auth-provider.tsx:83',
-        message: 'mapRole - returning normalized',
-        data: { normalized },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'B',
-      }),
-    }).catch(() => {})
-    // #endregion
     return normalized
   }
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'auth-provider.tsx:87',
-      message: 'mapRole - unrecognized role, returning null',
-      data: { rawRole, normalized },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'B',
-    }),
-  }).catch(() => {})
-  // #endregion
   return null
 }
 
@@ -215,26 +121,6 @@ function mapProfileToUser(profile: ProfileRow): UserProfile {
   const firstName = profile.nome ?? legacyProfile.first_name ?? ''
   const lastName = profile.cognome ?? legacyProfile.last_name ?? ''
   const mappedRole = mapRole(profile.role)
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'auth-provider.tsx:90',
-      message: 'mapProfileToUser - role mapping',
-      data: {
-        profileRole: profile.role,
-        mappedRole,
-        usingDefault: mappedRole === null,
-        finalRole: mappedRole ?? 'athlete',
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'C',
-    }),
-  }).catch(() => {})
-  // #endregion
   const role = mappedRole ?? 'athlete'
 
   return {
@@ -265,70 +151,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let isMounted = true
 
     const loadUser = async () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'auth-provider.tsx:267',
-          message: 'loadUser called - START',
-          data: {
-            isMounted,
-            currentUser: user ? { id: user.id, email: user.email, role: user.role } : null,
-            currentLoading: loading,
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'B',
-        }),
-      }).catch(() => {})
-      // #endregion
-
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'auth-provider.tsx:269',
-            message: 'getSession called - BEFORE',
-            data: {},
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'C',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         const {
           data: { session },
           error: sessionError,
         } = await supabase.auth.getSession()
-
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'auth-provider.tsx:272',
-            message: 'getSession called - AFTER',
-            data: {
-              hasSession: !!session,
-              hasUser: !!session?.user,
-              userId: session?.user?.id,
-              sessionError: sessionError
-                ? { message: sessionError.message, name: sessionError.name }
-                : null,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'C',
-          }),
-        }).catch(() => {})
-        // #endregion
 
         if (sessionError) {
           // Gestione specifica per errore refresh token
@@ -513,156 +340,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (profile && isMounted) {
-          // Log diretto per debug immediato
-          logger.debug('AUTH PROVIDER Profile loaded', {
-            profileId: profile.id,
-            userId: profile.user_id,
-            email: profile.email,
-            role: profile.role,
-            roleType: typeof profile.role,
-            roleLength: profile.role?.length,
-            roleCharCodes: profile.role
-              ? (Array.from(profile.role as string) as string[]).map((c: string) => c.charCodeAt(0))
-              : null,
-            isPt: profile.role === 'pt',
-            isPtStrict: profile.role === 'pt',
-            roleTrimmed: profile.role?.trim(),
-            roleTrimmedIsPt: profile.role?.trim() === 'pt',
-          })
-
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'auth-provider.tsx:244',
-              message: 'profile loaded from DB',
-              data: {
-                profileId: profile.id,
-                userId: profile.user_id,
-                profileRole: profile.role,
-                profileRoleType: typeof profile.role,
-                profileRoleLength: profile.role?.length,
-                profileRoleCharCodes: profile.role
-                  ? (Array.from(profile.role as string) as string[]).map((c: string) =>
-                      c.charCodeAt(0),
-                    )
-                  : null,
-                isPt: profile.role === 'pt',
-                roleTrimmed: profile.role?.trim(),
-                roleTrimmedIsPt: profile.role?.trim() === 'pt',
-                orgId: profile.org_id,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'A',
-            }),
-          }).catch(() => {})
-          // #endregion
           const mappedProfile = mapProfileToUser(profile as ProfileRow)
-
-          // Log diretto per debug immediato
-          logger.debug('AUTH PROVIDER Mapped profile', {
-            originalRole: profile.role,
-            mappedRole: mappedProfile.role,
-            isTrainer: mappedProfile.role === 'trainer',
-            isAthlete: mappedProfile.role === 'athlete',
-            isAdmin: mappedProfile.role === 'admin',
-          })
-
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'auth-provider.tsx:246',
-              message: 'mapped profile created',
-              data: {
-                originalRole: profile.role,
-                mappedRole: mappedProfile.role,
-                isTrainer: mappedProfile.role === 'trainer',
-                isAthlete: mappedProfile.role === 'athlete',
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'B',
-            }),
-          }).catch(() => {})
-          // #endregion
-
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'auth-provider.tsx:535',
-              message: 'setUser called - BEFORE',
-              data: {
-                mappedProfile: {
-                  id: mappedProfile.id,
-                  email: mappedProfile.email,
-                  role: mappedProfile.role,
-                },
-                isMounted,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'D',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           setUser(mappedProfile)
           setRole(mappedProfile.role)
           setOrgId(mappedProfile.org_id)
-
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'auth-provider.tsx:537',
-              message: 'setUser called - AFTER',
-              data: {
-                mappedProfile: {
-                  id: mappedProfile.id,
-                  email: mappedProfile.email,
-                  role: mappedProfile.role,
-                },
-                isMounted,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'D',
-            }),
-          }).catch(() => {})
-          // #endregion
         }
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'auth-provider.tsx:250',
-            message: 'catch block - error thrown',
-            data: {
-              errorType: typeof error,
-              errorString: String(error),
-              errorName: (error as Error)?.name,
-              errorMessage: (error as Error)?.message,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'E',
-          }),
-        }).catch(() => {})
-        // #endregion
         const errorDetails = serializeError(error)
         logger.error('Errore caricamento utente (catch)', error, {
           errorDetails,
@@ -671,50 +354,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         })
 
         if (isMounted) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'auth-provider.tsx:567',
-              message: 'catch block - setting user to null',
-              data: {
-                isMounted,
-                errorType: typeof error,
-                errorString: String(error),
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'E',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           setUser(null)
           setRole(null)
           setOrgId(null)
         }
       } finally {
         if (isMounted) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'auth-provider.tsx:573',
-              message: 'finally block - setLoading(false)',
-              data: {
-                isMounted,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'A',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           setLoading(false)
         }
       }
@@ -807,7 +452,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     // onAuthStateChange è un listener che deve essere registrato solo una volta al mount
     // loading e user sono settati ma non letti nella logica, quindi non devono essere nelle dipendenze
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Intenzionalmente vuoto: il listener deve essere registrato solo al mount
 
   const contextValue = useMemo<AuthContextType>(

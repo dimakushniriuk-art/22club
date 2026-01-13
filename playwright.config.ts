@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
-import { existsSync } from 'fs'
-import { join } from 'path'
+import { config } from 'dotenv'
+
+// Carica variabili d'ambiente da .env.local per Playwright
+config({ path: '.env.local' })
 
 /**
  * Configurazione Playwright per test E2E
@@ -34,6 +36,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     /* Video solo quando fallisce */
     video: 'retain-on-failure',
+    /* Imposta variabile d'ambiente per disabilitare agent logging durante test */
+    extraHTTPHeaders: {
+      'X-Test-Mode': 'true',
+    },
   },
 
   /* Configura progetti per browser */
@@ -42,19 +48,8 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        // Riutilizza lo stato di autenticazione per evitare login ripetuti (opzionale)
-        // Se il file non esiste, Playwright continuerà senza storageState
-        storageState: (() => {
-          const path = 'tests/e2e/.auth/athlete-auth.json'
-          try {
-            if (existsSync(join(process.cwd(), path))) {
-              return path
-            }
-          } catch {
-            // Ignora errori
-          }
-          return undefined
-        })(),
+        // Non caricare storageState pre-autenticato: ogni test gestisce il proprio contesto anonimo
+        storageState: undefined,
       },
     },
 
@@ -63,6 +58,20 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
     },
 
+    /**
+     * ⚠️ WEBKIT/SAFARI - LIMITAZIONI NOTE
+     *
+     * Safari/WebKit hanno problemi con cookie Secure su HTTP (localhost).
+     * I test di login/auth falliscono sistematicamente su questi browser
+     * in ambiente di sviluppo locale.
+     *
+     * Decisione: SKIP PERMANENTE per test auth su WebKit/Mobile Safari
+     * - I test funzionali (non-auth) possono comunque girare
+     * - Per test auth completi su Safari, serve HTTPS locale
+     * - In produzione (HTTPS), Safari funziona correttamente
+     *
+     * Riferimento: __project_logic_docs__/09_test_e_affidabilita_e2e.md
+     */
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
@@ -76,6 +85,7 @@ export default defineConfig({
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
+      // Stesse limitazioni di webkit per cookie Secure su HTTP
     },
   ],
 

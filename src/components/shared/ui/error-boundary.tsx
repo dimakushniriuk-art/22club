@@ -36,30 +36,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       componentStack: errorInfo.componentStack,
     })
 
-    // Log specifico per errori JSON
-    if (error instanceof SyntaxError && error.message.includes('JSON')) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'error-boundary.tsx:componentDidCatch',
-          message: 'JSON parse error caught by ErrorBoundary',
-          data: {
-            errorMessage: error.message,
-            errorStack: error.stack,
-            componentStack: errorInfo.componentStack,
-            isSyntaxError: true,
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'F',
-        }),
-      }).catch(() => {})
-      // #endregion
-    }
-
     // Report to Sentry
     const errorId = Sentry.captureException(error, {
       contexts: {

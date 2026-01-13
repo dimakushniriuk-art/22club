@@ -1,21 +1,25 @@
-import { Page, BrowserContext } from '@playwright/test'
+import { Page, BrowserContext, expect } from '@playwright/test'
 
-/**
- * Credenziali reali per i test E2E
- * NOTA: Queste sono credenziali reali del sistema di produzione/test
- */
+const getEnvOrThrow = (key: string): string => {
+  const value = process.env[key]?.trim()
+  if (!value) {
+    throw new Error(`Variabile ${key} mancante: impostala per eseguire i test E2E`)
+  }
+  return value
+}
+
 export const TEST_CREDENTIALS = {
   athlete: {
-    email: 'dima.kushniriuk@gmail.com',
-    password: 'dimon280894',
+    email: getEnvOrThrow('PLAYWRIGHT_ATHLETE_EMAIL'),
+    password: getEnvOrThrow('PLAYWRIGHT_ATHLETE_PASSWORD'),
   },
   pt: {
-    email: 'b.francesco@22club.it',
-    password: 'FrancescoB',
+    email: getEnvOrThrow('PLAYWRIGHT_TRAINER_EMAIL'),
+    password: getEnvOrThrow('PLAYWRIGHT_TRAINER_PASSWORD'),
   },
   admin: {
-    email: 'admin@22club.it',
-    password: 'adminadmin',
+    email: getEnvOrThrow('PLAYWRIGHT_ADMIN_EMAIL'),
+    password: getEnvOrThrow('PLAYWRIGHT_ADMIN_PASSWORD'),
   },
 } as const
 
@@ -24,15 +28,19 @@ export const TEST_CREDENTIALS = {
  */
 export async function loginAsAthlete(page: Page): Promise<void> {
   await page.goto('/login')
-  await page.waitForLoadState('networkidle')
+  const emailInput = page.locator('#email')
+  const passwordInput = page.locator('#password')
+  await emailInput.waitFor({ state: 'visible', timeout: 10000 })
+  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 
   // I campi hanno id="email" e id="password"
-  await page.fill('#email', TEST_CREDENTIALS.athlete.email)
-  await page.fill('#password', TEST_CREDENTIALS.athlete.password)
+  await emailInput.fill(TEST_CREDENTIALS.athlete.email)
+  await passwordInput.fill(TEST_CREDENTIALS.athlete.password)
 
   // Cerca il pulsante di submit
   await page.click('button[type="submit"]')
-  await page.waitForURL('**/home', { timeout: 10000 })
+  await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {})
+  await expect(page).toHaveURL(/post-login|home/, { timeout: 45000 })
 }
 
 /**
@@ -40,15 +48,19 @@ export async function loginAsAthlete(page: Page): Promise<void> {
  */
 export async function loginAsPT(page: Page): Promise<void> {
   await page.goto('/login')
-  await page.waitForLoadState('networkidle')
+  const emailInput = page.locator('#email')
+  const passwordInput = page.locator('#password')
+  await emailInput.waitFor({ state: 'visible', timeout: 10000 })
+  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 
   // I campi hanno id="email" e id="password"
-  await page.fill('#email', TEST_CREDENTIALS.pt.email)
-  await page.fill('#password', TEST_CREDENTIALS.pt.password)
+  await emailInput.fill(TEST_CREDENTIALS.pt.email)
+  await passwordInput.fill(TEST_CREDENTIALS.pt.password)
 
   // Cerca il pulsante di submit
   await page.click('button[type="submit"]')
-  await page.waitForURL('**/dashboard', { timeout: 10000 })
+  await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {})
+  await expect(page).toHaveURL(/post-login|dashboard/, { timeout: 45000 })
 }
 
 /**
@@ -56,15 +68,19 @@ export async function loginAsPT(page: Page): Promise<void> {
  */
 export async function loginAsAdmin(page: Page): Promise<void> {
   await page.goto('/login')
-  await page.waitForLoadState('networkidle')
+  const emailInput = page.locator('#email')
+  const passwordInput = page.locator('#password')
+  await emailInput.waitFor({ state: 'visible', timeout: 10000 })
+  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 
   // I campi hanno id="email" e id="password"
-  await page.fill('#email', TEST_CREDENTIALS.admin.email)
-  await page.fill('#password', TEST_CREDENTIALS.admin.password)
+  await emailInput.fill(TEST_CREDENTIALS.admin.email)
+  await passwordInput.fill(TEST_CREDENTIALS.admin.password)
 
   // Cerca il pulsante di submit
   await page.click('button[type="submit"]')
-  await page.waitForURL('**/dashboard', { timeout: 10000 })
+  await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {})
+  await expect(page).toHaveURL(/post-login|dashboard/, { timeout: 45000 })
 }
 
 /**

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -126,20 +126,34 @@ export default function AllenamentiDashboardPage() {
   // Fetch allenamenti
   const { allenamenti, stats, loading, error, refresh } = useAllenamenti(filters, sort)
 
+  // Fallback: se il loading dura troppo, mostra comunque UI con stato vuoto
+  const [loadingTimeoutReached, setLoadingTimeoutReached] = useState(false)
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimeoutReached(false)
+      return
+    }
+    const t = setTimeout(() => setLoadingTimeoutReached(true), 7000)
+    return () => clearTimeout(t)
+  }, [loading])
+
+  const isLoadingUI = loading && !loadingTimeoutReached
+  const safeStats = stats ?? {
+    oggi: 0,
+    completati: 0,
+    in_corso: 0,
+    programmati: 0,
+    saltati: 0,
+    questa_settimana: 0,
+    questo_mese: 0,
+  }
+  const safeAllenamenti = isLoadingUI ? [] : allenamenti
+
   // Funzioni helper ora sono fuori dal componente (vedi sopra)
 
   const handleApplyFiltriAvanzati = (newFilters: Partial<AllenamentoFilters>) => {
     if (newFilters.periodo) setPeriodo(newFilters.periodo)
   }
-
-  if (loading) return <LoadingState message="Caricamento allenamenti..." />
-  if (error)
-    return (
-      <ErrorState
-        message={error.message || 'Errore nel caricamento degli allenamenti'}
-        onRetry={refresh}
-      />
-    )
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -193,22 +207,41 @@ export default function AllenamentiDashboardPage() {
         >
           <TabsList variant="pills">
             <TabsTrigger value="tutti" variant="pills">
-              Tutti ({allenamenti.length})
+              Tutti ({safeAllenamenti.length})
             </TabsTrigger>
             <TabsTrigger value="completato" variant="pills">
-              Completati ({stats.completati})
+              Completati ({safeStats.completati})
             </TabsTrigger>
             <TabsTrigger value="in_corso" variant="pills">
-              In corso ({stats.in_corso})
+              In corso ({safeStats.in_corso})
             </TabsTrigger>
             <TabsTrigger value="programmato" variant="pills">
-              Programmati ({stats.programmati})
+              Programmati ({safeStats.programmati})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab}>
             <div className="space-y-4">
-              {allenamenti.length === 0 ? (
+              {isLoadingUI && (
+                <Card variant="trainer">
+                  <CardContent className="py-10">
+                    <LoadingState message="Caricamento allenamenti..." />
+                  </CardContent>
+                </Card>
+              )}
+
+              {!isLoadingUI && error && (
+                <Card variant="trainer">
+                  <CardContent className="py-6">
+                    <ErrorState
+                      message={error.message || 'Errore nel caricamento degli allenamenti'}
+                      onRetry={refresh}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {!isLoadingUI && !error && safeAllenamenti.length === 0 ? (
                 <Card
                   variant="trainer"
                   className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl"

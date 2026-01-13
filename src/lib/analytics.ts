@@ -1,6 +1,7 @@
 // 📊 Analytics Engine — 22Club
 
 import { unstable_cache } from 'next/cache'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 
@@ -62,60 +63,20 @@ const mockTrendData: TrendData[] = [
   { day: '2024-01-14', allenamenti: 23, documenti: 7, ore_totali: 15.1 },
 ]
 
-const mockDistributionData: DistributionData[] = [
-  { type: 'allenamento', count: 45, percentage: 60 },
-  { type: 'consulenza', count: 20, percentage: 27 },
-  { type: 'valutazione', count: 8, percentage: 11 },
-  { type: 'recupero', count: 2, percentage: 2 },
-]
-
-const mockPerformanceData: PerformanceData[] = [
-  {
-    athlete_id: '1',
-    athlete_name: 'Mario Rossi',
-    total_workouts: 12,
-    avg_duration: 65,
-    completion_rate: 95,
-  },
-  {
-    athlete_id: '2',
-    athlete_name: 'Giulia Bianchi',
-    total_workouts: 8,
-    avg_duration: 70,
-    completion_rate: 88,
-  },
-  {
-    athlete_id: '3',
-    athlete_name: 'Luca Verdi',
-    total_workouts: 15,
-    avg_duration: 55,
-    completion_rate: 92,
-  },
-  {
-    athlete_id: '4',
-    athlete_name: 'Sofia Neri',
-    total_workouts: 6,
-    avg_duration: 75,
-    completion_rate: 85,
-  },
-  {
-    athlete_id: '5',
-    athlete_name: 'Marco Blu',
-    total_workouts: 10,
-    avg_duration: 60,
-    completion_rate: 90,
-  },
-]
+// Mock data rimossi - non più usati dopo il passaggio a fallback vuoto
+// Se servono per test, spostare in file di test dedicato
 
 // Funzione principale per ottenere i dati analytics
 // Nota: orgId potrebbe essere usato in futuro per multi-tenant
 export async function getAnalyticsData(orgId?: string): Promise<AnalyticsData> {
+  // Estrai i cookie fuori dalla funzione cache per evitare errori unstable_cache
+  const cookieStore = await cookies()
+  const supabase = await createClient(cookieStore)
+
   // Usa unstable_cache per cache di 5 minuti per ridurre query ripetute
   return unstable_cache(
     async () => {
       try {
-        const supabase = await createClient()
-
         // Esegui query in parallelo per migliorare performance
         const [trend, distribution, performance] = await Promise.all([
           // 1. TREND DATA - Ultimi 14 giorni
@@ -275,8 +236,7 @@ async function getDistributionDataFromDB(
   supabase: Awaited<ReturnType<typeof createClient>>,
 ): Promise<DistributionData[]> {
   try {
-    // Prova prima con RPC function ottimizzata
-    // Workaround necessario per tipizzazione Supabase RPC
+    // RPC best effort; se fallisce, usa mock per ridurre warning/timeout
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: rpcData, error: rpcError } = await (supabase.rpc as any)(
       'get_analytics_distribution_data',
@@ -297,52 +257,17 @@ async function getDistributionDataFromDB(
       }))
     }
 
-    // Fallback: query diretta se RPC non disponibile
-    logger.warn('RPC get_analytics_distribution_data non disponibile, uso query diretta', {
-      error: rpcError,
-    })
-
-    // Query per distribuzione per tipo di appuntamento
-    const { data: appointments, error: appointmentsError } = await supabase
-      .from('appointments')
-      .select('type')
-      .not('type', 'is', null)
-
-    if (appointmentsError) {
-      logger.warn('Errore caricamento appointments', { error: appointmentsError })
-      return mockDistributionData
-    }
-
-    // Raggruppa per tipo
-    const typeCount = new Map<string, number>()
-    let total = 0
-
-    if (appointments) {
-      type AppointmentRow = {
-        type?: string | null
-        [key: string]: unknown
-      }
-      const typedAppointments = (appointments as AppointmentRow[]) || []
-      typedAppointments.forEach((apt) => {
-        const type = apt.type || 'altro'
-        typeCount.set(type, (typeCount.get(type) || 0) + 1)
-        total += 1
+    if (rpcError) {
+      logger.warn('RPC get_analytics_distribution_data non disponibile - dati vuoti', {
+        code: rpcError.code,
+        message: rpcError.message,
       })
     }
-
-    // Converti in array con percentuali
-    const distribution: DistributionData[] = Array.from(typeCount.entries())
-      .map(([type, count]) => ({
-        type,
-        count,
-        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
-      }))
-      .sort((a, b) => b.count - a.count)
-
-    return distribution.length > 0 ? distribution : mockDistributionData
+    // Fallback: dati vuoti (più onesto di mock data)
+    return []
   } catch (error) {
-    logger.error('Errore getDistributionDataFromDB', error)
-    return mockDistributionData
+    logger.error('Errore getDistributionDataFromDB - dati vuoti', error)
+    return []
   }
 }
 
@@ -468,7 +393,8 @@ async function getPerformanceDataFromDB(
       .limit(20)
 
     if (athletesError || !athletes || athletes.length === 0) {
-      return mockPerformanceData
+      logger.warn('Nessun atleta trovato per performance analytics - dati vuoti')
+      return []
     }
 
     // Type assertion per athletes
@@ -558,8 +484,8 @@ async function getPerformanceDataFromDB(
 
     return performance.filter((p) => p.total_workouts > 0).slice(0, 20)
   } catch (error) {
-    logger.error('Errore getPerformanceDataFromDB', error)
-    return mockPerformanceData
+    logger.error('Errore getPerformanceDataFromDB - dati vuoti', error)
+    return []
   }
 }
 

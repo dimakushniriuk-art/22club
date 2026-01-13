@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect } from 'react'
+import { Suspense } from 'react'
 import { RoleLayout } from '@/components/shared/dashboard/role-layout'
 // RIMOSSO: NavigationLoading non serve più - Next.js Link gestisce già la navigazione
 // import { NavigationLoading } from '@/components/ui'
@@ -21,27 +21,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // RIMOSSO: useNavigationState non serve più - Next.js Link gestisce già la navigazione
   // const navigationState = useNavigationState()
   const { org_id } = useAuth()
-
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'dashboard/layout.tsx:20',
-        message: 'DashboardLayout - component render',
-        data: {
-          org_id: org_id || null,
-          timestamp: Date.now(),
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'M',
-      }),
-    }).catch(() => {})
-  }, [org_id])
-  // #endregion
 
   // Fine navigazione quando i children cambiano - RIMOSSO perché non serve più
   // useEffect(() => {

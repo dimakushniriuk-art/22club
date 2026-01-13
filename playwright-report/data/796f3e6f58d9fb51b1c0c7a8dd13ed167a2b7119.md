@@ -1,0 +1,1191 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e5]:
+      - img [ref=e7]
+      - navigation [ref=e20]:
+        - link "Dashboard" [ref=e21] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e22]
+          - generic [ref=e25]: Dashboard
+        - link "Clienti" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard/clienti
+          - img [ref=e27]
+          - generic [ref=e32]: Clienti
+        - link "Schede" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/schede
+          - img [ref=e35]
+          - generic [ref=e41]: Schede
+        - link "Appuntamenti" [ref=e42] [cursor=pointer]:
+          - /url: /dashboard/appuntamenti
+          - img [ref=e43]
+          - generic [ref=e45]: Appuntamenti
+        - link "Calendario" [ref=e46] [cursor=pointer]:
+          - /url: /dashboard/calendario
+          - img [ref=e47]
+          - generic [ref=e49]: Calendario
+        - link "Esercizi" [ref=e50] [cursor=pointer]:
+          - /url: /dashboard/esercizi
+          - img [ref=e51]
+          - generic [ref=e57]: Esercizi
+        - link "Abbonamenti" [ref=e58] [cursor=pointer]:
+          - /url: /dashboard/abbonamenti
+          - img [ref=e59]
+          - generic [ref=e61]: Abbonamenti
+        - link "Chat" [ref=e62] [cursor=pointer]:
+          - /url: /dashboard/chat
+          - img [ref=e63]
+          - generic [ref=e65]: Chat
+        - link "Comunicazioni" [ref=e66] [cursor=pointer]:
+          - /url: /dashboard/comunicazioni
+          - img [ref=e67]
+          - generic [ref=e70]: Comunicazioni
+        - link "Impostazioni" [ref=e71] [cursor=pointer]:
+          - /url: /dashboard/impostazioni
+          - img [ref=e72]
+          - generic [ref=e75]: Impostazioni
+        - button "Esci" [ref=e76]:
+          - img [ref=e77]
+          - generic [ref=e80]: Esci
+        - button "Riduci sidebar" [ref=e81]:
+          - img [ref=e82]
+    - main [ref=e84]:
+      - generic [ref=e88]:
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - heading "Clienti" [level=1] [ref=e92]
+            - paragraph [ref=e93]: Gestisci i tuoi atleti e i loro progressi
+          - generic [ref=e94]:
+            - button "Aggiungi Atleta" [ref=e95]:
+              - img [ref=e96]
+              - text: Aggiungi Atleta
+            - link "Invita Atleta" [ref=e99] [cursor=pointer]:
+              - /url: /dashboard/invita-atleta
+              - button "Invita Atleta" [ref=e100]:
+                - img [ref=e101]
+                - text: Invita Atleta
+        - generic [ref=e105]:
+          - generic [ref=e107]:
+            - img [ref=e109]
+            - textbox "Cerca clienti per nome o email" [ref=e112]:
+              - /placeholder: Cerca per nome o email...
+          - generic [ref=e113]:
+            - button "Filtra per tutti i clienti (attivo)" [pressed] [ref=e114]: Tutti
+            - button "Filtra per clienti attivi" [ref=e115]: Attivi
+            - button "Filtra per clienti inattivi" [ref=e116]: Inattivi
+            - button "Mostra filtri avanzati" [ref=e117]:
+              - img [ref=e118]
+              - text: Filtri avanzati
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - button "Vista griglia" [ref=e122]:
+              - img [ref=e123]
+              - text: Griglia
+            - button "Vista tabella" [ref=e125]:
+              - img [ref=e126]
+              - text: Tabella
+          - button "Esporta dati clienti" [ref=e129]:
+            - img [ref=e130]
+            - text: Export
+        - status [ref=e133]: 38 clienti trovati
+        - generic [ref=e134]:
+          - generic [ref=e136]:
+            - img [ref=e138]
+            - heading "Lista Clienti (38)" [level=3] [ref=e141]
+          - generic [ref=e142]:
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - generic "Nensj Carrara" [ref=e148]: "N"
+                  - heading "Nensj Carrara" [level=3] [ref=e150]
+                - generic [ref=e151]: Attivo
+              - generic [ref=e153]:
+                - img [ref=e154]
+                - generic [ref=e157]: nensj.carrara@tepm.com
+              - generic [ref=e158]:
+                - generic [ref=e159]:
+                  - generic [ref=e160]:
+                    - img [ref=e161]
+                    - text: Iscritto dal
+                  - generic [ref=e163]: 8 gen 2026
+                - generic [ref=e164]:
+                  - generic [ref=e165]: Allenamenti/mese
+                  - generic [ref=e166]: "0"
+              - generic [ref=e167]:
+                - link "Profilo" [ref=e168] [cursor=pointer]:
+                  - /url: /dashboard/atleti/8c3af9c2-1823-479c-9dd2-2639804304d3
+                  - button "Profilo" [ref=e169]:
+                    - img [ref=e170]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e173] [cursor=pointer]:
+                  - /url: /dashboard/atleti/8c3af9c2-1823-479c-9dd2-2639804304d3/chat
+                  - button "Chat con cliente" [ref=e174]:
+                    - img [ref=e175]
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - generic [ref=e181]:
+                  - generic "Marilena Rota" [ref=e182]: M
+                  - heading "Marilena Rota" [level=3] [ref=e184]
+                - generic [ref=e185]: Attivo
+              - generic [ref=e187]:
+                - img [ref=e188]
+                - generic [ref=e191]: marilena.rota@tepm.com
+              - generic [ref=e192]:
+                - generic [ref=e193]:
+                  - generic [ref=e194]:
+                    - img [ref=e195]
+                    - text: Iscritto dal
+                  - generic [ref=e197]: 8 gen 2026
+                - generic [ref=e198]:
+                  - generic [ref=e199]: Allenamenti/mese
+                  - generic [ref=e200]: "0"
+              - generic [ref=e201]:
+                - link "Profilo" [ref=e202] [cursor=pointer]:
+                  - /url: /dashboard/atleti/fbf3cb60-0943-4bd1-a935-257b76abc7a9
+                  - button "Profilo" [ref=e203]:
+                    - img [ref=e204]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e207] [cursor=pointer]:
+                  - /url: /dashboard/atleti/fbf3cb60-0943-4bd1-a935-257b76abc7a9/chat
+                  - button "Chat con cliente" [ref=e208]:
+                    - img [ref=e209]
+            - generic [ref=e213]:
+              - generic [ref=e214]:
+                - generic [ref=e215]:
+                  - generic "Alessandro Ziboni" [ref=e216]: A
+                  - heading "Alessandro Ziboni" [level=3] [ref=e218]
+                - generic [ref=e219]: Attivo
+              - generic [ref=e221]:
+                - img [ref=e222]
+                - generic [ref=e225]: alessandro.ziboni@tepm.com
+              - generic [ref=e226]:
+                - generic [ref=e227]:
+                  - generic [ref=e228]:
+                    - img [ref=e229]
+                    - text: Iscritto dal
+                  - generic [ref=e231]: 8 gen 2026
+                - generic [ref=e232]:
+                  - generic [ref=e233]: Allenamenti/mese
+                  - generic [ref=e234]: "0"
+              - generic [ref=e235]:
+                - link "Profilo" [ref=e236] [cursor=pointer]:
+                  - /url: /dashboard/atleti/0e3cfc5c-8416-4917-b1ab-415662f08c01
+                  - button "Profilo" [ref=e237]:
+                    - img [ref=e238]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e241] [cursor=pointer]:
+                  - /url: /dashboard/atleti/0e3cfc5c-8416-4917-b1ab-415662f08c01/chat
+                  - button "Chat con cliente" [ref=e242]:
+                    - img [ref=e243]
+            - generic [ref=e247]:
+              - generic [ref=e248]:
+                - generic [ref=e249]:
+                  - generic "Eugenia Amato" [ref=e250]: E
+                  - heading "Eugenia Amato" [level=3] [ref=e252]
+                - generic [ref=e253]: Attivo
+              - generic [ref=e255]:
+                - img [ref=e256]
+                - generic [ref=e259]: eugenia.amato@tepm.com
+              - generic [ref=e260]:
+                - generic [ref=e261]:
+                  - generic [ref=e262]:
+                    - img [ref=e263]
+                    - text: Iscritto dal
+                  - generic [ref=e265]: 8 gen 2026
+                - generic [ref=e266]:
+                  - generic [ref=e267]: Allenamenti/mese
+                  - generic [ref=e268]: "0"
+              - generic [ref=e269]:
+                - link "Profilo" [ref=e270] [cursor=pointer]:
+                  - /url: /dashboard/atleti/2f8333a1-f4ba-4298-bd59-b8b2ae34c4c1
+                  - button "Profilo" [ref=e271]:
+                    - img [ref=e272]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e275] [cursor=pointer]:
+                  - /url: /dashboard/atleti/2f8333a1-f4ba-4298-bd59-b8b2ae34c4c1/chat
+                  - button "Chat con cliente" [ref=e276]:
+                    - img [ref=e277]
+            - generic [ref=e281]:
+              - generic [ref=e282]:
+                - generic [ref=e283]:
+                  - generic "Matteo Balestra" [ref=e284]: M
+                  - heading "Matteo Balestra" [level=3] [ref=e286]
+                - generic [ref=e287]: Attivo
+              - generic [ref=e289]:
+                - img [ref=e290]
+                - generic [ref=e293]: matteo.balestra@tepm.com
+              - generic [ref=e294]:
+                - generic [ref=e295]:
+                  - generic [ref=e296]:
+                    - img [ref=e297]
+                    - text: Iscritto dal
+                  - generic [ref=e299]: 8 gen 2026
+                - generic [ref=e300]:
+                  - generic [ref=e301]: Allenamenti/mese
+                  - generic [ref=e302]: "0"
+              - generic [ref=e303]:
+                - link "Profilo" [ref=e304] [cursor=pointer]:
+                  - /url: /dashboard/atleti/3b7609f7-40cc-44f4-8778-964be4d8e3f0
+                  - button "Profilo" [ref=e305]:
+                    - img [ref=e306]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e309] [cursor=pointer]:
+                  - /url: /dashboard/atleti/3b7609f7-40cc-44f4-8778-964be4d8e3f0/chat
+                  - button "Chat con cliente" [ref=e310]:
+                    - img [ref=e311]
+            - generic [ref=e315]:
+              - generic [ref=e316]:
+                - generic [ref=e317]:
+                  - generic "Ivan Carrara" [ref=e318]: I
+                  - heading "Ivan Carrara" [level=3] [ref=e320]
+                - generic [ref=e321]: Attivo
+              - generic [ref=e323]:
+                - img [ref=e324]
+                - generic [ref=e327]: ivan.carrara@tepm.com
+              - generic [ref=e328]:
+                - generic [ref=e329]:
+                  - generic [ref=e330]:
+                    - img [ref=e331]
+                    - text: Iscritto dal
+                  - generic [ref=e333]: 8 gen 2026
+                - generic [ref=e334]:
+                  - generic [ref=e335]: Allenamenti/mese
+                  - generic [ref=e336]: "0"
+              - generic [ref=e337]:
+                - link "Profilo" [ref=e338] [cursor=pointer]:
+                  - /url: /dashboard/atleti/b9babf97-9fd9-4a5f-bb1e-9d6c0a236d05
+                  - button "Profilo" [ref=e339]:
+                    - img [ref=e340]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e343] [cursor=pointer]:
+                  - /url: /dashboard/atleti/b9babf97-9fd9-4a5f-bb1e-9d6c0a236d05/chat
+                  - button "Chat con cliente" [ref=e344]:
+                    - img [ref=e345]
+            - generic [ref=e349]:
+              - generic [ref=e350]:
+                - generic [ref=e351]:
+                  - generic "Guenda Putelli" [ref=e352]: G
+                  - heading "Guenda Putelli" [level=3] [ref=e354]
+                - generic [ref=e355]: Attivo
+              - generic [ref=e357]:
+                - img [ref=e358]
+                - generic [ref=e361]: guenda.putelli@tepm.com
+              - generic [ref=e362]:
+                - generic [ref=e363]:
+                  - generic [ref=e364]:
+                    - img [ref=e365]
+                    - text: Iscritto dal
+                  - generic [ref=e367]: 8 gen 2026
+                - generic [ref=e368]:
+                  - generic [ref=e369]: Allenamenti/mese
+                  - generic [ref=e370]: "0"
+              - generic [ref=e371]:
+                - link "Profilo" [ref=e372] [cursor=pointer]:
+                  - /url: /dashboard/atleti/3c98c8aa-c071-452f-8b0d-52bc98435933
+                  - button "Profilo" [ref=e373]:
+                    - img [ref=e374]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e377] [cursor=pointer]:
+                  - /url: /dashboard/atleti/3c98c8aa-c071-452f-8b0d-52bc98435933/chat
+                  - button "Chat con cliente" [ref=e378]:
+                    - img [ref=e379]
+            - generic [ref=e383]:
+              - generic [ref=e384]:
+                - generic [ref=e385]:
+                  - generic "Mario Ati" [ref=e386]: M
+                  - heading "Mario Ati" [level=3] [ref=e388]
+                - generic [ref=e389]: Attivo
+              - generic [ref=e391]:
+                - img [ref=e392]
+                - generic [ref=e395]: mario.ati@tepm.com
+              - generic [ref=e396]:
+                - generic [ref=e397]:
+                  - generic [ref=e398]:
+                    - img [ref=e399]
+                    - text: Iscritto dal
+                  - generic [ref=e401]: 8 gen 2026
+                - generic [ref=e402]:
+                  - generic [ref=e403]: Allenamenti/mese
+                  - generic [ref=e404]: "0"
+              - generic [ref=e405]:
+                - link "Profilo" [ref=e406] [cursor=pointer]:
+                  - /url: /dashboard/atleti/59cbd466-b356-4694-afa4-6b6d3a1c5b88
+                  - button "Profilo" [ref=e407]:
+                    - img [ref=e408]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e411] [cursor=pointer]:
+                  - /url: /dashboard/atleti/59cbd466-b356-4694-afa4-6b6d3a1c5b88/chat
+                  - button "Chat con cliente" [ref=e412]:
+                    - img [ref=e413]
+            - generic [ref=e417]:
+              - generic [ref=e418]:
+                - generic [ref=e419]:
+                  - generic "Michela Cattaneo" [ref=e420]: M
+                  - heading "Michela Cattaneo" [level=3] [ref=e422]
+                - generic [ref=e423]: Attivo
+              - generic [ref=e425]:
+                - img [ref=e426]
+                - generic [ref=e429]: michela.cattaneo@tepm.com
+              - generic [ref=e430]:
+                - generic [ref=e431]:
+                  - generic [ref=e432]:
+                    - img [ref=e433]
+                    - text: Iscritto dal
+                  - generic [ref=e435]: 8 gen 2026
+                - generic [ref=e436]:
+                  - generic [ref=e437]: Allenamenti/mese
+                  - generic [ref=e438]: "0"
+              - generic [ref=e439]:
+                - link "Profilo" [ref=e440] [cursor=pointer]:
+                  - /url: /dashboard/atleti/894414aa-2fa2-40dd-8c2b-1ad6ad0da458
+                  - button "Profilo" [ref=e441]:
+                    - img [ref=e442]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e445] [cursor=pointer]:
+                  - /url: /dashboard/atleti/894414aa-2fa2-40dd-8c2b-1ad6ad0da458/chat
+                  - button "Chat con cliente" [ref=e446]:
+                    - img [ref=e447]
+            - generic [ref=e451]:
+              - generic [ref=e452]:
+                - generic [ref=e453]:
+                  - generic "Roberta Begnis" [ref=e454]: R
+                  - heading "Roberta Begnis" [level=3] [ref=e456]
+                - generic [ref=e457]: Attivo
+              - generic [ref=e459]:
+                - img [ref=e460]
+                - generic [ref=e463]: roberta.begnis@tepm.com
+              - generic [ref=e464]:
+                - generic [ref=e465]:
+                  - generic [ref=e466]:
+                    - img [ref=e467]
+                    - text: Iscritto dal
+                  - generic [ref=e469]: 8 gen 2026
+                - generic [ref=e470]:
+                  - generic [ref=e471]: Allenamenti/mese
+                  - generic [ref=e472]: "0"
+              - generic [ref=e473]:
+                - link "Profilo" [ref=e474] [cursor=pointer]:
+                  - /url: /dashboard/atleti/9ffe383b-e470-461a-b1e6-b9dd46bd6ab5
+                  - button "Profilo" [ref=e475]:
+                    - img [ref=e476]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e479] [cursor=pointer]:
+                  - /url: /dashboard/atleti/9ffe383b-e470-461a-b1e6-b9dd46bd6ab5/chat
+                  - button "Chat con cliente" [ref=e480]:
+                    - img [ref=e481]
+            - generic [ref=e485]:
+              - generic [ref=e486]:
+                - generic [ref=e487]:
+                  - generic "Roberto Cattaneo" [ref=e488]: R
+                  - heading "Roberto Cattaneo" [level=3] [ref=e490]
+                - generic [ref=e491]: Attivo
+              - generic [ref=e493]:
+                - img [ref=e494]
+                - generic [ref=e497]: roberto.cattaneo@tepm.com
+              - generic [ref=e498]:
+                - generic [ref=e499]:
+                  - generic [ref=e500]:
+                    - img [ref=e501]
+                    - text: Iscritto dal
+                  - generic [ref=e503]: 8 gen 2026
+                - generic [ref=e504]:
+                  - generic [ref=e505]: Allenamenti/mese
+                  - generic [ref=e506]: "0"
+              - generic [ref=e507]:
+                - link "Profilo" [ref=e508] [cursor=pointer]:
+                  - /url: /dashboard/atleti/8401a041-05bd-4019-977e-83e0d8fa057e
+                  - button "Profilo" [ref=e509]:
+                    - img [ref=e510]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e513] [cursor=pointer]:
+                  - /url: /dashboard/atleti/8401a041-05bd-4019-977e-83e0d8fa057e/chat
+                  - button "Chat con cliente" [ref=e514]:
+                    - img [ref=e515]
+            - generic [ref=e519]:
+              - generic [ref=e520]:
+                - generic [ref=e521]:
+                  - generic "Tomorrow Tirana" [ref=e522]: T
+                  - heading "Tomorrow Tirana" [level=3] [ref=e524]
+                - generic [ref=e525]: Attivo
+              - generic [ref=e527]:
+                - img [ref=e528]
+                - generic [ref=e531]: tomorrow.tirana@tepm.com
+              - generic [ref=e532]:
+                - generic [ref=e533]:
+                  - generic [ref=e534]:
+                    - img [ref=e535]
+                    - text: Iscritto dal
+                  - generic [ref=e537]: 8 gen 2026
+                - generic [ref=e538]:
+                  - generic [ref=e539]: Allenamenti/mese
+                  - generic [ref=e540]: "0"
+              - generic [ref=e541]:
+                - link "Profilo" [ref=e542] [cursor=pointer]:
+                  - /url: /dashboard/atleti/f2a04477-5e04-41f8-93c7-e9811bb00860
+                  - button "Profilo" [ref=e543]:
+                    - img [ref=e544]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e547] [cursor=pointer]:
+                  - /url: /dashboard/atleti/f2a04477-5e04-41f8-93c7-e9811bb00860/chat
+                  - button "Chat con cliente" [ref=e548]:
+                    - img [ref=e549]
+            - generic [ref=e553]:
+              - generic [ref=e554]:
+                - generic [ref=e555]:
+                  - generic "Fabio Carminati" [ref=e556]: F
+                  - heading "Fabio Carminati" [level=3] [ref=e558]
+                - generic [ref=e559]: Attivo
+              - generic [ref=e561]:
+                - img [ref=e562]
+                - generic [ref=e565]: fabio.carminati@tepm.com
+              - generic [ref=e566]:
+                - generic [ref=e567]:
+                  - generic [ref=e568]:
+                    - img [ref=e569]
+                    - text: Iscritto dal
+                  - generic [ref=e571]: 8 gen 2026
+                - generic [ref=e572]:
+                  - generic [ref=e573]: Allenamenti/mese
+                  - generic [ref=e574]: "0"
+              - generic [ref=e575]:
+                - link "Profilo" [ref=e576] [cursor=pointer]:
+                  - /url: /dashboard/atleti/ed3a0a7c-8edd-4480-8b76-4d52c28e3166
+                  - button "Profilo" [ref=e577]:
+                    - img [ref=e578]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e581] [cursor=pointer]:
+                  - /url: /dashboard/atleti/ed3a0a7c-8edd-4480-8b76-4d52c28e3166/chat
+                  - button "Chat con cliente" [ref=e582]:
+                    - img [ref=e583]
+            - generic [ref=e587]:
+              - generic [ref=e588]:
+                - generic [ref=e589]:
+                  - generic "Nicola Patruno" [ref=e590]: "N"
+                  - heading "Nicola Patruno" [level=3] [ref=e592]
+                - generic [ref=e593]: Attivo
+              - generic [ref=e595]:
+                - img [ref=e596]
+                - generic [ref=e599]: nicola.patruno@tepm.com
+              - generic [ref=e600]:
+                - generic [ref=e601]:
+                  - generic [ref=e602]:
+                    - img [ref=e603]
+                    - text: Iscritto dal
+                  - generic [ref=e605]: 8 gen 2026
+                - generic [ref=e606]:
+                  - generic [ref=e607]: Allenamenti/mese
+                  - generic [ref=e608]: "0"
+              - generic [ref=e609]:
+                - link "Profilo" [ref=e610] [cursor=pointer]:
+                  - /url: /dashboard/atleti/01ae3f53-49b8-4a95-9c96-521b58bd3e46
+                  - button "Profilo" [ref=e611]:
+                    - img [ref=e612]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e615] [cursor=pointer]:
+                  - /url: /dashboard/atleti/01ae3f53-49b8-4a95-9c96-521b58bd3e46/chat
+                  - button "Chat con cliente" [ref=e616]:
+                    - img [ref=e617]
+            - generic [ref=e621]:
+              - generic [ref=e622]:
+                - generic [ref=e623]:
+                  - generic "Veronica Minno" [ref=e624]: V
+                  - heading "Veronica Minno" [level=3] [ref=e626]
+                - generic [ref=e627]: Attivo
+              - generic [ref=e629]:
+                - img [ref=e630]
+                - generic [ref=e633]: veronica.minno@tepm.com
+              - generic [ref=e634]:
+                - generic [ref=e635]:
+                  - generic [ref=e636]:
+                    - img [ref=e637]
+                    - text: Iscritto dal
+                  - generic [ref=e639]: 8 gen 2026
+                - generic [ref=e640]:
+                  - generic [ref=e641]: Allenamenti/mese
+                  - generic [ref=e642]: "0"
+              - generic [ref=e643]:
+                - link "Profilo" [ref=e644] [cursor=pointer]:
+                  - /url: /dashboard/atleti/39a0bdd4-6039-4d1e-9ccf-f82905f3f327
+                  - button "Profilo" [ref=e645]:
+                    - img [ref=e646]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e649] [cursor=pointer]:
+                  - /url: /dashboard/atleti/39a0bdd4-6039-4d1e-9ccf-f82905f3f327/chat
+                  - button "Chat con cliente" [ref=e650]:
+                    - img [ref=e651]
+            - generic [ref=e655]:
+              - generic [ref=e656]:
+                - generic [ref=e657]:
+                  - generic "Alessandro Donato" [ref=e658]: A
+                  - heading "Alessandro Donato" [level=3] [ref=e660]
+                - generic [ref=e661]: Attivo
+              - generic [ref=e663]:
+                - img [ref=e664]
+                - generic [ref=e667]: alessandro.donato@tepm.com
+              - generic [ref=e668]:
+                - generic [ref=e669]:
+                  - generic [ref=e670]:
+                    - img [ref=e671]
+                    - text: Iscritto dal
+                  - generic [ref=e673]: 8 gen 2026
+                - generic [ref=e674]:
+                  - generic [ref=e675]: Allenamenti/mese
+                  - generic [ref=e676]: "0"
+              - generic [ref=e677]:
+                - link "Profilo" [ref=e678] [cursor=pointer]:
+                  - /url: /dashboard/atleti/1ff3da79-060f-4600-a519-3379fbe67751
+                  - button "Profilo" [ref=e679]:
+                    - img [ref=e680]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e683] [cursor=pointer]:
+                  - /url: /dashboard/atleti/1ff3da79-060f-4600-a519-3379fbe67751/chat
+                  - button "Chat con cliente" [ref=e684]:
+                    - img [ref=e685]
+            - generic [ref=e689]:
+              - generic [ref=e690]:
+                - generic [ref=e691]:
+                  - generic "Francesco Bernotto" [ref=e692]: F
+                  - heading "Francesco Bernotto" [level=3] [ref=e694]
+                - generic [ref=e695]: Attivo
+              - generic [ref=e697]:
+                - img [ref=e698]
+                - generic [ref=e701]: francesco.bernotto@tepm.com
+              - generic [ref=e702]:
+                - generic [ref=e703]:
+                  - generic [ref=e704]:
+                    - img [ref=e705]
+                    - text: Iscritto dal
+                  - generic [ref=e707]: 8 gen 2026
+                - generic [ref=e708]:
+                  - generic [ref=e709]: Allenamenti/mese
+                  - generic [ref=e710]: "0"
+              - generic [ref=e711]:
+                - link "Profilo" [ref=e712] [cursor=pointer]:
+                  - /url: /dashboard/atleti/48ae97bd-bb9c-442b-a96b-f482ae34381e
+                  - button "Profilo" [ref=e713]:
+                    - img [ref=e714]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e717] [cursor=pointer]:
+                  - /url: /dashboard/atleti/48ae97bd-bb9c-442b-a96b-f482ae34381e/chat
+                  - button "Chat con cliente" [ref=e718]:
+                    - img [ref=e719]
+            - generic [ref=e723]:
+              - generic [ref=e724]:
+                - generic [ref=e725]:
+                  - generic "Paola Berlen" [ref=e726]: P
+                  - heading "Paola Berlen" [level=3] [ref=e728]
+                - generic [ref=e729]: Attivo
+              - generic [ref=e731]:
+                - img [ref=e732]
+                - generic [ref=e735]: paola.berlen@tepm.com
+              - generic [ref=e736]:
+                - generic [ref=e737]:
+                  - generic [ref=e738]:
+                    - img [ref=e739]
+                    - text: Iscritto dal
+                  - generic [ref=e741]: 8 gen 2026
+                - generic [ref=e742]:
+                  - generic [ref=e743]: Allenamenti/mese
+                  - generic [ref=e744]: "0"
+              - generic [ref=e745]:
+                - link "Profilo" [ref=e746] [cursor=pointer]:
+                  - /url: /dashboard/atleti/d692c8f8-f096-4c5e-a462-85dd55226ad9
+                  - button "Profilo" [ref=e747]:
+                    - img [ref=e748]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e751] [cursor=pointer]:
+                  - /url: /dashboard/atleti/d692c8f8-f096-4c5e-a462-85dd55226ad9/chat
+                  - button "Chat con cliente" [ref=e752]:
+                    - img [ref=e753]
+            - generic [ref=e757]:
+              - generic [ref=e758]:
+                - generic [ref=e759]:
+                  - generic "Olha Totskoinova" [ref=e760]: O
+                  - heading "Olha Totskoinova" [level=3] [ref=e762]
+                - generic [ref=e763]: Attivo
+              - generic [ref=e765]:
+                - img [ref=e766]
+                - generic [ref=e769]: olha.totskoinova@tepm.com
+              - generic [ref=e770]:
+                - generic [ref=e771]:
+                  - generic [ref=e772]:
+                    - img [ref=e773]
+                    - text: Iscritto dal
+                  - generic [ref=e775]: 8 gen 2026
+                - generic [ref=e776]:
+                  - generic [ref=e777]: Allenamenti/mese
+                  - generic [ref=e778]: "0"
+              - generic [ref=e779]:
+                - link "Profilo" [ref=e780] [cursor=pointer]:
+                  - /url: /dashboard/atleti/214b29ce-3711-41a1-bb32-a21d8352081c
+                  - button "Profilo" [ref=e781]:
+                    - img [ref=e782]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e785] [cursor=pointer]:
+                  - /url: /dashboard/atleti/214b29ce-3711-41a1-bb32-a21d8352081c/chat
+                  - button "Chat con cliente" [ref=e786]:
+                    - img [ref=e787]
+            - generic [ref=e791]:
+              - generic [ref=e792]:
+                - generic [ref=e793]:
+                  - generic "Anna Ronca" [ref=e794]: A
+                  - heading "Anna Ronca" [level=3] [ref=e796]
+                - generic [ref=e797]: Attivo
+              - generic [ref=e799]:
+                - img [ref=e800]
+                - generic [ref=e803]: anna.ronca@tepm.com
+              - generic [ref=e804]:
+                - generic [ref=e805]:
+                  - generic [ref=e806]:
+                    - img [ref=e807]
+                    - text: Iscritto dal
+                  - generic [ref=e809]: 8 gen 2026
+                - generic [ref=e810]:
+                  - generic [ref=e811]: Allenamenti/mese
+                  - generic [ref=e812]: "0"
+              - generic [ref=e813]:
+                - link "Profilo" [ref=e814] [cursor=pointer]:
+                  - /url: /dashboard/atleti/9366a1ab-3e0c-4f16-8374-b855799b2411
+                  - button "Profilo" [ref=e815]:
+                    - img [ref=e816]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e819] [cursor=pointer]:
+                  - /url: /dashboard/atleti/9366a1ab-3e0c-4f16-8374-b855799b2411/chat
+                  - button "Chat con cliente" [ref=e820]:
+                    - img [ref=e821]
+            - generic [ref=e825]:
+              - generic [ref=e826]:
+                - generic [ref=e827]:
+                  - generic "Martina Minno" [ref=e828]: M
+                  - heading "Martina Minno" [level=3] [ref=e830]
+                - generic [ref=e831]: Attivo
+              - generic [ref=e833]:
+                - img [ref=e834]
+                - generic [ref=e837]: martina.minno@tepm.com
+              - generic [ref=e838]:
+                - generic [ref=e839]:
+                  - generic [ref=e840]:
+                    - img [ref=e841]
+                    - text: Iscritto dal
+                  - generic [ref=e843]: 8 gen 2026
+                - generic [ref=e844]:
+                  - generic [ref=e845]: Allenamenti/mese
+                  - generic [ref=e846]: "0"
+              - generic [ref=e847]:
+                - link "Profilo" [ref=e848] [cursor=pointer]:
+                  - /url: /dashboard/atleti/798c4885-d745-4838-bf53-b3b0ad2b679b
+                  - button "Profilo" [ref=e849]:
+                    - img [ref=e850]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e853] [cursor=pointer]:
+                  - /url: /dashboard/atleti/798c4885-d745-4838-bf53-b3b0ad2b679b/chat
+                  - button "Chat con cliente" [ref=e854]:
+                    - img [ref=e855]
+            - generic [ref=e859]:
+              - generic [ref=e860]:
+                - generic [ref=e861]:
+                  - generic "Nicola Martino" [ref=e862]: "N"
+                  - heading "Nicola Martino" [level=3] [ref=e864]
+                - generic [ref=e865]: Attivo
+              - generic [ref=e867]:
+                - img [ref=e868]
+                - generic [ref=e871]: nicola.martino@tepm.com
+              - generic [ref=e872]:
+                - generic [ref=e873]:
+                  - generic [ref=e874]:
+                    - img [ref=e875]
+                    - text: Iscritto dal
+                  - generic [ref=e877]: 8 gen 2026
+                - generic [ref=e878]:
+                  - generic [ref=e879]: Allenamenti/mese
+                  - generic [ref=e880]: "0"
+              - generic [ref=e881]:
+                - link "Profilo" [ref=e882] [cursor=pointer]:
+                  - /url: /dashboard/atleti/978fdb17-b002-4fc4-8b48-04b9598d66d3
+                  - button "Profilo" [ref=e883]:
+                    - img [ref=e884]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e887] [cursor=pointer]:
+                  - /url: /dashboard/atleti/978fdb17-b002-4fc4-8b48-04b9598d66d3/chat
+                  - button "Chat con cliente" [ref=e888]:
+                    - img [ref=e889]
+            - generic [ref=e893]:
+              - generic [ref=e894]:
+                - generic [ref=e895]:
+                  - generic "Francesco Masetti" [ref=e896]: F
+                  - heading "Francesco Masetti" [level=3] [ref=e898]
+                - generic [ref=e899]: Attivo
+              - generic [ref=e901]:
+                - img [ref=e902]
+                - generic [ref=e905]: francesco.masetti@tepm.com
+              - generic [ref=e906]:
+                - generic [ref=e907]:
+                  - generic [ref=e908]:
+                    - img [ref=e909]
+                    - text: Iscritto dal
+                  - generic [ref=e911]: 8 gen 2026
+                - generic [ref=e912]:
+                  - generic [ref=e913]: Allenamenti/mese
+                  - generic [ref=e914]: "0"
+              - generic [ref=e915]:
+                - link "Profilo" [ref=e916] [cursor=pointer]:
+                  - /url: /dashboard/atleti/7468ad08-ab53-42cf-a18f-5a982e393b64
+                  - button "Profilo" [ref=e917]:
+                    - img [ref=e918]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e921] [cursor=pointer]:
+                  - /url: /dashboard/atleti/7468ad08-ab53-42cf-a18f-5a982e393b64/chat
+                  - button "Chat con cliente" [ref=e922]:
+                    - img [ref=e923]
+            - generic [ref=e927]:
+              - generic [ref=e928]:
+                - generic [ref=e929]:
+                  - generic "Luca Lussana" [ref=e930]: L
+                  - heading "Luca Lussana" [level=3] [ref=e932]
+                - generic [ref=e933]: Attivo
+              - generic [ref=e935]:
+                - img [ref=e936]
+                - generic [ref=e939]: luca.lussana@tepm.com
+              - generic [ref=e940]:
+                - generic [ref=e941]:
+                  - generic [ref=e942]:
+                    - img [ref=e943]
+                    - text: Iscritto dal
+                  - generic [ref=e945]: 8 gen 2026
+                - generic [ref=e946]:
+                  - generic [ref=e947]: Allenamenti/mese
+                  - generic [ref=e948]: "0"
+              - generic [ref=e949]:
+                - link "Profilo" [ref=e950] [cursor=pointer]:
+                  - /url: /dashboard/atleti/a77695e2-3548-4ccc-92b4-4c6addde85a0
+                  - button "Profilo" [ref=e951]:
+                    - img [ref=e952]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e955] [cursor=pointer]:
+                  - /url: /dashboard/atleti/a77695e2-3548-4ccc-92b4-4c6addde85a0/chat
+                  - button "Chat con cliente" [ref=e956]:
+                    - img [ref=e957]
+            - generic [ref=e961]:
+              - generic [ref=e962]:
+                - generic [ref=e963]:
+                  - generic "Mazzoni Marco" [ref=e964]: M
+                  - heading "Mazzoni Marco" [level=3] [ref=e966]
+                - generic [ref=e967]: Attivo
+              - generic [ref=e969]:
+                - img [ref=e970]
+                - generic [ref=e973]: mazzoni.marco@tepm.com
+              - generic [ref=e974]:
+                - generic [ref=e975]:
+                  - generic [ref=e976]:
+                    - img [ref=e977]
+                    - text: Iscritto dal
+                  - generic [ref=e979]: 8 gen 2026
+                - generic [ref=e980]:
+                  - generic [ref=e981]: Allenamenti/mese
+                  - generic [ref=e982]: "0"
+              - generic [ref=e983]:
+                - link "Profilo" [ref=e984] [cursor=pointer]:
+                  - /url: /dashboard/atleti/0f98b49d-4bfa-4623-a348-df6e25f1da65
+                  - button "Profilo" [ref=e985]:
+                    - img [ref=e986]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e989] [cursor=pointer]:
+                  - /url: /dashboard/atleti/0f98b49d-4bfa-4623-a348-df6e25f1da65/chat
+                  - button "Chat con cliente" [ref=e990]:
+                    - img [ref=e991]
+            - generic [ref=e995]:
+              - generic [ref=e996]:
+                - generic [ref=e997]:
+                  - generic "Federico Pellegrinelli" [ref=e998]: F
+                  - heading "Federico Pellegrinelli" [level=3] [ref=e1000]
+                - generic [ref=e1001]: Attivo
+              - generic [ref=e1003]:
+                - img [ref=e1004]
+                - generic [ref=e1007]: federico.pellegrinelli@tepm.com
+              - generic [ref=e1008]:
+                - generic [ref=e1009]:
+                  - generic [ref=e1010]:
+                    - img [ref=e1011]
+                    - text: Iscritto dal
+                  - generic [ref=e1013]: 8 gen 2026
+                - generic [ref=e1014]:
+                  - generic [ref=e1015]: Allenamenti/mese
+                  - generic [ref=e1016]: "0"
+              - generic [ref=e1017]:
+                - link "Profilo" [ref=e1018] [cursor=pointer]:
+                  - /url: /dashboard/atleti/b227d526-5465-4c3f-81d4-f363f532d16c
+                  - button "Profilo" [ref=e1019]:
+                    - img [ref=e1020]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1023] [cursor=pointer]:
+                  - /url: /dashboard/atleti/b227d526-5465-4c3f-81d4-f363f532d16c/chat
+                  - button "Chat con cliente" [ref=e1024]:
+                    - img [ref=e1025]
+            - generic [ref=e1029]:
+              - generic [ref=e1030]:
+                - generic [ref=e1031]:
+                  - generic "Erika li" [ref=e1032]: E
+                  - heading "Erika li" [level=3] [ref=e1034]
+                - generic [ref=e1035]: Attivo
+              - generic [ref=e1037]:
+                - img [ref=e1038]
+                - generic [ref=e1041]: erika.li@tepm.com
+              - generic [ref=e1042]:
+                - generic [ref=e1043]:
+                  - generic [ref=e1044]:
+                    - img [ref=e1045]
+                    - text: Iscritto dal
+                  - generic [ref=e1047]: 8 gen 2026
+                - generic [ref=e1048]:
+                  - generic [ref=e1049]: Allenamenti/mese
+                  - generic [ref=e1050]: "0"
+              - generic [ref=e1051]:
+                - link "Profilo" [ref=e1052] [cursor=pointer]:
+                  - /url: /dashboard/atleti/62b2a5d5-c529-45e5-8ec9-abbf4b7d08ab
+                  - button "Profilo" [ref=e1053]:
+                    - img [ref=e1054]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1057] [cursor=pointer]:
+                  - /url: /dashboard/atleti/62b2a5d5-c529-45e5-8ec9-abbf4b7d08ab/chat
+                  - button "Chat con cliente" [ref=e1058]:
+                    - img [ref=e1059]
+            - generic [ref=e1063]:
+              - generic [ref=e1064]:
+                - generic [ref=e1065]:
+                  - generic "Olmo Balini" [ref=e1066]: O
+                  - heading "Olmo Balini" [level=3] [ref=e1068]
+                - generic [ref=e1069]: Attivo
+              - generic [ref=e1071]:
+                - img [ref=e1072]
+                - generic [ref=e1075]: olmo.balini@tepm.com
+              - generic [ref=e1076]:
+                - generic [ref=e1077]:
+                  - generic [ref=e1078]:
+                    - img [ref=e1079]
+                    - text: Iscritto dal
+                  - generic [ref=e1081]: 8 gen 2026
+                - generic [ref=e1082]:
+                  - generic [ref=e1083]: Allenamenti/mese
+                  - generic [ref=e1084]: "0"
+              - generic [ref=e1085]:
+                - link "Profilo" [ref=e1086] [cursor=pointer]:
+                  - /url: /dashboard/atleti/5343a0d8-6887-4170-ada6-fd2e7c687ee7
+                  - button "Profilo" [ref=e1087]:
+                    - img [ref=e1088]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1091] [cursor=pointer]:
+                  - /url: /dashboard/atleti/5343a0d8-6887-4170-ada6-fd2e7c687ee7/chat
+                  - button "Chat con cliente" [ref=e1092]:
+                    - img [ref=e1093]
+            - generic [ref=e1097]:
+              - generic [ref=e1098]:
+                - generic [ref=e1099]:
+                  - generic "Giuseppe Cosentino" [ref=e1100]: G
+                  - heading "Giuseppe Cosentino" [level=3] [ref=e1102]
+                - generic [ref=e1103]: Attivo
+              - generic [ref=e1105]:
+                - img [ref=e1106]
+                - generic [ref=e1109]: giuseppe.cosentino@tepm.com
+              - generic [ref=e1110]:
+                - generic [ref=e1111]:
+                  - generic [ref=e1112]:
+                    - img [ref=e1113]
+                    - text: Iscritto dal
+                  - generic [ref=e1115]: 8 gen 2026
+                - generic [ref=e1116]:
+                  - generic [ref=e1117]: Allenamenti/mese
+                  - generic [ref=e1118]: "0"
+              - generic [ref=e1119]:
+                - link "Profilo" [ref=e1120] [cursor=pointer]:
+                  - /url: /dashboard/atleti/68c95875-4c44-4979-8193-ba8006678d11
+                  - button "Profilo" [ref=e1121]:
+                    - img [ref=e1122]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1125] [cursor=pointer]:
+                  - /url: /dashboard/atleti/68c95875-4c44-4979-8193-ba8006678d11/chat
+                  - button "Chat con cliente" [ref=e1126]:
+                    - img [ref=e1127]
+            - generic [ref=e1131]:
+              - generic [ref=e1132]:
+                - generic [ref=e1133]:
+                  - generic "Matteo Cominelli" [ref=e1134]: M
+                  - heading "Matteo Cominelli" [level=3] [ref=e1136]
+                - generic [ref=e1137]: Attivo
+              - generic [ref=e1139]:
+                - img [ref=e1140]
+                - generic [ref=e1143]: matteo.cominelli@tepm.com
+              - generic [ref=e1144]:
+                - generic [ref=e1145]:
+                  - generic [ref=e1146]:
+                    - img [ref=e1147]
+                    - text: Iscritto dal
+                  - generic [ref=e1149]: 8 gen 2026
+                - generic [ref=e1150]:
+                  - generic [ref=e1151]: Allenamenti/mese
+                  - generic [ref=e1152]: "0"
+              - generic [ref=e1153]:
+                - link "Profilo" [ref=e1154] [cursor=pointer]:
+                  - /url: /dashboard/atleti/eb65d3b9-659a-4568-855f-b649d241517e
+                  - button "Profilo" [ref=e1155]:
+                    - img [ref=e1156]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1159] [cursor=pointer]:
+                  - /url: /dashboard/atleti/eb65d3b9-659a-4568-855f-b649d241517e/chat
+                  - button "Chat con cliente" [ref=e1160]:
+                    - img [ref=e1161]
+            - generic [ref=e1165]:
+              - generic [ref=e1166]:
+                - generic [ref=e1167]:
+                  - generic "Patricia Salinas" [ref=e1168]: P
+                  - heading "Patricia Salinas" [level=3] [ref=e1170]
+                - generic [ref=e1171]: Attivo
+              - generic [ref=e1173]:
+                - img [ref=e1174]
+                - generic [ref=e1177]: patricia.salinas@tepm.com
+              - generic [ref=e1178]:
+                - generic [ref=e1179]:
+                  - generic [ref=e1180]:
+                    - img [ref=e1181]
+                    - text: Iscritto dal
+                  - generic [ref=e1183]: 8 gen 2026
+                - generic [ref=e1184]:
+                  - generic [ref=e1185]: Allenamenti/mese
+                  - generic [ref=e1186]: "0"
+              - generic [ref=e1187]:
+                - link "Profilo" [ref=e1188] [cursor=pointer]:
+                  - /url: /dashboard/atleti/85da7e2b-d1ca-432d-b282-10237ffdbe02
+                  - button "Profilo" [ref=e1189]:
+                    - img [ref=e1190]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1193] [cursor=pointer]:
+                  - /url: /dashboard/atleti/85da7e2b-d1ca-432d-b282-10237ffdbe02/chat
+                  - button "Chat con cliente" [ref=e1194]:
+                    - img [ref=e1195]
+            - generic [ref=e1199]:
+              - generic [ref=e1200]:
+                - generic [ref=e1201]:
+                  - generic "Danilo Bernotto" [ref=e1202]: D
+                  - heading "Danilo Bernotto" [level=3] [ref=e1204]
+                - generic [ref=e1205]: Attivo
+              - generic [ref=e1207]:
+                - img [ref=e1208]
+                - generic [ref=e1211]: danilo.bernotto@tepm.com
+              - generic [ref=e1212]:
+                - generic [ref=e1213]:
+                  - generic [ref=e1214]:
+                    - img [ref=e1215]
+                    - text: Iscritto dal
+                  - generic [ref=e1217]: 8 gen 2026
+                - generic [ref=e1218]:
+                  - generic [ref=e1219]: Allenamenti/mese
+                  - generic [ref=e1220]: "0"
+              - generic [ref=e1221]:
+                - link "Profilo" [ref=e1222] [cursor=pointer]:
+                  - /url: /dashboard/atleti/be52ab31-bd0c-4517-9770-f98e203fdd9e
+                  - button "Profilo" [ref=e1223]:
+                    - img [ref=e1224]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1227] [cursor=pointer]:
+                  - /url: /dashboard/atleti/be52ab31-bd0c-4517-9770-f98e203fdd9e/chat
+                  - button "Chat con cliente" [ref=e1228]:
+                    - img [ref=e1229]
+            - generic [ref=e1233]:
+              - generic [ref=e1234]:
+                - generic [ref=e1235]:
+                  - generic "Laura Lussana" [ref=e1236]: L
+                  - heading "Laura Lussana" [level=3] [ref=e1238]
+                - generic [ref=e1239]: Attivo
+              - generic [ref=e1241]:
+                - img [ref=e1242]
+                - generic [ref=e1245]: laura.lussana@tepm.com
+              - generic [ref=e1246]:
+                - generic [ref=e1247]:
+                  - generic [ref=e1248]:
+                    - img [ref=e1249]
+                    - text: Iscritto dal
+                  - generic [ref=e1251]: 8 gen 2026
+                - generic [ref=e1252]:
+                  - generic [ref=e1253]: Allenamenti/mese
+                  - generic [ref=e1254]: "0"
+              - generic [ref=e1255]:
+                - link "Profilo" [ref=e1256] [cursor=pointer]:
+                  - /url: /dashboard/atleti/f29c60d0-d1d1-445f-986f-6767b01edbd5
+                  - button "Profilo" [ref=e1257]:
+                    - img [ref=e1258]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1261] [cursor=pointer]:
+                  - /url: /dashboard/atleti/f29c60d0-d1d1-445f-986f-6767b01edbd5/chat
+                  - button "Chat con cliente" [ref=e1262]:
+                    - img [ref=e1263]
+            - generic [ref=e1267]:
+              - generic [ref=e1268]:
+                - generic [ref=e1269]:
+                  - generic "Serena xxx" [ref=e1270]: S
+                  - heading "Serena xxx" [level=3] [ref=e1272]
+                - generic [ref=e1273]: Attivo
+              - generic [ref=e1275]:
+                - img [ref=e1276]
+                - generic [ref=e1279]: serena@tepm.com
+              - generic [ref=e1280]:
+                - generic [ref=e1281]:
+                  - generic [ref=e1282]:
+                    - img [ref=e1283]
+                    - text: Iscritto dal
+                  - generic [ref=e1285]: 8 gen 2026
+                - generic [ref=e1286]:
+                  - generic [ref=e1287]: Allenamenti/mese
+                  - generic [ref=e1288]: "0"
+              - generic [ref=e1289]:
+                - link "Profilo" [ref=e1290] [cursor=pointer]:
+                  - /url: /dashboard/atleti/d2a54be6-f297-4d78-9db3-9b57a459ef41
+                  - button "Profilo" [ref=e1291]:
+                    - img [ref=e1292]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1295] [cursor=pointer]:
+                  - /url: /dashboard/atleti/d2a54be6-f297-4d78-9db3-9b57a459ef41/chat
+                  - button "Chat con cliente" [ref=e1296]:
+                    - img [ref=e1297]
+            - generic [ref=e1301]:
+              - generic [ref=e1302]:
+                - generic [ref=e1303]:
+                  - generic "Flavia Stratmann" [ref=e1304]: F
+                  - heading "Flavia Stratmann" [level=3] [ref=e1306]
+                - generic [ref=e1307]: Attivo
+              - generic [ref=e1309]:
+                - img [ref=e1310]
+                - generic [ref=e1313]: flavia.stratmann@tepm.com
+              - generic [ref=e1314]:
+                - generic [ref=e1315]:
+                  - generic [ref=e1316]:
+                    - img [ref=e1317]
+                    - text: Iscritto dal
+                  - generic [ref=e1319]: 8 gen 2026
+                - generic [ref=e1320]:
+                  - generic [ref=e1321]: Allenamenti/mese
+                  - generic [ref=e1322]: "0"
+              - generic [ref=e1323]:
+                - link "Profilo" [ref=e1324] [cursor=pointer]:
+                  - /url: /dashboard/atleti/c0938cf3-cb24-4ad6-b867-6fbd84a410d7
+                  - button "Profilo" [ref=e1325]:
+                    - img [ref=e1326]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1329] [cursor=pointer]:
+                  - /url: /dashboard/atleti/c0938cf3-cb24-4ad6-b867-6fbd84a410d7/chat
+                  - button "Chat con cliente" [ref=e1330]:
+                    - img [ref=e1331]
+            - generic [ref=e1335]:
+              - generic [ref=e1336]:
+                - generic [ref=e1337]:
+                  - generic "Stefano Daina" [ref=e1338]: S
+                  - heading "Stefano Daina" [level=3] [ref=e1340]
+                - generic [ref=e1341]: Attivo
+              - generic [ref=e1343]:
+                - img [ref=e1344]
+                - generic [ref=e1347]: stefano.daina@tepm.com
+              - generic [ref=e1348]:
+                - generic [ref=e1349]:
+                  - generic [ref=e1350]:
+                    - img [ref=e1351]
+                    - text: Iscritto dal
+                  - generic [ref=e1353]: 8 gen 2026
+                - generic [ref=e1354]:
+                  - generic [ref=e1355]: Allenamenti/mese
+                  - generic [ref=e1356]: "0"
+              - generic [ref=e1357]:
+                - link "Profilo" [ref=e1358] [cursor=pointer]:
+                  - /url: /dashboard/atleti/2ea80db8-1ec6-426a-9732-f06a49870b8a
+                  - button "Profilo" [ref=e1359]:
+                    - img [ref=e1360]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1363] [cursor=pointer]:
+                  - /url: /dashboard/atleti/2ea80db8-1ec6-426a-9732-f06a49870b8a/chat
+                  - button "Chat con cliente" [ref=e1364]:
+                    - img [ref=e1365]
+            - generic [ref=e1369]:
+              - generic [ref=e1370]:
+                - generic [ref=e1371]:
+                  - generic "Matteo Giudici" [ref=e1372]: M
+                  - heading "Matteo Giudici" [level=3] [ref=e1374]
+                - generic [ref=e1375]: Attivo
+              - generic [ref=e1377]:
+                - img [ref=e1378]
+                - generic [ref=e1381]: matteo.giudici@tepm.com
+              - generic [ref=e1382]:
+                - generic [ref=e1383]:
+                  - generic [ref=e1384]:
+                    - img [ref=e1385]
+                    - text: Iscritto dal
+                  - generic [ref=e1387]: 8 gen 2026
+                - generic [ref=e1388]:
+                  - generic [ref=e1389]: Allenamenti/mese
+                  - generic [ref=e1390]: "0"
+              - generic [ref=e1391]:
+                - link "Profilo" [ref=e1392] [cursor=pointer]:
+                  - /url: /dashboard/atleti/23de2d0b-ac4a-4679-aeb0-80f429d3aaf1
+                  - button "Profilo" [ref=e1393]:
+                    - img [ref=e1394]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1397] [cursor=pointer]:
+                  - /url: /dashboard/atleti/23de2d0b-ac4a-4679-aeb0-80f429d3aaf1/chat
+                  - button "Chat con cliente" [ref=e1398]:
+                    - img [ref=e1399]
+            - generic [ref=e1403]:
+              - generic [ref=e1404]:
+                - generic [ref=e1405]:
+                  - img "Dmytro Kushniriuk" [ref=e1407]
+                  - heading "Dmytro Kushniriuk" [level=3] [ref=e1409]
+                - generic [ref=e1410]: Attivo
+              - generic [ref=e1411]:
+                - generic [ref=e1412]:
+                  - img [ref=e1413]
+                  - generic [ref=e1416]: dima.kushniriuk@gmail.com
+                - generic [ref=e1417]:
+                  - img [ref=e1418]
+                  - generic [ref=e1420]: "3519951554"
+              - generic [ref=e1421]:
+                - generic [ref=e1422]:
+                  - generic [ref=e1423]:
+                    - img [ref=e1424]
+                    - text: Iscritto dal
+                  - generic [ref=e1426]: 29 dic 2025
+                - generic [ref=e1427]:
+                  - generic [ref=e1428]: Allenamenti/mese
+                  - generic [ref=e1429]: "0"
+              - generic [ref=e1430]:
+                - link "Profilo" [ref=e1431] [cursor=pointer]:
+                  - /url: /dashboard/atleti/25b279e7-6b70-47b6-973b-1ee1f98ed02d
+                  - button "Profilo" [ref=e1432]:
+                    - img [ref=e1433]
+                    - text: Profilo
+                - link "Chat con cliente" [ref=e1436] [cursor=pointer]:
+                  - /url: /dashboard/atleti/25b279e7-6b70-47b6-973b-1ee1f98ed02d/chat
+                  - button "Chat con cliente" [ref=e1437]:
+                    - img [ref=e1438]
+        - generic [ref=e1441]:
+          - generic [ref=e1445]:
+            - paragraph [ref=e1446]: Clienti Totali
+            - generic [ref=e1447]:
+              - paragraph [ref=e1448]: "38"
+              - img [ref=e1451]
+          - generic [ref=e1459]:
+            - paragraph [ref=e1460]: Clienti Attivi
+            - generic [ref=e1461]:
+              - paragraph [ref=e1462]: "38"
+              - img [ref=e1465]
+          - generic [ref=e1472]:
+            - paragraph [ref=e1473]: Nuovi Questo Mese
+            - generic [ref=e1474]:
+              - paragraph [ref=e1475]: "37"
+              - img [ref=e1478]
+          - generic [ref=e1484]:
+            - paragraph [ref=e1485]: Documenti in Scadenza
+            - generic [ref=e1486]:
+              - paragraph [ref=e1487]: "0"
+              - img [ref=e1490]
+  - button "Open Next.js Dev Tools" [ref=e1497] [cursor=pointer]:
+    - img [ref=e1498]
+  - alert [ref=e1501]
+  - region "Notifiche"
+```

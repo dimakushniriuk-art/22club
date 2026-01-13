@@ -228,16 +228,38 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Se non c'è sessione, redirect a login (anche per route root)
+  // Se non c'è sessione, gestisci route protette e 404
   if (!session) {
-    if (!isPublicRoute || pathname === '/') {
+    // Root sempre redirect a login
+    if (pathname === '/') {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
-      if (pathname !== '/') {
-        redirectUrl.searchParams.set('redirectedFrom', pathname)
-      }
       return NextResponse.redirect(redirectUrl)
     }
+    
+    // Route pubbliche: permetti il passaggio
+    if (isPublicRoute) {
+      return NextResponse.next()
+    }
+    
+    // Route protette note: reindirizza a login
+    // Queste route sono sicuramente protette e richiedono autenticazione
+    const PROTECTED_ROUTES = ['/dashboard', '/home', '/api']
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    )
+    
+    if (isProtectedRoute) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      redirectUrl.searchParams.set('redirectedFrom', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+    
+    // Per altre route non pubbliche: permettere a Next.js di gestire
+    // Next.js mostrerà not-found.tsx se la route non esiste
+    // Se la route esiste ma è protetta, il componente stesso gestirà l'autenticazione
+    return NextResponse.next()
   }
 
   // Add audit context to response headers

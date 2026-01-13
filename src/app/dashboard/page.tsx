@@ -53,24 +53,6 @@ const isSupabaseRelationError = (value: unknown): value is SupabaseRelationError
   typeof value === 'object' && value !== null && 'message' in value
 
 export default async function DashboardPage() {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'dashboard/page.tsx:55',
-      message: 'DashboardPage Server Component - execution start',
-      data: {
-        timestamp: Date.now(),
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'L',
-    }),
-  }).catch(() => {})
-  // #endregion
-
   // Carica appuntamenti del giorno corrente per l'agenda
   let agendaData: AgendaEvent[] = []
 
@@ -269,51 +251,6 @@ export default async function DashboardPage() {
     logger.error('Error loading today appointments', error)
     // In caso di errore, agendaData rimane vuoto
   }
-
-  // #region agent log
-  // Verifica serializzabilità prima di passare al client component
-  let canSerialize = true
-  let serializeError: string | null = null
-  try {
-    JSON.stringify(agendaData)
-  } catch (e) {
-    canSerialize = false
-    serializeError = e instanceof Error ? e.message : String(e)
-  }
-  fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'dashboard/page.tsx:240',
-      message: 'Dashboard page - agendaData before serialization',
-      data: {
-        agendaDataLength: agendaData.length,
-        agendaDataSample: agendaData.slice(0, 2).map((e) => ({
-          id: e.id,
-          time: e.time,
-          athlete: e.athlete,
-          type: e.type,
-          status: e.status,
-          hasStartsAt: !!e.starts_at,
-          hasEndsAt: !!e.ends_at,
-          startsAtType: typeof e.starts_at,
-          endsAtType: typeof e.ends_at,
-        })),
-        hasNonSerializable: agendaData.some(
-          (e) =>
-            (e.starts_at && typeof e.starts_at === 'object' && 'getTime' in e.starts_at) ||
-            (e.ends_at && typeof e.ends_at === 'object' && 'getTime' in e.ends_at),
-        ),
-        canSerialize,
-        serializeError,
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'A',
-    }),
-  }).catch(() => {})
-  // #endregion
 
   return (
     <div className="flex flex-col h-full space-y-6 px-6 py-6 overflow-y-auto">

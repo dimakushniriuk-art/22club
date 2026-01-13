@@ -276,79 +276,14 @@ export function useChatMessages(
           frequentQueryCache.set(cacheKey, combinedMessages.slice(0, 50))
         }
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-chat-messages.ts:247',
-            message: 'onMessageUpdate - BEFORE call',
-            data: {
-              otherUserId,
-              combinedMessagesCount: combinedMessages.length,
-              fetchedCount: data?.length ?? 0,
-              existingMessagesCount: existingMessages.length,
-              cachedMessagesCount: cachedMessages?.length ?? 0,
-              offset,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'G',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         // Aggiorna sempre con i messaggi combinati (nuovi + esistenti)
         // IMPORTANTE: Non sovrascrivere i messaggi esistenti se il fetch non trova risultati
         if (combinedMessages.length > 0) {
           // Abbiamo messaggi (nuovi o combinati), aggiorna
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'use-chat-messages.ts:252',
-              message: 'onMessageUpdate - calling with combinedMessages',
-              data: {
-                otherUserId,
-                combinedMessagesCount: combinedMessages.length,
-                fetchedCount: data?.length ?? 0,
-                existingMessagesCount: existingMessages.length,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'G',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           onMessageUpdate(otherUserId, combinedMessages, (data ?? []).length === limit, false)
         } else {
           // Il fetch non ha trovato messaggi e non ci sono messaggi esistenti
           // Questo può succedere solo per una nuova conversazione vuota
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'use-chat-messages.ts:262',
-              message: 'onMessageUpdate - calling with empty array (no messages found)',
-              data: {
-                otherUserId,
-                fetchedCount: data?.length ?? 0,
-                existingMessagesCount: existingMessages.length,
-                cachedMessagesCount: cachedMessages?.length ?? 0,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'G',
-            }),
-          }).catch(() => {})
-          // #endregion
-
           logger.debug(
             'Nessun messaggio trovato, nessun messaggio esistente (nuova conversazione vuota)',
             {
@@ -552,11 +487,12 @@ export function useChatMessages(
           throw new Error('Messaggio non trovato')
         }
 
-        if (messageData.sender_id !== profileId) {
+        const msg = messageData as { id: string; sender_id: string }
+        if (msg.sender_id !== profileId) {
           logger.warn('User trying to delete message they did not send', {
             messageId,
             profileId,
-            senderId: messageData.sender_id,
+            senderId: msg.sender_id,
           })
           throw new Error('Non puoi eliminare messaggi di altri utenti')
         }

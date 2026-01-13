@@ -67,8 +67,9 @@ export function useCalendarPage() {
           .single()
 
         if (profile) {
-          setTrainerId(profile.id)
-          const fullName = `${profile.nome || ''} ${profile.cognome || ''}`.trim()
+          const p = profile as { id: string; nome?: string | null; cognome?: string | null }
+          setTrainerId(p.id)
+          const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
           setTrainerName(fullName || null)
         }
       } catch (err) {
@@ -125,8 +126,9 @@ export function useCalendarPage() {
           .in('id', athleteIds)
 
         profiles?.forEach((profile) => {
-          const fullName = `${profile.nome || ''} ${profile.cognome || ''}`.trim()
-          athleteNamesMap.set(profile.id, fullName || 'Atleta')
+          const p = profile as { id: string; nome?: string | null; cognome?: string | null }
+          const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
+          athleteNamesMap.set(p.id, fullName || 'Atleta')
         })
       }
 
@@ -222,47 +224,7 @@ export function useCalendarPage() {
 
   const handleFormSubmit = useCallback(
     async (data: CreateAppointmentData, editingAppointment: EditAppointmentData | null) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'use-calendar-page.ts:191',
-          message: 'handleFormSubmit entry',
-          data: {
-            trainerId,
-            trainerName,
-            athlete_id: data.athlete_id,
-            starts_at: data.starts_at,
-            ends_at: data.ends_at,
-            type: data.type,
-            org_id: data.org_id,
-            editingId: editingAppointment?.id,
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'D',
-        }),
-      }).catch(() => {})
-      // #endregion
-
       if (!trainerId) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-calendar-page.ts:193',
-            message: 'Trainer ID null',
-            data: { trainerId },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'D',
-          }),
-        }).catch(() => {})
-        // #endregion
         logger.error('Trainer ID non disponibile')
         return
       }
@@ -284,48 +246,15 @@ export function useCalendarPage() {
         const startsAt = new Date(data.starts_at).toISOString()
         const endsAt = new Date(data.ends_at).toISOString()
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-calendar-page.ts:211',
-            message: 'After date conversion',
-            data: { starts_at: data.starts_at, ends_at: data.ends_at, startsAt, endsAt },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'C',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         if (new Date(endsAt) <= new Date(startsAt)) {
           throw new Error('La data di fine deve essere successiva alla data di inizio')
         }
-
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-calendar-page.ts:218',
-            message: 'Before checkAppointmentOverlap',
-            data: { trainerId, startsAt, endsAt, editingId: editingAppointment?.id },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'E',
-          }),
-        }).catch(() => {})
-        // #endregion
 
         // Validazione sovrapposizione rimossa: permette più atleti nello stesso orario
         // (utile per allenamenti di gruppo o più atleti contemporaneamente)
 
         if (editingAppointment && editingAppointment.id) {
-          // #region agent log
-          const updateData = {
+          const updatePayload = {
             athlete_id: data.athlete_id,
             starts_at: startsAt,
             ends_at: endsAt,
@@ -334,50 +263,12 @@ export function useCalendarPage() {
             notes: data.notes || null,
             location: data.location || null,
             athlete_name: athleteName,
-          }
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'use-calendar-page.ts:246',
-              message: 'Before UPDATE',
-              data: updateData,
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'A',
-            }),
-          }).catch(() => {})
-          // #endregion
+          } as Partial<AppointmentRow>
+
           const { error } = await supabase
             .from('appointments')
-            .update({
-              athlete_id: data.athlete_id,
-              starts_at: startsAt,
-              ends_at: endsAt,
-              type: data.type || 'allenamento',
-              status: data.status || 'attivo',
-              notes: data.notes || null,
-              location: data.location || null,
-              athlete_name: athleteName,
-            })
+            .update(updatePayload)
             .eq('id', editingAppointment.id)
-
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'use-calendar-page.ts:260',
-              message: 'After UPDATE',
-              data: { error: error?.message, code: error?.code, details: error?.details },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'A,B',
-            }),
-          }).catch(() => {})
-          // #endregion
 
           if (error) throw error
         } else {
@@ -409,50 +300,31 @@ export function useCalendarPage() {
           // Crea singolo appuntamento (ricorrenze rimosse nella nuova struttura)
           const insertData = {
             ...baseAppointmentData,
-          }
+          } as Partial<AppointmentRow>
 
           const { data: insertedData, error: insertError } = await supabase
             .from('appointments')
             .insert([insertData])
-            .select()
+            .select('id')
             .single()
 
           if (insertError) {
             throw insertError
           }
 
-          if (!insertedData) {
+          const inserted = insertedData as { id: string } | null
+          if (!inserted) {
             throw new Error("Errore durante la creazione dell'appuntamento")
           }
 
           logger.info('Appuntamento creato con successo', undefined, {
-            appointmentId: insertedData.id,
+            appointmentId: inserted.id,
           })
         }
 
         await fetchAppointments()
         setLoading(false)
       } catch (err: unknown) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-calendar-page.ts:283',
-            message: 'CATCH error',
-            data: {
-              errorMessage: err instanceof Error ? err.message : String(err),
-              errorName: err instanceof Error ? err.name : 'Unknown',
-              errorStack: err instanceof Error ? err.stack : undefined,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'A,B,C,D,E',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         // Miglioriamo il logging dell'errore per debug
         logger.error('Errore salvataggio appuntamento', err)
 
@@ -495,19 +367,21 @@ export function useCalendarPage() {
         throw err
       }
     },
-    [trainerId, trainerName, athletes, supabase, fetchAppointments],
+    [trainerId, athletes, supabase, fetchAppointments],
   )
 
   const handleCancel = useCallback(
     async (appointmentId: string) => {
       setLoading(true)
       try {
+        const cancelPayload = {
+          cancelled_at: new Date().toISOString(),
+          status: 'annullato',
+        } as Partial<AppointmentRow>
+
         const { error } = await supabase
           .from('appointments')
-          .update({
-            cancelled_at: new Date().toISOString(),
-            status: 'annullato',
-          })
+          .update(cancelPayload)
           .eq('id', appointmentId)
 
         if (error) throw error

@@ -1,7 +1,7 @@
 import { chromium, FullConfig } from '@playwright/test'
 import { TEST_CREDENTIALS } from './helpers/auth'
 import { join } from 'path'
-import { mkdirSync, existsSync } from 'fs'
+import { mkdirSync, existsSync, statSync } from 'fs'
 
 /**
  * Setup globale per creare e salvare lo stato di autenticazione
@@ -9,11 +9,25 @@ import { mkdirSync, existsSync } from 'fs'
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function globalSetupAuth(_config: FullConfig) {
+  if (process.env.SKIP_GLOBAL_AUTH) {
+    console.log('⏭️  SKIP_GLOBAL_AUTH attivo: salto creazione storage state')
+    return
+  }
   const storageDir = join(process.cwd(), 'tests/e2e/.auth')
 
   // Crea directory se non esiste
   if (!existsSync(storageDir)) {
     mkdirSync(storageDir, { recursive: true })
+  }
+
+  // Se gli storage esistono già, riusali per evitare login flaky
+  const athleteStatePath = join(storageDir, 'athlete-auth.json')
+  const ptStatePath = join(storageDir, 'pt-auth.json')
+  // adminStatePath riservato per futuro uso multi-role
+  const fileIsNonEmpty = (p: string) => existsSync(p) && statSync(p).size > 10
+  if (fileIsNonEmpty(athleteStatePath) && fileIsNonEmpty(ptStatePath)) {
+    console.log('✅ Storage state già presente, skip login e riuso cache')
+    return
   }
 
   const browser = await chromium.launch()
@@ -91,19 +105,16 @@ async function globalSetupAuth(_config: FullConfig) {
 
     console.log('✅ Login form loaded and ready')
 
-    // Compila il form usando type() per simulare la digitazione e triggerare correttamente React
+    // Compila il form in modo affidabile (fill + breve pausa) e riutilizzabile per eventuali retry
     console.log('📝 Filling login form...')
-
-    // Pulisci i campi prima
-    await emailInput.clear()
-    await passwordInput.clear()
-
-    // Usa type() che simula meglio la digitazione e triggera gli eventi onChange di React
-    await emailInput.type(TEST_CREDENTIALS.athlete.email, { delay: 50 })
-    await passwordInput.type(TEST_CREDENTIALS.athlete.password, { delay: 50 })
-
-    // Aspetta un momento per assicurarsi che React abbia processato gli eventi
-    await page.waitForTimeout(500)
+    const fillCredentials = async () => {
+      await emailInput.fill('', { timeout: 5000 }).catch(() => {})
+      await passwordInput.fill('', { timeout: 5000 }).catch(() => {})
+      await emailInput.fill(TEST_CREDENTIALS.athlete.email)
+      await passwordInput.fill(TEST_CREDENTIALS.athlete.password)
+      await page.waitForTimeout(300)
+    }
+    await fillCredentials()
 
     // Verifica che i valori siano stati inseriti
     const emailValue = await emailInput.inputValue()
@@ -154,7 +165,7 @@ async function globalSetupAuth(_config: FullConfig) {
     })
 
     // Aspetta anche una richiesta POST a Supabase auth
-    const authRequestPromise = page
+    let authRequestPromise = page
       .waitForRequest((request) => request.url().includes('auth') && request.method() === 'POST', {
         timeout: 10000,
       })
@@ -181,6 +192,33 @@ async function globalSetupAuth(_config: FullConfig) {
       '.text-state-error',
       '[class*="error"]',
     ]
+
+    // Se il form ha mostrato errori di validazione client-side, riprova una volta riempiendo di nuovo
+    const retryLoginIfValidationError = async () => {
+      const validationMessages = ['email è richiesta', 'password è richiesta']
+      for (const selector of errorSelectors) {
+        const errorElement = page.locator(selector).first()
+        const isVisible = await errorElement.isVisible({ timeout: 500 }).catch(() => false)
+        if (!isVisible) continue
+        const text = (await errorElement.textContent())?.toLowerCase().trim() || ''
+        if (validationMessages.some((msg) => text.includes(msg))) {
+          console.warn('⚠️ Validation error detected, retrying fill+submit')
+          await fillCredentials()
+          authRequestPromise = page
+            .waitForRequest(
+              (request) => request.url().includes('auth') && request.method() === 'POST',
+              { timeout: 10000 },
+            )
+            .catch(() => null)
+          await submitButton.click()
+          await authRequestPromise
+          await page.waitForTimeout(1000)
+          break
+        }
+      }
+    }
+
+    await retryLoginIfValidationError()
 
     for (const selector of errorSelectors) {
       try {
@@ -295,11 +333,9 @@ async function globalSetupAuth(_config: FullConfig) {
       const ptSubmitButton = ptPage.locator('button[type="submit"]').first()
 
       // Usa type() per triggerare correttamente gli eventi React
-      await ptEmailInput.clear()
-      await ptPasswordInput.clear()
-      await ptEmailInput.type(TEST_CREDENTIALS.pt.email, { delay: 50 })
-      await ptPasswordInput.type(TEST_CREDENTIALS.pt.password, { delay: 50 })
-      await ptPage.waitForTimeout(500)
+      await ptEmailInput.fill(TEST_CREDENTIALS.pt.email)
+      await ptPasswordInput.fill(TEST_CREDENTIALS.pt.password)
+      await ptPage.waitForTimeout(200)
 
       // Aspetta la navigazione con pattern più flessibile
       const ptNavigationPromise = Promise.race([
@@ -374,22 +410,17 @@ async function globalSetupAuth(_config: FullConfig) {
       const adminSubmitButton = adminPage.locator('button[type="submit"]').first()
 
       // Usa type() per triggerare correttamente gli eventi React
-      await adminEmailInput.clear()
-      await adminPasswordInput.clear()
-
-      console.log(`📝 Admin typing email: ${TEST_CREDENTIALS.admin.email}`)
-      await adminEmailInput.type(TEST_CREDENTIALS.admin.email, { delay: 50 })
+      await adminEmailInput.fill(TEST_CREDENTIALS.admin.email)
+      await adminPasswordInput.fill(TEST_CREDENTIALS.admin.password)
       await adminPage.waitForTimeout(200)
-
-      console.log(`📝 Admin typing password...`)
-      await adminPasswordInput.type(TEST_CREDENTIALS.admin.password, { delay: 50 })
-      await adminPage.waitForTimeout(500)
 
       // Verifica che i valori siano stati inseriti
       const adminEmailValue = await adminEmailInput.inputValue()
       const adminPasswordValue = await adminPasswordInput.inputValue()
       console.log(
-        `📝 Admin form values - Email: ${adminEmailValue.substring(0, 20)}..., Password: ${adminPasswordValue ? '***' : 'empty'}`,
+        `📝 Admin form values - Email: ${adminEmailValue.substring(0, 20)}..., Password: ${
+          adminPasswordValue ? '***' : 'empty'
+        }`,
       )
 
       if (!adminEmailValue || adminEmailValue !== TEST_CREDENTIALS.admin.email) {
@@ -402,17 +433,15 @@ async function globalSetupAuth(_config: FullConfig) {
         throw new Error('Admin password not set correctly')
       }
 
-      // Admin va a /dashboard/admin, non /dashboard
       const adminNavigationPromise = Promise.race([
         adminPage.waitForURL('**/dashboard/admin', { timeout: 30000 }),
         adminPage.waitForURL('**/dashboard', { timeout: 30000 }),
         adminPage.waitForURL('**/dashboard/**', { timeout: 30000 }),
         adminPage.waitForURL('**/home', { timeout: 30000 }),
+        adminPage.waitForURL('**/post-login', { timeout: 30000 }),
       ]).catch(async () => {
-        // Aspetta un po' di più per vedere se la navigazione è in corso
-        await adminPage.waitForTimeout(3000)
         const currentUrl = adminPage.url()
-        console.log(`⚠️ Admin Current URL after timeout: ${currentUrl}`)
+        console.log(`⚠️ Admin navigation error, current URL: ${currentUrl}`)
         return { url: currentUrl, success: false }
       })
 

@@ -173,41 +173,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
         {!isEditing && (
           <Button
             onClick={() => {
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'athlete-medical-tab.tsx:124',
-                  message: 'Modifica button clicked',
-                  data: {
-                    currentIsEditing: isEditing,
-                    setIsEditingType: typeof setIsEditing,
-                    setIsEditingExists: !!setIsEditing,
-                  },
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'run1',
-                  hypothesisId: 'H1',
-                }),
-              }).catch(() => {})
-              // #endregion
               setIsEditing(true)
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'athlete-medical-tab.tsx:140',
-                  message: 'After setIsEditing(true)',
-                  data: {},
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'run1',
-                  hypothesisId: 'H1',
-                }),
-              }).catch(() => {})
-              // #endregion
             }}
             variant="outline"
             className="flex items-center gap-2"

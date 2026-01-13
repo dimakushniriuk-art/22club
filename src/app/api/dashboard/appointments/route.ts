@@ -16,67 +16,8 @@ export async function GET(req: NextRequest) {
   try {
     const appointments = await getUpcomingAppointments()
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'api/dashboard/appointments/route.ts:17',
-        message: 'After getUpcomingAppointments - before validation',
-        data: {
-          appointmentsType: typeof appointments,
-          isArray: Array.isArray(appointments),
-          appointmentsLength: Array.isArray(appointments) ? appointments.length : 'N/A',
-          sample: Array.isArray(appointments) ? appointments.slice(0, 2) : appointments,
-          hasNonSerializable: Array.isArray(appointments)
-            ? appointments.some((a) => {
-                try {
-                  JSON.stringify(a)
-                  return false
-                } catch {
-                  return true
-                }
-              })
-            : false,
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'D',
-      }),
-    }).catch(() => {})
-    // #endregion
-
     // Valida response con Zod
     const validated = AppointmentsResponseSchema.parse(appointments)
-
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'api/dashboard/appointments/route.ts:22',
-        message: 'After validation - before JSON response',
-        data: {
-          validatedType: typeof validated,
-          isArray: Array.isArray(validated),
-          validatedLength: Array.isArray(validated) ? validated.length : 'N/A',
-          canStringify: (() => {
-            try {
-              JSON.stringify(validated)
-              return true
-            } catch (e) {
-              return { error: String(e) }
-            }
-          })(),
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'D',
-      }),
-    }).catch(() => {})
-    // #endregion
 
     return NextResponse.json(validated, {
       headers: {
@@ -84,25 +25,6 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (error) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'api/dashboard/appointments/route.ts:28',
-        message: 'Error in appointments API',
-        data: {
-          errorType: error instanceof Error ? error.constructor.name : typeof error,
-          errorMessage: error instanceof Error ? error.message : String(error),
-          hasIssues: error instanceof Error && 'issues' in error,
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'D',
-      }),
-    }).catch(() => {})
-    // #endregion
     logger.error('Error in appointments API', error)
 
     // Se errore Zod, ritorna 400 con dettagli

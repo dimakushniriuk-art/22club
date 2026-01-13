@@ -34,24 +34,6 @@ export function useAthleteMedicalForm({ medical, athleteId }: UseAthleteMedicalF
   const { addToast } = useToast()
 
   const [isEditing, setIsEditing] = useState(false)
-
-  // #region agent log - Monitor isEditing state changes
-  useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'use-athlete-medical-form.ts:30',
-        message: 'isEditing state changed',
-        data: { isEditing, athleteId },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'H2',
-      }),
-    }).catch(() => {})
-  }, [isEditing, athleteId])
-  // #endregion
   const [formData, setFormData] = useState<AthleteMedicalDataUpdate>({})
   const [showUploadCertificato, setShowUploadCertificato] = useState(false)
   const [showUploadReferto, setShowUploadReferto] = useState(false)

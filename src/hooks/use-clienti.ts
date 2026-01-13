@@ -271,45 +271,8 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
     }
   }, [supabase])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fetchClienti = useCallback(async (skipAuthCheck = false) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'use-clienti.ts:fetchClienti',
-        message: 'fetchClienti called',
-        data: {
-          filters,
-          sort,
-          page,
-          pageSize,
-          isFetching: fetchingRef.current,
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'J',
-      }),
-    }).catch(() => {})
-    // #endregion
     if (fetchingRef.current) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'use-clienti.ts:248',
-          message: 'Fetch already in progress, skipping',
-          data: {},
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'F',
-        }),
-      }).catch(() => {})
-      // #endregion
       return
     }
 
@@ -370,21 +333,6 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         setLoading(false)
         return
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'use-clienti.ts:251',
-          message: 'Fetch clienti started',
-          data: { pageSize, sortField: sort.field, sortDirection: sort.direction },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'A',
-        }),
-      }).catch(() => {})
-      // #endregion
       fetchingRef.current = true
       setLoading(true)
       setError(null)
@@ -499,37 +447,6 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
       let queryResult: ProfileSummary[] = []
 
       try {
-        // #region agent log
-        const queryStartTime = Date.now()
-        const requestedLimit = pageSize // Ridotto da pageSize * 2 a pageSize
-        const supabaseConfigCheck = {
-          hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-          urlLength: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
-          hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          keyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
-          hasSupabaseClient: !!supabase,
-        }
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-clienti.ts:375',
-            message: 'Query start with Supabase check',
-            data: {
-              pageSize,
-              requestedLimit,
-              sortDirection: sort.direction,
-              hasFilters: !!filters.search,
-              supabaseConfig: supabaseConfigCheck,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run2',
-            hypothesisId: 'G',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         // IMPORTANTE: Affidarsi completamente alle RLS policies invece di filtering manuale
         // Le RLS policies su profiles automaticamente filtrano:
         // - Admin: vede tutti gli atleti (policy "Admins can view all profiles")
@@ -562,144 +479,16 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
           .order('data_iscrizione', { ascending: sort.direction === 'asc' })
           .limit(pageSize)
 
-        // #region agent log
-        const queryPromiseStartTime = Date.now()
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-clienti.ts:377',
-            message: 'Promise.race start',
-            data: { timeSinceQueryStart: queryPromiseStartTime - queryStartTime },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'B',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         const simpleResponse = await Promise.race<PostgrestResponse<ProfileSummary>>([
-          Promise.resolve(simpleQuery)
-            .then((result) => {
-              // #region agent log
-              const queryEndTime = Date.now()
-              const queryDuration = queryEndTime - queryStartTime
-              const supabaseErrorDetails = result.error
-                ? {
-                    code: result.error.code,
-                    message: result.error.message,
-                    details: result.error.details,
-                    hint: result.error.hint,
-                    isRLSError:
-                      result.error.code === '42501' ||
-                      result.error.message?.includes('row-level security'),
-                    isAuthError:
-                      result.error.code === 'PGRST301' || result.error.message?.includes('JWT'),
-                  }
-                : null
-              fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'use-clienti.ts:407',
-                  message: 'Query completed',
-                  data: {
-                    queryDuration,
-                    dataLength: result.data?.length,
-                    hasError: !!result.error,
-                    supabaseError: supabaseErrorDetails,
-                  },
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'run1',
-                  hypothesisId: 'G',
-                }),
-              }).catch(() => {})
-              // #endregion
-              return result
-            })
-            .catch((err: unknown) => {
-              // #region agent log
-              const errorTime = Date.now()
-              const errorDuration = errorTime - queryStartTime
-              const errorObj = err as { message?: string; code?: string } | null
-              const errorMessage = errorObj?.message || 'Unknown error'
-              const errorCode = errorObj?.code || 'UNKNOWN'
-              fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'use-clienti.ts:420',
-                  message: 'Query promise rejected',
-                  data: {
-                    errorDuration,
-                    errorMessage,
-                    errorCode,
-                    errorType: err?.constructor?.name,
-                    isNetworkError:
-                      errorMessage.includes('fetch') || errorMessage.includes('network'),
-                    isRLSError:
-                      errorCode === '42501' || errorMessage.includes('row-level security'),
-                    isSupabaseError: !!errorCode,
-                  },
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'run1',
-                  hypothesisId: 'G',
-                }),
-              }).catch(() => {})
-              // #endregion
-              throw err
-            }),
+          Promise.resolve(simpleQuery),
           new Promise<never>((_, reject) => {
-            // #region agent log
             setTimeout(() => {
-              const timeoutTime = Date.now()
-              const timeoutDuration = timeoutTime - queryStartTime
-              fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'use-clienti.ts:430',
-                  message: 'Query timeout triggered',
-                  data: { timeoutDuration, requestedLimit: pageSize, pageSize },
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'run1',
-                  hypothesisId: 'C',
-                }),
-              }).catch(() => {})
               reject(new Error('Query timeout'))
             }, 30000) // Timeout a 30 secondi per query complesse
-            // #endregion
           }),
         ])
 
         const { data: simpleData, error: simpleError } = simpleResponse
-
-        // #region agent log
-        const responseProcessTime = Date.now()
-        const totalDuration = responseProcessTime - queryStartTime
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-clienti.ts:384',
-            message: 'Response processed',
-            data: {
-              totalDuration,
-              dataLength: simpleData?.length,
-              hasError: !!simpleError,
-              errorCode: simpleError?.code,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'D',
-          }),
-        }).catch(() => {})
-        // #endregion
 
         // Log dettagliato per debug
         logger.debug('Query clienti risultato', {
@@ -709,26 +498,6 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         })
 
         if (simpleError) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'use-clienti.ts:393',
-              message: 'Query error details',
-              data: {
-                errorCode: simpleError.code,
-                errorMessage: simpleError.message,
-                errorDetails: simpleError.details,
-                errorHint: simpleError.hint,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'E',
-            }),
-          }).catch(() => {})
-          // #endregion
           logger.error('Errore query clienti', simpleError, {
             code: simpleError.code,
             message: simpleError.message,
@@ -838,25 +607,6 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
           frequentQueryCache.set('clienti-list', filtered)
         }
       } catch (err) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'use-clienti.ts:502',
-            message: 'Fetch clienti error caught',
-            data: {
-              errorMessage: err instanceof Error ? err.message : String(err),
-              errorType: err?.constructor?.name,
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run2',
-            hypothesisId: 'E',
-          }),
-        }).catch(() => {})
-        // #endregion
-
         const errorMessage = err instanceof Error ? err.message : String(err)
         const isTimeout = errorMessage.includes('timeout') || errorMessage === 'Query timeout'
 
@@ -1306,55 +1056,11 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
     // Se i parametri non sono cambiati, non fare nulla
     // CONTROLLO PRIMA di qualsiasi altra operazione
     if (prevParamsRef.current === paramsKey) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'use-clienti.ts:useEffect:filters',
-          message: 'Filters/sort/page NOT changed - skipping fetchClienti',
-          data: {
-            prevParamsKey: prevParamsRef.current,
-            newParamsKey: paramsKey,
-            areEqual: prevParamsRef.current === paramsKey,
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'K',
-        }),
-      }).catch(() => {})
-      // #endregion
       return undefined
     }
 
     // Aggiorna prevParamsRef PRIMA di schedulare fetchClienti
     prevParamsRef.current = paramsKey
-
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/0f58390d-439e-4525-abb4-d05407869369', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'use-clienti.ts:useEffect:filters',
-        message: 'Filters/sort/page changed - scheduling fetchClienti',
-        data: {
-          filters,
-          sort,
-          page,
-          pageSize,
-          isFetching: fetchingRef.current,
-          isMounted: isMountedRef.current,
-          prevParamsKey: prevParamsRef.current,
-          newParamsKey: paramsKey,
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'K',
-      }),
-    }).catch(() => {})
-    // #endregion
 
     const timeoutId = setTimeout(() => {
       void fetchClienti()
