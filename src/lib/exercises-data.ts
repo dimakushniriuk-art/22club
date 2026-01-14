@@ -2,6 +2,7 @@
  * Lista completa di gruppi muscolari basata sulla classificazione professionale
  */
 export const MUSCLE_GROUPS = [
+  'Multipli',
   'Petto',
   'Schiena',
   'Spalle',
@@ -54,6 +55,7 @@ export const EQUIPMENT_BY_CATEGORY = {
     'Multipower',
   ],
   'Macchine isotoniche / guidate': [
+    'Cavi',
     'Chest press',
     'Shoulder press',
     'Lat machine',

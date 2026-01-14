@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 export type MuscleGroupFilterType =
+  | 'multipli'
   | 'cardio'
   | 'quadricipiti'
   | 'femorali'
@@ -26,6 +27,7 @@ interface MuscleGroupOption {
 
 // Mappatura tra ID filtro e valori nel database
 const MUSCLE_GROUP_MAPPING: Record<MuscleGroupFilterType, string[]> = {
+  multipli: ['multipli', 'multiple', 'full body', 'fullbody'],
   cardio: ['cardio'],
   quadricipiti: ['quadricipiti', 'quadriceps'],
   femorali: ['femorali', 'hamstrings'],
@@ -41,6 +43,7 @@ const MUSCLE_GROUP_MAPPING: Record<MuscleGroupFilterType, string[]> = {
 }
 
 const MUSCLE_GROUP_OPTIONS: MuscleGroupOption[] = [
+  { id: 'multipli', label: 'Multipli', dbValue: 'multipli' },
   { id: 'cardio', label: 'Cardio', dbValue: 'cardio' },
   { id: 'quadricipiti', label: 'Quadricipiti', dbValue: 'quadricipiti' },
   { id: 'femorali', label: 'Femorali', dbValue: 'femorali' },
@@ -57,6 +60,7 @@ const MUSCLE_GROUP_OPTIONS: MuscleGroupOption[] = [
 
 // Mappatura tra ID filtro e percorso SVG
 const MUSCLE_GROUP_ICONS: Record<MuscleGroupFilterType, string> = {
+  multipli: '/icons/muscle-groups/multipli.svg',
   cardio: '/icons/muscle-groups/cardio.svg',
   quadricipiti: '/icons/muscle-groups/quadricipiti.svg',
   femorali: '/icons/muscle-groups/femorali.svg',
@@ -120,32 +124,41 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className }: Muscle
                 : 'border-border bg-background-secondary/50 hover:border-teal-500/50 hover:bg-background-secondary',
             )}
           >
-            {/* Icona SVG */}
+            {/* Icona SVG o testo speciale per Multipli */}
             <div
               className={cn(
                 'h-[45px] w-[45px] flex items-center justify-center rounded-lg overflow-hidden relative',
                 isSelected ? 'bg-teal-500/20' : 'bg-background-tertiary/50',
               )}
             >
-              <Image
-                src={MUSCLE_GROUP_ICONS[option.id]}
-                alt={option.label}
-                width={45}
-                height={45}
-                className="object-contain"
-                onError={(e) => {
-                  // Fallback se l'immagine non esiste (es. polpacci)
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                  const parent = target.parentElement
-                  if (parent && !parent.querySelector('span')) {
-                    const fallback = document.createElement('span')
-                    fallback.className = 'text-xl'
-                    fallback.textContent = '💪'
-                    parent.appendChild(fallback)
-                  }
-                }}
-              />
+              {option.id === 'multipli' ? (
+                <span className={cn(
+                  'text-base font-bold',
+                  isSelected ? 'text-teal-400' : 'text-text-secondary'
+                )}>
+                  MIX
+                </span>
+              ) : (
+                <Image
+                  src={MUSCLE_GROUP_ICONS[option.id]}
+                  alt={option.label}
+                  width={45}
+                  height={45}
+                  className="object-contain"
+                  onError={(e) => {
+                    // Fallback se l'immagine non esiste - mostra iniziale del gruppo
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const parent = target.parentElement
+                    if (parent && !parent.querySelector('span')) {
+                      const fallback = document.createElement('span')
+                      fallback.className = 'text-sm font-bold text-text-secondary'
+                      fallback.textContent = option.label.substring(0, 2).toUpperCase()
+                      parent.appendChild(fallback)
+                    }
+                  }}
+                />
+              )}
             </div>
             <span
               className={cn(

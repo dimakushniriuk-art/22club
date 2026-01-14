@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 // Validazione sovrapposizione rimossa per permettere più atleti nello stesso orario
 // import { checkAppointmentOverlap } from '@/lib/appointment-utils'
 import { createLogger } from '@/lib/logger'
-import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
+import type { AppointmentUI, CreateAppointmentData, EditAppointmentData, AppointmentColor } from '@/types/appointment'
 import type { Tables } from '@/types/supabase'
 
 const logger = createLogger('hooks:calendar:use-calendar-page')
@@ -99,6 +99,7 @@ export function useCalendarPage() {
             ends_at,
             type,
             status,
+            color,
             location,
             notes,
             cancelled_at,
@@ -114,7 +115,9 @@ export function useCalendarPage() {
       }
 
       // Carica nomi atleti e staff per visualizzazione
-      const appointmentRows = (appointmentsData ?? []) as AppointmentRow[]
+      // Uso tipo esteso per includere il campo color (aggiunto via migration)
+      type AppointmentRowWithColor = AppointmentRow & { color?: string | null }
+      const appointmentRows = (appointmentsData ?? []) as unknown as AppointmentRowWithColor[]
       const athleteIds = [...new Set(appointmentRows.map((apt) => apt.athlete_id).filter(Boolean))]
 
       // Carica nomi atleti
@@ -132,7 +135,7 @@ export function useCalendarPage() {
         })
       }
 
-      const mappedAppointments: AppointmentUI[] = appointmentRows.map((apt) => {
+      const mappedAppointments: AppointmentUI[] = appointmentRows.map((apt: AppointmentRowWithColor) => {
         const athleteName = athleteNamesMap.get(apt.athlete_id) || 'Atleta'
 
         // Mappa i tipi per visualizzazione nel calendario
@@ -163,6 +166,7 @@ export function useCalendarPage() {
           end: apt.ends_at,
           athlete: athleteName,
           type: mappedType,
+          color: (apt.color as AppointmentColor) ?? undefined,
           location: apt.location,
           notes: apt.notes,
           cancelled_at: apt.cancelled_at,
@@ -246,8 +250,10 @@ export function useCalendarPage() {
         const startsAt = new Date(data.starts_at).toISOString()
         const endsAt = new Date(data.ends_at).toISOString()
 
-        if (new Date(endsAt) <= new Date(startsAt)) {
-          throw new Error('La data di fine deve essere successiva alla data di inizio')
+        // Il form gestisce già gli appuntamenti a cavallo di mezzanotte,
+        // quindi questo controllo verifica solo che le date siano valide
+        if (isNaN(new Date(startsAt).getTime()) || isNaN(new Date(endsAt).getTime())) {
+          throw new Error('Date non valide')
         }
 
         // Validazione sovrapposizione rimossa: permette più atleti nello stesso orario
@@ -260,6 +266,7 @@ export function useCalendarPage() {
             ends_at: endsAt,
             type: data.type || 'allenamento',
             status: data.status || 'attivo',
+            color: data.color || null,
             notes: data.notes || null,
             location: data.location || null,
             athlete_name: athleteName,
@@ -292,6 +299,7 @@ export function useCalendarPage() {
             ends_at: endsAt,
             type: data.type || 'allenamento',
             status: validStatus,
+            color: data.color || null,
             notes: data.notes || null,
             location: data.location || null,
             // IMPORTANTE: NON includere 'id' nel payload - PostgREST potrebbe interpretarlo come upsert
@@ -414,6 +422,78 @@ export function useCalendarPage() {
     [supabase, fetchAppointments],
   )
 
+  // Handler per drag & drop di eventi (spostamento)
+  const handleEventDrop = useCallback(
+    async (appointmentId: string, newStart: Date, newEnd: Date) => {
+      try {
+        const updatePayload = {
+          starts_at: newStart.toISOString(),
+          ends_at: newEnd.toISOString(),
+        } as Partial<AppointmentRow>
+
+        const { error } = await supabase
+          .from('appointments')
+          .update(updatePayload)
+          .eq('id', appointmentId)
+
+        if (error) throw error
+
+        // Aggiorna lo stato locale immediatamente (optimistic update)
+        setAppointments((prev) =>
+          prev.map((apt) =>
+            apt.id === appointmentId
+              ? { ...apt, starts_at: newStart.toISOString(), ends_at: newEnd.toISOString() }
+              : apt
+          )
+        )
+
+        logger.info('Appuntamento spostato', undefined, { appointmentId })
+      } catch (err) {
+        logger.error('Errore spostamento appuntamento', err, { appointmentId })
+        // Ricarica per ripristinare lo stato corretto
+        await fetchAppointments()
+        throw err
+      }
+    },
+    [supabase, fetchAppointments],
+  )
+
+  // Handler per ridimensionamento eventi
+  const handleEventResize = useCallback(
+    async (appointmentId: string, newStart: Date, newEnd: Date) => {
+      try {
+        const updatePayload = {
+          starts_at: newStart.toISOString(),
+          ends_at: newEnd.toISOString(),
+        } as Partial<AppointmentRow>
+
+        const { error } = await supabase
+          .from('appointments')
+          .update(updatePayload)
+          .eq('id', appointmentId)
+
+        if (error) throw error
+
+        // Aggiorna lo stato locale immediatamente (optimistic update)
+        setAppointments((prev) =>
+          prev.map((apt) =>
+            apt.id === appointmentId
+              ? { ...apt, starts_at: newStart.toISOString(), ends_at: newEnd.toISOString() }
+              : apt
+          )
+        )
+
+        logger.info('Appuntamento ridimensionato', undefined, { appointmentId })
+      } catch (err) {
+        logger.error('Errore ridimensionamento appuntamento', err, { appointmentId })
+        // Ricarica per ripristinare lo stato corretto
+        await fetchAppointments()
+        throw err
+      }
+    },
+    [supabase, fetchAppointments],
+  )
+
   return {
     appointments,
     appointmentsLoading,
@@ -426,5 +506,7 @@ export function useCalendarPage() {
     handleFormSubmit,
     handleCancel,
     handleDelete,
+    handleEventDrop,
+    handleEventResize,
   }
 }

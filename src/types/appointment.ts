@@ -3,6 +3,24 @@
  * Struttura semplificata senza complessità aggiuntive
  */
 
+// Colori disponibili per gli appuntamenti (stile Google Calendar)
+export const APPOINTMENT_COLORS = {
+  azzurro: '#039BE5',
+  blu: '#4285F4',
+  viola_scuro: '#7E57C2',
+  viola_chiaro: '#B39DDB',
+  rosa: '#D81B60',
+  rosso: '#E53935',
+  arancione: '#F4511E',
+  giallo: '#F6BF26',
+  verde: '#33B679',
+  verde_chiaro: '#0B8043',
+  marrone: '#795548',
+  grigio: '#9E9E9E',
+} as const
+
+export type AppointmentColor = keyof typeof APPOINTMENT_COLORS
+
 export interface Appointment {
   id: string
   org_id?: string | null
@@ -20,6 +38,7 @@ export interface Appointment {
     | 'massaggio'
     | 'nutrizionista'
   status: 'attivo' | 'completato' | 'annullato' | 'in_corso'
+  color?: AppointmentColor | null
   notes?: string | null
   location?: string | null
   cancelled_at?: string | null
@@ -49,6 +68,7 @@ export interface CreateAppointmentData {
     | 'massaggio'
     | 'nutrizionista'
   status?: 'attivo' | 'completato' | 'annullato' | 'in_corso'
+  color?: AppointmentColor | null
   notes?: string | null
   location?: string | null
   org_id?: string

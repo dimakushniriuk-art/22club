@@ -290,7 +290,103 @@ export async function POST(request: NextRequest) {
 
     const userId = authData.user.id
 
-    // 2. Crea profilo nella tabella profiles
+    // 2. Verifica se esiste già un profilo per questo user_id (potrebbe essere stato creato da un trigger)
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, user_id, email, role')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (existingProfile) {
+      // Il profilo esiste già - aggiorna i dati invece di crearne uno nuovo
+      logger.info('Profilo già esistente per user_id, aggiorno i dati', {
+        userId,
+        existingProfileId: existingProfile.id,
+      })
+
+      const { data: updatedProfile, error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          nome,
+          cognome,
+          email,
+          phone: phone ?? null,
+          role: 'atleta',
+          stato: stato ?? 'attivo',
+          note: note ?? null,
+          ...(normalizedDataIscrizione && { data_iscrizione: normalizedDataIscrizione }),
+        })
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (updateError) {
+        // Prova con 'athlete' se 'atleta' fallisce
+        const { data: updatedProfile2, error: updateError2 } = await supabaseAdmin
+          .from('profiles')
+          .update({
+            nome,
+            cognome,
+            email,
+            phone: phone ?? null,
+            role: 'athlete',
+            stato: stato ?? 'attivo',
+            note: note ?? null,
+            ...(normalizedDataIscrizione && { data_iscrizione: normalizedDataIscrizione }),
+          })
+          .eq('user_id', userId)
+          .select()
+          .single()
+
+        if (updateError2) {
+          logger.error('Errore aggiornamento profilo esistente', updateError2, { userId })
+          return NextResponse.json(
+            { error: updateError2.message || 'Errore durante aggiornamento profilo' },
+            { status: 500 },
+          )
+        }
+
+        const athleteProfileId = updatedProfile2?.id ?? existingProfile.id
+
+        // Crea la relazione pt_atleti
+        if (trainerProfileId) {
+          await supabaseAdmin.from('pt_atleti').upsert(
+            { pt_id: trainerProfileId, atleta_id: athleteProfileId },
+            { onConflict: 'pt_id,atleta_id' },
+          )
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            userId,
+            profileId: athleteProfileId,
+            message: 'Atleta aggiornato con successo',
+          },
+        })
+      }
+
+      const athleteProfileId = updatedProfile?.id ?? existingProfile.id
+
+      // Crea la relazione pt_atleti
+      if (trainerProfileId) {
+        await supabaseAdmin.from('pt_atleti').upsert(
+          { pt_id: trainerProfileId, atleta_id: athleteProfileId },
+          { onConflict: 'pt_id,atleta_id' },
+        )
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          userId,
+          profileId: athleteProfileId,
+          message: 'Atleta aggiornato con successo',
+        },
+      })
+    }
+
+    // 3. Crea profilo nella tabella profiles (nessun profilo esistente)
     const profileData: TablesInsert<'profiles'> = {
       user_id: userId,
       nome,

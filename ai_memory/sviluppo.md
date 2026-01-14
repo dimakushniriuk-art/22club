@@ -1,6 +1,251 @@
 # 🛠️ Registro di Sviluppo – 22Club
 
-(ultimo aggiornamento / last update: 2026-01-13T23:15:00Z)
+(ultimo aggiornamento / last update: 2026-01-14T05:00:00Z)
+
+---
+
+## ⌨️ CALENDARIO v3 - RICERCA, FILTRI, SHORTCUTS (2026-01-14T04:00:00Z)
+
+### ✅ Nuove funzionalità implementate
+
+**1. Barra di ricerca**
+- Input con icona Search nella sidebar
+- Ricerca in tempo reale su:
+  - Nome atleta
+  - Note
+  - Location
+  - Tipo appuntamento
+- Pulsante X per cancellare
+
+**2. Filtro per atleta**
+- Dropdown con tutti gli atleti
+- Opzione "Tutti gli atleti"
+- Filtra calendario e prossimi appuntamenti
+- Link "Rimuovi filtri" quando attivi
+
+**3. Keyboard shortcuts**
+- `T` - Vai a oggi
+- `N` - Nuovo appuntamento
+- `M` - Vista mese
+- `W` - Vista settimana
+- `D` - Vista giorno
+- `A` - Vista agenda
+- `/` - Focus ricerca
+- `?` - Mostra aiuto shortcuts
+- `←` `→` - Navigazione
+- `Esc` - Chiudi popup/modal
+
+**4. Modal aiuto tastiera**
+- Attivabile con `?` o click su footer sidebar
+- Categorizzato: Navigazione, Viste, Azioni
+- Design pulito con kbd tags
+
+**File modificati:**
+- `src/app/dashboard/calendario/page.tsx` - Ricerca, filtri, shortcuts
+- `src/components/calendar/calendar-view.tsx` - Data attributes per shortcuts
+
+---
+
+## 🚀 CALENDARIO v2 - MIGLIORAMENTI UX/UI (2026-01-14T03:00:00Z)
+
+### ✅ Implementazioni completate
+
+**1. FAB (Floating Action Button)**
+- Bottone circolare "+" fisso in basso a destra
+- Stile Material Design (#8AB4F8)
+- Animazioni hover/press con scale
+- Shadow colorata
+
+**2. Header integrato stile Google**
+- Bottone "Oggi" prominente con bordo
+- Frecce navigazione circolari
+- Titolo mese/anno dinamico
+- Nessun header separato
+
+**3. Tabs vista senza gradiente**
+- Pill buttons in container #303134
+- Active state #8AB4F8 con testo scuro
+- Transizioni fluide
+
+**4. Sidebar migliorata (260px)**
+- Mini-calendario compatto
+- Sezione "Prossimi appuntamenti" (max 5)
+  - Indicatore colore
+  - Nome atleta + data relativa
+  - Hover con chevron
+- Legenda tipi appuntamento
+- Empty state con icona
+
+**5. Micro-animazioni**
+- `fc-fade-in` per eventi
+- `fc-scale-in` per cambi vista
+- Hover eventi con translateY(-1px)
+- Active state con scale(0.98)
+- Focus states per accessibilità
+
+**File modificati:**
+- `src/components/calendar/calendar-view.tsx` - Nuovo layout completo
+- `src/app/dashboard/calendario/page.tsx` - Sidebar con upcoming
+- `src/styles/fullcalendar-theme.css` - Animazioni e transizioni
+
+---
+
+## 🎨 UI CALENDARIO GOOGLE STYLE (2026-01-14T02:00:00Z)
+
+### ✅ Restyling completo UI calendario
+
+**Tema FullCalendar riscritto:**
+- Sfondo trasparente, griglia sottile
+- Header minimalista con solo titolo
+- Indicatore "ora corrente" rosso (#EA4335)
+- Eventi con bordi arrotondati
+- Font Google Sans/Roboto style
+- Colori neutri (#202124, #E8EAED, #9AA0A6)
+
+**Form Appuntamento (stile Google):**
+- Header colorato con colore selezionato
+- Layout verticale con icone a sinistra
+- Input con bordi solo inferiori
+- Selettore colore compatto con labels
+- Bottoni rounded-full stile Material
+
+**Popover (stile Google):**
+- Header colorato compatto
+- Icone azioni in alto a destra
+- Layout pulito con info essenziali
+- Pulsante "Annulla appuntamento" rosso
+
+**Mini-calendario:**
+- Design compatto 220px
+- Oggi evidenziato in blu (#8AB4F8)
+- Indicatori appuntamenti sottili
+- Navigazione con frecce minimal
+
+**File modificati:**
+- `src/styles/fullcalendar-theme.css` - Tema completo Google style
+- `src/components/calendar/appointment-form.tsx` - Form minimalista
+- `src/components/calendar/appointment-popover.tsx` - Popover compatto
+- `src/components/calendar/mini-calendar.tsx` - Mini-cal pulito
+
+---
+
+## 🔧 CALENDARIO STILE GOOGLE CALENDAR (2026-01-14T01:00:00Z)
+
+### ✅ Refactoring completo del calendario
+
+**FASE 1 - Funzionalità Core:**
+| Feature | Stato | Descrizione |
+|---------|-------|-------------|
+| Drag & Drop | ✅ | Sposta eventi trascinandoli |
+| Ridimensionamento | ✅ | Cambia durata trascinando i bordi |
+| Selezione intervallo | ✅ | Clicca e trascina per creare nuovo evento |
+| Colori personalizzati | ✅ | 12 colori stile Google Calendar |
+
+**FASE 2 - UX Migliorata:**
+| Feature | Stato | Descrizione |
+|---------|-------|-------------|
+| Quick Popover | ✅ | Popup compatto al click invece di modal |
+| Tooltip hover | ✅ | Preview evento al passaggio del mouse |
+| Header unificato | ✅ | Controlli navigazione + tabs + nuovo |
+
+**FASE 3 - Funzionalità Extra:**
+| Feature | Stato | Descrizione |
+|---------|-------|-------------|
+| Vista Agenda | ✅ | Lista settimanale degli eventi |
+| Mini-calendario | ✅ | Navigazione rapida nella sidebar |
+
+**File modificati:**
+- `src/components/calendar/calendar-view.tsx` - Aggiunto drag/drop, resize, tooltip, viste
+- `src/components/calendar/appointment-popover.tsx` - Nuovo: popup compatto stile Google
+- `src/components/calendar/mini-calendar.tsx` - Nuovo: mini-calendario per navigazione
+- `src/components/calendar/index.ts` - Export nuovi componenti
+- `src/app/dashboard/calendario/page.tsx` - Layout con sidebar + popover
+- `src/hooks/calendar/use-calendar-page.ts` - Handler per drag/drop e resize
+
+---
+
+## 🔧 COLORI APPUNTAMENTI (2026-01-14T00:00:00Z)
+
+### ✅ Aggiunta selezione colore per appuntamenti
+
+**File modificati:**
+- `src/types/appointment.ts` - Aggiunto tipo `AppointmentColor` e costante `APPOINTMENT_COLORS`
+- `src/components/calendar/appointment-form.tsx` - Aggiunto selettore colore visuale
+
+**Colori disponibili (12 opzioni stile Google Calendar):**
+| Chiave | Colore | Hex |
+|--------|--------|-----|
+| azzurro | Azzurro | #039BE5 |
+| blu | Blu | #4285F4 |
+| viola_scuro | Viola scuro | #7E57C2 |
+| viola_chiaro | Viola chiaro | #B39DDB |
+| rosa | Rosa | #D81B60 |
+| rosso | Rosso | #E53935 |
+| arancione | Arancione | #F4511E |
+| giallo | Giallo | #F6BF26 |
+| verde | Verde | #33B679 |
+| verde_chiaro | Verde chiaro | #0B8043 |
+| marrone | Marrone | #795548 |
+| grigio | Grigio | #9E9E9E |
+
+**SQL Migration:** `supabase/migrations/add_appointment_color.sql`
+```sql
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS color TEXT DEFAULT 'azzurro';
+```
+
+**Visualizzazione calendario:**
+- `src/components/calendar/calendar-view.tsx` - Gli eventi FullCalendar usano `backgroundColor` e `borderColor` basati sul colore dell'appuntamento
+
+**Fix persistenza colore (2026-01-14T00:15:00Z):**
+- `src/app/dashboard/calendario/page.tsx` - Aggiunto `color` nel `handleEdit` per passarlo al form di modifica
+- `src/hooks/calendar/use-calendar-page.ts`:
+  - Query: aggiunto `color` nella SELECT
+  - Mapping: aggiunto `color` nel return degli appuntamenti
+  - Update: aggiunto `color` nel payload di update
+  - Insert: aggiunto `color` nel payload di insert
+
+---
+
+## 🔧 SELEZIONE MULTIPLA GRUPPI MUSCOLARI (2026-01-13T23:45:00Z)
+
+### ✅ Implementata selezione multipla per gruppi muscolari negli esercizi
+
+**File modificato:** `src/components/dashboard/exercise-form-modal.tsx`
+
+**Cambiamenti:**
+1. Aggiunto state `selectedMuscleGroups: string[]`
+2. Parsing dei gruppi muscolari esistenti (separati da virgola) in editing
+3. Sincronizzazione con `form.muscle_group` via useEffect
+4. UI con chips rimovibili (stesso stile degli attrezzi)
+5. Validazione aggiornata per richiedere almeno un gruppo muscolare
+
+**UX migliorata:**
+- Selezione dropdown che mostra solo muscoli non ancora selezionati
+- Chips colorate (viola) per visualizzare muscoli selezionati
+- Pulsante X per rimuovere singoli muscoli
+- Contatore "Gruppi Muscolari Selezionati (N)"
+
+---
+
+## 🔧 FIX CREAZIONE ATLETA DUPLICATO (2026-01-13T23:30:00Z)
+
+### ✅ Risolto errore "duplicate key value violates unique constraint 'profiles_user_id_key'"
+
+**Problema:**
+Quando si crea un atleta, se l'utente auth viene creato con successo ma esiste già un profilo per quel `user_id` (creato da trigger o tentativo precedente), l'insert falliva con constraint violation.
+
+**Soluzione:**
+Aggiunto controllo in `src/app/api/athletes/create/route.ts`:
+1. Dopo creazione utente auth, verifica se esiste già un profilo per quel `user_id`
+2. Se esiste → **aggiorna** il profilo invece di crearne uno nuovo
+3. Se non esiste → procedi con insert normale
+
+**Flusso corretto ora:**
+```
+Utente auth creato → Check profilo esistente?
+  ├─ SI → UPDATE profilo con nuovi dati
+  └─ NO → INSERT nuovo profilo
+```
 
 ---
 

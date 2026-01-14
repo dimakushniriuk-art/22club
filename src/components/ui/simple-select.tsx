@@ -12,6 +12,8 @@ export interface SimpleSelectProps {
   options: Array<{ value: string; label: string }>
   className?: string
   disabled?: boolean
+  /** Rimuove lo styling del button interno (per uso in contenitori custom) */
+  unstyled?: boolean
 }
 
 export function SimpleSelect({
@@ -21,6 +23,7 @@ export function SimpleSelect({
   options,
   className,
   disabled = false,
+  unstyled = false,
 }: SimpleSelectProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [selectedOption, setSelectedOption] = React.useState(
@@ -196,8 +199,11 @@ export function SimpleSelect({
           ref={buttonRef}
           type="button"
           className={cn(
-            'bg-background-secondary/50 text-white border-teal-500/30 focus:ring-teal-500/50 flex h-11 w-full items-center justify-between rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors hover:border-teal-500/50',
-            isOpen && 'ring-teal-500/50 ring-2 border-teal-500 focus:border-teal-500',
+            'flex w-full items-center justify-between text-sm disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
+            unstyled
+              ? 'h-full bg-transparent border-0 px-0 py-0 focus:outline-none'
+              : 'bg-background-secondary/50 text-white border-teal-500/30 focus:ring-teal-500/50 h-11 rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/20 hover:border-teal-500/50',
+            !unstyled && isOpen && 'ring-teal-500/50 ring-2 border-teal-500 focus:border-teal-500',
           )}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}

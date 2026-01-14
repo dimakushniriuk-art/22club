@@ -1,4 +1,6 @@
 export * from './appointment-detail'
 export * from './appointment-form'
+export * from './appointment-popover'
 export * from './appointments-table'
 export * from './calendar-view'
+export * from './mini-calendar'

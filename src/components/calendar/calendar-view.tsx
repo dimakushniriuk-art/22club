@@ -2,35 +2,63 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import type FullCalendarComponent from '@fullcalendar/react'
-import type { CalendarApi, EventClickArg, EventInput, PluginDef } from '@fullcalendar/core'
-import type { DateClickArg } from '@fullcalendar/interaction'
-import { Button } from '@/components/ui'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui'
-import type { AppointmentUI } from '@/types/appointment'
+import type { CalendarApi, EventClickArg, EventInput, PluginDef, EventDropArg } from '@fullcalendar/core'
+import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import type { AppointmentUI, AppointmentColor } from '@/types/appointment'
+import { APPOINTMENT_COLORS } from '@/types/appointment'
+import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('CalendarView')
 
 interface CalendarViewProps {
   appointments: AppointmentUI[]
-  onEventClick?: (appointment: AppointmentUI) => void
+  onEventClick?: (appointment: AppointmentUI, position: { x: number; y: number }) => void
   onDateClick?: (date: string) => void
   onNewAppointment?: () => void
+  onEventDrop?: (appointmentId: string, newStart: Date, newEnd: Date) => Promise<void>
+  onEventResize?: (appointmentId: string, newStart: Date, newEnd: Date) => Promise<void>
+  onSelectSlot?: (start: Date, end: Date) => void
+  /** Data a cui navigare (vista giorno) */
+  navigateToDate?: Date | null
+  /** Callback quando la navigazione è completata */
+  onNavigateComplete?: () => void
+}
+
+type ViewType = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
+
+const VIEW_LABELS: Record<ViewType, string> = {
+  dayGridMonth: 'Mese',
+  timeGridWeek: 'Settimana',
+  timeGridDay: 'Giorno',
+  listWeek: 'Agenda',
 }
 
 export function CalendarView({
   appointments,
   onEventClick,
-  onDateClick,
+  onDateClick: _onDateClick,
   onNewAppointment,
+  onEventDrop,
+  onEventResize,
+  onSelectSlot,
+  navigateToDate,
+  onNavigateComplete,
 }: CalendarViewProps) {
-  const [view, setView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'>('dayGridMonth')
+  // onDateClick mantenuto per retrocompatibilità ma non usato (usiamo onSelectSlot)
+  void _onDateClick
+  const [view, setView] = useState<ViewType>('dayGridMonth')
   const [isLoaded, setIsLoaded] = useState(false)
+  const [currentTitle, setCurrentTitle] = useState('')
+  const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; content: { title: string; time: string; type: string } } | null>(null)
+  
   interface CalendarModules {
     FullCalendar: typeof import('@fullcalendar/react').default
     dayGridPlugin: PluginDef
     timeGridPlugin: PluginDef
     interactionPlugin: PluginDef
+    listPlugin: PluginDef
   }
 
   const [calendarComponents, setCalendarComponents] = useState<CalendarModules | null>(null)
@@ -45,11 +73,13 @@ export function CalendarView({
           { default: dayGridPlugin },
           { default: timeGridPlugin },
           { default: interactionPlugin },
+          { default: listPlugin },
         ] = await Promise.all([
           import('@fullcalendar/react'),
           import('@fullcalendar/daygrid'),
           import('@fullcalendar/timegrid'),
           import('@fullcalendar/interaction'),
+          import('@fullcalendar/list'),
         ])
 
         setCalendarComponents({
@@ -57,6 +87,7 @@ export function CalendarView({
           dayGridPlugin,
           timeGridPlugin,
           interactionPlugin,
+          listPlugin,
         })
         setIsLoaded(true)
       } catch (error) {
@@ -67,29 +98,49 @@ export function CalendarView({
     loadCalendar()
   }, [])
 
-  // Converti gli appuntamenti per FullCalendar con colori per tipo
-  // useMemo per evitare ri-calcolo ad ogni render
+  // Aggiorna il titolo quando cambia la vista
+  useEffect(() => {
+    if (calendarRef.current && isLoaded) {
+      const api = calendarRef.current.getApi()
+      setCurrentTitle(api.view.title)
+    }
+  }, [isLoaded, view])
+
+  // Naviga a una data specifica quando richiesto (vista giorno)
+  useEffect(() => {
+    if (navigateToDate && calendarRef.current && isLoaded) {
+      const api = calendarRef.current.getApi()
+      api.changeView('timeGridDay', navigateToDate)
+      setView('timeGridDay')
+      setTimeout(() => {
+        setCurrentTitle(api.view.title)
+        onNavigateComplete?.()
+      }, 0)
+    }
+  }, [navigateToDate, isLoaded, onNavigateComplete])
+
+  // Converti gli appuntamenti per FullCalendar con colori personalizzati
   const events: EventInput[] = useMemo(
     () =>
       appointments.map((appointment) => {
-        // Determina colore e classe CSS in base al tipo
-        let eventClass = 'fc-event-type-allenamento' // default
+        let eventClass = 'fc-event-type-allenamento'
         if (appointment.type === 'prova') {
           eventClass = 'fc-event-type-prova'
         } else if (appointment.type === 'valutazione') {
           eventClass = 'fc-event-type-valutazione'
         }
 
-        // Aggiungi classe per ricorrenza se presente
         const classNames = [eventClass]
         if (appointment.cancelled_at) {
           classNames.push('fc-event-cancelled')
         }
-        // Aggiungi indicatore visivo per ricorrenze (icona 🔄)
         if (appointment.recurrence_rule) {
           classNames.push('fc-event-recurring')
         }
         const title = appointment.athlete_name || 'Appuntamento'
+
+        const colorKey = (appointment.color || 'azzurro') as AppointmentColor
+        const backgroundColor = APPOINTMENT_COLORS[colorKey] || APPOINTMENT_COLORS.azzurro
 
         return {
           id: appointment.id,
@@ -97,6 +148,8 @@ export function CalendarView({
           start: appointment.starts_at,
           end: appointment.ends_at,
           classNames,
+          backgroundColor,
+          borderColor: backgroundColor,
           extendedProps: {
             athlete: appointment.athlete_name,
             type: appointment.type,
@@ -104,6 +157,7 @@ export function CalendarView({
             notes: appointment.notes,
             cancelled_at: appointment.cancelled_at,
             recurrence_rule: appointment.recurrence_rule,
+            color: appointment.color,
           },
         }
       }),
@@ -147,33 +201,107 @@ export function CalendarView({
         null,
     }
 
-    onEventClick?.(appointment)
+    const rect = clickInfo.el.getBoundingClientRect()
+    const position = {
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 8,
+    }
+
+    onEventClick?.(appointment, position)
   }
 
   const handleDateClick = (arg: DateClickArg) => {
-    // Cambia la vista al giorno cliccato (solo se siamo in vista mensile)
     if (view === 'dayGridMonth') {
-      // Aggiorna prima lo stato React, poi FullCalendar
+      // In vista mese, passa alla vista giorno
       setView('timeGridDay')
-      // Usa setTimeout per assicurarsi che lo stato React sia aggiornato
       setTimeout(() => {
         const calendarApi = calendarRef.current?.getApi()
         calendarApi?.changeView('timeGridDay', arg.date)
       }, 0)
-      // Non chiamare onDateClick quando cambiamo solo la vista
     } else {
-      // Se siamo già in vista giornaliera/settimanale, apri il form
-      onDateClick?.(arg.dateStr)
+      // In vista giorno/settimana, apri form con l'orario cliccato
+      // arg.date contiene data + orario completo
+      const start = arg.date
+      const end = new Date(start.getTime() + 60 * 60 * 1000) // +1 ora
+      onSelectSlot?.(start, end)
     }
   }
 
-  const changeView = (newView: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay') => {
+  const handleEventDrop = async (info: EventDropArg) => {
+    if (!info.event.start || !info.event.end) {
+      info.revert()
+      return
+    }
+    
+    try {
+      await onEventDrop?.(info.event.id, info.event.start, info.event.end)
+    } catch {
+      info.revert()
+    }
+  }
+
+  const handleEventResize = async (info: EventResizeDoneArg) => {
+    if (!info.event.start || !info.event.end) {
+      info.revert()
+      return
+    }
+    
+    try {
+      await onEventResize?.(info.event.id, info.event.start, info.event.end)
+    } catch {
+      info.revert()
+    }
+  }
+
+  const handleSelect = (info: { start: Date; end: Date }) => {
+    onSelectSlot?.(info.start, info.end)
+  }
+
+  const handleEventMouseEnter = (info: { el: HTMLElement; event: { title: string; start: Date | null; end: Date | null; extendedProps: Record<string, unknown> } }) => {
+    const rect = info.el.getBoundingClientRect()
+    const startTime = info.event.start ? new Date(info.event.start).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : ''
+    const endTime = info.event.end ? new Date(info.event.end).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : ''
+    
+    setTooltip({
+      visible: true,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8,
+      content: {
+        title: info.event.title,
+        time: `${startTime} - ${endTime}`,
+        type: (info.event.extendedProps?.type as string) || 'allenamento',
+      },
+    })
+  }
+
+  const handleEventMouseLeave = () => {
+    setTooltip(null)
+  }
+
+  const changeView = (newView: ViewType) => {
     setView(newView)
     const calendarApi = calendarRef.current?.getApi()
     calendarApi?.changeView(newView)
   }
 
-  // Sincronizza lo stato della vista quando FullCalendar cambia vista
+  const handlePrev = () => {
+    const api = calendarRef.current?.getApi()
+    api?.prev()
+    setTimeout(() => setCurrentTitle(api?.view.title || ''), 0)
+  }
+
+  const handleNext = () => {
+    const api = calendarRef.current?.getApi()
+    api?.next()
+    setTimeout(() => setCurrentTitle(api?.view.title || ''), 0)
+  }
+
+  const handleToday = () => {
+    const api = calendarRef.current?.getApi()
+    api?.today()
+    setTimeout(() => setCurrentTitle(api?.view.title || ''), 0)
+  }
+
   useEffect(() => {
     if (!calendarRef.current || !isLoaded || !calendarComponents) return
 
@@ -181,10 +309,11 @@ export function CalendarView({
     if (!calendarApi) return
 
     const handleViewChange = () => {
-      const currentView = calendarApi.view.type as 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'
+      const currentView = calendarApi.view.type as ViewType
       if (currentView !== view) {
         setView(currentView)
       }
+      setCurrentTitle(calendarApi.view.title)
     }
 
     calendarApi.on('datesSet', handleViewChange)
@@ -196,132 +325,150 @@ export function CalendarView({
 
   if (!isLoaded || !calendarComponents) {
     return (
-      <div className="relative p-4">
-        <div className="h-[600px] flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto mb-4"></div>
-            <p className="text-text-secondary">Caricamento calendario...</p>
-          </div>
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#8AB4F8] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-[#9AA0A6] text-sm">Caricamento calendario...</p>
         </div>
       </div>
     )
   }
 
-  const { FullCalendar, dayGridPlugin, timeGridPlugin, interactionPlugin } = calendarComponents
+  const { FullCalendar, dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin } = calendarComponents
 
   return (
-    <div className="relative p-4">
-      {/* Header */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-teal-500/20 text-teal-400 rounded-full p-2">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-text-primary">Calendario Appuntamenti</h2>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Tabs
-              value={view}
-              onValueChange={(value) =>
-                changeView(value as 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay')
-              }
+    <div className="h-full flex flex-col">
+      {/* Header Google Style */}
+      <div className="flex items-center justify-between py-3 px-1 border-b border-[#3C4043]">
+        {/* Left: Navigation */}
+        <div className="flex items-center gap-3">
+          {/* Today Button */}
+          <button
+            data-action="today"
+            onClick={handleToday}
+            className="h-9 px-4 rounded-md border border-[#5F6368] text-[#E8EAED] text-sm font-medium hover:bg-[#3C4043] transition-colors"
+          >
+            Oggi
+          </button>
+          
+          {/* Nav Arrows */}
+          <div className="flex items-center">
+            <button
+              data-action="prev"
+              onClick={handlePrev}
+              className="p-2 rounded-full hover:bg-[#3C4043] transition-colors"
             >
-              <TabsList className="border-teal-500/20 !bg-transparent">
-                <TabsTrigger
-                  value="dayGridMonth"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/30 border-teal-500/30 hover:bg-teal-500/10"
-                >
-                  Mese
-                </TabsTrigger>
-                <TabsTrigger
-                  value="timeGridWeek"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/30 border-teal-500/30 hover:bg-teal-500/10"
-                >
-                  Settimana
-                </TabsTrigger>
-                <TabsTrigger
-                  value="timeGridDay"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/30 border-teal-500/30 hover:bg-teal-500/10"
-                >
-                  Giorno
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onNewAppointment}
-              className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 shadow-lg shadow-teal-500/30 text-white"
+              <ChevronLeft className="h-5 w-5 text-[#9AA0A6]" />
+            </button>
+            <button
+              data-action="next"
+              onClick={handleNext}
+              className="p-2 rounded-full hover:bg-[#3C4043] transition-colors"
             >
-              <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Nuovo
-            </Button>
+              <ChevronRight className="h-5 w-5 text-[#9AA0A6]" />
+            </button>
           </div>
+          
+          {/* Current Title */}
+          <h2 className="text-xl font-normal text-[#E8EAED] capitalize">
+            {currentTitle}
+          </h2>
+        </div>
+
+        {/* Right: View Tabs */}
+        <div className="flex items-center gap-1 bg-[#303134] rounded-lg p-1">
+          {(Object.keys(VIEW_LABELS) as ViewType[]).map((viewKey) => (
+            <button
+              key={viewKey}
+              data-view={viewKey}
+              onClick={() => changeView(viewKey)}
+              className={cn(
+                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                view === viewKey
+                  ? 'bg-[#8AB4F8] text-[#202124]'
+                  : 'text-[#E8EAED] hover:bg-[#3C4043]'
+              )}
+            >
+              {VIEW_LABELS[viewKey]}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Calendar Content */}
-      <div className="relative h-[calc(100vh-280px)] min-h-[600px] rounded-lg overflow-hidden">
-        <div className="h-full p-4">
-          <FullCalendar
-            ref={calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView={view}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: '',
+      <div className="flex-1 min-h-0 relative">
+        <FullCalendar
+          ref={calendarRef}
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+          initialView={view}
+          headerToolbar={false}
+          events={events}
+          eventClick={handleEventClick}
+          dateClick={handleDateClick}
+          editable={true}
+          eventDrop={handleEventDrop}
+          eventResize={handleEventResize}
+          eventDurationEditable={true}
+          eventStartEditable={true}
+          select={handleSelect}
+          selectable={true}
+          selectMirror={true}
+          selectMinDistance={5}
+          unselectAuto={true}
+          height="100%"
+          locale="it"
+          buttonText={{
+            today: 'Oggi',
+            month: 'Mese',
+            week: 'Settimana',
+            day: 'Giorno',
+          }}
+          dayHeaderFormat={{ weekday: 'short' }}
+          slotMinTime="06:00:00"
+          slotMaxTime="23:00:00"
+          allDaySlot={false}
+          nowIndicator={true}
+          dayMaxEvents={true}
+          weekends={true}
+          eventDisplay="block"
+          eventTimeFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          }}
+          firstDay={1}
+          weekNumbers={false}
+          eventTextColor="#ffffff"
+          eventBorderColor="transparent"
+          slotDuration="00:15:00"
+          snapDuration="00:15:00"
+          eventMouseEnter={handleEventMouseEnter}
+          eventMouseLeave={handleEventMouseLeave}
+        />
+        
+        {/* Tooltip */}
+        {tooltip && tooltip.visible && (
+          <div
+            className="fixed z-[200] px-3 py-2 rounded-lg bg-[#303134] border border-[#5F6368] shadow-lg pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100"
+            style={{
+              left: tooltip.x,
+              top: tooltip.y,
+              transform: 'translate(-50%, -100%)',
             }}
-            events={events}
-            eventClick={handleEventClick}
-            dateClick={handleDateClick}
-            height="100%"
-            locale="it"
-            buttonText={{
-              today: 'Oggi',
-              month: 'Mese',
-              week: 'Settimana',
-              day: 'Giorno',
-            }}
-            dayHeaderFormat={{ weekday: 'short' }}
-            slotMinTime="00:00:00"
-            slotMaxTime="24:00:00"
-            allDaySlot={false}
-            nowIndicator={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={true}
-            eventDisplay="block"
-            eventTimeFormat={{
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            }}
-            firstDay={1}
-            weekNumbers={false}
-            eventTextColor="#ffffff"
-            eventBorderColor="transparent"
-          />
-        </div>
+          >
+            <div className="text-sm font-medium text-[#E8EAED]">{tooltip.content.title}</div>
+            <div className="text-xs text-[#9AA0A6] mt-0.5">{tooltip.content.time}</div>
+          </div>
+        )}
       </div>
+
+      {/* FAB - Floating Action Button */}
+      <button
+        onClick={onNewAppointment}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#8AB4F8] hover:bg-[#AECBFA] shadow-lg shadow-[#8AB4F8]/30 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+      >
+        <Plus className="h-6 w-6 text-[#202124]" />
+      </button>
     </div>
   )
 }

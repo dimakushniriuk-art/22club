@@ -72,12 +72,20 @@ export function ExerciseFormModal({
   const [videoLoading, setVideoLoading] = useState(false)
   const [equipmentCategory, setEquipmentCategory] = useState<string>('')
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([])
+  const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<string[]>([])
 
   // Reset form when modal opens/closes or editing changes
   useEffect(() => {
     if (open) {
       if (editing) {
         setForm(editing)
+        // Parsa i gruppi muscolari dalla stringa (separati da virgole)
+        if (editing.muscle_group) {
+          const muscleList = editing.muscle_group.split(',').map((m) => m.trim()).filter(Boolean)
+          setSelectedMuscleGroups(muscleList)
+        } else {
+          setSelectedMuscleGroups([])
+        }
         // Parsa gli attrezzi dalla stringa (separati da virgole)
         if (editing.equipment) {
           const equipmentList = editing.equipment.split(',').map((e) => e.trim()).filter(Boolean)
@@ -103,6 +111,7 @@ export function ExerciseFormModal({
         setForm({ difficulty: 'media' })
         setEquipmentCategory('')
         setSelectedEquipment([])
+        setSelectedMuscleGroups([])
       }
       setVideoError(false)
       setVideoLoading(false)
@@ -110,10 +119,19 @@ export function ExerciseFormModal({
       setForm({ difficulty: 'media' })
       setEquipmentCategory('')
       setSelectedEquipment([])
+      setSelectedMuscleGroups([])
       setVideoError(false)
       setVideoLoading(false)
     }
   }, [open, editing])
+
+  // Aggiorna form.muscle_group quando cambia selectedMuscleGroups
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      muscle_group: selectedMuscleGroups.length > 0 ? selectedMuscleGroups.join(', ') : undefined,
+    }))
+  }, [selectedMuscleGroups])
 
   // Aggiorna form.equipment quando cambia selectedEquipment
   useEffect(() => {
@@ -465,10 +483,10 @@ export function ExerciseFormModal({
   }
 
   const handleSave = async () => {
-    if (!form.name || !form.muscle_group) {
+    if (!form.name || selectedMuscleGroups.length === 0) {
       addToast({
         title: 'Errore',
-        message: 'Compila tutti i campi obbligatori',
+        message: 'Compila tutti i campi obbligatori (nome e almeno un gruppo muscolare)',
         variant: 'error',
       })
       return
@@ -591,16 +609,49 @@ export function ExerciseFormModal({
                 <div>
                   <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
                     <Target className="h-4 w-4 text-purple-400" />
-                    Gruppo muscolare *
+                    Aggiungi Gruppo Muscolare *
                   </label>
                   <SimpleSelect
-                    value={form.muscle_group || ''}
-                    onValueChange={(value) => setForm({ ...form, muscle_group: value })}
+                    value=""
+                    onValueChange={(value) => {
+                      if (value && !selectedMuscleGroups.includes(value)) {
+                        setSelectedMuscleGroups([...selectedMuscleGroups, value])
+                      }
+                    }}
                     placeholder="Seleziona gruppo muscolare"
-                    options={MUSCLE_GROUPS.map((g) => ({ value: g, label: g }))}
+                    options={MUSCLE_GROUPS
+                      .filter((g) => !selectedMuscleGroups.includes(g))
+                      .map((g) => ({ value: g, label: g }))}
                   />
                 </div>
               </div>
+              {selectedMuscleGroups.length > 0 && (
+                <div>
+                  <label className="text-text-primary mb-2 block text-sm font-medium">
+                    Gruppi Muscolari Selezionati ({selectedMuscleGroups.length})
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMuscleGroups.map((muscle, index) => (
+                      <div
+                        key={index}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 text-sm"
+                      >
+                        <span>{muscle}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMuscleGroups(selectedMuscleGroups.filter((_, i) => i !== index))
+                          }}
+                          className="hover:text-red-400 transition-colors"
+                          aria-label={`Rimuovi ${muscle}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
