@@ -1,14 +1,27 @@
 import { memo } from 'react'
 import Link from 'next/link'
-import { Mail, Phone, Calendar, User, MessageSquare, AlertCircle } from 'lucide-react'
+import { Mail, Phone, Calendar, User, MessageSquare, AlertCircle, MoreVertical } from 'lucide-react'
 import { Button, Avatar, useAvatarInitials } from '@/components/ui'
+import { ClienteDropdownMenu } from '@/components/dashboard/cliente-dropdown-menu'
 import type { Cliente } from '@/types/cliente'
 
 interface ClienteCardProps {
   cliente: Cliente
+  onEdit?: (cliente: Cliente) => void
+  onViewHistory?: (cliente: Cliente) => void
+  onViewDocuments?: (cliente: Cliente) => void
+  onSendEmail?: (cliente: Cliente) => void
+  onDelete?: (cliente: Cliente) => void
 }
 
-export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({ cliente }) {
+export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
+  cliente,
+  onEdit,
+  onViewHistory,
+  onViewDocuments,
+  onSendEmail,
+  onDelete,
+}) {
   const avatarInitials = useAvatarInitials(cliente.nome, cliente.cognome)
 
   return (
@@ -40,16 +53,38 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({ cliente
             </div>
           </div>
 
-          {/* Stato badge */}
-          {cliente.stato === 'attivo' ? (
-            <div className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400 border border-green-500/30">
-              Attivo
-            </div>
-          ) : (
-            <div className="rounded-full bg-teal-500/20 px-3 py-1 text-xs font-medium text-teal-400 border border-teal-500/30">
-              {cliente.stato}
-            </div>
-          )}
+          {/* Dropdown menu e stato badge */}
+          <div className="flex items-center gap-2">
+            {cliente.stato === 'attivo' ? (
+              <div className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400 border border-green-500/30">
+                Attivo
+              </div>
+            ) : (
+              <div className="rounded-full bg-teal-500/20 px-3 py-1 text-xs font-medium text-teal-400 border border-teal-500/30">
+                {cliente.stato}
+              </div>
+            )}
+
+            {/* Menu dropdown azioni */}
+            <ClienteDropdownMenu
+              cliente={cliente}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-teal-500/10"
+                  aria-label={`Azioni per ${cliente.nome} ${cliente.cognome}`}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              }
+              onEdit={onEdit}
+              onViewHistory={onViewHistory}
+              onViewDocuments={onViewDocuments}
+              onSendEmail={onSendEmail}
+              onDelete={onDelete}
+            />
+          </div>
         </div>
 
         {/* Contatti */}

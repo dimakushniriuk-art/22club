@@ -15,6 +15,16 @@ export default async function AdminDashboardPage() {
   }
 
   // Verifica ruolo admin
+  // NOTA: Server component non può usare AuthProvider client, query necessaria per SSR
+  if (process.env.NODE_ENV !== 'production') {
+    const logger = (await import('@/lib/logger')).createLogger('dashboard:admin:page')
+    logger.debug('[profiles] dashboard/admin/page → query DB (server-side)', {
+      userId: session.user.id,
+      source: 'dashboard/admin/page',
+      reason: 'SSR - verifica ruolo admin',
+    })
+  }
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')

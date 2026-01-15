@@ -49,17 +49,15 @@ export const dietaEnumSchema = z.enum([
   'altro',
 ])
 
-// Definisci l'array di valori prima per evitare problemi di tree-shaking
-const tipoAbbonamentoValues = [
+// Enum per tipo abbonamento - definito inline per evitare problemi con z.enum()
+export const tipoAbbonamentoEnumSchema = z.enum([
   'mensile',
   'trimestrale',
   'semestrale',
   'annuale',
   'pacchetto_lezioni',
   'nessuno',
-] as const
-
-export const tipoAbbonamentoEnumSchema = z.enum(tipoAbbonamentoValues)
+])
 
 export const statoAbbonamentoEnumSchema = z.enum(['attivo', 'scaduto', 'sospeso', 'in_attesa'])
 

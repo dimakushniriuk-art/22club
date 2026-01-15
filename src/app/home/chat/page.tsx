@@ -196,19 +196,30 @@ function AthleteChatPageContent() {
       conversations.length === 0 &&
       personalTrainer &&
       !loadingPT &&
-      !currentConversationId
+      !currentConversationId &&
+      !hasAutoSelectedRef.current
     ) {
-      // Se non ci sono conversazioni ma c'è un PT, NON auto-selezionare
-      // L'utente deve cliccare "Inizia a chattare" per creare la conversazione
-      logger.debug('No conversations but PT available - waiting for user action', {
+      // Se non ci sono conversazioni ma c'è un PT, prova a selezionare direttamente il PT
+      // Questo permette di vedere i messaggi anche se fetchConversations non li trova
+      logger.debug('No conversations but PT available - trying to select PT directly', {
         ptId: personalTrainer.id,
         ptName: `${personalTrainer.nome} ${personalTrainer.cognome}`,
+        currentUserId,
+      })
+
+      // Prova a selezionare direttamente il PT per vedere se ci sono messaggi
+      hasAutoSelectedRef.current = true
+      setCurrentConversation(personalTrainer.id).catch((err) => {
+        logger.error('Error selecting PT conversation directly', err, {
+          ptId: personalTrainer.id,
+        })
+        hasAutoSelectedRef.current = false // Reset su errore
       })
     }
     // IMPORTANTE: Usa currentConversationId (primitivo) invece di currentConversation (oggetto)
     // per evitare loop infiniti
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversations.length, currentConversationId, personalTrainer?.id, loadingPT])
+  }, [conversations.length, currentConversationId, personalTrainer?.id, loadingPT, currentUserId])
 
   // Se stiamo ancora caricando l'autenticazione, mostra skeleton loader
   // Questo previene la pagina nera durante il refresh

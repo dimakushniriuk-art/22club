@@ -10,6 +10,7 @@ export interface UserProfile {
   full_name?: string // Per compatibilità
   email: string
   role: UserRole
+  phone?: string | null // Telefono utente (aggiunto per evitare query duplicate)
   avatar_url?: string
   avatar?: string // Alias per avatar_url (compatibilità)
   nome?: string // Alias per first_name (compatibilità)

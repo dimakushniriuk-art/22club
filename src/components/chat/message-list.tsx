@@ -1,11 +1,25 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Download, Eye, Check, CheckCheck, Trash2 } from 'lucide-react'
 import type { ChatMessage } from '@/types/chat'
 import { useIcon } from '@/components/ui/professional-icons'
+import { createLogger } from '@/lib/logger'
+import { notifyError } from '@/lib/notifications'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
+
+const logger = createLogger('components:chat:message-list')
 
 interface MessageListProps {
   messages: ChatMessage[]
@@ -28,6 +42,8 @@ export function MessageList({
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesStartRef = useRef<HTMLDivElement>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null)
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -68,39 +84,44 @@ export function MessageList({
     document.body.removeChild(link)
   }
 
-  const handleDeleteMessage = async (messageId: string) => {
+  const openDeleteDialog = (messageId: string) => {
     if (!onDeleteMessage) {
-      console.warn('[MessageList] onDeleteMessage not provided')
+      logger.warn('onDeleteMessage not provided')
       return
     }
+    setMessageToDelete(messageId)
+    setDeleteDialogOpen(true)
+  }
 
-    // Conferma prima di eliminare
-    if (!confirm('Sei sicuro di voler eliminare questo messaggio?')) {
-      return
-    }
+  const handleConfirmDelete = async () => {
+    if (!messageToDelete || !onDeleteMessage) return
 
     try {
-      console.log('[MessageList] Attempting to delete message', { messageId })
-      const result = await onDeleteMessage(messageId)
-      console.log('[MessageList] Delete result', { messageId, result })
+      logger.debug('Attempting to delete message', { messageId: messageToDelete })
+      const result = await onDeleteMessage(messageToDelete)
+      logger.debug('Delete result', { messageId: messageToDelete, result })
 
       if (!result) {
-        alert(
-          'Errore: impossibile eliminare il messaggio. Verifica di essere il mittente del messaggio.',
+        notifyError(
+          'Eliminazione fallita',
+          'Verifica di essere il mittente del messaggio.',
         )
       }
     } catch (error) {
-      console.error('[MessageList] Error deleting message', error)
-      alert(
-        `Errore nell'eliminazione del messaggio: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`,
+      logger.error('Error deleting message', error, { messageId: messageToDelete })
+      notifyError(
+        'Errore eliminazione',
+        error instanceof Error ? error.message : 'Errore sconosciuto',
       )
+    } finally {
+      setMessageToDelete(null)
     }
   }
 
   const renderMessage = (message: ChatMessage) => {
     // Log per debug se currentUserId è vuoto
     if (!currentUserId && process.env.NODE_ENV === 'development') {
-      console.warn('[MessageList] currentUserId is empty!', {
+      logger.warn('currentUserId is empty!', {
         messageId: message.id,
         sender_id: message.sender_id,
         receiver_id: message.receiver_id,
@@ -133,7 +154,7 @@ export function MessageList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDeleteMessage(message.id)}
+                    onClick={() => openDeleteDialog(message.id)}
                     className="h-6 w-6 rounded-full bg-red-500/80 hover:bg-red-600 active:bg-red-700 text-white opacity-80 hover:opacity-100 transition-all shadow-md hover:shadow-lg hover:scale-110 flex-shrink-0"
                     aria-label="Elimina messaggio"
                   >
@@ -179,7 +200,7 @@ export function MessageList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteMessage(message.id)}
+                        onClick={() => openDeleteDialog(message.id)}
                         className="h-6 w-6 rounded-full bg-red-500/80 hover:bg-red-600 active:bg-red-700 text-white opacity-80 hover:opacity-100 transition-all shadow-md hover:shadow-lg hover:scale-110 flex-shrink-0"
                         aria-label="Elimina messaggio"
                       >
@@ -245,51 +266,63 @@ export function MessageList({
   }
 
   return (
-    <div className={cn('flex h-full flex-col', className)}>
-      {/* Load more button */}
-      {hasMore && (
-        <div className="flex justify-center p-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onLoadMore}
-            disabled={isLoading}
-            className="text-xs border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50"
-          >
-            {isLoading ? 'Caricamento...' : 'Carica messaggi precedenti'}
-          </Button>
-        </div>
-      )}
-
-      {/* Messages */}
-      <div className="flex-1 space-y-1 overflow-y-auto p-4 bg-background min-h-0">
-        {messages.length > 0 ? (
-          <>
-            <div ref={messagesStartRef} />
-            {messages.map((msg) => {
-              // Log per debug - rimuovere in produzione
-              if (process.env.NODE_ENV === 'development') {
-                console.log('[MessageList] Rendering message', {
-                  id: msg.id,
-                  sender_id: msg.sender_id,
-                  receiver_id: msg.receiver_id,
-                  currentUserId,
-                  isOwn: msg.sender_id === currentUserId,
-                  message_preview: msg.message.substring(0, 30),
-                })
-              }
-              return renderMessage(msg)
-            })}
-            <div ref={messagesEndRef} />
-          </>
-        ) : (
-          isLoading && (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-text-secondary text-sm">Caricamento messaggi...</div>
-            </div>
-          )
+    <>
+      <div className={cn('flex h-full flex-col', className)}>
+        {/* Load more button */}
+        {hasMore && (
+          <div className="flex justify-center p-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLoadMore}
+              disabled={isLoading}
+              className="text-xs border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50"
+            >
+              {isLoading ? 'Caricamento...' : 'Carica messaggi precedenti'}
+            </Button>
+          </div>
         )}
+
+        {/* Messages */}
+        <div className="flex-1 space-y-1 overflow-y-auto p-4 bg-background min-h-0">
+          {messages.length > 0 ? (
+            <>
+              <div ref={messagesStartRef} />
+              {messages.map((msg) => renderMessage(msg))}
+              <div ref={messagesEndRef} />
+            </>
+          ) : (
+            isLoading && (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-text-secondary text-sm">Caricamento messaggi...</div>
+              </div>
+            )
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* AlertDialog per conferma eliminazione */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-background-secondary border-red-500/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Elimina messaggio</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler eliminare questo messaggio? Questa azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-teal-500/30 text-white hover:bg-teal-500/10">
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

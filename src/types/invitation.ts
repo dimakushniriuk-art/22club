@@ -5,7 +5,7 @@ export type Invitation = {
   pt_id: string
   nome_atleta: string
   email: string
-  stato: 'inviato' | 'accepted' | 'expired'
+  stato: 'inviato' | 'registrato' | 'scaduto'
   created_at: string
   accepted_at?: string | null
   expires_at: string | null

@@ -61,7 +61,8 @@ export function useInvitations({
   const supabase = createClient()
 
   const fetchInvitations = useCallback(async () => {
-    if (!userId || (role !== 'admin' && role !== 'pt')) {
+    // Supporta sia 'pt' (legacy) che 'trainer' (normalizzato)
+    if (!userId || (role !== 'admin' && role !== 'pt' && role !== 'trainer')) {
       setLoading(false)
       return
     }
@@ -93,8 +94,8 @@ export function useInvitations({
         .select('*', { count: enablePagination ? 'exact' : undefined })
         .order('created_at', { ascending: false })
 
-      // Admin può vedere tutti, PT solo i propri
-      if (role === 'pt') {
+      // Admin può vedere tutti, PT/Trainer solo i propri
+      if (role === 'pt' || role === 'trainer') {
         query = query.eq('pt_id', userId)
       }
 
@@ -109,6 +110,13 @@ export function useInvitations({
 
       if (fetchError) throw fetchError
 
+      // Mappa stati DB → UI: 'accepted' → 'registrato', 'expired' → 'scaduto'
+      const mapStatusToStato = (status: string | null): 'inviato' | 'registrato' | 'scaduto' => {
+        if (status === 'accepted') return 'registrato'
+        if (status === 'expired') return 'scaduto'
+        return 'inviato' // Default e 'inviato' restano invariati
+      }
+
       const invitationsData: InvitationWithPT[] = (data ?? []).map((invitation) => ({
         id: invitation.id ?? '',
         codice: invitation.codice ?? '',
@@ -116,12 +124,7 @@ export function useInvitations({
         pt_id: invitation.pt_id ?? '',
         nome_atleta: invitation.nome_atleta ?? '',
         email: invitation.email ?? '',
-        stato:
-          invitation.status === 'inviato' ||
-          invitation.status === 'accepted' ||
-          invitation.status === 'expired'
-            ? (invitation.status as 'inviato' | 'accepted' | 'expired')
-            : 'inviato',
+        stato: mapStatusToStato(invitation.status),
         created_at: invitation.created_at ?? new Date().toISOString(),
         accepted_at: invitation.accepted_at ?? null,
         expires_at: invitation.expires_at ?? null,
@@ -134,8 +137,8 @@ export function useInvitations({
       const statsData = {
         total: count || invitationsData.length,
         inviati: invitationsData.filter((inv) => inv.stato === 'inviato').length,
-        registrati: invitationsData.filter((inv) => inv.stato === 'accepted').length,
-        scaduti: invitationsData.filter((inv) => inv.stato === 'expired').length,
+        registrati: invitationsData.filter((inv) => inv.stato === 'registrato').length,
+        scaduti: invitationsData.filter((inv) => inv.stato === 'scaduto').length,
       }
 
       setInvitations(invitationsData)
@@ -192,16 +195,33 @@ export function useInvitations({
         nome_atleta: data.nome_atleta,
         email: data.email || '',
         token: inviteCode, // Usa codice come token se richiesto
+        stato: 'inviato', // Stato iniziale (colonna NOT NULL)
+        status: 'pending', // Status per compatibilità
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
 
+      // Log dei dati prima dell'insert per debug
+      console.log('[DEBUG] Insert data:', JSON.stringify(insertData, null, 2))
+      console.log('[DEBUG] userId:', userId)
+      
       const { data: invitation, error: insertError } = await supabase
         .from('inviti_atleti')
         .insert(insertData)
         .select()
         .single()
 
-      if (insertError) throw insertError
+      // Log dettagliato dell'errore Supabase
+      if (insertError) {
+        console.error('[DEBUG] Supabase insertError RAW:', insertError)
+        console.error('[DEBUG] Supabase insertError keys:', Object.keys(insertError))
+        console.error('[DEBUG] Supabase insertError props:', Object.getOwnPropertyNames(insertError))
+        console.error('[DEBUG] Supabase insertError message:', insertError.message)
+        console.error('[DEBUG] Supabase insertError code:', insertError.code)
+        console.error('[DEBUG] Supabase insertError stringified:', JSON.stringify(insertError, Object.getOwnPropertyNames(insertError)))
+        throw insertError
+      }
+      
+      console.log('[DEBUG] Insert SUCCESS, invitation:', invitation)
 
       // Invalida cache
       if (userId) {
@@ -213,8 +233,25 @@ export function useInvitations({
 
       return invitation
     } catch (err) {
-      logger.error('Error creating invitation', err, { email: data.email })
-      setError(err instanceof Error ? err.message : "Errore nella creazione dell'invito")
+      // Log dettagliato dell'errore
+      const errorDetails = err instanceof Error 
+        ? { message: err.message, name: err.name, stack: err.stack }
+        : typeof err === 'object' && err !== null
+          ? { ...err as Record<string, unknown>, stringified: JSON.stringify(err) }
+          : { rawError: String(err) }
+      
+      logger.error('Error creating invitation', err, { 
+        email: data.email,
+        userId,
+        role,
+        errorDetails,
+      })
+      
+      // Estrai messaggio errore Supabase se disponibile
+      const supabaseError = err as { message?: string; code?: string; details?: string; hint?: string }
+      const errorMessage = supabaseError?.message || supabaseError?.details || supabaseError?.hint || "Errore nella creazione dell'invito"
+      
+      setError(errorMessage)
       throw err
     }
   }
@@ -282,8 +319,13 @@ export function useInvitations({
   }
 
   const generateQRCode = (invitationCode: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3007'
-    const registrationUrl = `${baseUrl}/registrati?codice=${invitationCode}`
+    // Production-safe: usa window.location.origin invece di NEXT_PUBLIC_APP_URL
+    // Evita problemi di redirect strani su Vercel con dominio custom
+    const baseUrl =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || 'https://app.22club.it'
+    const registrationUrl = `${baseUrl}/registrati?code=${invitationCode}`
     return registrationUrl
   }
 

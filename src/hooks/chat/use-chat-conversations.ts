@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
+import { createLogger } from '@/lib/logger'
 import type { ConversationParticipant } from '@/types/chat'
+
+const logger = createLogger('hooks:chat:use-chat-conversations')
 
 type ConversationParticipantExtended = ConversationParticipant & {
   nome?: string
@@ -62,7 +65,7 @@ export function useChatConversations(
 
       // Usa la RPC ottimizzata definita nelle migrazioni; fallback su query diretta se non disponibile
       let data: ConversationParticipantExtended[] = []
-      console.log('[useChatConversations] Calling RPC get_conversation_participants', {
+      logger.debug('Calling RPC get_conversation_participants', {
         user_uuid: user.id,
         profileId,
       })
@@ -71,7 +74,7 @@ export function useChatConversations(
         user_uuid: user.id,
       })
 
-      console.log('[useChatConversations] RPC response', {
+      logger.debug('RPC response', {
         hasData: !!rpcData,
         dataLength: Array.isArray(rpcData) ? rpcData.length : 0,
         error: error
@@ -83,7 +86,21 @@ export function useChatConversations(
             }
           : null,
         rpcData: Array.isArray(rpcData) ? rpcData.slice(0, 3) : rpcData,
+        profileId,
+        userId: user.id,
       })
+
+      // Se RPC fallisce, logga dettagli per debug
+      if (error) {
+        logger.warn('RPC get_conversation_participants failed, using fallback', {
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorDetails: error.details,
+          errorHint: error.hint,
+          profileId,
+          userId: user.id,
+        })
+      }
 
       if (!error && Array.isArray(rpcData)) {
         const rpcRows = rpcData as ConversationParticipantRow[]
@@ -108,7 +125,7 @@ export function useChatConversations(
         })
       } else {
         // Fallback: ricava i partecipanti dai messaggi
-        console.log('[useChatConversations] Using fallback - fetching messages', { profileId })
+        logger.debug('Using fallback - fetching messages', { profileId })
         const { data: messages, error: fbErr } = await supabase
           .from('chat_messages')
           .select('sender_id, receiver_id, created_at')
@@ -116,9 +133,8 @@ export function useChatConversations(
           .order('created_at', { ascending: false })
 
         if (fbErr) {
-          console.error('[useChatConversations] Error fetching messages (fallback)', {
+          logger.error('Error fetching messages (fallback)', fbErr, {
             profileId,
-            error: fbErr,
             errorCode: fbErr.code,
             errorMessage: fbErr.message,
             errorDetails: fbErr.details,
@@ -127,7 +143,7 @@ export function useChatConversations(
           throw fbErr
         }
 
-        console.log('[useChatConversations] Messages fetched (fallback)', {
+        logger.debug('Messages fetched (fallback)', {
           profileId,
           messagesCount: messages?.length ?? 0,
           messages: messages?.map((m) => ({
@@ -318,7 +334,7 @@ export function useChatConversations(
           }
         } catch (error) {
           // Ignora errori nel recupero del PT, non bloccare il caricamento delle conversazioni
-          console.warn('Error fetching PT for athlete:', error)
+          logger.warn('Error fetching PT for athlete', error)
         }
       }
 
@@ -338,7 +354,7 @@ export function useChatConversations(
         })
 
       // Log per debug
-      console.log('[useChatConversations] Conversations loaded', {
+      logger.debug('Conversations loaded', {
         profileId,
         userRole: profileData?.role,
         conversationsCount: conversationsList.length,

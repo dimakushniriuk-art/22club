@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Send,
   Shield,
+  UserPlus,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -33,6 +34,7 @@ const staffNav = [
   { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/chat' },
   { label: 'Comunicazioni', icon: Send, href: '/dashboard/comunicazioni' },
+  { label: 'Invita Atleta', icon: UserPlus, href: '/dashboard/invita-atleta' },
   { label: 'Impostazioni', icon: Settings, href: '/dashboard/impostazioni' },
 ]
 

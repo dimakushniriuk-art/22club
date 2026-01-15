@@ -86,9 +86,12 @@ export async function sendEmailViaResend(
     })
 
     // Aggiungi tracking pixel se fornito
+    // Production-safe: usa NEXT_PUBLIC_APP_URL con fallback sicuro
+    // Nota: in futuro potrebbe essere passato come parametro da API route con request.nextUrl.origin
     let finalHtml = html
     if (trackingPixelId) {
-      const trackingPixel = `<img src="${process.env.NEXT_PUBLIC_APP_URL || 'https://22club.it'}/api/track/email-open/${trackingPixelId}" width="1" height="1" style="display:none;" alt="" />`
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.22club.it'
+      const trackingPixel = `<img src="${baseUrl}/api/track/email-open/${trackingPixelId}" width="1" height="1" style="display:none;" alt="" />`
       finalHtml = finalHtml.replace('</body>', `${trackingPixel}</body>`)
     }
 

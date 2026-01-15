@@ -80,6 +80,7 @@ export function useChatMessages(
           limit,
           offset,
           queryType: 'chat_messages',
+          existingMessagesCount: existingMessages.length,
         })
 
         // Query per trovare messaggi tra profileId e otherUserId
@@ -88,10 +89,16 @@ export function useChatMessages(
         logger.debug('Query filter', {
           profileId,
           otherUserId,
+          query1: `sender_id.eq.${profileId},receiver_id.eq.${otherUserId}`,
+          query2: `sender_id.eq.${otherUserId},receiver_id.eq.${profileId}`,
         })
 
         // Query 1: messaggi dove profileId è sender e otherUserId è receiver
         // Ordina in crescente per avere i messaggi più vecchi prima
+        logger.debug('Executing query 1: messages where profileId is sender', {
+          profileId,
+          otherUserId,
+        })
         const { data: data1, error: error1 } = await supabase
           .from('chat_messages')
           .select('*')
@@ -111,8 +118,24 @@ export function useChatMessages(
           throw error1
         }
 
+        logger.debug('Query 1 results', {
+          profileId,
+          otherUserId,
+          count: data1?.length ?? 0,
+          messages: data1?.map((m) => ({
+            id: m.id,
+            sender_id: m.sender_id,
+            receiver_id: m.receiver_id,
+            created_at: m.created_at,
+          })),
+        })
+
         // Query 2: messaggi dove otherUserId è sender e profileId è receiver
         // Ordina in crescente per avere i messaggi più vecchi prima
+        logger.debug('Executing query 2: messages where profileId is receiver', {
+          profileId,
+          otherUserId,
+        })
         const { data: data2, error: error2 } = await supabase
           .from('chat_messages')
           .select('*')
@@ -131,6 +154,18 @@ export function useChatMessages(
           })
           throw error2
         }
+
+        logger.debug('Query 2 results', {
+          profileId,
+          otherUserId,
+          count: data2?.length ?? 0,
+          messages: data2?.map((m) => ({
+            id: m.id,
+            sender_id: m.sender_id,
+            receiver_id: m.receiver_id,
+            created_at: m.created_at,
+          })),
+        })
 
         // Unisci i risultati e ordina per data (crescente: più vecchi prima, più recenti dopo)
         // Per la chat vogliamo i messaggi più vecchi in alto e i più recenti in basso

@@ -24,7 +24,7 @@ import {
 } from '@/components/ui'
 import { QRCodeComponent } from '@/components/invitations'
 import { useInvitations } from '@/hooks/use-invitations'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/providers/auth-provider'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
@@ -55,8 +55,15 @@ type InvitoSort = 'data_asc' | 'data_desc' | 'nome_asc' | 'nome_desc' | 'stato'
 export default function InvitaAtletaPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, loading: authLoading } = useAuth()
+  const { user, role, loading: authLoading } = useAuth()
   const { addToast } = useToast()
+
+  // Redirect al login se non autenticato
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [authLoading, user, router])
 
   // State
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -128,7 +135,7 @@ export default function InvitaAtletaPage() {
     bulkDeleteInvitations,
     copyToClipboard,
   } = useInvitations({
-    userId: user?.user_id || null,
+    userId: user?.id || null, // Usa profiles.id, non auth.users.id
     role: user?.role || null,
     enablePagination,
   })

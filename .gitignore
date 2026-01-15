@@ -13,6 +13,13 @@
 # testing
 /coverage
 
+# Playwright / E2E tests
+test-results/
+playwright-report/
+.last-run.json
+tmp-pw*/
+tmp-e2e/
+
 # next.js
 /.next/
 /out/
@@ -50,3 +57,10 @@ next-env.d.ts
 
 # large archive files (exceed GitHub 100MB limit)
 *.zip
+.vercel
+
+
+# playwright / e2e tests
+test-results/
+playwright-report/
+.last-run.json

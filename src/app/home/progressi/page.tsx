@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
-import { Scale, TrendingUp, Activity, BarChart3, ArrowLeft } from 'lucide-react'
+import { Scale, TrendingUp, Activity, BarChart3, ArrowLeft, History } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProgressiPage() {
@@ -125,6 +125,49 @@ export default function ProgressiPage() {
                   Visualizza statistiche
                 </span>
                 <BarChart3 className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Storico Allenamenti */}
+        <div
+          onClick={() => handleNavigate('/home/progressi/storico')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              handleNavigate('/home/progressi/storico')
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          className="cursor-pointer"
+        >
+          <Card
+            variant="trainer"
+            className="group relative overflow-hidden cursor-pointer border border-purple-500/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-purple-400/60 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg hover:shadow-purple-500/20 active:scale-[0.99] backdrop-blur-sm"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <CardHeader className="relative z-10 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-2 group-hover:from-purple-500/30 group-hover:to-pink-500/30 transition-all duration-300">
+                  <History className="h-4 w-4 text-purple-300" />
+                </div>
+                <CardTitle size="sm" className="text-white text-sm font-bold flex-1 min-w-0">
+                  <span className="truncate">Storico Allenamenti</span>
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="relative z-10 pt-0 pb-3">
+              <p className="text-text-secondary mb-2 text-xs line-clamp-3 leading-relaxed">
+                Visualizza tutti i tuoi allenamenti completati, statistiche dettagliate e progressi
+                nel tempo con grafici e report.
+              </p>
+              <div className="flex items-center gap-1.5 text-purple-300 group-hover:text-purple-200 transition-colors">
+                <span className="text-[10px] font-medium uppercase tracking-wide">
+                  Visualizza storico
+                </span>
+                <History className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </CardContent>
           </Card>

@@ -13,6 +13,7 @@ import { ClientiFiltriAvanzati } from '@/components/dashboard/clienti-filtri-ava
 import { ClientiBulkActions } from '@/components/dashboard/clienti-bulk-actions'
 import { ModernKPICard } from '@/components/dashboard/modern-kpi-card'
 import { CreaAtletaModal } from '@/components/dashboard/crea-atleta-modal'
+import { ModificaAtletaModal } from '@/components/dashboard/modifica-atleta-modal'
 import { ClientiToolbar } from '@/components/dashboard/clienti/clienti-toolbar'
 import { ClientiTableView } from '@/components/dashboard/clienti/clienti-table-view'
 import { ClientiGridView } from '@/components/dashboard/clienti/clienti-grid-view'
@@ -30,6 +31,8 @@ export default function ClientiPage() {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid')
   const [showFiltriAvanzati, setShowFiltriAvanzati] = useState(false)
   const [showCreaAtleta, setShowCreaAtleta] = useState(false)
+  const [showModificaAtleta, setShowModificaAtleta] = useState(false)
+  const [atletaToEdit, setAtletaToEdit] = useState<Cliente | null>(null)
 
   // Apri il modal automaticamente se c'è il query param 'new'
   useEffect(() => {
@@ -146,7 +149,8 @@ export default function ClientiPage() {
 
   // Handler azioni dropdown
   const handleEdit = (cliente: Cliente) => {
-    router.push(`/dashboard/atleti/${cliente.id}/edit`)
+    setAtletaToEdit(cliente)
+    setShowModificaAtleta(true)
   }
 
   const handleViewHistory = (cliente: Cliente) => {
@@ -288,6 +292,11 @@ export default function ClientiPage() {
             page={page}
             totalPages={totalPages}
             onPageChange={updatePage}
+            onEdit={handleEdit}
+            onViewHistory={handleViewHistory}
+            onViewDocuments={handleViewDocuments}
+            onSendEmail={handleSendEmail}
+            onDelete={handleDelete}
           />
         )}
 
@@ -346,6 +355,16 @@ export default function ClientiPage() {
           onOpenChange={handleCloseCreaAtleta}
           onSuccess={() => {
             refetch()
+          }}
+        />
+
+        <ModificaAtletaModal
+          open={showModificaAtleta}
+          onOpenChange={setShowModificaAtleta}
+          athlete={atletaToEdit}
+          onSuccess={() => {
+            refetch()
+            setAtletaToEdit(null)
           }}
         />
       </div>

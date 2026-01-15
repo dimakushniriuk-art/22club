@@ -107,6 +107,40 @@ export async function POST(request: NextRequest) {
       if (isEmailExistsError) {
         // L'email esiste già - verifica se l'utente auth ha un profilo
         // Se non ha un profilo, possiamo creare il profilo per l'utente auth esistente
+        
+        // Prima verifica se esiste un profilo orfano (senza utente auth) con questa email
+        const { data: orphanProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('id, user_id, email, role')
+          .eq('email', email.trim())
+          .maybeSingle()
+
+        if (orphanProfile) {
+          // Verifica se l'utente auth esiste ancora
+          if (orphanProfile.user_id) {
+            const { error: getUserError } = await supabaseAdmin.auth.admin.getUserById(
+              orphanProfile.user_id,
+            )
+
+            if (!getUserError) {
+              // L'utente auth esiste e ha un profilo - errore
+              return NextResponse.json(
+                { error: 'Questa email è già registrata nel sistema' },
+                { status: 409 },
+              )
+            }
+          }
+
+          // Profilo orfano trovato - eliminalo prima di creare il nuovo
+          logger.info('Profilo orfano trovato, lo elimino prima di creare il nuovo', {
+            orphanProfileId: orphanProfile.id,
+            email: email.trim(),
+          })
+
+          await supabaseAdmin.from('profiles').delete().eq('id', orphanProfile.id)
+        }
+
+        // Cerca l'utente auth esistente
         const { data: existingAuthUsers } = await supabaseAdmin.auth.admin.listUsers()
         const existingUser = existingAuthUsers?.users?.find((u) => u.email === email.trim())
 

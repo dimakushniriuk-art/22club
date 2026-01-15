@@ -21,7 +21,11 @@ export function QRCodeComponent({ invitationCode, athleteName, onCopy }: QRCodeP
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
-  const registrationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3007'}/registrati?codice=${invitationCode}`
+  // Production-safe: usa window.location.origin invece di NEXT_PUBLIC_APP_URL
+  // Evita problemi di redirect strani su Vercel con dominio custom
+  const registrationUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/registrati?code=${invitationCode}`
+    : `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.22club.it'}/registrati?code=${invitationCode}`
 
   useEffect(() => {
     const generateQR = async () => {

@@ -106,8 +106,10 @@ async function sendSMSViaTwilio(
     const fromNumber = process.env.TWILIO_PHONE_NUMBER!
 
     // Costruisci callback URL per status updates (opzionale)
+    // Production-safe: usa NEXT_PUBLIC_APP_URL con fallback sicuro
+    // Nota: in futuro potrebbe essere passato come parametro da API route con request.nextUrl.origin
     const statusCallback = recipientId
-      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://22club.it'}/api/webhooks/sms?recipient_id=${recipientId}`
+      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.22club.it'}/api/webhooks/sms?recipient_id=${recipientId}`
       : undefined
 
     const result = await client.messages.create({

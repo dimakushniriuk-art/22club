@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
+import { notifyError } from '@/lib/notifications'
+import { Button } from '@/components/ui/button'
 
 const logger = createLogger('components:chat:message-input')
-import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { EmojiPicker } from './emoji-picker'
 import { FileUpload } from './file-upload'
@@ -55,7 +56,7 @@ export function MessageInput({
         setSelectedFile(null)
       } catch (error) {
         logger.error('Error uploading file', error, { fileName: selectedFile.file.name })
-        alert('Errore nel caricamento del file')
+        notifyError('Errore upload', 'Impossibile caricare il file. Riprova.')
       } finally {
         setIsUploading(false)
       }

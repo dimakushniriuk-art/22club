@@ -839,16 +839,24 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
   const deleteCliente = useCallback(
     async (id: string) => {
       try {
-        await executeSupabaseCall(
-          async () => {
-            const { error: deleteError } = await supabase.from('profiles').delete().eq('id', id)
-            if (deleteError) {
-              return { data: null, error: deleteError }
-            }
-            return { data: null, error: null }
+        // Usa l'API route invece di eliminare direttamente da profiles
+        // Questo permette ai trainer di eliminare i propri atleti (verifica pt_atleti)
+        const response = await fetch(`/api/athletes/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          { context: 'useClienti.deleteCliente' },
-        )
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Errore sconosciuto' }))
+          throw new Error(errorData.error || `Errore ${response.status}: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        if (!result.success) {
+          throw new Error(result.error || "Errore nell'eliminazione dell'atleta")
+        }
 
         // Refetch per aggiornare la lista
         await fetchClienti()
@@ -858,7 +866,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         throw new Error(apiError.message)
       }
     },
-    [supabase, fetchClienti, executeSupabaseCall],
+    [fetchClienti],
   )
 
   // Fetch iniziale - aspetta che l'autenticazione sia completata E che userId sia disponibile

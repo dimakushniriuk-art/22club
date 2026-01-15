@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { notifyError } from '@/lib/notifications'
 import { Button } from '@/components/ui/button'
 import { Paperclip, X, FileText, Image as ImageIcon } from 'lucide-react'
 import type { ChatFile } from '@/types/chat'
@@ -32,7 +33,7 @@ export function FileUpload({
 
   const handleFileSelect = (file: File) => {
     if (file.size > MAX_FILE_SIZE) {
-      alert('Il file è troppo grande. Dimensione massima: 10MB')
+      notifyError('File troppo grande', 'Dimensione massima consentita: 10MB')
       return
     }
 

@@ -12,6 +12,11 @@ interface ClientiGridViewProps {
   page: number
   totalPages: number
   onPageChange: (page: number) => void
+  onEdit?: (cliente: Cliente) => void
+  onViewHistory?: (cliente: Cliente) => void
+  onViewDocuments?: (cliente: Cliente) => void
+  onSendEmail?: (cliente: Cliente) => void
+  onDelete?: (cliente: Cliente) => void
 }
 
 export function ClientiGridView({
@@ -20,6 +25,11 @@ export function ClientiGridView({
   page,
   totalPages,
   onPageChange,
+  onEdit,
+  onViewHistory,
+  onViewDocuments,
+  onSendEmail,
+  onDelete,
 }: ClientiGridViewProps) {
   return (
     <div className="relative p-6">
@@ -33,7 +43,15 @@ export function ClientiGridView({
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {clienti.map((cliente) => (
-          <ClienteCard key={cliente.id} cliente={cliente} />
+          <ClienteCard
+            key={cliente.id}
+            cliente={cliente}
+            onEdit={onEdit}
+            onViewHistory={onViewHistory}
+            onViewDocuments={onViewDocuments}
+            onSendEmail={onSendEmail}
+            onDelete={onDelete}
+          />
         ))}
       </div>
 

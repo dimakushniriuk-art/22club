@@ -73,6 +73,16 @@ export default async function DashboardPage() {
       const todayEnd = tomorrow.toISOString()
 
       // Ottieni il profilo dello staff corrente
+      // NOTA: Server component non può usare AuthProvider client, query necessaria per SSR
+      if (process.env.NODE_ENV !== 'production') {
+        const logger = (await import('@/lib/logger')).createLogger('dashboard:page')
+        logger.debug('[profiles] dashboard/page → query DB (server-side)', {
+          userId: user.id,
+          source: 'dashboard/page',
+          reason: 'SSR - ottieni profile.id per appointments',
+        })
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')

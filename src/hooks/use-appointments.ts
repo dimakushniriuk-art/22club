@@ -24,11 +24,25 @@ async function getProfileId(
   // Se già in cache, ritorna immediatamente
   if (profileIdCache.has(userId)) {
     const cached = profileIdCache.get(userId)!
-    logger.debug('ProfileId da cache', undefined, { userId, profileId: cached })
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('[profiles] useAppointments → profileId da cache', {
+        userId,
+        profileId: cached,
+        source: 'use-appointments',
+      })
+    }
     return cached
   }
 
   // Prima verifica se userId è già profiles.id
+  if (process.env.NODE_ENV !== 'production') {
+    logger.debug('[profiles] useAppointments → query DB (lookup profile.id)', {
+      userId,
+      source: 'use-appointments',
+      reason: 'cache miss - verifica se userId è già profile.id',
+    })
+  }
+
   const { data: profileCheck } = await client
     .from('profiles')
     .select('id')
@@ -42,14 +56,25 @@ async function getProfileId(
   if (typedProfileCheck?.id) {
     // userId è già profiles.id, cache e ritorna
     profileIdCache.set(userId, typedProfileCheck.id)
-    logger.debug('userId è già profiles.id', undefined, { userId, profileId: typedProfileCheck.id })
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('[profiles] useAppointments → userId è già profile.id', {
+        userId,
+        profileId: typedProfileCheck.id,
+        source: 'use-appointments',
+      })
+    }
     return typedProfileCheck.id
   }
 
   // Se non trovato, potrebbe essere user_id, quindi facciamo lookup
-  logger.debug('userId non trovato come profiles.id, tentativo lookup per user_id', undefined, {
-    userId,
-  })
+  if (process.env.NODE_ENV !== 'production') {
+    logger.debug('[profiles] useAppointments → query DB (lookup user_id)', {
+      userId,
+      source: 'use-appointments',
+      reason: 'userId non è profile.id, lookup per user_id',
+    })
+  }
+
   const { data: profileByUserId } = await client
     .from('profiles')
     .select('id')
@@ -59,10 +84,13 @@ async function getProfileId(
   if (profileByUserId?.id) {
     // Trovato per user_id, cache e ritorna
     profileIdCache.set(userId, profileByUserId.id)
-    logger.debug('Converted userId to profileId (cached)', undefined, {
-      userId,
-      profileId: profileByUserId.id,
-    })
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('[profiles] useAppointments → convertito user_id → profile.id', {
+        userId,
+        profileId: profileByUserId.id,
+        source: 'use-appointments',
+      })
+    }
     return profileByUserId.id
   }
 

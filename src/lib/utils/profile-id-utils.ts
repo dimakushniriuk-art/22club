@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useState, useEffect, useRef } from 'react'
+import { useAuth } from '@/providers/auth-provider'
 
 const logger = createLogger('utils:profile-id-utils')
 
@@ -101,6 +102,8 @@ export async function getUserIdFromProfileId(profileId: string): Promise<string 
 export function useProfileId(userId: string | null): string | null {
   const [profileId, setProfileId] = useState<string | null>(null)
   const previousUserIdRef = useRef<string | null>(null)
+  // Ottimizzazione: usa useAuth() prima di fare query (evita query duplicate)
+  const { user } = useAuth()
 
   useEffect(() => {
     // Evita fetch se userId non è cambiato
@@ -111,6 +114,24 @@ export function useProfileId(userId: string | null): string | null {
 
     if (!userId) {
       setProfileId(null)
+      return
+    }
+
+    // Ottimizzazione: se user da useAuth() ha già id e user_id corrisponde, usa direttamente
+    if (user?.id && user?.user_id === userId) {
+      if (process.env.NODE_ENV !== 'production') {
+        logger.debug('[profiles] useProfileId → da useAuth (no query)', {
+          userId,
+          profileId: user.id,
+          source: 'profile-id-utils',
+          reason: 'AuthProvider già caricato profilo',
+        })
+      }
+      setProfileId(user.id)
+      // Salva in sessionStorage per cache
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(`profile_id_${userId}`, user.id)
+      }
       return
     }
 
@@ -135,6 +156,14 @@ export function useProfileId(userId: string | null): string | null {
     if (cached) {
       setProfileId(cached)
       return
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('[profiles] useProfileId → query DB', {
+        userId,
+        source: 'profile-id-utils',
+        reason: 'cache miss + AuthProvider non disponibile',
+      })
     }
 
     getProfileIdFromUserId(userId)

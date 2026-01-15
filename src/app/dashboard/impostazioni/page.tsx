@@ -104,29 +104,27 @@ export default function ImpostazioniPage() {
       try {
         setProfileLoading(true)
 
-        // Usa user da useAuth se disponibile, ma dobbiamo comunque fare query per phone
-        // perché UserProfile non include phone
+        // Usa user da useAuth - ora include phone, no query necessaria
         if (authUser) {
-          // Usa i dati base da authUser (più veloce)
+          if (process.env.NODE_ENV !== 'production') {
+            const logger = (await import('@/lib/logger')).createLogger('dashboard:impostazioni')
+            logger.debug('[profiles] dashboard/impostazioni → usa useAuth (no query)', {
+              userId: authUser.user_id,
+              profileId: authUser.id,
+              source: 'dashboard/impostazioni',
+              reason: 'user.phone disponibile da AuthProvider',
+            })
+          }
+
+          // Usa i dati da authUser (include phone da AuthProvider)
           const baseProfile = {
             id: authUser.id || '',
             nome: authUser.nome || authUser.first_name || '',
             cognome: authUser.cognome || authUser.last_name || '',
             email: authUser.email || '',
-            phone: '', // Sarà caricato dalla query
+            phone: authUser.phone || '', // Ora disponibile da AuthProvider
             avatar: authUser.avatar || null,
             avatar_url: authUser.avatar_url || null,
-          }
-
-          // Query solo per phone (campo mancante in UserProfile)
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('phone')
-            .eq('id', authUser.id)
-            .single()
-
-          if (!error && profileData) {
-            baseProfile.phone = (profileData as { phone?: string | null }).phone || ''
           }
 
           setProfile(baseProfile)
@@ -142,6 +140,15 @@ export default function ImpostazioniPage() {
         if (!authUserFromSession) {
           setProfileLoading(false)
           return
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
+          const logger = (await import('@/lib/logger')).createLogger('dashboard:impostazioni')
+          logger.debug('[profiles] dashboard/impostazioni → query DB (fallback)', {
+            userId: authUserFromSession.id,
+            source: 'dashboard/impostazioni',
+            reason: 'authUser non disponibile - fallback',
+          })
         }
 
         const { data: profileData, error } = await supabase
