@@ -353,7 +353,7 @@ export function ClientiTableView({
                           Profilo
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/atleti/${cliente.id}/chat`}>
+                      <Link href={`/dashboard/chat?with=${cliente.id}`}>
                         <Button
                           variant="ghost"
                           size="icon"

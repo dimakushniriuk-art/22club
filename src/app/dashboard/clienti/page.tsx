@@ -18,6 +18,7 @@ import { useClientiFilters } from '@/hooks/use-clienti-filters'
 import { useClientiPageGuard } from '@/hooks/use-clienti-page-guard'
 import { useClientiSelection } from '@/hooks/use-clienti-selection'
 import { useLessonCounters } from '@/hooks/use-lesson-counters'
+import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { useInvitiClientePendentiStaff } from '@/hooks/use-inviti-cliente'
 import { exportToCSV, exportToPDF, formatClientiForExport } from '@/lib/export-utils'
 import { useNotify } from '@/lib/ui/notify'
@@ -231,11 +232,25 @@ export default function ClientiPage() {
 
   const athleteIds = useMemo(() => selectableClienti.map((c) => c.id), [selectableClienti])
   const rimastiMap = useLessonCounters(athleteIds)
+  const lessonStatsMap = useLessonStatsBulk(athleteIds)
 
-  // Clienti con lessons_remaining per la griglia (displayClienti = clienti + eventuali invitati in attesa)
+  // Clienti con lessons_remaining e dati abbonamento (acquistati/eseguiti) per la griglia.
+  // Rimasti: da lesson_counters se presente, altrimenti calcolato come Acquistati - Eseguiti.
   const clientiForGrid = useMemo(
-    () => displayClienti.map((c) => ({ ...c, lessons_remaining: rimastiMap.get(c.id) })),
-    [displayClienti, rimastiMap],
+    () =>
+      displayClienti.map((c) => {
+        const stats = lessonStatsMap.get(c.id)
+        const fromCounter = rimastiMap.get(c.id)
+        const computedRemaining =
+          stats != null ? Math.max(0, stats.acquired - stats.used) : undefined
+        return {
+          ...c,
+          lessons_remaining: fromCounter !== undefined ? fromCounter : computedRemaining,
+          lessons_acquired: stats?.acquired,
+          lessons_used: stats?.used,
+        }
+      }),
+    [displayClienti, rimastiMap, lessonStatsMap],
   )
 
   const displayStats = useMemo<ClienteStats>(() => {

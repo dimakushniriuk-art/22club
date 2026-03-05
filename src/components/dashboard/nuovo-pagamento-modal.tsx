@@ -322,11 +322,21 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
         paymentData.payment_date = new Date(formData.payment_date).toISOString()
       }
 
-      const orgId = (staffProfile as { org_id?: string | null }).org_id ?? ''
+      const orgIdRaw = (staffProfile as { org_id?: string | null }).org_id
+      let orgId: string | undefined =
+        orgIdRaw && String(orgIdRaw).trim() ? String(orgIdRaw).trim() : undefined
+      if (!orgId) {
+        const { data: firstOrg } = await supabase
+          .from('organizations')
+          .select('id')
+          .limit(1)
+          .maybeSingle()
+        orgId = firstOrg?.id ?? undefined
+      }
       const paymentPayload = {
         ...paymentData,
         created_by_profile_id: staffProfile.id,
-        org_id: orgId,
+        ...(orgId != null && orgId !== '' && { org_id: orgId }),
       }
 
       logger.debug('Tentativo inserimento pagamento', undefined, {

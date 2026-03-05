@@ -6,8 +6,12 @@ import { createClient } from '@/lib/supabase/client'
 /**
  * Restituisce una mappa athlete_id -> count (lezioni rimanenti) per gli atleti indicati.
  * Utile per griglia clienti e altre viste che mostrano il conteggio lezioni.
+ * refetchKey: incrementare dopo completamento/annullamento appuntamento per riaggiornare il conteggio.
  */
-export function useLessonCounters(athleteIds: string[]): Map<string, number> {
+export function useLessonCounters(
+  athleteIds: string[],
+  refetchKey?: number,
+): Map<string, number> {
   const [rimastiMap, setRimastiMap] = useState<Map<string, number>>(new Map())
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export function useLessonCounters(athleteIds: string[]): Map<string, number> {
     return () => {
       cancelled = true
     }
-  }, [athleteIds])
+  }, [athleteIds, refetchKey])
 
   return rimastiMap
 }

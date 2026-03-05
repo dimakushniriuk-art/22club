@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
 import { User, Dumbbell, Edit, Trash2, CheckCircle2, XCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { AppointmentTable } from '@/types/appointment'
 
 interface AppointmentItemProps {
@@ -23,6 +24,8 @@ interface AppointmentItemProps {
   formatDateTime: (isoString: string) => { time: string; dateStr: string }
   getStatusColorClasses: (status: string) => string
   getAppointmentType: (apt: AppointmentTable) => string
+  /** Lezioni rimanenti atleta (solo numero in lista) */
+  lessonsRemaining?: number
 }
 
 export function AppointmentItem({
@@ -36,6 +39,7 @@ export function AppointmentItem({
   formatDateTime,
   getStatusColorClasses,
   getAppointmentType,
+  lessonsRemaining,
 }: AppointmentItemProps) {
   const router = useRouter()
   const { time, dateStr } = formatDateTime(appointment.starts_at)
@@ -52,6 +56,8 @@ export function AppointmentItem({
     ? 'rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-xs font-medium px-3 py-1 shrink-0'
     : 'rounded-full bg-background-tertiary/50 border border-white/10 text-text-tertiary text-xs font-medium px-3 py-1 shrink-0'
 
+  const isLocked = status === 'completato' || status === 'annullato'
+
   return (
     <div
       key={appointment.id}
@@ -61,7 +67,25 @@ export function AppointmentItem({
         animation: 'fadeInUp 0.5s ease-out forwards',
       }}
     >
-      <div className="flex items-center gap-4 p-4">
+      <div className="relative flex items-center gap-4 p-4">
+        {/* Rimasti - centrato orizzontalmente e verticalmente nella riga */}
+        {typeof lessonsRemaining === 'number' && (
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+            <span
+              className={cn(
+                'text-2xl font-bold tabular-nums',
+                lessonsRemaining >= 6 && 'text-[#00C781]',
+                lessonsRemaining >= 2 &&
+                  lessonsRemaining <= 4 &&
+                  'text-[#FFC107]',
+                lessonsRemaining <= 1 && 'text-[#FF3B30]',
+              )}
+            >
+              {lessonsRemaining}
+            </span>
+          </div>
+        )}
+
         {/* Time section */}
         <div className="flex min-w-[120px] flex-col items-start">
           <div className="text-text-secondary text-xs mb-1">{dateStr}</div>
@@ -107,18 +131,18 @@ export function AppointmentItem({
         </div>
 
         {/* Action Buttons - Status */}
-        <div className="flex-shrink-0 flex items-center gap-1.5">
+        <div className="relative z-10 flex shrink-0 items-center gap-1.5">
           <Button
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation()
-              if (confirm('Segnare questo appuntamento come completato?')) {
+              if (confirm('Segnare questo appuntamento come completato? Verrà scalato un allenamento all\'atleta.')) {
                 onComplete(appointment)
               }
             }}
             className="rounded-full p-3 bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Segna come completato"
-            disabled={appointment.status === 'completato' || appointment.status === 'annullato'}
+            disabled={isLocked}
           >
             <CheckCircle2 className="h-5 w-5" />
           </Button>
@@ -127,52 +151,72 @@ export function AppointmentItem({
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation()
-              onCancel(appointment)
+              if (confirm('Annullare questo appuntamento?')) {
+                onCancel(appointment)
+              }
             }}
             className="rounded-full p-3 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Annulla appuntamento"
-            disabled={appointment.status === 'completato' || appointment.status === 'annullato'}
+            disabled={isLocked}
           >
             <XCircle className="h-5 w-5" />
           </Button>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex-shrink-0 flex items-center gap-1.5">
+        {/* Action Buttons - bloccati se completato/annullato */}
+        <div className={cn('relative z-10 flex shrink-0 items-center gap-1.5', isLocked && 'pointer-events-none opacity-60')}>
           <Button
             variant="ghost"
-            onClick={() => onView(appointment)}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (appointment.athlete_id) {
+                router.push(`/dashboard/atleti/${appointment.athlete_id}`)
+              } else {
+                onView(appointment)
+              }
+            }}
             className="rounded-full p-3 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
-            title="Visualizza dettagli"
+            title="Visualizza profilo atleta"
+            disabled={isLocked}
           >
             <User className="h-5 w-5" />
           </Button>
 
           <Button
             variant="ghost"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               router.push(`/dashboard/schede?athlete_id=${appointment.athlete_id}`)
             }}
             className="rounded-full p-3 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Visualizza schede"
+            disabled={isLocked}
           >
             <Dumbbell className="h-5 w-5" />
           </Button>
 
           <Button
             variant="ghost"
-            onClick={() => onEdit(appointment)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(appointment)
+            }}
             className="rounded-full p-3 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Modifica appuntamento"
+            disabled={isLocked}
           >
             <Edit className="h-5 w-5" />
           </Button>
 
           <Button
             variant="ghost"
-            onClick={() => onDelete(appointment)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(appointment)
+            }}
             className="rounded-full p-3 bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Elimina appuntamento"
+            disabled={isLocked}
           >
             <Trash2 className="h-5 w-5" />
           </Button>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, lazy, Suspense } from 'react'
+import { use, useState, useCallback, lazy, Suspense } from 'react'
 import { Card, CardContent, Button } from '@/components/ui'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 import { AlertCircle, Bell, Mail, MessageSquare } from 'lucide-react'
@@ -24,7 +24,14 @@ const RecipientsDetailModal = lazy(() =>
   })),
 )
 
-export default function ComunicazioniPage() {
+type PageProps = {
+  params?: Promise<Record<string, string | string[]>>
+  searchParams?: Promise<Record<string, string | string[]>>
+}
+
+export default function ComunicazioniPage(props: PageProps) {
+  use(props.params ?? Promise.resolve({}))
+  use(props.searchParams ?? Promise.resolve({}))
   const {
     communications,
     totalCount,
@@ -128,19 +135,13 @@ export default function ComunicazioniPage() {
   }, [editingCommunicationId, handleUpdateCommunication, handleCreateCommunication])
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-linear-to-br from-blue-500/5 via-transparent to-transparent" />
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-linear-to-tl from-indigo-500/5 via-transparent to-transparent" />
-      </div>
-
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+    <div className="min-h-screen bg-background text-text-primary">
+      <div className="mx-auto max-w-5xl flex flex-col space-y-4 sm:space-y-6 px-4 py-10">
         <CommunicationsHeader onNewCommunication={openNewModal} />
 
         {/* Error State con retry */}
         {error && (
-          <Card variant="trainer" className="border-red-500/30 bg-red-500/10">
+          <Card variant="outlined" className="border-red-500/40 bg-red-500/10">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2 text-red-400">

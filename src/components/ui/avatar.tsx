@@ -38,12 +38,12 @@ export function Avatar({
     setImageLoading(false)
   }
 
-  // Se non c'è src o c'è stato un errore, mostra fallback
+  // Fallback: riempimento unico, bordo con leggera sfumatura (come Button/Badge)
   if (!src || imageError) {
     return (
       <div
         className={cn(
-          'bg-gradient-to-br from-teal-500 to-cyan-500 text-white flex shrink-0 items-center justify-center rounded-full font-bold select-none',
+          'bg-cyan-500 text-white flex shrink-0 items-center justify-center rounded-full font-bold select-none border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]',
           sizeClasses[size],
           className,
         )}

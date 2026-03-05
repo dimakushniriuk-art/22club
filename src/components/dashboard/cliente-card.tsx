@@ -83,7 +83,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
             ) : (
               <>
                 {cliente.stato === 'attivo' ? (
-                  <span className="rounded-full bg-primary/10 text-primary border border-primary/20 px-3 py-1 text-xs font-medium">
+                  <span className="rounded-full bg-state-valid/10 text-state-valid border border-state-valid/25 px-3 py-1 text-xs font-medium">
                     Attivo
                   </span>
                 ) : (
@@ -146,17 +146,39 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-text-secondary text-xs">Allenamenti/mese</span>
-            <span className={cn('font-bold tracking-tight text-primary', (cliente.allenamenti_mese ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]')}>{cliente.allenamenti_mese}</span>
-          </div>
-
-          {cliente.lessons_remaining !== undefined && (
+          <div className="space-y-1.5">
+            <div className="text-text-secondary text-xs font-medium">Allenamenti</div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-text-secondary text-xs">Rimasti</span>
-              <span className={cn('font-bold tracking-tight text-primary', (cliente.lessons_remaining ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]')}>{cliente.lessons_remaining}</span>
+              <span className="text-text-secondary text-xs">Acquistati:</span>
+              <span className={cn('font-medium text-text-primary', (cliente.lessons_acquired ?? 0) > 0 && 'font-bold text-primary drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]')}>
+                {cliente.lessons_acquired !== undefined ? cliente.lessons_acquired : '–'}
+              </span>
             </div>
-          )}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-text-secondary text-xs">Eseguiti:</span>
+              <span className={cn('font-bold tracking-tight text-primary', (cliente.lessons_used ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]')}>
+                {cliente.lessons_used !== undefined ? cliente.lessons_used : '–'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-text-secondary text-xs">Rimasti:</span>
+              <span
+                className={cn(
+                  'font-bold tracking-tight',
+                  cliente.lessons_remaining !== undefined &&
+                    (cliente.lessons_remaining >= 6
+                      ? 'text-[#00C781] drop-shadow-[0_0_10px_rgba(0,199,129,0.35)]'
+                      : cliente.lessons_remaining >= 2 && cliente.lessons_remaining <= 4
+                        ? 'text-[#FFC107]'
+                        : cliente.lessons_remaining <= 1
+                          ? 'text-[#FF3B30]'
+                          : 'text-primary'),
+                )}
+              >
+                {cliente.lessons_remaining !== undefined ? cliente.lessons_remaining : '–'}
+              </span>
+            </div>
+          </div>
 
           {cliente.scheda_attiva && (
             <div className="mt-2">
@@ -184,11 +206,11 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
                   Profilo
                 </Button>
               </Link>
-              <Link href={`/dashboard/atleti/${cliente.id}/chat`}>
+              <Link href={`/dashboard/chat?with=${cliente.id}`}>
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Chat con cliente"
+                  aria-label={`Chat con ${cliente.nome ?? ''} ${cliente.cognome ?? ''}`.trim() || 'Chat con cliente'}
                   className="min-h-[44px] min-w-[44px] h-10 w-10 rounded-full bg-background-secondary/35 border border-white/5 hover:border-primary/20 hover:bg-primary/10 transition-all duration-300 touch-manipulation"
                 >
                   <MessageSquare className="h-4 w-4" />

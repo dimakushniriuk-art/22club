@@ -8,6 +8,8 @@ import type {
   EditAppointmentData,
 } from '@/types/appointment'
 import { useAppointments } from '@/hooks/appointments/use-appointments'
+import { useLessonCounters } from '@/hooks/use-lesson-counters'
+import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
@@ -104,6 +106,26 @@ export default function AppuntamentiPage() {
     action: 'delete' | 'cancel'
     fromDetail: boolean
   } | null>(null)
+  const [lessonRefetchKey, setLessonRefetchKey] = useState(0)
+
+  const athleteIds = useMemo(
+    () =>
+      [...new Set(appointments.map((a) => a.athlete_id).filter(Boolean))] as string[],
+    [appointments],
+  )
+  const rimastiMap = useLessonCounters(athleteIds, lessonRefetchKey)
+  const lessonStatsMap = useLessonStatsBulk(athleteIds, lessonRefetchKey)
+  const lessonsRemainingMap = useMemo(() => {
+    const m = new Map<string, number>()
+    athleteIds.forEach((id) => {
+      const fromCounter = rimastiMap.get(id)
+      const stats = lessonStatsMap.get(id)
+      const computed = stats != null ? stats.acquired - stats.used : undefined
+      const value = fromCounter !== undefined ? fromCounter : computed
+      if (value !== undefined) m.set(id, value)
+    })
+    return m
+  }, [athleteIds, rimastiMap, lessonStatsMap])
 
   // Filtra appuntamenti
   const filteredAppointments = useMemo(() => {
@@ -144,6 +166,7 @@ export default function AppuntamentiPage() {
       setLoading(true)
       try {
         await handleCompleteHook(appointment.id)
+        setLessonRefetchKey((k) => k + 1)
       } finally {
         setLoading(false)
       }
@@ -222,6 +245,7 @@ export default function AppuntamentiPage() {
       } else {
         await handleCancelHook(confirmState.appointment.id)
       }
+      setLessonRefetchKey((k) => k + 1)
       if (confirmState.fromDetail) {
         setShowDetail(false)
         setSelectedAppointment(null)
@@ -309,6 +333,7 @@ export default function AppuntamentiPage() {
             formatDateTime={formatDateTime}
             getStatusColorClasses={getStatusColorClasses}
             getAppointmentType={getAppointmentType}
+            lessonsRemainingMap={lessonsRemainingMap}
           />
         </div>
 

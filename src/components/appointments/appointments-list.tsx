@@ -29,6 +29,8 @@ interface AppointmentsListProps {
   getAppointmentType: (apt: AppointmentTable) => string
   /** Tema colori: teal (default) per PT/dashboard, amber per massaggiatore */
   theme?: 'teal' | 'amber'
+  /** Mappa athlete_id -> lezioni rimanenti (per mostrare "Rimasti" in ogni riga) */
+  lessonsRemainingMap?: Map<string, number>
 }
 
 export function AppointmentsList({
@@ -47,6 +49,7 @@ export function AppointmentsList({
   getStatusColorClasses,
   getAppointmentType,
   theme = 'teal',
+  lessonsRemainingMap,
 }: AppointmentsListProps) {
   if (appointmentsLoading) {
     return <SkeletonAppointmentsList rows={6} className="py-4" />
@@ -126,6 +129,7 @@ export function AppointmentsList({
           formatDateTime={formatDateTime}
           getStatusColorClasses={getStatusColorClasses}
           getAppointmentType={getAppointmentType}
+          lessonsRemaining={apt.athlete_id ? lessonsRemainingMap?.get(apt.athlete_id) : undefined}
         />
       ))}
     </div>

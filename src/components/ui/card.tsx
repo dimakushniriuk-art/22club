@@ -1,8 +1,10 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
-import { designSystem } from '@/config/design-system'
 import { masterAnimations, masterCards } from '@/config/master-design.config'
-import { gradients } from '@/lib/design-tokens'
+
+const glassHighlight = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
+/** Classe radius fissa per evitare hydration mismatch (stesso valore di designSystem.radius.lg) */
+const CARD_RADIUS = 'rounded-[16px]'
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'outlined' | 'athlete' | 'trainer' | 'admin' | 'glass'
@@ -18,29 +20,26 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       athlete: masterCards.athlete.base,
       trainer: masterCards.trainer.base,
       admin: masterCards.admin.base,
-      glass: 'border border-primary/40 backdrop-blur-xl',
+      glass: cn(
+        'bg-white/[0.04] border border-white/10 backdrop-blur-xl',
+        glassHighlight,
+      ),
     }
 
     // Verifica se className contiene !bg-transparent o bg-transparent
     const shouldSkipBackground =
       className?.includes('!bg-transparent') || className?.includes('bg-transparent')
 
-    const isGlass = variant === 'glass'
-
     return (
       <div
         ref={ref}
         className={cn(
-          // Base styles usando design tokens
-          `rounded-[${designSystem.radius.lg}] p-4`,
-          'text-text-primary',
+          CARD_RADIUS,
+          'p-4 text-text-primary',
           masterAnimations.transition,
           masterAnimations.focus.ring,
           masterAnimations.focus.outline,
-          // Variant (solo se className non contiene !bg-transparent o bg-transparent)
           !shouldSkipBackground && variants[variant],
-          isGlass && 'border',
-          // Hoverable effect (solo se non è trasparente)
           hoverable &&
             !shouldSkipBackground &&
             cn(
@@ -50,7 +49,6 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
             ),
           className,
         )}
-        style={isGlass ? { background: gradients.glassHeaderTeal, boxShadow: gradients.glassHeaderShadow } : undefined}
         {...props}
       />
     )

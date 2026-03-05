@@ -17,11 +17,8 @@ interface CommunicationsSearchProps {
 
 export function CommunicationsSearch({ searchTerm, onSearchChange }: CommunicationsSearchProps) {
   return (
-    <Card
-      variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
-    >
-      <CardContent className="p-4 relative">
+    <Card variant="elevated" className="border border-border">
+      <CardContent className="p-4">
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <Input

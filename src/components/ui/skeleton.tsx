@@ -16,7 +16,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
 
     const animations = {
       pulse: 'animate-pulse',
-      wave: 'animate-pulse bg-gradient-to-r from-background-secondary via-background-tertiary to-background-secondary bg-[length:200%_100%]',
+      wave: 'animate-pulse',
       none: '',
     }
 

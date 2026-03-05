@@ -242,6 +242,12 @@ export default function DesignSystemPage() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-16 px-4 py-10">
+        <section className="rounded-xl border border-border bg-background-secondary p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+          <h2 className="mb-2 text-lg font-semibold text-text-primary">Principi di stile</h2>
+          <p className="text-sm text-text-secondary">
+            In tutto il progetto: <strong>riempimento unico</strong> (no gradienti bicolore), <strong>bordo con sfumatura leggera</strong> sempre visibile (inset highlight), <strong>forme coerenti</strong> (rounded-xl, rounded-lg). Button, Badge, Avatar, Card, Progress, Select e Skeleton seguono queste regole.
+          </p>
+        </section>
         <FoundationsColors />
         <Separator className="bg-border" />
         <FoundationsTypography />

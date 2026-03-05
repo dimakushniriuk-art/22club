@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils'
 import { NewAppointmentButton } from './_components/new-appointment-button'
 import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
+import { useLessonCounters } from '@/hooks/use-lesson-counters'
+import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 
 const logger = createLogger('DashboardPage')
 
@@ -67,6 +69,8 @@ interface AgendaEvent {
   description?: string
   starts_at?: string
   ends_at?: string
+  /** Lezioni rimanenti atleta (per visualizzazione in agenda) */
+  lessons_remaining?: number
 }
 
 type TodayAppointment = {
@@ -302,6 +306,28 @@ export default function DashboardPage() {
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [user, loadAgenda])
 
+  const athleteIds = useMemo(
+    () => agendaData.map((e) => e.athlete_id).filter(Boolean) as string[],
+    [agendaData],
+  )
+  const rimastiMap = useLessonCounters(athleteIds)
+  const lessonStatsMap = useLessonStatsBulk(athleteIds)
+  const initialEvents = useMemo(
+    () =>
+      agendaData.map((e) => {
+        if (!e.athlete_id) return { ...e, lessons_remaining: undefined }
+        const fromCounter = rimastiMap.get(e.athlete_id)
+        const stats = lessonStatsMap.get(e.athlete_id)
+        const computed =
+          stats != null ? stats.acquired - stats.used : undefined
+        return {
+          ...e,
+          lessons_remaining: fromCounter !== undefined ? fromCounter : computed,
+        }
+      }),
+    [agendaData, rimastiMap, lessonStatsMap],
+  )
+
   return (
     <div
       className="relative flex flex-col h-full space-y-10 px-6 py-6 overflow-y-auto"
@@ -315,7 +341,7 @@ export default function DashboardPage() {
       </div>
 
       <section className="shrink-0" aria-label="Azioni rapide">
-        <div className="grid gap-6 md:grid-cols-5">
+        <div className="grid gap-3 md:grid-cols-5">
           {QUICK_ACTIONS.map((item) =>
             item.href ? (
               <Link
@@ -323,7 +349,7 @@ export default function DashboardPage() {
                 href={item.href}
                 prefetch
                 aria-label={`${item.label}, ${item.sublabel}`}
-                className="group relative flex min-h-[180px] flex-col items-center justify-center overflow-hidden rounded-2xl bg-background-secondary/42 backdrop-blur-2xl ring-1 ring-white/8 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-glow active:scale-[0.98] p-6 text-center"
+                className="group relative flex min-h-[90px] flex-col items-center justify-center overflow-hidden rounded-xl bg-background-secondary/42 backdrop-blur-2xl ring-1 ring-white/8 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-glow active:scale-[0.98] p-3 text-center"
               >
                 <div className="pointer-events-none absolute inset-0">
                   <div
@@ -333,15 +359,15 @@ export default function DashboardPage() {
                     )}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-white/5" />
-                  <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 via-primary/40 to-transparent opacity-70" />
+                  <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-primary/60 via-primary/40 to-transparent opacity-70" />
                 </div>
-                <div className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/6 ring-1 ring-white/12 shadow-inner transition-all duration-300 group-hover:scale-105 group-hover:ring-primary/25 text-text-primary/90 group-hover:text-primary">
-                  <item.icon className="h-7 w-7" />
+                <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/6 ring-1 ring-white/12 shadow-inner transition-all duration-300 group-hover:scale-105 group-hover:ring-primary/25 text-text-primary/90 group-hover:text-primary">
+                  <item.icon className="h-3.5 w-3.5" />
                 </div>
-                <span className="relative z-10 mt-3 block text-sm font-semibold text-text-primary">
+                <span className="relative z-10 mt-1.5 block text-xs font-semibold text-text-primary">
                   {item.label}
                 </span>
-                <span className="relative z-10 mt-1 block text-[11px] text-text-secondary/90">
+                <span className="relative z-10 mt-0.5 block text-[10px] text-text-secondary/90">
                   {item.sublabel}
                 </span>
               </Link>
@@ -383,7 +409,7 @@ export default function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <AgendaClient initialEvents={agendaData} />
+          <AgendaClient initialEvents={initialEvents} />
         )}
       </section>
     </div>

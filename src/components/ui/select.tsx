@@ -27,9 +27,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ) => {
     const variants = {
       default:
-        'bg-background-secondary/50 border-border text-text-primary backdrop-blur-sm hover:bg-background-secondary/70 focus:border-input-focus focus:ring-2 focus:ring-primary/20 transition-all duration-200',
+        'bg-background-secondary text-text-primary hover:bg-background-tertiary/80 focus:border-input-focus focus:ring-2 focus:ring-primary/20 transition-all duration-200',
       outline:
-        'bg-background-secondary/60 border-border text-text-primary backdrop-blur-sm hover:bg-background-secondary/80 focus:border-input-focus focus:ring-2 focus:ring-primary/20 transition-all duration-200',
+        'bg-background-secondary text-text-primary hover:bg-background-tertiary/80 focus:border-input-focus focus:ring-2 focus:ring-primary/20 transition-all duration-200',
       ghost:
         'bg-transparent border-transparent text-text-primary hover:bg-background-secondary/40 transition-all duration-200',
     }
@@ -55,11 +55,13 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <div className="relative">
           <select
             className={cn(
-              'appearance-none flex w-full rounded-xl border text-text-primary px-4 py-2.5 text-sm shadow-md backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200',
-              'bg-gradient-to-br from-background-secondary/50 to-background-tertiary/30',
-              variants[variant],
-              sizes[size],
+              'appearance-none flex items-center w-full rounded-xl border border-primary/35 bg-background-secondary/80 text-text-primary px-4 py-2.5 text-base outline-none',
+              'min-h-[44px] transition-all duration-200',
+              'hover:bg-background-secondary focus:border-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-0',
+              'disabled:cursor-not-allowed disabled:opacity-50',
               errorMessage && 'border-red-500/50 focus-visible:ring-red-500/30',
+              sizes[size],
               className,
             )}
             ref={ref}

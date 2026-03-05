@@ -196,36 +196,22 @@ export function useCommunicationsPage() {
           return
         }
 
-        // Chiama API route per calcolare count (usa service role key lato server)
-        const response = await fetch('/api/communications/count-recipients', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ filter }),
-        })
+        const response = await fetch('/api/communications/recipients/count', { method: 'GET' })
 
-        if (!response.ok) {
-          logger.error('Error counting recipients', undefined, {
-            status: response.status,
-            statusText: response.statusText,
-          })
-          setRecipientCount(null)
+        if (response.status === 404 || !response.ok) {
+          setRecipientCount(0)
           return
         }
 
-        // Proteggi da risposte vuote che causano "Unexpected end of JSON input"
         const text = await response.text()
         if (!text || text.trim().length === 0) {
-          logger.warn('Risposta vuota da /api/communications/count-recipients')
           setRecipientCount(0)
           return
         }
         const data = JSON.parse(text)
-        setRecipientCount(data.count || 0)
-      } catch (error) {
-        logger.error('Error calculating recipient count', error)
-        setRecipientCount(null)
+        setRecipientCount(data.count ?? 0)
+      } catch {
+        setRecipientCount(0)
       }
     }
 

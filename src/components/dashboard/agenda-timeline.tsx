@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { createLogger } from '@/lib/logger'
+import { cn } from '@/lib/utils'
 import { RescheduleAppointmentModal } from './reschedule-appointment-modal'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import '@/styles/agenda-animations.css'
@@ -37,6 +38,8 @@ interface AgendaEvent {
   description?: string
   starts_at?: string // Data/ora inizio per riprogrammamento
   ends_at?: string // Data/ora fine per riprogrammamento
+  /** Lezioni rimanenti atleta (visualizzazione in agenda) */
+  lessons_remaining?: number
 }
 
 interface AgendaTimelineProps {
@@ -126,7 +129,7 @@ export function AgendaTimeline({
     if (onViewProfile && event.athlete_id) {
       onViewProfile(event.athlete_id, event.athlete)
     } else if (event.athlete_id) {
-      router.push(`/dashboard/clienti/${event.athlete_id}`)
+      router.push(`/dashboard/atleti/${event.athlete_id}`)
     }
   }
 
@@ -387,7 +390,25 @@ export function AgendaTimeline({
                   <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-primary animate-pulse" />
                 )}
 
-                <div className="flex items-center gap-4 p-4">
+                <div className="relative flex items-center gap-4 p-4">
+                  {/* Rimasti - centrato orizzontalmente e verticalmente nella riga */}
+                  {typeof event.lessons_remaining === 'number' && (
+                    <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+                      <span
+                        className={cn(
+                          'text-2xl font-bold tabular-nums',
+                          event.lessons_remaining >= 6 && 'text-[#00C781]',
+                          event.lessons_remaining >= 2 &&
+                            event.lessons_remaining <= 4 &&
+                            'text-[#FFC107]',
+                          event.lessons_remaining <= 1 && 'text-[#FF3B30]',
+                        )}
+                      >
+                        {event.lessons_remaining}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Time section - più prominente */}
                   <div className="flex min-w-[85px] flex-col items-start">
                     <div
@@ -444,101 +465,100 @@ export function AgendaTimeline({
                     </div>
                   </div>
 
-                  {/* Action Buttons - migliorati e organizzati */}
-                  <div className="flex-shrink-0 flex items-center gap-1.5">
-                    {/* Bottoni Primari - sempre visibili */}
-
+                  {/* Action Buttons - migliorati e organizzati, con etichette sotto le icone */}
+                  <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
                     {/* Button Visualizza Profilo Atleta */}
                     <Button
                       variant="ghost"
                       onClick={() => handleViewProfile(event)}
-                      className="rounded-full p-3 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+                      className="rounded-full p-3 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 flex flex-col items-center justify-center gap-1 flex-shrink-0 min-w-[52px]"
                       aria-label={`Visualizza profilo di ${event.athlete}`}
                       title={`Profilo di ${event.athlete}`}
                     >
                       <div className="h-5 w-5">
                         <User className="h-5 w-5" />
                       </div>
+                      <span className="text-[10px] font-medium text-text-secondary leading-tight">Profilo</span>
                     </Button>
 
                     {/* Button Schede Allenamento */}
                     <Button
                       variant="ghost"
                       onClick={() => handleViewSchede(event)}
-                      className="rounded-full p-3 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+                      className="rounded-full p-3 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 flex flex-col items-center justify-center gap-1 flex-shrink-0 min-w-[52px]"
                       aria-label={`Visualizza schede di allenamento di ${event.athlete}`}
                       title={`Schede di ${event.athlete}`}
                     >
                       <div className="h-5 w-5">
                         <Dumbbell className="h-5 w-5" />
                       </div>
+                      <span className="text-[10px] font-medium text-text-secondary leading-tight">Schede</span>
                     </Button>
 
                     {/* Bottoni Condizionali basati su stato */}
                     {false && event.status === 'scheduled' && (
                       <>
-                        {/* Button Inizia Allenamento - solo per eventi programmati */}
                         <Button
                           variant="ghost"
                           onClick={() => handleStartWorkout(event)}
-                          className="rounded-full p-3 bg-success/10 text-success hover:bg-success/20 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+                          className="rounded-full p-3 bg-success/10 text-success hover:bg-success/20 transition-all duration-200 flex flex-col items-center justify-center gap-1 flex-shrink-0 min-w-[52px]"
                           aria-label={`Inizia allenamento con ${event.athlete}`}
                           title="Inizia allenamento"
                         >
                           <div className="h-5 w-5">
                             <Play className="h-5 w-5" />
                           </div>
+                          <span className="text-[10px] font-medium text-text-secondary leading-tight">Inizia</span>
                         </Button>
                       </>
                     )}
 
                     {event.status === 'in-progress' && (
                       <>
-                        {/* Button Completa - solo per eventi in corso */}
                         <Button
                           variant="ghost"
                           onClick={() => handleComplete(event.id)}
-                          className="rounded-full p-3 bg-success/10 text-success hover:bg-success/20 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+                          className="rounded-full p-3 bg-success/10 text-success hover:bg-success/20 transition-all duration-200 flex flex-col items-center justify-center gap-1 flex-shrink-0 min-w-[52px]"
                           aria-label={`Completa appuntamento con ${event.athlete}`}
                           title="Completa appuntamento"
                         >
                           <div className="h-5 w-5">
                             <CheckCircle className="h-5 w-5" />
                           </div>
+                          <span className="text-[10px] font-medium text-text-secondary leading-tight">Completa</span>
                         </Button>
                       </>
                     )}
 
-                    {/* Bottoni Secondari - sempre disponibili */}
+                    {/* Button Modifica/Riprogramma */}
                     {(event.status === 'scheduled' || event.status === 'in-progress') && (
-                      <>
-                        {/* Button Modifica/Riprogramma */}
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleEdit(event)}
-                          className="rounded-full p-3 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 flex items-center justify-center flex-shrink-0"
-                          aria-label={`Modifica appuntamento con ${event.athlete}`}
-                          title="Modifica appuntamento"
-                        >
-                          <div className="h-5 w-5">
-                            <Edit className="h-5 w-5" />
-                          </div>
-                        </Button>
-                      </>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleEdit(event)}
+                        className="rounded-full p-3 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 flex flex-col items-center justify-center gap-1 flex-shrink-0 min-w-[52px]"
+                        aria-label={`Modifica appuntamento con ${event.athlete}`}
+                        title="Modifica appuntamento"
+                      >
+                        <div className="h-5 w-5">
+                          <Edit className="h-5 w-5" />
+                        </div>
+                        <span className="text-[10px] font-medium text-text-secondary leading-tight">Modifica</span>
+                      </Button>
                     )}
 
-                    {/* Button Elimina - sempre disponibile */}
+                    {/* Button Elimina */}
                     {onDeleteAppointment && (
                       <Button
                         variant="ghost"
                         onClick={() => handleDelete(event.id)}
-                        className="rounded-full p-3 bg-state-error/10 text-state-error hover:bg-state-error/20 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+                        className="rounded-full p-3 bg-state-error/10 text-state-error hover:bg-state-error/20 transition-all duration-200 flex flex-col items-center justify-center gap-1 flex-shrink-0 min-w-[52px]"
                         aria-label={`Elimina appuntamento con ${event.athlete}`}
                         title="Elimina appuntamento"
                       >
                         <div className="h-5 w-5">
                           <Trash2 className="h-5 w-5" />
                         </div>
+                        <span className="text-[10px] font-medium text-text-secondary leading-tight">Elimina</span>
                       </Button>
                     )}
                   </div>

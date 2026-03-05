@@ -44,7 +44,7 @@ function CommunicationsListSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
-        <Card key={i} variant="trainer" className="border-blue-500/30 overflow-hidden">
+        <Card key={i} variant="elevated" className="border border-border overflow-hidden">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
@@ -127,18 +127,12 @@ export function CommunicationsList({
 
   if (communications.length === 0) {
     return (
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl"
-      >
-        <CardContent className="py-12 text-center relative">
+      <Card variant="elevated" className="border border-border">
+        <CardContent className="py-12 text-center">
           <div className="mb-4 flex justify-center">{emptyState.icon}</div>
           <h3 className="text-text-primary mb-2 text-lg font-medium">{emptyState.title}</h3>
           <p className="text-text-secondary mb-4 text-sm">{emptyState.description}</p>
-          <Button
-            onClick={onNewCommunication}
-            className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-          >
+          <Button variant="primary" onClick={onNewCommunication}>
             <Plus className="mr-2 h-4 w-4" />
             Crea comunicazione
           </Button>
@@ -167,10 +161,7 @@ export function CommunicationsList({
 
       {/* Controlli Paginazione */}
       {totalCount !== null && totalCount !== undefined && totalCount > 0 && (
-        <Card
-          variant="trainer"
-          className="border-blue-500/30 bg-linear-to-br from-background-secondary/80 to-background-tertiary/80"
-        >
+        <Card variant="default" className="border border-border">
           <CardContent className="flex items-center justify-between p-4">
             <div className="text-text-secondary text-sm">
               Mostrando {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount ?? 0)} -{' '}
@@ -185,7 +176,7 @@ export function CommunicationsList({
                 size="sm"
                 onClick={onPrevPage}
                 disabled={!hasPrevPage || loading}
-                className="border-border/50 bg-background-secondary/50 hover:bg-background-secondary"
+                className="border-border hover:bg-background-tertiary/50 text-text-secondary"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Precedente
@@ -202,7 +193,7 @@ export function CommunicationsList({
                 size="sm"
                 onClick={onNextPage}
                 disabled={!hasNextPage || loading}
-                className="border-border/50 bg-background-secondary/50 hover:bg-background-secondary"
+                className="border-border hover:bg-background-tertiary/50 text-text-secondary"
               >
                 Successiva
                 <ChevronRight className="h-4 w-4" />

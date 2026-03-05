@@ -366,18 +366,15 @@ function AthleteSelector({ selectedAthletes, onSelectionChange }: AthleteSelecto
         setLoading(true)
         const response = await fetch('/api/communications/list-athletes')
 
-        if (!response.ok) {
-          logger.error('Error fetching athletes', null, {
-            status: response.status,
-            statusText: response.statusText,
-          })
+        if (response.status === 404 || !response.ok) {
+          setAthletes([])
           return
         }
 
         const data = await response.json()
-        setAthletes(data.athletes || [])
-      } catch (error) {
-        logger.error('Error fetching athletes', error)
+        setAthletes(data.athletes ?? [])
+      } catch {
+        setAthletes([])
       } finally {
         setLoading(false)
       }

@@ -9,6 +9,8 @@ import type {
   EditAppointmentData,
 } from '@/types/appointment'
 import { useAppointments } from '@/hooks/appointments/use-appointments'
+import { useLessonCounters } from '@/hooks/use-lesson-counters'
+import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
@@ -91,6 +93,24 @@ export default function MassaggiatoreAppuntamentiPage() {
     () => appointments.filter((a) => a.type === 'massaggio'),
     [appointments],
   )
+  const athleteIds = useMemo(
+    () =>
+      [...new Set(massaggiOnly.map((a) => a.athlete_id).filter(Boolean))] as string[],
+    [massaggiOnly],
+  )
+  const rimastiMap = useLessonCounters(athleteIds)
+  const lessonStatsMap = useLessonStatsBulk(athleteIds)
+  const lessonsRemainingMap = useMemo(() => {
+    const m = new Map<string, number>()
+    athleteIds.forEach((id) => {
+      const fromCounter = rimastiMap.get(id)
+      const stats = lessonStatsMap.get(id)
+      const computed = stats != null ? stats.acquired - stats.used : undefined
+      const value = fromCounter !== undefined ? fromCounter : computed
+      if (value !== undefined) m.set(id, value)
+    })
+    return m
+  }, [athleteIds, rimastiMap, lessonStatsMap])
 
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentTable | null>(null)
   const [editingAppointment, setEditingAppointment] = useState<EditAppointmentData | null>(null)
@@ -287,6 +307,7 @@ export default function MassaggiatoreAppuntamentiPage() {
             getStatusColorClasses={getStatusColorClasses}
             getAppointmentType={getAppointmentType}
             theme="amber"
+            lessonsRemainingMap={lessonsRemainingMap}
           />
         </div>
       </div>

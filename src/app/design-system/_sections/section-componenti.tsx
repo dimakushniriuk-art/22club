@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Save, X } from 'lucide-react'
+import { Box, Save, X, User } from 'lucide-react'
 import {
   Avatar,
   Badge,
@@ -48,44 +48,69 @@ export function SectionComponenti() {
         Componenti
       </h2>
       <p className="mb-6 text-sm text-text-secondary">
-        Set da <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">@/components/ui</code>. Varianti e dimensioni in uso nel progetto.
+        Set da <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">@/components/ui</code>. Regole comuni: <strong>riempimento unico</strong> (no gradienti), <strong>bordo con sfumatura leggera</strong> sempre visibile, <strong>forme coerenti</strong> (rounded-xl / rounded-lg). Varianti e dimensioni in uso nel progetto.
       </p>
       <div className="space-y-8">
         <Card variant="default" className={cardFrameClass}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Button</h3>
           <p className="mb-4 text-xs text-text-muted">
-            Primary per azione principale, Secondary/Outline per secondarie, Ghost per terziarie, Destructive per eliminazioni.
+            Tutti i tipi di pulsante usati nel progetto. Primary/default per azione principale, Secondary/Outline per secondarie, Ghost per terziarie, Destructive per eliminazioni, Success per conferme, Warning per attenzione, Trainer per contesti PT, Link per link stilizzati.
           </p>
+          {/* Varianti: all from @/components/ui/button.tsx */}
           <p className="mb-2 text-xs font-medium text-text-tertiary">Varianti</p>
           <div className="mb-6 flex flex-wrap items-end gap-4">
-            {[
-              { variant: 'primary' as const, label: 'primary' },
-              { variant: 'secondary' as const, label: 'secondary' },
-              { variant: 'outline' as const, label: 'outline' },
-              { variant: 'ghost' as const, label: 'ghost' },
-              { variant: 'destructive' as const, label: 'destructive' },
-              { variant: 'success' as const, label: 'success' },
-            ].map(({ variant, label }) => (
+            {(
+              [
+                { variant: 'primary' as const, label: 'Primary' },
+                { variant: 'default' as const, label: 'Default' },
+                { variant: 'secondary' as const, label: 'Secondary' },
+                { variant: 'outline' as const, label: 'Outline' },
+                { variant: 'ghost' as const, label: 'Ghost' },
+                { variant: 'destructive' as const, label: 'Destructive' },
+                { variant: 'success' as const, label: 'Success' },
+                { variant: 'warning' as const, label: 'Warning' },
+                { variant: 'trainer' as const, label: 'Trainer' },
+                { variant: 'link' as const, label: 'Link' },
+              ] as const
+            ).map(({ variant, label }) => (
               <div key={variant} className="flex flex-col items-center gap-1.5">
-                <Button variant={variant}>{label.charAt(0).toUpperCase() + label.slice(1)}</Button>
-                <span className="text-xs text-text-muted">{label}</span>
+                <Button variant={variant}>{label}</Button>
+                <span className="text-xs text-text-muted">{variant}</span>
               </div>
             ))}
           </div>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Dimensioni (Primary)</p>
           <div className="mb-6 flex flex-wrap items-end gap-4">
-            <div className="flex flex-col items-center gap-1.5">
-              <Button variant="primary" size="sm">Small</Button>
-              <span className="text-xs text-text-muted">sm</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <Button variant="primary">Default</Button>
-              <span className="text-xs text-text-muted">md</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <Button variant="primary" size="lg">Large</Button>
-              <span className="text-xs text-text-muted">lg</span>
-            </div>
+            {(
+              [
+                { size: 'sm' as const, label: 'Small' },
+                { size: 'md' as const, label: 'Default' },
+                { size: 'lg' as const, label: 'Large' },
+                { size: 'xl' as const, label: 'XL' },
+              ] as const
+            ).map(({ size, label }) => (
+              <div key={size} className="flex flex-col items-center gap-1.5">
+                <Button variant="primary" size={size}>{label}</Button>
+                <span className="text-xs text-text-muted">{size}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">Solo icona (size)</p>
+          <div className="mb-6 flex flex-wrap items-end gap-4">
+            {(
+              [
+                { size: 'icon-sm' as const },
+                { size: 'icon' as const },
+                { size: 'icon-lg' as const },
+              ] as const
+            ).map(({ size }) => (
+              <div key={size} className="flex flex-col items-center gap-1.5">
+                <Button variant="ghost" size={size} aria-label="Indietro">
+                  <X className="h-4 w-4" />
+                </Button>
+                <span className="text-xs text-text-muted">{size}</span>
+              </div>
+            ))}
           </div>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Stati (loading)</p>
           <div className="mb-6 flex flex-wrap items-end gap-4">
@@ -114,17 +139,30 @@ export function SectionComponenti() {
               </Button>
               <span className="text-xs text-text-muted">icon + testo</span>
             </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <Button variant="trainer" className="gap-2">
+                <User className="h-4 w-4" />
+                Trainer
+              </Button>
+              <span className="text-xs text-text-muted">trainer + icon</span>
+            </div>
           </div>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Stati (disabled)</p>
           <div className="flex flex-wrap items-end gap-4">
-            {[
-              { variant: 'primary' as const },
-              { variant: 'secondary' as const },
-              { variant: 'outline' as const },
-              { variant: 'ghost' as const },
-              { variant: 'destructive' as const },
-              { variant: 'success' as const },
-            ].map(({ variant }) => (
+            {(
+              [
+                'primary',
+                'default',
+                'secondary',
+                'outline',
+                'ghost',
+                'destructive',
+                'success',
+                'warning',
+                'trainer',
+                'link',
+              ] as const
+            ).map((variant) => (
               <div key={variant} className="flex flex-col items-center gap-1.5">
                 <Button variant={variant} disabled>
                   {variant.charAt(0).toUpperCase() + variant.slice(1)}
@@ -137,21 +175,27 @@ export function SectionComponenti() {
         <Card variant="default" className={cardFrameClass}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Badge</h3>
           <p className="mb-4 text-xs text-text-muted">
-            Etichette per stati (success, warning, error), ruoli o categorie. Primary per accent, Outline/Neutral per secondari.
+            Tutti i tipi usati nel progetto. Riempimento unico, bordo con sfumatura. Primary/default per accent, Success/Warning/Error per stati, Outline/Neutral/Secondario per secondari, Info per informativi, Destructive per eliminazioni.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Varianti</p>
           <div className="mb-6 flex flex-wrap items-end gap-4">
-            {[
-              { variant: 'primary' as const, label: 'primary' },
-              { variant: 'success' as const, label: 'success' },
-              { variant: 'warning' as const, label: 'warning' },
-              { variant: 'error' as const, label: 'error' },
-              { variant: 'outline' as const, label: 'outline' },
-              { variant: 'neutral' as const, label: 'neutral' },
-            ].map(({ variant, label }) => (
+            {(
+              [
+                { variant: 'primary' as const, label: 'Primary' },
+                { variant: 'default' as const, label: 'Default' },
+                { variant: 'secondary' as const, label: 'Secondary' },
+                { variant: 'success' as const, label: 'Success' },
+                { variant: 'warning' as const, label: 'Warning' },
+                { variant: 'error' as const, label: 'Error' },
+                { variant: 'destructive' as const, label: 'Destructive' },
+                { variant: 'info' as const, label: 'Info' },
+                { variant: 'neutral' as const, label: 'Neutral' },
+                { variant: 'outline' as const, label: 'Outline' },
+              ] as const
+            ).map(({ variant, label }) => (
               <div key={variant} className="flex flex-col items-center gap-1.5">
-                <Badge variant={variant}>{label.charAt(0).toUpperCase() + label.slice(1)}</Badge>
-                <span className="text-xs text-text-muted">{label}</span>
+                <Badge variant={variant}>{label}</Badge>
+                <span className="text-xs text-text-muted">{variant}</span>
               </div>
             ))}
           </div>
@@ -262,7 +306,7 @@ export function SectionComponenti() {
         <Card variant="default" className={cardFrameClass}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Switch & Progress</h3>
           <p className="mb-4 text-xs text-text-muted">
-            Switch per toggle on/off. Progress per indicare avanzamento o percentuale.
+            Switch per toggle on/off. Progress: riempimento unico, track con bordo e sfumatura. Varianti default, success, warning, error.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Switch</p>
           <div className="mb-4 flex flex-wrap items-center gap-6">
@@ -281,10 +325,29 @@ export function SectionComponenti() {
               <span className="text-xs text-text-muted">on</span>
             </div>
           </div>
-          <p className="mb-2 text-xs font-medium text-text-tertiary">Progress</p>
-          <div className="w-48">
-            <Progress value={60} className="h-2" />
-            <span className="mt-1 block text-xs text-text-muted">60%</span>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">Progress – varianti</p>
+          <div className="mb-4 flex flex-wrap items-end gap-6">
+            {(['default', 'success', 'warning', 'error'] as const).map((v) => (
+              <div key={v} className="flex flex-col items-center gap-1.5 w-36">
+                <Progress value={60} variant={v} className="h-2" />
+                <span className="text-xs text-text-muted">{v}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">Progress – dimensioni</p>
+          <div className="flex flex-wrap items-end gap-6">
+            <div className="flex flex-col gap-1.5 w-48">
+              <Progress value={40} size="sm" />
+              <span className="text-xs text-text-muted">sm</span>
+            </div>
+            <div className="flex flex-col gap-1.5 w-48">
+              <Progress value={70} size="md" />
+              <span className="text-xs text-text-muted">md</span>
+            </div>
+            <div className="flex flex-col gap-1.5 w-48">
+              <Progress value={90} size="lg" />
+              <span className="text-xs text-text-muted">lg</span>
+            </div>
           </div>
         </Card>
         <Card variant="default" className={cardFrameClass}>

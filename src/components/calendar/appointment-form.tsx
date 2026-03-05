@@ -103,12 +103,13 @@ export function AppointmentForm({
   defaultType,
   defaultColor,
 }: AppointmentFormProps) {
-  // Calcola orario fine (+1 ora)
+  // Calcola orario fine (+90 minuti di default)
   function calculateEndTime(startTime: string): string {
     const [hours, minutes] = startTime.split(':').map(Number)
-    let endHour = hours + 1
-    if (endHour >= 24) endHour = 0
-    return `${String(endHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+    const totalMinutes = hours * 60 + minutes + 90
+    const endHour = Math.floor(totalMinutes / 60) % 24
+    const endMinute = totalMinutes % 60
+    return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
   }
 
   const getDefaultDateTime = useCallback(() => {
@@ -326,15 +327,7 @@ export function AppointmentForm({
   const handleStartTimeChange = (value: string) => {
     setFormData((prev) => {
       if (value) {
-        const [hours, minutes] = value.split(':').map(Number)
-        let endHour = hours + 1
-        const endMinute = minutes
-
-        if (endHour >= 24) {
-          endHour = 0
-        }
-
-        const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
+        const endTimeStr = calculateEndTime(value)
         return { ...prev, start_time: value, end_time: endTimeStr }
       }
       return { ...prev, start_time: value }

@@ -24,10 +24,7 @@ export function CommunicationsHeader({ onNewCommunication }: CommunicationsHeade
           Invia notifiche push, email e SMS ai tuoi atleti
         </p>
       </div>
-      <Button
-        onClick={onNewCommunication}
-        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-      >
+      <Button variant="primary" onClick={onNewCommunication}>
         <Plus className="mr-2 h-4 w-4" />
         Nuova Comunicazione
       </Button>

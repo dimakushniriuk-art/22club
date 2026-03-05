@@ -527,7 +527,7 @@ export default function AbbonamentiPage() {
 
             // Usufruiti/Rimasti sempre da ledger+counter (ignora colonne RPC per coerenza)
             const rpcAthleteIds = [...new Set(typedRpcData.map((r) => r.athlete_id).filter(Boolean))]
-            const [countersRes, ledgerRes] = await Promise.all([
+            const [countersRes, ledgerDebitRes, ledgerCreditRes] = await Promise.all([
               rpcAthleteIds.length > 0
                 ? supabaseClient
                     .from('lesson_counters')
@@ -543,36 +543,62 @@ export default function AbbonamentiPage() {
                     .eq('entry_type', 'DEBIT')
                     .eq('service_type', currentServiceType)
                 : Promise.resolve({ data: [], error: null }),
+              rpcAthleteIds.length > 0
+                ? supabaseClient
+                    .from('credit_ledger')
+                    .select('athlete_id, entry_type, qty')
+                    .in('athlete_id', rpcAthleteIds)
+                    .in('entry_type', ['CREDIT', 'REVERSAL'])
+                    .eq('service_type', currentServiceType)
+                : Promise.resolve({ data: [], error: null }),
             ])
 
             const remainingMap = new Map<string, number>()
             const usedMap = new Map<string, number>()
+            const creditedMap = new Map<string, number>()
             if (countersRes.data) {
               ;(countersRes.data as { athlete_id: string; count: number | null }[]).forEach(
                 (row) => remainingMap.set(row.athlete_id, row.count ?? 0),
               )
             }
-            if (ledgerRes.data) {
-              ;(ledgerRes.data as { athlete_id: string; qty: number }[]).forEach((row) => {
+            if (ledgerDebitRes.data) {
+              ;(ledgerDebitRes.data as { athlete_id: string; qty: number }[]).forEach((row) => {
                 usedMap.set(
                   row.athlete_id,
                   (usedMap.get(row.athlete_id) ?? 0) + Math.max(0, -row.qty),
                 )
               })
             }
+            if (ledgerCreditRes.data) {
+              ;(ledgerCreditRes.data as { athlete_id: string; qty: number }[]).forEach((row) => {
+                creditedMap.set(
+                  row.athlete_id,
+                  (creditedMap.get(row.athlete_id) ?? 0) + row.qty,
+                )
+              })
+            }
 
-            const formatted: Abbonamento[] = typedRpcData.map((row) => ({
-              id: row.id,
-              athlete_id: row.athlete_id,
-              athlete_name: row.athlete_name || 'Sconosciuto',
-              payment_date: row.payment_date || row.created_at || '',
-              lessons_purchased: row.lessons_purchased || 0,
-              lessons_used: usedMap.get(row.athlete_id) ?? 0,
-              lessons_remaining: remainingMap.get(row.athlete_id) ?? 0,
-              amount: Number(row.amount) || 0,
-              invoice_url: row.invoice_url || null,
-              status: row.status || 'completed',
-            }))
+            const formatted: Abbonamento[] = typedRpcData.map((row) => {
+              const used = usedMap.get(row.athlete_id) ?? 0
+              const credited = creditedMap.get(row.athlete_id) ?? 0
+              const fromCounter = remainingMap.get(row.athlete_id)
+              const lessonsRemaining =
+                fromCounter !== undefined && fromCounter !== null
+                  ? fromCounter
+                  : Math.max(0, credited - used)
+              return {
+                id: row.id,
+                athlete_id: row.athlete_id,
+                athlete_name: row.athlete_name || 'Sconosciuto',
+                payment_date: row.payment_date || row.created_at || '',
+                lessons_purchased: row.lessons_purchased || 0,
+                lessons_used: used,
+                lessons_remaining: lessonsRemaining,
+                amount: Number(row.amount) || 0,
+                invoice_url: row.invoice_url || null,
+                status: row.status || 'completed',
+              }
+            })
 
             const total = typedRpcData[0]?.total_count ?? formatted.length
 
@@ -732,12 +758,15 @@ export default function AbbonamentiPage() {
             lessonsUsedMap instanceof Map
               ? lessonsUsedMap.get(athleteIdKey) ?? 0
               : (lessonsUsedMap as Record<string, number>)[athleteIdKey] ?? 0
-          const lessonsRemaining =
+          const fromCounter =
             lessonsRemainingMap instanceof Map
-              ? lessonsRemainingMap.get(athleteIdKey) ?? 0
-              : (lessonsRemainingMap as Record<string, number>)[athleteIdKey] ?? 0
-
+              ? lessonsRemainingMap.get(athleteIdKey)
+              : (lessonsRemainingMap as Record<string, number>)[athleteIdKey]
           const credited = lessonsCreditedMap.get(athleteIdKey) ?? 0
+          const lessonsRemaining =
+            fromCounter !== undefined && fromCounter !== null
+              ? fromCounter
+              : Math.max(0, credited - lessonsUsed)
           const legacy_balance_hint =
             lessonsRemaining > credited - lessonsUsed && (credited > 0 || lessonsUsed > 0)
 

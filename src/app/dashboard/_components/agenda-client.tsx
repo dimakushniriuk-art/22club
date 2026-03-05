@@ -22,6 +22,7 @@ interface AgendaEvent {
   description?: string
   starts_at?: string
   ends_at?: string
+  lessons_remaining?: number
 }
 
 interface AgendaClientProps {
@@ -39,6 +40,11 @@ export function AgendaClient({ initialEvents, hasMoreAppointments = false, appoi
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [eventToDelete, setEventToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Sincronizza eventi quando il genitore passa initialEvents aggiornati (es. con lessons_remaining)
+  useEffect(() => {
+    setEvents(initialEvents)
+  }, [initialEvents])
 
   // Mostra errore di caricamento se presente
   useEffect(() => {
@@ -160,7 +166,7 @@ export function AgendaClient({ initialEvents, hasMoreAppointments = false, appoi
 
   const handleViewProfile = (athleteId: string, athleteName: string) => {
     void athleteName
-    router.push(`/dashboard/clienti/${athleteId}`)
+    router.push(`/dashboard/atleti/${athleteId}`)
   }
 
   const handleEditAppointment = (event: AgendaEvent) => {

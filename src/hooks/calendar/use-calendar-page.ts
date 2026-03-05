@@ -373,12 +373,16 @@ export function useCalendarPage() {
             setLoading(false)
             return
           }
+          const allowedStatuses = ['attivo', 'completato', 'annullato', 'in_corso', 'cancelled'] as const
+          const updateStatus = data.status && allowedStatuses.includes(data.status as (typeof allowedStatuses)[number])
+            ? data.status
+            : 'attivo'
           const updatePayload = {
             athlete_id: data.athlete_id!,
             starts_at: startsAt,
             ends_at: endsAt,
             type: data.type || 'allenamento',
-            status: data.status || 'attivo',
+            status: updateStatus,
             color: data.color || null,
             notes: data.notes || null,
             location: data.location || null,
@@ -416,11 +420,10 @@ export function useCalendarPage() {
           if (insertError) throw insertError
           logger.info('Slot Libera prenotazione creati', undefined, { count: rows.length })
         } else {
+          // DB ammette solo: attivo, completato, annullato, in_corso, cancelled
           const validStatus =
             data.status &&
-            ['attivo', 'completato', 'annullato', 'in_corso', 'cancelled', 'scheduled'].includes(
-              data.status,
-            )
+            ['attivo', 'completato', 'annullato', 'in_corso', 'cancelled'].includes(data.status)
               ? data.status
               : 'attivo'
 

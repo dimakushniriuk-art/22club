@@ -12,6 +12,10 @@ export interface Cliente {
   allenamenti_mese: number
   /** Lezioni rimanenti (lesson_counters, unica riga per atleta). Opzionale, valorizzato in dashboard clienti. */
   lessons_remaining?: number
+  /** Lezioni acquistate (somma da payments completed). Valorizzato in dashboard clienti. */
+  lessons_acquired?: number
+  /** Lezioni utilizzate (appuntamenti completati). Valorizzato in dashboard clienti. */
+  lessons_used?: number
   ultimo_accesso: string | null
   scheda_attiva: string | null
   documenti_scadenza: boolean

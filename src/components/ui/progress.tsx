@@ -8,15 +8,18 @@ export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg'
 }
 
+const trackHighlight = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
+
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
   ({ className, value = 0, max = 100, variant = 'default', size = 'md', ...props }, ref) => {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100)
 
+    // Barra: riempimento unico (no gradienti)
     const variants = {
-      default: 'bg-gradient-to-r from-teal-500 to-cyan-500',
-      success: 'bg-gradient-to-r from-green-500 to-green-600',
-      warning: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-      error: 'bg-gradient-to-r from-red-500 to-red-600',
+      default: 'bg-cyan-500',
+      success: 'bg-emerald-500',
+      warning: 'bg-amber-500',
+      error: 'bg-red-500',
     }
 
     const sizes = {
@@ -29,7 +32,8 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-gradient-to-br from-teal-900 to-cyan-900 relative h-4 w-full overflow-hidden rounded-full border border-teal-700/50',
+          'bg-slate-800 relative w-full overflow-hidden rounded-full border border-slate-600/70',
+          trackHighlight,
           sizes[size],
           className,
         )}
@@ -37,10 +41,10 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       >
         <div
           className={cn(
-            'h-full w-full flex-1 transition-all duration-300 ease-in-out',
+            'h-full flex-1 transition-all duration-300 ease-in-out rounded-full',
             variants[variant],
           )}
-          style={{ transform: `translateX(-${100 - percentage}%)` }}
+          style={{ width: `${percentage}%` }}
         />
       </div>
     )

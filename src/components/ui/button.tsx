@@ -33,9 +33,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    // Base classes usando design tokens
+    // Bordo con leggera sfumatura sempre visibile (highlight superiore sottile)
+    const borderHighlight = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
+
+    // Base: forme coerenti (rounded-xl), transizioni e focus
     const baseClasses = cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium',
+      'inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium border',
       masterAnimations.transition,
       masterAnimations.focus.outline,
       'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
@@ -43,78 +46,68 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'active:scale-[0.98]',
     )
 
-    // Varianti con gradienti e stili adatti a sfondo nero
+    // Varianti: riempimento unico (no gradienti), bordo con sfumatura visibile
     const variants = {
       primary: cn(
-        'bg-gradient-to-br from-teal-400 via-cyan-500 to-teal-600 text-white',
-        'hover:from-teal-300 hover:via-cyan-400 hover:to-teal-500',
-        'active:from-teal-500 active:via-cyan-600 active:to-teal-700',
-        'border border-cyan-400/30 shadow-lg shadow-cyan-500/20',
-        'hover:shadow-xl hover:shadow-cyan-400/25 hover:border-cyan-300/40',
+        'bg-cyan-500 text-white hover:bg-cyan-400 active:bg-cyan-600',
+        'border-cyan-400/80 hover:border-cyan-300/90',
+        borderHighlight,
       ),
       default: cn(
-        'bg-gradient-to-br from-teal-400 via-cyan-500 to-teal-600 text-white',
-        'hover:from-teal-300 hover:via-cyan-400 hover:to-teal-500',
-        'border border-cyan-400/30 shadow-lg shadow-cyan-500/20',
+        'bg-cyan-500 text-white hover:bg-cyan-400 active:bg-cyan-600',
+        'border-cyan-400/80 hover:border-cyan-300/90',
+        borderHighlight,
       ),
       secondary: cn(
-        'bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-white',
-        'hover:from-slate-500 hover:via-slate-600 hover:to-slate-700',
-        'active:from-slate-700 active:via-slate-800 active:to-slate-900',
-        'border border-slate-500/40 shadow-md shadow-black/20',
-        'hover:border-slate-400/50',
+        'bg-slate-600 text-white hover:bg-slate-500 active:bg-slate-700',
+        'border-slate-400/60 hover:border-slate-300/70',
+        borderHighlight,
       ),
       ghost: cn(
-        'text-cyan-300/95 bg-transparent',
-        'hover:bg-gradient-to-br hover:from-white/10 hover:to-cyan-500/10 hover:text-white',
+        'text-cyan-300/95 bg-transparent border-transparent',
+        'hover:bg-cyan-500/10 hover:border-cyan-400/30 hover:text-white',
         'focus-visible:ring-1 focus-visible:ring-cyan-400/60',
       ),
       outline: cn(
-        'bg-transparent text-cyan-300 border border-transparent',
-        'hover:bg-gradient-to-br hover:from-cyan-500/20 hover:to-teal-500/20 hover:text-white',
-        'active:from-cyan-600/25 active:to-teal-600/25',
+        'bg-transparent text-cyan-300',
+        'border border-cyan-400/70 hover:border-cyan-300/80',
+        'hover:bg-cyan-500/15 active:bg-cyan-500/25',
         'focus-visible:ring-1 focus-visible:ring-cyan-400',
       ),
       destructive: cn(
-        'bg-gradient-to-br from-red-500 via-rose-500 to-red-600 text-white',
-        'hover:from-red-400 hover:via-rose-400 hover:to-red-500',
-        'active:from-red-600 active:via-rose-600 active:to-red-700',
-        'border border-red-400/40 shadow-lg shadow-red-500/20',
-        'hover:shadow-xl hover:shadow-red-400/25',
+        'bg-red-500 text-white hover:bg-red-400 active:bg-red-600',
+        'border-red-400/80 hover:border-red-300/90',
+        borderHighlight,
       ),
       success: cn(
-        'bg-gradient-to-br from-emerald-500 via-green-500 to-emerald-600 text-white',
-        'hover:from-emerald-400 hover:via-green-400 hover:to-emerald-500',
-        'active:from-emerald-600 active:via-green-600 active:to-emerald-700',
-        'border border-emerald-400/40 shadow-lg shadow-emerald-500/20',
-        'hover:shadow-xl hover:shadow-emerald-400/25',
+        'bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600',
+        'border-emerald-400/80 hover:border-emerald-300/90',
+        borderHighlight,
       ),
       warning: cn(
-        'rounded-[50%]',
-        'bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 text-amber-950',
-        'hover:from-amber-400 hover:via-yellow-400 hover:to-amber-500',
-        'active:from-amber-600 active:via-yellow-600 active:to-amber-700',
-        'border border-amber-400/50 shadow-lg shadow-amber-500/20',
-        'hover:shadow-xl hover:shadow-amber-400/25',
+        'bg-amber-500 text-amber-950 hover:bg-amber-400 active:bg-amber-600',
+        'border-amber-400/80 hover:border-amber-300/90',
+        borderHighlight,
       ),
       trainer: cn(
-        'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 text-white',
-        'hover:from-blue-400 hover:via-indigo-400 hover:to-purple-500',
-        'active:from-blue-600 active:via-indigo-600 active:to-purple-700',
-        'border border-indigo-400/30 shadow-lg shadow-purple-500/20',
-        'hover:shadow-xl hover:shadow-purple-400/25',
+        'bg-indigo-500 text-white hover:bg-indigo-400 active:bg-indigo-600',
+        'border-indigo-400/80 hover:border-indigo-300/90',
+        borderHighlight,
       ),
-      link: cn('text-cyan-400 underline-offset-4', 'hover:underline hover:text-cyan-300', 'p-0 h-auto'),
+      link: cn(
+        'text-cyan-400 underline-offset-4 border-0 border-transparent bg-transparent !p-0 !min-h-0 !h-auto',
+        'hover:underline hover:text-cyan-300',
+      ),
     }
 
     const sizes = {
-      sm: 'h-9 px-3 text-xs',
-      md: 'h-11 px-5 text-sm',
-      lg: 'h-12 px-6 text-base',
-      xl: 'h-14 px-7 text-lg',
-      icon: 'h-10 w-10 rounded-md',
-      'icon-sm': 'h-8 w-8 rounded-md',
-      'icon-lg': 'h-12 w-12 rounded-lg',
+      sm: 'h-9 min-h-9 px-3 text-xs rounded-lg',
+      md: 'h-11 min-h-11 px-5 text-sm rounded-xl',
+      lg: 'h-12 min-h-12 px-6 text-base rounded-xl',
+      xl: 'h-14 min-h-14 px-7 text-lg rounded-xl',
+      icon: 'h-10 w-10 min-h-10 min-w-10 rounded-xl',
+      'icon-sm': 'h-8 w-8 min-h-8 min-w-8 rounded-lg',
+      'icon-lg': 'h-12 w-12 min-h-12 min-w-12 rounded-xl',
     }
 
     const isDisabled = disabled || loading
