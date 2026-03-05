@@ -1,0 +1,203 @@
+{
+  "timestamp": "2026-01-07T16:18:37.987Z",
+  "projectId": "icibqnmtacibgnhaidlz",
+  "tables": [
+    {
+      "name": "profiles",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "roles",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "appointments",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "workout_plans",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "workout_logs",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "exercises",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "documents",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "payments",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "lesson_counters",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "notifications",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "chat_messages",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "inviti_atleti",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "progress_logs",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "progress_photos",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "pt_atleti",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "audit_logs",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "push_subscriptions",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "cliente_tags",
+      "exists": true,
+      "rowCount": 0
+    },
+    {
+      "name": "profiles_tags",
+      "exists": true,
+      "rowCount": 0
+    }
+  ],
+  "migrations": [],
+  "rlsPolicies": [],
+  "functions": [
+    {
+      "name": "get_clienti_stats",
+      "exists": true
+    },
+    {
+      "name": "get_payments_stats",
+      "exists": true
+    },
+    {
+      "name": "get_notifications_count",
+      "exists": true
+    },
+    {
+      "name": "get_chat_unread_count",
+      "exists": true
+    },
+    {
+      "name": "get_documents_count",
+      "exists": true
+    }
+  ],
+  "triggers": [
+    {
+      "name": "handle_new_user",
+      "table": "auth.users",
+      "exists": false
+    },
+    {
+      "name": "update_updated_at_column",
+      "table": "profiles",
+      "exists": false
+    }
+  ],
+  "storageBuckets": [
+    {
+      "name": "documents",
+      "exists": false,
+      "public": false
+    },
+    {
+      "name": "exercise-videos",
+      "exists": false,
+      "public": false
+    },
+    {
+      "name": "progress-photos",
+      "exists": false,
+      "public": false
+    },
+    {
+      "name": "avatars",
+      "exists": false,
+      "public": true
+    }
+  ],
+  "issues": [
+    {
+      "severity": "critical",
+      "category": "triggers",
+      "message": "Trigger \"handle_new_user\" non esiste sulla tabella \"auth.users\"",
+      "fix": "Eseguire migrazione che crea trigger handle_new_user"
+    },
+    {
+      "severity": "warning",
+      "category": "triggers",
+      "message": "Trigger \"update_updated_at_column\" non esiste sulla tabella \"profiles\"",
+      "fix": "Eseguire migrazione che crea trigger update_updated_at_column"
+    },
+    {
+      "severity": "warning",
+      "category": "storage",
+      "message": "Storage bucket \"documents\" non esiste",
+      "fix": "Creare bucket \"documents\" nel dashboard Supabase"
+    },
+    {
+      "severity": "warning",
+      "category": "storage",
+      "message": "Storage bucket \"exercise-videos\" non esiste",
+      "fix": "Creare bucket \"exercise-videos\" nel dashboard Supabase"
+    },
+    {
+      "severity": "warning",
+      "category": "storage",
+      "message": "Storage bucket \"progress-photos\" non esiste",
+      "fix": "Creare bucket \"progress-photos\" nel dashboard Supabase"
+    },
+    {
+      "severity": "warning",
+      "category": "storage",
+      "message": "Storage bucket \"avatars\" non esiste",
+      "fix": "Creare bucket \"avatars\" nel dashboard Supabase"
+    }
+  ],
+  "recommendations": [
+    "⚠️  1 problemi critici da risolvere immediatamente",
+    "⚠️  5 avvisi da verificare",
+    "🔴 PRIORITÀ ALTA: Applicare trigger handle_new_user() per creazione automatica profili",
+    "   Eseguire: docs/QUICK_APPLY_TRIGGER.sql nel dashboard Supabase"
+  ]
+}

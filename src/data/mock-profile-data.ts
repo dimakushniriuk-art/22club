@@ -1,0 +1,56 @@
+// Mock badge data per PT
+export const mockBadge = [
+  { id: '1', name: 'Primo Cliente', icon: '👥', unlocked: true },
+  { id: '2', name: '50 Sessioni', icon: '💪', unlocked: true },
+  { id: '3', name: '6 Mesi Esperienza', icon: '🏆', unlocked: true },
+  { id: '4', name: 'Certificazione Avanzata', icon: '🎓', unlocked: false },
+]
+
+// Mock notifications data
+export const mockNotifications = [
+  {
+    id: '1',
+    user_id: 'pt-1',
+    title: 'Nuovo cliente iscritto',
+    body: 'Marco Bianchi si è iscritto al tuo servizio di personal training',
+    link: '/dashboard/clienti',
+    type: 'cliente',
+    sent_at: '2024-02-15T10:30:00Z',
+    read_at: null,
+    action_text: 'Vedi profilo',
+    is_push_sent: true,
+    created_at: '2024-02-15T10:30:00Z',
+    priority: 'high' as const,
+    category: 'client',
+  },
+  {
+    id: '2',
+    user_id: 'pt-1',
+    title: 'Pagamento ricevuto',
+    body: '€120 ricevuti da Anna Rossi per 4 sessioni',
+    link: '/dashboard/statistiche',
+    type: 'pagamento',
+    sent_at: '2024-02-14T14:20:00Z',
+    read_at: '2024-02-14T15:30:00Z',
+    action_text: 'Vedi dettagli',
+    is_push_sent: true,
+    created_at: '2024-02-14T14:20:00Z',
+    priority: 'medium' as const,
+    category: 'payment',
+  },
+  {
+    id: '3',
+    user_id: 'pt-1',
+    title: 'Appuntamento domani',
+    body: 'Sessione con Luca Verdi alle 10:00',
+    link: '/dashboard/calendario',
+    type: 'appuntamento',
+    sent_at: '2024-02-14T09:00:00Z',
+    read_at: null,
+    action_text: 'Vedi calendario',
+    is_push_sent: true,
+    created_at: '2024-02-14T09:00:00Z',
+    priority: 'high' as const,
+    category: 'appointment',
+  },
+]

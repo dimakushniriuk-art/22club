@@ -1,0 +1,170 @@
+/**
+ * @fileoverview Tab Motivazionale per profilo atleta (vista PT)
+ * @description Componente per visualizzare e modificare dati motivazionali e preferenze atleta
+ * @module components/dashboard/athlete-profile/athlete-motivational-tab
+ */
+
+'use client'
+
+import { useMemo } from 'react'
+import { Button } from '@/components/ui'
+import { useAthleteMotivational } from '@/hooks/athlete-profile/use-athlete-motivational'
+
+const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
+import { useAthleteMotivationalForm } from '@/hooks/athlete-profile/use-athlete-motivational-form'
+import { LoadingState } from '@/components/dashboard/loading-state'
+import { ErrorState } from '@/components/dashboard/error-state'
+import { Target, Edit, Save, X } from 'lucide-react'
+import {
+  MotivationalMainSection,
+  MotivationalMotivationsObstaclesSection,
+  MotivationalPreferencesSection,
+  MotivationalAbandonmentsSection,
+  MotivationalNotesSection,
+} from './motivational'
+
+interface AthleteMotivationalTabProps {
+  athleteId: string
+}
+
+export function AthleteMotivationalTab({ athleteId }: AthleteMotivationalTabProps) {
+  const { data: motivational, isLoading, error } = useAthleteMotivational(athleteId)
+
+  const {
+    isEditing,
+    setIsEditing,
+    formData,
+    setFormData,
+    newArrayItem,
+    setNewArrayItem,
+    showAbbandonoForm,
+    setShowAbbandonoForm,
+    handleSave,
+    handleCancel,
+    addArrayItem,
+    removeArrayItem,
+    togglePreferenza,
+    addAbbandono,
+    removeAbbandono,
+    updateMutation,
+  } = useAthleteMotivationalForm({ motivational: motivational ?? null, athleteId })
+
+  // Memoizza liste array per evitare ricalcoli
+  const motivazioniList = useMemo(
+    () => formData.motivazioni_secondarie || [],
+    [formData.motivazioni_secondarie],
+  )
+  const ostacoliList = useMemo(
+    () => formData.ostacoli_percepiti || [],
+    [formData.ostacoli_percepiti],
+  )
+
+  if (isLoading) {
+    return <LoadingState message="Caricamento dati motivazionali..." />
+  }
+
+  if (error) {
+    return <ErrorState message="Errore nel caricamento dei dati motivazionali" />
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+            <Target className="h-6 w-6 text-primary" />
+            Dati Motivazionali
+          </h2>
+          <p className="text-text-secondary text-sm mt-1">
+            Motivazioni, ostacoli e preferenze dell&apos;atleta
+          </p>
+          <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
+        </div>
+        {!isEditing && (
+          <Button
+            onClick={() => setIsEditing(true)}
+            variant="outline"
+            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+          >
+            <Edit className="h-4 w-4" />
+            Modifica
+          </Button>
+        )}
+      </div>
+
+      {/* Motivazione Principale e Livello */}
+      <MotivationalMainSection
+        isEditing={isEditing}
+        formData={formData}
+        motivational={motivational ?? null}
+        onFormDataChange={(data) => setFormData({ ...formData, ...data })}
+      />
+
+      {/* Motivazioni Secondarie e Ostacoli */}
+      <MotivationalMotivationsObstaclesSection
+        isEditing={isEditing}
+        motivazioniSecondarie={motivazioniList}
+        ostacoliPercepiti={ostacoliList}
+        newMotivazione={newArrayItem.motivazione || ''}
+        newOstacolo={newArrayItem.ostacolo || ''}
+        motivational={motivational ?? null}
+        onMotivazioneAdd={(value) => addArrayItem('motivazioni_secondarie', value)}
+        onMotivazioneRemove={(index) => removeArrayItem('motivazioni_secondarie', index)}
+        onOstacoloAdd={(value) => addArrayItem('ostacoli_percepiti', value)}
+        onOstacoloRemove={(index) => removeArrayItem('ostacoli_percepiti', index)}
+        onNewMotivazioneChange={(value) => setNewArrayItem({ ...newArrayItem, motivazione: value })}
+        onNewOstacoloChange={(value) => setNewArrayItem({ ...newArrayItem, ostacolo: value })}
+      />
+
+      {/* Preferenze Ambiente e Compagnia */}
+      <MotivationalPreferencesSection
+        isEditing={isEditing}
+        formData={formData}
+        motivational={motivational ?? null}
+        onTogglePreferenza={togglePreferenza}
+      />
+
+      {/* Storico Abbandoni */}
+      <MotivationalAbandonmentsSection
+        isEditing={isEditing}
+        showAbbandonoForm={showAbbandonoForm}
+        newAbbandono={newArrayItem.abbandono || {}}
+        motivational={motivational ?? null}
+        onShowAbbandonoFormChange={setShowAbbandonoForm}
+        onNewAbbandonoChange={(abbandono) => setNewArrayItem({ ...newArrayItem, abbandono })}
+        onAbbandonoAdd={addAbbandono}
+        onAbbandonoRemove={removeAbbandono}
+      />
+
+      {/* Note Motivazionali */}
+      <MotivationalNotesSection
+        isEditing={isEditing}
+        formData={formData}
+        motivational={motivational ?? null}
+        onFormDataChange={(data) => setFormData({ ...formData, ...data })}
+      />
+
+      {/* Pulsanti azione */}
+      {isEditing && (
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-primary/20">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+          >
+            <X className="h-4 w-4" />
+            Annulla
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="flex items-center gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition text-white"
+          >
+            <Save className="h-4 w-4" />
+            {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}

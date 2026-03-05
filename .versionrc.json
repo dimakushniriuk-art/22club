@@ -1,0 +1,30 @@
+{
+  "types": [
+    { "type": "feat", "section": "✨ Nuove funzionalità" },
+    { "type": "fix", "section": "🐞 Correzioni" },
+    { "type": "docs", "section": "📝 Documentazione" },
+    { "type": "refactor", "section": "🧩 Refactoring" },
+    { "type": "perf", "section": "⚡ Performance" },
+    { "type": "test", "section": "🧪 Testing" },
+    { "type": "build", "section": "🔨 Build" },
+    { "type": "ci", "section": "🚀 CI/CD" },
+    { "type": "chore", "hidden": true }
+  ],
+  "commitUrlFormat": "https://github.com/22Club/22club/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/22Club/22club/compare/{{previousTag}}...{{currentTag}}",
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
+  "bumpFiles": [
+    {
+      "filename": "package.json",
+      "type": "json"
+    },
+    {
+      "filename": "package-lock.json",
+      "type": "json"
+    }
+  ],
+  "commitAll": true,
+  "scripts": {
+    "precommit": "npm run cleanup && npm run lint && npm run typecheck"
+  }
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Pre-push: Verifica completa (test hooks, build, servizi)..."
+
+# Esegui script completo pre-push
+node scripts/prepush-check-complete.js
+
+# Se lo script fallisce, il push viene bloccato
+exit $?

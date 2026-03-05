@@ -1,0 +1,339 @@
+/**
+ * 🎨 COLORI PERSONALIZZATI - ACCOUNT ATLETA
+ * ==========================================
+ * 
+ * Questo file definisce i colori personalizzati utilizzati nell'account atleta.
+ * Questi colori possono essere utilizzati con le classi Tailwind CSS.
+ */
+
+@layer base {
+  :root {
+    /* =====================================================
+     * 🎨 GRADIENTI TEAL/CIANO - ATHLETE ACCOUNT
+     * ===================================================== */
+
+    /* Gradiente principale (solido) */
+    --athlete-gradient-primary: linear-gradient(135deg, #134e4a 0%, #155e75 100%);
+
+    /* Gradiente sottile (con opacità) */
+    --athlete-gradient-subtle: linear-gradient(
+      135deg,
+      rgba(20, 83, 78, 0.8) 0%,
+      rgba(21, 94, 117, 0.8) 100%
+    );
+
+    /* Gradiente intenso */
+    --athlete-gradient-intense: linear-gradient(135deg, #0f766e 0%, #0e7490 100%);
+
+    /* Gradiente hover */
+    --athlete-gradient-hover: linear-gradient(135deg, #115e59 0%, #155e75 100%);
+
+    /* =====================================================
+     * 🎯 COLORI TEAL/CIANO - VARIAZIONI
+     * ===================================================== */
+
+    /* Teal variations */
+    --athlete-teal-50: #f0fdfa;
+    --athlete-teal-100: #ccfbf1;
+    --athlete-teal-200: #99f6e4;
+    --athlete-teal-300: #5eead4;
+    --athlete-teal-400: #2dd4bf; /* Colore accent principale */
+    --athlete-teal-500: #14b8a6; /* Colore bottoni primari */
+    --athlete-teal-600: #0d9488; /* Hover bottoni primari */
+    --athlete-teal-700: #0f766e; /* Bordi e accent */
+    --athlete-teal-800: #115e59;
+    --athlete-teal-900: #134e4a; /* Gradiente start */
+
+    /* Cyan variations */
+    --athlete-cyan-50: #ecfeff;
+    --athlete-cyan-100: #cffafe;
+    --athlete-cyan-200: #a5f3fc;
+    --athlete-cyan-300: #67e8f9;
+    --athlete-cyan-400: #22d3ee; /* Colore accent secondario */
+    --athlete-cyan-500: #06b6d4;
+    --athlete-cyan-600: #0891b2;
+    --athlete-cyan-700: #0e7490;
+    --athlete-cyan-800: #155e75; /* Gradiente end */
+    --athlete-cyan-900: #164e63;
+
+    /* =====================================================
+     * 🎨 COLORI DI STATO - ATHLETE SPECIFIC
+     * ===================================================== */
+
+    /* Success (verde) */
+    --athlete-success: #10b981;
+    --athlete-success-light: #34d399;
+    --athlete-success-dark: #059669;
+
+    /* Warning (giallo) */
+    --athlete-warning: #f59e0b;
+    --athlete-warning-light: #fbbf24;
+    --athlete-warning-dark: #d97706;
+
+    /* Error (rosso) */
+    --athlete-error: #ef4444;
+    --athlete-error-light: #f87171;
+    --athlete-error-dark: #dc2626;
+
+    /* Info (blu) */
+    --athlete-info: #3b82f6;
+    --athlete-info-light: #60a5fa;
+    --athlete-info-dark: #2563eb;
+
+    /* =====================================================
+     * 🏃‍♂️ COLORI WORKOUT STATUS
+     * ===================================================== */
+
+    /* Stati allenamento */
+    --workout-active: var(--athlete-success);
+    --workout-pending: var(--athlete-warning);
+    --workout-completed: var(--athlete-info);
+    --workout-cancelled: var(--athlete-error);
+
+    /* =====================================================
+     * 📊 COLORI PROGRESS
+     * ===================================================== */
+
+    /* Colori per grafici e progress */
+    --progress-positive: #10b981; /* Verde per progressi positivi */
+    --progress-negative: #ef4444; /* Rosso per regressioni */
+    --progress-neutral: #6b7280; /* Grigio per neutrale */
+
+    /* =====================================================
+     * 🔔 COLORI NOTIFICHE
+     * ===================================================== */
+
+    /* Tipi notifica */
+    --notification-workout: var(--athlete-teal-500);
+    --notification-appointment: var(--athlete-info);
+    --notification-progress: var(--athlete-success);
+    --notification-document: var(--athlete-warning);
+    --notification-payment: var(--athlete-cyan-500);
+  }
+}
+
+@layer utilities {
+  /* =====================================================
+   * 🎨 UTILITY CLASSES - GRADIENTI
+   * ===================================================== */
+
+  /* Gradiente principale atleta */
+  .bg-athlete-gradient {
+    background: var(--athlete-gradient-primary);
+  }
+
+  .bg-athlete-gradient-subtle {
+    background: var(--athlete-gradient-subtle);
+  }
+
+  .bg-athlete-gradient-intense {
+    background: var(--athlete-gradient-intense);
+  }
+
+  /* Gradiente hover */
+  .hover\:bg-athlete-gradient-hover:hover {
+    background: var(--athlete-gradient-hover);
+  }
+
+  /* =====================================================
+   * 🎯 UTILITY CLASSES - COLORI TEAL/CIANO
+   * ===================================================== */
+
+  /* Text colors */
+  .text-athlete-teal {
+    color: var(--athlete-teal-400);
+  }
+
+  .text-athlete-cyan {
+    color: var(--athlete-cyan-400);
+  }
+
+  /* Background colors */
+  .bg-athlete-teal {
+    background-color: var(--athlete-teal-500);
+  }
+
+  .bg-athlete-cyan {
+    background-color: var(--athlete-cyan-500);
+  }
+
+  /* Border colors */
+  .border-athlete-teal {
+    border-color: var(--athlete-teal-700);
+  }
+
+  .border-athlete-cyan {
+    border-color: var(--athlete-cyan-700);
+  }
+
+  /* =====================================================
+   * 🏃‍♂️ UTILITY CLASSES - WORKOUT STATUS
+   * ===================================================== */
+
+  /* Stati allenamento */
+  .bg-workout-active {
+    background-color: var(--workout-active);
+  }
+
+  .bg-workout-pending {
+    background-color: var(--workout-pending);
+  }
+
+  .bg-workout-completed {
+    background-color: var(--workout-completed);
+  }
+
+  .bg-workout-cancelled {
+    background-color: var(--workout-cancelled);
+  }
+
+  .text-workout-active {
+    color: var(--workout-active);
+  }
+
+  .text-workout-pending {
+    color: var(--workout-pending);
+  }
+
+  .text-workout-completed {
+    color: var(--workout-completed);
+  }
+
+  .text-workout-cancelled {
+    color: var(--workout-cancelled);
+  }
+
+  /* =====================================================
+   * 📊 UTILITY CLASSES - PROGRESS
+   * ===================================================== */
+
+  /* Colori progress */
+  .text-progress-positive {
+    color: var(--progress-positive);
+  }
+
+  .text-progress-negative {
+    color: var(--progress-negative);
+  }
+
+  .text-progress-neutral {
+    color: var(--progress-neutral);
+  }
+
+  .bg-progress-positive {
+    background-color: var(--progress-positive);
+  }
+
+  .bg-progress-negative {
+    background-color: var(--progress-negative);
+  }
+
+  .bg-progress-neutral {
+    background-color: var(--progress-neutral);
+  }
+
+  /* =====================================================
+   * 🔔 UTILITY CLASSES - NOTIFICHE
+   * ===================================================== */
+
+  /* Colori notifica */
+  .text-notification-workout {
+    color: var(--notification-workout);
+  }
+
+  .text-notification-appointment {
+    color: var(--notification-appointment);
+  }
+
+  .text-notification-progress {
+    color: var(--notification-progress);
+  }
+
+  .text-notification-document {
+    color: var(--notification-document);
+  }
+
+  .text-notification-payment {
+    color: var(--notification-payment);
+  }
+
+  /* =====================================================
+   * 🎨 UTILITY CLASSES - SPECIAL EFFECTS
+   * ===================================================== */
+
+  /* Glow effect per focus */
+  .focus\:shadow-athlete-glow:focus {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+  }
+
+  /* Gradient text */
+  .text-athlete-gradient {
+    background: var(--athlete-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gradient border */
+  .border-athlete-gradient {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--background), var(--background)) padding-box,
+      var(--athlete-gradient-primary) border-box;
+  }
+}
+
+/* =====================================================
+ * 📱 RESPONSIVE UTILITIES
+ * ===================================================== */
+
+@media (max-width: 640px) {
+  /* Mobile specific adjustments */
+  .bg-athlete-gradient {
+    background: var(--athlete-gradient-primary);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Tablet specific adjustments */
+  .bg-athlete-gradient {
+    background: var(--athlete-gradient-subtle);
+  }
+}
+
+@media (min-width: 1025px) {
+  /* Desktop specific adjustments */
+  .bg-athlete-gradient {
+    background: var(--athlete-gradient-intense);
+  }
+}
+
+/* =====================================================
+ * 🌙 DARK MODE SUPPORT
+ * ===================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Adjustments for dark mode if needed */
+    --athlete-teal-400: #2dd4bf;
+    --athlete-cyan-400: #22d3ee;
+  }
+}
+
+/* =====================================================
+ * 🎯 PRINT STYLES
+ * ===================================================== */
+
+@media print {
+  .bg-athlete-gradient {
+    background: var(--athlete-teal-700) !important;
+    color: white !important;
+  }
+
+  .text-athlete-gradient {
+    color: var(--athlete-teal-700) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+  }
+}

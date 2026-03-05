@@ -1,0 +1,625 @@
+# Regole struttura app mobile – Progettazione UI/UX
+
+Documento unico di conoscenza. Struttura ottimizzata per lettura rapida; le regole non sono state modificate.
+
+---
+
+## QUICK REFERENCE
+
+**Spacing (8pt):** 4=micro, 8=xs, 16=sm/base, 24=md/sezioni, 32=lg, 48=xl/CTA, 64=xxl, 96=section break. Regola: spazio tra gruppi > spazio interno al gruppo.
+
+**Spazio sezioni/card:** Tra sezioni ≥24–32px. Padding card ≥16px (16–24). Padding bottom minimo 16–24px. Container desktop: SaaS 1200–1440px, data-heavy fino 1600px, testo max 75ch (max-width: 65ch).
+
+**Breakpoints:** 320 (mobile small), 375–480 (mobile), 768 (tablet), 1024 (small desktop), 1280 (desktop), 1440+ (large). Mobile-first.
+
+**Touch & safe area:** Touch target min 44×44px (Apple/Google). Safe-area-inset (CSS). Mai CTA vicino al bordo inferiore.
+
+**Contrasto:** Testo/sfondo min 4.5:1 (WCAG AA). Large text 3:1. AAA 7:1.
+
+**Tipografia:** Body 14–16px, caption 12–13px, micro 10–12px solo se necessario. H1 28–32px una volta per pagina. Line-height body 140–160%. Tabular numbers per KPI/tabelle/orari.
+
+**CTA:** Una sola CTA primaria per schermata. Colore CTA deve contrastare col resto.
+
+**Gerarchia:** Max 3 livelli gerarchici per schermata. Ordine potenza: dimensione > colore > posizione > spazio > peso tipografico.
+
+---
+
+## INDICE
+
+1. Gerarchia visiva
+2. CRAP (Contrasto, Allineamento, Prossimità, Ripetizione)
+3. Spazio negativo
+4. Bilanciamento visivo
+5. Coerenza sistemica
+6. Riduzione rumore visivo
+7. Minimalismo funzionale
+8. Scansione visiva (F-pattern / Z-pattern)
+9. Teoria del colore
+10. Psicologia del colore
+11. Sistema di misura e griglia
+12. Tipografia
+13. Colori e theming
+14. Component system
+15. Layout patterns
+16. UX e psicologia cognitiva
+17. Accessibility
+18. Motion e interaction
+19. Navigazione e architettura informativa
+20. Data visualization e SaaS
+21. Stato e feedback
+22. Performance e technical UI
+23. Sicurezza e UX
+24. Scalabilità enterprise
+25. Mobile specific
+26. Testing e validazione
+27. Documentazione e governance
+28. Business e strategia
+29. Errori da evitare
+30. Form UX
+31. Modal vs pagina
+32. Canale di feedback (toast / inline / modal)
+33. Touch vs hover
+34. Microcopy e tono
+35. Focus management (a11y)
+36. Ricerca e filtri
+37. Densità (compatto vs comodo)
+
+---
+
+## 1. Gerarchia visiva
+
+Obiettivo: l’utente capisce cosa è più importante in meno di 3 secondi.
+
+**Regole:**
+- L’elemento più importante deve: essere più grande, avere più contrasto, avere più spazio attorno, essere più in alto.
+- Max 3 livelli gerarchici principali per schermata.
+- Una sola CTA primaria.
+- Ogni sezione deve avere un titolo.
+- Se tutto è grande → nulla è importante.
+
+**Ordine di potenza:** Dimensione > Colore > Posizione > Spazio > Peso tipografico.
+
+**Errori comuni:** 4 pulsanti con stesso peso; titoli uguali ai paragrafi; troppe evidenziazioni.
+
+---
+
+## 2. CRAP – Contrasto, Allineamento, Prossimità, Ripetizione
+
+**Contrasto:** Testo vs sfondo min 4.5:1. CTA primaria deve emergere. Non usare colori diversi senza motivo. Usa differenze chiare, non sottili.
+
+**Allineamento:** Allinea sempre a una griglia. Evita elementi “quasi allineati”. Mantieni una linea verticale forte. Se puoi tracciare una linea invisibile che collega elementi → sei coerente.
+
+**Prossimità:** Elementi correlati vicini, non correlati distanti. Spazio tra gruppi > spazio interno al gruppo.
+
+**Ripetizione:** Stesso stile per componenti simili, stesse spaziature, stesse dimensioni per ruoli simili. Ripetizione = coerenza = percezione di qualità.
+
+---
+
+## 3. Spazio negativo (white space)
+
+Spazio intenzionale che aiuta la leggibilità.
+
+**Regole:** Spazio tra sezioni ≥24–32px. Padding interno card ≥16px. Mai comprimere elementi importanti. Aumenta lo spazio attorno agli elementi chiave.
+
+**Funzione:** Riduce stress cognitivo, aumenta eleganza e percezione premium.
+
+**Errori:** Riempire ogni spazio; ridurre padding per “far stare tutto”.
+
+---
+
+## 4. Bilanciamento visivo
+
+Distribuzione equilibrata del peso visivo.
+
+**Regole:** Evita un lato visivamente più pesante. Se un elemento è grande, bilancialo con spazio. Simmetria per stabilità, asimmetria controllata per dinamismo.
+
+**Peso visivo aumenta con:** Dimensione, colore forte, forma irregolare, contrasto alto.
+
+---
+
+## 5. Coerenza sistemica
+
+Tutto deve sembrare parte dello stesso sistema.
+
+**Regole:** Una sola scala tipografica, una sola griglia, spacing system fisso, palette colori limitata, componenti documentati.
+
+**Errore grave:** Creare nuovi stili “solo per questa pagina”.
+
+---
+
+## 6. Riduzione del rumore visivo
+
+Eliminare elementi inutili che distraggono.
+
+**Regole:** Rimuovi linee decorative inutili. Evita ombre pesanti. Limita colori. Riduci testo superfluo. Usa icone solo se aiutano.
+
+**Test:** Se togli un elemento e nulla cambia → era rumore.
+
+---
+
+## 7. Minimalismo funzionale
+
+Minimalismo ≠ vuoto.
+
+**Regole:** Ogni elemento deve avere uno scopo. Mostra solo ciò che serve ora. Nascondi opzioni avanzate (progressive disclosure). Evita sovraccarico iniziale. Massima chiarezza con minima complessità.
+
+---
+
+## 8. Scansione visiva – F-pattern e Z-pattern
+
+**F-pattern** (dashboard, testi lunghi): riga superiore, colonna sinistra, movimento orizzontale corto. Regole: info importante in alto a sinistra, titoli chiari, liste verticali.
+
+**Z-pattern** (landing): alto sinistra, alto destra, centro diagonale, CTA in basso a destra. Regole: logo in alto sinistra, CTA principale in alto o basso destra, sezioni ben separate.
+
+---
+
+## 9. Teoria del colore
+
+**Struttura palette:** 1 Primary, 1 Secondary, 1–2 Accent, neutral scale, semantic colors.
+
+**Regole:** Non più di 3 colori dominanti. HSL per variazioni coerenti. Evita saturazione 100%. Tonalità più scure per hover. Trasparenza per layering.
+
+**Dark mode:** No nero puro. Grigi profondi. Aumenta leggermente saturazione colori.
+
+---
+
+## 10. Psicologia del colore
+
+Blu: fiducia, stabilità, SaaS/fintech. Verde: crescita, salute, successo. Rosso: urgenza, errore, pericolo. Giallo: attenzione, avviso. Viola: creatività, premium. Nero: lusso, autorità.
+
+**Regole:** Colori caldi → più energici; colori freddi → più affidabili. Saturazione alta → dinamico; bassa → elegante. Colore CTA deve contrastare col resto.
+
+**Trasversali:** Coerenza > creatività casuale. Spazio = potere. Riduci prima di aggiungere. Ogni schermata deve avere un focus. Se l’utente deve pensare troppo → stai fallendo.
+
+---
+
+## 11. Sistema di misura e griglia
+
+Basato su Apple HIG e Material Design.
+
+**Grid 4pt/8pt:** Tutto multiplo di 8: 8=micro, 16=base, 24=sezioni, 32=grande separazione, 40=elementi medi, 48=CTA grandi, 64=macro. Usa 4pt per micro aggiustamenti, icon padding, fine tuning.
+
+**Errori:** 13px, 27px casuali; spaziature diverse tra card simili; misure non documentate.
+
+**Baseline tipografica:** Line-height multiplo di 4 o 8; blocchi di testo sulla stessa linea invisibile. Esempio: 16px / 24px.
+
+**Spacing scale:** 4=micro, 8=xs, 16=sm, 24=md, 32=lg, 48=xl, 64=xxl, 96=section break. Spazio tra gruppi > spazio interno.
+
+**Container max width:** SaaS 1200–1440px, data-heavy fino 1600px, testo max 75ch.
+
+**12-column grid:** Gutter 16–24px, margin 80–120px. 12 divisibile per 2,3,4,6.
+
+**Breakpoints:** 320, 375–480, 768, 1024, 1280, 1440+. Mobile-first. Layout cambia per struttura non solo scala. Testa 4 dimensioni reali.
+
+**Safe areas:** Mai CTA vicino al bordo inferiore. Padding bottom min 16–24px. Rispetta notch/dynamic island. safe-area-inset (CSS). Touch target min 44×44pt.
+
+**Layout:** Fluid container con max-width limitato (regola moderna).
+
+**Vertical rhythm:** Solo spacing scale definita. Esempio: titolo → 16px → testo → 24px → sezione. Evita “spazi emotivi”.
+
+**Leggibilità:** 60–75 caratteri per riga; oltre 90 = fatica; sotto 45 = frammentato. max-width: 65ch.
+
+**Trasversali:** Ogni misura ha logica matematica. Nessun numero casuale. Ogni pagina rispetta la stessa griglia. Sistema prima del gusto personale.
+
+---
+
+## 12. Tipografia
+
+**Scala modulare:** Ratio costante (es. 1.25, base 16px → 12,14,16,20,25,31,39). Scegli 1 ratio. Base body 14–16px. Max 6–7 livelli. Scala per tutto.
+
+**Gerarchia H1–H6:** H1 28–32px Bold, H2 22–24px SemiBold, H3 18–20px Medium, H4 16–18px, H5 14–16px, H6 12–14px. H1 una volta per pagina. Non saltare livelli. Spazio sopra titolo > sotto.
+
+**Body/Caption/Micro:** Body 14–16px Regular, line-height 140–160%. Caption 12–13px per metadati/hint, non testo principale. Micro 10–12px solo label/badge, mai testo lungo. Errore: 12px per tutto stanca.
+
+**Line-height:** Titoli grandi 110–120%, medi 120–130%, body 140–160%, lunghi 150–170%. Esempio: 16px/24px (150%). Evita line-height = font-size.
+
+**Letter-spacing:** Titoli grandi leggermente negativo (-0.5%), body 0 o +0.1%, piccolo +0.5%.
+
+**Font pairing:** 1 principale (UI+body), 1 secondario (display opzionale). Max 2 famiglie. Sans-serif UI, serif solo marketing/hero. Errori: 3–4 font, font decorativi in dashboard.
+
+**Peso:** Regular body, Medium label, SemiBold sottotitoli, Bold titoli. Max 3–4 pesi. Non abusare Bold.
+
+**Responsive:** Mobile body min 14px, H1 max 28px. Desktop body 16px, H1 32–36px. clamp(min, preferred, max) es. clamp(16px, 2vw, 20px).
+
+**Tabular numbers:** Per tabelle, KPI, orari. Evita “salto” dei numeri.
+
+**Accessibility:** Testo principale min 14px, caption min 12px, mai sotto 12px. Zoom 200%. Contrasto min 4.5:1 (WCAG).
+
+**Max line length:** 60–75 caratteri ideale, max 80. Oltre 90 difficile. max-width: 65ch.
+
+**Finali:** Nessuna misura casuale. Gerarchia prima della creatività. Spazio e tipografia insieme. Coerenza > varietà.
+
+---
+
+## 13. Colori e theming
+
+**Palette:** 1 primary (brand, CTA, link, attivi), 1 secondary (supporto). 1–2 accent, neutri, semantic. Errori: 4 primary, CTA colori diversi nella stessa pagina, saturazione 100%.
+
+**Neutral scale (50–900):** 50 background chiaro, 100 surface, 200 border light, 300 divider, 400 text secondario, 500 default, 600 strong, 700–900 titoli/dark. 70–80% UI in neutri.
+
+**Semantic:** Success verde, Warning arancione/giallo, Error rosso, Info blu. Ogni semantic: background soft, text, border, icon. Mai primary per errori.
+
+**Dark mode:** No #000. Background grigio profondo. Testo quasi bianco non puro. Riduci contrasto estremo. Layer: base → surface → elevated card → modal.
+
+**Contrast WCAG:** AA 4.5:1, AA large 3:1, AAA 7:1. Strumenti di verifica. Obbligatorio.
+
+**HSL:** Hue costante, Lightness per 50–900, Saturation per armonia.
+
+**Tonal elevation:** Più elevazione → più luminosità (dark). Ombre leggere. Overlay invece di cambio colore drastico.
+
+**Multi-theme:** Design tokens. Mai hardcodare. Definisci color-background, color-surface, color-primary, color-text.
+
+**Brand consistency:** Primary coerente, CTA stesso colore, icone stesso stile, no cambi tono tra pagine.
+
+---
+
+## 14. Component system
+
+Riutilizzabile, documentato, scalabile, coerente.
+
+**Button:** Size Small 32–36, Medium 40–44, Large 48–56. Variant Primary, Secondary, Outline, Ghost, Destructive. Stati: Default, Hover, Active, Focus, Disabled, Loading. 1 CTA primaria per schermata. Padding multiplo di 8.
+
+**Input:** Label, Field, Helper, Error. Altezza min 44px. Stato error chiaro. Focus visibile. Placeholder non sostituisce label.
+
+**Select/Dropdown:** Altezza coerente con input. Icona arrow coerente. Scroll ordinato. Max height limitata.
+
+**Modal:** Max width definita. Overlay 40–60%. Chiudi con ESC. Focus trap.
+
+**Drawer:** Azioni secondarie. Non sostituisce pagina. Mobile: bottom sheet.
+
+**Toast:** Non blocca. Auto dismiss 3–5s. Colore semantico. Posizione coerente.
+
+**Tooltip:** Breve. Non essenziale per azione critica. Accessibile da tastiera.
+
+**Tabs:** Max 5. Active chiaro. Non per navigazione primaria complessa.
+
+**Card:** Padding 16–24. Border radius coerente. Non sovraccaricare.
+
+**Table:** Header bold, row hover, spacing uniforme, tabular numbers.
+
+**Pagination:** Max 7 numeri. Previous/Next chiari. Stato attivo evidente.
+
+**Badge:** Informativo o status. No testo lungo.
+
+**Avatar:** 32, 40, 48. Fallback iniziali. Bordo coerente.
+
+**KPI block:** Numero grande, label piccola, trend indicator, spazio generoso.
+
+**Stepper:** Max 6 step. Progressione chiara. Step corrente evidente.
+
+**Empty states:** Icona, titolo, descrizione, CTA primaria.
+
+**Skeleton:** Simile al layout finale. Non spinner per tutto. Solo contenuto variabile.
+
+**Architettura:** Atoms → Molecules → Organisms → Templates → Pages. Ogni componente: Default, Hover, Focus, Active, Disabled, Loading, Error se applicabile.
+
+**Regole finali:** Mai componente “solo per una pagina”. Documentare. Tokenizzare colori. Progettare ogni stato.
+
+---
+
+## 15. Layout patterns
+
+**Dashboard:** Header (titolo + azione primaria), KPI row, sezioni dati (card/grafici), tabella/lista. KPI importanti in alto a sinistra. Max 6 KPI per riga. Spazio generoso. CTA visibile senza scroll. Errori: 12 grafici insieme, nessuna gerarchia.
+
+**CRUD:** Lista con ricerca+filtri → Dettaglio → Modifica. Lista leggibile e filtrabile, Detail informativa, Edit focalizzata. Non mischiare dettaglio e modifica.
+
+**Wizard:** Max 5–6 step. Mostrare progresso. Salvataggio automatico. Validazione per step. CTA “Avanti”. Errore: form lunghissimo su una pagina.
+
+**Master-Detail:** Lista sinistra, dettaglio destra. Desktop affiancato, mobile stack. Evidenziare elemento selezionato.
+
+**Sidebar:** SaaS 6+ sezioni. Max 1 livello principale. Collassabile. Evidenziazione chiara. Max 12 voci.
+
+**Bottom nav (mobile):** Max 5 tab. Icona + label. Sempre visibile. Sezioni primarie.
+
+**Top nav:** Altezza 56–72px. Azioni globali (search, profile). Non sovraccaricare.
+
+**Split layout:** Due colonne simmetriche. Auth, marketing, tool con anteprima.
+
+**Data-heavy:** Tabelle leggibili, spacing compatto, tabular numbers, filtri visibili, sticky header.
+
+**Marketing:** Pattern Z. Hero, benefits, social proof, CTA, FAQ, footer.
+
+**Auth:** Minimal, focus singolo, split su desktop, ridurre distrazioni.
+
+---
+
+## 16. UX e psicologia cognitiva
+
+**Fitts’s Law:** CTA grande. Azioni pericolose distanti. Primari in thumb zone (mobile).
+
+**Hick’s Law:** Max 5–7 scelte. Raggruppare. Mostrare solo necessario.
+
+**Cognitive load:** Ridurre informazioni inutili, scelte simultanee, elementi decorativi.
+
+**Progressive disclosure:** Mostrare solo ciò che serve ora. Es: filtri avanzati nascosti, impostazioni collassate.
+
+**Feedback:** Click → animazione. Salvataggio → conferma. Errore → messaggio chiaro.
+
+**Affordance:** Elementi “sembrano” cliccabili. Pulsante con forma, link sottolineato, cursor pointer.
+
+**Error prevention:** Disabilitare impossibili. Validazione real-time. Conferma per azioni distruttive.
+
+**Recognition > Recall:** Menu visibili, autocomplete, suggerimenti.
+
+**Mental models:** Logo alto sinistra, carrello alto destra, profilo alto destra. Non rompere pattern.
+
+**User journey:** Entrata, azione, conversione, retention.
+
+**Task flow:** Obiettivo, step, punto successo, punto errore.
+
+**Onboarding:** Max 3–5 step. Mostra valore prima di chiedere. Skip possibile.
+
+---
+
+## 17. Accessibility (obbligatorio – WCAG)
+
+**WCAG AA:** Contrasto 4.5:1. Navigabile da tastiera. Testo scalabile 200%.
+
+**Keyboard:** Tab order logico. Focus trap in modal. Nessun elemento inaccessibile.
+
+**Focus:** Outline chiaro. Non rimuovere focus style.
+
+**Screen reader:** Alt text, label collegati, ruoli ARIA corretti.
+
+**Contrast:** Testo normale 4.5:1, large text 3:1.
+
+**Error messaging:** Specifico, non tecnico, vicino al campo.
+
+**Touch target:** Min 44×44px.
+
+**Motion:** Supportare prefers-reduced-motion. Disattivare animazioni eccessive.
+
+---
+
+## 18. Motion e interaction
+
+**Microinterazioni:** Confermano azione, rendono UI viva, migliorano percezione qualità.
+
+**Transition:** 150–300ms standard. Non oltre 400ms. Più veloce per microazioni.
+
+**Easing:** Ease-out entrata, ease-in uscita. No linear rigido.
+
+**Enter/Exit:** Fade + leggero movimento. No animazioni teatrali.
+
+**Feedback:** Bottone cambia stato, loading inline. Non lasciare UI “ferma”.
+
+**Gesture (mobile):** Swipe back, pull to refresh, swipe action list.
+
+**Loading:** Skeleton per contenuti, spinner per azione breve. Mai schermata vuota.
+
+**Hierarchy:** Animazioni primarie più evidenti, secondarie sottili.
+
+**Motion a11y:** Ridurre movimenti eccessivi. No parallasse aggressiva.
+
+---
+
+## 19. Navigazione e architettura informativa
+
+**IA:** Contenuti logici e scalabili. Sitemap ad albero: Home → Sezioni → Sotto-sezioni.
+
+**Depth mobile:** Max 3 livelli: Sezione → Sotto-sezione → Dettaglio.
+
+**Global vs local:** Global sempre visibile (sidebar/top). Local specifica sezione.
+
+**Permission-based:** Mostrare solo ciò che l’utente può usare.
+
+**Breadcrumb:** Percorso gerarchico. Utile desktop, non necessario mobile.
+
+**Search:** Sempre visibile in sistemi grandi. Autocomplete. Highlight risultati.
+
+**Filter:** Visibili, collassabili, stato attivo evidente.
+
+**Sorting:** Default chiaro, stato ordinamento visibile, persistente.
+
+**Regola finale:** L’utente non deve pensare, cercare, indovinare.
+
+---
+
+## 20. Data visualization e SaaS
+
+**KPI hierarchy:** Ordine visivo per impatto decisionale. Primary KPI grande (Revenue, MRR), Secondary medio, Supporting piccolo. 1–3 KPI primari max sopra la fold. Sempre: valore attuale, variazione %, timeframe. Non mischiare KPI di natura diversa nello stesso blocco.
+
+**Data density:** Max 7 elementi per blocco. Spaziatura generosa. Grouping visivo (card/container). Mostrare insight non solo dati.
+
+**Table:** Righe 44–56px. Zebra striping leggero. Header sticky. Ordinamento visibile. Numeri right, testo left. Evita 8–10+ colonne, testo multilinea non controllato.
+
+**Chart:** Max 5–7 serie colori. Legenda leggibile. No 3D. Assi etichettati. Tooltip chiari. Line=trend, Bar=confronto, Pie≤5 segmenti, Area=volume nel tempo.
+
+**Empty states:** Icona/illustrazione, spiegazione breve, CTA primaria, eventuale link guida.
+
+**Error states:** Mai solo “Errore”. Includere: cosa è successo, perché, cosa può fare l’utente, CTA alternativa.
+
+**Drill-down:** Dashboard → Segment → Dettaglio → Item. Breadcrumb visibile. Transizioni chiare. Tornare indietro facile.
+
+**Pagination vs infinite:** Pagination per tabelle business, controllo, ritorno a punto preciso. Infinite per feed, contenuto esplorativo. Mai infinite per dati critici.
+
+**Export:** Prevedere CSV, Excel, PDF (report). Rispettare filtri e ordinamento attivi.
+
+**Performance feedback:** Skeleton, progress bar per operazioni lunghe, feedback post-export.
+
+---
+
+## 21. Stato e feedback
+
+Ogni componente deve avere: Default, Hover, Focus, Active, Disabled, Loading, Success, Error, Warning, Empty.
+
+**Regole:** Focus sempre visibile. Disabled deve sembrare non cliccabile. Loading non deve bloccare inutilmente.
+
+---
+
+## 22. Performance e technical UI
+
+**Perceived performance:** Carica prima contenuto critico. Skeleton > spinner. Mostra dati parziali.
+
+**Skeleton vs Spinner:** Skeleton per lista, dashboard, tabelle. Spinner per micro azione, bottone, submit.
+
+**Lazy loading:** Immagini sotto fold, moduli pesanti, sezioni avanzate.
+
+**Optimistic UI:** Per like, toggle, switch. Non per pagamenti o operazioni critiche.
+
+**Offline:** Messaggio chiaro, cache locale, retry automatico.
+
+---
+
+## 23. Sicurezza e UX
+
+**Password:** Toggle mostra password, indicatore forza, messaggi chiari sui requisiti.
+
+**2FA:** Spiegazione semplice, backup codes, retry chiaro.
+
+**Session timeout:** Avviso prima della scadenza. Possibilità di estendere.
+
+**Dangerous actions:** Colore rosso, doppia conferma, testo esplicito (es. “Elimina definitivamente”). Mai solo “OK”.
+
+---
+
+## 24. Scalabilità enterprise
+
+**Multi-role:** UI diversa per ruoli. Permessi granulari. Non mostrare ciò che non si può usare.
+
+**Feature flags:** Feature nascoste, attivazione progressiva. UI pronta anche se disabilitata.
+
+**Token-based styling:** Colori, spacing, font tokenizzati, non hard-coded.
+
+**i18n:** No testo dentro immagini. Date dinamiche. Attenzione lunghezza parole (es. tedesco).
+
+---
+
+## 25. Mobile specific
+
+**Thumb zone:** CTA principali nella zona inferiore centrale.
+
+**Bottom sheet:** Azioni rapide, filtri, opzioni contestuali.
+
+**One-hand:** Max 1 CTA primaria. Evita angoli superiori per azioni importanti.
+
+---
+
+## 26. Testing e validazione
+
+**Usability:** Primo uso, task critici, errori.
+
+**A/B:** CTA, pricing, hero section.
+
+**Accessibility audit:** Tastiera, screen reader, contrasti.
+
+---
+
+## 27. Documentazione e governance
+
+**Design tokens:** Colori, radius, spacing centralizzati.
+
+**Naming:** Es. btn-primary-large, input-error.
+
+**Versioning:** Major (breaking), Minor (feature), Patch (fix).
+
+---
+
+## 28. Business e strategia
+
+**Product vision:** Chiaro: per chi è, che problema risolve, perché è diverso.
+
+**Monetization UX:** Mostra valore prima del paywall. Upgrade semplice. Prezzi trasparenti.
+
+**Retention:** Notifiche utili, reminder, progress tracking.
+
+---
+
+## 29. Errori da evitare
+
+- Incoerenza tra pagine
+- Troppe CTA
+- Nessuna gerarchia
+- Spaziature casuali
+- Colori senza sistema
+- Animazioni decorative inutili
+- Componenti duplicati
+- Stati mancanti
+
+---
+
+## 30. Form UX
+
+**Validazione:** Preferire feedback inline dopo blur o dopo primo submit; non solo al submit finale. Messaggio vicino al campo, non solo in cima.
+
+**Campi obbligatori:** Indicare in modo accessibile (es. asterisco + legenda “* obbligatorio”). Evitare solo colore per indicare obbligatorietà.
+
+**Tab order:** Logico (top-down, left-right). Campi disabilitati esclusi dal tab. Dopo submit, focus su messaggio di successo o su prossimo step.
+
+**Autofocus:** Solo un campo per schermata (es. primo campo del form o search). Mai in modal con contenuto che cambia sotto (es. typeahead) senza gestione attenta.
+
+**Errori:** Un messaggio per campo; linguaggio utente (“Inserisci un’email valida”), non tecnico (“ValidationError: invalid format”).
+
+---
+
+## 31. Modal vs pagina
+
+**Usa modal quando:** Azione breve e contestuale (conferma, picker, 1–2 campi). L’utente deve poter annullare o chiudere senza perdere il contesto. Contenuto secondario rispetto alla schermata sotto.
+
+**Usa pagina (o drawer full-screen) quando:** Flusso multi-step, molti campi, contenuto che deve essere linkabile/shareabile (URL). Quando “tornare indietro” deve essere navigazione chiara (es. history).
+
+**Regola:** Se superi 3–4 campi o 2 step, valuta pagina/drawer invece di modal. Modal piccole su mobile spesso male usabili; preferire bottom sheet o full-screen.
+
+---
+
+## 32. Canale di feedback (toast / inline / modal)
+
+**Toast (o snackbar):** Conferma di azione non critica (salvato, copiato). Non blocca. Auto-dismiss 3–5s. Non per errori che richiedono azione. Posizione coerente (es. in basso).
+
+**Inline:** Errori di validazione, stato di salvataggio, messaggi legati a un campo o a un blocco. Resta visibile finché l’utente non corregge o non cambia contesto.
+
+**Modal (dialog):** Errori bloccanti, conferme distruttive, scelte obbligate. Richiede azione esplicita (OK, Annulla). Per messaggi critici che l’utente deve leggere.
+
+**Regola:** Un solo livello di interruzione per volta (non modal sopra modal). Per “qualcosa è andato storto” con retry: preferire banner o inline con CTA “Riprova”, non solo toast.
+
+---
+
+## 33. Touch vs hover
+
+Su touch non esiste hover. Non basare informazioni o azioni critiche solo su hover (es. tooltip con azione unica, menu che si apre solo al hover).
+
+**Regole:** Azioni importanti sempre raggiungibili con tap/click. Tooltip e hover come “di più”, non come unico modo. Su hybrid (touch + pointer), hover può migliorare l’esperienza ma non essere obbligatorio. Evitare hover su aree troppo piccole su mobile (tap target già 44px).
+
+---
+
+## 34. Microcopy e tono
+
+**Pulsanti:** Verbo/azione (“Salva”, “Invia richiesta”), non sostantivo generico (“Invio”). Coerente tra pagine (stesso azione = stesso testo).
+
+**Errori:** In prima persona o neutro (“Non abbiamo trovato…”), specifico (“Inserisci un numero di 10 cifre”). Mai colpevolizzare (“Hai sbagliato”).
+
+**Empty state:** Spiegare perché è vuoto e cosa fare (“Nessun ordine. Il tuo primo ordine apparirà qui.” + CTA “Crea ordine” se applicabile).
+
+**Tono:** Coerente con il prodotto (formale/informale). Breve; una idea per frase. Evitare gergo tecnico in UI utente.
+
+---
+
+## 35. Focus management (a11y)
+
+**Apertura modal:** Focus nel modal (primo elemento focusabile o pulsante primario). Focus trap: tab non esce dal modal.
+
+**Chiusura modal:** Restituire focus all’elemento che aveva aperto il modal (trigger). Evitare che il focus finisca nel body o sparisca.
+
+**Dopo submit / navigazione:** Focus su messaggio di conferma o su elemento logico successivo (es. prima riga della lista aggiornata). Per cambi di route, focus sul titolo o sul main content (skip link / landmark).
+
+**URL e deep link:** Stato importante riflesso in URL dove ha senso (filtri, tab, id). Permette condivisione e “indietro” prevedibile.
+
+---
+
+## 36. Ricerca e filtri
+
+**Ricerca:** Debounce 200–400ms su input typeahead. Min 2–3 caratteri prima di chiamate pesanti. Stato “Nessun risultato” con suggerimento (controlla ortografia, allarga filtri). Loading durante la ricerca.
+
+**Filtri:** Stato attivo visibile (chip, badge, colore). “Rimuovi filtri” / “Clear all” quando più di uno è attivo. Su mobile, filtri in drawer/sheet o pagina dedicata; non troppi dropdown in linea.
+
+**Ordinamento:** Default chiaro (es. “Più recenti”). Label che descrive l’ordinamento attuale (“Ordine: A–Z”). Persistere preferenza dove ha senso (es. lista preferiti).
+
+---
+
+## 37. Densità (compatto vs comodo)
+
+**Compatto:** Tabelle dati, dashboard con molti KPI, utenti esperti che devono scansionare velocemente. Padding e altezze ridotti ma rispettando sempre touch 44px su mobile e leggibilità (line-height min).
+
+**Comodo:** Onboarding, form lunghi, contenuto da leggere. Più spazio tra blocchi e più padding nelle card. Preferibile quando il focus è comprensione, non velocità.
+
+**Regola:** Stessa sezione = stessa densità. Non mischiare righe compatte e righe molto ariose nella stessa lista. Densità può variare per ruolo o preferenza utente (impostazione “vista compatta”) se il prodotto lo giustifica.

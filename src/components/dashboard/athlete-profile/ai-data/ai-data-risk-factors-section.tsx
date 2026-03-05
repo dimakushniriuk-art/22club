@@ -1,0 +1,41 @@
+// ============================================================
+// Componente Sezione Fattori Rischio AI Data (FASE C - Split File Lunghi)
+// ============================================================
+// Estratto da athlete-ai-data-tab.tsx per migliorare manutenibilità
+// ============================================================
+
+'use client'
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { Badge } from '@/components/ui'
+import { AlertTriangle } from 'lucide-react'
+
+interface AIDataRiskFactorsSectionProps {
+  fattoriRischio: string[]
+}
+
+export function AIDataRiskFactorsSection({ fattoriRischio }: AIDataRiskFactorsSectionProps) {
+  if (fattoriRischio.length === 0) return null
+
+  return (
+    <Card
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+    >
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-primary" />
+          Fattori di Rischio
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2">
+          {fattoriRischio.map((fattore, index) => (
+            <Badge key={index} variant="destructive">
+              {fattore}
+            </Badge>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

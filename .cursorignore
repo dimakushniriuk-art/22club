@@ -1,0 +1,156 @@
+####################################
+# DIPENDENZE
+####################################
+node_modules
+bower_components
+jspm_packages
+
+####################################
+# BUILD / OUTPUT
+####################################
+.next
+out
+dist
+build
+coverage
+storybook-static
+playwright-report
+test-results
+reports
+
+####################################
+# CACHE / TOOLING
+####################################
+.cache
+.turbo
+.parcel-cache
+.eslintcache
+.stylelintcache
+.swc
+.vercel
+.netlify
+.firebase
+
+####################################
+# TEST / TEMP
+####################################
+tmp
+tmp-*
+.tmp
+.tmp-*
+temp
+temp-*
+tmp-e2e
+.tmp-e2e
+screenshots
+videos
+artifacts
+
+####################################
+# LOG
+####################################
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+####################################
+# ENV / SECRETS
+####################################
+.env
+.env.*
+.env.local
+.env.development*
+.env.production*
+.env.test*
+
+####################################
+# DATABASE / RUNTIME
+####################################
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.wal
+*.shm
+
+####################################
+# OS
+####################################
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+####################################
+# EDITOR / IDE
+####################################
+.vscode
+!.vscode/extensions.json
+.idea
+*.iml
+*.swp
+*.swo
+*~
+*.bak
+
+####################################
+# VERSION CONTROL METADATA
+####################################
+.git
+.gitignore
+.gitattributes
+.gitmodules
+.github
+
+####################################
+# ARCHIVI / BINARI
+####################################
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.exe
+*.dll
+*.so
+*.dylib
+
+####################################
+# MEDIA (NON UTILI AL RAGIONAMENTO)
+####################################
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.mp3
+*.wav
+*.ogg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.ico
+*.pdf
+
+####################################
+# DOCUMENTAZIONE GENERATA
+####################################
+docs/generated
+docs/build
+docs/.cache
+
+####################################
+# AI / TOOL OUTPUT
+####################################
+.ai-cache
+.ai-output
+.ai-tmp
+.cursor-cache

@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "sb-icibqnmtacibgnhaidlz-auth-token",
+      "value": "base64-eyJhY2Nlc3NfdG9rZW4iOiJleUpoYkdjaU9pSklVekkxTmlJc0ltdHBaQ0k2SWpWTE5UQTNNMVUxVERCV2FrOVRObW9pTENKMGVYQWlPaUpLVjFRaWZRLmV5SnBjM01pT2lKb2RIUndjem92TDJsamFXSnhibTEwWVdOcFltZHVhR0ZwWkd4NkxuTjFjR0ZpWVhObExtTnZMMkYxZEdndmRqRWlMQ0p6ZFdJaU9pSTRaVFJqWkRaaVpDMHhNRE0xTFRSbE9USXRZVGhoTXkwellURTFOV1EzTmpOaVl6RWlMQ0poZFdRaU9pSmhkWFJvWlc1MGFXTmhkR1ZrSWl3aVpYaHdJam94TnpjeU16STROamN6TENKcFlYUWlPakUzTnpJek1qVXdOek1zSW1WdFlXbHNJam9pWVdSdGFXNUFNakpqYkhWaUxtbDBJaXdpY0dodmJtVWlPaUlpTENKaGNIQmZiV1YwWVdSaGRHRWlPbnNpYjNKblgybGtJam9pWkdWbVlYVnNkQzF2Y21jaUxDSndjbTkyYVdSbGNpSTZJbVZ0WVdsc0lpd2ljSEp2ZG1sa1pYSnpJanBiSW1WdFlXbHNJbDBzSW5KdmJHVWlPaUpoWkcxcGJpSjlMQ0oxYzJWeVgyMWxkR0ZrWVhSaElqcDdJbVZ0WVdsc1gzWmxjbWxtYVdWa0lqcDBjblZsTENKdmNtZGZhV1FpT2lKa1pXWmhkV3gwTFc5eVp5SXNJbkp2YkdVaU9pSmhaRzFwYmlKOUxDSnliMnhsSWpvaVlYVjBhR1Z1ZEdsallYUmxaQ0lzSW1GaGJDSTZJbUZoYkRFaUxDSmhiWElpT2x0N0ltMWxkR2h2WkNJNkluQmhjM04zYjNKa0lpd2lkR2x0WlhOMFlXMXdJam94TnpjeU16STFNRGN6ZlYwc0luTmxjM05wYjI1ZmFXUWlPaUkxTWpNd05EZzFPQzFsTm1abExUUTVZMkV0WVdNM01pMWxaV000TkRJMlpESXhPVElpTENKcGMxOWhibTl1ZVcxdmRYTWlPbVpoYkhObGZRLjFncHNUcEJtYTFpOWc2TXBBRWV0SVVFRXdxaFU2NzZMVkdGRlN3QkV5RFEiLCJ0b2tlbl90eXBlIjoiYmVhcmVyIiwiZXhwaXJlc19pbiI6MzYwMCwiZXhwaXJlc19hdCI6MTc3MjMyODY3MywicmVmcmVzaF90b2tlbiI6ImNhaHBremVveW80ciIsInVzZXIiOnsiaWQiOiI4ZTRjZDZiZC0xMDM1LTRlOTItYThhMy0zYTE1NWQ3NjNiYzEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJlbWFpbCI6ImFkbWluQDIyY2x1Yi5pdCIsImVtYWlsX2NvbmZpcm1lZF9hdCI6IjIwMjUtMTItMjlUMTg6NTc6MTUuNDg2MTAzWiIsInBob25lIjoiIiwiY29uZmlybWVkX2F0IjoiMjAyNS0xMi0yOVQxODo1NzoxNS40ODYxMDNaIiwibGFzdF9zaWduX2luX2F0IjoiMjAyNi0wMy0wMVQwMDozMToxMy45MTI5NjM0MzFaIiwiYXBwX21ldGFkYXRhIjp7Im9yZ19pZCI6ImRlZmF1bHQtb3JnIiwicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdLCJyb2xlIjoiYWRtaW4ifSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwib3JnX2lkIjoiZGVmYXVsdC1vcmciLCJyb2xlIjoiYWRtaW4ifSwiaWRlbnRpdGllcyI6W10sImNyZWF0ZWRfYXQiOiIyMDI1LTEyLTI5VDE4OjM4OjEwLjU1Mjk4NVoiLCJ1cGRhdGVkX2F0IjoiMjAyNi0wMy0wMVQwMDozMToxMy45MTY2ODhaIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0sIndlYWtfcGFzc3dvcmQiOm51bGx9",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1806885076.394476,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "cookie-consent",
+          "value": "true"
+        }
+      ]
+    }
+  ]
+}

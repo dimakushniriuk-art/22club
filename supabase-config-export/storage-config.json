@@ -1,0 +1,129 @@
+{
+  "buckets": [
+    {
+      "id": "general-files",
+      "name": "general-files",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": [
+        "*/*"
+      ],
+      "created_at": "2025-10-16T14:09:01.081Z",
+      "updated_at": "2025-10-16T14:09:01.081Z"
+    },
+    {
+      "id": "athlete-certificates",
+      "name": "athlete-certificates",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg"
+      ],
+      "created_at": "2025-12-07T12:49:14.130Z",
+      "updated_at": "2025-12-07T12:49:14.130Z"
+    },
+    {
+      "id": "athlete-referti",
+      "name": "athlete-referti",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg"
+      ],
+      "created_at": "2025-12-07T12:49:14.130Z",
+      "updated_at": "2025-12-07T12:49:14.130Z"
+    },
+    {
+      "id": "athlete-progress-photos",
+      "name": "athlete-progress-photos",
+      "public": false,
+      "file_size_limit": 5242880,
+      "allowed_mime_types": [
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "image/webp"
+      ],
+      "created_at": "2025-12-07T12:49:14.130Z",
+      "updated_at": "2025-12-07T12:49:14.130Z"
+    },
+    {
+      "id": "athlete-documents",
+      "name": "athlete-documents",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ],
+      "created_at": "2025-12-07T12:49:14.130Z",
+      "updated_at": "2025-12-07T12:49:14.130Z"
+    },
+    {
+      "id": "exercise-thumbs",
+      "name": "exercise-thumbs",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null,
+      "created_at": "2025-11-02T11:01:50.328Z",
+      "updated_at": "2025-11-02T11:01:50.328Z"
+    },
+    {
+      "id": "documents",
+      "name": "documents",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "application/pdf",
+        "image/*",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ],
+      "created_at": "2025-10-16T14:06:59.263Z",
+      "updated_at": "2025-10-16T14:06:59.263Z"
+    },
+    {
+      "id": "progress-photos",
+      "name": "progress-photos",
+      "public": false,
+      "file_size_limit": 5242880,
+      "allowed_mime_types": [
+        "image/*"
+      ],
+      "created_at": "2025-10-16T14:08:39.680Z",
+      "updated_at": "2025-10-16T14:08:39.680Z"
+    },
+    {
+      "id": "avatars",
+      "name": "avatars",
+      "public": true,
+      "file_size_limit": 2097152,
+      "allowed_mime_types": [
+        "image/*"
+      ],
+      "created_at": "2025-12-07T01:51:03.813Z",
+      "updated_at": "2025-12-07T01:51:03.813Z"
+    },
+    {
+      "id": "exercise-videos",
+      "name": "exercise-videos",
+      "public": true,
+      "file_size_limit": 52428800,
+      "allowed_mime_types": [
+        "video/*"
+      ],
+      "created_at": "2025-11-02T11:01:50.328Z",
+      "updated_at": "2026-01-09T12:00:59.950Z"
+    }
+  ]
+}

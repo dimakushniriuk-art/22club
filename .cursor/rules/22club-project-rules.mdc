@@ -1,0 +1,74 @@
+---
+alwaysApply: true
+---
+# Overview
+
+PROGETTO
+- Nome: 22Club
+- Gestionale fitness multi-ruolo.
+
+STACK
+- Next.js (App Router)
+- TypeScript strict
+- Supabase (Postgres + RLS)
+- Tailwind CSS (dark, Apple-like)
+- Playwright E2E
+- Capacitor (Android / iOS)
+
+CODICE VIVO (PRIORITÀ MASSIMA)
+- src/
+- app/
+- components/
+- lib/
+- supabase/
+- e2e/
+- tests/
+
+CODICE DI SUPPORTO (NON MODIFICARE)
+- project_memory/
+- project_tracker/
+- ai_memory/
+- __project_logic_docs__/
+- docs/
+- backups/
+
+DIVIETI ASSOLUTI
+- NON modificare file in:
+  - project_memory
+  - project_tracker
+  - ai_memory
+  - __project_logic_docs__
+- Queste cartelle sono solo storico e tracking.
+
+DATABASE
+- Supabase è la fonte di verità.
+- Ogni modifica ai dati:
+  - deve produrre SQL esplicito
+  - NON va eseguita automaticamente
+  - attendere conferma dell’utente
+
+SVILUPPO
+- Un file alla volta se possibile.
+- Niente refactor estetici.
+- Niente miglioramenti non richiesti.
+- Risolvi solo problemi reali.
+
+TEST
+- Analizza solo test falliti.
+- Correggi solo il punto rotto.
+- Riesegui solo test coinvolti.
+- Full E2E solo a fine ciclo.
+
+STILE UI
+- Dark mode.
+- Apple-like.
+- Coerenza > creatività.
+
+SPAZIATURA (verificare in ogni pagina dashboard/staff)
+- Tra sezioni principali: space-y-4 sm:space-y-6 (o gap-4 / gap-6 in flex-col).
+- Tra header (titolo/azioni) e contenuto: ereditato da StaffContentLayout (gap-4 sm:gap-6 md:gap-8).
+- All’interno di card/contenitori: space-y-4 tra blocchi (es. stats + lista).
+- Gruppi di pulsanti/filtri: gap-2 tra pulsanti; gap-x-4 gap-y-3 tra gruppi (es. ricerca vs filtri).
+- Liste di card/item: space-y-3 tra un item e l’altro.
+- Griglie: gap-3 sm:gap-4 per card KPI; gap-2 per griglie compatte mobile.
+- Evitare blocchi adiacenti senza gap; usare min-w-0 su flex-1 per evitare overflow.

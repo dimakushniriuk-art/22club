@@ -1,0 +1,26 @@
+{
+  "note": "Commenti su tabelle e colonne estratti dal database",
+  "exported_at": "2026-01-17T20:49:53.302Z",
+  "comments": [
+    {
+      "schema": "public",
+      "table": "appointments",
+      "table_comment": "Tabella semplificata per gestire appuntamenti",
+      "columns": [
+        {
+          "column": "type",
+          "comment": "Tipo appuntamento: allenamento, cardio, check, consulenza"
+        },
+        {
+          "column": "status",
+          "comment": "Stato appuntamento: attivo, completato, annullato"
+        },
+        {
+          "column": "color",
+          "comment": "Colore appuntamento (stile Google Calendar)"
+        }
+      ]
+    }
+  ],
+  "note_2": "Questo file contiene solo un esempio. Per il file completo, esegui la query 16 di export-database-schema.sql e salva i risultati qui."
+}

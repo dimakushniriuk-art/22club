@@ -1,0 +1,46 @@
+# 🎯 REGOLA SUPREMA: Schema SQL - Fonte di Verità Unica
+
+## REGOLA FONDAMENTALE
+
+**`supabase-config-export/schema-with-data.sql` è l'UNICA fonte di verità per lo schema del database.**
+
+### Quando Modifichi il Database:
+
+1. **SEMPRE** parti da `schema-with-data.sql` per capire lo stato attuale
+2. **SEMPRE** crea migrazioni basate su `schema-with-data.sql`
+3. **SEMPRE** aggiorna `schema-with-data.sql` dopo aver eseguito modifiche al database
+4. **SEMPRE** committa `schema-with-data.sql` aggiornato nel repository
+
+### Workflow Obbligatorio:
+
+```
+1. Leggi schema-with-data.sql → Capisci stato attuale
+2. Crea migrazione SQL → Basata su schema-with-data.sql
+3. Esegui migrazione su Supabase → Dashboard o CLI
+4. Esporta nuovo schema → npm run db:update-source-of-truth
+5. Committa schema-with-data.sql aggiornato
+```
+
+### Comandi Disponibili:
+
+- `npm run db:update-source-of-truth` - Aggiorna schema-with-data.sql dal database
+- `npm run db:sync-schema` - Verifica e sincronizza schema-with-data.sql
+- `npm run db:analyze-schema` - Analizza errori in schema-with-data.sql
+
+### ❌ NON FARE MAI:
+
+- Modificare il database senza aggiornare schema-with-data.sql
+- Creare migrazioni senza consultare schema-with-data.sql
+- Usare altri file SQL come fonte di verità
+- Ignorare questa regola
+
+### ✅ FARE SEMPRE:
+
+- Consultare schema-with-data.sql prima di ogni modifica
+- Aggiornare schema-with-data.sql dopo ogni modifica
+- Committare schema-with-data.sql nel repository
+- Verificare che schema-with-data.sql sia sincronizzato
+
+---
+
+**Questa regola ha priorità ASSOLUTA su tutte le altre regole di sviluppo database.**

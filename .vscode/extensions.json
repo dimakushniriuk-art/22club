@@ -1,0 +1,29 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "supabase.vscode-supabase",
+    "mikestead.dotenv",
+    "heybourn.headwind",
+    "ivanhofer.colors",
+    "antfu.iconify",
+    "pranaygp.vscode-css-peek",
+    "csstools.postcss",
+    "qwtel.sqlite-viewer",
+    "mtxr.sqltools",
+    "GrapeCity.gc-excelviewer",
+    "eamodio.gitlens",
+    "christian-kohler.path-intellisense",
+    "usernamehw.errorlens",
+    "Gruntfuggly.todo-tree",
+    "humao.rest-client",
+    "CoenraadS.bracket-pair-color-dlw",
+    "formulahendry.auto-rename-tag",
+    "wix.vscode-import-cost",
+    "Orta.vscode-jest",
+    "ms-playwright.playwright",
+    "Codeium.codeium",
+    "shd101wyy.markdown-preview-enhanced"
+  ]
+}

@@ -1,0 +1,15 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Calendario | 22Club Dashboard',
+  description:
+    'Gestisci appuntamenti, allenamenti e sessioni. Calendario con viste giorno, settimana, mese e agenda.',
+}
+
+export default function CalendarioLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return children
+}

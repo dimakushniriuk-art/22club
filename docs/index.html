@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>22Club Developer Portal</title>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/themes/dark.css" />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <style>
+      :root {
+        --theme-color: #02b3bf;
+        --base-font-size: 14px;
+        --sidebar-width: 300px;
+      }
+
+      .app-name {
+        color: var(--theme-color) !important;
+        font-weight: bold;
+      }
+
+      .sidebar-nav > ul > li > a {
+        color: var(--theme-color) !important;
+        font-weight: 600;
+      }
+
+      .sidebar-nav > ul > li > ul > li > a {
+        color: #e2e8f0 !important;
+      }
+
+      .sidebar-nav > ul > li > ul > li > ul > li > a {
+        color: #94a3b8 !important;
+      }
+
+      .cover {
+        background: linear-gradient(135deg, #02b3bf 0%, #0891b2 100%);
+      }
+
+      .cover-main {
+        color: white;
+      }
+
+      .cover-main h1 {
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .cover-main p {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .btn {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+      }
+
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">Caricamento documentazione...</div>
+    <script>
+      window.$docsify = {
+        name: '22Club Dev Docs',
+        repo: '22Club/22club',
+        loadSidebar: true,
+        subMaxLevel: 3,
+        auto2top: true,
+        themeColor: '#02B3BF',
+        coverpage: true,
+        search: {
+          maxAge: 86400000,
+          paths: 'auto',
+          placeholder: 'Cerca nella documentazione...',
+          noData: 'Nessun risultato trovato.',
+          depth: 6,
+        },
+        pagination: {
+          previousText: 'Precedente',
+          nextText: 'Successivo',
+          crossChapter: true,
+          crossChapterText: true,
+        },
+        tabs: {
+          persist: true,
+          sync: true,
+          theme: 'classic',
+          tabComments: true,
+          tabHeadings: true,
+        },
+        copyCode: {
+          buttonText: 'Copia',
+          errorText: 'Errore',
+          successText: 'Copiato!',
+        },
+        zoom: {
+          selector: 'img',
+          background: {
+            'background-color': 'rgba(0,0,0,0.8)',
+          },
+        },
+      }
+    </script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/copy-code.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/pagination.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/tabs.min.js"></script>
+  </body>
+</html>

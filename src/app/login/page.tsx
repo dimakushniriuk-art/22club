@@ -1,0 +1,277 @@
+'use client'
+
+import { Suspense, useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { createLogger } from '@/lib/logger'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { AthleteBackground } from '@/components/athlete/athlete-background'
+import { LoginCard } from '@/components/auth/LoginCard'
+
+const logger = createLogger('LoginPage')
+
+function validateLoginForm(email: string, password: string): { email?: string; password?: string } {
+  const errors: { email?: string; password?: string } = {}
+  if (!email.trim()) errors.email = 'Email è richiesta'
+  if (!password) errors.password = 'Password è richiesta'
+  return errors
+}
+
+type ProfileRow = { role: string; org_id: string | null; first_login: boolean | null }
+
+function performPostLoginRedirect(
+  profileData: ProfileRow,
+  router: ReturnType<typeof useRouter>,
+  setError: (s: string | null) => void,
+  setLoading: (b: boolean) => void,
+): boolean {
+  const userRole = profileData.role
+  const normalizedRole =
+    userRole === 'pt' || userRole === 'staff'
+      ? 'trainer'
+      : userRole === 'atleta'
+        ? 'athlete'
+        : userRole === 'owner'
+          ? 'admin'
+          : userRole
+
+  if (normalizedRole === 'admin') {
+    router.replace('/dashboard/admin')
+    return true
+  }
+  if (normalizedRole === 'trainer') {
+    router.replace('/dashboard')
+    return true
+  }
+  if (normalizedRole === 'marketing') {
+    router.replace('/dashboard/marketing')
+    return true
+  }
+  if (normalizedRole === 'nutrizionista') {
+    router.replace('/dashboard/nutrizionista')
+    return true
+  }
+  if (normalizedRole === 'massaggiatore') {
+    router.replace('/dashboard/massaggiatore')
+    return true
+  }
+  if (normalizedRole === 'athlete') {
+    if (profileData.first_login === true) {
+      router.replace('/welcome')
+    } else {
+      router.replace('/home')
+    }
+    return true
+  }
+
+  setError(`Ruolo non riconosciuto: ${userRole}. Contatta l'amministratore.`)
+  setLoading(false)
+  return false
+}
+
+const LOGIN_ERROR_ID = 'login-error'
+const RATE_LIMIT_ATTEMPTS = 5
+const RATE_LIMIT_MS = 60_000
+
+function LoginContent() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({})
+  const [lockUntil, setLockUntil] = useState<number | null>(null)
+  const failedAttemptsRef = useRef(0)
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = useMemo(() => createClient(), [])
+
+  useEffect(() => {
+    if (searchParams.get('error') === 'profilo') {
+      setError("Profilo non trovato. Contatta l'amministratore per completare la registrazione.")
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (lockUntil == null) return
+    const remaining = lockUntil - Date.now()
+    if (remaining <= 0) {
+      setLockUntil(null)
+      setError(null)
+      failedAttemptsRef.current = 0
+      return
+    }
+    const t = setTimeout(() => {
+      setLockUntil(null)
+      setError(null)
+      failedAttemptsRef.current = 0
+    }, remaining)
+    return () => clearTimeout(t)
+  }, [lockUntil])
+
+  const handleLogin = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setLoading(true)
+      setError(null)
+      setValidationErrors({})
+
+      const errors = validateLoginForm(email, password)
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors)
+        setLoading(false)
+        return
+      }
+
+      try {
+        const signInStart = performance.now()
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        })
+        logger.debug(
+          `[PERF] signInWithPassword: ${(performance.now() - signInStart).toFixed(2)}ms`,
+          { success: !signInError },
+        )
+
+        if (signInError) {
+          logger.error('Errore login', signInError, {
+            message: signInError.message,
+            status: (signInError as { status?: number }).status,
+          })
+          failedAttemptsRef.current += 1
+          if (failedAttemptsRef.current >= RATE_LIMIT_ATTEMPTS) {
+            setLockUntil(Date.now() + RATE_LIMIT_MS)
+            setError(
+              `Troppi tentativi errati. Riprova tra ${RATE_LIMIT_MS / 1000} secondi.`,
+            )
+          } else {
+            const isNetworkError =
+              signInError.message?.includes('Failed to fetch') ||
+              (signInError as { name?: string }).name === 'AuthRetryableFetchError' ||
+              (signInError as { status?: number }).status === 0
+            if (isNetworkError) {
+              setError(
+                'Impossibile contattare il server. Verifica la connessione e che il progetto Supabase sia attivo (Dashboard Supabase).',
+              )
+            } else if (signInError.message?.includes('Supabase not configured')) {
+              setError(
+                "Supabase non configurato correttamente. Verifica le variabili d'ambiente in .env.local",
+              )
+            } else {
+              setError('Credenziali non valide')
+            }
+          }
+          return
+        }
+        failedAttemptsRef.current = 0
+
+        if (!data.user) {
+          setLoading(false)
+          return
+        }
+
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('role, org_id, first_login')
+            .eq('user_id', data.user.id)
+            .single()
+
+          if (profileError || !profileData) {
+            const err = profileError as { code?: string; status?: number; message?: string }
+            const rawMessage =
+              typeof (profileError as { message?: string })?.message === 'string'
+                ? (profileError as { message: string }).message
+                : String(profileError ?? '')
+            const isAbort =
+              (profileError instanceof Error && profileError.name === 'AbortError') ||
+              rawMessage.toLowerCase().includes('aborted')
+            if (isAbort) {
+              setError('Riprova il login.')
+              return
+            }
+            logger.error('Errore caricamento profilo', profileError, {
+              userId: data.user.id,
+              code: err?.code,
+              status: err?.status,
+            })
+            const code = err?.code
+            if (code === 'PGRST116') {
+              setError("Profilo non trovato. Contatta l'amministratore per completare la registrazione.")
+            } else if (err?.status === 429 || code === 'over_request_rate_limit') {
+              setError('Troppe richieste. Riprova tra qualche secondo.')
+            } else {
+              setError(err?.message ?? (rawMessage || 'Errore durante il caricamento del profilo'))
+            }
+            return
+          }
+
+          performPostLoginRedirect(
+            profileData as ProfileRow,
+            router,
+            setError,
+            setLoading,
+          )
+        } catch {
+          logger.error('Errore durante il caricamento del profilo')
+          router.replace('/post-login')
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Errore durante il login'
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+          setError('Impossibile connettersi a Supabase. Verifica la configurazione in .env.local')
+        } else {
+          setError(errorMessage)
+        }
+      } finally {
+        setLoading(false)
+      }
+    },
+    [email, password, router, supabase],
+  )
+
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+    setValidationErrors((prev) => (prev.email ? { ...prev, email: undefined } : prev))
+  }, [])
+
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    setValidationErrors((prev) => (prev.password ? { ...prev, password: undefined } : prev))
+  }, [])
+
+  const isRateLimited = lockUntil != null && Date.now() < lockUntil
+
+  return (
+    <LoginCard
+      email={email}
+      password={password}
+      loading={loading}
+      error={error}
+      validationErrors={validationErrors}
+      onSubmit={handleLogin}
+      onEmailChange={handleEmailChange}
+      onPasswordChange={handlePasswordChange}
+      errorId={LOGIN_ERROR_ID}
+      submitDisabled={isRateLimited}
+      title="Accedi"
+      subtitle="Inserisci le tue credenziali per accedere al tuo account."
+    />
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <div
+      className="page-login min-h-screen flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 relative overflow-hidden safe-area-inset bg-background"
+      style={{ minHeight: '100dvh' }}
+    >
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <AthleteBackground />
+      </div>
+      <Suspense fallback={<LoginCard skeleton title="Accedi" />}>
+        <LoginContent />
+      </Suspense>
+    </div>
+  )
+}
