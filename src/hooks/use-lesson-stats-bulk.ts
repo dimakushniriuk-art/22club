@@ -53,8 +53,9 @@ export function useLessonStatsBulk(
         },
       )
       ;(Array.isArray(appointmentsRes.data) ? appointmentsRes.data : []).forEach(
-        (r: { athlete_id: string }) => {
+        (r: { athlete_id: string | null }) => {
           const id = r.athlete_id
+          if (id == null) return
           usedByAthlete.set(id, (usedByAthlete.get(id) ?? 0) + 1)
         },
       )

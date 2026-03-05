@@ -333,10 +333,13 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
           .maybeSingle()
         orgId = firstOrg?.id ?? undefined
       }
+      if (!orgId || orgId.trim() === '') {
+        throw new Error('Organizzazione non configurata. Impossibile creare il pagamento.')
+      }
       const paymentPayload = {
         ...paymentData,
         created_by_profile_id: staffProfile.id,
-        ...(orgId != null && orgId !== '' && { org_id: orgId }),
+        org_id: orgId,
       }
 
       logger.debug('Tentativo inserimento pagamento', undefined, {
