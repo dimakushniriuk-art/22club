@@ -190,8 +190,14 @@ function ChatLoadingFullPage({ footerChildren }: { footerChildren?: ReactNode })
           <div className="bg-background-tertiary h-14 rounded-xl" />
         </div>
       </div>
-      <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary p-3 min-[834px]:p-4 shadow-lg pb-[env(safe-area-inset-bottom)]">
-        <div className="absolute inset-0 z-20 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-background to-teal-500/5 pointer-events-none" />
+      <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black p-3 min-[834px]:p-4 shadow-lg pt-px pb-[env(safe-area-inset-bottom)]">
+        <div
+          className="absolute inset-x-0 top-0 h-px z-20"
+          style={{
+            background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+          }}
+          aria-hidden
+        />
         <div className="relative z-10 w-full">
           {footerChildren ?? (
             <div className="h-10 min-[834px]:h-11 bg-background-tertiary rounded-xl animate-pulse" />
@@ -631,8 +637,14 @@ function AthleteChatPageContent() {
             <div className="bg-background-tertiary h-14 rounded-xl" />
           </div>
         </div>
-        <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary p-3 min-[834px]:p-4 shadow-lg pb-[env(safe-area-inset-bottom)]">
-          <div className="absolute inset-0 z-20 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-background to-teal-500/5 pointer-events-none" />
+        <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black p-3 min-[834px]:p-4 shadow-lg pt-px pb-[env(safe-area-inset-bottom)]">
+          <div
+            className="absolute inset-x-0 top-0 h-px z-20"
+            style={{
+              background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+            }}
+            aria-hidden
+          />
           <div className="relative z-10 w-full">
             <MessageInput
               onSendMessage={handleSendMessage}
@@ -666,8 +678,14 @@ function AthleteChatPageContent() {
       role="main"
       aria-label="Chat"
     >
-      <header className="relative overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg z-10 flex-shrink-0">
-        <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5" />
+      <header className="fixed inset-x-0 top-0 z-20 overflow-hidden bg-black p-3 min-[834px]:p-4 shadow-lg pt-[calc(10px+env(safe-area-inset-top,0px))]">
+        <div
+          className="absolute inset-x-0 bottom-0 h-px"
+          style={{
+            background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+          }}
+          aria-hidden
+        />
         <div className="relative z-10 flex items-center gap-2 min-[834px]:gap-3 overflow-x-auto">
           <Button
             variant="ghost"
@@ -753,7 +771,7 @@ function AthleteChatPageContent() {
       </header>
 
       <main
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain flex flex-col space-y-1 p-4 bg-background"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain flex flex-col space-y-1 p-4 pt-[calc(5.5rem+10px+env(safe-area-inset-top,0px))] pb-[calc(5rem+env(safe-area-inset-bottom))] bg-background"
         aria-label="Messaggi della conversazione"
       >
         <MessageList
@@ -768,10 +786,16 @@ function AthleteChatPageContent() {
       </main>
 
       <footer
-        className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary p-3 min-[834px]:p-4 shadow-lg pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black px-3 min-[834px]:px-4 py-[10px] shadow-lg pt-[calc(10px+1px)] pb-[calc(10px+env(safe-area-inset-bottom))]"
         aria-label="Input messaggio"
       >
-        <div className="absolute inset-0 z-20 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-background to-teal-500/5 pointer-events-none" />
+        <div
+          className="absolute inset-x-0 top-0 h-px z-20"
+          style={{
+            background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+          }}
+          aria-hidden
+        />
         <div className="relative z-10 w-full">
           <MessageInput
             onSendMessage={handleSendMessage}

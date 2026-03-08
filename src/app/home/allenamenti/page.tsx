@@ -558,7 +558,13 @@ function AllenamentiHomePageContent() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-72 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div
+        className="min-h-0 flex-1 overflow-auto px-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5"
+        style={{
+          paddingTop: 'calc(5.5rem + env(safe-area-inset-top, 0px))',
+          paddingBottom: 'calc(20rem + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
         <AllenamentiPageHeader onBack={handleBack} />
 
         <div className="grid grid-cols-2 min-[834px]:grid-cols-4 gap-2.5 min-[834px]:gap-4">

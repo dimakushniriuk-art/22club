@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
+import { PageHeaderFixed } from '@/components/layout'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -14,6 +15,46 @@ import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('app:home:allenamenti:[id]:page')
+
+/** Mini-preview video per lista: play su tap se autoplay bloccato (es. mobile) */
+function ListVideoPreview({ videoUrl }: { videoUrl: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [showPlayOverlay, setShowPlayOverlay] = useState(false)
+
+  const tryPlay = useCallback(() => {
+    const el = videoRef.current
+    if (!el) return
+    el.play().then(() => setShowPlayOverlay(false)).catch(() => setShowPlayOverlay(true))
+  }, [])
+
+  return (
+    <div className="relative w-full h-full">
+      <video
+        ref={videoRef}
+        src={videoUrl}
+        className="w-full h-full object-cover"
+        muted
+        loop
+        playsInline
+        preload="auto"
+        onLoadedData={tryPlay}
+        onCanPlay={tryPlay}
+      />
+      {showPlayOverlay && (
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); tryPlay() }}
+          className="absolute inset-0 flex items-center justify-center bg-black/60 hover:bg-black/50 active:scale-95"
+          aria-label="Riproduci video"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/90 text-white shadow-lg">
+            <Play className="h-5 w-5 fill-current" />
+          </span>
+        </button>
+      )}
+    </div>
+  )
+}
 
 type PlanRow = { id: string; name: string; description: string | null }
 type DayRow = { id: string; day_number: number; title: string | null; day_name: string }
@@ -241,21 +282,12 @@ export default function AllenamentiSchedaDetailPage() {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-          <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
-            <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-            <div className="relative z-10 flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" onClick={() => router.push('/home/allenamenti')} aria-label="Indietro">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-                <Activity className="h-5 w-5 text-cyan-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">Scheda</h1>
-                <p className="text-xs text-text-tertiary line-clamp-1">Dettaglio scheda allenamento</p>
-              </div>
-            </div>
-          </header>
+          <PageHeaderFixed
+            title="Scheda"
+            subtitle="Dettaglio scheda allenamento"
+            backHref="/home/allenamenti"
+            icon={<Activity className="h-5 w-5 text-cyan-400" />}
+          />
           <Card className="border border-state-error/50 bg-background-secondary/50">
             <CardContent className="pt-6 min-[834px]:pt-8">
               <p className="text-text-secondary text-sm min-[834px]:text-base">{error ?? 'Scheda non trovata'}</p>
@@ -346,14 +378,7 @@ export default function AllenamentiSchedaDetailPage() {
                                       unoptimized={posterUrl.startsWith('http')}
                                     />
                                   ) : hasVideo && ex.video_url ? (
-                                    <video
-                                      src={ex.video_url}
-                                      className="w-full h-full object-cover"
-                                      muted
-                                      loop
-                                      playsInline
-                                      preload="metadata"
-                                    />
+                                    <ListVideoPreview videoUrl={ex.video_url} />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center text-cyan-400/60">
                                       <Dumbbell className="h-8 w-8" />
@@ -432,14 +457,7 @@ export default function AllenamentiSchedaDetailPage() {
                                       unoptimized={firstPoster.startsWith('http')}
                                     />
                                   ) : firstHasVideo && firstEx?.video_url ? (
-                                    <video
-                                      src={firstEx.video_url}
-                                      className="w-full h-full object-cover"
-                                      muted
-                                      loop
-                                      playsInline
-                                      preload="metadata"
-                                    />
+                                    <ListVideoPreview videoUrl={firstEx.video_url} />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center text-amber-400/60">
                                       <Zap className="h-8 w-8" />
@@ -590,25 +608,12 @@ export default function AllenamentiSchedaDetailPage() {
   const renderContent = () => (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-        <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
-          <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-          <div className="relative z-10 flex items-center gap-3">
-            <Link href="/home/allenamenti" className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors" aria-label="Torna agli allenamenti">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-              <Activity className="h-5 w-5 text-cyan-400" />
-            </div>
-            <div className="flex-1 min-w-0 overflow-hidden flex flex-col justify-center min-h-0">
-              <h1 className="text-text-primary mb-0.5 text-base sm:text-xl md:text-2xl min-[834px]:text-3xl font-semibold leading-tight line-clamp-2 break-words">
-                {plan.name}
-              </h1>
-              <p className="text-text-tertiary text-[10px] sm:text-xs min-[834px]:text-sm line-clamp-2 break-words">
-                {plan.description ?? 'Scheda di allenamento'}
-              </p>
-            </div>
-          </div>
-        </header>
+        <PageHeaderFixed
+          title={plan.name}
+          subtitle={plan.description ?? 'Scheda di allenamento'}
+          backHref="/home/allenamenti"
+          icon={<Activity className="h-5 w-5 text-cyan-400" />}
+        />
         <div>
           <h2 className="text-text-primary text-base min-[834px]:text-lg font-semibold mb-3 min-[834px]:mb-4 flex items-center gap-2">
             <Calendar className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5 text-cyan-400" />

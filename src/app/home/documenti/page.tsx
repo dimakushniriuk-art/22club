@@ -66,14 +66,6 @@ const CATEGORIE_UPLOAD = [
 type DocStatus = 'valido' | 'scaduto' | 'in-revisione' | 'in_scadenza' | 'non_valido'
 type BadgeVariant = 'primary' | 'success' | 'warning' | 'neutral' | 'outline' | 'secondary'
 
-const HEADER_STYLE = {
-  border: '1px solid rgba(2, 179, 191, 0.4)',
-  background: 'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.22), 0 0 0 1px rgba(2,179,191,0.1) inset',
-} as const
-const HEADER_OVERLAY_STYLE = {
-  background: 'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
-} as const
 const CARD_VALIDI_STYLE = {
   background: 'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
   boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
@@ -374,42 +366,36 @@ function DocumentiPageContent() {
 
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-6">
-        {/* Header - glass + accento teal */}
-        <div
-          className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5"
-          style={HEADER_STYLE}
-        >
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-[calc(5.5rem+10px+env(safe-area-inset-top,0px))] safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
+        {/* Header - fisso in alto, nero + linea cyan */}
+        <div className="fixed inset-x-0 top-0 z-20 overflow-hidden bg-black px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-lg pt-[calc(10px+env(safe-area-inset-top,0px))]">
           <div
-            className="absolute inset-0 rounded-2xl opacity-70"
-            style={HEADER_OVERLAY_STYLE}
+            className="absolute inset-x-0 bottom-0 h-px"
+            style={{
+              background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+            }}
             aria-hidden
           />
-          <div className="relative z-10 flex items-center gap-4">
+          <div className="relative z-10 flex items-center gap-3">
             <Button
               onClick={handleBack}
               variant="ghost"
-              size="sm"
-              className="h-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl p-0 text-text-secondary transition-colors duration-200 hover:bg-primary/15 hover:text-primary"
+              size="icon"
+              className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
               aria-label="Indietro"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex flex-1 items-center gap-3 min-w-0">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl min-[834px]:h-14 min-[834px]:w-14"
-                style={{ backgroundColor: 'rgba(2, 179, 191, 0.2)', border: '1px solid rgba(2, 179, 191, 0.35)' }}
-              >
-                <FileText className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="truncate text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
-                  I miei Documenti
-                </h1>
-                <p className="mt-0.5 truncate text-xs text-text-tertiary">
-                  Gestisci i tuoi certificati e documenti
-                </p>
-              </div>
+            <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+              <FileText className="h-5 w-5 text-cyan-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg md:text-xl font-semibold text-text-primary truncate">
+                I miei Documenti
+              </h1>
+              <p className="text-[11px] text-text-tertiary line-clamp-1">
+                Gestisci i tuoi certificati e documenti
+              </p>
             </div>
             <Button
               onClick={() => handleUploadDocument()}

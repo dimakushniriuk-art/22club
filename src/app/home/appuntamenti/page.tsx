@@ -77,13 +77,15 @@ function AppuntamentiPageContent() {
       .eq('id', profileId)
       .single()
       .then(({ data }) => {
-        if (!cancelled && data) setStatoCliente((data as { stato_cliente?: string | null }).stato_cliente ?? 'cliente')
+        if (!cancelled && data)
+          setStatoCliente((data as { stato_cliente?: string | null }).stato_cliente ?? 'cliente')
       })
     return () => {
       cancelled = true
     }
   }, [profileId, isAthlete])
-  const canAccessCalendar = !isAthlete || (statoCliente != null && statoCliente !== 'non_ancora_cliente')
+  const canAccessCalendar =
+    !isAthlete || (statoCliente != null && statoCliente !== 'non_ancora_cliente')
   const athleteCalendar = useAthleteCalendarPage(isAthlete && canAccessCalendar ? profileId : null)
 
   // Lista appuntamenti (per non-atleta o fallback)
@@ -128,22 +130,28 @@ function AppuntamentiPageContent() {
 
   const handleBack = useCallback(() => router.push('/home'), [router])
 
-  const handleListCardClick = useCallback((appointment: AppointmentUI, event: React.MouseEvent<HTMLDivElement>) => {
-    setSelectedAppointment(appointment)
-    const rect = event.currentTarget.getBoundingClientRect()
-    setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.bottom + 8 })
-    setShowPopover(true)
-  }, [])
-
-  const handleListCardKeyDown = useCallback((appointment: AppointmentUI, event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
+  const handleListCardClick = useCallback(
+    (appointment: AppointmentUI, event: React.MouseEvent<HTMLDivElement>) => {
       setSelectedAppointment(appointment)
-      const rect = (event.target as HTMLDivElement).getBoundingClientRect()
+      const rect = event.currentTarget.getBoundingClientRect()
       setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.bottom + 8 })
       setShowPopover(true)
-    }
-  }, [])
+    },
+    [],
+  )
+
+  const handleListCardKeyDown = useCallback(
+    (appointment: AppointmentUI, event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        setSelectedAppointment(appointment)
+        const rect = (event.target as HTMLDivElement).getBoundingClientRect()
+        setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.bottom + 8 })
+        setShowPopover(true)
+      }
+    },
+    [],
+  )
 
   const handleListEdit = useCallback(() => {
     if (!selectedAppointment || !selectedAppointment.athlete_id) return
@@ -244,7 +252,8 @@ function AppuntamentiPageContent() {
           <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
           <Card className="border border-cyan-500/30 bg-background-secondary/50 p-6 min-[834px]:p-8 text-center">
             <p className="text-text-primary text-sm font-medium">
-              Non hai accesso al calendario. Contatta l&apos;organizzazione per attivare il tuo profilo cliente.
+              Non hai accesso al calendario. Contatta l&apos;organizzazione per attivare il tuo
+              profilo cliente.
             </p>
           </Card>
         </div>
@@ -265,9 +274,16 @@ function AppuntamentiPageContent() {
           <Card className="border border-state-error/50 bg-background-secondary/50 backdrop-blur-sm p-6 min-[834px]:p-8 text-center">
             <div className="mb-3 text-4xl opacity-50">❌</div>
             <p className="text-text-primary mb-4 text-sm font-medium line-clamp-3">
-              {typeof error === 'string' ? error : 'Errore sconosciuto nel caricamento degli appuntamenti'}
+              {typeof error === 'string'
+                ? error
+                : 'Errore sconosciuto nel caricamento degli appuntamenti'}
             </p>
-            <RefreshButton onRefresh={() => refetch()} isLoading={loading} ariaLabel="Riprova caricamento appuntamenti" className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]" />
+            <RefreshButton
+              onRefresh={() => refetch()}
+              isLoading={loading}
+              ariaLabel="Riprova caricamento appuntamenti"
+              className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]"
+            />
           </Card>
         </div>
       </div>
@@ -300,7 +316,10 @@ function AppuntamentiPageContent() {
     const handleEventClick = (appointment: AppointmentUI, position: { x: number; y: number }) => {
       if (appointment.is_open_booking_day) {
         formPreviousFocusRef.current = document.activeElement as HTMLElement | null
-        setSelectedSlot({ start: new Date(appointment.starts_at), end: new Date(appointment.ends_at) })
+        setSelectedSlot({
+          start: new Date(appointment.starts_at),
+          end: new Date(appointment.ends_at),
+        })
         setEditingAppointment(null)
         setShowForm(true)
         return
@@ -323,7 +342,11 @@ function AppuntamentiPageContent() {
       setShowForm(true)
     }
     const handleEdit = () => {
-      if (selectedAppointment && selectedAppointment.created_by_role === 'athlete' && selectedAppointment.athlete_id) {
+      if (
+        selectedAppointment &&
+        selectedAppointment.created_by_role === 'athlete' &&
+        selectedAppointment.athlete_id
+      ) {
         setEditingAppointment({
           id: selectedAppointment.id,
           org_id: selectedAppointment.org_id ?? undefined,
@@ -355,7 +378,7 @@ function AppuntamentiPageContent() {
             withBottomMargin
           />
 
-          <div className="h-[55vh] min-h-[260px] sm:h-[70vh] sm:min-h-[380px] rounded-xl border border-cyan-500/30 bg-background-secondary/50 overflow-hidden flex flex-col shrink-0">
+          <div className="min-h-[260px] rounded-xl border border-cyan-500/30 bg-background-secondary/50 overflow-hidden flex flex-col">
             {athleteCalendar.appointmentsLoading ? (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">
@@ -373,7 +396,9 @@ function AppuntamentiPageContent() {
                 onSelectSlot={handleSelectSlot}
                 navigateToDate={navigateToDate}
                 onNavigateComplete={() => setNavigateToDate(null)}
-                isEventEditable={(apt) => !apt.is_open_booking_day && apt.created_by_role === 'athlete'}
+                isEventEditable={(apt) =>
+                  !apt.is_open_booking_day && apt.created_by_role === 'athlete'
+                }
                 openBookingAsBackground
                 slotBookingCounts={slotBookingCounts}
               />
@@ -384,7 +409,8 @@ function AppuntamentiPageContent() {
             <div className="mt-3 space-y-2">
               {!trainerStaffId && !athleteCalendar.trainerLoading && (
                 <p className="text-center text-sm text-text-secondary rounded-lg border border-cyan-500/20 bg-cyan-500/5 py-2.5 px-3">
-                  Non hai ancora un trainer assegnato. Contatta l&apos;organizzazione per poter prenotare.
+                  Non hai ancora un trainer assegnato. Contatta l&apos;organizzazione per poter
+                  prenotare.
                 </p>
               )}
               <p className="text-center text-xs text-text-tertiary">
@@ -443,8 +469,14 @@ function AppuntamentiPageContent() {
                 setSelectedAppointment(null)
               }}
               loading={submitLoading}
-              canEdit={!selectedAppointment.is_open_booking_day && selectedAppointment.created_by_role === 'athlete'}
-              canDelete={!selectedAppointment.is_open_booking_day && selectedAppointment.created_by_role === 'athlete'}
+              canEdit={
+                !selectedAppointment.is_open_booking_day &&
+                selectedAppointment.created_by_role === 'athlete'
+              }
+              canDelete={
+                !selectedAppointment.is_open_booking_day &&
+                selectedAppointment.created_by_role === 'athlete'
+              }
             />
           )}
         </div>

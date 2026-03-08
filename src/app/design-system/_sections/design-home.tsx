@@ -22,6 +22,7 @@ import {
   User,
   Utensils,
 } from 'lucide-react'
+import { PageHeaderFixed } from '@/components/layout'
 import {
   Button,
   Card,
@@ -102,7 +103,7 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
 
   const baseTokenRows = homeMeta?.tokenTable ?? []
   const variantRows: Array<{ token: string; value: string }> = [
-    { token: 'Header pagina', value: 'Glass (primary) o Compatto (primary)' },
+    { token: 'Header pagina', value: 'Glass (primary), Compatto (primary) o Fisso nero + linea cyan (Allenamenti, Appuntamenti, Foto)' },
     { token: 'Accenti', value: 'teal, cyan, green, emerald, amber (barra sinistra e bordo card)' },
     { token: 'Tabs', value: 'Anagrafica, Medico, Fitness, Nutrizione, Massaggi (Profilo)' },
     {
@@ -241,8 +242,8 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
           </div>
         </div>
 
-        {/* Header pagina — Glass e Compatto */}
-        <div className="grid gap-6 sm:grid-cols-2">
+        {/* Header pagina — Glass, Compatto, Fisso */}
+        <div className="grid gap-6 sm:grid-cols-2 min-[900px]:grid-cols-3">
           <div>
             <h3 className="mb-3 text-sm font-medium text-text-secondary">Header pagina — Glass</h3>
             <p className="mb-3 text-xs text-text-muted">
@@ -288,8 +289,7 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
               Header pagina — Compatto
             </h3>
             <p className="mb-3 text-xs text-text-muted">
-              Allenamenti, Appuntamenti, Foto risultati. Stesso stile Glass (teal, rounded-2xl,
-              backdrop-blur-xl).
+              Variante glass/teal per contesti secondari. Vedi Patterns Headers.
             </p>
             {tealAccent && (
               <header
@@ -323,6 +323,21 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
                 </div>
               </header>
             )}
+          </div>
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-text-secondary">
+              Header pagina — Fisso (nero + linea cyan)
+            </h3>
+            <p className="mb-3 text-xs text-text-muted">
+              Allenamenti, Appuntamenti, Foto risultati, Riepilogo, Esercizio. Componente PageHeaderFixed. Vedi Patterns Headers.
+            </p>
+            <PageHeaderFixed
+              title="I miei Allenamenti"
+              subtitle="Programma e monitora i tuoi progressi"
+              onBack={() => {}}
+              icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
+              static
+            />
           </div>
         </div>
 

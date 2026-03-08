@@ -2,33 +2,39 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 
-export interface PageHeaderGlassProps {
+export interface PageHeaderFixedProps {
   title: string
   subtitle?: string
   backHref?: string
   onBack?: () => void
   icon?: React.ReactNode
   className?: string
+  /** Se true, header non fixed (per anteprime design-system). Default false. */
+  static?: boolean
 }
 
-const HEADER_CLASS =
-  'fixed inset-x-0 top-0 z-20 overflow-hidden bg-black px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-lg pt-[calc(10px+env(safe-area-inset-top,0px))]'
+const HEADER_BASE =
+  'overflow-hidden bg-black px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-lg'
+const HEADER_FIXED =
+  'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))]'
+const HEADER_STATIC = 'relative rounded-xl pt-3'
 
 const CYAN_LINE_STYLE = {
   background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
 }
 
-export function PageHeaderGlass({
+export function PageHeaderFixed({
   title,
   subtitle,
   backHref,
   onBack,
   icon,
   className,
-}: PageHeaderGlassProps) {
+  static: isStatic = false,
+}: PageHeaderFixedProps) {
+  const headerClass = `${HEADER_BASE} ${isStatic ? HEADER_STATIC : HEADER_FIXED}${className ? ` ${className}` : ''}`
   const hasBack = backHref != null || onBack != null
   const backContent =
     hasBack &&
@@ -57,7 +63,7 @@ export function PageHeaderGlass({
     ))
 
   return (
-    <div className={cn(HEADER_CLASS, className)}>
+    <header className={headerClass}>
       <div className="relative z-10 flex items-center gap-3">
         {backContent}
         {icon != null && (
@@ -77,7 +83,7 @@ export function PageHeaderGlass({
         style={CYAN_LINE_STYLE}
         aria-hidden
       />
-    </div>
+    </header>
   )
 }
 

@@ -669,7 +669,7 @@ export function CalendarView({
           selectMirror={true}
           selectMinDistance={5}
           unselectAuto={true}
-          height="100%"
+          height="auto"
           locale="it"
           buttonText={{
             today: 'Oggi',

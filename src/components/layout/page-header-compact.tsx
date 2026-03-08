@@ -54,7 +54,10 @@ export function PageHeaderCompact({
         className,
       )}
     >
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5" aria-hidden />
+      <div
+        className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5"
+        aria-hidden
+      />
       <div className="relative z-10 flex items-center gap-3">
         {backContent}
         {icon != null && (
@@ -63,9 +66,7 @@ export function PageHeaderCompact({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h4 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">
-            {title}
-          </h4>
+          <h4 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">{title}</h4>
           {subtitle != null && (
             <p className="text-xs text-text-tertiary line-clamp-1">{subtitle}</p>
           )}

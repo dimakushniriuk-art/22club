@@ -1,7 +1,7 @@
 'use client'
 
-import { Activity, BarChart3, TrendingUp } from 'lucide-react'
-import { PageHeaderGlass, PageHeaderCompact } from '@/components/layout'
+import { Activity, BarChart3, Dumbbell, TrendingUp } from 'lucide-react'
+import { PageHeaderGlass, PageHeaderCompact, PageHeaderFixed } from '@/components/layout'
 import { CardMetric } from '@/components/ui/card-metric'
 
 const cardFrameClass =
@@ -31,6 +31,18 @@ export function PatternsHeaders() {
           title="Titolo"
           subtitle="Sottotitolo"
           icon={<Activity className="h-5 w-5 text-cyan-400" />}
+        />
+      </div>
+      <div>
+        <p className="mb-1.5 text-xs font-medium text-text-tertiary">
+          Header pagina — Fisso (Allenamenti, Appuntamenti, Foto). Nero, linea cyan in basso.
+        </p>
+        <PageHeaderFixed
+          title="I miei Allenamenti"
+          subtitle="Programma e monitora i tuoi progressi"
+          onBack={() => {}}
+          icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
+          static
         />
       </div>
       <div>

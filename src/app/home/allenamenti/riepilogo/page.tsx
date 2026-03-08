@@ -10,6 +10,7 @@ import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import type { Tables } from '@/types/supabase'
 
 const logger = createLogger('app:home:allenamenti:riepilogo:page')
+import { PageHeaderFixed } from '@/components/layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -512,22 +513,12 @@ function RiepilogoPageContent() {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-          <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
-            <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-            <div className="relative z-10 flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" aria-label="Indietro">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-                <Trophy className="h-5 w-5 text-cyan-400" />
-              </div>
-              <div className="flex-1 min-w-0 text-center">
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">Riepilogo Allenamento</h1>
-                <p className="text-xs text-text-tertiary line-clamp-1">Riepilogo sessione</p>
-              </div>
-              <div className="w-10 shrink-0" />
-            </div>
-          </header>
+          <PageHeaderFixed
+            title="Riepilogo Allenamento"
+            subtitle="Riepilogo sessione"
+            onBack={() => router.back()}
+            icon={<Trophy className="h-5 w-5 text-cyan-400" />}
+          />
           <Card className="border border-state-error/50 bg-background-secondary/50">
             <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
               <div className="mb-3 text-4xl opacity-50">❌</div>
@@ -564,22 +555,12 @@ function RiepilogoPageContent() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-        <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
-          <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-          <div className="relative z-10 flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" aria-label="Indietro">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-              <Trophy className="h-5 w-5 text-cyan-400" />
-            </div>
-            <div className="flex-1 min-w-0 text-center">
-              <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">Riepilogo Allenamento</h1>
-              <p className="text-xs text-text-tertiary line-clamp-1">{summary.workout_title}</p>
-            </div>
-            <div className="w-10 shrink-0" />
-          </div>
-        </header>
+        <PageHeaderFixed
+          title="Riepilogo Allenamento"
+          subtitle={summary.workout_title}
+          onBack={() => router.back()}
+          icon={<Trophy className="h-5 w-5 text-cyan-400" />}
+        />
 
         {/* Card principale — design 7: barra accento, stats compatte */}
         <Card className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/50 shadow-lg backdrop-blur-sm">

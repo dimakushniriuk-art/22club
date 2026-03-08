@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
+import { PageHeaderFixed } from '@/components/layout'
 import { Card, CardContent } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import Image from 'next/image'
@@ -76,21 +77,12 @@ export default function EsercizioDetailPage() {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-          <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
-            <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-            <div className="relative z-10 flex items-center gap-3">
-              <Link href={backHref} className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors" aria-label="Indietro">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-                <Dumbbell className="h-5 w-5 text-cyan-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">Esercizio</h1>
-                <p className="text-xs text-text-tertiary line-clamp-1">Dettaglio esercizio</p>
-              </div>
-            </div>
-          </header>
+          <PageHeaderFixed
+            title="Esercizio"
+            subtitle="Dettaglio esercizio"
+            backHref={backHref}
+            icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
+          />
           <Card className="border border-state-error/50 bg-background-secondary/50">
             <CardContent className="pt-6 min-[834px]:pt-8">
               <p className="text-text-secondary text-sm min-[834px]:text-base">{error ?? 'Esercizio non trovato'}</p>
@@ -110,23 +102,12 @@ export default function EsercizioDetailPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-        <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
-          <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-          <div className="relative z-10 flex items-center gap-3">
-            <Link href={backHref} className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors" aria-label="Torna alla scheda">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-              <Dumbbell className="h-5 w-5 text-cyan-400" />
-            </div>
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <h1 className="text-text-primary mb-0.5 text-2xl md:text-3xl font-semibold leading-tight line-clamp-2 break-words">
-                {exercise.name}
-              </h1>
-              <p className="text-text-tertiary text-xs min-[834px]:text-sm line-clamp-1">Dettaglio esercizio</p>
-            </div>
-          </div>
-        </header>
+        <PageHeaderFixed
+          title={exercise.name}
+          subtitle="Dettaglio esercizio"
+          backHref={backHref}
+          icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
+        />
 
         <Card className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/50">
           <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 via-transparent to-primary/10 pointer-events-none" />
