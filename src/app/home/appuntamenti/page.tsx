@@ -13,6 +13,7 @@ import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useAuth } from '@/providers/auth-provider'
 import { useAppointments } from '@/hooks/use-appointments'
 import { useAthleteCalendarPage } from '@/hooks/calendar/use-athlete-calendar-page'
+import { supabase } from '@/lib/supabase'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { AppuntamentiPageHeader } from './AppuntamentiPageHeader'
 import { AppuntamentiListView } from './AppuntamentiListView'
@@ -66,7 +67,24 @@ function AppuntamentiPageContent() {
 
   // Calendario atleta (solo per role athlete)
   const isAthlete = normalizedRole === 'athlete'
-  const athleteCalendar = useAthleteCalendarPage(isAthlete ? profileId : null)
+  const [statoCliente, setStatoCliente] = useState<string | null>(null)
+  useEffect(() => {
+    if (!profileId || !isAthlete) return
+    let cancelled = false
+    supabase
+      .from('profiles')
+      .select('stato_cliente')
+      .eq('id', profileId)
+      .single()
+      .then(({ data }) => {
+        if (!cancelled && data) setStatoCliente((data as { stato_cliente?: string | null }).stato_cliente ?? 'cliente')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [profileId, isAthlete])
+  const canAccessCalendar = !isAthlete || (statoCliente != null && statoCliente !== 'non_ancora_cliente')
+  const athleteCalendar = useAthleteCalendarPage(isAthlete && canAccessCalendar ? profileId : null)
 
   // Lista appuntamenti (per non-atleta o fallback)
   const {
@@ -108,7 +126,7 @@ function AppuntamentiPageContent() {
     })
   }, [appointments])
 
-  const handleBack = useCallback(() => router.back(), [router])
+  const handleBack = useCallback(() => router.push('/home'), [router])
 
   const handleListCardClick = useCallback((appointment: AppointmentUI, event: React.MouseEvent<HTMLDivElement>) => {
     setSelectedAppointment(appointment)
@@ -215,6 +233,25 @@ function AppuntamentiPageContent() {
     return <AppuntamentiLoadingSkeleton />
   }
 
+  if (isAthlete && statoCliente === null) {
+    return <AppuntamentiLoadingSkeleton />
+  }
+
+  if (isAthlete && statoCliente === 'non_ancora_cliente') {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col bg-background">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
+          <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
+          <Card className="border border-cyan-500/30 bg-background-secondary/50 p-6 min-[834px]:p-8 text-center">
+            <p className="text-text-primary text-sm font-medium">
+              Non hai accesso al calendario. Contatta l&apos;organizzazione per attivare il tuo profilo cliente.
+            </p>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   const isLoading = isAthlete ? athleteCalendar.appointmentsLoading : loading
   if (isLoading && !error) {
     return <AppuntamentiLoadingSkeleton />
@@ -223,7 +260,7 @@ function AppuntamentiPageContent() {
   if (error && !loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
           <AppuntamentiPageHeader onBack={handleBack} />
           <Card className="border border-state-error/50 bg-background-secondary/50 backdrop-blur-sm p-6 min-[834px]:p-8 text-center">
             <div className="mb-3 text-4xl opacity-50">❌</div>
@@ -311,7 +348,7 @@ function AppuntamentiPageContent() {
 
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 flex flex-col px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5">
+        <div className="min-h-0 flex-1 flex flex-col px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5">
           <AppuntamentiPageHeader
             subtitle="Calendario e appuntamenti con il trainer"
             onBack={handleBack}

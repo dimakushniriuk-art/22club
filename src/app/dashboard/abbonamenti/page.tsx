@@ -12,7 +12,7 @@ import {
   FileText,
   Download,
   Eye,
-  Upload,
+  Upload as _Upload,
   Loader2,
   X,
   Search,
@@ -134,19 +134,23 @@ function InvoiceViewModal({
               </Button>
             </div>
           ) : signedUrl ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 py-8">
-              <p className="text-text-secondary text-sm">
-                Apri la fattura in una nuova scheda per visualizzarla.
-              </p>
-              <Button asChild className={m.modalPrimary}>
-                <a
-                  href={signedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Apri fattura
-                </a>
-              </Button>
+            <div className="flex flex-col h-full gap-3">
+              <iframe
+                src={signedUrl}
+                title={`Fattura - ${athlete}`}
+                className="w-full flex-1 min-h-0 rounded-lg border border-border bg-white"
+              />
+              <div className="flex justify-end shrink-0">
+                <Button asChild variant="outline" size="sm">
+                  <a
+                    href={signedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Apri in nuova scheda
+                  </a>
+                </Button>
+              </div>
             </div>
           ) : null}
         </div>
@@ -178,6 +182,15 @@ function invoiceUrlToStoragePath(invoiceUrl: string): string {
   if (!s.startsWith('http')) return s.startsWith('documents/') ? s.replace(/^documents\//, '') : s
   const match = s.match(/\/documents\/([^?]+)/)
   return match ? match[1] : s
+}
+
+/** Nome documento fattura per visualizzazione in tabella (filename da path o "Fattura DD/MM/YYYY"). */
+function getInvoiceDocumentName(abb: { invoice_url: string | null; payment_date?: string }): string | null {
+  if (!abb.invoice_url) return null
+  const path = abb.invoice_url.trim()
+  const segment = path.split('/').filter(Boolean).pop()
+  if (segment) return segment
+  return abb.payment_date ? `Fattura ${formatDate(abb.payment_date)}` : 'Fattura'
 }
 
 /** Chiave cache univoca: stessa per get/set/invalidate. Include service_type. */
@@ -370,7 +383,7 @@ export default function AbbonamentiPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<{ url: string; athlete: string } | null>(
     null,
   )
-  const [uploadingInvoice, setUploadingInvoice] = useState<string | null>(null)
+  const [_uploadingInvoice, setUploadingInvoice] = useState<string | null>(null)
   const [deletingPayment, setDeletingPayment] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
@@ -495,8 +508,10 @@ export default function AbbonamentiPage() {
         return
       }
 
-      // Prova prima con RPC (ottimizzata)
-      if (enablePagination && role !== 'trainer') {
+      // RPC solo per admin (vede tutti i pagamenti); trainer/nutrizionista/massaggiatore usano fallback filtrato per created_by_staff_id
+      const isStaffOwnPayments =
+        role === 'trainer' || role === 'nutrizionista' || role === 'massaggiatore'
+      if (enablePagination && !isStaffOwnPayments) {
         try {
           // Workaround necessario per tipizzazione Supabase RPC
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -616,8 +631,8 @@ export default function AbbonamentiPage() {
       }
 
       // Fallback: query separate (compatibilità)
-      // Filtro per ruolo usa profile id (profiles.id), non auth user_id
-      if (role === 'trainer' || role === 'athlete') {
+      // Staff (trainer, nutrizionista, massaggiatore) e athlete devono avere profileId per filtrare
+      if (isStaffOwnPayments || role === 'athlete') {
         if (!profileId) {
           setAbbonamenti([])
           setTotalCount(0)
@@ -636,7 +651,7 @@ export default function AbbonamentiPage() {
         .or('status.neq.cancelled,status.is.null')
         .order('created_at', { ascending: false })
 
-      if (role === 'trainer') {
+      if (isStaffOwnPayments) {
         paymentsQuery = paymentsQuery.eq('created_by_staff_id', profileId!)
       } else if (role === 'athlete') {
         paymentsQuery = paymentsQuery.eq('athlete_id', profileId!)
@@ -824,7 +839,7 @@ export default function AbbonamentiPage() {
     updateUrlFilters({ search: '', lessons: 'all', amount: 'all', date: 'all' })
   }, [updateUrlFilters])
 
-  const handleInvoiceUpload = useCallback(
+  const _handleInvoiceUpload = useCallback(
     async (paymentId: string, file: File) => {
     try {
       setUploadingInvoice(paymentId)
@@ -1246,23 +1261,26 @@ export default function AbbonamentiPage() {
           </Card>
         )}
 
-        {/* Tab servizio: Allenamenti | Nutrizione | Massaggi */}
-        <div className={`flex gap-1 p-1 rounded-lg bg-background-tertiary/50 border w-fit ${t.tabContainer}`}>
-          {SERVICE_TYPES.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => updateUrlFilters({ service: value })}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                currentServiceType === value ? t.tabActive : 'text-text-secondary hover:text-text-primary hover:bg-background-secondary/50'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Tab servizio: Allenamenti | Nutrizione | Massaggi (nascosti al trainer) */}
+        {role !== 'trainer' && (
+          <div className={`flex gap-1 p-1 rounded-lg bg-background-tertiary/50 border w-fit ${t.tabContainer}`}>
+            {SERVICE_TYPES.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => updateUrlFilters({ service: value })}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentServiceType === value ? t.tabActive : 'text-text-secondary hover:text-text-primary hover:bg-background-secondary/50'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* KPI bar (service corrente) */}
+        {/* KPI bar (service corrente) - nascosta al trainer */}
+        {role !== 'trainer' && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
             <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
@@ -1295,6 +1313,7 @@ export default function AbbonamentiPage() {
             <p className="text-lg font-bold text-text-primary">{kpiDebitsInMonth}</p>
           </div>
         </div>
+        )}
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -1576,68 +1595,9 @@ export default function AbbonamentiPage() {
                             )}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                          {abb.invoice_url ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setSelectedInvoice({
-                                    url: abb.invoice_url!,
-                                    athlete: abb.athlete_name,
-                                  })
-                                }
-                                className={t.buttonOutline}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Visualizza
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownloadInvoice(abb.invoice_url!)}
-                                className={t.buttonOutline}
-                                title="Scarica fattura"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center">
-                              <input
-                                type="file"
-                                accept="application/pdf"
-                                className="hidden"
-                                id={`invoice-upload-${abb.id}`}
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0]
-                                  if (file) handleInvoiceUpload(abb.id, file)
-                                }}
-                                disabled={uploadingInvoice === abb.id}
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={uploadingInvoice === abb.id}
-                                onClick={() => {
-                                  const input = document.getElementById(
-                                    `invoice-upload-${abb.id}`,
-                                  ) as HTMLInputElement
-                                  if (input) input.click()
-                                }}
-                                className={t.buttonOutline}
-                              >
-                                {uploadingInvoice === abb.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    <Upload className="h-4 w-4 mr-1" />
-                                    Carica
-                                  </>
-                                )}
-                              </Button>
-                            </div>
+                        <td className="px-4 py-3 text-center text-text-primary text-sm">
+                          {getInvoiceDocumentName(abb) ?? (
+                            <span className="text-text-tertiary">—</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-right text-text-primary font-semibold">

@@ -9,6 +9,7 @@ export const APPOINTMENT_COLORS = {
   blu: '#4285F4',
   viola_scuro: '#7E57C2',
   viola_chiaro: '#B39DDB',
+  lilla: '#B39DDB',
   rosa: '#D81B60',
   rosso: '#E53935',
   arancione: '#F4511E',
@@ -30,14 +31,8 @@ export interface Appointment {
   trainer_id?: string | null
   starts_at: string
   ends_at: string
-  type:
-    | 'allenamento'
-    | 'prova'
-    | 'valutazione'
-    | 'prima_visita'
-    | 'riunione'
-    | 'massaggio'
-    | 'nutrizionista'
+  /** Tipo sistema (es. allenamento_singolo) o chiave custom da staff_calendar_settings.custom_appointment_types */
+  type: string
   status: 'attivo' | 'completato' | 'annullato' | 'in_corso'
   /** training | nutrition | massage (per trigger DEBIT e bottone Completa seduta) */
   service_type?: 'training' | 'nutrition' | 'massage' | null
@@ -57,6 +52,8 @@ export interface Appointment {
   athlete_avatar_url?: string | null
   staff_name?: string | null
   trainer_name?: string | null
+  /** Lezioni rimanenti (lesson_counters) per colore rosso e badge 5/10 */
+  lessons_remaining?: number
 }
 
 export type AppointmentTable = Appointment
@@ -68,14 +65,8 @@ export interface CreateAppointmentData {
   staff_id: string
   starts_at: string
   ends_at: string
-  type:
-    | 'allenamento'
-    | 'prova'
-    | 'valutazione'
-    | 'prima_visita'
-    | 'riunione'
-    | 'massaggio'
-    | 'nutrizionista'
+  /** Tipo sistema o chiave custom da staff_calendar_settings.custom_appointment_types */
+  type: string
   status?: 'attivo' | 'completato' | 'annullato' | 'in_corso'
   color?: AppointmentColor | null
   notes?: string | null
@@ -86,7 +77,7 @@ export interface CreateAppointmentData {
   /** true per creare uno slot "Libera prenotazione" (solo trainer/admin) */
   is_open_booking_day?: boolean
   /** Ripetizione: stessa data ogni settimana per il periodo indicato (solo in creazione) */
-  recurrence?: 'none' | '2_weeks' | '1_month' | '6_months' | '1_year'
+  recurrence?: 'none' | '2_weeks' | '1_month' | '6_months' | '1_year' | 'until_lessons'
 }
 
 export interface EditAppointmentData extends CreateAppointmentData {

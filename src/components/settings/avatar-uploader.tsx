@@ -7,16 +7,25 @@ import { useSupabase } from '@/hooks/use-supabase'
 import { useToast } from '@/components/ui/toast'
 import { validateAvatarFile, resizeImage, getFileExtension } from '@/lib/avatar-utils'
 import { createLogger } from '@/lib/logger'
-import { Upload } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 
 const logger = createLogger('AvatarUploader')
 
 interface AvatarUploaderProps {
   userId: string | null
   onUploaded?: (publicUrl: string) => void
+  /** Se true, al mount apre subito il dialog di selezione file (es. dopo creazione profilo da welcome). */
+  autoOpenFilePicker?: boolean
+  /** Chiamato dopo aver aperto il file picker (per resettare autoOpenFilePicker nel parent). */
+  onFilePickerOpened?: () => void
 }
 
-export function AvatarUploader({ userId, onUploaded }: AvatarUploaderProps) {
+export function AvatarUploader({
+  userId,
+  onUploaded,
+  autoOpenFilePicker,
+  onFilePickerOpened,
+}: AvatarUploaderProps) {
   const { supabase } = useSupabase()
   const { addToast } = useToast()
   const [file, setFile] = React.useState<File | null>(null)
@@ -24,6 +33,17 @@ export function AvatarUploader({ userId, onUploaded }: AvatarUploaderProps) {
   const [preview, setPreview] = React.useState<string>('')
   const [error, setError] = React.useState<string | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  React.useEffect(() => {
+    if (!autoOpenFilePicker) return
+    const t = setTimeout(() => {
+      if (fileInputRef.current) {
+        fileInputRef.current.click()
+        onFilePickerOpened?.()
+      }
+    }, 100)
+    return () => clearTimeout(t)
+  }, [autoOpenFilePicker, onFilePickerOpened])
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
@@ -185,10 +205,47 @@ export function AvatarUploader({ userId, onUploaded }: AvatarUploaderProps) {
     fileInputRef.current?.click()
   }
 
+  const handleClearSelection = () => {
+    setFile(null)
+    setError(null)
+    if (preview) {
+      URL.revokeObjectURL(preview)
+      setPreview('')
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   return (
-    <div className="space-y-3 w-full">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        {/* File Input nascosto */}
+    <div className="space-y-4 w-full">
+      {/* Preview grande quando c'è file selezionato o anteprima */}
+      {(preview || file) && (
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative shrink-0">
+            {preview ? (
+              <Image
+                src={preview}
+                alt="Anteprima foto profilo"
+                width={128}
+                height={128}
+                className="h-28 w-28 sm:h-32 sm:w-32 rounded-full border-2 border-primary/30 object-cover shadow-lg"
+              />
+            ) : (
+              <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full border-2 border-dashed border-primary/30 bg-background-tertiary/50 flex items-center justify-center">
+                <span className="text-text-muted text-xs text-center px-2">Elaborazione…</span>
+              </div>
+            )}
+          </div>
+          {file && (
+            <p className="text-text-secondary text-xs text-center max-w-full truncate px-2">
+              {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap">
         <input
           ref={fileInputRef}
           type="file"
@@ -198,63 +255,60 @@ export function AvatarUploader({ userId, onUploaded }: AvatarUploaderProps) {
           className="hidden"
         />
 
-        {/* Bottone per selezionare file */}
         <Button
           type="button"
           onClick={handleSelectFile}
           disabled={isUploading}
           variant="outline"
-          className="flex-1 sm:flex-initial sm:min-w-[200px] justify-center gap-2 bg-background-secondary/50 border-teal-500/30 hover:bg-background-tertiary/50 hover:border-teal-500/50 text-text-primary transition-all duration-200"
+          className="flex-1 sm:flex-initial min-w-[160px] justify-center gap-2"
         >
           <Upload className="h-4 w-4 shrink-0" />
-          <span className="truncate">{file ? file.name : 'Seleziona immagine'}</span>
+          <span className="truncate">{file ? 'Scegli un\'altra' : 'Seleziona immagine'}</span>
         </Button>
 
-        {/* Bottone Carica */}
-        <Button
-          onClick={upload}
-          disabled={!file || isUploading}
-          className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-medium shadow-md shadow-teal-500/20 hover:shadow-teal-500/30 transition-all duration-200 shrink-0 min-w-[100px] sm:min-w-[120px]"
-        >
-          {isUploading ? (
-            <span className="flex items-center gap-2">
-              <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span className="hidden sm:inline">Caricamento…</span>
-              <span className="sm:hidden">…</span>
-            </span>
-          ) : (
-            'Carica'
-          )}
-        </Button>
+        {file && (
+          <Button
+            type="button"
+            onClick={upload}
+            disabled={isUploading}
+            variant="default"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 min-w-[100px]"
+          >
+            {isUploading ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <span className="hidden sm:inline">Caricamento…</span>
+                <span className="sm:hidden">…</span>
+              </span>
+            ) : (
+              'Carica'
+            )}
+          </Button>
+        )}
 
-        {/* Anteprima */}
-        {preview && (
-          <div className="shrink-0 flex items-center justify-center">
-            <Image
-              src={preview}
-              alt="Anteprima avatar"
-              width={44}
-              height={44}
-              className="h-11 w-11 rounded-full border-2 border-teal-500/30 object-cover shadow-md"
-            />
-          </div>
+        {file && !isUploading && (
+          <Button
+            type="button"
+            onClick={handleClearSelection}
+            variant="outline"
+            className="shrink-0 gap-2 border-state-error/30 text-state-error hover:bg-state-error/10"
+          >
+            <X className="h-4 w-4" />
+            Annulla
+          </Button>
         )}
       </div>
 
-      {/* Messaggio errore */}
       {error && (
         <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20">
           <p className="text-sm text-red-400 font-medium">{error}</p>
         </div>
       )}
 
-      {/* Info file selezionato */}
       {file && !error && !preview && (
-        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background-tertiary/30 border border-teal-500/10">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-text-secondary font-medium truncate">{file.name}</p>
-            <p className="text-xs text-text-tertiary mt-0.5">{(file.size / 1024).toFixed(1)} KB</p>
-          </div>
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background-tertiary/30 border border-primary/10">
+          <p className="text-xs text-text-secondary truncate flex-1 min-w-0">{file.name}</p>
+          <p className="text-xs text-text-tertiary shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
         </div>
       )}
     </div>

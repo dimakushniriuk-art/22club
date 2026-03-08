@@ -55,9 +55,14 @@ export async function getRecipientsByFilter(
 
     let query = supabase
       .from('profiles')
-      .select('user_id, email, telefono, role')
-      .not('user_id', 'is', null)
+      .select('id, user_id, email, telefono, role')
       .eq('stato', 'attivo') // Filtra solo utenti attivi
+
+    // Filtro per org (stessa organizzazione del creatore)
+    const orgId = (filter as { org_id?: string }).org_id
+    if (orgId) {
+      query = query.eq('org_id', orgId)
+    }
 
     // Filtro per ruolo (gestisce atleta/athlete come sinonimi)
     if (filter.role) {
@@ -68,18 +73,20 @@ export async function getRecipientsByFilter(
       }
     }
 
-    // Filtro per atleti specifici
+    // Filtro per atleti specifici (athlete_ids sono profile id da list-athletes)
     if (filter.athlete_ids && filter.athlete_ids.length > 0) {
-      query = query.in('user_id', filter.athlete_ids)
+      query = query.in('id', filter.athlete_ids)
     }
 
-    // Se all_users è true, non aggiungere filtri aggiuntivi (tutti gli utenti)
-    // Se all_users è false o undefined, e non ci sono altri filtri, restituisci array vuoto
     if (
       !filter.all_users &&
       !filter.role &&
       (!filter.athlete_ids || filter.athlete_ids.length === 0)
     ) {
+      return { data: [], error: null }
+    }
+
+    if ((filter.role || filter.all_users) && !orgId) {
       return { data: [], error: null }
     }
 
@@ -89,8 +96,8 @@ export async function getRecipientsByFilter(
       return { data: null, error: new Error(profilesError.message) }
     }
 
-    // Type assertion per profiles
     type ProfileRow = {
+      id?: string | null
       user_id?: string | null
       email?: string | null
       telefono?: string | null
@@ -104,45 +111,37 @@ export async function getRecipientsByFilter(
       return { data: [], error: null }
     }
 
-    // Verifica quali utenti hanno token push attivi (per filtrare destinatari push)
-    const userIds = typedProfiles
+    const authUserIds = typedProfiles
       .map((p) => p.user_id)
       .filter((id): id is string => id !== null && id !== undefined)
 
     const { data: pushTokens, error: tokensError } = await supabase
       .from('user_push_tokens')
       .select('user_id')
-      .in('user_id', userIds)
+      .in('user_id', authUserIds)
       .eq('is_active', true)
 
     if (tokensError) {
-      // Non è critico, continuiamo senza filtrare per push tokens
-      logger.warn('Error fetching push tokens', tokensError, { userIdsCount: userIds.length })
+      logger.warn('Error fetching push tokens', tokensError, { userIdsCount: authUserIds.length })
     }
 
-    // Type assertion per pushTokens
-    type PushTokenRow = {
-      user_id?: string | null
-      [key: string]: unknown
-    }
-
+    type PushTokenRow = { user_id?: string | null; [key: string]: unknown }
     const typedPushTokens = (pushTokens as PushTokenRow[]) || []
-
     const usersWithPushTokens = new Set(
       typedPushTokens
         .map((t) => t.user_id)
         .filter((id): id is string => id !== null && id !== undefined),
     )
 
-    // Mappa i profili a Recipient
+    // user_id in Recipient = profile id (profiles.id), usato come recipient_profile_id in DB
     const recipients: Recipient[] = typedProfiles
-      .filter((p) => p.user_id !== null && p.user_id !== undefined)
+      .filter((p) => p.id != null)
       .map((p) => ({
-        user_id: p.user_id!,
+        user_id: p.id!,
         email: p.email || null,
         phone: p.telefono || null,
         role: p.role || null,
-        has_push_token: usersWithPushTokens.has(p.user_id!),
+        has_push_token: p.user_id != null ? usersWithPushTokens.has(p.user_id) : false,
       }))
 
     return { data: recipients, error: null }
@@ -155,11 +154,11 @@ export async function getRecipientsByFilter(
 }
 
 /**
- * Valida che i destinatari selezionati siano validi
+ * Valida che i destinatari selezionati siano validi (solo email)
  */
 export async function validateRecipients(
   recipients: Recipient[],
-  communicationType: 'push' | 'email' | 'sms' | 'all',
+  communicationType: 'email' | 'all',
 ): Promise<{ valid: Recipient[]; invalid: Recipient[]; errors: string[] }> {
   const valid: Recipient[] = []
   const invalid: Recipient[] = []
@@ -168,24 +167,9 @@ export async function validateRecipients(
   for (const recipient of recipients) {
     const recipientErrors: string[] = []
 
-    // Validazione per push
-    if (communicationType === 'push' || communicationType === 'all') {
-      if (!recipient.has_push_token) {
-        recipientErrors.push('No active push token')
-      }
-    }
-
-    // Validazione per email
     if (communicationType === 'email' || communicationType === 'all') {
       if (!recipient.email) {
         recipientErrors.push('No email address')
-      }
-    }
-
-    // Validazione per SMS
-    if (communicationType === 'sms' || communicationType === 'all') {
-      if (!recipient.phone) {
-        recipientErrors.push('No phone number')
       }
     }
 
@@ -201,41 +185,22 @@ export async function validateRecipients(
 }
 
 /**
- * Genera la lista di recipients per ogni tipo di comunicazione
- * (push, email, sms) in base al tipo di comunicazione
- *
- * NOTA: Per push, crea recipients anche se non hanno token attivi.
- * Durante l'invio verranno marcati come failed se non hanno token.
- * Questo permette di avere un conteggio accurato dei destinatari.
+ * Genera la lista di recipients per tipo comunicazione (solo email).
+ * Per tipi push/sms (legacy) restituisce array vuoto.
  */
 export function generateRecipientTypes(
   recipients: Recipient[],
-  communicationType: 'push' | 'email' | 'sms' | 'all',
-): Array<{ user_id: string; recipient_type: 'push' | 'email' | 'sms' }> {
-  const recipientTypes: Array<{ user_id: string; recipient_type: 'push' | 'email' | 'sms' }> = []
-
+  communicationType: string,
+): Array<{ user_id: string; recipient_type: 'email' }> {
+  if (communicationType !== 'email' && communicationType !== 'all') {
+    return []
+  }
+  const recipientTypes: Array<{ user_id: string; recipient_type: 'email' }> = []
   for (const recipient of recipients) {
-    if (communicationType === 'all') {
-      // Aggiungi tutti i tipi disponibili per questo utente
-      if (recipient.has_push_token) {
-        recipientTypes.push({ user_id: recipient.user_id, recipient_type: 'push' })
-      }
-      if (recipient.email) {
-        recipientTypes.push({ user_id: recipient.user_id, recipient_type: 'email' })
-      }
-      if (recipient.phone) {
-        recipientTypes.push({ user_id: recipient.user_id, recipient_type: 'sms' })
-      }
-    } else if (communicationType === 'push') {
-      // Per push, crea recipients anche senza token (saranno marcati come failed durante l'invio)
-      recipientTypes.push({ user_id: recipient.user_id, recipient_type: 'push' })
-    } else if (communicationType === 'email' && recipient.email) {
+    if (recipient.email) {
       recipientTypes.push({ user_id: recipient.user_id, recipient_type: 'email' })
-    } else if (communicationType === 'sms' && recipient.phone) {
-      recipientTypes.push({ user_id: recipient.user_id, recipient_type: 'sms' })
     }
   }
-
   return recipientTypes
 }
 

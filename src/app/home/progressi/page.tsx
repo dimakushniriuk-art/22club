@@ -8,7 +8,7 @@ import { ProgressiNavCard, type Accent } from '@/components/home/progressi-nav-c
 const SCROLL_CONTAINER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' } as const
 
 const SCROLL_CONTAINER_CLASS =
-  'min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-6'
+  'min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24'
 
 const ICON_CLASS = 'h-4 w-4 min-[834px]:h-5 min-[834px]:w-5'
 const CTA_ICON_CLASS = 'h-3 w-3 group-hover:translate-x-0.5 transition-transform'

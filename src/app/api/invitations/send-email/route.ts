@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { email, nomeAtleta, codiceInvito, registrationLink, expiresAt } = body
+    const registrationLinkStr =
+      typeof registrationLink === 'string' && registrationLink.trim() ? registrationLink.trim() : ''
 
     if (!email || typeof email !== 'string' || !email.trim()) {
       return NextResponse.json(
@@ -51,9 +53,19 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       )
     }
-    if (!registrationLink || typeof registrationLink !== 'string' || !registrationLink.trim()) {
+
+    const baseUrl =
+      request.nextUrl?.origin ||
+      request.headers.get('origin') ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+    const linkToRegistrati = baseUrl
+      ? `${baseUrl.replace(/\/$/, '')}/registrati?codice=${encodeURIComponent(codiceInvito.trim())}`
+      : registrationLinkStr
+
+    if (!linkToRegistrati) {
       return NextResponse.json(
-        { error: 'Link registrazione obbligatorio' },
+        { error: 'Impossibile costruire il link di registrazione (baseUrl mancante)' },
         { status: 400 },
       )
     }
@@ -62,7 +74,7 @@ export async function POST(request: NextRequest) {
       email: email.trim(),
       nomeAtleta: nomeAtleta.trim(),
       codiceInvito: codiceInvito.trim(),
-      registrationLink: registrationLink.trim(),
+      registrationLink: linkToRegistrati,
       expiresAt: typeof expiresAt === 'string' ? expiresAt : null,
     })
 

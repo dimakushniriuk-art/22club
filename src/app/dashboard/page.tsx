@@ -28,10 +28,10 @@ type QuickActionItem = QuickActionLink | QuickActionAppointment
 
 const QUICK_ACTIONS: QuickActionItem[] = [
   {
-    href: '/dashboard/clienti?new=true',
+    href: '/dashboard/invita-atleta?new=true',
     icon: UserPlus,
-    label: 'Nuovo Cliente',
-    sublabel: 'Aggiungi un atleta',
+    label: 'Invita Cliente',
+    sublabel: 'Invita un atleta',
     accentClass: 'from-emerald-500/14 to-teal-500/6',
   },
   { href: null, accentClass: 'from-cyan-500/16 to-teal-500/6', sublabel: 'Pianifica una sessione' },

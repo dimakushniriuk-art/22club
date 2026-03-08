@@ -220,6 +220,13 @@ export async function middleware(request: NextRequest) {
           const err = error as { code?: string; status?: number } | undefined
           const is429 =
             err?.code === 'over_request_rate_limit' || err?.status === 429
+          const isNoProfile = err?.code === 'PGRST116'
+          if (pathname === '/welcome' && isNoProfile) {
+            return NextResponse.next()
+          }
+          if (isNoProfile) {
+            return NextResponse.redirect(new URL('/welcome', request.url))
+          }
           const redirectUrl = request.nextUrl.clone()
           redirectUrl.pathname = '/login'
           if (!is429) {

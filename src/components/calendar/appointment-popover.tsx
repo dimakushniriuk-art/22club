@@ -1,10 +1,12 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
-import { Clock, User, Edit, Trash2, X, MapPin, FileText, CheckCircle } from 'lucide-react'
+import { useRef, useEffect, useMemo } from 'react'
+import { Clock, User, Edit, Trash2, X, MapPin, FileText, CheckCircle, UserX } from 'lucide-react'
 import { Button } from '@/components/ui'
 import type { AppointmentUI } from '@/types/appointment'
 import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
+import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
+import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
 import { cn } from '@/lib/utils'
 
 interface AppointmentPopoverProps {
@@ -22,6 +24,10 @@ interface AppointmentPopoverProps {
   canComplete?: boolean
   /** Callback per conferma completamento seduta (trigger DB: status=completato → DEBIT ledger). */
   onComplete?: () => void
+  /** Mostra bottone "Segna no-show" (solo staff, appuntamenti attivi/in_corso con atleta). */
+  canNoShow?: boolean
+  /** Callback per segnare no-show (scala 1 lezione, insert cancellation). */
+  onNoShow?: () => void
   /** Sotto 852px: mostra come modal/drawer full width invece che popover posizionato */
   asModal?: boolean
 }
@@ -38,6 +44,8 @@ export function AppointmentPopover({
   canDelete = true,
   canComplete = false,
   onComplete,
+  canNoShow = false,
+  onNoShow,
   asModal = false,
 }: AppointmentPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -100,6 +108,14 @@ export function AppointmentPopover({
   }
 
   const adjustedPos = getAdjustedPosition()
+  const { settings } = useStaffCalendarSettings()
+  const typeLabelMap = useMemo(() => {
+    const m: Record<string, string> = { ...APPOINTMENT_TYPE_LABELS }
+    settings?.custom_appointment_types?.forEach((c) => {
+      m[c.key] = c.label
+    })
+    return m
+  }, [settings?.custom_appointment_types])
 
   const formatTime = (dateTime: string) => {
     return new Date(dateTime).toLocaleTimeString('it-IT', {
@@ -116,18 +132,7 @@ export function AppointmentPopover({
     })
   }
 
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      allenamento: 'Allenamento',
-      prova: 'Prova',
-      valutazione: 'Valutazione',
-      prima_visita: 'Prima Visita',
-      riunione: 'Riunione',
-      massaggio: 'Massaggio',
-      nutrizionista: 'Nutrizionista',
-    }
-    return labels[type] || type
-  }
+  const getTypeLabel = (type: string) => typeLabelMap[type] ?? type.replace(/_/g, ' ')
 
   const colorKey = (appointment.color || 'azzurro') as AppointmentColor
   const backgroundColor = APPOINTMENT_COLORS[colorKey] || APPOINTMENT_COLORS.azzurro
@@ -135,6 +140,7 @@ export function AppointmentPopover({
   const isInCorso = appointment.status === 'in_corso'
   const isCompletato = appointment.status === 'completato'
   const showCompleteButton = (isActive || isInCorso) && canComplete && onComplete
+  const showNoShowButton = (isActive || isInCorso) && canNoShow && onNoShow
   const showEditDelete = isActive && (canEdit || canDelete)
 
   const content = (
@@ -257,18 +263,31 @@ export function AppointmentPopover({
           </div>
         )}
 
-        {/* Azioni: Segna completato, Annulla, Elimina */}
-        {showCompleteButton ? (
+        {/* Azioni: Segna completato, Segna no-show, Annulla, Elimina */}
+        {(showCompleteButton || showNoShowButton) ? (
           <div className="pt-2 border-t border-[#5F6368]/30 space-y-2">
-            <Button
-              variant="default"
-              onClick={() => restoreFocusAndClose(onComplete!)}
-              disabled={loading}
-              className="w-full h-9 bg-[#33B679] hover:bg-[#2D9D6B] text-white font-medium justify-center gap-2"
-            >
-              <CheckCircle className="h-4 w-4" />
-              Segna completato
-            </Button>
+            {showCompleteButton && (
+              <Button
+                variant="default"
+                onClick={() => restoreFocusAndClose(onComplete!)}
+                disabled={loading}
+                className="w-full h-9 bg-[#33B679] hover:bg-[#2D9D6B] text-white font-medium justify-center gap-2"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Segna completato
+              </Button>
+            )}
+            {showNoShowButton && (
+              <Button
+                variant="outline"
+                onClick={() => restoreFocusAndClose(onNoShow!)}
+                disabled={loading}
+                className="w-full h-9 text-[#F28B82] border-[#F28B82]/50 hover:bg-[#F28B82]/10 font-medium justify-center gap-2"
+              >
+                <UserX className="h-4 w-4" />
+                Segna no-show
+              </Button>
+            )}
           </div>
         ) : null}
         {(isActive && canEdit) || canDelete ? (

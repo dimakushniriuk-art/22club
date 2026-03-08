@@ -112,6 +112,11 @@ export default function MassaggiatoreAppuntamentiPage() {
     return m
   }, [athleteIds, rimastiMap, lessonStatsMap])
 
+  const athleteEmailMap = useMemo(
+    () => new Map(athletes.map((a) => [a.id, a.email])),
+    [athletes],
+  )
+
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentTable | null>(null)
   const [editingAppointment, setEditingAppointment] = useState<EditAppointmentData | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -308,6 +313,7 @@ export default function MassaggiatoreAppuntamentiPage() {
             getAppointmentType={getAppointmentType}
             theme="amber"
             lessonsRemainingMap={lessonsRemainingMap}
+            athleteEmailMap={athleteEmailMap}
           />
         </div>
       </div>

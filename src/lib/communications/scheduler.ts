@@ -7,9 +7,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
 import type { Database } from '@/types/supabase'
-import { sendCommunicationPush } from './push'
 import { sendCommunicationEmail } from './email'
-import { sendCommunicationSMS } from './sms'
 
 const logger = createLogger('lib:communications:scheduler')
 
@@ -107,42 +105,29 @@ export async function processScheduledCommunications(): Promise<ProcessScheduled
         await ensureRecipientsCreated(communication.id, {
           type: communication.type as string,
           recipient_filter: communication.recipient_filter as unknown,
+          created_by_profile_id: (communication as { created_by_profile_id?: string }).created_by_profile_id,
         })
 
-        // Poi, invia in base al tipo
+        // Poi, invia in base al tipo (solo email)
         let result
 
         switch (communication.type) {
-          case 'push':
-            result = await sendCommunicationPush(communication.id)
-            break
-
           case 'email':
             result = await sendCommunicationEmail(communication.id)
             break
 
-          case 'sms':
-            result = await sendCommunicationSMS(communication.id)
+          case 'all':
+            result = await sendCommunicationEmail(communication.id)
             break
 
-          case 'all':
-            // Invia su tutti i canali
-            const pushResult = await sendCommunicationPush(communication.id)
-            const emailResult = await sendCommunicationEmail(communication.id)
-            const smsResult = await sendCommunicationSMS(communication.id)
-
-            result = {
-              success: pushResult.success || emailResult.success || smsResult.success,
-              sent: (pushResult.sent || 0) + (emailResult.sent || 0) + (smsResult.sent || 0),
-              failed:
-                (pushResult.failed || 0) + (emailResult.failed || 0) + (smsResult.failed || 0),
-              total: (pushResult.total || 0) + (emailResult.total || 0) + (smsResult.total || 0),
-              errors: [
-                ...(pushResult.errors || []),
-                ...(emailResult.errors || []),
-                ...(smsResult.errors || []),
-              ],
-            }
+          case 'push':
+          case 'sms':
+            // Canali push/sms rimossi: skip
+            logger.debug('Comunicazione push/sms saltata (canale non più supportato)', undefined, {
+              id: communication.id,
+              type: communication.type,
+            })
+            result = { success: false, sent: 0, failed: 0, total: 0, errors: ['Canale non supportato'] }
             break
 
           default:
@@ -206,6 +191,7 @@ export async function ensureRecipientsCreated(
   communication: {
     type: string
     recipient_filter: unknown
+    created_by_profile_id?: string
   },
 ): Promise<void> {
   const supabase = getSupabaseClient()
@@ -227,7 +213,6 @@ export async function ensureRecipientsCreated(
     return
   }
 
-  // Crea i recipients
   const { getRecipientsByFilter, generateRecipientTypes } = await import('./recipients')
   const { createCommunicationRecipients } = await import('./service')
 
@@ -235,9 +220,24 @@ export async function ensureRecipientsCreated(
     role?: 'admin' | 'trainer' | 'athlete'
     athlete_ids?: string[]
     all_users?: boolean
+    org_id?: string
   }
 
-  const { data: recipients, error: recipientsError } = await getRecipientsByFilter(recipientFilter)
+  const commWithCreator = communication as { created_by_profile_id?: string }
+  let filterWithOrg: typeof recipientFilter = { ...recipientFilter }
+  if (commWithCreator.created_by_profile_id) {
+    const { data: creatorProfile } = await supabase
+      .from('profiles')
+      .select('org_id')
+      .eq('id', commWithCreator.created_by_profile_id)
+      .maybeSingle()
+    const orgId = (creatorProfile as { org_id?: string } | null)?.org_id
+    if (orgId) {
+      filterWithOrg = { ...recipientFilter, org_id: orgId }
+    }
+  }
+
+  const { data: recipients, error: recipientsError } = await getRecipientsByFilter(filterWithOrg)
 
   if (recipientsError) {
     logger.error('Error getting recipients for communication', recipientsError, { communicationId })

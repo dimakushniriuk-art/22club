@@ -13,12 +13,12 @@ export function validateAvatarFile(file: File): { valid: boolean; error?: string
     }
   }
 
-  // 2. Controlla dimensione (max 25MB)
-  const maxSize = 25 * 1024 * 1024 // 25MB in bytes
+  // 2. Controlla dimensione (max 100MB)
+  const maxSize = 100 * 1024 * 1024 // 100MB in bytes
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: 'File troppo grande. Dimensione massima: 25MB.',
+      error: 'File troppo grande. Dimensione massima: 100MB.',
     }
   }
 

@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle } from 'lucide-react'
 import { AthleteBackground } from '@/components/athlete/athlete-background'
 
 const logger = createLogger('app:registrati:page')
@@ -59,6 +59,10 @@ function RegisterContent() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showConfirmationScreen, setShowConfirmationScreen] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendMessage, setResendMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const router = useRouter()
   const supabase = createClient()
@@ -85,10 +89,15 @@ function RegisterContent() {
     }
 
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const codiceAtRedirect = codiceInvito || ''
+      const redirectTo =
+        origin ? (codiceAtRedirect ? `${origin}/welcome?codice=${encodeURIComponent(codiceAtRedirect)}` : `${origin}/welcome`) : undefined
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: redirectTo,
           data: {
             nome: formData.nome,
             cognome: formData.cognome,
@@ -108,54 +117,68 @@ function RegisterContent() {
       }
 
       if (authData.user) {
-        const { data: existingProfile, error: checkError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', authData.user.id)
-          .single()
-
-        const isAbort = checkError && (
-          checkError.code === '' ||
-          (typeof checkError.details === 'string' && checkError.details.includes('AbortError'))
-        )
-        if (checkError && checkError.code !== 'PGRST116' && !isAbort) {
-          logger.error('Errore verifica profilo', checkError, {
-            code: checkError.code,
-            details: checkError.details,
-            hint: checkError.hint,
-          })
-        }
-
         const session = authData.session
         const codiceAtSubmit =
           searchParams.get('codice')?.trim() || searchParams.get('code')?.trim() || ''
-        const needProfile = !existingProfile || !!isAbort
-        const needInvite = !!codiceAtSubmit
-        if (needProfile || needInvite) {
-          const res = await fetch('/api/register/complete-profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              nome: formData.nome,
-              cognome: formData.cognome,
-              email: formData.email,
-              ...(codiceAtSubmit && { codice: codiceAtSubmit }),
-              ...(session && {
+
+        if (session?.access_token && session?.refresh_token) {
+          const supabaseClient = createClient()
+          await supabaseClient.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          })
+          try {
+            await fetch('/api/register/complete-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                nome: formData.nome,
+                cognome: formData.cognome,
+                email: formData.email,
+                ...(codiceAtSubmit && { codice: codiceAtSubmit }),
                 access_token: session.access_token,
                 refresh_token: session.refresh_token,
               }),
-            }),
-          })
-          const data = await res.json().catch(() => ({}))
-          if (!res.ok) {
-            logger.error('Errore API complete-profile', { status: res.status, data })
-            setError(data?.error || 'Errore durante la creazione del profilo. Riprova più tardi.')
-            return
+            })
+          } catch {
+            // welcome farà complete-profile al caricamente se fallisce qui
           }
+          const welcomePath = codiceAtSubmit
+            ? `/welcome?codice=${encodeURIComponent(codiceAtSubmit)}`
+            : '/welcome'
+          router.push(welcomePath)
+        } else {
+          // Nessuna sessione (conferma email attiva): registra e assegna subito via API (user_id + email)
+          try {
+            const cpRes = await fetch('/api/register/complete-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: authData.user.id,
+                email: formData.email,
+                nome: formData.nome,
+                cognome: formData.cognome,
+                ...(codiceAtSubmit && { codice: codiceAtSubmit }),
+              }),
+            })
+            if (!cpRes.ok) {
+              const errData = await cpRes.json().catch(() => ({}))
+              logger.warn('complete-profile dopo registrazione fallito', { status: cpRes.status, errData })
+            }
+          } catch (e) {
+            logger.warn('complete-profile dopo registrazione errore di rete', e)
+          }
+          if (codiceAtSubmit && typeof window !== 'undefined') {
+            try {
+              sessionStorage.setItem('pending_invite_codice', codiceAtSubmit)
+            } catch {
+              // ignore
+            }
+          }
+          setRegisteredEmail(formData.email)
+          setShowConfirmationScreen(true)
+          return
         }
-
-        router.push('/home')
-        router.refresh()
       } else {
         setError('Utente non creato correttamente')
       }
@@ -174,6 +197,94 @@ function RegisterContent() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleResendConfirmation = async () => {
+    const email = registeredEmail?.trim()
+    if (!email) return
+    setResendMessage(null)
+    setResendLoading(true)
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      })
+      if (error) {
+        logger.warn('Resend confirmation email failed', error, { email })
+        setResendMessage({
+          type: 'error',
+          text: error.message ?? 'Impossibile inviare di nuovo l\'email. Riprova più tardi.',
+        })
+      } else {
+        setResendMessage({
+          type: 'success',
+          text: 'Email inviata di nuovo. Controlla la casella (e la cartella spam).',
+        })
+      }
+    } catch (err) {
+      logger.error('Resend confirmation email error', err, { email })
+      setResendMessage({ type: 'error', text: 'Errore di rete. Riprova.' })
+    } finally {
+      setResendLoading(false)
+    }
+  }
+
+  if (showConfirmationScreen) {
+    return (
+      <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+        <Card variant="default" className="login-card w-full max-w-md min-[834px]:max-w-lg backdrop-blur-xl border border-border rounded-xl min-[834px]:rounded-2xl bg-background-secondary/95">
+          <CardContent className="p-5 sm:p-6 min-[834px]:p-8 text-center">
+            <div className="mb-6 min-[834px]:mb-8">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <CheckCircle className="h-8 w-8" aria-hidden />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-text-primary">Account creato</h2>
+              <p className="text-text-secondary mt-2 text-sm">
+                Abbiamo inviato un&apos;email di conferma a{' '}
+                <span className="font-medium text-text-primary">{registeredEmail ?? ''}</span>.
+              </p>
+              <p className="text-text-secondary mt-3 text-sm">
+                Clicca sul link nell&apos;email per attivare l&apos;account. Poi accedi per completare il profilo
+                {codiceInvito ? ' e collegarti al tuo trainer.' : '.'}
+              </p>
+            </div>
+            <div className="space-y-4">
+              <Button variant="primary" className="w-full min-h-[44px] rounded-xl" asChild>
+                <Link href="/login">Vai al login</Link>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full min-h-[44px] rounded-xl"
+                disabled={resendLoading || !registeredEmail?.trim()}
+                onClick={handleResendConfirmation}
+              >
+                {resendLoading ? (
+                  <>
+                    <span className="inline-block h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" aria-hidden />
+                    Invio in corso...
+                  </>
+                ) : (
+                  'Invia di nuovo l\'email di conferma'
+                )}
+              </Button>
+              {resendMessage && (
+                <p
+                  className={`text-sm ${
+                    resendMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-state-error'
+                  }`}
+                >
+                  {resendMessage.text}
+                </p>
+              )}
+              <p className="text-text-muted text-xs">
+                Non hai ricevuto l&apos;email? Controlla spam e cartelle promozioni.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

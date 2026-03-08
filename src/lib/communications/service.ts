@@ -24,13 +24,14 @@ export interface RecipientFilter {
   role?: 'admin' | 'trainer' | 'athlete'
   athlete_ids?: string[]
   all_users?: boolean
+  org_id?: string
 }
 
 // Tipo per creazione comunicazione
 export interface CreateCommunicationInput {
   title: string
   message: string
-  type: 'push' | 'email' | 'sms' | 'all'
+  type: 'email' | 'all'
   recipient_filter: RecipientFilter
   scheduled_for?: string | null
   metadata?: Record<string, unknown>
@@ -40,7 +41,7 @@ export interface CreateCommunicationInput {
 export interface UpdateCommunicationInput {
   title?: string
   message?: string
-  type?: 'push' | 'email' | 'sms' | 'all'
+  type?: 'email' | 'all'
   recipient_filter?: RecipientFilter
   scheduled_for?: string | null
   status?: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled'
@@ -396,7 +397,7 @@ export async function deleteCommunication(id: string): Promise<{ error: Error | 
  */
 export async function createCommunicationRecipients(
   communicationId: string,
-  recipients: Array<{ user_id: string; recipient_type: 'push' | 'email' | 'sms' }>,
+  recipients: Array<{ user_id: string; recipient_type: 'email' }>,
 ): Promise<{ data: CommunicationRecipientRow[] | null; error: Error | null }> {
   try {
     const supabase = getSupabaseClient()

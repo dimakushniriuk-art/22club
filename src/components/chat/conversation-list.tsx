@@ -50,6 +50,17 @@ export function ConversationList({
     conv.other_user_name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  const isStaffRole = (role: string) =>
+    ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing', 'staff'].includes(
+      (role ?? '').toLowerCase(),
+    )
+  const staffConversations = filteredConversations.filter((c) =>
+    isStaffRole(c.other_user_role),
+  )
+  const athleteConversations = filteredConversations.filter(
+    (c) => !isStaffRole(c.other_user_role),
+  )
+
   const formatLastMessageTime = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
@@ -120,88 +131,145 @@ export function ConversationList({
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {filteredConversations.map((conversation) => (
-              <div
-                key={conversation.other_user_id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelectConversation(conversation.other_user_id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onSelectConversation(conversation.other_user_id)
-                  }
-                }}
-                className={cn(
-                  'w-full text-left rounded-2xl border bg-background-secondary/25 p-3 transition-colors min-h-[56px] flex items-center gap-2 sm:gap-3 border-white/10 hover:border-white/14 cursor-pointer group touch-manipulation active:scale-[0.99]',
-                  currentConversationId === conversation.other_user_id && t.selectedItem,
-                )}
-              >
-                <Avatar
-                  src={conversation.avatar ?? undefined}
-                  alt={conversation.other_user_name}
-                  fallbackText={getInitial(conversation.other_user_name)}
-                  size="md"
-                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="mb-0.5 flex items-center gap-1.5 sm:gap-2">
-                    <h4 className="text-text-primary truncate text-sm font-medium">
-                      {conversation.other_user_name}
-                    </h4>
-                    <span className="text-xs shrink-0">{getRoleIcon(conversation.other_user_role)}</span>
-                  </div>
-                  <div className="text-text-secondary flex items-center gap-1.5 text-xs">
-                    <Clock className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{formatLastMessageTime(conversation.last_message_at)}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {conversation.unread_count > 0 && (
-                    <Badge variant="success" size="sm">
-                      {conversation.unread_count}
-                    </Badge>
-                  )}
-                  <MessageCircle className={cn('h-4 w-4 opacity-70', t.iconColor)} />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="min-h-[44px] min-w-[44px] h-8 w-8 opacity-70 group-hover:opacity-100 touch-manipulation"
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={`Azioni per ${conversation.other_user_name}`}
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href={`/dashboard/atleti/${conversation.other_user_id}`}
-                          className="flex items-center"
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          Vedi profilo
-                        </Link>
-                      </DropdownMenuItem>
-                      {onRemoveFromList && (
-                        <DropdownMenuItem
-                          onClick={() => onRemoveFromList(conversation.other_user_id)}
-                          className="text-state-error focus:text-state-error"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Rimuovi dalla lista
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+          <div className="space-y-4">
+            {staffConversations.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="px-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+                  Staff
+                </h3>
+                {staffConversations.map((conversation) => (
+                  <ConversationItem
+                    key={conversation.other_user_id}
+                    conversation={conversation}
+                    currentConversationId={currentConversationId}
+                    onSelectConversation={onSelectConversation}
+                    onRemoveFromList={onRemoveFromList}
+                    t={t}
+                    formatLastMessageTime={formatLastMessageTime}
+                    getRoleIcon={getRoleIcon}
+                  />
+                ))}
               </div>
-            ))}
+            )}
+            {athleteConversations.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="px-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+                  Atleti
+                </h3>
+                {athleteConversations.map((conversation) => (
+                  <ConversationItem
+                    key={conversation.other_user_id}
+                    conversation={conversation}
+                    currentConversationId={currentConversationId}
+                    onSelectConversation={onSelectConversation}
+                    onRemoveFromList={onRemoveFromList}
+                    t={t}
+                    formatLastMessageTime={formatLastMessageTime}
+                    getRoleIcon={getRoleIcon}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function ConversationItem({
+  conversation,
+  currentConversationId,
+  onSelectConversation,
+  onRemoveFromList,
+  t,
+  formatLastMessageTime,
+  getRoleIcon,
+}: {
+  conversation: ConversationParticipant
+  currentConversationId?: string
+  onSelectConversation: (userId: string) => void
+  onRemoveFromList?: (userId: string) => void
+  t: (typeof CHAT_THEME_CLASSES)[keyof typeof CHAT_THEME_CLASSES]
+  formatLastMessageTime: (dateString: string) => string
+  getRoleIcon: (role: string) => string
+}) {
+  return (
+    <div
+      key={conversation.other_user_id}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelectConversation(conversation.other_user_id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelectConversation(conversation.other_user_id)
+        }
+      }}
+      className={cn(
+        'w-full text-left rounded-2xl border bg-background-secondary/25 p-3 transition-colors min-h-[56px] flex items-center gap-2 sm:gap-3 border-white/10 hover:border-white/14 cursor-pointer group touch-manipulation active:scale-[0.99]',
+        currentConversationId === conversation.other_user_id && t.selectedItem,
+      )}
+    >
+      <Avatar
+        src={conversation.avatar ?? undefined}
+        alt={conversation.other_user_name}
+        fallbackText={getInitial(conversation.other_user_name)}
+        size="md"
+        className="h-9 w-9 sm:h-10 sm:w-10 shrink-0"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="mb-0.5 flex items-center gap-1.5 sm:gap-2">
+          <h4 className="text-text-primary truncate text-sm font-medium">
+            {conversation.other_user_name}
+          </h4>
+          <span className="text-xs shrink-0">{getRoleIcon(conversation.other_user_role)}</span>
+        </div>
+        <div className="text-text-secondary flex items-center gap-1.5 text-xs">
+          <Clock className="h-3 w-3 shrink-0" />
+          <span className="truncate">{formatLastMessageTime(conversation.last_message_at)}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        {conversation.unread_count > 0 && (
+          <Badge variant="success" size="sm">
+            {conversation.unread_count}
+          </Badge>
+        )}
+        <MessageCircle className={cn('h-4 w-4 opacity-70', t.iconColor)} />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="min-h-[44px] min-w-[44px] h-8 w-8 opacity-70 group-hover:opacity-100 touch-manipulation"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Azioni per ${conversation.other_user_name}`}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/dashboard/atleti/${conversation.other_user_id}`}
+                className="flex items-center"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Vedi profilo
+              </Link>
+            </DropdownMenuItem>
+            {onRemoveFromList && (
+              <DropdownMenuItem
+                onClick={() => onRemoveFromList(conversation.other_user_id)}
+                className="text-state-error focus:text-state-error"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Rimuovi dalla lista
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )

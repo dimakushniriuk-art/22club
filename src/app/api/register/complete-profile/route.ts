@@ -4,13 +4,23 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api:register:complete-profile')
 
+/** Decodifica base64url (compatibile Node e Edge). */
+function base64UrlDecode(str: string): string {
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(base64, 'base64').toString('utf8')
+  }
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
 /** Decodifica payload JWT (solo lettura, token ricevuto dal client subito dopo signUp). */
 function decodeJwtPayload(token: string): { sub?: string; email?: string } | null {
   try {
     const parts = token.trim().split('.')
     if (parts.length !== 3) return null
     const payload = JSON.parse(
-      Buffer.from(parts[1]!, 'base64url').toString('utf8'),
+      base64UrlDecode(parts[1]!),
     ) as { sub?: string; email?: string }
     return payload
   } catch {
@@ -25,6 +35,11 @@ function decodeJwtPayload(token: string): { sub?: string; email?: string } | nul
  * Se codice/code è presente e valido: collega atleta al PT (trainer_athletes) e marca invito come accettato.
  */
 export async function POST(request: NextRequest) {
+  const adminClient = createAdminClient()
+  let userId!: string
+  let email!: string
+  let profileId!: string
+  let created = false
   try {
     const body = await request.json().catch(() => ({}))
     const accessToken =
@@ -33,9 +48,6 @@ export async function POST(request: NextRequest) {
       (typeof body.codice === 'string' ? body.codice.trim() : null) ||
       (typeof body.code === 'string' ? body.code.trim() : null) ||
       ''
-
-    let userId: string
-    let email: string
 
     if (accessToken) {
       const payload = decodeJwtPayload(accessToken)
@@ -51,30 +63,74 @@ export async function POST(request: NextRequest) {
       const supabase = await createClient()
       const {
         data: { session },
-        error: sessionError,
+        error: _sessionError,
       } = await supabase.auth.getSession()
-      if (sessionError || !session?.user) {
-        return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+      if (session?.user) {
+        userId = session.user.id
+        email =
+          session.user.email?.trim() ||
+          (typeof body.email === 'string' ? body.email.trim() : '') ||
+          ''
+      } else {
+        // Conferma email attiva: signUp restituisce session = null; il client invia user_id (authData.user.id)
+        const bodyUserId =
+          typeof body.user_id === 'string' ? body.user_id.trim() : null
+        const bodyEmail =
+          typeof body.email === 'string' ? body.email.trim() : null
+        if (!bodyUserId || !bodyEmail) {
+          return NextResponse.json(
+            {
+              error:
+                'Sessione non disponibile. Se hai la conferma email attiva, controlla la casella e clicca il link di conferma, poi riprova la registrazione.',
+            },
+            { status: 401 },
+          )
+        }
+        const adminAuth = createAdminClient().auth.admin
+        const { data: authData, error: authErr } =
+          await adminAuth.getUserById(bodyUserId)
+        const authUserObj = authData?.user ?? (authData as unknown as { user?: { id: string; email?: string; created_at?: string } })?.user
+        if (authErr || !authUserObj) {
+          logger.warn('complete-profile: getUserById fallito', authErr, {
+            bodyUserId,
+          })
+          return NextResponse.json(
+            {
+              error:
+                'Utente non trovato. Conferma l\'email dal link ricevuto e riprova.',
+            },
+            { status: 401 },
+          )
+        }
+        if (authUserObj.email?.toLowerCase() !== bodyEmail.toLowerCase()) {
+          return NextResponse.json(
+            { error: 'Email non corrisponde all\'utente.' },
+            { status: 400 },
+          )
+        userId = bodyUserId
+        email = bodyEmail
       }
-      userId = session.user.id
-      email =
-        session.user.email?.trim() ||
-        (typeof body.email === 'string' ? body.email.trim() : '') ||
-        ''
     }
 
-    const adminClient = createAdminClient()
     const { data: existing } = await adminClient
       .from('profiles')
       .select('id')
       .eq('user_id', userId)
       .maybeSingle()
 
-    let profileId: string
-    let created = false
-
     if (existing) {
       profileId = existing.id
+      const nome = typeof body.nome === 'string' ? body.nome.trim() : null
+      const cognome = typeof body.cognome === 'string' ? body.cognome.trim() : null
+      if (nome !== null || cognome !== null) {
+        await adminClient
+          .from('profiles')
+          .update({
+            ...(nome !== null && { nome: nome || null }),
+            ...(cognome !== null && { cognome: cognome || null }),
+          })
+          .eq('id', profileId)
+      }
     } else {
       const nome = typeof body.nome === 'string' ? body.nome.trim() : ''
       const cognome = typeof body.cognome === 'string' ? body.cognome.trim() : ''
@@ -85,18 +141,33 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      let defaultOrgId: string | null = null
+      let orgIdForInsert: string
       try {
         const { data: defaultOrg } = await adminClient
           .from('organizations')
           .select('id')
           .eq('slug', 'default-org')
           .maybeSingle()
-        defaultOrgId = defaultOrg?.id ?? null
+        if (defaultOrg?.id) {
+          orgIdForInsert = defaultOrg.id
+        } else {
+          const { data: firstOrg } = await adminClient
+            .from('organizations')
+            .select('id')
+            .limit(1)
+            .maybeSingle()
+          orgIdForInsert = (firstOrg as { id?: string } | null)?.id ?? ''
+        }
       } catch {
-        // Tabella organizations assente (pre-migration): org_id può essere text 'default-org'
+        orgIdForInsert = ''
       }
-      const orgIdForInsert = defaultOrgId ?? 'default-org'
+      if (!orgIdForInsert) {
+        logger.error('Nessuna organization trovata (complete-profile)', { userId })
+        return NextResponse.json(
+          { error: 'Configurazione organizzazione mancante. Contatta l\'amministratore.' },
+          { status: 502 },
+        )
+      }
 
       const { data: inserted, error: insertError } = await adminClient
         .from('profiles')
@@ -114,31 +185,55 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         if (insertError.code === '23505') {
-          const { data: existingAfterConflict } = await adminClient
+          const { data: existingByUser } = await adminClient
             .from('profiles')
             .select('id')
             .eq('user_id', userId)
             .maybeSingle()
-          if (existingAfterConflict) {
-            profileId = existingAfterConflict.id
+          if (existingByUser) {
+            profileId = existingByUser.id
             created = false
+            // Profilo creato dal trigger senza nome/cognome: aggiornali ora
+            const nomeVal = typeof body.nome === 'string' ? body.nome.trim() || null : null
+            const cognomeVal = typeof body.cognome === 'string' ? body.cognome.trim() || null : null
+            if (nomeVal !== null || cognomeVal !== null) {
+              await adminClient
+                .from('profiles')
+                .update({
+                  ...(nomeVal !== null && { nome: nomeVal }),
+                  ...(cognomeVal !== null && { cognome: cognomeVal }),
+                })
+                .eq('id', profileId)
+            }
           } else {
-            logger.error('Errore INSERT profiles (complete-profile)', insertError, {
+            const msg =
+              insertError.message?.includes('email') || insertError.details?.includes('email')
+                ? 'Questa email è già registrata. Usa un\'altra email o accedi al tuo account.'
+                : insertError.message || 'Errore creazione profilo'
+            logger.error('Errore INSERT profiles (complete-profile) - conflitto', insertError, {
               userId,
               email,
             })
             return NextResponse.json(
-              { error: insertError.message || 'Errore creazione profilo' },
-              { status: 502 },
+              { error: msg, code: insertError.code },
+              { status: 409 },
             )
           }
         } else {
+          const errMsg =
+            insertError.message ||
+            (typeof insertError.details === 'string' ? insertError.details : null) ||
+            (typeof (insertError as { hint?: string }).hint === 'string'
+              ? (insertError as { hint: string }).hint
+              : null) ||
+            'Errore durante la creazione del profilo. Riprova o contatta l\'assistenza.'
           logger.error('Errore INSERT profiles (complete-profile)', insertError, {
             userId,
             email,
+            code: insertError.code,
           })
           return NextResponse.json(
-            { error: insertError.message || 'Errore creazione profilo' },
+            { error: errMsg, code: insertError.code, details: insertError.details },
             { status: 502 },
           )
         }
@@ -147,22 +242,48 @@ export async function POST(request: NextRequest) {
         created = true
       }
     }
+    }
 
+    let invito: { id: string; pt_id: string; stato: string; status: string | null } | null = null
     if (codiceInvito) {
-      const { data: invito, error: invitoErr } = await adminClient
+      const { data: invitoByCodice, error: invitoErr } = await adminClient
         .from('inviti_atleti')
-        .select('id, pt_id, stato, status, expires_at')
+        .select('id, pt_id, stato, status')
         .eq('codice', codiceInvito)
         .maybeSingle()
-
       if (invitoErr) {
         logger.warn('Lookup invito (complete-profile)', invitoErr, { codice: codiceInvito })
-      } else if (!invito) {
-        logger.warn('Invito non trovato (complete-profile)', { codice: codiceInvito })
-      } else if (
+      } else {
+        invito = invitoByCodice
+        if (invito) {
+          logger.info('complete-profile: invito trovato per codice', { invitoId: invito.id, codice: codiceInvito })
+        }
+      }
+    }
+    if (!invito && email) {
+      const emailTrim = email.trim()
+      const { data: invitoByEmail, error: invitoEmailErr } = await adminClient
+        .from('inviti_atleti')
+        .select('id, pt_id, stato, status')
+        .ilike('email', emailTrim)
+        .or('stato.eq.inviato,status.eq.pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (invitoEmailErr) {
+        logger.warn('Lookup invito per email (complete-profile)', invitoEmailErr, { email: emailTrim })
+      }
+      invito = invitoByEmail
+      if (invito) {
+        logger.info('complete-profile: invito trovato per email (fallback)', { invitoId: invito.id, email: emailTrim })
+      }
+    }
+    if (!invito && (codiceInvito || email)) {
+      logger.warn('complete-profile: nessun invito trovato', { codice: codiceInvito, email: email?.trim() })
+    }
+    if (invito &&
         invito.pt_id &&
-        (invito.stato === 'inviato' || invito.status === 'pending') &&
-        (!invito.expires_at || new Date(invito.expires_at) > new Date())
+        (invito.stato === 'inviato' || invito.status === 'pending')
       ) {
         const { data: trainerProfile } = await adminClient.from('profiles').select('org_id').eq('id', invito.pt_id).single()
         const { data: athleteProfile } = await adminClient.from('profiles').select('org_id').eq('id', profileId).single()
@@ -191,42 +312,56 @@ export async function POST(request: NextRequest) {
             athlete_id: profileId,
           })
         }
+        // pt_atleti ha UNIQUE(atleta_id): una sola riga per atleta. Aggiorniamo la riga esistente al nuovo pt_id, altrimenti inseriamo.
+        const { data: updatedRow, error: ptUpdateErr } = await adminClient
+          .from('pt_atleti')
+          .update({ pt_id: invito.pt_id })
+          .eq('atleta_id', profileId)
+          .select('id')
+          .maybeSingle()
+        if (ptUpdateErr) {
+          logger.warn('Errore UPDATE pt_atleti (complete-profile)', ptUpdateErr, {
+            atleta_id: profileId,
+          })
+        }
+        if (!updatedRow) {
+          const { error: ptInsertErr } = await adminClient
+            .from('pt_atleti')
+            .insert({ pt_id: invito.pt_id, atleta_id: profileId })
+          if (ptInsertErr) {
+            logger.warn('Errore INSERT pt_atleti (complete-profile)', ptInsertErr, {
+              pt_id: invito.pt_id,
+              atleta_id: profileId,
+            })
+          }
+        }
         const updatePayload = {
           stato: 'registrato',
           status: 'accepted',
           accepted_at: new Date().toISOString(),
         }
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/04549c1c-3da0-43fd-bc76-435058c34b0a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'complete-profile:before-update',message:'inviti_atleti update payload and invito state',data:{invitoId:invito.id,pt_id:invito.pt_id,statoBefore:invito.stato,statusBefore:invito.status,updatePayload},timestamp:Date.now(),hypothesisId:'H3',runId:'invite-update'})}).catch(()=>{});
-        // #endregion
         const { error: updateInvitoErr } = await adminClient
           .from('inviti_atleti')
           .update(updatePayload)
           .eq('id', invito.id)
         if (updateInvitoErr) {
-          const errSerialized = { message: updateInvitoErr.message, code: updateInvitoErr.code, details: updateInvitoErr.details, hint: updateInvitoErr.hint }
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/04549c1c-3da0-43fd-bc76-435058c34b0a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'complete-profile:update-invito-err',message:'UPDATE inviti_atleti error serialized',data:{invitoId:invito.id,...errSerialized},timestamp:Date.now(),hypothesisId:'H1',runId:'invite-update'})}).catch(()=>{});
-          // #endregion
           logger.error('Errore UPDATE inviti_atleti (complete-profile)', updateInvitoErr, {
             invitoId: invito.id,
           })
         }
-      } else {
-        logger.warn('Invito non valido o scaduto (complete-profile)', {
-          codice: codiceInvito,
-          stato: invito.stato,
-          status: invito.status,
-          expires_at: invito.expires_at,
-        })
-      }
     }
 
     return NextResponse.json({ ok: true, created })
-  } catch (error) {
-    logger.error('Errore API complete-profile', error)
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    logger.error('Errore API complete-profile', error, {
+      message: error.message,
+      stack: error.stack,
+    })
+    const message =
+      typeof error.message === 'string' ? error.message : 'Errore interno del server'
     return NextResponse.json(
-      { error: 'Errore interno del server' },
+      { error: message, details: message },
       { status: 500 },
     )
   }

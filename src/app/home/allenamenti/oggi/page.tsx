@@ -6,7 +6,13 @@ import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui'
 import { RestTimer } from '@/components/workout/rest-timer'
 import { TrainerSessionModal } from '@/components/workout/trainer-session-modal'
 import { ArrowLeft, Check, Target, Dumbbell, Edit2, Info } from 'lucide-react'
@@ -68,7 +74,8 @@ function ExerciseMediaDisplay({
   // Se c'è un errore video ma abbiamo una thumbnail valida, mostra l'immagine
   // Fallback automatico: se il video fallisce, mostra l'immagine se disponibile
   const shouldShowVideo = isValidVideoUrl && videoUrl && !videoError
-  const shouldShowImage = (!shouldShowVideo || videoError) && isValidThumbUrl && thumbUrl && !imageError
+  const shouldShowImage =
+    (!shouldShowVideo || videoError) && isValidThumbUrl && thumbUrl && !imageError
 
   return (
     <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-background-tertiary to-background-secondary border border-cyan-500/20">
@@ -87,7 +94,7 @@ function ExerciseMediaDisplay({
           onError={(ev) => {
             const videoElement = ev.currentTarget as HTMLVideoElement
             const error = videoElement.error
-            
+
             // Costruisci errorDetails con valori sicuri e serializzabili
             // Usa JSON.stringify per assicurare serializzazione corretta
             const errorDetails: Record<string, string | number | null> = {
@@ -102,7 +109,7 @@ function ExerciseMediaDisplay({
             if (error) {
               errorDetails.errorCode = error.code ?? null
               errorDetails.errorMessage = String(error.message ?? 'Errore sconosciuto')
-              
+
               // Codici errore HTMLMediaElement
               const errorCodeMap: Record<number, string> = {
                 1: 'MEDIA_ERR_ABORTED - Caricamento interrotto',
@@ -110,7 +117,8 @@ function ExerciseMediaDisplay({
                 3: 'MEDIA_ERR_DECODE - Errore di decodifica',
                 4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Formato non supportato',
               }
-              errorDetails.errorCodeDescription = errorCodeMap[error.code] ?? `Codice sconosciuto: ${error.code}`
+              errorDetails.errorCodeDescription =
+                errorCodeMap[error.code] ?? `Codice sconosciuto: ${error.code}`
             } else {
               errorDetails.errorMessage = 'Errore video senza dettagli disponibili'
               errorDetails.errorCode = null
@@ -132,13 +140,15 @@ function ExerciseMediaDisplay({
                 currentSrc: videoElement.currentSrc,
                 networkState: videoElement.networkState,
                 readyState: videoElement.readyState,
-                error: error ? {
-                  code: error.code,
-                  message: error.message,
-                } : null,
+                error: error
+                  ? {
+                      code: error.code,
+                      message: error.message,
+                    }
+                  : null,
               })
             }
-            
+
             logger.warn('Errore caricamento video esercizio', undefined, errorDetails)
             setVideoError(true)
           }}
@@ -222,7 +232,9 @@ function AllenamentiOggiPageContent() {
   const [showTrainerModal, setShowTrainerModal] = useState(false)
   const [inlineTimerSeconds, setInlineTimerSeconds] = useState<number | null>(null)
   const [inlineTimerRunning, setInlineTimerRunning] = useState(false)
-  const [inlineExecutionTimerSeconds, setInlineExecutionTimerSeconds] = useState<number | null>(null)
+  const [inlineExecutionTimerSeconds, setInlineExecutionTimerSeconds] = useState<number | null>(
+    null,
+  )
   const [inlineExecutionTimerRunning, setInlineExecutionTimerRunning] = useState(false)
   const [loading, setLoading] = useState(true)
   const [completingWorkout, setCompletingWorkout] = useState(false)
@@ -310,10 +322,7 @@ function AllenamentiOggiPageContent() {
     if (currentWorkout) {
       setWorkoutSession(currentWorkout)
       // Registra inizio sessione una sola volta (per durata_minuti al completamento)
-      if (
-        currentWorkout.exercises?.length &&
-        sessionStartedAtRef.current == null
-      ) {
+      if (currentWorkout.exercises?.length && sessionStartedAtRef.current == null) {
         sessionStartedAtRef.current = Date.now()
       }
 
@@ -332,7 +341,11 @@ function AllenamentiOggiPageContent() {
               const blockId = (row?.circuit_block_id as string | null) ?? null
               if (blockId) {
                 const start = i
-                while (i + 1 < exs.length && (exs[i + 1] as Record<string, unknown>)?.circuit_block_id === blockId) i += 1
+                while (
+                  i + 1 < exs.length &&
+                  (exs[i + 1] as Record<string, unknown>)?.circuit_block_id === blockId
+                )
+                  i += 1
                 out.push({ startIndex: start, endIndex: i })
                 i += 1
               } else {
@@ -342,7 +355,9 @@ function AllenamentiOggiPageContent() {
             }
             return out
           })()
-          const blockIndex = blocksForIndex.findIndex((b) => exerciseIndex >= b.startIndex && exerciseIndex <= b.endIndex)
+          const blockIndex = blocksForIndex.findIndex(
+            (b) => exerciseIndex >= b.startIndex && exerciseIndex <= b.endIndex,
+          )
           if (blockIndex >= 0) setCurrentBlockIndex(blockIndex)
         }
       } else if (workoutDayId && currentWorkout.exercises && currentWorkout.exercises.length > 0) {
@@ -371,7 +386,11 @@ function AllenamentiOggiPageContent() {
       const blockId = (row?.circuit_block_id as string | null) ?? null
       if (blockId) {
         const start = i
-        while (i + 1 < exercises.length && (exercises[i + 1] as Record<string, unknown>)?.circuit_block_id === blockId) i += 1
+        while (
+          i + 1 < exercises.length &&
+          (exercises[i + 1] as Record<string, unknown>)?.circuit_block_id === blockId
+        )
+          i += 1
         out.push({ startIndex: start, endIndex: i })
         i += 1
       } else {
@@ -401,9 +420,17 @@ function AllenamentiOggiPageContent() {
     const blockId = (current?.circuit_block_id as string | null) ?? null
     if (!blockId || !current) return []
     let start = currentExerciseIndex
-    while (start > 0 && (exercises[start - 1] as Record<string, unknown>)?.circuit_block_id === blockId) start -= 1
+    while (
+      start > 0 &&
+      (exercises[start - 1] as Record<string, unknown>)?.circuit_block_id === blockId
+    )
+      start -= 1
     let end = currentExerciseIndex
-    while (end < exercises.length - 1 && (exercises[end + 1] as Record<string, unknown>)?.circuit_block_id === blockId) end += 1
+    while (
+      end < exercises.length - 1 &&
+      (exercises[end + 1] as Record<string, unknown>)?.circuit_block_id === blockId
+    )
+      end += 1
     return exercises.slice(start, end + 1) as Record<string, unknown>[]
   })()
 
@@ -518,27 +545,27 @@ function AllenamentiOggiPageContent() {
 
   const handleRestTimerComplete = () => {
     setShowRestTimer(false)
-    
+
     // Controlla se l'esercizio ha execution_time_sec e mostra il timer di esecuzione
     if (currentExercise) {
       const sets = (currentExercise.sets as Record<string, unknown>[]) || []
       const currentSetIndex = sets.findIndex((s) => !s.completed)
       const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-      
+
       // Verifica se c'è execution_time_sec nel set o nell'esercizio
       const executionTime =
         ((activeSet?.execution_time_sec ?? currentExercise.execution_time_sec ?? null) as
           | number
           | null) ?? null
-      
-              // Mostra il timer di esecuzione inline solo se execution_time_sec è presente e > 0
-              // Mantieni il timer di recupero visibile (a 0 = completato) e mostra anche il timer di esecuzione
-              if (executionTime !== null && executionTime > 0) {
-                // NON resettare il timer di recupero - mantienilo a 0 (completato) per mostrare entrambi i timer
-                // In questo modo entrambi i timer saranno visibili uno accanto all'altro
-                setInlineExecutionTimerSeconds(executionTime)
-                setInlineExecutionTimerRunning(true)
-              }
+
+      // Mostra il timer di esecuzione inline solo se execution_time_sec è presente e > 0
+      // Mantieni il timer di recupero visibile (a 0 = completato) e mostra anche il timer di esecuzione
+      if (executionTime !== null && executionTime > 0) {
+        // NON resettare il timer di recupero - mantienilo a 0 (completato) per mostrare entrambi i timer
+        // In questo modo entrambi i timer saranno visibili uno accanto all'altro
+        setInlineExecutionTimerSeconds(executionTime)
+        setInlineExecutionTimerRunning(true)
+      }
     }
   }
 
@@ -565,7 +592,7 @@ function AllenamentiOggiPageContent() {
           ((activeSet?.execution_time_sec ?? currentExercise.execution_time_sec ?? null) as
             | number
             | null) ?? null
-        
+
         if (executionTime !== null && executionTime > 0) {
           setInlineExecutionTimerSeconds(executionTime)
           setInlineExecutionTimerRunning(true)
@@ -650,7 +677,7 @@ function AllenamentiOggiPageContent() {
             if ('vibrate' in navigator) {
               navigator.vibrate([200, 100, 200])
             }
-            
+
             // Quando il timer di recupero inline finisce, controlla se c'è execution_time_sec e mostra il timer di esecuzione
             const currentExerciseForTimer = workoutSession?.exercises?.[currentExerciseIndex] as
               | Record<string, unknown>
@@ -659,13 +686,13 @@ function AllenamentiOggiPageContent() {
               const sets = (currentExerciseForTimer.sets as Record<string, unknown>[]) || []
               const currentSetIndex = sets.findIndex((s) => !s.completed)
               const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-              
+
               // Verifica se c'è execution_time_sec nel set o nell'esercizio
               const executionTime =
-                ((activeSet?.execution_time_sec ?? currentExerciseForTimer.execution_time_sec ?? null) as
-                  | number
-                  | null) ?? null
-              
+                ((activeSet?.execution_time_sec ??
+                  currentExerciseForTimer.execution_time_sec ??
+                  null) as number | null) ?? null
+
               // Debug: log per verificare se execution_time_sec è presente
               if (process.env.NODE_ENV === 'development') {
                 console.log('Timer recupero completato - Verifica execution_time_sec:', {
@@ -675,7 +702,7 @@ function AllenamentiOggiPageContent() {
                   willShowTimer: executionTime !== null && executionTime > 0,
                 })
               }
-              
+
               // Mostra il timer di esecuzione inline solo se execution_time_sec è presente e > 0
               // Mantieni il timer di recupero visibile (a 0 = completato) e mostra anche il timer di esecuzione
               if (executionTime !== null && executionTime > 0) {
@@ -685,7 +712,7 @@ function AllenamentiOggiPageContent() {
                 setInlineExecutionTimerRunning(true)
               }
             }
-            
+
             return 0
           }
           return prev - 1
@@ -699,7 +726,11 @@ function AllenamentiOggiPageContent() {
 
   // Effetto per il countdown del timer di esecuzione inline
   useEffect(() => {
-    if (inlineExecutionTimerRunning && inlineExecutionTimerSeconds !== null && inlineExecutionTimerSeconds > 0) {
+    if (
+      inlineExecutionTimerRunning &&
+      inlineExecutionTimerSeconds !== null &&
+      inlineExecutionTimerSeconds > 0
+    ) {
       const interval = setInterval(() => {
         setInlineExecutionTimerSeconds((prev) => {
           if (prev === null || prev <= 1) {
@@ -792,7 +823,8 @@ function AllenamentiOggiPageContent() {
       let coachedByProfileId: string | null = null
       if (withTrainer) {
         const { data: trainerRow } = await supabase.rpc('get_my_trainer_profile')
-        const row = Array.isArray(trainerRow) && trainerRow[0] ? (trainerRow[0] as { pt_id?: string }) : null
+        const row =
+          Array.isArray(trainerRow) && trainerRow[0] ? (trainerRow[0] as { pt_id?: string }) : null
         coachedByProfileId = row?.pt_id ?? null
       }
 
@@ -824,14 +856,23 @@ function AllenamentiOggiPageContent() {
               weight_kg: set.weight_kg != null ? Number(set.weight_kg) : null,
               execution_time_sec: set.execution_time_sec ?? null,
               completed_at: now,
-            } as { reps: number | null; weight_kg: number | null; execution_time_sec: number | null; completed_at: string }
+            } as {
+              reps: number | null
+              weight_kg: number | null
+              execution_time_sec: number | null
+              completed_at: string
+            }
             if (isValidUUID(set.id)) {
               setPromises.push(
                 Promise.resolve(
-                  supabase.from('workout_sets').update(payload).eq('id', set.id).then((r: { error: unknown }) => {
-                    if (r.error) logger.warn('Errore update set', r.error, { setId: set.id })
-                    return { error: r.error }
-                  }),
+                  supabase
+                    .from('workout_sets')
+                    .update(payload)
+                    .eq('id', set.id)
+                    .then((r: { error: unknown }) => {
+                      if (r.error) logger.warn('Errore update set', r.error, { setId: set.id })
+                      return { error: r.error }
+                    }),
                 ),
               )
             } else {
@@ -870,9 +911,7 @@ function AllenamentiOggiPageContent() {
           console.log('[oggi] Salvataggio set:', {
             total: setPromises.length,
             failed: failed.length,
-            error: failed[0]
-              ? (failed[0].error as { message?: string; code?: string })
-              : null,
+            error: failed[0] ? (failed[0].error as { message?: string; code?: string }) : null,
           })
         }
         if (failed.length > 0) {
@@ -978,9 +1017,10 @@ function AllenamentiOggiPageContent() {
         }
 
         logger.error('Errore salvataggio workout_log', logError, errorDetails)
-        
+
         // Messaggio errore più dettagliato
-        const errorMessage = logError.message || "Errore nel salvataggio dell'allenamento completato"
+        const errorMessage =
+          logError.message || "Errore nel salvataggio dell'allenamento completato"
         throw new Error(`${errorMessage}${logError.hint ? ` (${logError.hint})` : ''}`)
       }
 
@@ -1075,19 +1115,26 @@ function AllenamentiOggiPageContent() {
     const isSpecificWorkout = !!workoutPlanId
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-          <header className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg">
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-            <div className="relative z-10 flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" aria-label="Indietro">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+          <header className="fixed inset-x-0 top-0 z-20 flex min-h-[3.5rem] items-center overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
+            <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
+            <div className="relative z-10 flex w-full items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+                aria-label="Indietro"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
                 <Dumbbell className="h-5 w-5 text-cyan-400" />
               </div>
               <div className="flex-1 min-w-0 text-center">
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">Allenamento</h1>
-                <p className="text-xs text-text-tertiary line-clamp-1">Sessione di oggi</p>
+                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">
+                  Allenamento
+                </h1>
               </div>
               <div className="w-10 shrink-0" />
             </div>
@@ -1106,11 +1153,18 @@ function AllenamentiOggiPageContent() {
                   : 'Contatta il tuo trainer per ricevere una scheda di allenamento'}
               </p>
               <div className="flex gap-2 justify-center flex-wrap">
-                <Button onClick={() => router.push('/home/allenamenti')} className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-medium">
+                <Button
+                  onClick={() => router.push('/home/allenamenti')}
+                  className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-medium"
+                >
                   Vai agli Allenamenti
                 </Button>
                 {isSpecificWorkout && (
-                  <Button variant="outline" onClick={() => router.back()} className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10">
+                  <Button
+                    variant="outline"
+                    onClick={() => router.back()}
+                    className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+                  >
                     Indietro
                   </Button>
                 )}
@@ -1126,19 +1180,26 @@ function AllenamentiOggiPageContent() {
   if (error) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-          <header className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg">
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-            <div className="relative z-10 flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" aria-label="Indietro">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+          <header className="fixed inset-x-0 top-0 z-20 flex min-h-[3.5rem] items-center overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
+            <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
+            <div className="relative z-10 flex w-full items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+                aria-label="Indietro"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
                 <Dumbbell className="h-5 w-5 text-cyan-400" />
               </div>
               <div className="flex-1 min-w-0 text-center">
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">Allenamento di Oggi</h1>
-                <p className="text-xs text-text-tertiary line-clamp-1">Sessione</p>
+                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary truncate">
+                  Allenamento di Oggi
+                </h1>
               </div>
               <div className="w-10 shrink-0" />
             </div>
@@ -1146,8 +1207,12 @@ function AllenamentiOggiPageContent() {
           <Card className="relative overflow-hidden border border-state-error/50 bg-background-secondary/50">
             <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
               <div className="mb-3 text-4xl opacity-50">❌</div>
-              <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">Errore nel caricamento</h3>
-              <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-3">{error}</p>
+              <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
+                Errore nel caricamento
+              </h3>
+              <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-3">
+                {error}
+              </p>
               <Button
                 onClick={() => {
                   setError(null)
@@ -1166,245 +1231,361 @@ function AllenamentiOggiPageContent() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-3 min-[834px]:py-4 space-y-3 min-[834px]:space-y-4">
-        <header className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-          <div className="relative z-10 flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" aria-label="Indietro">
+      <div
+        className="min-h-0 flex-1 overflow-auto px-3 pb-56 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-3 min-[834px]:py-4 space-y-3 min-[834px]:space-y-4"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 3.5rem + 10px)' }}
+      >
+        <header className="fixed inset-x-0 top-0 z-20 flex min-h-[3.5rem] items-center overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
+          <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
+          <div className="relative z-10 flex w-full items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.back()}
+              className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+              aria-label="Indietro"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
               <Dumbbell className="h-5 w-5 text-cyan-400" />
             </div>
             <div className="flex-1 min-w-0 text-center">
-              <h1 className="text-text-primary text-2xl md:text-3xl font-semibold truncate">{workoutSession.day_title}</h1>
-              <p className="text-xs text-text-tertiary line-clamp-1">Sessione in corso</p>
+              <h1 className="text-text-primary text-2xl md:text-3xl font-semibold truncate">
+                {workoutSession.day_title}
+              </h1>
             </div>
             <div className="w-10 shrink-0" />
           </div>
         </header>
 
         {/* Esercizio corrente */}
-        {currentExercise ? (((): React.ReactElement | null => {
-            const exercise = currentExercise.exercise as Record<string, unknown>
-            const exerciseVideoUrl = exercise.video_url as string | undefined | null
-            const exerciseThumbUrl = exercise.thumb_url as string | undefined | null
-            const exerciseNote = currentExercise.note as string | null | undefined
+        {currentExercise
+          ? ((): React.ReactElement | null => {
+              const exercise = currentExercise.exercise as Record<string, unknown>
+              const exerciseVideoUrl = exercise.video_url as string | undefined | null
+              const exerciseThumbUrl = exercise.thumb_url as string | undefined | null
+              const exerciseNote = currentExercise.note as string | null | undefined
 
-            // Validazione URL video (deve essere una stringa non vuota e valida)
-            // Verifica anche che non sia un URL malformato o un placeholder
-            const isValidVideoUrl: boolean = Boolean(
-              exerciseVideoUrl &&
+              // Validazione URL video (deve essere una stringa non vuota e valida)
+              // Verifica anche che non sia un URL malformato o un placeholder
+              const isValidVideoUrl: boolean = Boolean(
+                exerciseVideoUrl &&
                 typeof exerciseVideoUrl === 'string' &&
                 exerciseVideoUrl.trim() !== '' &&
                 exerciseVideoUrl.trim() !== 'null' &&
                 exerciseVideoUrl.trim() !== 'undefined' &&
-                (exerciseVideoUrl.startsWith('http://') || exerciseVideoUrl.startsWith('https://')) &&
+                (exerciseVideoUrl.startsWith('http://') ||
+                  exerciseVideoUrl.startsWith('https://')) &&
                 // Verifica che l'URL non contenga caratteri problematici
                 !exerciseVideoUrl.includes('{{') &&
                 !exerciseVideoUrl.includes('${'),
-            )
+              )
 
-            // Validazione URL thumbnail (deve essere una stringa non vuota)
-            const isValidThumbUrl: boolean = Boolean(
-              exerciseThumbUrl &&
+              // Validazione URL thumbnail (deve essere una stringa non vuota)
+              const isValidThumbUrl: boolean = Boolean(
+                exerciseThumbUrl &&
                 typeof exerciseThumbUrl === 'string' &&
                 exerciseThumbUrl.trim() !== '',
-            )
+              )
 
-            // Debug: log temporaneo per verificare i dati
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Exercise data:', {
-                hasVideoUrl: !!exerciseVideoUrl,
-                videoUrl: exerciseVideoUrl,
-                hasThumbUrl: !!exerciseThumbUrl,
-                thumbUrl: exerciseThumbUrl,
-                isValidVideoUrl,
-                isValidThumbUrl,
-                exerciseName: exercise.name,
-              })
-            }
+              // Debug: log temporaneo per verificare i dati
+              if (process.env.NODE_ENV === 'development') {
+                console.log('Exercise data:', {
+                  hasVideoUrl: !!exerciseVideoUrl,
+                  videoUrl: exerciseVideoUrl,
+                  hasThumbUrl: !!exerciseThumbUrl,
+                  thumbUrl: exerciseThumbUrl,
+                  isValidVideoUrl,
+                  isValidThumbUrl,
+                  exerciseName: exercise.name,
+                })
+              }
 
-            // Estrai la condizione per evitare problemi di inferenza tipo
-            const shouldShowMedia = Boolean(isValidVideoUrl || isValidThumbUrl)
+              // Estrai la condizione per evitare problemi di inferenza tipo
+              const shouldShowMedia = Boolean(isValidVideoUrl || isValidThumbUrl)
 
-            // Vista circuito: griglia 3x3 video + lista info per ogni esercizio
-            if (circuitGroup.length > 0) {
-              return (
-                <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 shadow-lg backdrop-blur-sm">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  <CardHeader className="relative z-10 border-b border-cyan-500/20 py-2.5">
-                    <CardTitle size="md" className="text-white flex items-center gap-2 text-sm">
-                      <div className="p-1 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                        <Dumbbell className="h-3.5 w-3.5 text-cyan-400 flex-shrink-0" />
-                      </div>
-                      <span className="truncate flex-1">Circuito · {circuitGroup.length} esercizi</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="relative z-10 space-y-2 pt-2">
-                    <div className={`grid gap-2 -mx-4 sm:-mx-6 ${circuitGroup.length <= 5 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-                      {circuitGroup.slice(0, 9).map((item) => {
-                        const ex = (item.exercise ?? {}) as Record<string, unknown>
-                        const vUrl = ex.video_url as string | undefined | null
-                        const tUrl = ex.thumb_url as string | undefined | null
-                        const validV = Boolean(vUrl && typeof vUrl === 'string' && vUrl.trim() !== '' && (vUrl.startsWith('http://') || vUrl.startsWith('https://')))
-                        const validT = Boolean(tUrl && typeof tUrl === 'string' && tUrl.trim() !== '')
-                        const name = (ex.name as string) ?? 'Esercizio'
-                        const canEnlarge = validV || validT
-                        return (
-                          <div
-                            key={String(item.id)}
-                            className={`relative w-full aspect-video rounded-lg overflow-hidden border border-cyan-500/20 bg-background-tertiary ${canEnlarge ? 'cursor-pointer hover:border-cyan-400/50 hover:ring-2 hover:ring-cyan-500/40 transition-all' : ''}`}
-                            role={canEnlarge ? 'button' : undefined}
-                            tabIndex={canEnlarge ? 0 : undefined}
-                            onClick={() => canEnlarge && setEnlargedCircuitVideo({ videoUrl: (vUrl as string) || '', thumbUrl: tUrl ?? undefined, name })}
-                            onKeyDown={(e) => canEnlarge && (e.key === 'Enter' || e.key === ' ') && setEnlargedCircuitVideo({ videoUrl: (vUrl as string) || '', thumbUrl: tUrl ?? undefined, name })}
-                            aria-label={canEnlarge ? `Ingrandisci video: ${name}` : undefined}
-                          >
-                            <ExerciseMediaDisplay exercise={ex} videoUrl={vUrl ?? undefined} thumbUrl={tUrl ?? undefined} isValidVideoUrl={validV} isValidThumbUrl={validT} />
-                            {canEnlarge && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
-                                <span className="text-[10px] font-medium text-white uppercase tracking-wider bg-black/50 px-2 py-1 rounded">Ingrandisci</span>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                    <div className="space-y-2 pt-2">
-                      <div className="flex items-center gap-1.5">
-                        <div className="p-1 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                          <Target className="h-3 w-3 text-cyan-400 flex-shrink-0" />
+              // Vista circuito: griglia 3x3 video + lista info per ogni esercizio
+              if (circuitGroup.length > 0) {
+                return (
+                  <Card className="relative overflow-hidden border-0 bg-background-secondary/50 shadow-lg backdrop-blur-sm p-2.5">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <CardHeader
+                      className="relative z-10 border-b border-cyan-500/20 py-1.5 px-3"
+                      padding="sm"
+                    >
+                      <CardTitle size="md" className="text-white flex items-center gap-2 text-sm">
+                        <div className="p-0.5 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
+                          <Dumbbell className="h-3 w-3 text-cyan-400 flex-shrink-0" />
                         </div>
-                        <h4 className="text-text-primary font-semibold text-xs uppercase tracking-wide">Esercizi nel circuito</h4>
-                      </div>
-                      {(() => {
-                        const hasReps = true
-                        const hasWeight = true
-                        const hasTime = circuitGroup.some((item) => {
-                          const sets = (item.sets as Record<string, unknown>[] | undefined) ?? []
-                          return sets.some((s) => (s.execution_time_sec as number | null) != null && (s.execution_time_sec as number) > 0)
-                        })
-                        const hasRest = circuitGroup.some((item) => (item.rest_timer_sec as number | null) != null)
-                        const visibleColumns = [
-                          { key: 'weight', show: hasWeight, label: 'Peso (kg)', field: 'weight_kg' as const },
-                          { key: 'reps', show: hasReps, label: 'Ripetizioni', field: 'reps' as const },
-                          { key: 'time', show: hasTime, label: 'Tempo (sec)', field: 'execution_time_sec' as const },
-                          { key: 'rest', show: hasRest, label: 'Recupero (sec)', field: 'rest_timer_sec' as const },
-                        ].filter((col) => col.show)
-                        const columnCount = visibleColumns.length
-                        return (
-                          <>
-                            <div className="grid grid-cols-[auto_1fr] gap-1.5 mb-0.5" style={{ gridTemplateColumns: '32px 1fr' }}>
-                              <div />
-                              <div className="grid gap-1 md:gap-2" style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(50px, 1fr))` }}>
-                                {visibleColumns.map((col) => (
-                                  <div key={col.key} className="text-center">
-                                    <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide whitespace-nowrap truncate">
-                                      {col.label}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            {circuitGroup.map((item, i) => {
-                              const ex = (item.exercise ?? {}) as Record<string, unknown>
-                              const name = (ex.name as string) ?? 'Esercizio'
-                              const sets = (item.sets as Record<string, unknown>[]) ?? []
-                              const firstSet = sets[0]
-                              const weight = (item.target_weight as number) ?? (firstSet?.weight_kg as number) ?? 0
-                              const reps = (item.target_reps as number) ?? (firstSet?.reps as number) ?? 0
-                              const rest = (item.rest_timer_sec as number) ?? (firstSet?.rest_timer_sec as number) ?? 60
-                              const time = (firstSet?.execution_time_sec as number | null) ?? null
-                              return (
-                                <div key={String(item.id)} className="space-y-0.5">
-                                  <div className="text-text-primary text-[11px] font-medium truncate pl-0.5">{name}</div>
-                                  <div className="relative overflow-hidden rounded-md p-1.5 transition-all border bg-background-tertiary/30 border-cyan-500/20">
-                                    <div className="grid grid-cols-[auto_1fr] gap-1.5" style={{ gridTemplateColumns: '32px 1fr' }}>
-                                      <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-background-tertiary/50 text-white border border-cyan-500/40 font-bold text-[11px]">
-                                        {i + 1}
-                                      </div>
-                                      <div className="grid gap-1 md:gap-2" style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(50px, 1fr))` }}>
-                                        {visibleColumns.map((col) => {
-                                          const value = col.field === 'weight_kg' ? weight : col.field === 'reps' ? reps : col.field === 'rest_timer_sec' ? rest : col.field === 'execution_time_sec' ? (time ?? 0) : 0
-                                          return (
-                                            <div key={col.key} className="text-center">
-                                              <div className="text-sm font-bold text-white whitespace-nowrap">{value}</div>
-                                            </div>
-                                          )
-                                        })}
-                                      </div>
-                                    </div>
-                                  </div>
+                        <span className="truncate flex-1">
+                          Circuito · {circuitGroup.length} esercizi
+                        </span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative z-10 space-y-2 pt-2 p-0">
+                      <div
+                        className={`grid gap-2 ${circuitGroup.length <= 5 ? 'grid-cols-2' : 'grid-cols-3'}`}
+                      >
+                        {circuitGroup.slice(0, 9).map((item) => {
+                          const ex = (item.exercise ?? {}) as Record<string, unknown>
+                          const vUrl = ex.video_url as string | undefined | null
+                          const tUrl = ex.thumb_url as string | undefined | null
+                          const validV = Boolean(
+                            vUrl &&
+                            typeof vUrl === 'string' &&
+                            vUrl.trim() !== '' &&
+                            (vUrl.startsWith('http://') || vUrl.startsWith('https://')),
+                          )
+                          const validT = Boolean(
+                            tUrl && typeof tUrl === 'string' && tUrl.trim() !== '',
+                          )
+                          const name = (ex.name as string) ?? 'Esercizio'
+                          const canEnlarge = validV || validT
+                          return (
+                            <div
+                              key={String(item.id)}
+                              className={`relative w-full aspect-video rounded-lg overflow-hidden border border-cyan-500/20 bg-background-tertiary ${canEnlarge ? 'cursor-pointer hover:border-cyan-400/50 hover:ring-2 hover:ring-cyan-500/40 transition-all' : ''}`}
+                              role={canEnlarge ? 'button' : undefined}
+                              tabIndex={canEnlarge ? 0 : undefined}
+                              onClick={() =>
+                                canEnlarge &&
+                                setEnlargedCircuitVideo({
+                                  videoUrl: (vUrl as string) || '',
+                                  thumbUrl: tUrl ?? undefined,
+                                  name,
+                                })
+                              }
+                              onKeyDown={(e) =>
+                                canEnlarge &&
+                                (e.key === 'Enter' || e.key === ' ') &&
+                                setEnlargedCircuitVideo({
+                                  videoUrl: (vUrl as string) || '',
+                                  thumbUrl: tUrl ?? undefined,
+                                  name,
+                                })
+                              }
+                              aria-label={canEnlarge ? `Ingrandisci video: ${name}` : undefined}
+                            >
+                              <ExerciseMediaDisplay
+                                exercise={ex}
+                                videoUrl={vUrl ?? undefined}
+                                thumbUrl={tUrl ?? undefined}
+                                isValidVideoUrl={validV}
+                                isValidThumbUrl={validT}
+                              />
+                              {canEnlarge && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
+                                  <span className="text-[10px] font-medium text-white uppercase tracking-wider bg-black/50 px-2 py-1 rounded">
+                                    Ingrandisci
+                                  </span>
                                 </div>
-                              )
-                            })}
-                          </>
-                        )
-                      })()}
-                    </div>
-                    <div className="space-y-2 pt-2.5">
-                      {(() => {
-                        const block = blocks[currentBlockIndex]
-                        const isBlockCompleted = block
-                          ? (workoutSession?.exercises ?? [])
-                              .slice(block.startIndex, block.endIndex + 1)
-                              .every((ex) => (ex as { is_completed?: boolean }).is_completed === true)
-                          : false
-                        return (
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="space-y-2 pt-2">
+                        {(() => {
+                          const hasReps = true
+                          const hasWeight = true
+                          const hasTime = circuitGroup.some((item) => {
+                            const sets = (item.sets as Record<string, unknown>[] | undefined) ?? []
+                            return sets.some(
+                              (s) =>
+                                (s.execution_time_sec as number | null) != null &&
+                                (s.execution_time_sec as number) > 0,
+                            )
+                          })
+                          const hasRest = circuitGroup.some(
+                            (item) => (item.rest_timer_sec as number | null) != null,
+                          )
+                          const visibleColumns = [
+                            {
+                              key: 'weight',
+                              show: hasWeight,
+                              label: 'Peso (kg)',
+                              field: 'weight_kg' as const,
+                            },
+                            {
+                              key: 'reps',
+                              show: hasReps,
+                              label: 'Ripetizioni',
+                              field: 'reps' as const,
+                            },
+                            {
+                              key: 'time',
+                              show: hasTime,
+                              label: 'Tempo (sec)',
+                              field: 'execution_time_sec' as const,
+                            },
+                            {
+                              key: 'rest',
+                              show: hasRest,
+                              label: 'Recupero (sec)',
+                              field: 'rest_timer_sec' as const,
+                            },
+                          ].filter((col) => col.show)
+                          const columnCount = visibleColumns.length
+                          return (
+                            <>
+                              <div
+                                className="grid grid-cols-[auto_1fr] gap-1.5 mb-0.5"
+                                style={{ gridTemplateColumns: '32px 1fr' }}
+                              >
+                                <div />
+                                <div
+                                  className="grid gap-1 md:gap-2"
+                                  style={{
+                                    gridTemplateColumns: `repeat(${columnCount}, minmax(50px, 1fr))`,
+                                  }}
+                                >
+                                  {visibleColumns.map((col) => (
+                                    <div key={col.key} className="text-center">
+                                      <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide whitespace-nowrap truncate">
+                                        {col.label}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              {circuitGroup.map((item, i) => {
+                                const ex = (item.exercise ?? {}) as Record<string, unknown>
+                                const name = (ex.name as string) ?? 'Esercizio'
+                                const sets = (item.sets as Record<string, unknown>[]) ?? []
+                                const firstSet = sets[0]
+                                const weight =
+                                  (item.target_weight as number) ??
+                                  (firstSet?.weight_kg as number) ??
+                                  0
+                                const reps =
+                                  (item.target_reps as number) ?? (firstSet?.reps as number) ?? 0
+                                const rest =
+                                  (item.rest_timer_sec as number) ??
+                                  (firstSet?.rest_timer_sec as number) ??
+                                  60
+                                const time = (firstSet?.execution_time_sec as number | null) ?? null
+                                return (
+                                  <div key={String(item.id)} className="space-y-0.5">
+                                    <div className="text-text-primary text-[11px] font-medium truncate pl-0.5">
+                                      {name}
+                                    </div>
+                                    <div className="relative overflow-hidden rounded-md p-1.5 transition-all border bg-background-tertiary/30 border-cyan-500/20">
+                                      <div
+                                        className="grid grid-cols-[auto_1fr] gap-1.5"
+                                        style={{ gridTemplateColumns: '32px 1fr' }}
+                                      >
+                                        <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-background-tertiary/50 text-white border border-cyan-500/40 font-bold text-[11px]">
+                                          {i + 1}
+                                        </div>
+                                        <div
+                                          className="grid gap-1 md:gap-2"
+                                          style={{
+                                            gridTemplateColumns: `repeat(${columnCount}, minmax(50px, 1fr))`,
+                                          }}
+                                        >
+                                          {visibleColumns.map((col) => {
+                                            const value =
+                                              col.field === 'weight_kg'
+                                                ? weight
+                                                : col.field === 'reps'
+                                                  ? reps
+                                                  : col.field === 'rest_timer_sec'
+                                                    ? rest
+                                                    : col.field === 'execution_time_sec'
+                                                      ? (time ?? 0)
+                                                      : 0
+                                            return (
+                                              <div key={col.key} className="text-center">
+                                                <div className="text-sm font-bold text-white whitespace-nowrap">
+                                                  {value}
+                                                </div>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </>
+                          )
+                        })()}
+                      </div>
+                      <div className="space-y-2 pt-2.5">
+                        {(() => {
+                          const block = blocks[currentBlockIndex]
+                          const isBlockCompleted = block
+                            ? (workoutSession?.exercises ?? [])
+                                .slice(block.startIndex, block.endIndex + 1)
+                                .every(
+                                  (ex) => (ex as { is_completed?: boolean }).is_completed === true,
+                                )
+                            : false
+                          return (
+                            <Button
+                              onClick={() => completeBlock(currentBlockIndex)}
+                              variant={isBlockCompleted ? 'success' : 'default'}
+                              className={
+                                isBlockCompleted
+                                  ? 'h-9 text-xs rounded-xl bg-green-500 hover:bg-emerald-500 text-white font-semibold w-full transition-all duration-200'
+                                  : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'
+                              }
+                            >
+                              <Check className="mr-1.5 h-3.5 w-3.5" />
+                              {isBlockCompleted ? 'Esercizio completato' : 'Completa esercizio'}
+                            </Button>
+                          )
+                        })()}
+                        {workoutSession && isWorkoutComplete && (
                           <Button
-                            onClick={() => completeBlock(currentBlockIndex)}
-                            variant={isBlockCompleted ? 'success' : 'default'}
-                            className={isBlockCompleted ? 'h-9 text-xs rounded-xl bg-green-500 hover:bg-emerald-500 text-white font-semibold w-full transition-all duration-200' : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'}
+                            onClick={finishWorkout}
+                            className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200"
                           >
-                            <Check className="mr-1.5 h-3.5 w-3.5" />
-                            {isBlockCompleted ? 'Esercizio completato' : 'Completa esercizio'}
+                            🎉 Completa allenamento
                           </Button>
-                        )
-                      })()}
-                      {workoutSession && isWorkoutComplete && (
-                        <Button onClick={finishWorkout} className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200">
-                          🎉 Completa allenamento
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              }
+
+              return (
+                <Card className="relative overflow-hidden border-0 bg-background-secondary/50 shadow-lg backdrop-blur-sm p-2.5">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <CardHeader
+                    className="relative z-10 border-b border-cyan-500/20 py-1.5 px-3"
+                    padding="sm"
+                  >
+                    <CardTitle size="md" className="text-white flex items-center gap-2 text-sm">
+                      <div className="p-0.5 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
+                        <Dumbbell className="h-3 w-3 text-cyan-400 flex-shrink-0" />
+                      </div>
+                      <span className="truncate flex-1">{exercise.name as string}</span>
+                      {Boolean(exercise.description) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 flex-shrink-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-full p-0"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedExerciseDescription({
+                              name: (exercise.name as string) || 'Esercizio',
+                              description: (exercise.description as string) || '',
+                            })
+                          }}
+                          aria-label="Mostra descrizione esercizio"
+                        >
+                          <Info className="h-4 w-4" />
                         </Button>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            }
-
-            return (
-              <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 shadow-lg backdrop-blur-sm">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                <CardHeader className="relative z-10 border-b border-cyan-500/20 py-2.5">
-                  <CardTitle size="md" className="text-white flex items-center gap-2 text-sm">
-                    <div className="p-1 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                      <Dumbbell className="h-3.5 w-3.5 text-cyan-400 flex-shrink-0" />
-                    </div>
-                    <span className="truncate flex-1">{exercise.name as string}</span>
-                    {Boolean(exercise.description) && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 flex-shrink-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-full p-0"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedExerciseDescription({
-                            name: (exercise.name as string) || 'Esercizio',
-                            description: (exercise.description as string) || '',
-                          })
-                        }}
-                        aria-label="Mostra descrizione esercizio"
-                      >
-                        <Info className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="relative z-10 space-y-2 pt-2">
-                  {/* Video/Immagine esercizio - Componente interno per gestire lo stato */}
-                  {shouldShowMedia ? (
-                    <div className="-mx-4 sm:-mx-6">
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10 space-y-2 pt-2 p-0">
+                    {/* Video/Immagine esercizio - Componente interno per gestire lo stato */}
+                    {shouldShowMedia ? (
                       <ExerciseMediaDisplay
                         exercise={exercise}
                         videoUrl={exerciseVideoUrl || undefined}
@@ -1412,362 +1593,363 @@ function AllenamentiOggiPageContent() {
                         isValidVideoUrl={isValidVideoUrl}
                         isValidThumbUrl={isValidThumbUrl}
                       />
-                    </div>
-                  ) : null}
+                    ) : null}
 
-                  {/* Nota esercizio - Visualizzata sotto il video */}
-                  {exerciseNote ? (
-                    <div className="mt-3 pt-3 border-t border-cyan-500/20">
-                      <div className="text-text-secondary text-[10px] font-medium uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <div className="p-0.5 rounded bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                          <Target className="h-2.5 w-2.5 text-cyan-400 flex-shrink-0" />
+                    {/* Nota esercizio - Visualizzata sotto il video */}
+                    {exerciseNote ? (
+                      <div className="mt-3 pt-3 border-t border-cyan-500/20">
+                        <div className="text-text-secondary text-[10px] font-medium uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                          <div className="p-0.5 rounded bg-gradient-to-br from-cyan-500/20 to-primary/20">
+                            <Target className="h-2.5 w-2.5 text-cyan-400 flex-shrink-0" />
+                          </div>
+                          <span>Note</span>
                         </div>
-                        <span>Note</span>
+                        <p className="text-text-primary text-xs leading-relaxed whitespace-pre-wrap break-words">
+                          {exerciseNote}
+                        </p>
                       </div>
-                      <p className="text-text-primary text-xs leading-relaxed whitespace-pre-wrap break-words">
-                        {exerciseNote}
-                      </p>
-                    </div>
-                  ) : null}
+                    ) : null}
 
-                  {/* Set - Design Moderno e Uniforme */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="p-1 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                        <Target className="h-3 w-3 text-cyan-400 flex-shrink-0" />
-                      </div>
-                      <h4 className="text-text-primary font-semibold text-xs uppercase tracking-wide text-white truncate">
-                        Set da eseguire
-                      </h4>
-                    </div>
-                    <div className="space-y-1.5">
-                      {(() => {
-                        const sets = currentExercise.sets as Record<string, unknown>[]
+                    {/* Set - Design Moderno e Uniforme */}
+                    <div className="space-y-2">
+                      <div className="space-y-1.5">
+                        {(() => {
+                          const sets = currentExercise.sets as Record<string, unknown>[]
 
-                        // Debug: log dei dati per verificare la struttura
-                        if (process.env.NODE_ENV === 'development') {
-                          console.log('Current Exercise Data:', {
-                            exerciseId: currentExercise.id,
-                            target_weight: currentExercise.target_weight,
-                            target_reps: currentExercise.target_reps,
-                            rest_timer_sec: currentExercise.rest_timer_sec,
-                            sets: sets.map((s) => ({
-                              set_number: s.set_number,
-                              weight_kg: s.weight_kg,
-                              reps: s.reps,
-                              rest_timer_sec: s.rest_timer_sec,
-                            })),
-                          })
-                        }
+                          // Debug: log dei dati per verificare la struttura
+                          if (process.env.NODE_ENV === 'development') {
+                            console.log('Current Exercise Data:', {
+                              exerciseId: currentExercise.id,
+                              target_weight: currentExercise.target_weight,
+                              target_reps: currentExercise.target_reps,
+                              rest_timer_sec: currentExercise.rest_timer_sec,
+                              sets: sets.map((s) => ({
+                                set_number: s.set_number,
+                                weight_kg: s.weight_kg,
+                                reps: s.reps,
+                                rest_timer_sec: s.rest_timer_sec,
+                              })),
+                            })
+                          }
 
-                        // Calcola quali colonne mostrare:
-                        // - Ripetizioni: sempre mostrata (campo standard per tutti gli esercizi)
-                        // - Peso: sempre mostrata (campo standard per tutti gli esercizi)
-                        // - Tempo: mostrata solo se almeno un set ha execution_time_sec > 0
-                        // - Recupero: sempre mostrata se l'esercizio ha rest_timer_sec (anche se 0, l'utente può inserire)
-                        const hasReps = true // Sempre mostrata perché è un campo standard
-                        const hasWeight = true // Sempre mostrata perché è un campo standard
-                        const hasTime = sets.some(
-                          (s) =>
-                            (s.execution_time_sec as number | null) !== null &&
-                            (s.execution_time_sec as number) > 0,
-                        )
-                        const hasRest =
-                          sets.length > 0 &&
-                          (sets.some(
+                          // Calcola quali colonne mostrare:
+                          // - Ripetizioni: sempre mostrata (campo standard per tutti gli esercizi)
+                          // - Peso: sempre mostrata (campo standard per tutti gli esercizi)
+                          // - Tempo: mostrata solo se almeno un set ha execution_time_sec > 0
+                          // - Recupero: sempre mostrata se l'esercizio ha rest_timer_sec (anche se 0, l'utente può inserire)
+                          const hasReps = true // Sempre mostrata perché è un campo standard
+                          const hasWeight = true // Sempre mostrata perché è un campo standard
+                          const hasTime = sets.some(
                             (s) =>
-                              (s.rest_timer_sec as number | null) !== null &&
-                              (s.rest_timer_sec as number) > 0,
-                          ) ||
-                            ((currentExercise.rest_timer_sec as number | null | undefined) !==
-                              null &&
-                              (currentExercise.rest_timer_sec as number | null | undefined) !==
-                                undefined))
+                              (s.execution_time_sec as number | null) !== null &&
+                              (s.execution_time_sec as number) > 0,
+                          )
+                          const hasRest =
+                            sets.length > 0 &&
+                            (sets.some(
+                              (s) =>
+                                (s.rest_timer_sec as number | null) !== null &&
+                                (s.rest_timer_sec as number) > 0,
+                            ) ||
+                              ((currentExercise.rest_timer_sec as number | null | undefined) !==
+                                null &&
+                                (currentExercise.rest_timer_sec as number | null | undefined) !==
+                                  undefined))
 
-                        const visibleColumns = [
-                          {
-                            key: 'weight',
-                            show: hasWeight,
-                            label: 'Peso (kg)',
-                            field: 'weight_kg',
-                          },
-                          { key: 'reps', show: hasReps, label: 'Ripetizioni', field: 'reps' },
-                          {
-                            key: 'time',
-                            show: hasTime,
-                            label: 'Tempo (sec)',
-                            field: 'execution_time_sec',
-                          },
-                          {
-                            key: 'rest',
-                            show: hasRest,
-                            label: 'Recupero (sec)',
-                            field: 'rest_timer_sec',
-                          },
-                        ].filter((col) => col.show)
+                          const visibleColumns = [
+                            {
+                              key: 'weight',
+                              show: hasWeight,
+                              label: 'Peso (kg)',
+                              field: 'weight_kg',
+                            },
+                            { key: 'reps', show: hasReps, label: 'Ripetizioni', field: 'reps' },
+                            {
+                              key: 'time',
+                              show: hasTime,
+                              label: 'Tempo (sec)',
+                              field: 'execution_time_sec',
+                            },
+                            {
+                              key: 'rest',
+                              show: hasRest,
+                              label: 'Recupero (sec)',
+                              field: 'rest_timer_sec',
+                            },
+                          ].filter((col) => col.show)
 
-                        const columnCount = visibleColumns.length
+                          const columnCount = visibleColumns.length
 
-                        return (
-                          <>
-                            {/* Header delle colonne (solo per la prima riga) */}
-                            <div
-                              className="grid grid-cols-[auto_1fr] gap-2 mb-1"
-                              style={{ gridTemplateColumns: '40px 1fr' }}
-                            >
-                              <div></div>
+                          return (
+                            <>
+                              {/* Header delle colonne (solo per la prima riga) */}
                               <div
-                                className="grid gap-2 md:gap-3"
-                                style={{
-                                  gridTemplateColumns: `repeat(${columnCount}, minmax(60px, 1fr))`,
-                                }}
+                                className="grid grid-cols-[auto_1fr] gap-2 mb-1"
+                                style={{ gridTemplateColumns: '40px 1fr' }}
                               >
-                                {visibleColumns.map((col) => (
-                                  <div key={col.key} className="text-center">
-                                    <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide mb-0.5 whitespace-nowrap truncate">
-                                      {col.label}
+                                <div></div>
+                                <div
+                                  className="grid gap-2 md:gap-3"
+                                  style={{
+                                    gridTemplateColumns: `repeat(${columnCount}, minmax(60px, 1fr))`,
+                                  }}
+                                >
+                                  {visibleColumns.map((col) => (
+                                    <div key={col.key} className="text-center">
+                                      <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide mb-0.5 whitespace-nowrap truncate">
+                                        {col.label}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                            {sets.map((set: Record<string, unknown>, index: number) => (
-                              <div
-                                key={index}
-                                className={`relative overflow-hidden rounded-lg p-2.5 transition-all duration-200 border ${
-                                  set.completed
-                                    ? 'bg-green-500/10 border-green-500/30'
-                                    : isSetEditing(
+                              {sets.map((set: Record<string, unknown>, index: number) => (
+                                <div
+                                  key={index}
+                                  className={`relative overflow-hidden rounded-lg p-2.5 transition-all duration-200 border ${
+                                    set.completed
+                                      ? 'bg-green-500/10 border-green-500/30'
+                                      : isSetEditing(
+                                            currentExercise.id as string,
+                                            set.set_number as number,
+                                          )
+                                        ? 'bg-cyan-500/10 border-cyan-500/40'
+                                        : 'bg-background-tertiary/30 border-cyan-500/20'
+                                  }`}
+                                >
+                                  <div
+                                    className="grid grid-cols-[auto_1fr] gap-2 items-center"
+                                    style={{ gridTemplateColumns: '40px 1fr' }}
+                                  >
+                                    <div
+                                      onClick={() =>
+                                        !(set.completed as boolean) &&
+                                        toggleSetEditMode(
                                           currentExercise.id as string,
                                           set.set_number as number,
                                         )
-                                      ? 'bg-cyan-500/10 border-cyan-500/40'
-                                      : 'bg-background-tertiary/30 border-cyan-500/20'
-                                }`}
-                              >
-                                <div
-                                  className="grid grid-cols-[auto_1fr] gap-2"
-                                  style={{ gridTemplateColumns: '40px 1fr' }}
-                                >
-                                  <div
-                                    onClick={() =>
-                                      !(set.completed as boolean) &&
-                                      toggleSetEditMode(
-                                        currentExercise.id as string,
-                                        set.set_number as number,
-                                      )
-                                    }
-                                    className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all duration-200 ${
-                                      set.completed
-                                        ? 'bg-green-500/20 text-green-300 border border-green-500/50 cursor-not-allowed'
-                                        : isSetEditing(
+                                      }
+                                      className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all duration-200 ${
+                                        set.completed
+                                          ? 'bg-green-500/20 text-green-300 border border-green-500/50 cursor-not-allowed'
+                                          : isSetEditing(
+                                                currentExercise.id as string,
+                                                set.set_number as number,
+                                              )
+                                            ? 'bg-gradient-to-br from-cyan-500/30 to-primary/30 text-cyan-100 border-2 border-cyan-400/60 hover:from-cyan-500/40 hover:to-primary/40 cursor-pointer shadow-lg shadow-cyan-500/30'
+                                            : 'bg-background-tertiary/50 text-white border-2 border-cyan-500/40 hover:border-cyan-400/60 hover:bg-cyan-500/15 cursor-pointer hover:shadow-md hover:shadow-cyan-500/20'
+                                      }`}
+                                      title={
+                                        set.completed ? 'Set completato' : 'Clicca per modificare'
+                                      }
+                                    >
+                                      {!set.completed && (
+                                        <Edit2
+                                          className={`h-3 w-3 ${
+                                            isSetEditing(
                                               currentExercise.id as string,
                                               set.set_number as number,
                                             )
-                                          ? 'bg-gradient-to-br from-cyan-500/30 to-primary/30 text-cyan-100 border-2 border-cyan-400/60 hover:from-cyan-500/40 hover:to-primary/40 cursor-pointer shadow-lg shadow-cyan-500/30'
-                                          : 'bg-background-tertiary/50 text-white border-2 border-cyan-500/40 hover:border-cyan-400/60 hover:bg-cyan-500/15 cursor-pointer hover:shadow-md hover:shadow-cyan-500/20'
-                                    }`}
-                                    title={
-                                      set.completed ? 'Set completato' : 'Clicca per modificare'
-                                    }
-                                  >
-                                    {!set.completed && (
-                                      <Edit2
-                                        className={`h-3 w-3 ${
+                                              ? 'text-cyan-300'
+                                              : 'text-cyan-400/70'
+                                          }`}
+                                        />
+                                      )}
+                                      <span
+                                        className={
                                           isSetEditing(
                                             currentExercise.id as string,
                                             set.set_number as number,
                                           )
                                             ? 'text-cyan-300'
-                                            : 'text-cyan-400/70'
-                                        }`}
-                                      />
-                                    )}
-                                    <span
-                                      className={
-                                        isSetEditing(
-                                          currentExercise.id as string,
-                                          set.set_number as number,
-                                        )
-                                          ? 'text-cyan-300'
-                                          : 'text-white'
-                                      }
+                                            : 'text-white'
+                                        }
+                                      >
+                                        {set.set_number as number}
+                                      </span>
+                                    </div>
+
+                                    <div
+                                      className="grid gap-2 md:gap-3 items-center"
+                                      style={{
+                                        gridTemplateColumns: `repeat(${columnCount}, minmax(60px, 1fr))`,
+                                      }}
                                     >
-                                      {set.set_number as number}
-                                    </span>
-                                  </div>
-
-                                  <div
-                                    className="grid gap-2 md:gap-3"
-                                    style={{
-                                      gridTemplateColumns: `repeat(${columnCount}, minmax(60px, 1fr))`,
-                                    }}
-                                  >
-                                    {visibleColumns.map((col) => {
-                                      // Usa i fallback corretti per ogni campo:
-                                      // - rest_timer_sec: da set, poi da exercise
-                                      // - reps: da set, poi da exercise.target_reps
-                                      // - weight_kg: da set, poi da exercise.target_weight
-                                      // - execution_time_sec: solo da set
-                                      const value =
-                                        col.field === 'rest_timer_sec'
-                                          ? (((set[col.field] ??
-                                              currentExercise.rest_timer_sec ??
-                                              null) as number | null) ?? 0)
-                                          : col.field === 'reps'
+                                      {visibleColumns.map((col) => {
+                                        // Usa i fallback corretti per ogni campo:
+                                        // - rest_timer_sec: da set, poi da exercise
+                                        // - reps: da set, poi da exercise.target_reps
+                                        // - weight_kg: da set, poi da exercise.target_weight
+                                        // - execution_time_sec: solo da set
+                                        const value =
+                                          col.field === 'rest_timer_sec'
                                             ? (((set[col.field] ??
-                                                currentExercise.target_reps ??
-                                                null) as number | null | undefined) ?? 0)
-                                            : col.field === 'weight_kg'
+                                                currentExercise.rest_timer_sec ??
+                                                null) as number | null) ?? 0)
+                                            : col.field === 'reps'
                                               ? (((set[col.field] ??
-                                                  currentExercise.target_weight ??
+                                                  currentExercise.target_reps ??
                                                   null) as number | null | undefined) ?? 0)
-                                              : ((set[col.field] as number | null | undefined) ?? 0)
+                                              : col.field === 'weight_kg'
+                                                ? (((set[col.field] ??
+                                                    currentExercise.target_weight ??
+                                                    null) as number | null | undefined) ?? 0)
+                                                : ((set[col.field] as number | null | undefined) ??
+                                                  0)
 
-                                      return (
-                                        <div key={col.key} className="text-center">
-                                          {isSetEditing(
-                                            currentExercise.id as string,
-                                            set.set_number as number,
-                                          ) &&
-                                          !set.completed &&
-                                          col.field === 'weight_kg' ? (
-                                            <Input
-                                              type="number"
-                                              value={value || ''}
-                                              onChange={(e) => {
-                                                const updateData: Record<string, unknown> = {
-                                                  weight_kg: Number(e.target.value) || 0,
-                                                }
-                                                updateSet(
-                                                  currentExercise.id as string,
-                                                  (set.set_number as number) || 1,
-                                                  updateData,
-                                                )
-                                              }}
-                                              className="text-xl font-bold text-white bg-transparent border-0 p-0 h-auto focus:ring-0 text-center w-full opacity-100"
-                                              min="0"
-                                              placeholder="0"
-                                            />
-                                          ) : (
-                                            <div
-                                              className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                (set.completed as boolean)
-                                                  ? 'opacity-70'
-                                                  : 'opacity-100'
-                                              }`}
-                                            >
-                                              {col.field === 'rest_timer_sec'
-                                                ? (((set.rest_timer_sec ??
-                                                    currentExercise.rest_timer_sec ??
-                                                    null) as number | null) ?? 0)
-                                                : col.field === 'execution_time_sec'
-                                                  ? ((set.execution_time_sec as
-                                                      | number
-                                                      | null
-                                                      | undefined) ?? 0)
-                                                  : col.field === 'reps'
-                                                    ? ((set.reps as number | null | undefined) ??
-                                                      (currentExercise.target_reps as
+                                        return (
+                                          <div
+                                            key={col.key}
+                                            className="text-center flex items-center justify-center min-h-[2rem]"
+                                          >
+                                            {isSetEditing(
+                                              currentExercise.id as string,
+                                              set.set_number as number,
+                                            ) &&
+                                            !set.completed &&
+                                            col.field === 'weight_kg' ? (
+                                              <Input
+                                                type="number"
+                                                value={value || ''}
+                                                onChange={(e) => {
+                                                  const updateData: Record<string, unknown> = {
+                                                    weight_kg: Number(e.target.value) || 0,
+                                                  }
+                                                  updateSet(
+                                                    currentExercise.id as string,
+                                                    (set.set_number as number) || 1,
+                                                    updateData,
+                                                  )
+                                                }}
+                                                className="text-xl font-bold text-white bg-transparent border-0 p-0 h-auto focus:ring-0 text-center w-full opacity-100"
+                                                min="0"
+                                                placeholder="0"
+                                              />
+                                            ) : (
+                                              <div
+                                                className={`text-base font-bold text-white text-center whitespace-nowrap ${
+                                                  (set.completed as boolean)
+                                                    ? 'opacity-70'
+                                                    : 'opacity-100'
+                                                }`}
+                                              >
+                                                {col.field === 'rest_timer_sec'
+                                                  ? (((set.rest_timer_sec ??
+                                                      currentExercise.rest_timer_sec ??
+                                                      null) as number | null) ?? 0)
+                                                  : col.field === 'execution_time_sec'
+                                                    ? ((set.execution_time_sec as
                                                         | number
                                                         | null
-                                                        | undefined) ??
-                                                      0)
-                                                    : col.field === 'weight_kg'
-                                                      ? (() => {
-                                                          // Prima cerca nel set, poi nell'esercizio
-                                                          const setWeight = set.weight_kg as
-                                                            | number
-                                                            | null
-                                                            | undefined
-                                                          const exerciseWeight =
-                                                            currentExercise.target_weight as
+                                                        | undefined) ?? 0)
+                                                    : col.field === 'reps'
+                                                      ? ((set.reps as number | null | undefined) ??
+                                                        (currentExercise.target_reps as
+                                                          | number
+                                                          | null
+                                                          | undefined) ??
+                                                        0)
+                                                      : col.field === 'weight_kg'
+                                                        ? (() => {
+                                                            // Prima cerca nel set, poi nell'esercizio
+                                                            const setWeight = set.weight_kg as
                                                               | number
                                                               | null
                                                               | undefined
+                                                            const exerciseWeight =
+                                                              currentExercise.target_weight as
+                                                                | number
+                                                                | null
+                                                                | undefined
 
-                                                          // Se il set ha un peso (anche 0), usalo
-                                                          if (
-                                                            setWeight !== null &&
-                                                            setWeight !== undefined
-                                                          ) {
-                                                            return setWeight
-                                                          }
+                                                            // Se il set ha un peso (anche 0), usalo
+                                                            if (
+                                                              setWeight !== null &&
+                                                              setWeight !== undefined
+                                                            ) {
+                                                              return setWeight
+                                                            }
 
-                                                          // Altrimenti usa il peso target dell'esercizio
-                                                          if (
-                                                            exerciseWeight !== null &&
-                                                            exerciseWeight !== undefined
-                                                          ) {
-                                                            return exerciseWeight
-                                                          }
+                                                            // Altrimenti usa il peso target dell'esercizio
+                                                            if (
+                                                              exerciseWeight !== null &&
+                                                              exerciseWeight !== undefined
+                                                            ) {
+                                                              return exerciseWeight
+                                                            }
 
-                                                          // Se non c'è nessun peso, mostra '-'
-                                                          return '-'
-                                                        })()
-                                                      : ((set[col.field] as
-                                                          | number
-                                                          | null
-                                                          | undefined) ?? '-')}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )
-                                    })}
+                                                            // Se non c'è nessun peso, mostra '-'
+                                                            return '-'
+                                                          })()
+                                                        : ((set[col.field] as
+                                                            | number
+                                                            | null
+                                                            | undefined) ?? '-')}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </>
+                              ))}
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Azioni - Design Moderno e Uniforme */}
+                    <div className="space-y-2 pt-2.5">
+                      {(() => {
+                        const block = blocks[currentBlockIndex]
+                        const isBlockCompleted = block
+                          ? (workoutSession?.exercises ?? [])
+                              .slice(block.startIndex, block.endIndex + 1)
+                              .every(
+                                (ex) => (ex as { is_completed?: boolean }).is_completed === true,
+                              )
+                          : false
+                        return (
+                          <Button
+                            onClick={() => completeBlock(currentBlockIndex)}
+                            variant={isBlockCompleted ? 'success' : 'default'}
+                            className={
+                              isBlockCompleted
+                                ? 'h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold w-full transition-all duration-200 shadow-lg shadow-green-500/30 hover:shadow-green-500/40'
+                                : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'
+                            }
+                          >
+                            <Check className="mr-1.5 h-3.5 w-3.5" />
+                            {isBlockCompleted ? 'Esercizio completato' : 'Completa esercizio'}
+                          </Button>
                         )
                       })()}
-                    </div>
-                  </div>
-
-                  {/* Azioni - Design Moderno e Uniforme */}
-                  <div className="space-y-2 pt-2.5">
-                    {(() => {
-                      const block = blocks[currentBlockIndex]
-                      const isBlockCompleted = block
-                        ? (workoutSession?.exercises ?? [])
-                            .slice(block.startIndex, block.endIndex + 1)
-                            .every((ex) => (ex as { is_completed?: boolean }).is_completed === true)
-                        : false
-                      return (
+                      {/* Pulsante fine allenamento - Mostra solo quando tutti gli esercizi sono completati */}
+                      {workoutSession && isWorkoutComplete && (
                         <Button
-                          onClick={() => completeBlock(currentBlockIndex)}
-                          variant={isBlockCompleted ? 'success' : 'default'}
-                          className={
-                            isBlockCompleted
-                              ? 'h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold w-full transition-all duration-200 shadow-lg shadow-green-500/30 hover:shadow-green-500/40'
-                              : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'
-                          }
+                          onClick={finishWorkout}
+                          className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200 hover:scale-[1.02]"
                         >
-                          <Check className="mr-1.5 h-3.5 w-3.5" />
-                          {isBlockCompleted ? 'Esercizio completato' : 'Completa esercizio'}
+                          🎉 Completa allenamento
                         </Button>
-                      )
-                    })()}
-                    {/* Pulsante fine allenamento - Mostra solo quando tutti gli esercizi sono completati */}
-                    {workoutSession && isWorkoutComplete && (
-                      <Button
-                        onClick={finishWorkout}
-                        className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200 hover:scale-[1.02]"
-                      >
-                        🎉 Completa allenamento
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })()) : null}
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })()
+          : null}
 
-        {/* Timer circolari: recupero ed esecuzione uno accanto all'altro */}
+        {/* Timer circolari: fissato sopra la barra di navigazione */}
         {/* Mostra sempre il container quando c'è un esercizio corrente */}
         {currentExercise ? (
-          <Card className="relative overflow-hidden bg-transparent border-0 shadow-none">
-            <CardContent className="p-4">
+          <Card
+            className="fixed inset-x-0 bottom-[4rem] z-20 overflow-hidden bg-transparent border-0 shadow-none p-0 px-3 sm:px-4 min-[834px]:px-6"
+            style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+          >
+            <CardContent className="p-2">
               <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
                 {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}
                 {/* TIMER ESECUZIONE PRIMA (sinistra) */}
@@ -1777,9 +1959,15 @@ function AllenamentiOggiPageContent() {
                   if (circuitGroup.length > 0) {
                     for (const item of circuitGroup) {
                       const itemSets = (item.sets as Record<string, unknown>[]) || []
-                      const setIdx = itemSets.findIndex((s) => !(s as { completed?: boolean }).completed)
-                      const activeSet = setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
-                      const t = ((activeSet?.execution_time_sec ?? (item as Record<string, unknown>).execution_time_sec ?? null) as number | null) ?? null
+                      const setIdx = itemSets.findIndex(
+                        (s) => !(s as { completed?: boolean }).completed,
+                      )
+                      const activeSet =
+                        setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
+                      const t =
+                        ((activeSet?.execution_time_sec ??
+                          (item as Record<string, unknown>).execution_time_sec ??
+                          null) as number | null) ?? null
                       if (t != null && t > 0) {
                         executionTime = t
                         break
@@ -1789,19 +1977,26 @@ function AllenamentiOggiPageContent() {
                   if (executionTime === null) {
                     const sets = (currentExercise?.sets as Record<string, unknown>[]) || []
                     const currentSetIndex = sets.findIndex((s) => !s.completed)
-                    const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                    const activeSet =
+                      currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
                     executionTime =
-                      ((activeSet?.execution_time_sec ?? currentExercise?.execution_time_sec ?? null) as number | null) ?? null
+                      ((activeSet?.execution_time_sec ??
+                        currentExercise?.execution_time_sec ??
+                        null) as number | null) ?? null
                   }
                   if (executionTime === null || executionTime <= 0) {
                     return null
                   }
 
                   const initialSeconds = executionTime
-                  const currentSeconds = inlineExecutionTimerSeconds !== null ? inlineExecutionTimerSeconds : initialSeconds
+                  const currentSeconds =
+                    inlineExecutionTimerSeconds !== null
+                      ? inlineExecutionTimerSeconds
+                      : initialSeconds
                   // Calcola il progresso basato sul tempo rimanente (inverso)
                   // Quando currentSeconds = 0, progress = 0% (cerchio vuoto/completato)
-                  const progress = currentSeconds === 0 ? 0 : (currentSeconds / initialSeconds) * 100
+                  const progress =
+                    currentSeconds === 0 ? 0 : (currentSeconds / initialSeconds) * 100
                   const circumference = 2 * Math.PI * 80
                   const strokeDashoffset = circumference - (progress / 100) * circumference
 
@@ -1810,7 +2005,10 @@ function AllenamentiOggiPageContent() {
                   }
 
                   return (
-                    <div key="timer-esecuzione-inline" className="flex flex-col items-center justify-center gap-3">
+                    <div
+                      key="timer-esecuzione-inline"
+                      className="flex flex-col items-center justify-center gap-3"
+                    >
                       {/* Cerchio animato esecuzione - Colore arancione/quasi rosso */}
                       <div
                         className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
@@ -1877,7 +2075,9 @@ function AllenamentiOggiPageContent() {
                               </>
                             ) : currentSeconds === 0 ? (
                               <>
-                                <div className="text-4xl font-bold text-green-500 leading-none">0</div>
+                                <div className="text-4xl font-bold text-green-500 leading-none">
+                                  0
+                                </div>
                                 <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
                                   Completato
                                 </div>
@@ -1908,13 +2108,15 @@ function AllenamentiOggiPageContent() {
 
                   const sets = (currentExercise.sets as Record<string, unknown>[]) || []
                   const currentSetIndex = sets.findIndex((s) => !s.completed)
-                  const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                  const activeSet =
+                    currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
                   const timerValue =
                     ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as
                       | number
                       | null) ?? 0
                   const initialSeconds = timerValue > 0 ? timerValue : 60
-                  const currentSeconds = inlineTimerSeconds !== null ? inlineTimerSeconds : initialSeconds
+                  const currentSeconds =
+                    inlineTimerSeconds !== null ? inlineTimerSeconds : initialSeconds
                   const progress = (currentSeconds / initialSeconds) * 100
                   const circumference = 2 * Math.PI * 80
                   const strokeDashoffset = circumference - (progress / 100) * circumference
@@ -1926,12 +2128,19 @@ function AllenamentiOggiPageContent() {
                   // Mostra sempre il timer di recupero se l'esercizio ha un valore di recupero > 0
                   // oppure se è già stato avviato (inlineTimerSeconds !== null, anche se è 0 = completato)
                   // Nascondi solo se non c'è né timer di recupero né timer di esecuzione E non c'è un valore di recupero > 0
-                  if (timerValue <= 0 && inlineTimerSeconds === null && inlineExecutionTimerSeconds === null) {
+                  if (
+                    timerValue <= 0 &&
+                    inlineTimerSeconds === null &&
+                    inlineExecutionTimerSeconds === null
+                  ) {
                     return null
                   }
 
                   return (
-                    <div key="timer-recupero-unico" className="flex flex-col items-center justify-center gap-3">
+                    <div
+                      key="timer-recupero-unico"
+                      className="flex flex-col items-center justify-center gap-3"
+                    >
                       {/* Cerchio animato recupero */}
                       <div
                         className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
@@ -1944,7 +2153,9 @@ function AllenamentiOggiPageContent() {
                             toggleInlineTimer()
                           }
                         }}
-                        aria-label={inlineTimerRunning ? 'Pausa timer recupero' : 'Avvia timer recupero'}
+                        aria-label={
+                          inlineTimerRunning ? 'Pausa timer recupero' : 'Avvia timer recupero'
+                        }
                       >
                         <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
                           <circle
@@ -1987,7 +2198,9 @@ function AllenamentiOggiPageContent() {
                               </>
                             ) : currentSeconds === 0 ? (
                               <>
-                                <div className="text-4xl font-bold text-green-500 leading-none">0</div>
+                                <div className="text-4xl font-bold text-green-500 leading-none">
+                                  0
+                                </div>
                                 <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
                                   Completato
                                 </div>
@@ -2013,10 +2226,10 @@ function AllenamentiOggiPageContent() {
           </Card>
         ) : null}
 
-        {/* Navigazione esercizi - Design Moderno e Uniforme */}
-        <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 shadow-sm backdrop-blur-sm">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-          <CardContent className="relative z-10 p-3">
+        {/* Navigazione esercizi - fissata in basso */}
+        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-x border-cyan-500/30 bg-background-secondary/50 shadow-sm backdrop-blur-sm pb-[env(safe-area-inset-bottom)] p-0">
+          <div className="absolute inset-0 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
+          <CardContent className="relative z-10 p-2">
             <div className="flex items-center justify-between gap-2">
               <Button
                 onClick={previousExercise}

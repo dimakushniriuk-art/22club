@@ -157,6 +157,13 @@ function LoginContent() {
               setError(
                 "Supabase non configurato correttamente. Verifica le variabili d'ambiente in .env.local",
               )
+            } else if (
+              signInError.message?.toLowerCase().includes('email not confirmed') ||
+              (signInError as { code?: string }).code === 'email_not_confirmed'
+            ) {
+              setError(
+                'Email non ancora confermata. Controlla la casella (anche spam), clicca il link nella mail di conferma e poi riprova ad accedere.',
+              )
             } else {
               setError('Credenziali non valide')
             }
@@ -183,11 +190,17 @@ function LoginContent() {
               typeof (profileError as { message?: string })?.message === 'string'
                 ? (profileError as { message: string }).message
                 : String(profileError ?? '')
-            const isAbort =
+            const msgLower = rawMessage.toLowerCase()
+            const isLockOrAbort =
               (profileError instanceof Error && profileError.name === 'AbortError') ||
-              rawMessage.toLowerCase().includes('aborted')
-            if (isAbort) {
-              setError('Riprova il login.')
+              msgLower.includes('aborted') ||
+              msgLower.includes('lock broken')
+            const code = err?.code
+            if (code === 'PGRST116' || isLockOrAbort) {
+              const codice =
+                typeof window !== 'undefined' ? sessionStorage.getItem('pending_invite_codice')?.trim() : null
+              const welcomePath = codice ? `/welcome?codice=${encodeURIComponent(codice)}` : '/welcome'
+              router.replace(welcomePath)
               return
             }
             logger.error('Errore caricamento profilo', profileError, {
@@ -195,10 +208,7 @@ function LoginContent() {
               code: err?.code,
               status: err?.status,
             })
-            const code = err?.code
-            if (code === 'PGRST116') {
-              setError("Profilo non trovato. Contatta l'amministratore per completare la registrazione.")
-            } else if (err?.status === 429 || code === 'over_request_rate_limit') {
+            if (err?.status === 429 || code === 'over_request_rate_limit') {
               setError('Troppe richieste. Riprova tra qualche secondo.')
             } else {
               setError(err?.message ?? (rawMessage || 'Errore durante il caricamento del profilo'))

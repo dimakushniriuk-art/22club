@@ -32,7 +32,11 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
   onDisable,
   onEnable,
 }) {
-  const avatarInitials = useAvatarInitials(cliente.nome, cliente.cognome)
+  const avatarInitials = useAvatarInitials(cliente.nome, cliente.cognome, cliente.email)
+  const displayName =
+    (cliente.nome?.trim() || cliente.cognome?.trim())
+      ? `${cliente.nome ?? ''} ${cliente.cognome ?? ''}`.trim()
+      : cliente.email || 'Profilo da completare'
   const isBlocked = Boolean(cliente.invitatoInAttesa)
 
   return (
@@ -51,7 +55,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
               {cliente.avatar_url ? (
                 <Image
                   src={cliente.avatar_url}
-                  alt={`${cliente.nome} ${cliente.cognome}`}
+                  alt={displayName}
                   className="h-full w-full object-cover"
                   fill
                   unoptimized
@@ -64,7 +68,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
             </div>
             <div className="min-w-0">
               <h3 className="font-semibold text-text-primary text-sm sm:text-base truncate">
-                {cliente.nome} {cliente.cognome}
+                {displayName}
               </h3>
               {cliente.documenti_scadenza && !isBlocked && (
                 <div className="mt-1 flex items-center gap-1">
@@ -99,7 +103,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
                       variant="ghost"
                       size="icon"
                       className="min-h-[44px] min-w-[44px] h-8 w-8 sm:h-8 sm:w-8 rounded-full bg-background-secondary/35 border border-white/5 hover:border-primary/20 hover:bg-primary/10 touch-manipulation"
-                      aria-label={`Azioni per ${cliente.nome} ${cliente.cognome}`}
+                      aria-label={`Azioni per ${displayName}`}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -210,7 +214,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label={`Chat con ${cliente.nome ?? ''} ${cliente.cognome ?? ''}`.trim() || 'Chat con cliente'}
+                  aria-label={`Chat con ${displayName}`}
                   className="min-h-[44px] min-w-[44px] h-10 w-10 rounded-full bg-background-secondary/35 border border-white/5 hover:border-primary/20 hover:bg-primary/10 transition-all duration-300 touch-manipulation"
                 >
                   <MessageSquare className="h-4 w-4" />

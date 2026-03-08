@@ -74,10 +74,11 @@ export async function GET(_request: NextRequest) {
     // REGOLA: Admin deve vedere tutto e poter fare tutto
     const supabaseAdmin = createAdminClient()
 
-    // Ottieni tutti i profili ordinati per data creazione
+    // Ottieni tutti i profili non eliminati (soft delete: is_deleted = true esclusi)
     const { data: profiles, error: fetchError } = await supabaseAdmin
       .from('profiles')
       .select('*')
+      .or('is_deleted.eq.false,is_deleted.is.null')
       .order('created_at', { ascending: false })
 
     if (fetchError) {
@@ -424,7 +425,7 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     userId = searchParams.get('userId')
-    const reason = searchParams.get('reason') ?? undefined
+    const _reason = searchParams.get('reason') ?? undefined
 
     if (!userId) {
       return NextResponse.json({ error: 'userId è obbligatorio' }, { status: 400 })
@@ -443,39 +444,101 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Utente non trovato' }, { status: 404 })
     }
     const userProfileTyped = userProfile as ProfileWithUserId
+    const profileId = userId
+    const authUserId = userProfileTyped.user_id ?? null
 
-    // Tombstone: soft delete profilo (tombstone + is_deleted) + audit; storico e FK restano intatti
-    const { data: softResult, error: rpcError } = await (adminClient.rpc as unknown as AdminRpc)('soft_delete_profile', {
-      p_profile_id: userId,
-      p_actor_profile_id: profileTyped.id,
-      p_reason: reason ?? null,
-    })
+    // Hard delete: rimuovi tutte le dipendenze poi profilo e auth
+    const safeDelete = async (table: string, filter: { column: string; value: string | null }) => {
+      if (!filter.value) return
+      try {
+        const { error } = await adminClient
+          .from(table as keyof Database['public']['Tables'])
+          .delete()
+          .eq(filter.column, filter.value)
+        if (error && error.code !== 'PGRST116') {
+          logger.warn(`Errore eliminazione ${table}`, error, { filter })
+        }
+      } catch (err) {
+        logger.debug(`Tabella ${table} non esiste o errore non critico`, err)
+      }
+    }
 
+    try {
+      await safeDelete('athlete_trainer_assignments', { column: 'trainer_id', value: profileId })
+      await safeDelete('athlete_trainer_assignments', { column: 'athlete_id', value: profileId })
+      await safeDelete('trainer_athletes', { column: 'trainer_id', value: profileId })
+      await safeDelete('trainer_athletes', { column: 'athlete_id', value: profileId })
+
+      if (authUserId) {
+        await safeDelete('athlete_medical_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_fitness_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_nutrition_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_massage_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_motivational_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_administrative_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_smart_tracking_data', { column: 'user_id', value: authUserId })
+        await safeDelete('athlete_ai_data', { column: 'user_id', value: authUserId })
+      }
+
+      await (adminClient.rpc as unknown as AdminRpc)('soft_delete_payments_for_profile', {
+        p_profile_id: profileId,
+        p_actor_profile_id: profileTyped.id,
+      })
+
+      await safeDelete('appointments', { column: 'athlete_id', value: profileId })
+      await safeDelete('appointments', { column: 'staff_id', value: profileId })
+      await safeDelete('appointments', { column: 'trainer_id', value: profileId })
+      await safeDelete('workout_logs', { column: 'atleta_id', value: profileId })
+      await safeDelete('workout_logs', { column: 'athlete_id', value: profileId })
+      await safeDelete('workouts', { column: 'athlete_id', value: profileId })
+      await safeDelete('workouts', { column: 'created_by_staff_id', value: profileId })
+      await safeDelete('workout_plans', { column: 'athlete_id', value: profileId })
+      await safeDelete('workout_plans', { column: 'created_by_staff_id', value: profileId })
+      await safeDelete('documents', { column: 'athlete_id', value: profileId })
+      await safeDelete('documents', { column: 'uploaded_by_profile_id', value: profileId })
+      await safeDelete('inviti_atleti', { column: 'pt_id', value: profileId })
+      await safeDelete('inviti_atleti', { column: 'invited_by', value: profileId })
+      if (authUserId) {
+        await safeDelete('inviti_atleti', { column: 'atleta_user_id', value: authUserId })
+      }
+      await safeDelete('lesson_counters', { column: 'athlete_id', value: profileId })
+      await safeDelete('progress_logs', { column: 'athlete_id', value: profileId })
+      await safeDelete('progress_photos', { column: 'athlete_id', value: profileId })
+      await safeDelete('chat_messages', { column: 'sender_id', value: profileId })
+      await safeDelete('chat_messages', { column: 'receiver_id', value: profileId })
+      await safeDelete('profiles_tags', { column: 'profile_id', value: profileId })
+      if (authUserId) {
+        await safeDelete('notifications', { column: 'user_id', value: authUserId })
+      }
+      await safeDelete('profile_tombstones', { column: 'profile_id', value: profileId })
+    } catch (depsError) {
+      logger.warn('Errore durante eliminazione dipendenze (continuo)', depsError, { userId: profileId })
+    }
+
+    if (authUserId) {
+      const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(authUserId)
+      if (deleteAuthError) {
+        logger.warn('Errore eliminazione auth.users', deleteAuthError, { authUserId })
+      }
+    }
+
+    const { data: deleteResult, error: rpcError } = await (adminClient.rpc as unknown as (fn: string, params?: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>)(
+      'delete_profile_bypass_rls',
+      { profile_id_to_delete: profileId },
+    )
     if (rpcError) {
-      logger.error('Errore RPC soft_delete_profile', rpcError, { userId })
+      logger.error('Errore RPC delete_profile_bypass_rls', rpcError, { userId: profileId })
       return NextResponse.json(
         { error: 'Errore durante la cancellazione del profilo', details: rpcError.message, code: rpcError.code },
         { status: 500 },
       )
     }
-
-    const result = softResult as { success?: boolean; error?: string; error_code?: string }
-    if (!result?.success) {
-      logger.warn('soft_delete_profile fallito', { userId, result })
+    const result = deleteResult as { success?: boolean; error?: string }
+    if (result && result.success === false) {
       return NextResponse.json(
-        { error: result?.error ?? 'Cancellazione non riuscita', code: result?.error_code },
+        { error: result?.error ?? 'Cancellazione non riuscita' },
         { status: 400 },
       )
-    }
-
-    // Elimina auth.users (reale) così l'utente non può più autenticarsi
-    const authUserIdToDelete = userProfileTyped.user_id
-    if (authUserIdToDelete) {
-      const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(authUserIdToDelete)
-      if (deleteAuthError) {
-        logger.warn('Errore eliminazione auth.users (profilo già tombstone)', deleteAuthError, { authUserId: authUserIdToDelete })
-        // Profilo già marcato deleted; segnaliamo ma restituiamo success
-      }
     }
 
     return NextResponse.json({ success: true })

@@ -4,7 +4,7 @@
 // Estratto da comunicazioni/page.tsx per migliorare manutenibilità
 // ============================================================
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('hooks:communications:use-communications-page')
@@ -16,9 +16,7 @@ import {
 import { useToast } from '@/components/ui/toast'
 import { useNotify } from '@/lib/ui/notify'
 import {
-  Bell,
   Mail,
-  MessageSquare,
   Send,
   CheckCircle,
   Clock,
@@ -35,12 +33,24 @@ export function useCommunicationsPage() {
   const { notify } = useNotify()
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(ITEMS_PER_PAGE)
-  const [activeTab, setActiveTab] = useState('tutte')
+  const [activeTab, setActiveTab] = useState<'tutte' | 'sent' | 'delivered' | 'pending' | 'failed'>('tutte')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Determina il tipo di comunicazione da filtrare (undefined = tutte)
-  const filterType =
-    activeTab === 'tutte' ? undefined : (activeTab as 'push' | 'email' | 'sms' | 'all')
+  // Determina il filtro per stato (Tutti, Inviati, Consegnati, In attesa, Falliti)
+  const statusFilter = (() => {
+    switch (activeTab) {
+      case 'sent':
+        return 'sent'
+      case 'delivered':
+        return 'sent' // fetch sent, poi filtriamo client-side per total_delivered > 0
+      case 'pending':
+        return ['draft', 'scheduled', 'sending']
+      case 'failed':
+        return 'failed'
+      default:
+        return undefined
+    }
+  })()
 
   const {
     communications,
@@ -55,20 +65,23 @@ export function useCommunicationsPage() {
     fetchCommunications,
   } = useCommunications({
     autoRefresh: true,
-    type: filterType,
+    status: statusFilter,
     limit: itemsPerPage,
     offset: (currentPage - 1) * itemsPerPage,
   })
-  const [formType, setFormType] = useState<'push' | 'email' | 'sms' | 'all'>('push')
+  const [formType, setFormType] = useState<'email' | 'all'>('email')
   const [formTitle, setFormTitle] = useState('')
   const [formMessage, setFormMessage] = useState('')
-  const [formRecipientFilter, setFormRecipientFilter] = useState<'all' | 'atleti' | 'custom'>('all')
+  const [formRecipientFilter, setFormRecipientFilter] = useState<'all' | 'atleti' | 'custom'>('atleti')
   const [formSelectedAthletes, setFormSelectedAthletes] = useState<string[]>([]) // athlete_ids selezionati
   const [formScheduled, setFormScheduled] = useState(false)
   const [formScheduledDate, setFormScheduledDate] = useState('')
   const [formLoading, setFormLoading] = useState(false)
   const [recipientCount, setRecipientCount] = useState<number | null>(null)
   const [editingCommunicationId, setEditingCommunicationId] = useState<string | null>(null)
+
+  const communicationsRef = useRef(communications)
+  communicationsRef.current = communications
 
   // Reset alla prima pagina quando cambia filtro
   useEffect(() => {
@@ -101,30 +114,27 @@ export function useCommunicationsPage() {
     [totalPages],
   )
 
-  // Filtra comunicazioni per searchTerm (il filtro type è già applicato lato server)
-  // Nota: La ricerca client-side può essere migliorata in futuro con ricerca lato server
+  // Filtra per searchTerm e per "Consegnati" (sent con total_delivered > 0)
   const filteredCommunications = useMemo(() => {
-    if (!searchTerm) {
-      return communications
+    let list = communications
+    if (activeTab === 'delivered') {
+      list = list.filter((c) => (c.total_delivered ?? 0) > 0)
     }
-
+    if (!searchTerm) {
+      return list
+    }
     const term = searchTerm.toLowerCase()
-    return communications.filter(
+    return list.filter(
       (c) => c.title.toLowerCase().includes(term) || c.message.toLowerCase().includes(term),
     )
-  }, [communications, searchTerm])
+  }, [communications, searchTerm, activeTab])
 
-  // Controllo periodico per comunicazioni bloccate in "sending"
-  // Ottimizzato: controlla solo quando la pagina è visibile e aumenta intervallo a 5 minuti
+  // Controllo periodico per comunicazioni bloccate in "sending" (solo interval, senza dipendere da communications)
   useEffect(() => {
     const checkStuckCommunications = async () => {
-      // Controlla solo se la pagina è visibile
-      if (document.visibilityState === 'hidden') {
-        return
-      }
-
-      // Controlla se ci sono comunicazioni in stato "sending" (potrebbero essere bloccate)
-      const stuck = communications.filter((c) => c.status === 'sending')
+      if (document.visibilityState === 'hidden') return
+      const list = communicationsRef.current
+      const stuck = list.filter((c) => c.status === 'sending')
       if (stuck.length === 0) return
 
       try {
@@ -135,15 +145,10 @@ export function useCommunicationsPage() {
         })
 
         if (response.ok) {
-          // Proteggi da risposte vuote che causano "Unexpected end of JSON input"
           const text = await response.text()
-          if (!text || text.trim().length === 0) {
-            logger.warn('Risposta vuota da /api/communications/check-stuck')
-            return
-          }
+          if (!text || text.trim().length === 0) return
           const result = JSON.parse(text)
           if (result.reset > 0) {
-            // Refresh automatico se sono state resetate comunicazioni bloccate
             await fetchCommunications()
           }
         }
@@ -152,28 +157,21 @@ export function useCommunicationsPage() {
       }
     }
 
-    // Controlla ogni 5 minuti (invece di 2) per ridurre chiamate API
     const interval = setInterval(checkStuckCommunications, 5 * 60 * 1000)
-
-    // Controlla subito al mount se la pagina è visibile
     if (document.visibilityState === 'visible') {
       checkStuckCommunications()
     }
 
-    // Ricontrolla quando la pagina diventa visibile
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkStuckCommunications()
-      }
+      if (document.visibilityState === 'visible') checkStuckCommunications()
     }
-
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [communications, fetchCommunications])
+  }, [fetchCommunications])
 
   // Re-fetch quando cambia pagina (useCommunications si aggiorna automaticamente quando cambiano options)
 
@@ -181,12 +179,12 @@ export function useCommunicationsPage() {
   useEffect(() => {
     const calculateRecipientCount = async () => {
       try {
-        let filter: { all_users?: boolean; role?: string; athlete_ids?: string[] } | null = null
+        let _filter: { all_users?: boolean; role?: string; athlete_ids?: string[] } | null = null
 
         if (formRecipientFilter === 'all') {
-          filter = { all_users: true }
+          _filter = { all_users: true }
         } else if (formRecipientFilter === 'atleti') {
-          filter = { role: 'athlete' }
+          _filter = { role: 'athlete' }
         } else if (formRecipientFilter === 'custom') {
           // Per atleti specifici, il count è il numero di atleti selezionati
           setRecipientCount(formSelectedAthletes.length)
@@ -196,7 +194,11 @@ export function useCommunicationsPage() {
           return
         }
 
-        const response = await fetch('/api/communications/recipients/count', { method: 'GET' })
+        const countUrl =
+          formRecipientFilter === 'atleti'
+            ? '/api/communications/recipients/count?role=athlete'
+            : '/api/communications/recipients/count'
+        const response = await fetch(countUrl, { method: 'GET' })
 
         if (response.status === 404 || !response.ok) {
           setRecipientCount(0)
@@ -220,16 +222,12 @@ export function useCommunicationsPage() {
 
   const getTipoIcon = useCallback((tipo: string) => {
     switch (tipo) {
-      case 'push':
-        return <Bell className="h-4 w-4" />
       case 'email':
         return <Mail className="h-4 w-4" />
-      case 'sms':
-        return <MessageSquare className="h-4 w-4" />
       case 'all':
         return <Send className="h-4 w-4" />
       default:
-        return <Send className="h-4 w-4" />
+        return <Mail className="h-4 w-4" />
     }
   }, [])
 
@@ -348,7 +346,7 @@ export function useCommunicationsPage() {
           setFormScheduled(false)
           setFormScheduledDate('')
           setFormSelectedAthletes([])
-          setFormRecipientFilter('all')
+          setFormRecipientFilter('atleti')
 
           await fetchCommunications()
         }
@@ -449,7 +447,11 @@ export function useCommunicationsPage() {
       if (!communication) return
 
       setEditingCommunicationId(id)
-      setFormType(communication.type as 'push' | 'email' | 'sms' | 'all')
+      setFormType(
+        communication.type === 'push' || communication.type === 'sms'
+          ? 'email'
+          : (communication.type as 'email' | 'all'),
+      )
       setFormTitle(communication.title)
       setFormMessage(communication.message)
 
@@ -461,7 +463,7 @@ export function useCommunicationsPage() {
       } | null
 
       if (recipientFilter?.all_users) {
-        setFormRecipientFilter('all')
+        setFormRecipientFilter('atleti')
         setFormSelectedAthletes([])
       } else if (recipientFilter?.role === 'athlete') {
         setFormRecipientFilter('atleti')
@@ -470,7 +472,7 @@ export function useCommunicationsPage() {
         setFormRecipientFilter('custom')
         setFormSelectedAthletes(recipientFilter.athlete_ids)
       } else {
-        setFormRecipientFilter('all')
+        setFormRecipientFilter('atleti')
         setFormSelectedAthletes([])
       }
 
@@ -563,7 +565,7 @@ export function useCommunicationsPage() {
           setFormScheduled(false)
           setFormScheduledDate('')
           setFormSelectedAthletes([])
-          setFormRecipientFilter('all')
+          setFormRecipientFilter('atleti')
 
           await fetchCommunications()
         }

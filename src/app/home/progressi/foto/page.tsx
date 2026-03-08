@@ -384,10 +384,10 @@ export default function FotoProgressiPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
         {/* Header */}
-        <header className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5" />
+        <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
+          <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5" />
           <div className="relative z-10 flex items-center gap-3">
             <Button
               variant="ghost"

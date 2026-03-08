@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
@@ -70,11 +71,14 @@ export function DialogTrigger({ children }: { children: React.ReactNode }) {
 
 export function DialogContent({ children, className }: DialogContentProps) {
   const { open, onOpenChange } = React.useContext(DialogContext)
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
 
   if (!open) return null
+  if (!mounted || typeof document === 'undefined') return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  const content = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop con blur */}
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-md"
@@ -85,7 +89,7 @@ export function DialogContent({ children, className }: DialogContentProps) {
       {/* Dialog: full width sotto 852px, centrato desktop */}
       <div
         className={cn(
-          'bg-background border-border relative z-50 w-full max-w-lg rounded-lg border p-6 shadow-lg',
+          'bg-background border-border relative z-[100] w-full max-w-lg rounded-lg border p-6 shadow-lg',
           'mx-4 my-4 max-h-[90dvh] overflow-y-auto',
           'max-[851px]:max-w-[calc(100vw-2rem)] max-[851px]:w-full',
           className,
@@ -97,7 +101,7 @@ export function DialogContent({ children, className }: DialogContentProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-4 top-4 z-[60] hover:bg-background-tertiary/50 text-text-secondary hover:text-text-primary transition-all duration-200 rounded-full"
+          className="absolute right-4 top-4 z-[110] hover:bg-background-tertiary/50 text-text-secondary hover:text-text-primary transition-all duration-200 rounded-full"
           onClick={(e) => {
             e.stopPropagation()
             onOpenChange(false)
@@ -110,6 +114,8 @@ export function DialogContent({ children, className }: DialogContentProps) {
       </div>
     </div>
   )
+
+  return createPortal(content, document.body)
 }
 
 export function DialogHeader({ children, className }: DialogHeaderProps) {

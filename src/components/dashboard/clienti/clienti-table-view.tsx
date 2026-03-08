@@ -284,8 +284,9 @@ export function ClientiTableView({
                     </div>
                     <div>
                       <p className="text-text-primary font-medium">
-                        {cliente.first_name || cliente.nome || 'Nome'}{' '}
-                        {cliente.last_name || cliente.cognome || 'Cognome'}
+                        {(cliente.first_name || cliente.nome || cliente.last_name || cliente.cognome)
+                            ? `${cliente.first_name ?? cliente.nome ?? ''} ${cliente.last_name ?? cliente.cognome ?? ''}`.trim()
+                            : cliente.email || '—'}
                       </p>
                       {cliente.documenti_scadenza && (
                         <div className="flex items-center gap-1">

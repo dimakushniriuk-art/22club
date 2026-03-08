@@ -127,6 +127,11 @@ export default function AppuntamentiPage() {
     return m
   }, [athleteIds, rimastiMap, lessonStatsMap])
 
+  const athleteEmailMap = useMemo(
+    () => new Map(athletes.map((a) => [a.id, a.email])),
+    [athletes],
+  )
+
   // Filtra appuntamenti
   const filteredAppointments = useMemo(() => {
     return appointments.filter((apt) => {
@@ -334,6 +339,7 @@ export default function AppuntamentiPage() {
             getStatusColorClasses={getStatusColorClasses}
             getAppointmentType={getAppointmentType}
             lessonsRemainingMap={lessonsRemainingMap}
+            athleteEmailMap={athleteEmailMap}
           />
         </div>
 

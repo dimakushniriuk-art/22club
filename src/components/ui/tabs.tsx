@@ -18,14 +18,22 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
   ({ className, defaultValue, value, onValueChange, ...props }, ref) => {
-    const [activeTab, setActiveTab] = React.useState(defaultValue || value || '')
+    const [internalValue, setInternalValue] = React.useState(defaultValue || value || '')
+    const isControlled = value !== undefined && value !== null
+    const activeTab = isControlled ? value : internalValue
+
+    React.useEffect(() => {
+      if (isControlled && typeof value === 'string') {
+        setInternalValue(value)
+      }
+    }, [isControlled, value])
 
     const handleValueChange = React.useCallback(
       (newValue: string) => {
-        setActiveTab(newValue)
+        if (!isControlled) setInternalValue(newValue)
         onValueChange?.(newValue)
       },
-      [onValueChange],
+      [onValueChange, isControlled],
     )
 
     return (
@@ -80,7 +88,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
       default:
         'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background-elevated data-[state=active]:text-text-primary data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
       pills:
-        'inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm data-[state=active]:shadow-glow max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
+        'inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=inactive]:text-text-tertiary data-[state=inactive]:hover:text-text-secondary data-[state=inactive]:hover:bg-white/5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/25 data-[state=active]:ring-2 data-[state=active]:ring-primary/40 max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
       underline:
         'inline-flex items-center justify-center whitespace-nowrap px-4 py-2 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-semibold max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
     }
@@ -90,7 +98,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         ref={ref}
         className={cn(
           variants[variant],
-          isActive && 'bg-primary text-primary-foreground shadow-sm',
+          isActive && variant === 'pills' && 'bg-primary text-primary-foreground shadow-md shadow-primary/25 ring-2 ring-primary/40',
           className,
         )}
         onClick={() => onValueChange?.(value)}

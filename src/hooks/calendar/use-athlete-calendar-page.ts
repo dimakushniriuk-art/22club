@@ -239,16 +239,33 @@ export function useAthleteCalendarPage(profileId: string | null) {
           const openSlots = appointments.filter(
             (a) => a.is_open_booking_day && a.staff_id === staffId && !a.cancelled_at,
           )
-          const withinSlot = openSlots.some(
+          const matchingSlot = openSlots.find(
             (s) =>
               new Date(s.starts_at).getTime() <= new Date(startsAt).getTime() &&
               new Date(endsAt).getTime() <= new Date(s.ends_at).getTime(),
           )
-          if (!withinSlot) {
+          if (!matchingSlot) {
             notify(
               'L’orario deve essere compreso in uno slot "Libera prenotazione" del tuo trainer.',
               'warning',
               'Attenzione',
+            )
+            setLoading(false)
+            return
+          }
+          const slotKey = `${matchingSlot.starts_at}|${matchingSlot.ends_at}`
+          const currentCount = slotBookingCounts[slotKey] ?? 0
+          const { data: settingsRow } = await supabase
+            .from('staff_calendar_settings')
+            .select('max_free_pass_athletes_per_slot')
+            .eq('staff_id', staffId)
+            .maybeSingle()
+          const maxPerSlot = (settingsRow as { max_free_pass_athletes_per_slot?: number } | null)?.max_free_pass_athletes_per_slot ?? 4
+          if (currentCount >= maxPerSlot) {
+            notify(
+              `Questo slot è al completo (${maxPerSlot}/${maxPerSlot}). Scegli un altro orario.`,
+              'error',
+              'Slot pieno',
             )
             setLoading(false)
             return
@@ -301,7 +318,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
         setLoading(false)
       }
     },
-    [profileId, staffId, orgId, appointments, fetchAppointments, notify],
+    [profileId, staffId, orgId, appointments, slotBookingCounts, fetchAppointments, notify],
   )
 
   const handleCancel = useCallback(

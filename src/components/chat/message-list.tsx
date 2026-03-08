@@ -135,8 +135,8 @@ export function MessageList({
               className={cn(
                 'px-4 py-2.5 shadow-lg relative',
                 isOwn
-                  ? 'bg-cyan-500 text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm border border-cyan-400/30'
-                  : 'bg-background-secondary text-text-primary rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl border border-cyan-500/20',
+                  ? 'bg-cyan-700 text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm border border-cyan-600/50'
+                  : 'bg-background-tertiary text-text-primary rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl border border-cyan-500/20',
               )}
             >
               <div className="flex items-start justify-between gap-2">
@@ -175,8 +175,8 @@ export function MessageList({
               className={cn(
                 'max-w-xs p-3 shadow-lg relative',
                 isOwn
-                  ? 'bg-cyan-500 text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm border border-cyan-400/30'
-                  : 'bg-background-secondary text-text-primary rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl border border-cyan-500/20',
+                  ? 'bg-cyan-700 text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm border border-cyan-600/50'
+                  : 'bg-background-tertiary text-text-primary rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl border border-cyan-500/20',
               )}
             >
               <div className="flex items-start gap-3">

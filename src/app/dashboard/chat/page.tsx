@@ -377,7 +377,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
         {/* Pannello lista conversazioni: nascosto su mobile quando una chat è aperta */}
         {(!isMobile || showListOnly) && (
           <div
-            className={`w-full lg:w-[320px] shrink-0 flex flex-col min-h-0 overflow-hidden rounded-3xl ${t.glass} ${t.frame} ${SHADOW_SPORT}`}
+            className={`w-full lg:w-[320px] shrink-0 flex flex-col min-h-0 overflow-hidden rounded-3xl ${t.glass} ${SHADOW_SPORT}`}
           >
             <ConversationList
               conversations={visibleConversations}
@@ -393,7 +393,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
         {/* Pannello messaggi + input: su mobile mostrato solo con conversazione selezionata, con back */}
         {(!isMobile || showConversationOnly) && (
           <div
-            className={`flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden rounded-3xl ${t.glass} ${t.frame} ${SHADOW_SPORT}`}
+            className={`flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden rounded-3xl ${t.glass} ${SHADOW_SPORT}`}
           >
             {showConversationOnly && (
               <div className="flex items-center gap-2 shrink-0 px-3 py-2 border-b border-white/10 min-h-[44px]">
@@ -423,7 +423,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
                     className="flex-1 min-h-0"
                   />
                 </div>
-                <div className="border-t border-white/10 bg-background-secondary/25 px-4 py-3 sm:p-4 shrink-0 rounded-b-3xl">
+                <div className="sticky bottom-0 z-10 border-t border-white/10 bg-background-secondary backdrop-blur-sm px-4 py-3 sm:p-4 shrink-0 rounded-b-3xl">
                   <MessageInput
                     onSendMessage={handleSendMessage}
                     onUploadFile={handleUploadFile}

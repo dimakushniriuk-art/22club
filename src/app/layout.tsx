@@ -10,6 +10,7 @@ import SwRegister from '@/components/sw-register'
 import { ToastProvider } from '@/components/ui/toast'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
 import { CookieConsent } from '@/components/shared/cookie-consent'
+import { WakeLockProvider } from '@/components/wake-lock-provider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -81,9 +82,11 @@ export default function RootLayout({
           <AuthProvider>
             <QueryProvider>
               <ToastProvider>
-                {children}
-                <SwRegister />
-                <CookieConsent />
+                <WakeLockProvider>
+                  {children}
+                  <SwRegister />
+                  <CookieConsent />
+                </WakeLockProvider>
               </ToastProvider>
             </QueryProvider>
           </AuthProvider>

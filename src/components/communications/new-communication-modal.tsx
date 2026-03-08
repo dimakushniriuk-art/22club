@@ -29,7 +29,7 @@ import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Textarea } from '@/components/ui'
 import { Checkbox } from '@/components/ui'
-import { Bell, Mail, MessageSquare, Send, Users, Loader2, Search, UserCheck } from 'lucide-react'
+import { Send, Loader2, Search, UserCheck } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
 
 function arraysEqual(a: string[], b: string[]): boolean {
@@ -37,13 +37,13 @@ function arraysEqual(a: string[], b: string[]): boolean {
   return a.every((v, i) => v === b[i])
 }
 
-const logger = createLogger('NewCommunicationModal')
+const _logger = createLogger('NewCommunicationModal')
 
 interface NewCommunicationModalProps {
   isOpen: boolean
   onClose: () => void
   isEditing?: boolean
-  formType: 'push' | 'email' | 'sms' | 'all'
+  formType: 'email' | 'all'
   formTitle: string
   formMessage: string
   formRecipientFilter: 'all' | 'atleti' | 'custom'
@@ -52,7 +52,7 @@ interface NewCommunicationModalProps {
   formScheduledDate: string
   formLoading: boolean
   recipientCount: number | null
-  onFormTypeChange: (type: 'push' | 'email' | 'sms' | 'all') => void
+  onFormTypeChange: (type: 'email' | 'all') => void
   onFormTitleChange: (title: string) => void
   onFormMessageChange: (message: string) => void
   onFormRecipientFilterChange: (filter: 'all' | 'atleti' | 'custom') => void
@@ -76,7 +76,7 @@ export function NewCommunicationModal({
   formScheduledDate,
   formLoading,
   recipientCount,
-  onFormTypeChange,
+  onFormTypeChange: _onFormTypeChange,
   onFormTitleChange,
   onFormMessageChange,
   onFormRecipientFilterChange,
@@ -160,72 +160,36 @@ export function NewCommunicationModal({
           if (!open) handleCloseRequest()
         }}
       >
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Comunicazione' : 'Nuova Comunicazione'}</DialogTitle>
-          <DialogDescription>Invia una notifica push, email o SMS ai tuoi atleti</DialogDescription>
+          <DialogDescription>Invia un&apos;email ai tuoi atleti</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Tipo */}
-          <div>
-            <label className="text-text-primary mb-2 block text-sm font-medium">
-              Tipo di comunicazione
-            </label>
-            <div className="grid grid-cols-4 gap-4">
-              {[
-                { value: 'push', label: 'Push', icon: <Bell className="h-5 w-5" /> },
-                { value: 'email', label: 'Email', icon: <Mail className="h-5 w-5" /> },
-                { value: 'sms', label: 'SMS', icon: <MessageSquare className="h-5 w-5" /> },
-                { value: 'all', label: 'Tutti', icon: <Send className="h-5 w-5" /> },
-              ].map((tipo) => (
-                <button
-                  key={tipo.value}
-                  onClick={() => onFormTypeChange(tipo.value as typeof formType)}
-                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                    formType === tipo.value
-                      ? 'border-blue-500 bg-blue-500/20 text-blue-400'
-                      : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                  }`}
-                >
-                  <div>{tipo.icon}</div>
-                  <span className="text-sm font-medium">{tipo.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
+        <div className="space-y-4 sm:space-y-6">
           {/* Destinatari */}
-          <div>
-            <label className="text-text-primary mb-2 block text-sm font-medium">Destinatari</label>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={formRecipientFilter === 'all' ? 'default' : 'outline'}
-                className="flex-1 min-w-[140px]"
-                onClick={() => onFormRecipientFilterChange('all')}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Tutti gli utenti {recipientCount !== null && `(${recipientCount})`}
-              </Button>
+          <div className="space-y-3">
+            <label className="text-text-primary block text-sm font-medium">Destinatari</label>
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={formRecipientFilter === 'atleti' ? 'default' : 'outline'}
                 className="flex-1 min-w-[140px]"
                 onClick={() => onFormRecipientFilterChange('atleti')}
               >
-                Solo atleti{' '}
-                {recipientCount !== null &&
-                  formRecipientFilter === 'atleti' &&
-                  `(${recipientCount})`}
+                Tutti atleti
+                {recipientCount !== null && formRecipientFilter === 'atleti'
+                  ? ` (${recipientCount})`
+                  : ''}
               </Button>
               <Button
                 variant={formRecipientFilter === 'custom' ? 'default' : 'outline'}
                 className="flex-1 min-w-[140px]"
                 onClick={() => onFormRecipientFilterChange('custom')}
               >
-                <UserCheck className="mr-2 h-4 w-4" />
-                Atleti specifici{' '}
+                <UserCheck className="mr-2 h-4 w-4 shrink-0" />
+                Atleta specifico
                 {formRecipientFilter === 'custom' && formSelectedAthletes.length > 0
-                  ? `(${formSelectedAthletes.length})`
+                  ? ` (${formSelectedAthletes.length})`
                   : ''}
               </Button>
             </div>
@@ -239,48 +203,36 @@ export function NewCommunicationModal({
             )}
           </div>
 
-          {/* Titolo */}
-          <Input
+          {/* Titolo e messaggio */}
+          <div className="space-y-4">
+            <Input
             label="Titolo"
             placeholder="Es: Nuova scheda disponibile"
             value={formTitle}
             onChange={(e) => onFormTitleChange(e.target.value)}
-          />
-
-          {/* Messaggio */}
-          <Textarea
-            label="Messaggio"
-            placeholder="Scrivi il contenuto della comunicazione..."
-            value={formMessage}
-            onChange={(e) => onFormMessageChange(e.target.value)}
-            errorMessage={
-              formType === 'sms' && formMessage.length > 160
-                ? `Il messaggio SMS non può superare 160 caratteri (attualmente: ${formMessage.length}. Riduci di ${formMessage.length - 160} caratteri)`
-                : undefined
-            }
-            helperText={
-              formType === 'sms'
-                ? `Massimo 160 caratteri per SMS (${formMessage.length}/160)`
-                : 'Illimitato per Push ed Email'
-            }
-          />
+            />
+            <Textarea
+              label="Messaggio"
+              placeholder="Scrivi il contenuto della comunicazione..."
+              value={formMessage}
+              onChange={(e) => onFormMessageChange(e.target.value)}
+            />
+          </div>
 
           {/* Programmazione */}
-          <div className="flex items-center gap-4">
-            <input
-              type="checkbox"
-              id="schedule"
-              checked={formScheduled}
-              onChange={(e) => onFormScheduledChange(e.target.checked)}
-              className="h-4 w-4"
-            />
-            <label htmlFor="schedule" className="text-text-primary text-sm">
-              Programma invio
-            </label>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="shrink-0">
+              <Checkbox
+                id="schedule"
+                checked={formScheduled}
+                onChange={(e) => onFormScheduledChange(e.target.checked)}
+                label="Programma invio"
+              />
+            </div>
             {formScheduled && (
               <Input
                 type="datetime-local"
-                className="flex-1"
+                className="min-w-0 flex-1 sm:max-w-xs"
                 value={formScheduledDate}
                 onChange={(e) => onFormScheduledDateChange(e.target.value)}
               />
@@ -288,37 +240,27 @@ export function NewCommunicationModal({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleCloseRequest} disabled={formLoading}>
             Annulla
           </Button>
           <Button
             variant="secondary"
             onClick={onCreateDraft}
-            disabled={
-              formLoading ||
-              !formTitle.trim() ||
-              !formMessage.trim() ||
-              (formType === 'sms' && formMessage.length > 160)
-            }
+            disabled={formLoading || !formTitle.trim() || !formMessage.trim()}
           >
-            {formLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {formLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" /> : null}
             Salva bozza
           </Button>
           <Button
             onClick={onCreateAndSend}
-            disabled={
-              formLoading ||
-              !formTitle.trim() ||
-              !formMessage.trim() ||
-              (formType === 'sms' && formMessage.length > 160)
-            }
-            className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+            disabled={formLoading || !formTitle.trim() || !formMessage.trim()}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {formLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" />
             ) : (
-              <Send className="mr-2 h-4 w-4" />
+              <Send className="mr-2 h-4 w-4 shrink-0" />
             )}
             Invia ora
           </Button>

@@ -1,7 +1,8 @@
 // ============================================================
 // Email reset password via Resend (template dashboard: password-reset-request)
 // ============================================================
-// Genera il link di recovery con Supabase Admin e invia via Resend template
+// Design proforma: vedi RESEND_PASSWORD_RESET_HTML_REFERENCE in
+// email-reset-password-template.ts per copiare il layout nel dashboard Resend.
 // ============================================================
 
 import { createAdminClient } from '@/lib/supabase/server'

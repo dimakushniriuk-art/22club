@@ -6,12 +6,14 @@
 
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
-import { User, Dumbbell, Edit, Trash2, CheckCircle2, XCircle } from 'lucide-react'
+import { User, Dumbbell, Edit, Trash2, CheckCircle2, XCircle, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AppointmentTable } from '@/types/appointment'
+import { EmailToAthleteModal } from './email-to-athlete-modal'
 
 interface AppointmentItemProps {
   appointment: AppointmentTable
@@ -26,6 +28,8 @@ interface AppointmentItemProps {
   getAppointmentType: (apt: AppointmentTable) => string
   /** Lezioni rimanenti atleta (solo numero in lista) */
   lessonsRemaining?: number
+  /** Email atleta (per modal invio email) */
+  athleteEmail?: string | null
 }
 
 export function AppointmentItem({
@@ -40,8 +44,10 @@ export function AppointmentItem({
   getStatusColorClasses,
   getAppointmentType,
   lessonsRemaining,
+  athleteEmail,
 }: AppointmentItemProps) {
   const router = useRouter()
+  const [showEmailModal, setShowEmailModal] = useState(false)
   const { time, dateStr } = formatDateTime(appointment.starts_at)
   const { time: endTime } = formatDateTime(appointment.ends_at)
   const status = appointment.status?.toLowerCase() || 'attivo'
@@ -165,6 +171,28 @@ export function AppointmentItem({
 
         {/* Action Buttons - bloccati se completato/annullato */}
         <div className={cn('relative z-10 flex shrink-0 items-center gap-1.5', isLocked && 'pointer-events-none opacity-60')}>
+          <Button
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (appointment.athlete_id) setShowEmailModal(true)
+            }}
+            className="rounded-full p-3 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+            title="Invia email all'atleta"
+            disabled={isLocked || !appointment.athlete_id}
+          >
+            <Mail className="h-5 w-5" />
+          </Button>
+          {appointment.athlete_id && (
+            <EmailToAthleteModal
+              open={showEmailModal}
+              onOpenChange={setShowEmailModal}
+              athleteId={appointment.athlete_id}
+              athleteName={appointment.athlete_name || 'Atleta'}
+              athleteEmail={athleteEmail}
+            />
+          )}
+
           <Button
             variant="ghost"
             onClick={(e) => {

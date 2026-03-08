@@ -603,14 +603,15 @@ export function AdminUsersContent() {
         </div>
       </div>
 
-      {/* Statistiche KPI */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      {/* Statistiche KPI (compact: ~50% ingombro) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         <ModernKPICard
           title="Totale Utenti"
           value={stats.total}
           icon="👥"
           color="blue"
           animationDelay="0ms"
+          compact
         />
         <ModernKPICard
           title="Utenti Attivi"
@@ -618,6 +619,7 @@ export function AdminUsersContent() {
           icon="✅"
           color="green"
           animationDelay="100ms"
+          compact
         />
         <ModernKPICard
           title="Personal Trainer"
@@ -625,6 +627,7 @@ export function AdminUsersContent() {
           icon="💪"
           color="orange"
           animationDelay="200ms"
+          compact
         />
         <ModernKPICard
           title="Atleti"
@@ -632,6 +635,7 @@ export function AdminUsersContent() {
           icon="🏃"
           color="purple"
           animationDelay="300ms"
+          compact
         />
         <ModernKPICard
           title="Marketing"
@@ -639,6 +643,7 @@ export function AdminUsersContent() {
           icon="📢"
           color="cyan"
           animationDelay="400ms"
+          compact
         />
       </div>
 

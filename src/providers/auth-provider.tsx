@@ -252,12 +252,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (error) {
           const errPayload = normalizeSupabaseError(error)
+          const msg = (errPayload.message ?? '').toLowerCase()
           const isAbort =
             (error instanceof Error && error.name === 'AbortError') ||
-            (errPayload.message ?? '').toLowerCase().includes('aborted')
+            msg.includes('aborted') ||
+            msg.includes('lock broken')
           if (isAbort) {
             if (process.env.NODE_ENV !== 'production') {
-              logger.debug('[profiles] fetchProfile → richiesta abortita (ignorato)', { userId })
+              logger.debug('[profiles] fetchProfile → richiesta abortita/lock (ignorato)', { userId })
             }
             return { profile: null }
           }
@@ -314,12 +316,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         return { profile: null }
       } catch (error) {
+        const msg = (error instanceof Error ? error.message : String(error ?? '')).toLowerCase()
         const isAbort =
-          error instanceof Error &&
-          (error.name === 'AbortError' || (error.message ?? '').toLowerCase().includes('aborted'))
+          (error instanceof Error && error.name === 'AbortError') ||
+          msg.includes('aborted') ||
+          msg.includes('lock broken')
         if (isAbort) {
           if (process.env.NODE_ENV !== 'production') {
-            logger.debug('[profiles] fetchProfile → richiesta abortita (ignorato)', { userId })
+            logger.debug('[profiles] fetchProfile → richiesta abortita/lock (ignorato)', { userId })
           }
           return { profile: null }
         }
@@ -389,6 +393,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!isMounted) return
 
         if (userError || !authUser) {
+          const errMsg = (userError as { message?: string })?.message ?? ''
+          if (
+            errMsg.includes('Invalid Refresh Token') ||
+            errMsg.includes('Refresh Token Not Found')
+          ) {
+            await supabase.auth.signOut()
+          }
           setLoading(false)
           return
         }
@@ -415,9 +426,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         if (isMounted) {
+          const msg = (error instanceof Error ? error.message : String(error ?? '')).toLowerCase()
           const isAbort =
-            error instanceof Error &&
-            (error.name === 'AbortError' || (error.message ?? '').includes('aborted'))
+            (error instanceof Error && error.name === 'AbortError') ||
+            msg.includes('aborted') ||
+            msg.includes('lock broken')
+          if (msg.includes('invalid refresh token') || msg.includes('refresh token not found')) {
+            await supabase.auth.signOut()
+            setLoading(false)
+            return
+          }
           if (isAbort) {
             setLoading(false)
             return

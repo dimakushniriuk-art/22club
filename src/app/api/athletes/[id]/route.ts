@@ -308,17 +308,15 @@ export async function DELETE(
       await safeDelete('trainer_athletes', { column: 'trainer_id', value: id })
       await safeDelete('trainer_athletes', { column: 'athlete_id', value: id })
 
-      // 2. Tabelle athlete_* (dati atleta - referenziano profiles.user_id)
-      if (existingAthleteTyped.user_id) {
-        await safeDelete('athlete_medical_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_fitness_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_nutrition_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_massage_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_motivational_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_administrative_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_smart_tracking_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-        await safeDelete('athlete_ai_data', { column: 'user_id', value: existingAthleteTyped.user_id })
-      }
+      // 2. Tabelle athlete_* (dati atleta - referenziano profiles.id come athlete_id)
+      await safeDelete('athlete_medical_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_fitness_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_nutrition_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_massage_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_motivational_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_administrative_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_smart_tracking_data', { column: 'athlete_id', value: id })
+      await safeDelete('athlete_ai_data', { column: 'athlete_id', value: id })
 
       // 3. Payments: soft delete (no DELETE fisico)
       const { error: paymentsSoftErr } = await adminClient.rpc('soft_delete_payments_for_profile', {
@@ -336,9 +334,9 @@ export async function DELETE(
       await safeDelete('workout_logs', { column: 'atleta_id', value: id })
       await safeDelete('workout_logs', { column: 'athlete_id', value: id })
       await safeDelete('workouts', { column: 'athlete_id', value: id })
-      await safeDelete('workouts', { column: 'created_by_staff_id', value: id })
+      await safeDelete('workouts', { column: 'created_by_trainer_id', value: id })
       await safeDelete('workout_plans', { column: 'athlete_id', value: id })
-      await safeDelete('workout_plans', { column: 'created_by_staff_id', value: id })
+      await safeDelete('workout_plans', { column: 'created_by_profile_id', value: id })
 
       // 6. Documents (tabella ha athlete_id e uploaded_by_profile_id, non user_id)
       await safeDelete('documents', { column: 'athlete_id', value: id })
@@ -347,9 +345,6 @@ export async function DELETE(
       // 7. Inviti atleti (pt_id e invited_by = profile id, evita trigger ricorsione al DELETE profiles)
       await safeDelete('inviti_atleti', { column: 'pt_id', value: id })
       await safeDelete('inviti_atleti', { column: 'invited_by', value: id })
-      if (existingAthleteTyped.user_id) {
-        await safeDelete('inviti_atleti', { column: 'atleta_user_id', value: existingAthleteTyped.user_id })
-      }
 
       // 8. Lesson counters
       await safeDelete('lesson_counters', { column: 'athlete_id', value: id })

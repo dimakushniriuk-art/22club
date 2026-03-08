@@ -31,6 +31,8 @@ interface AppointmentsListProps {
   theme?: 'teal' | 'amber'
   /** Mappa athlete_id -> lezioni rimanenti (per mostrare "Rimasti" in ogni riga) */
   lessonsRemainingMap?: Map<string, number>
+  /** Mappa athlete_id -> email (per modal invio email) */
+  athleteEmailMap?: Map<string, string>
 }
 
 export function AppointmentsList({
@@ -50,6 +52,7 @@ export function AppointmentsList({
   getAppointmentType,
   theme = 'teal',
   lessonsRemainingMap,
+  athleteEmailMap,
 }: AppointmentsListProps) {
   if (appointmentsLoading) {
     return <SkeletonAppointmentsList rows={6} className="py-4" />
@@ -130,6 +133,7 @@ export function AppointmentsList({
           getStatusColorClasses={getStatusColorClasses}
           getAppointmentType={getAppointmentType}
           lessonsRemaining={apt.athlete_id ? lessonsRemainingMap?.get(apt.athlete_id) : undefined}
+          athleteEmail={apt.athlete_id ? athleteEmailMap?.get(apt.athlete_id) : undefined}
         />
       ))}
     </div>

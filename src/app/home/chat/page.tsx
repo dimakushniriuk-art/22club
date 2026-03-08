@@ -77,7 +77,12 @@ function ChatPageHeader({
   if (skeleton) {
     return (
       <header className={wrapperClass}>
-        <div className={cn('absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5', roundedClass)} />
+        <div
+          className={cn(
+            'absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5',
+            roundedClass,
+          )}
+        />
         <div className="relative z-10 flex items-center gap-3">
           <div className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-xl bg-background-tertiary animate-pulse shrink-0" />
           <div className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-xl bg-background-tertiary animate-pulse shrink-0" />
@@ -91,7 +96,12 @@ function ChatPageHeader({
   }
   return (
     <header className={wrapperClass}>
-      <div className={cn('absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5', roundedClass)} />
+      <div
+        className={cn(
+          'absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5',
+          roundedClass,
+        )}
+      />
       <div className="relative z-10 flex items-center gap-3">
         {onBack && (
           <Button
@@ -122,9 +132,15 @@ function ChatErrorState({ error, onRetry }: { error: string; onRetry: () => void
   return (
     <Card className="border border-state-error/50 bg-background-secondary/50 backdrop-blur-sm p-6 min-[834px]:p-8 text-center">
       <div className="mb-3 text-4xl opacity-50">😞</div>
-      <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">Errore nel caricamento</h2>
+      <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">
+        Errore nel caricamento
+      </h2>
       <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm">{error}</p>
-      <Button onClick={onRetry} aria-label="Riprova a caricare le conversazioni" className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]">
+      <Button
+        onClick={onRetry}
+        aria-label="Riprova a caricare le conversazioni"
+        className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]"
+      >
         Riprova
       </Button>
     </Card>
@@ -143,7 +159,9 @@ function ChatEmptyState({
   return (
     <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-4 min-[834px]:p-6 text-center">
       <div className="mb-2.5 text-4xl opacity-50">{emoji}</div>
-      <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">{title}</h2>
+      <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">
+        {title}
+      </h2>
       <p className="text-text-secondary text-xs min-[834px]:text-sm mb-1.5">{description}</p>
     </Card>
   )
@@ -172,10 +190,12 @@ function ChatLoadingFullPage({ footerChildren }: { footerChildren?: ReactNode })
           <div className="bg-background-tertiary h-14 rounded-xl" />
         </div>
       </div>
-      <footer className="relative overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg z-10 shrink-0 safe-area-inset-bottom">
-        <div className="absolute inset-0 rounded-t-xl bg-gradient-to-t from-cyan-500/5 via-transparent to-teal-500/5" />
+      <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary p-3 min-[834px]:p-4 shadow-lg pb-[env(safe-area-inset-bottom)]">
+        <div className="absolute inset-0 z-20 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-background to-teal-500/5 pointer-events-none" />
         <div className="relative z-10 w-full">
-          {footerChildren ?? <div className="h-10 min-[834px]:h-11 bg-background-tertiary rounded-xl animate-pulse" />}
+          {footerChildren ?? (
+            <div className="h-10 min-[834px]:h-11 bg-background-tertiary rounded-xl animate-pulse" />
+          )}
         </div>
       </footer>
     </div>
@@ -223,9 +243,7 @@ function AthleteChatPageContent() {
     const loadPersonalTrainer = async () => {
       try {
         setLoadingPT(true)
-        const athleteProfileId = user.user_id
-          ? await getProfileIdFromUserId(user.user_id)
-          : user.id
+        const athleteProfileId = user.user_id ? await getProfileIdFromUserId(user.user_id) : user.id
         if (!athleteProfileId) {
           if (!cancelled) setLoadingPT(false)
           return
@@ -252,7 +270,11 @@ function AthleteChatPageContent() {
           if (cancelled) return
           const rows = Array.isArray(rpcRows) ? rpcRows : []
           if (!rpcError && rows.length > 0) {
-            const row = rows[0] as { pt_nome?: string | null; pt_cognome?: string | null; pt_avatar_url?: string | null }
+            const row = rows[0] as {
+              pt_nome?: string | null
+              pt_cognome?: string | null
+              pt_avatar_url?: string | null
+            }
             nome = row?.pt_nome ?? nome
             cognome = row?.pt_cognome ?? cognome
             avatar_url = row?.pt_avatar_url ?? null
@@ -281,9 +303,11 @@ function AthleteChatPageContent() {
         const parts = (c.other_user_name ?? '').trim().split(/\s+/).filter(Boolean)
         const nome = parts[0] ?? 'Utente'
         const cognome = parts.length > 1 ? parts.slice(1).join(' ') : ''
-        const role = (c.other_user_role === 'nutrizionista' || c.other_user_role === 'massaggiatore'
-          ? c.other_user_role
-          : 'trainer') as ChatRecipientRole
+        const role = (
+          c.other_user_role === 'nutrizionista' || c.other_user_role === 'massaggiatore'
+            ? c.other_user_role
+            : 'trainer'
+        ) as ChatRecipientRole
         return {
           id: c.other_user_id,
           nome,
@@ -294,13 +318,15 @@ function AthleteChatPageContent() {
       })
     }
     if (personalTrainer) {
-      return [{
-        id: personalTrainer.id,
-        nome: personalTrainer.nome,
-        cognome: personalTrainer.cognome,
-        role: 'trainer',
-        avatar_url: personalTrainer.avatar_url ?? null,
-      }]
+      return [
+        {
+          id: personalTrainer.id,
+          nome: personalTrainer.nome,
+          cognome: personalTrainer.cognome,
+          role: 'trainer',
+          avatar_url: personalTrainer.avatar_url ?? null,
+        },
+      ]
     }
     return []
   }, [conversations, personalTrainer])
@@ -336,9 +362,16 @@ function AthleteChatPageContent() {
         ? convs.find((c) => c.other_user_id === personalTrainer.id)
         : null
       const byRole = convs.find((c) => c.other_user_role === 'trainer')
-      const toSelect = ptConv || byRole || (personalTrainer?.id ? { other_user_id: personalTrainer.id } : null) || convs[0]
+      const toSelect =
+        ptConv ||
+        byRole ||
+        (personalTrainer?.id ? { other_user_id: personalTrainer.id } : null) ||
+        convs[0]
       if (toSelect) {
-        const otherId = typeof toSelect === 'object' && 'other_user_id' in toSelect ? toSelect.other_user_id : toSelect
+        const otherId =
+          typeof toSelect === 'object' && 'other_user_id' in toSelect
+            ? toSelect.other_user_id
+            : toSelect
         setCurrentConversation(otherId).catch(() => {
           hasAutoSelectedRef.current = false
         })
@@ -350,16 +383,24 @@ function AthleteChatPageContent() {
         hasAutoSelectedRef.current = false
       })
     }
-  }, [conversationsLength, currentConversationId, personalTrainer?.id, loadingPT, firstRecipientId, setCurrentConversation])
+  }, [
+    conversationsLength,
+    currentConversationId,
+    personalTrainer?.id,
+    loadingPT,
+    firstRecipientId,
+    setCurrentConversation,
+  ])
 
   // Se la conversazione in vista ha 0 messaggi (o stiamo mostrando il fallback con currentConversation
   // null), forziamo setCurrentConversation per avviare fetchMessages (es. Trainer).
   const recipientIdToFetch = currentConversationId ?? availableRecipients[0]?.id ?? null
   useEffect(() => {
     if (!recipientIdToFetch) return
-    const messagesCount = currentConversation?.participant?.other_user_id === recipientIdToFetch
-      ? (currentConversation.messages?.length ?? 0)
-      : 0
+    const messagesCount =
+      currentConversation?.participant?.other_user_id === recipientIdToFetch
+        ? (currentConversation.messages?.length ?? 0)
+        : 0
     if (messagesCount > 0) return
     if (recipientIdToFetch !== hasFetchedEmptyRef.current) hasFetchedEmptyRef.current = null
     if (hasFetchedEmptyRef.current === recipientIdToFetch) return
@@ -367,7 +408,12 @@ function AthleteChatPageContent() {
     setCurrentConversation(recipientIdToFetch).catch(() => {
       hasFetchedEmptyRef.current = null
     })
-  }, [recipientIdToFetch, currentConversation?.participant?.other_user_id, currentConversation?.messages?.length, setCurrentConversation])
+  }, [
+    recipientIdToFetch,
+    currentConversation?.participant?.other_user_id,
+    currentConversation?.messages?.length,
+    setCurrentConversation,
+  ])
 
   const handleBack = useCallback(() => router.back(), [router])
 
@@ -384,10 +430,9 @@ function AthleteChatPageContent() {
     )
   }, [currentUserId, otherIdForFilter, currentConversation?.messages])
 
-  const selectedRecipient =
-    currentConversationId
-      ? availableRecipients.find((r) => r.id === currentConversationId)
-      : null
+  const selectedRecipient = currentConversationId
+    ? availableRecipients.find((r) => r.id === currentConversationId)
+    : null
 
   const effectiveConversation = useMemo(
     () =>
@@ -396,7 +441,9 @@ function AthleteChatPageContent() {
         ? {
             participant: {
               other_user_id: selectedRecipient.id,
-              other_user_name: `${selectedRecipient.nome} ${selectedRecipient.cognome}`.trim() || roleLabel(selectedRecipient.role),
+              other_user_name:
+                `${selectedRecipient.nome} ${selectedRecipient.cognome}`.trim() ||
+                roleLabel(selectedRecipient.role),
               other_user_role: selectedRecipient.role,
               last_message_at: '',
               unread_count: 0,
@@ -501,7 +548,11 @@ function AthleteChatPageContent() {
   // Se non c'è user dopo il caricamento, mostra contenuto vuoto (il layout gestirà il redirect)
   if (!user || !isValidUser) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background w-full max-w-full p-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5" role="main" aria-label="Chat - caricamento">
+      <div
+        className="flex min-h-0 flex-1 flex-col bg-background w-full max-w-full p-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5"
+        role="main"
+        aria-label="Chat - caricamento"
+      >
         {/* Contenuto vuoto - il layout gestirà il redirect */}
       </div>
     )
@@ -580,38 +631,51 @@ function AthleteChatPageContent() {
             <div className="bg-background-tertiary h-14 rounded-xl" />
           </div>
         </div>
-        <footer className="relative overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg z-10 shrink-0 safe-area-inset-bottom">
-          <div className="absolute inset-0 rounded-t-xl bg-gradient-to-t from-cyan-500/5 via-transparent to-teal-500/5" />
+        <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary p-3 min-[834px]:p-4 shadow-lg pb-[env(safe-area-inset-bottom)]">
+          <div className="absolute inset-0 z-20 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-background to-teal-500/5 pointer-events-none" />
           <div className="relative z-10 w-full">
-            <MessageInput onSendMessage={handleSendMessage} onUploadFile={handleUploadFile} placeholder="Hai completato l'allenamento? Raccontalo qui!" disabled={true} />
+            <MessageInput
+              onSendMessage={handleSendMessage}
+              onUploadFile={handleUploadFile}
+              placeholder="Hai completato l'allenamento? Raccontalo qui!"
+              disabled={true}
+            />
           </div>
         </footer>
       </div>
     )
   }
 
-  const displayName =
-    selectedRecipient
-      ? `${selectedRecipient.nome} ${selectedRecipient.cognome}`.trim() || roleLabel(selectedRecipient.role)
-      : effectiveConversation.participant.other_user_name || 'Utente'
+  const displayName = selectedRecipient
+    ? `${selectedRecipient.nome} ${selectedRecipient.cognome}`.trim() ||
+      roleLabel(selectedRecipient.role)
+    : effectiveConversation.participant.other_user_name || 'Utente'
   const displayRole = selectedRecipient
     ? roleLabel(selectedRecipient.role)
-    : (effectiveConversation.participant.other_user_role === 'nutrizionista'
+    : effectiveConversation.participant.other_user_role === 'nutrizionista'
       ? 'Nutrizionista'
       : effectiveConversation.participant.other_user_role === 'massaggiatore'
         ? 'Massaggiatore'
-        : 'Trainer')
+        : 'Trainer'
   const avatarUrl =
-    effectiveConversation.participant.avatar ??
-    selectedRecipient?.avatar_url ??
-    null
+    effectiveConversation.participant.avatar ?? selectedRecipient?.avatar_url ?? null
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 bg-background w-full max-w-full overflow-hidden" role="main" aria-label="Chat">
+    <div
+      className="flex flex-col min-h-0 flex-1 bg-background w-full max-w-full overflow-hidden"
+      role="main"
+      aria-label="Chat"
+    >
       <header className="relative overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg z-10 flex-shrink-0">
         <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5" />
         <div className="relative z-10 flex items-center gap-2 min-[834px]:gap-3 overflow-x-auto">
-          <Button variant="ghost" size="icon" className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" onClick={handleBack} aria-label="Indietro">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+            onClick={handleBack}
+            aria-label="Indietro"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           {availableRecipients.length >= 1 ? (
@@ -634,7 +698,13 @@ function AthleteChatPageContent() {
                 >
                   <div className="relative h-9 w-9 min-[834px]:h-10 min-[834px]:w-10 shrink-0 rounded-full overflow-hidden border border-cyan-500/20 bg-cyan-500/10">
                     {r.avatar_url ? (
-                      <Image src={r.avatar_url} alt={name} fill className="object-cover" sizes="40px" />
+                      <Image
+                        src={r.avatar_url}
+                        alt={name}
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
                     ) : (
                       <span className="absolute inset-0 flex items-center justify-center text-cyan-400">
                         <User className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
@@ -642,8 +712,12 @@ function AthleteChatPageContent() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-text-primary truncate max-w-[100px] min-[834px]:max-w-[140px]">{name}</p>
-                    <p className="text-[10px] min-[834px]:text-xs text-text-tertiary truncate max-w-[100px] min-[834px]:max-w-[140px]">{roleLabel(r.role)}</p>
+                    <p className="text-sm font-semibold text-text-primary truncate max-w-[100px] min-[834px]:max-w-[140px]">
+                      {name}
+                    </p>
+                    <p className="text-[10px] min-[834px]:text-xs text-text-tertiary truncate max-w-[100px] min-[834px]:max-w-[140px]">
+                      {roleLabel(r.role)}
+                    </p>
                   </div>
                 </button>
               )
@@ -652,7 +726,13 @@ function AthleteChatPageContent() {
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {avatarUrl ? (
                 <div className="relative h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-full overflow-hidden border border-cyan-500/30 bg-cyan-500/10">
-                  <Image src={avatarUrl} alt={displayName} fill className="object-cover" sizes="40px" />
+                  <Image
+                    src={avatarUrl}
+                    alt={displayName}
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
                 </div>
               ) : (
                 <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/10">
@@ -660,15 +740,22 @@ function AthleteChatPageContent() {
                 </div>
               )}
               <div className="min-w-0">
-                <h1 className="text-sm min-[834px]:text-base font-semibold text-text-primary truncate">{displayName}</h1>
-                <p className="text-text-tertiary text-[10px] min-[834px]:text-xs truncate">{displayRole}</p>
+                <h1 className="text-sm min-[834px]:text-base font-semibold text-text-primary truncate">
+                  {displayName}
+                </h1>
+                <p className="text-text-tertiary text-[10px] min-[834px]:text-xs truncate">
+                  {displayRole}
+                </p>
               </div>
             </div>
           )}
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain flex flex-col space-y-1 p-4 bg-background" aria-label="Messaggi della conversazione">
+      <main
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain flex flex-col space-y-1 p-4 bg-background"
+        aria-label="Messaggi della conversazione"
+      >
         <MessageList
           key={effectiveConversation.participant.other_user_id}
           messages={messagesForThisConversation}
@@ -680,10 +767,18 @@ function AthleteChatPageContent() {
         />
       </main>
 
-      <footer className="relative overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg z-10 flex-shrink-0 safe-area-inset-bottom" aria-label="Input messaggio">
-        <div className="absolute inset-0 rounded-t-xl bg-gradient-to-t from-cyan-500/5 via-transparent to-teal-500/5" />
+      <footer
+        className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-cyan-500/30 bg-background-secondary p-3 min-[834px]:p-4 shadow-lg pb-[env(safe-area-inset-bottom)]"
+        aria-label="Input messaggio"
+      >
+        <div className="absolute inset-0 z-20 rounded-t-xl bg-gradient-to-br from-cyan-500/10 via-background to-teal-500/5 pointer-events-none" />
         <div className="relative z-10 w-full">
-          <MessageInput onSendMessage={handleSendMessage} onUploadFile={handleUploadFile} placeholder="Hai completato l'allenamento? Raccontalo qui!" disabled={false} />
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            onUploadFile={handleUploadFile}
+            placeholder="Hai completato l'allenamento? Raccontalo qui!"
+            disabled={false}
+          />
         </div>
       </footer>
     </div>

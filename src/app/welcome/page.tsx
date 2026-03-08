@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createLogger } from '@/lib/logger'
@@ -17,6 +17,7 @@ import { SimpleSelect } from '@/components/ui/simple-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
+import { useToast } from '@/components/ui/toast'
 import type { Database } from '@/lib/supabase/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { uploadDocument, validateDocumentFile } from '@/lib/documents'
@@ -506,12 +507,17 @@ interface PtInfo {
   pt_avatar_url: string | null
 }
 
-export default function WelcomePage() {
+function WelcomePageContent() {
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = useSupabaseClient()
+  const { addToast } = useToast()
   const supabaseExt = supabase as unknown as SupabaseExt
   const authUserId = user?.user_id ?? user?.id
+
+  const codiceFromUrl = searchParams.get('codice')?.trim() || searchParams.get('code')?.trim() || ''
+  const completedProfileRef = useRef(false)
 
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [form, setForm] = useState<OnboardingFormState>(emptyFormState())
@@ -523,6 +529,8 @@ export default function WelcomePage() {
   const [stepError, setStepError] = useState<string | null>(null)
   const [completeError, setCompleteError] = useState<string | null>(null)
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const [preparingProfile, setPreparingProfile] = useState(false)
+  const [openFilePickerAfterProfile, setOpenFilePickerAfterProfile] = useState(false)
 
   const emptyAnamnesi = (): AnamnesiState => ({
     sonno: '',
@@ -569,19 +577,89 @@ export default function WelcomePage() {
   const [liberatoriaLeggiTuttoOpen, setLiberatoriaLeggiTuttoOpen] = useState(false)
   const [finalConfirmation, setFinalConfirmation] = useState(false)
 
-  // Fetch profile + PT + questionnaire
+  // Complete-profile (crea profilo + collega invito se codice) poi fetch profile + PT + questionnaire.
+  // Usa getSession() perché il context può avere user=null se il profilo non esiste ancora (AuthProvider imposta null su PGRST116).
+  // Retry getSession dopo breve attesa se sessione non pronta (es. redirect da conferma email).
   useEffect(() => {
-    if (!authUserId) return
     let cancelled = false
     const run = async () => {
       try {
         setLoading(true)
+        let { data: sessionData } = await supabase.auth.getSession()
+        let session = sessionData?.session
+        let authUser = session?.user
+        let userId = authUser?.id ?? authUserId
+        if (!userId) {
+          await new Promise((r) => setTimeout(r, 600))
+          if (cancelled) return
+          const retry = await supabase.auth.getSession()
+          sessionData = retry?.data
+          session = sessionData?.session
+          authUser = session?.user
+          userId = authUser?.id ?? authUserId
+        }
+        if (!userId) {
+          if (!cancelled) setLoading(false)
+          return
+        }
+
+        if (!completedProfileRef.current) {
+          if (session?.access_token && session?.refresh_token) {
+            const codice =
+              codiceFromUrl ||
+              (typeof window !== 'undefined'
+                ? sessionStorage.getItem('pending_invite_codice')?.trim()
+                : null) ||
+              ''
+            const meta = (authUser?.user_metadata ?? (user as { user_metadata?: unknown } | null)?.user_metadata) as { nome?: string; cognome?: string } | undefined
+            const res = await fetch('/api/register/complete-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                nome: meta?.nome ?? '',
+                cognome: meta?.cognome ?? '',
+                email: authUser?.email ?? user?.email ?? '',
+                ...(codice && { codice }),
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+              }),
+            })
+            if (!cancelled) completedProfileRef.current = true
+            if (codice && typeof window !== 'undefined') {
+              try {
+                sessionStorage.removeItem('pending_invite_codice')
+              } catch {
+                // ignore
+              }
+            }
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}))
+              logger.warn('complete-profile da welcome fallito', { status: res.status, errData })
+            }
+          }
+        }
+
         const [profileRes, ptRes] = await Promise.all([
-          supabase.from('profiles').select('*').eq('user_id', authUserId).maybeSingle(),
+          supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
           supabaseExt.rpc('get_my_trainer_profile'),
         ])
         if (cancelled) return
-        if (profileRes.error) throw profileRes.error
+        const profileErr = profileRes.error
+        if (profileErr) {
+          const msg = (profileErr?.message ?? '').toLowerCase()
+          const isLockOrAbort =
+            (profileErr instanceof Error && profileErr.name === 'AbortError') ||
+            msg.includes('aborted') ||
+            msg.includes('lock broken')
+          if (isLockOrAbort) {
+            if (process.env.NODE_ENV !== 'production') {
+              logger.debug('Welcome fetch: lock/abort su profiles (transiente)', { userId })
+            }
+            if (!cancelled) setLoading(false)
+            return
+          }
+          throw profileErr
+        }
         const row = profileRes.data
         setProfile(row)
         setForm(profileToFormState(row))
@@ -663,7 +741,20 @@ export default function WelcomePage() {
           }
         }
       } catch (err) {
-        if (!cancelled) logger.error('Welcome fetch failed', err, { userId: authUserId })
+        if (!cancelled) {
+          const msg = (err instanceof Error ? err.message : String(err ?? '')).toLowerCase()
+          const isLockOrAbort =
+            (err instanceof Error && err.name === 'AbortError') ||
+            msg.includes('aborted') ||
+            msg.includes('lock broken')
+          if (isLockOrAbort) {
+            if (process.env.NODE_ENV !== 'production') {
+              logger.debug('Welcome fetch: lock/abort (transiente)', { userId: authUserId })
+            }
+          } else {
+            logger.error('Welcome fetch failed', err, { userId: authUserId })
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -672,7 +763,7 @@ export default function WelcomePage() {
     return () => {
       cancelled = true
     }
-  }, [authUserId, supabase, supabaseExt])
+  }, [authUserId, codiceFromUrl, user, supabase, supabaseExt])
 
   const updateForm = useCallback((patch: Partial<OnboardingFormState>) => {
     setForm((prev) => ({ ...prev, ...patch }))
@@ -715,8 +806,7 @@ export default function WelcomePage() {
   )
 
   const saveStep = useCallback(
-    async (step: number): Promise<boolean> => {
-      if (!authUserId) return false
+    async (step: number, extraPayload?: Partial<ProfileUpdate>): Promise<boolean> => {
       setStepError(null)
       const alt = form.altezza_cm !== '' ? Number(form.altezza_cm) : 0
       const peso =
@@ -726,17 +816,25 @@ export default function WelcomePage() {
             ? Number(form.peso_iniziale_kg)
             : 0
       const bmi = alt && peso ? computeBmi(alt, peso) : null
-      const payload = formStateToUpdate({ ...form, bmi }, step)
-      const { error } = await supabase.from('profiles').update(payload).eq('user_id', authUserId)
-      if (error) {
-        logger.error('Welcome save step failed', error, { step, userId: authUserId })
-        setStepError(error.message)
+      const rawPayload = formStateToUpdate({ ...form, bmi }, step, extraPayload)
+      const payload = Object.fromEntries(
+        Object.entries(rawPayload).filter(([, v]) => v !== undefined),
+      ) as Record<string, unknown>
+      const res = await fetch('/api/onboarding/save-step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step, payload }),
+      })
+      const data = await res.json().catch(() => ({})) as { error?: string }
+      if (!res.ok) {
+        logger.error('Welcome save step failed', { step, status: res.status, error: data.error })
+        setStepError(data.error ?? 'Errore salvataggio')
         return false
       }
       if (bmi !== null) updateForm({ bmi })
       return true
     },
-    [authUserId, form, updateForm, supabase],
+    [form, updateForm],
   )
 
   const saveQuestionnaire = useCallback(
@@ -745,27 +843,25 @@ export default function WelcomePage() {
       manleva?: Record<string, unknown>
       liberatoria_media?: Record<string, unknown>
     }) => {
-      if (!profile?.id) return false
-      const now = new Date().toISOString()
-      const fullPayload: Database['public']['Tables']['athlete_questionnaires']['Insert'] = {
-        athlete_id: profile.id,
-        version: QUESTIONNAIRE_VERSION,
-        anamnesi: (updates.anamnesi ?? anamnesi) as Database['public']['Tables']['athlete_questionnaires']['Row']['anamnesi'],
-        manleva: (updates.manleva ?? manleva) as Database['public']['Tables']['athlete_questionnaires']['Row']['manleva'],
-        liberatoria_media: (updates.liberatoria_media ?? liberatoria) as Database['public']['Tables']['athlete_questionnaires']['Row']['liberatoria_media'],
-        updated_at: now,
+      const body = {
+        anamnesi: updates.anamnesi ?? anamnesi,
+        manleva: updates.manleva ?? manleva,
+        liberatoria_media: updates.liberatoria_media ?? liberatoria,
       }
-      const { error } = await supabase.from('athlete_questionnaires').upsert(fullPayload, {
-        onConflict: 'athlete_id,version',
+      const res = await fetch('/api/onboarding/save-questionnaire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       })
-      if (error) {
-        logger.error('Welcome save questionnaire failed', error, { athleteId: profile.id })
-        setStepError(error.message)
+      const data = await res.json().catch(() => ({})) as { error?: string }
+      if (!res.ok) {
+        logger.error('Welcome save questionnaire failed', { status: res.status, error: data.error })
+        setStepError(data.error ?? 'Errore salvataggio questionario')
         return false
       }
       return true
     },
-    [profile?.id, anamnesi, manleva, liberatoria, supabase],
+    [anamnesi, manleva, liberatoria],
   )
 
   const handleNext = async () => {
@@ -785,7 +881,10 @@ export default function WelcomePage() {
       setSaving(true)
       const ok = await saveStep(stepIndex + 1)
       setSaving(false)
-      if (ok) setCurrentStep(stepIndex + 1)
+      if (ok) {
+        addToast({ title: 'Dati salvati', message: 'Dati salvati', variant: 'success' })
+        setCurrentStep(stepIndex + 1)
+      }
       return
     }
     if (stepIndex === 9) {
@@ -797,18 +896,25 @@ export default function WelcomePage() {
           user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
         },
       })
-      if (ok && authUserId) {
+      if (ok) {
         const profileUpdates: Record<string, string | null> = {}
         if (anamnesi.infortuni_descrizione.trim())
           profileUpdates.infortuni_recenti = anamnesi.infortuni_descrizione.trim()
         if (anamnesi.operazioni_descrizione.trim())
           profileUpdates.operazioni_passate = anamnesi.operazioni_descrizione.trim()
         if (Object.keys(profileUpdates).length > 0) {
-          await supabase.from('profiles').update(profileUpdates).eq('user_id', authUserId)
+          await fetch('/api/onboarding/save-step', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ step: 9, payload: profileUpdates }),
+          })
         }
       }
       setSaving(false)
-      if (ok) setCurrentStep(10)
+      if (ok) {
+        addToast({ title: 'Dati salvati', message: 'Dati salvati', variant: 'success' })
+        setCurrentStep(10)
+      }
       return
     }
     if (stepIndex === 10) {
@@ -827,7 +933,10 @@ export default function WelcomePage() {
         },
       })
       setSaving(false)
-      if (ok) setCurrentStep(11)
+      if (ok) {
+        addToast({ title: 'Dati salvati', message: 'Dati salvati', variant: 'success' })
+        setCurrentStep(11)
+      }
       return
     }
     if (stepIndex === 11) {
@@ -844,7 +953,10 @@ export default function WelcomePage() {
       }
       const ok = await saveQuestionnaire({ liberatoria_media: payload })
       setSaving(false)
-      if (ok) setCurrentStep(12)
+      if (ok) {
+        addToast({ title: 'Dati salvati', message: 'Dati salvati', variant: 'success' })
+        setCurrentStep(12)
+      }
       return
     }
     if (stepIndex === 12) {
@@ -1004,7 +1116,7 @@ export default function WelcomePage() {
                     <Card className="mb-6 border border-primary/40 bg-gradient-to-br from-primary/25 to-primary/15 rounded-xl overflow-hidden">
                       <CardContent className="p-6">
                         <p className="text-primary text-xs font-medium uppercase tracking-wider mb-3">
-                          Personal Trainer
+                          Sono il tuo Personal Trainer
                         </p>
                         <div className="mb-4 flex items-center gap-4">
                           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-primary/20 ring-2 ring-primary/40">
@@ -1039,53 +1151,137 @@ export default function WelcomePage() {
                     </Card>
                   )}
                   {(!ptInfo || (!ptInfo.pt_nome && !ptInfo.pt_cognome)) && (
-                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 mb-6">
-                      {profile?.avatar_url || profile?.avatar ? (
-                        <>
-                          <p className="text-text-primary text-sm font-medium text-center mb-4">
-                            La tua foto profilo
-                          </p>
-                          <div className="flex flex-col items-center gap-4 mb-4">
-                            <Avatar
-                              src={profile.avatar_url ?? profile.avatar ?? null}
-                              alt="Foto profilo"
-                              fallbackText={
-                                [form.nome, form.cognome].filter(Boolean).join(' ').trim() || '?'
-                              }
-                              size="xl"
-                              className="ring-2 ring-amber-500/30"
-                            />
-                            <p className="text-text-tertiary text-xs">
-                              Vuoi cambiarla? Scegli una nuova immagine qui sotto.
-                            </p>
-                          </div>
-                          {profile?.id && (
-                            <AvatarUploader
-                              userId={profile.id}
-                              onUploaded={(url) =>
-                                setProfile((prev) =>
-                                  prev ? { ...prev, avatar_url: url, avatar: url } : null,
-                                )
-                              }
-                            />
-                          )}
-                        </>
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 sm:p-6 mb-6">
+                      <p className="text-text-primary text-sm font-medium text-center mb-1">
+                        {profile?.avatar_url || profile?.avatar
+                          ? 'La tua foto profilo'
+                          : 'Foto del profilo'}
+                      </p>
+                      <p className="text-text-secondary text-xs text-center mb-4">
+                        {profile?.avatar_url || profile?.avatar
+                          ? 'Vuoi cambiarla? Scegli una nuova immagine qui sotto.'
+                          : 'Carica un\'immagine che useremo come foto del profilo. JPG, PNG o WebP, max 100 MB.'}
+                      </p>
+                      {(profile?.avatar_url || profile?.avatar) ? (
+                        <div className="flex justify-center mb-4">
+                          <Avatar
+                            src={profile.avatar_url ?? profile.avatar ?? null}
+                            alt="Foto profilo"
+                            fallbackText={
+                              [form.nome, form.cognome].filter(Boolean).join(' ').trim() || '?'
+                            }
+                            size="xl"
+                            className="ring-2 ring-amber-500/30"
+                          />
+                        </div>
                       ) : (
-                        <>
-                          <p className="text-text-primary text-sm font-medium text-center mb-4">
-                            Carica la tua foto, che useremo come immagine del profilo.
-                          </p>
-                          {profile?.id && (
-                            <AvatarUploader
-                              userId={profile.id}
-                              onUploaded={(url) =>
-                                setProfile((prev) =>
-                                  prev ? { ...prev, avatar_url: url, avatar: url } : null,
-                                )
+                        <div className="flex justify-center mb-4">
+                          <div className="h-24 w-24 rounded-full border-2 border-dashed border-primary/40 bg-primary/5 flex items-center justify-center text-primary/70">
+                            <Upload className="h-10 w-10" aria-hidden />
+                          </div>
+                        </div>
+                      )}
+                      {profile?.id ? (
+                        <AvatarUploader
+                          userId={profile.id}
+                          onUploaded={(url) =>
+                            setProfile((prev) =>
+                              prev ? { ...prev, avatar_url: url, avatar: url } : null,
+                            )
+                          }
+                          autoOpenFilePicker={openFilePickerAfterProfile}
+                          onFilePickerOpened={() => setOpenFilePickerAfterProfile(false)}
+                        />
+                      ) : (
+                        <div className="space-y-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={preparingProfile}
+                            className="w-full justify-center gap-2 border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+                            onClick={async () => {
+                              const { data: sessionData } = await supabase.auth.getSession()
+                              const session = sessionData?.session
+                              const authUser = session?.user
+                              if (!session?.access_token || !session?.refresh_token || !authUser) {
+                                addToast({
+                                  variant: 'warning',
+                                  title: 'Sessione',
+                                  message: 'Accedi di nuovo per caricare la foto.',
+                                })
+                                return
                               }
-                            />
-                          )}
-                        </>
+                              setPreparingProfile(true)
+                              try {
+                                const codice =
+                                  codiceFromUrl ||
+                                  (typeof window !== 'undefined'
+                                    ? sessionStorage.getItem('pending_invite_codice')?.trim()
+                                    : null) ||
+                                  ''
+                                const meta = (authUser.user_metadata ?? (user as { user_metadata?: unknown } | null)?.user_metadata) as {
+                                  nome?: string
+                                  cognome?: string
+                                } | undefined
+                                const res = await fetch('/api/register/complete-profile', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    nome: meta?.nome ?? form.nome ?? '',
+                                    cognome: meta?.cognome ?? form.cognome ?? '',
+                                    email: authUser.email ?? '',
+                                    ...(codice && { codice }),
+                                    access_token: session.access_token,
+                                    refresh_token: session.refresh_token,
+                                  }),
+                                })
+                                if (!res.ok) {
+                                  const errData = await res.json().catch(() => ({}))
+                                  addToast({
+                                    variant: 'error',
+                                    title: 'Errore',
+                                    message:
+                                      (errData?.error as string) ?? 'Impossibile preparare il profilo. Riprova.',
+                                  })
+                                  return
+                                }
+                                const { data: profileRow, error: fetchErr } = await supabase
+                                  .from('profiles')
+                                  .select('*')
+                                  .eq('user_id', authUser.id)
+                                  .maybeSingle()
+                                if (!fetchErr && profileRow) {
+                                  setProfile(profileRow as ProfileRow)
+                                  setForm(profileToFormState(profileRow as ProfileRow))
+                                  setOpenFilePickerAfterProfile(true)
+                                  addToast({
+                                    variant: 'success',
+                                    title: 'Profilo pronto',
+                                    message: 'Seleziona la foto da caricare.',
+                                    duration: 3000,
+                                  })
+                                }
+                              } finally {
+                                setPreparingProfile(false)
+                              }
+                            }}
+                          >
+                            {preparingProfile ? (
+                              <>
+                                <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                Preparazione profilo…
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 shrink-0" />
+                                Seleziona immagine
+                              </>
+                            )}
+                          </Button>
+                          <p className="text-text-muted text-xs text-center">
+                            Se il pulsante è disattivo, clicca per creare il profilo e abilitare subito il caricamento della foto.
+                          </p>
+                        </div>
                       )}
                     </div>
                   )}
@@ -3003,5 +3199,22 @@ export default function WelcomePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+function WelcomePageFallback() {
+  return (
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="mt-3 text-sm text-text-secondary">Caricamento...</p>
+    </div>
+  )
+}
+
+export default function WelcomePage() {
+  return (
+    <Suspense fallback={<WelcomePageFallback />}>
+      <WelcomePageContent />
+    </Suspense>
   )
 }

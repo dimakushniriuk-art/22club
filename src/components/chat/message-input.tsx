@@ -120,7 +120,7 @@ export function MessageInput({
             rows={1}
           />
 
-          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5">
+          <div className="absolute right-2.5 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
             {showFileUpload && (
               <Button
                 variant="ghost"

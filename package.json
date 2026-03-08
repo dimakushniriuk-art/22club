@@ -75,6 +75,7 @@
     "supabase:db:backup:complete": "powershell -ExecutionPolicy Bypass -File scripts/backup-database-complete.ps1",
     "supabase:db:pull": "npx supabase db pull",
     "dev:clean": "rimraf .next && cross-env PORT=3001 next dev",
+    "dev:noturbo": "cross-env PORT=3001 next dev",
     "health": "curl http://localhost:3001/api/health",
     "postbuild": "node scripts/build-optimization.js",
     "test": "node scripts/run-vitest.js",
@@ -175,6 +176,7 @@
     "recharts": "^3.2.1",
     "require-in-the-middle": "^8.0.1",
     "resend": "^6.6.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.1.12"

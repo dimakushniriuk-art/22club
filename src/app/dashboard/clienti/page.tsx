@@ -189,6 +189,21 @@ export default function ClientiPage() {
     canInvitaCliente ? user?.id ?? null : null,
   )
 
+  // Sincronizza pt_atleti da athlete_trainer_assignments (atleti registrati via invito prima del fix)
+  useEffect(() => {
+    const roleStr = (role ?? '') as string
+    const isStaff = roleStr && roleStr !== 'athlete' && roleStr !== 'atleta'
+    if (!isStaff) return
+    fetch('/api/clienti/sync-pt-atleti', { method: 'POST' })
+      .then((r) => {
+        if (!r.ok) return
+        return r.json().then((body: { synced?: number }) => {
+          if (body?.synced && body.synced > 0) void refetch()
+        })
+      })
+      .catch(() => {})
+  }, [role, refetch])
+
   // Con filtro Inattivi, mostra anche atleti invitati ma non ancora accettati (bloccati, non interagibili)
   const pendentiAsClienti = useMemo((): Cliente[] => {
     if (!canInvitaCliente || statoFilter !== 'inattivo') return []

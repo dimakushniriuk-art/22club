@@ -240,9 +240,9 @@ export default function AllenamentiSchedaDetailPage() {
   if (error || !plan) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-          <header className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg">
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
+          <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
+            <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
             <div className="relative z-10 flex items-center gap-3">
               <Button variant="ghost" size="icon" className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400" onClick={() => router.push('/home/allenamenti')} aria-label="Indietro">
                 <ArrowLeft className="h-5 w-5" />
@@ -591,9 +591,9 @@ export default function AllenamentiSchedaDetailPage() {
 
   const renderContent = () => (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
-        <header className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
+      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+        <header className="fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
+          <div className="absolute inset-0 rounded-b-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
           <div className="relative z-10 flex items-center gap-3">
             <Link href="/home/allenamenti" className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors" aria-label="Torna agli allenamenti">
               <ArrowLeft className="h-5 w-5" />
@@ -601,11 +601,11 @@ export default function AllenamentiSchedaDetailPage() {
             <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
               <Activity className="h-5 w-5 text-cyan-400" />
             </div>
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <h1 className="text-text-primary mb-0.5 text-2xl md:text-3xl font-semibold leading-tight line-clamp-2 break-words">
+            <div className="flex-1 min-w-0 overflow-hidden flex flex-col justify-center min-h-0">
+              <h1 className="text-text-primary mb-0.5 text-base sm:text-xl md:text-2xl min-[834px]:text-3xl font-semibold leading-tight line-clamp-2 break-words">
                 {plan.name}
               </h1>
-              <p className="text-text-tertiary text-xs min-[834px]:text-sm line-clamp-2 break-words">
+              <p className="text-text-tertiary text-[10px] sm:text-xs min-[834px]:text-sm line-clamp-2 break-words">
                 {plan.description ?? 'Scheda di allenamento'}
               </p>
             </div>

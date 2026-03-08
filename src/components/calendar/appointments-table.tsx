@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
@@ -16,6 +17,8 @@ import {
   Circle,
 } from 'lucide-react'
 import type { AppointmentTable } from '@/types/appointment'
+import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
+import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
 
 interface AppointmentsTableProps {
   appointments: AppointmentTable[]
@@ -32,18 +35,17 @@ export function AppointmentsTable({
   onDuplicate,
   onView,
 }: AppointmentsTableProps) {
-  const getAppointmentType = (appointment: AppointmentTable): string => {
-    const typeLabels: Record<string, string> = {
-      allenamento: 'Allenamento',
-      prova: 'Prova',
-      valutazione: 'Valutazione',
-      prima_visita: 'Prima Visita',
-      riunione: 'Riunione',
-      massaggio: 'Massaggio',
-      nutrizionista: 'Nutrizionista',
-    }
-    return typeLabels[appointment.type] ?? 'Appuntamento'
-  }
+  const { settings } = useStaffCalendarSettings()
+  const typeLabelMap = useMemo(() => {
+    const m: Record<string, string> = { ...APPOINTMENT_TYPE_LABELS }
+    settings?.custom_appointment_types?.forEach((c) => {
+      m[c.key] = c.label
+    })
+    return m
+  }, [settings?.custom_appointment_types])
+
+  const getAppointmentType = (appointment: AppointmentTable): string =>
+    typeLabelMap[appointment.type] ?? appointment.type.replace(/_/g, ' ') ?? 'Appuntamento'
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('it-IT', {

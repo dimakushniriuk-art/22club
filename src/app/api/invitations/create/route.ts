@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
     if (!nome_atleta) {
       return NextResponse.json({ error: 'Nome atleta obbligatorio' }, { status: 400 })
     }
+    if (!email) {
+      return NextResponse.json({ error: 'Email obbligatoria per collegare l\'atleta al trainer dopo la registrazione' }, { status: 400 })
+    }
 
     const inviteCode = generateInviteCode()
     const expiresAt = new Date(Date.now() + giorni_validita * 24 * 60 * 60 * 1000).toISOString()
@@ -62,7 +65,7 @@ export async function POST(request: NextRequest) {
       pt_id: profileId,
       invited_by: profileId,
       nome_atleta,
-      email: email || '',
+      email,
       token: inviteCode,
       stato: 'inviato',
       status: 'pending',

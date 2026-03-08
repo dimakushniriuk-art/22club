@@ -32,11 +32,29 @@ export function isResendConfigured(): boolean {
 /**
  * Invia email tramite Resend
  */
+export interface EmailAttachment {
+  filename: string
+  content: Buffer
+}
+
+/**
+ * Invia email tramite Resend con allegati opzionali (es. .ics).
+ */
+export async function sendEmailViaResendWithAttachments(
+  to: string,
+  subject: string,
+  html: string,
+  attachments?: EmailAttachment[],
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  return sendEmailViaResend(to, subject, html, undefined, attachments)
+}
+
 export async function sendEmailViaResend(
   to: string,
   subject: string,
   html: string,
   trackingPixelId?: string,
+  attachments?: EmailAttachment[],
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   try {
     if (!isResendConfigured()) {
@@ -83,6 +101,7 @@ export async function sendEmailViaResend(
       from: `${fromName} <${fromEmail}>`,
       subject,
       htmlLength: html.length,
+      attachmentsCount: attachments?.length ?? 0,
     })
 
     // Aggiungi tracking pixel se fornito
@@ -95,12 +114,20 @@ export async function sendEmailViaResend(
       finalHtml = finalHtml.replace('</body>', `${trackingPixel}</body>`)
     }
 
-    const { data, error } = await resendClient.emails.send({
+    const payload: {
+      from: string
+      to: string[]
+      subject: string
+      html: string
+      attachments?: { filename: string; content: Buffer }[]
+    } = {
       from: `${fromName} <${fromEmail}>`,
       to: [to],
       subject,
       html: finalHtml,
-    })
+    }
+    if (attachments?.length) payload.attachments = attachments
+    const { data, error } = await resendClient.emails.send(payload)
 
     if (error) {
       logger.error('Errore invio email Resend', undefined, {

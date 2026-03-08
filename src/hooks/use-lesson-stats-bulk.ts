@@ -18,6 +18,7 @@ export function useLessonStatsBulk(
   refetchKey?: number,
 ): Map<string, LessonStats> {
   const [statsMap, setStatsMap] = useState<Map<string, LessonStats>>(new Map())
+  const athleteIdsKey = athleteIds.join(',')
 
   useEffect(() => {
     if (athleteIds.length === 0) {
@@ -72,7 +73,7 @@ export function useLessonStatsBulk(
     return () => {
       cancelled = true
     }
-  }, [athleteIds.join(','), refetchKey])
+  }, [athleteIds, athleteIdsKey, refetchKey])
 
   return statsMap
 }

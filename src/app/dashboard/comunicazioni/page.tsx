@@ -3,7 +3,7 @@
 import { use, useState, useCallback, lazy, Suspense } from 'react'
 import { Card, CardContent, Button } from '@/components/ui'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
-import { AlertCircle, Bell, Mail, MessageSquare } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { useCommunicationsPage } from '@/hooks/communications/use-communications-page'
 import {
   CommunicationsHeader,
@@ -164,22 +164,22 @@ export default function ComunicazioniPage(props: PageProps) {
         <CommunicationsSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList variant="pills">
             <TabsTrigger value="tutte" variant="pills">
-              Tutte
+              Tutti
             </TabsTrigger>
-            <TabsTrigger value="push" variant="pills">
-              <Bell className="mr-2 h-4 w-4" />
-              Push
+            <TabsTrigger value="sent" variant="pills">
+              Inviati
             </TabsTrigger>
-            <TabsTrigger value="email" variant="pills">
-              <Mail className="mr-2 h-4 w-4" />
-              Email
+            <TabsTrigger value="delivered" variant="pills">
+              Consegnati
             </TabsTrigger>
-            <TabsTrigger value="sms" variant="pills">
-              <MessageSquare className="mr-2 h-4 w-4" />
-              SMS
+            <TabsTrigger value="pending" variant="pills">
+              In attesa
+            </TabsTrigger>
+            <TabsTrigger value="failed" variant="pills">
+              Falliti
             </TabsTrigger>
           </TabsList>
 

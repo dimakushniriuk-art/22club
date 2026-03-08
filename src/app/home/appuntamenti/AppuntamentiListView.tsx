@@ -82,7 +82,7 @@ export function AppuntamentiListView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
         <AppuntamentiPageHeader
           title="I miei Appuntamenti"
           subtitle="Visualizza i tuoi appuntamenti programmati"

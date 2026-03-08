@@ -7,7 +7,8 @@ const logger = createLogger('components:shared:dashboard:sidebar')
 import {
   Home,
   Dumbbell,
-  Calendar,
+  CalendarCheck,
+  CalendarDays,
   Users,
   Settings,
   MessageSquare,
@@ -15,7 +16,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Send,
+  Mail,
   Shield,
   UserPlus,
   User,
@@ -36,12 +37,12 @@ const staffNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard' },
   { label: 'Clienti', icon: Users, href: '/dashboard/clienti' },
   { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
-  { label: 'Appuntamenti', icon: Calendar, href: '/dashboard/appuntamenti' },
-  { label: 'Calendario', icon: Calendar, href: '/dashboard/calendario' },
+  { label: 'Appuntamenti', icon: CalendarCheck, href: '/dashboard/appuntamenti' },
+  { label: 'Calendario', icon: CalendarDays, href: '/dashboard/calendario' },
   { label: 'Esercizi', icon: Dumbbell, href: '/dashboard/esercizi' },
   { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/chat' },
-  { label: 'Comunicazioni', icon: Send, href: '/dashboard/comunicazioni' },
+  { label: 'Comunicazioni', icon: Mail, href: '/dashboard/comunicazioni' },
   { label: 'Invita Atleta', icon: UserPlus, href: '/dashboard/invita-atleta' },
   { label: 'Impostazioni', icon: Settings, href: '/dashboard/impostazioni' },
 ]
@@ -52,7 +53,7 @@ const nutrizionistaNav = [
   { label: 'Piani', icon: ClipboardList, href: '/dashboard/nutrizionista/piani' },
   { label: 'Progressi', icon: TrendingUp, href: '/dashboard/nutrizionista/progressi' },
   { label: 'Analisi settimanale', icon: BarChart2, href: '/dashboard/nutrizionista/analisi' },
-  { label: 'Calendario', icon: Calendar, href: '/dashboard/nutrizionista/calendario' },
+  { label: 'Calendario', icon: CalendarDays, href: '/dashboard/nutrizionista/calendario' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/nutrizionista/chat' },
   { label: 'Documenti', icon: FileText, href: '/dashboard/nutrizionista/documenti' },
   { label: 'Abbonamenti', icon: Euro, href: '/dashboard/nutrizionista/abbonamenti' },
@@ -61,8 +62,8 @@ const nutrizionistaNav = [
 
 const massaggiatoreNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard/massaggiatore' },
-  { label: 'Appuntamenti', icon: Calendar, href: '/dashboard/massaggiatore/appuntamenti' },
-  { label: 'Calendario', icon: Calendar, href: '/dashboard/massaggiatore/calendario' },
+  { label: 'Appuntamenti', icon: CalendarCheck, href: '/dashboard/massaggiatore/appuntamenti' },
+  { label: 'Calendario', icon: CalendarDays, href: '/dashboard/massaggiatore/calendario' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/massaggiatore/chat' },
   { label: 'Statistiche', icon: BarChart2, href: '/dashboard/massaggiatore/statistiche' },
   { label: 'Profilo', icon: User, href: '/dashboard/massaggiatore/profilo' },
@@ -75,7 +76,7 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
   const { role: userRole, signOut } = useAuth()
   const isAdmin = userRole === 'admin'
   const { notify } = useNotify()
-  
+
   // Filtra nav in base al ruolo
   let nav = staffNav
   if (userRole === 'marketing') {
@@ -173,7 +174,11 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
       <nav className="flex flex-col gap-2 flex-1" suppressHydrationWarning>
         {nav.map((item) => {
           const itemPath = item.href.split('?')[0]
-          const isHomePage = itemPath === '/dashboard' || itemPath === '/home' || itemPath === '/dashboard/nutrizionista' || itemPath === '/dashboard/massaggiatore'
+          const isHomePage =
+            itemPath === '/dashboard' ||
+            itemPath === '/home' ||
+            itemPath === '/dashboard/nutrizionista' ||
+            itemPath === '/dashboard/massaggiatore'
           const active = isHomePage
             ? path === itemPath
             : path === itemPath || path.startsWith(itemPath + '/')

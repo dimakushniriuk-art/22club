@@ -48,14 +48,23 @@ const SKELETON_CONTAINER_STYLE = { overflow: 'auto' as const }
 
 // --- Sub-componenti (stesso file, nessuna modifica ad altri file) ---
 
+const PLACEHOLDER_NAMES = new Set(['Nome', 'Cognome', 'Nome Cognome'])
+
+function toDisplayName(nome: string | undefined, cognome: string | undefined): string {
+  const raw = [nome, cognome].filter(Boolean).join(' ').trim()
+  return PLACEHOLDER_NAMES.has(raw) ? '' : raw
+}
+
 interface WelcomeHeaderProps {
   nome: string | undefined
+  cognome: string | undefined
   isAtleta: boolean
   invitiCount: number
   onOpenWizard: () => void
 }
 
-function WelcomeHeader({ nome, isAtleta, invitiCount, onOpenWizard }: WelcomeHeaderProps) {
+function WelcomeHeader({ nome, cognome, isAtleta, invitiCount, onOpenWizard }: WelcomeHeaderProps) {
+  const displayName = toDisplayName(nome, cognome)
   return (
     <div
       className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5 animate-fade-in"
@@ -73,7 +82,7 @@ function WelcomeHeader({ nome, isAtleta, invitiCount, onOpenWizard }: WelcomeHea
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div>
           <h1 className="mb-1 text-lg font-bold tracking-tight text-white min-[834px]:text-xl">
-            Benvenuto{nome ? `, ${nome}` : ''} 👋
+            Benvenuto{displayName ? `, ${displayName}` : ''} 👋
           </h1>
           <p className="text-xs text-text-secondary min-[834px]:text-sm">
             Gestisci i tuoi allenamenti, progressi e molto altro
@@ -233,6 +242,7 @@ export default function HomePage() {
     >
       <WelcomeHeader
         nome={user.nome}
+        cognome={user.cognome}
         isAtleta={isAtleta}
         invitiCount={inviti.length}
         onOpenWizard={openWizard}

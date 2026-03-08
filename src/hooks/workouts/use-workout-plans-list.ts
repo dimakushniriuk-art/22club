@@ -31,19 +31,25 @@ export function useWorkoutPlansList() {
 
       if (!userId) return
 
+      const isAthlete = role === 'athlete' || role === 'atleta'
+      if (isAthlete) {
+        logger.debug('Fetch workout_plans per atleta via API', undefined, { userId })
+        const res = await fetch('/api/athlete/workout-plans')
+        const json = await res.json().catch(() => ({})) as { workouts?: Workout[]; error?: string }
+        if (!res.ok) {
+          throw new Error(json.error ?? 'Errore nel caricamento delle schede')
+        }
+        setWorkouts(json.workouts ?? [])
+        setLoading(false)
+        return
+      }
+
       let query = supabase.from('workout_plans').select(`
           *,
           athlete:profiles!workout_plans_athlete_id_fkey(nome, cognome, user_id)
         `)
 
-      if (role === 'athlete') {
-        logger.debug('Query workout_plans per atleta', undefined, {
-          userId,
-          role,
-          athlete_id: userId,
-        })
-        query = query.eq('athlete_id', userId)
-      } else if (role === 'trainer' || role === 'admin') {
+      if (role === 'trainer' || role === 'admin') {
         // userId = profiles.id; filtro per creatore (created_by_profile_id)
         query = query.eq('created_by_profile_id', userId)
         logger.debug('Query workout_plans per staff (created_by_profile_id)', undefined, {

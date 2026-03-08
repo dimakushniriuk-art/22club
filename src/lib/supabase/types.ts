@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -212,6 +212,174 @@ export type Database = {
             columns: ["trainer_id"]
             isOneToOne: false
             referencedRelation: "v_profiles_marketing_subset"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_cancellations: {
+        Row: {
+          id: string
+          appointment_id: string
+          athlete_id: string
+          cancelled_at: string
+          cancelled_by_profile_id: string
+          cancellation_type: string
+          lesson_deducted: boolean
+        }
+        Insert: {
+          id?: string
+          appointment_id: string
+          athlete_id: string
+          cancelled_at?: string
+          cancelled_by_profile_id: string
+          cancellation_type: string
+          lesson_deducted?: boolean
+        }
+        Update: {
+          id?: string
+          appointment_id?: string
+          athlete_id?: string
+          cancelled_at?: string
+          cancelled_by_profile_id?: string
+          cancellation_type?: string
+          lesson_deducted?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_cancellations_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_cancellations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_blocks: {
+        Row: {
+          id: string
+          org_id: string
+          staff_id: string | null
+          starts_at: string
+          ends_at: string
+          reason: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          staff_id?: string | null
+          starts_at: string
+          ends_at: string
+          reason: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          staff_id?: string | null
+          starts_at?: string
+          ends_at?: string
+          reason?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_blocks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_blocks_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_calendar_settings: {
+        Row: {
+          id: string
+          staff_id: string
+          org_id: string
+          default_durations: Json
+          enabled_appointment_types: Json
+          custom_appointment_types: Json
+          type_colors: Json
+          default_calendar_view: string
+          default_week_start: string
+          show_free_pass_calendar: boolean
+          show_collaborators_calendars: boolean
+          recurrence_options: Json
+          work_hours: Json | null
+          slot_duration_minutes: number
+          max_free_pass_athletes_per_slot: number
+          view_density: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          staff_id: string
+          org_id: string
+          default_durations?: Json
+          enabled_appointment_types?: Json
+          custom_appointment_types?: Json
+          type_colors?: Json
+          default_calendar_view?: string
+          default_week_start?: string
+          show_free_pass_calendar?: boolean
+          show_collaborators_calendars?: boolean
+          recurrence_options?: Json
+          work_hours?: Json | null
+          slot_duration_minutes?: number
+          max_free_pass_athletes_per_slot?: number
+          view_density?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          staff_id?: string
+          org_id?: string
+          default_durations?: Json
+          enabled_appointment_types?: Json
+          custom_appointment_types?: Json
+          type_colors?: Json
+          default_calendar_view?: string
+          default_week_start?: string
+          show_free_pass_calendar?: boolean
+          show_collaborators_calendars?: boolean
+          recurrence_options?: Json
+          work_hours?: Json | null
+          slot_duration_minutes?: number
+          max_free_pass_athletes_per_slot?: number
+          view_density?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_calendar_settings_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_calendar_settings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -4309,6 +4477,7 @@ export type Database = {
           role: string
           sesso: string | null
           stato: string | null
+          stato_cliente: string | null
           stato_profilo: string | null
           telefono: string | null
           tipo_abbonamento: string | null
@@ -4384,6 +4553,7 @@ export type Database = {
           role: string
           sesso?: string | null
           stato?: string | null
+          stato_cliente?: string | null
           stato_profilo?: string | null
           telefono?: string | null
           tipo_abbonamento?: string | null
@@ -4459,6 +4629,7 @@ export type Database = {
           role?: string
           sesso?: string | null
           stato?: string | null
+          stato_cliente?: string | null
           stato_profilo?: string | null
           telefono?: string | null
           tipo_abbonamento?: string | null
@@ -8403,6 +8574,7 @@ export type Database = {
           role: string
           sesso: string | null
           stato: string | null
+          stato_cliente: string | null
           stato_profilo: string | null
           telefono: string | null
           tipo_abbonamento: string | null

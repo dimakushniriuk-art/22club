@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const createInvitoSchema = z.object({
   nome_atleta: z.string().trim().min(1, 'Nome obbligatorio').max(100, 'Nome troppo lungo'),
-  email: z.string().email('Email non valida').optional().or(z.literal('')), // Semplificato: usa validazione Zod nativa
+  email: z.string().trim().min(1, 'Email obbligatoria').email('Email non valida'),
   giorni_validita: z
     .number()
     .int()

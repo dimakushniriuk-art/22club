@@ -17,7 +17,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       label,
       helperText,
       errorMessage,
-      variant = 'default',
+      variant: _variant = 'default',
       size = 'md',
       children,
       onValueChange,
@@ -25,7 +25,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref,
   ) => {
-    const variants = {
+    const _variants = {
       default:
         'bg-background-secondary text-text-primary hover:bg-background-tertiary/80 focus:border-input-focus focus:ring-2 focus:ring-primary/20 transition-all duration-200',
       outline:

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useMemo, useEffect, useState } from 'react'
+import { Suspense, useCallback, useMemo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -364,15 +364,20 @@ function AllenamentiHomePageContent() {
     role: normalizedRole,
   })
 
+  const refreshAllenamentiRef = useRef(refreshAllenamenti)
+  const refetchWorkoutsRef = useRef(refetchWorkouts)
+  refreshAllenamentiRef.current = refreshAllenamenti
+  refetchWorkoutsRef.current = refetchWorkouts
+
   useEffect(() => {
     if (!profileId) return
-    refreshAllenamenti()
-    refetchWorkouts()
-  }, [profileId, refreshAllenamenti, refetchWorkouts])
+    refreshAllenamentiRef.current()
+    refetchWorkoutsRef.current()
+  }, [profileId])
 
   const stats = useMemo(() => computeStatsFromLogs(workoutLogs ?? []), [workoutLogs])
 
-  const handleBack = useCallback(() => router.back(), [router])
+  const handleBack = useCallback(() => router.push('/home'), [router])
   const handleStartOggi = useCallback(() => router.push('/home/allenamenti/oggi'), [router])
 
   // Recupera media (video/thumbnail) per l'allenamento di oggi
@@ -500,34 +505,44 @@ function AllenamentiHomePageContent() {
   }, [])
   const handleVideoError = useCallback(() => setOggiMedia(null), [])
 
-  // Mostra errori all'utente con notifiche
+  // Una sola notifica per tipo di errore (evita toast multipli da re-render/remount)
+  const lastNotifiedAllenamentiRef = useRef<string | null>(null)
+  const lastNotifiedWorkoutsRef = useRef<string | null>(null)
+
   useEffect(() => {
-    if (allenamentiError) {
-      logger.warn('Errore nel caricamento allenamenti', allenamentiError, {
-        profileId: user?.id,
-        userId: user?.user_id,
-      })
-      const errorMessage =
-        (allenamentiError as unknown) instanceof Error
-          ? (allenamentiError as Error).message
-          : String(allenamentiError)
-      notifyError('Errore nel caricamento allenamenti', errorMessage)
+    if (!allenamentiError) {
+      lastNotifiedAllenamentiRef.current = null
+      return
     }
+    const errorMessage =
+      (allenamentiError as unknown) instanceof Error
+        ? (allenamentiError as Error).message
+        : String(allenamentiError)
+    if (lastNotifiedAllenamentiRef.current === errorMessage) return
+    lastNotifiedAllenamentiRef.current = errorMessage
+    logger.warn('Errore nel caricamento allenamenti', allenamentiError, {
+      profileId: user?.id,
+      userId: user?.user_id,
+    })
+    notifyError('Errore nel caricamento allenamenti', errorMessage)
   }, [allenamentiError, user?.id, user?.user_id])
 
   useEffect(() => {
-    if (workoutsError) {
-      logger.warn('Errore nel caricamento workout plans', workoutsError, {
-        profileId: user?.id,
-        userId: user?.user_id,
-      })
-      // workoutsError è di tipo string | null da useWorkoutPlansList
-      const errorMessage =
-        typeof workoutsError === 'string'
-          ? workoutsError
-          : 'Errore sconosciuto nel caricamento delle schede allenamento'
-      notifyError('Errore nel caricamento schede allenamento', errorMessage)
+    if (!workoutsError) {
+      lastNotifiedWorkoutsRef.current = null
+      return
     }
+    const errorMessage =
+      typeof workoutsError === 'string'
+        ? workoutsError
+        : 'Errore sconosciuto nel caricamento delle schede allenamento'
+    if (lastNotifiedWorkoutsRef.current === errorMessage) return
+    lastNotifiedWorkoutsRef.current = errorMessage
+    logger.warn('Errore nel caricamento workout plans', workoutsError, {
+      profileId: user?.id,
+      userId: user?.user_id,
+    })
+    notifyError('Errore nel caricamento schede allenamento', errorMessage)
   }, [workoutsError, user?.id, user?.user_id])
 
   // Loading state per i dati
@@ -543,31 +558,31 @@ function AllenamentiHomePageContent() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-72 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
         <AllenamentiPageHeader onBack={handleBack} />
 
         <div className="grid grid-cols-2 min-[834px]:grid-cols-4 gap-2.5 min-[834px]:gap-4">
-          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-3">
             <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/40" />
-            <CardContent className="p-3 min-[834px]:p-3.5 flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+            <CardContent className="p-0 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
                 <Activity className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Questa settimana</div>
-                <div className="text-xl font-bold text-cyan-400">{stats.settimana}</div>
+                <div className="text-base font-bold text-cyan-400 leading-tight">{stats.settimana}</div>
               </div>
             </CardContent>
           </Card>
-          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-3">
             <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/40" />
-            <CardContent className="p-3 min-[834px]:p-3.5 flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+            <CardContent className="p-0 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
                 <TrendingUp className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Questo mese</div>
-                <div className="text-xl font-bold text-cyan-400">{stats.mese}</div>
+                <div className="text-base font-bold text-cyan-400 leading-tight">{stats.mese}</div>
               </div>
             </CardContent>
           </Card>
@@ -595,19 +610,19 @@ function AllenamentiHomePageContent() {
           </div>
         )}
 
-        <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
-          <CardContent className="p-5 min-[834px]:p-6 text-center">
-            <div className="mb-2.5 min-[834px]:mb-3 flex justify-center">
+        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-0 bg-background-secondary/50 backdrop-blur-sm px-3 sm:px-4 min-[834px]:px-6 pb-[env(safe-area-inset-bottom)]">
+          <CardContent className="p-4 min-[834px]:p-5 text-center">
+            <div className="mb-2 min-[834px]:mb-2.5 flex justify-center">
               {trainerAvatarUrl ? (
-                <div className="relative h-14 w-14 min-[834px]:h-16 min-[834px]:w-16 overflow-hidden rounded-full border-2 border-cyan-500/40">
-                  <Image src={trainerAvatarUrl} alt="Il tuo trainer" fill className="object-cover" sizes="(min-width: 834px) 64px, 56px" unoptimized={trainerAvatarUrl.startsWith('http')} />
+                <div className="relative h-12 w-12 min-[834px]:h-14 min-[834px]:w-14 overflow-hidden rounded-full border-2 border-cyan-500/40">
+                  <Image src={trainerAvatarUrl} alt="Il tuo trainer" fill className="object-cover" sizes="(min-width: 834px) 56px, 48px" unoptimized={trainerAvatarUrl.startsWith('http')} />
                 </div>
               ) : (
-                <div className="text-3xl animate-bounce">🏆</div>
+                <div className="text-2xl animate-bounce">🏆</div>
               )}
             </div>
-            <h3 className="text-text-primary mb-1.5 text-base min-[834px]:text-lg font-semibold">Ottimo lavoro questa settimana!</h3>
-            <p className="text-text-secondary mb-3 text-xs min-[834px]:text-sm">
+            <h3 className="text-text-primary mb-1 text-base min-[834px]:text-lg font-semibold">Ottimo lavoro questa settimana!</h3>
+            <p className="text-text-secondary mb-2 text-xs min-[834px]:text-sm">
               Hai completato <span className="text-cyan-400 font-bold">{stats.settimana}</span> allenamenti. Continua così!
             </p>
             <Link href="/home/progressi" prefetch={true} className="inline-block w-full">

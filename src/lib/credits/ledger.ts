@@ -19,6 +19,8 @@ export type PaymentForLedger = {
 export type AppointmentForLedger = {
   id: string
   athlete_id: string
+  /** Tipo servizio per scalare il credito corretto (training/nutrition/massage). */
+  service_type?: ServiceType
 }
 
 /** Payload per storno pagamento (ledger REVERSAL). */
@@ -64,7 +66,7 @@ export async function addDebitFromAppointment(
     appointment_id: appointment.id,
     athlete_id: appointment.athlete_id,
     created_by_profile_id: staffProfileId ?? undefined,
-    service_type: (appointment as { service_type?: ServiceType }).service_type ?? 'training',
+    service_type: appointment.service_type ?? 'training',
     reason: 'Sessione completata',
   })
 

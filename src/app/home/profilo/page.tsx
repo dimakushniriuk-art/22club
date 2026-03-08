@@ -242,7 +242,7 @@ export default function ProfiloPage() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-6"
+        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24"
         style={CONTENT_WRAPPER_STYLE}
       >
         <PageHeaderGlass

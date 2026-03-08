@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
 import { LogoRefresh } from '@/components/athlete/logo-refresh'
@@ -31,22 +32,27 @@ function TrialBanner() {
 
 /** Client Component wrapper per il layout home */
 export function HomeLayoutClient({ children }: HomeLayoutClientProps) {
+  const pathname = usePathname()
+  const isHomePage = pathname === '/home' || pathname === '/home/'
+
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
-      {/* Header fisso in alto — area di lavoro min atleta 393×852px */}
-      <header
-        className="sticky top-0 z-50 shrink-0 safe-area-inset-top backdrop-blur-xl"
-        style={{
-          borderBottom: '1px solid rgba(2, 179, 191, 0.35)',
-          background: 'linear-gradient(180deg, rgba(16,16,18,0.92) 0%, rgba(16,16,18,0.85) 100%)',
-          boxShadow: '0 1px 0 0 rgba(2,179,191,0.08)',
-        }}
-      >
-        <div className="flex items-center justify-between px-3 sm:px-4 min-[834px]:px-6 py-2.5 sm:py-3 min-[834px]:py-3">
-          <LogoRefresh />
-          <div className="flex-1" />
-        </div>
-      </header>
+      {/* Header visibile solo sulla home */}
+      {isHomePage && (
+        <header
+          className="sticky top-0 z-50 shrink-0 safe-area-inset-top backdrop-blur-xl"
+          style={{
+            borderBottom: '1px solid rgba(2, 179, 191, 0.35)',
+            background: 'linear-gradient(180deg, rgba(16,16,18,0.92) 0%, rgba(16,16,18,0.85) 100%)',
+            boxShadow: '0 1px 0 0 rgba(2,179,191,0.08)',
+          }}
+        >
+          <div className="flex items-center justify-between px-3 sm:px-4 min-[834px]:px-6 py-2.5 sm:py-3 min-[834px]:py-3">
+            <LogoRefresh />
+            <div className="flex-1" />
+          </div>
+        </header>
+      )}
 
       <TrialBanner />
 

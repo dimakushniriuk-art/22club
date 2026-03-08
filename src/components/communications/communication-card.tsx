@@ -74,7 +74,6 @@ export function CommunicationCard({
     communication.id,
     communication.status,
     communication.total_recipients,
-    communication.recipient_filter,
     loadingEstimate,
     estimatedRecipients,
   ])
@@ -88,68 +87,68 @@ export function CommunicationCard({
       ? Math.round(((communication.total_opened ?? 0) / (communication.total_delivered ?? 1)) * 100)
       : 0
 
+  const recipientLabel = (() => {
+    const meta = communication.metadata as { to_email?: string; athlete_name?: string } | null | undefined
+    const email = meta?.to_email && typeof meta.to_email === 'string' ? meta.to_email.trim() : null
+    const name = meta?.athlete_name && typeof meta.athlete_name === 'string' ? meta.athlete_name.trim() : null
+    if (name && email) return `${name} (${email})`
+    if (email) return email
+    if (name) return name
+    return null
+  })()
+
   return (
     <Card variant="elevated" className="border border-border overflow-hidden">
       <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className="flex items-stretch justify-between gap-4">
+          <div className="flex min-w-0 flex-1 flex-col">
             <div className="mb-2 flex items-center gap-3">
-              <div className="bg-muted/60 text-text-primary rounded-lg p-2 border border-border">
+              <div className="bg-muted/60 text-text-primary rounded-lg p-2 border border-border shrink-0">
                 {getTipoIcon(communication.type)}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <h3 className="text-text-primary mb-1 text-lg font-semibold">
                   {communication.title}
                 </h3>
                 <p className="text-text-secondary line-clamp-2 text-sm">{communication.message}</p>
               </div>
-              {getStatoBadge(communication.status)}
             </div>
 
             {/* Statistiche */}
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Users className="text-text-tertiary h-4 w-4" />
-                <span className="text-text-secondary">
-                  {communication.status === 'draft' && communication.total_recipients === 0 ? (
-                    <span className="flex items-center gap-1">
-                      {estimatedRecipients !== null
-                        ? `~${estimatedRecipients} destinatari stimati`
-                        : loadingEstimate
-                          ? 'Calcolo...'
-                          : "Destinatari calcolati all'invio"}
-                      {estimatedRecipients === null && !loadingEstimate && (
-                        <button
-                          type="button"
-                          onClick={fetchEstimatedRecipients}
-                          className="text-text-tertiary hover:text-text-secondary transition-colors"
-                          title="Calcola destinatari stimati"
-                        >
-                          <Info className="h-3 w-3" />
-                        </button>
-                      )}
-                    </span>
-                  ) : (
-                    `${communication.total_recipients || 0} destinatari`
-                  )}
-                </span>
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <Users className="text-text-tertiary h-4 w-4 shrink-0" />
+                  <span className="text-text-secondary">
+                    {communication.status === 'draft' && communication.total_recipients === 0 ? (
+                      <span className="flex items-center gap-1">
+                        {estimatedRecipients !== null
+                          ? `~${estimatedRecipients} destinatari stimati`
+                          : loadingEstimate
+                            ? 'Calcolo...'
+                            : "Destinatari calcolati all'invio"}
+                        {estimatedRecipients === null && !loadingEstimate && (
+                          <button
+                            type="button"
+                            onClick={fetchEstimatedRecipients}
+                            className="text-text-tertiary hover:text-text-secondary transition-colors"
+                            title="Calcola destinatari stimati"
+                          >
+                            <Info className="h-3 w-3" />
+                          </button>
+                        )}
+                      </span>
+                    ) : (
+                      `${communication.total_recipients || 0} destinatari`
+                    )}
+                  </span>
+                </div>
+                {recipientLabel && (communication.total_recipients ?? 0) > 0 && (
+                  <span className="text-text-tertiary text-xs pl-6" title={recipientLabel}>
+                    Destinatario: {recipientLabel}
+                  </span>
+                )}
               </div>
-              {communication.status === 'sent' && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="text-state-valid h-4 w-4" />
-                    <span className="text-text-secondary">
-                      {communication.total_delivered || 0} consegnati ({deliveryRate}%)
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="text-state-info h-4 w-4" />
-                    <span className="text-text-secondary">
-                      {communication.total_opened || 0} aperti ({openRate}%)
-                    </span>
-                  </div>
-                </>
-              )}
               {communication.status === 'sending' && (
                 <div className="flex-1 min-w-[200px]">
                   <Progress
@@ -169,17 +168,13 @@ export function CommunicationCard({
                   </span>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                <Calendar className="text-text-tertiary h-4 w-4" />
-                <span className="text-text-secondary">
-                  {formatData(communication.sent_at || communication.scheduled_for)}
-                </span>
-              </div>
             </div>
           </div>
 
-          {/* Azioni */}
-          <div className="ml-4 flex gap-2">
+          {/* Azioni in alto a destra; Data + Badge in basso a destra */}
+          <div className="flex shrink-0 flex-col items-end justify-between gap-2 self-stretch">
+            {/* Pulsanti in alto */}
+            <div className="flex items-center gap-2">
             {/* Pulsante Dettagli (mostra sempre se ci sono recipients) */}
             {onViewDetails &&
               (communication.total_recipients ?? 0) > 0 &&
@@ -292,17 +287,6 @@ export function CommunicationCard({
                 </Button>
               </>
             )}
-            {communication.status === 'sent' && onViewDetails && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onViewDetails(communication.id)}
-                className="text-text-secondary hover:bg-background-tertiary/50 hover:text-text-primary"
-              >
-                <Eye className="mr-1 h-4 w-4" />
-                Dettagli
-              </Button>
-            )}
             {/* Pulsante Elimina - visibile per tutti gli status */}
             {onDelete && (
               <Button
@@ -324,6 +308,28 @@ export function CommunicationCard({
                 Elimina
               </Button>
             )}
+            </div>
+            {/* Consegnati + Aperti in mezzo (solo se inviato), allineati a destra */}
+            {communication.status === 'sent' && (
+              <div className="flex items-center gap-4 text-sm text-text-secondary">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="text-state-valid h-4 w-4 shrink-0" />
+                  <span>{communication.total_delivered || 0} consegnati ({deliveryRate}%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="text-state-info h-4 w-4 shrink-0" />
+                  <span>{communication.total_opened || 0} aperti ({openRate}%)</span>
+                </div>
+              </div>
+            )}
+            {/* Data + Badge in basso a destra */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm text-text-secondary">
+                <Calendar className="text-text-tertiary h-4 w-4 shrink-0" />
+                <span>{formatData(communication.sent_at || communication.scheduled_for)}</span>
+              </div>
+              {getStatoBadge(communication.status)}
+            </div>
           </div>
         </div>
       </CardContent>

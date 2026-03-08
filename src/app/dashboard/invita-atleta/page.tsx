@@ -44,6 +44,7 @@ import {
   AlertDialogAction,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/components/ui/toast'
+import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import {
   Plus,
   Copy,
@@ -125,6 +126,14 @@ export default function InvitaAtletaPage() {
   const [invitationToDelete, setInvitationToDelete] = useState<string | null>(null)
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Invalida cache inviti al mount così lo stato (es. Registrati) è aggiornato dopo una registrazione
+  useEffect(() => {
+    if (user?.id) {
+      frequentQueryCache.invalidatePrefix(`invitations:${user.id}:`)
+      refetch()
+    }
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps -- refetch on mount only
 
   // Apri il modal automaticamente se c'è il query param 'new'
   useEffect(() => {
@@ -891,7 +900,7 @@ export default function InvitaAtletaPage() {
 
             <div>
               <label className="text-text-primary mb-2 block text-sm font-medium">
-                Email (opzionale)
+                Email
               </label>
               <Input
                 type="email"
@@ -899,6 +908,9 @@ export default function InvitaAtletaPage() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="mario.rossi@example.com"
               />
+              <p className="text-text-muted mt-1 text-xs">
+                Obbligatoria per collegare l&apos;atleta al trainer dopo la registrazione.
+              </p>
               {formErrors.email && (
                 <p className="text-state-error mt-1 text-xs">{formErrors.email}</p>
               )}
@@ -960,7 +972,7 @@ export default function InvitaAtletaPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={submitting || !formData.nome_atleta.trim()}
+                disabled={submitting || !formData.nome_atleta.trim() || !(formData.email ?? '').trim()}
                 className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
               >
                 {submitting ? (

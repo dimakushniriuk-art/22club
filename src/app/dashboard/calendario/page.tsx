@@ -5,12 +5,15 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { CalendarView, AppointmentPopover, MiniCalendar } from '@/components/calendar'
 import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
 import { useCalendarPage } from '@/hooks/calendar/use-calendar-page'
-import { useCalendarPageGuard } from '@/hooks/calendar/use-calendar-page-guard'
+import { useCalendarPageGuard, ALLOWED_CALENDAR_SETTINGS_ROLES } from '@/hooks/calendar/use-calendar-page-guard'
+import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
+import { useBirthdays } from '@/hooks/calendar/use-birthdays'
+import Link from 'next/link'
 import { useCalendarKeyboardShortcuts } from '@/hooks/calendar/use-calendar-keyboard-shortcuts'
 import { useAuth } from '@/providers/auth-provider'
 import { LoadingState } from '@/components/dashboard/loading-state'
-import { Clock, ChevronRight, Search, X, Filter, Keyboard, List } from 'lucide-react'
-import { Drawer } from '@/components/ui'
+import { Clock, ChevronRight, Search, X, Filter, Keyboard, List, PanelLeftClose, PanelLeft, Settings } from 'lucide-react'
+import { Drawer, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button } from '@/components/ui'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
 
@@ -58,6 +61,8 @@ type CalendarSidebarContentProps = {
   onEventClickFromList: (apt: AppointmentUI, position: { x: number; y: number }) => void
   onOpenKeyboardHelp: () => void
   theme?: CalendarTheme
+  /** Compleanni nel giorno selezionato */
+  birthdays?: { id: string; name: string }[]
 }
 
 const CalendarSidebarContent = memo(function CalendarSidebarContent({
@@ -76,6 +81,7 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
   onEventClickFromList,
   onOpenKeyboardHelp,
   theme: themeKey = 'default',
+  birthdays = [],
 }: CalendarSidebarContentProps) {
   const t = CALENDAR_THEME_CLASSES[themeKey]
   return (
@@ -138,6 +144,18 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
           appointmentDates={appointmentDates}
         />
       </div>
+      {birthdays.length > 0 && (
+        <div className="p-3 sm:p-4 border-b border-white/5 space-y-2">
+          <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider">
+            Compleanni oggi
+          </h3>
+          <ul className="text-sm text-text-primary space-y-1">
+            {birthdays.map((b) => (
+              <li key={b.id}>{b.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="p-3 sm:p-4 shrink-0">
           <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-2">
@@ -454,6 +472,16 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   const calendarTheme: CalendarTheme =
     role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
   const themeButtonClasses = CALENDAR_THEME_CLASSES[calendarTheme].button
+  const { settings: calendarSettings } = useStaffCalendarSettings()
+  const initialCalendarView =
+    calendarSettings?.default_calendar_view === 'week'
+      ? 'timeGridWeek'
+      : calendarSettings?.default_calendar_view === 'day'
+        ? 'timeGridDay'
+        : calendarSettings?.default_calendar_view === 'agenda'
+          ? 'listWeek'
+          : 'dayGridMonth'
+  const initialWeekStart = calendarSettings?.default_week_start === 'sunday' ? 0 : 1
 
   const {
     appointments,
@@ -461,11 +489,13 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
     athletes,
     athletesLoading,
     staffProfileId,
+    calendarBlocks,
     loading,
     handleFormSubmit,
     handleCancel,
     handleDelete,
     handleComplete,
+    handleNoShow,
     handleEventDrop,
     handleEventResize,
   } = useCalendarPage()
@@ -477,6 +507,7 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 })
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null)
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const birthdays = useBirthdays(selectedDate, calendarSettings?.org_id ?? null)
 
   // Filtri: stato iniziale da URL, poi sincronizzati con URL ai cambi
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') ?? '')
@@ -485,11 +516,18 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   )
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showFiltersDrawer, setShowFiltersDrawer] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [confirmState, setConfirmState] = useState<{
     action: 'delete' | 'cancel' | 'complete'
     appointmentId: string
   } | null>(null)
+  const [overlapConfirmData, setOverlapConfirmData] = useState<{
+    data: CreateAppointmentData
+    editingAppointment: EditAppointmentData | null
+  } | null>(null)
+  /** Dialog annullamento con regole 24h: annulla / annulla e scala / annulla senza scalare */
+  const [cancelChoiceAppointment, setCancelChoiceAppointment] = useState<AppointmentUI | null>(null)
   const filtersDrawerButtonRef = useRef<HTMLButtonElement>(null)
   const searchParamsRef = useRef(searchParams)
   searchParamsRef.current = searchParams
@@ -693,11 +731,14 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   }, [editingAppointment, selectedSlot, role])
 
   const handleFormSubmitClick = useCallback(
-    (data: Parameters<typeof handleFormSubmit>[0]) => {
-      handleFormSubmit(data, editingAppointment).then(() => {
-        setSelectedSlot(null)
-        handleCloseForm()
-      })
+    async (data: Parameters<typeof handleFormSubmit>[0]) => {
+      const result = await handleFormSubmit(data, editingAppointment)
+      if ((result as { overlapDetected?: boolean } | void)?.overlapDetected) {
+        setOverlapConfirmData({ data, editingAppointment })
+        return
+      }
+      setSelectedSlot(null)
+      handleCloseForm()
     },
     [editingAppointment, handleCloseForm, handleFormSubmit]
   )
@@ -716,7 +757,7 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
 
   const handlePopoverCancel = useCallback(() => {
     if (!selectedAppointment) return
-    setConfirmState({ action: 'cancel', appointmentId: selectedAppointment.id })
+    setCancelChoiceAppointment(selectedAppointment)
   }, [selectedAppointment])
 
   const handlePopoverDelete = useCallback(() => {
@@ -750,7 +791,27 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
     if (action === 'complete')
       return handleComplete(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
     return handleCancel(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
-  }, [confirmState, handleDelete, handleCancel, handleComplete, handleClosePopover])
+  }, [confirmState, handleDelete, handleComplete, handleClosePopover])
+
+  const hoursUntilStart = cancelChoiceAppointment
+    ? (new Date(cancelChoiceAppointment.starts_at).getTime() - Date.now()) / (1000 * 60 * 60)
+    : 0
+  const cancelWithin24h = hoursUntilStart > 0 && hoursUntilStart < 24
+
+  const handleCancelWithChoice = useCallback(
+    (deductLesson: boolean, isException: boolean) => {
+      if (!cancelChoiceAppointment) return
+      handleCancel(cancelChoiceAppointment.id, {
+        deductLesson,
+        isException,
+        appointment: cancelChoiceAppointment,
+      }).then(() => {
+        handleClosePopover()
+        setCancelChoiceAppointment(null)
+      })
+    },
+    [cancelChoiceAppointment, handleCancel, handleClosePopover],
+  )
 
   const handleDrawerOpenChange = useCallback((open: boolean) => {
     setShowFiltersDrawer(open)
@@ -814,33 +875,37 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
               onEventClickFromList={handleEventClickFromList}
               onOpenKeyboardHelp={openKeyboardHelp}
               theme={calendarTheme}
+              birthdays={birthdays}
             />
           </div>
         </div>
       </Drawer>
 
-      {/* Sidebar - desktop lg+ */}
-      <aside className="hidden lg:flex w-[280px] flex-col border-r border-white/5 bg-background-secondary/30 backdrop-blur-sm shrink-0">
-        <CalendarSidebarContent
-          searchQuery={searchQuery}
-          onSearchQueryChange={onSearchQueryChange}
-          selectedAthleteFilter={selectedAthleteFilter}
-          onAthleteFilterChange={onAthleteFilterChange}
-          athletes={athletes}
-          appointmentDates={appointmentDates}
-          selectedDate={selectedDate}
-          onDateSelect={handleMiniCalendarDateSelect}
-          filteredAppointments={filteredAppointments}
-          upcomingAppointments={upcomingAppointments}
-          hasActiveFilters={hasActiveFilters}
-          onClearFilters={clearFilters}
-          onEventClickFromList={handleEventClickFromList}
-          onOpenKeyboardHelp={openKeyboardHelp}
-          theme={calendarTheme}
-        />
-      </aside>
+      {/* Sidebar - desktop lg+ (nascondibile) */}
+      {showSidebar && (
+        <aside className="hidden lg:flex w-[280px] flex-col border-r border-white/5 bg-background-secondary/30 backdrop-blur-sm shrink-0">
+          <CalendarSidebarContent
+            searchQuery={searchQuery}
+            onSearchQueryChange={onSearchQueryChange}
+            selectedAthleteFilter={selectedAthleteFilter}
+            onAthleteFilterChange={onAthleteFilterChange}
+            athletes={athletes}
+            appointmentDates={appointmentDates}
+            selectedDate={selectedDate}
+            onDateSelect={handleMiniCalendarDateSelect}
+            filteredAppointments={filteredAppointments}
+            upcomingAppointments={upcomingAppointments}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+            onEventClickFromList={handleEventClickFromList}
+              onOpenKeyboardHelp={openKeyboardHelp}
+              theme={calendarTheme}
+              birthdays={birthdays}
+          />
+        </aside>
+      )}
 
-      <main className="flex-1 bg-background overflow-hidden relative">
+      <main className="flex-1 bg-background overflow-hidden relative min-w-0">
         <div role="status" aria-live="polite" className="sr-only">
           {filteredAppointments.length === 1 ? '1 appuntamento' : `${filteredAppointments.length} appuntamenti`}
         </div>
@@ -858,6 +923,34 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
               onSelectSlot={handleSelectSlot}
               navigateToDate={navigateToDate}
               onNavigateComplete={onNavigateComplete}
+              initialView={initialCalendarView}
+              initialWeekStart={initialWeekStart}
+              calendarBlocks={calendarBlocks}
+              toolbarLeftContent={
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSidebar((v) => !v)}
+                    className="hidden lg:flex items-center justify-center w-10 h-9 min-h-[44px] rounded-lg bg-background-secondary/90 border border-white/10 shadow-sm text-text-secondary hover:text-text-primary hover:bg-background-tertiary transition-colors shrink-0"
+                    aria-label={showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'}
+                  >
+                    {showSidebar ? (
+                      <PanelLeftClose className="w-5 h-5" />
+                    ) : (
+                      <PanelLeft className="w-5 h-5" />
+                    )}
+                  </button>
+                  {role && ALLOWED_CALENDAR_SETTINGS_ROLES.includes(role as (typeof ALLOWED_CALENDAR_SETTINGS_ROLES)[number]) && (
+                    <Link
+                      href="/dashboard/calendario/impostazioni"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-background-secondary/90 border border-white/10 text-text-secondary hover:text-text-primary hover:bg-background-tertiary transition-colors text-sm shrink-0"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Impostazioni
+                    </Link>
+                  )}
+                </div>
+              }
             />
           </>
         )}
@@ -893,7 +986,12 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
           onDelete={handlePopoverDelete}
           onClose={handleClosePopover}
           onComplete={handlePopoverComplete}
+          onNoShow={handleNoShow ? () => handleNoShow(selectedAppointment.id, selectedAppointment) : undefined}
           canComplete={canCompleteAppointment}
+          canNoShow={
+            !!selectedAppointment.athlete_id &&
+            (selectedAppointment.status === 'attivo' || selectedAppointment.status === 'in_corso')
+          }
           loading={loading}
           asModal={isMobile}
         />
@@ -928,6 +1026,67 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
           onConfirm={handleConfirmDialogConfirm}
           loading={loading}
         />
+      )}
+
+      {overlapConfirmData && (
+        <ConfirmDialog
+          open={!!overlapConfirmData}
+          onOpenChange={(open) => !open && setOverlapConfirmData(null)}
+          title="Slot occupato"
+          description="Questo slot è già occupato. Procedi comunque con la creazione/modifica?"
+          confirmText="Procedi comunque"
+          variant="default"
+          onConfirm={async () => {
+            if (!overlapConfirmData) return
+            await handleFormSubmit(overlapConfirmData.data, overlapConfirmData.editingAppointment, {
+              forceOverwrite: true,
+            })
+            setOverlapConfirmData(null)
+            setSelectedSlot(null)
+            handleCloseForm()
+          }}
+          loading={loading}
+        />
+      )}
+
+      {cancelChoiceAppointment && (
+        <Dialog open={!!cancelChoiceAppointment} onOpenChange={(open) => !open && setCancelChoiceAppointment(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Annulla appuntamento</DialogTitle>
+              <DialogDescription>
+                {cancelWithin24h
+                  ? 'Annullando con meno di 24 ore di preavviso puoi scegliere di scalare la lezione o annullare senza scalare.'
+                  : 'L\'appuntamento verrà annullato. La lezione non verrà scalata.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2 pt-2">
+              {cancelWithin24h ? (
+                <>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleCancelWithChoice(true, false)}
+                    disabled={loading}
+                  >
+                    Annulla e scala lezione
+                  </Button>
+                  <Button variant="outline" onClick={() => handleCancelWithChoice(false, true)} disabled={loading}>
+                    Annulla senza scalare
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="destructive" onClick={() => handleCancelWithChoice(false, false)} disabled={loading}>
+                    Annulla
+                  </Button>
+                  <Button variant="ghost" onClick={() => setCancelChoiceAppointment(null)}>
+                    Indietro
+                  </Button>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       <KeyboardShortcutsModal open={showKeyboardHelp} onClose={closeKeyboardHelp} />

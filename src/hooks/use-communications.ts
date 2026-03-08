@@ -20,7 +20,7 @@ export interface Communication extends CommunicationRow {
 export interface CreateCommunicationInput {
   title: string
   message: string
-  type: 'push' | 'email' | 'sms' | 'all'
+  type: 'email' | 'all'
   recipient_filter: RecipientFilter
   scheduled_for?: string | null
   metadata?: Record<string, unknown>
@@ -29,7 +29,7 @@ export interface CreateCommunicationInput {
 export interface UpdateCommunicationInput {
   title?: string
   message?: string
-  type?: 'push' | 'email' | 'sms' | 'all'
+  type?: 'email' | 'all'
   recipient_filter?: RecipientFilter
   scheduled_for?: string | null
   status?: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled'
@@ -37,7 +37,8 @@ export interface UpdateCommunicationInput {
 }
 
 interface UseCommunicationsOptions {
-  status?: CommunicationRow['status']
+  /** Filtro per stato: singolo o multiplo (es. ['draft','scheduled','sending'] per "In attesa") */
+  status?: CommunicationRow['status'] | CommunicationRow['status'][]
   type?: CommunicationRow['type']
   limit?: number
   offset?: number
@@ -58,7 +59,11 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
 
       // Usa API route su web, Supabase client su mobile
       const queryParams: Record<string, string> = {}
-      if (options.status) queryParams.status = options.status
+      if (options.status) {
+        queryParams.status = Array.isArray(options.status)
+          ? options.status.join(',')
+          : options.status
+      }
       if (options.type) queryParams.type = options.type
       if (options.limit) queryParams.limit = options.limit.toString()
       if (options.offset !== undefined) queryParams.offset = options.offset.toString()
@@ -74,7 +79,11 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
             .order('created_at', { ascending: false })
 
           if (options.status) {
-            query = query.eq('status', options.status)
+            if (Array.isArray(options.status)) {
+              query = query.in('status', options.status)
+            } else {
+              query = query.eq('status', options.status)
+            }
           }
 
           if (options.type && options.type !== 'all') {
@@ -301,7 +310,6 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
           body: JSON.stringify({ communicationId: id }),
         })
 
-        // Proteggi da risposte vuote che causano "Unexpected end of JSON input"
         const text = await response.text()
         if (!text || text.trim().length === 0) {
           const errorMessage = 'Risposta vuota dal server'
@@ -310,7 +318,21 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
           return { success: false, error: errorMessage }
         }
 
-        const result = JSON.parse(text)
+        if (text.trimStart().startsWith('<')) {
+          const errorMessage = response.ok ? 'Risposta non valida dal server' : `Errore ${response.status}`
+          setError(new Error(errorMessage))
+          logger.error('Error sending communication', null, { errorMessage, communicationId: id })
+          return { success: false, error: errorMessage }
+        }
+
+        let result: { success?: boolean; error?: string; message?: string }
+        try {
+          result = JSON.parse(text)
+        } catch {
+          setError(new Error('Risposta non valida dal server'))
+          logger.error('Error sending communication', null, { communicationId: id })
+          return { success: false, error: 'Risposta non valida dal server' }
+        }
 
         if (!response.ok) {
           const errorMessage = result.error || result.message || 'Failed to send communication'
@@ -410,7 +432,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
     if (options.autoRefresh) {
       const interval = setInterval(() => {
         fetchCommunications()
-      }, 30000) // Refresh ogni 30 secondi
+      }, 90 * 1000) // Refresh ogni 90 secondi (evita aggiornamenti troppo frequenti)
 
       return () => clearInterval(interval)
     }

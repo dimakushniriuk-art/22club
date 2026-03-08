@@ -6,7 +6,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/lib/supabase/types'
 // Validazione sovrapposizione rimossa per permettere più atleti nello stesso orario
 // import { checkAppointmentOverlap } from '@/lib/appointment-utils'
 import { createLogger } from '@/lib/logger'
@@ -18,6 +20,9 @@ import type {
   AppointmentColor,
 } from '@/types/appointment'
 import type { Tables } from '@/types/supabase'
+import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
+import { addDebitFromAppointment } from '@/lib/credits/ledger'
+import type { CalendarBlock } from '@/types/calendar-block'
 
 const logger = createLogger('hooks:calendar:use-calendar-page')
 
@@ -78,6 +83,67 @@ function getRecurrenceSlots(
   return slots
 }
 
+const UNTIL_LESSONS_MAX_SLOTS = 100
+
+/** Verifica sovrapposizione per (staff_id, starts_at, ends_at). Ritorna true se c'è overlap (e non si può inserire senza "procedi comunque"). */
+async function checkAppointmentOverlap(
+  supabaseClient: SupabaseClient<Database>,
+  staffId: string,
+  startsAt: string,
+  endsAt: string,
+  options: {
+    excludeAppointmentId?: string
+    appointmentType?: string
+    isCollaborator?: boolean
+  },
+): Promise<boolean> {
+  const { data: existing } = await supabaseClient
+    .from('appointments')
+    .select('id, type')
+    .eq('staff_id', staffId)
+    .lt('starts_at', endsAt)
+    .gt('ends_at', startsAt)
+  const rows = (existing ?? []) as { id: string; type?: string }[]
+  const filtered = options.excludeAppointmentId
+    ? rows.filter((r) => r.id !== options.excludeAppointmentId)
+    : rows
+  if (filtered.length === 0) return false
+  if (options.appointmentType === 'allenamento_doppio') {
+    const doppioCount = filtered.filter((r) => r.type === 'allenamento_doppio').length
+    return doppioCount >= 2
+  }
+  return filtered.length >= 1
+}
+
+/** Genera slot settimanali "fino a esaurimento lezioni": N = min(lesson_count, 100). */
+async function getRecurrenceSlotsUntilLessons(
+  supabaseClient: SupabaseClient<Database>,
+  athleteId: string,
+  firstStartsAt: string,
+  firstEndsAt: string,
+): Promise<{ starts_at: string; ends_at: string }[]> {
+  const { data: row } = await supabaseClient
+    .from('lesson_counters')
+    .select('count')
+    .eq('athlete_id', athleteId)
+    .maybeSingle()
+  const count = (row as { count?: number | null } | null)?.count ?? 0
+  const N = Math.min(Math.max(0, count), UNTIL_LESSONS_MAX_SLOTS)
+  if (N === 0) return []
+  const firstStart = new Date(firstStartsAt)
+  const firstEnd = new Date(firstEndsAt)
+  const durationMs = firstEnd.getTime() - firstStart.getTime()
+  const oneWeekMs = 7 * 24 * 60 * 60 * 1000
+  const slots: { starts_at: string; ends_at: string }[] = []
+  for (let i = 0; i < N; i++) {
+    const t = firstStart.getTime() + i * oneWeekMs
+    const start = new Date(t)
+    const end = new Date(t + durationMs)
+    slots.push({ starts_at: start.toISOString(), ends_at: end.toISOString() })
+  }
+  return slots
+}
+
 export function useCalendarPage() {
   // Nota: router e searchParams potrebbero essere usati in futuro per navigazione/filtri URL
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -95,6 +161,8 @@ export function useCalendarPage() {
   const [staffRole, setStaffRole] = useState<string | null>(null)
   const [staffDisplayName, setStaffDisplayName] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [calendarBlocks, setCalendarBlocks] = useState<CalendarBlock[]>([])
+  const { settings: calendarSettings } = useStaffCalendarSettings()
 
   // Carica il profilo dello staff corrente (id, org_id, role per insert e lista atleti)
   useEffect(() => {
@@ -127,16 +195,13 @@ export function useCalendarPage() {
     fetchStaffProfile()
   }, [])
 
-  // Carica appuntamenti dal database (filtrati per profilo staff corrente)
+  // Carica appuntamenti: propri + (se trainer/admin) Free Pass org + calendari collaboratori
   const fetchAppointments = useCallback(async () => {
     if (!staffProfileId) return
 
     try {
       setAppointmentsLoading(true)
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select(
-          `
+      const selectFields = `
             id,
             org_id,
             athlete_id,
@@ -152,17 +217,23 @@ export function useCalendarPage() {
             created_at,
             is_open_booking_day,
             created_by_role
-          `,
-        )
+          `
+      const isTrainerOrAdmin = staffRole === 'trainer' || staffRole === 'admin'
+      const showFreePass = calendarSettings?.show_free_pass_calendar !== false
+      const showCollaborators = calendarSettings?.show_collaborators_calendars !== false
+
+      const { data: myData, error: myError } = await supabase
+        .from('appointments')
+        .select(selectFields)
         .eq('staff_id', staffProfileId)
         .order('starts_at', { ascending: true })
 
-      if (appointmentsError) {
+      if (myError) {
         const errMsg =
-          typeof appointmentsError === 'object' && appointmentsError !== null && 'message' in appointmentsError
-            ? (appointmentsError as { message?: string }).message
-            : String(appointmentsError)
-        logger.error(`Errore caricamento appuntamenti: ${errMsg ?? 'unknown'}`, appointmentsError)
+          typeof myError === 'object' && myError !== null && 'message' in myError
+            ? (myError as { message?: string }).message
+            : String(myError)
+        logger.error(`Errore caricamento appuntamenti: ${errMsg ?? 'unknown'}`, myError)
         return
       }
 
@@ -172,24 +243,76 @@ export function useCalendarPage() {
         created_by_role?: string | null
         service_type?: 'training' | 'nutrition' | 'massage' | null
       }
-      const appointmentRows = (appointmentsData ?? []) as unknown as AppointmentRowWithColor[]
+      const allRows = (myData ?? []) as unknown as AppointmentRowWithColor[]
+
+      if (isTrainerOrAdmin && staffOrgId) {
+        if (showFreePass) {
+          const { data: freePassData } = await supabase
+            .from('appointments')
+            .select(selectFields)
+            .eq('org_id', staffOrgId)
+            .eq('is_open_booking_day', true)
+            .order('starts_at', { ascending: true })
+          const fpRows = (freePassData ?? []) as unknown as AppointmentRowWithColor[]
+          const seen = new Set(allRows.map((r) => r.id))
+          for (const r of fpRows) {
+            if (!seen.has(r.id)) {
+              seen.add(r.id)
+              allRows.push(r)
+            }
+          }
+        }
+        if (showCollaborators) {
+          const { data: collaboratorProfiles } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('org_id', staffOrgId)
+            .in('role', ['nutrizionista', 'massaggiatore'])
+          const collIds = (collaboratorProfiles ?? []).map((p: { id: string }) => p.id).filter((id: string) => id !== staffProfileId)
+          if (collIds.length > 0) {
+            const { data: collData } = await supabase
+              .from('appointments')
+              .select(selectFields)
+              .in('staff_id', collIds)
+              .order('starts_at', { ascending: true })
+            const collRows = (collData ?? []) as unknown as AppointmentRowWithColor[]
+            const seen = new Set(allRows.map((r) => r.id))
+            for (const r of collRows) {
+              if (!seen.has(r.id)) {
+                seen.add(r.id)
+                allRows.push(r)
+              }
+            }
+          }
+        }
+      }
+
+      allRows.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+      // Escludi slot privati di altri staff: solo il proprietario vede i propri privati
+      const appointmentRows = allRows.filter(
+        (apt) => !(apt.type === 'privato' && apt.staff_id !== staffProfileId),
+      )
       const athleteIds = [...new Set(appointmentRows.map((apt) => apt.athlete_id).filter(Boolean))] as string[]
 
-      // Carica nomi atleti (se fallisce RLS/profiles, continuiamo con nomi vuoti)
+      // Carica nomi atleti e lezioni rimanenti
       const athleteNamesMap = new Map<string, string>()
+      const lessonsRemainingMap = new Map<string, number>()
       if (athleteIds.length > 0) {
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome')
-          .in('id', athleteIds)
-
+        const [profilesRes, countersRes] = await Promise.all([
+          supabase.from('profiles').select('id, nome, cognome').in('id', athleteIds),
+          supabase.from('lesson_counters').select('athlete_id, count').in('athlete_id', athleteIds),
+        ])
+        const profilesError = profilesRes.error
         if (profilesError) {
           logger.error('Errore caricamento nomi atleti per calendario (ignorato)', profilesError)
         }
-        profiles?.forEach((profile: { id: string; nome?: string | null; cognome?: string | null }) => {
+        ;(profilesRes.data ?? []).forEach((profile: { id: string; nome?: string | null; cognome?: string | null }) => {
           const p = profile
           const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
           athleteNamesMap.set(p.id, fullName || 'Atleta')
+        })
+        ;(countersRes.data ?? []).forEach((r: { athlete_id: string; count: number | null }) => {
+          lessonsRemainingMap.set(r.athlete_id, r.count ?? 0)
         })
       }
 
@@ -202,12 +325,19 @@ export function useCalendarPage() {
 
           const allowedTypes = [
             'allenamento',
+            'allenamento_singolo',
+            'allenamento_doppio',
+            'programma',
             'prova',
             'valutazione',
             'prima_visita',
             'riunione',
             'massaggio',
             'nutrizionista',
+            'privato',
+            'appuntamento_normale',
+            'controllo',
+            'slot_disponibile',
           ] as const
           const appointmentType =
             apt.type && allowedTypes.includes(apt.type as (typeof allowedTypes)[number])
@@ -241,6 +371,7 @@ export function useCalendarPage() {
             created_at: apt.created_at ?? new Date().toISOString(),
             is_open_booking_day: isOpenSlot,
             created_by_role: (apt.created_by_role as 'athlete' | 'trainer' | 'admin') ?? undefined,
+            lessons_remaining: apt.athlete_id ? lessonsRemainingMap.get(apt.athlete_id) : undefined,
           }
         },
       )
@@ -251,11 +382,34 @@ export function useCalendarPage() {
     } finally {
       setAppointmentsLoading(false)
     }
-  }, [staffProfileId, staffOrgId, staffDisplayName])
+  }, [staffProfileId, staffOrgId, staffDisplayName, staffRole, calendarSettings?.show_free_pass_calendar, calendarSettings?.show_collaborators_calendars])
 
   useEffect(() => {
     void fetchAppointments()
   }, [fetchAppointments])
+
+  useEffect(() => {
+    if (!staffOrgId || !staffProfileId) return
+    let cancelled = false
+    const from = new Date()
+    from.setDate(from.getDate() - 30)
+    const to = new Date()
+    to.setDate(to.getDate() + 365)
+    supabase
+      .from('calendar_blocks')
+      .select('id, org_id, staff_id, starts_at, ends_at, reason, created_at')
+      .eq('org_id', staffOrgId)
+      .or(`staff_id.eq.${staffProfileId},staff_id.is.null`)
+      .gte('ends_at', from.toISOString())
+      .lte('starts_at', to.toISOString())
+      .then(({ data, error }) => {
+        if (cancelled || error) return
+        setCalendarBlocks((data ?? []) as CalendarBlock[])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [staffOrgId, staffProfileId])
 
   // Carica atleti: trainer/admin = tutti atleti org (stato attivo); nutrizionista/massaggiatore = solo clienti in staff_atleti
   const fetchAthletes = useCallback(async () => {
@@ -331,7 +485,11 @@ export function useCalendarPage() {
   }, [fetchAthletes])
 
   const handleFormSubmit = useCallback(
-    async (data: CreateAppointmentData, editingAppointment: EditAppointmentData | null) => {
+    async (
+      data: CreateAppointmentData,
+      editingAppointment: EditAppointmentData | null,
+      options?: { forceOverwrite?: boolean },
+    ): Promise<{ overlapDetected?: boolean } | void> => {
       if (!staffProfileId) {
         logger.error('Profilo staff non disponibile')
         return
@@ -357,6 +515,7 @@ export function useCalendarPage() {
 
       try {
         const isOpenBooking = data.is_open_booking_day === true
+        const isCollaborator = staffRole === 'nutrizionista' || staffRole === 'massaggiatore'
         const athleteName = data.athlete_id
           ? (athletes.find((a) => a.id === data.athlete_id)?.name || 'Atleta')
           : 'Libera prenotazione'
@@ -372,6 +531,30 @@ export function useCalendarPage() {
             notify('Gli slot Libera prenotazione vanno modificati dal calendario (trascinamento).', 'info', 'Info')
             setLoading(false)
             return
+          }
+          const overlapsBlock = (s: string, e: string) =>
+            calendarBlocks.some(
+              (b) => new Date(s) < new Date(b.ends_at) && new Date(e) > new Date(b.starts_at),
+            )
+          if (overlapsBlock(startsAt, endsAt)) {
+            notify('Questo orario cade in un blocco calendario (ferie/chiusura). Scegli un altro slot.', 'error', 'Blocco calendario')
+            setLoading(false)
+            return
+          }
+          if (!options?.forceOverwrite) {
+            const hasOverlap = await checkAppointmentOverlap(supabase, staffProfileId, startsAt, endsAt, {
+              excludeAppointmentId: editingAppointment.id,
+              appointmentType: data.type,
+              isCollaborator,
+            })
+            if (hasOverlap) {
+              const msg = isCollaborator
+                ? 'Questo slot è già occupato.'
+                : 'Questo slot è già occupato. Non è disponibile.'
+              notify(msg, 'warning', 'Slot occupato')
+              setLoading(false)
+              return { overlapDetected: true }
+            }
           }
           const allowedStatuses = ['attivo', 'completato', 'annullato', 'in_corso', 'cancelled'] as const
           const updateStatus = data.status && allowedStatuses.includes(data.status as (typeof allowedStatuses)[number])
@@ -396,10 +579,30 @@ export function useCalendarPage() {
 
           if (error) throw error
         } else if (isOpenBooking) {
+          if (!orgId) {
+            notify('Organizzazione non disponibile per creare slot Free Pass.', 'error', 'Errore')
+            setLoading(false)
+            return
+          }
           const slots =
-            data.recurrence && data.recurrence !== 'none'
+            data.recurrence && data.recurrence !== 'none' && data.recurrence !== 'until_lessons'
               ? getRecurrenceSlots(startsAt, endsAt, data.recurrence)
               : [{ starts_at: startsAt, ends_at: endsAt }]
+          for (const slot of slots) {
+            const { data: existing } = await supabase
+              .from('appointments')
+              .select('id')
+              .eq('org_id', orgId)
+              .eq('is_open_booking_day', true)
+              .eq('starts_at', slot.starts_at)
+              .eq('ends_at', slot.ends_at)
+              .maybeSingle()
+            if (existing) {
+              notify('Esiste già uno slot Free Pass per questo orario. Un solo slot per orario per organizzazione.', 'error', 'Slot Free Pass')
+              setLoading(false)
+              return
+            }
+          }
           const rows = slots.map((slot) => ({
             org_id: orgId,
             org_id_text: orgId ?? null,
@@ -417,7 +620,15 @@ export function useCalendarPage() {
           }))
           type AppointmentInsert = import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Insert']
           const { error: insertError } = await supabase.from('appointments').insert(rows as AppointmentInsert[])
-          if (insertError) throw insertError
+          if (insertError) {
+            if (insertError.code === '23505') {
+              notify('Esiste già uno slot Free Pass per questo orario.', 'error', 'Slot Free Pass')
+            } else {
+              throw insertError
+            }
+            setLoading(false)
+            return
+          }
           logger.info('Slot Libera prenotazione creati', undefined, { count: rows.length })
         } else {
           // DB ammette solo: attivo, completato, annullato, in_corso, cancelled
@@ -427,10 +638,49 @@ export function useCalendarPage() {
               ? data.status
               : 'attivo'
 
-          const slots =
-            data.recurrence && data.recurrence !== 'none'
-              ? getRecurrenceSlots(startsAt, endsAt, data.recurrence)
-              : [{ starts_at: startsAt, ends_at: endsAt }]
+          let slots: { starts_at: string; ends_at: string }[]
+          if (data.recurrence === 'until_lessons' && data.athlete_id) {
+            slots = await getRecurrenceSlotsUntilLessons(supabase, data.athlete_id, startsAt, endsAt)
+            if (slots.length === 0) {
+              notify('L\'atleta non ha lezioni disponibili o il conteggio è zero.', 'error', 'Ripetizione')
+              setLoading(false)
+              return
+            }
+          } else if (data.recurrence && data.recurrence !== 'none' && data.recurrence !== 'until_lessons') {
+            slots = getRecurrenceSlots(startsAt, endsAt, data.recurrence)
+          } else {
+            slots = [{ starts_at: startsAt, ends_at: endsAt }]
+          }
+          const overlapsBlock = (s: string, e: string) =>
+            calendarBlocks.some(
+              (b) => new Date(s) < new Date(b.ends_at) && new Date(e) > new Date(b.starts_at),
+            )
+          for (const slot of slots) {
+            if (overlapsBlock(slot.starts_at, slot.ends_at)) {
+              notify('Questo orario cade in un blocco calendario (ferie/chiusura). Scegli un altro slot.', 'error', 'Blocco calendario')
+              setLoading(false)
+              return
+            }
+          }
+          if (!options?.forceOverwrite) {
+            for (const slot of slots) {
+              const hasOverlap = await checkAppointmentOverlap(supabase, staffProfileId, slot.starts_at, slot.ends_at, {
+                appointmentType: data.type,
+                isCollaborator,
+              })
+              if (hasOverlap) {
+                const msg =
+                  data.type === 'allenamento_doppio'
+                    ? 'Questo slot ha già due allenamenti doppi. Non è disponibile per un nuovo allenamento.'
+                    : isCollaborator
+                      ? 'Questo slot è già occupato.'
+                      : 'Questo slot è già occupato. Non è disponibile per un nuovo allenamento.'
+                notify(msg, 'warning', 'Slot occupato')
+                setLoading(false)
+                return { overlapDetected: true }
+              }
+            }
+          }
           const rows = slots.map((slot) => ({
             org_id: orgId,
             org_id_text: orgId ?? null,
@@ -446,9 +696,20 @@ export function useCalendarPage() {
             created_by_role: 'trainer',
           }))
           type AppointmentInsert = import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Insert']
-          const { error: insertError } = await supabase.from('appointments').insert(rows as AppointmentInsert[])
+          const { data: insertedRows, error: insertError } = await supabase
+            .from('appointments')
+            .insert(rows as AppointmentInsert[])
+            .select('id')
           if (insertError) throw insertError
+          const createdIds = (insertedRows ?? []).map((r) => (r as { id: string }).id)
           logger.info('Appuntamenti creati', undefined, { count: rows.length })
+          if (createdIds.length > 0 && data.athlete_id) {
+            fetch('/api/calendar/send-appointment-reminder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ appointmentIds: createdIds }),
+            }).catch((err) => logger.error('Invio promemoria atleta fallito', err))
+          }
         }
 
         await fetchAppointments()
@@ -473,15 +734,33 @@ export function useCalendarPage() {
         throw err
       }
     },
-    [staffProfileId, staffOrgId, athletes, fetchAppointments, notify],
+    [staffProfileId, staffOrgId, athletes, calendarBlocks, fetchAppointments, notify],
   )
 
   const handleCancel = useCallback(
-    async (appointmentId: string) => {
+    async (
+      appointmentId: string,
+      options?: {
+        deductLesson?: boolean
+        /** true = "Annulla senza scalare" (eccezione) anche con < 24h */
+        isException?: boolean
+        appointment?: AppointmentUI
+      },
+    ) => {
       setLoading(true)
       try {
+        let apt = options?.appointment
+        if (!apt) {
+          const { data } = await supabase
+            .from('appointments')
+            .select('id, athlete_id, staff_id, starts_at, service_type')
+            .eq('id', appointmentId)
+            .single()
+          apt = data as unknown as AppointmentUI
+        }
+        const cancelledAt = new Date().toISOString()
         const cancelPayload = {
-          cancelled_at: new Date().toISOString(),
+          cancelled_at: cancelledAt,
           status: 'annullato',
         } as Partial<AppointmentRow>
 
@@ -491,6 +770,33 @@ export function useCalendarPage() {
           .eq('id', appointmentId)
 
         if (error) throw error
+
+        const athleteId = apt?.athlete_id ?? null
+        const deductLesson = options?.deductLesson === true
+        const isException = options?.isException === true
+        let cancellationType: string
+        if (deductLesson) {
+          cancellationType = 'tardiva'
+          if (athleteId) {
+            await addDebitFromAppointment(
+              { id: appointmentId, athlete_id: athleteId, service_type: (apt as { service_type?: 'training' | 'nutrition' | 'massage' })?.service_type },
+              staffProfileId,
+            )
+          }
+        } else {
+          cancellationType = isException ? 'eccezionale' : 'anticipata'
+        }
+
+        if (athleteId) {
+          await supabase.from('appointment_cancellations').insert({
+            appointment_id: appointmentId,
+            athlete_id: athleteId,
+            cancelled_at: cancelledAt,
+            cancelled_by_profile_id: staffProfileId!,
+            cancellation_type: cancellationType,
+            lesson_deducted: deductLesson,
+          })
+        }
 
         await fetchAppointments()
       } catch (err) {
@@ -502,7 +808,7 @@ export function useCalendarPage() {
         setLoading(false)
       }
     },
-    [fetchAppointments, notify],
+    [staffProfileId, fetchAppointments, notify],
   )
 
   const handleDelete = useCallback(
@@ -623,6 +929,58 @@ export function useCalendarPage() {
     [fetchAppointments, notify],
   )
 
+  const handleNoShow = useCallback(
+    async (appointmentId: string, appointment?: AppointmentUI) => {
+      setLoading(true)
+      try {
+        let apt = appointment
+        if (!apt) {
+          const { data } = await supabase
+            .from('appointments')
+            .select('id, athlete_id, service_type')
+            .eq('id', appointmentId)
+            .single()
+          apt = data as unknown as AppointmentUI
+        }
+        const cancelledAt = new Date().toISOString()
+        const { error: updateError } = await supabase
+          .from('appointments')
+          .update({ status: 'annullato', cancelled_at: cancelledAt })
+          .eq('id', appointmentId)
+        if (updateError) throw updateError
+        const athleteId = apt?.athlete_id ?? null
+        if (athleteId) {
+          await addDebitFromAppointment(
+            {
+              id: appointmentId,
+              athlete_id: athleteId,
+              service_type: (apt as { service_type?: 'training' | 'nutrition' | 'massage' })?.service_type,
+            },
+            staffProfileId,
+          )
+          await supabase.from('appointment_cancellations').insert({
+            appointment_id: appointmentId,
+            athlete_id: athleteId,
+            cancelled_at: cancelledAt,
+            cancelled_by_profile_id: staffProfileId!,
+            cancellation_type: 'no_show',
+            lesson_deducted: true,
+          })
+        }
+        await fetchAppointments()
+        notify('No-show registrato. È stato scalato 1 credito.', 'success', 'No-show')
+      } catch (err) {
+        logger.error('Errore no-show', err, { appointmentId })
+        const msg =
+          err instanceof Error ? err.message : (err as { message?: string })?.message
+        notify(msg || 'Impossibile registrare il no-show', 'error', 'Errore')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [staffProfileId, fetchAppointments, notify],
+  )
+
   return {
     appointments,
     appointmentsLoading,
@@ -630,12 +988,14 @@ export function useCalendarPage() {
     athletesLoading,
     staffProfileId,
     staffDisplayName,
+    calendarBlocks,
     loading,
     fetchAppointments,
     handleFormSubmit,
     handleCancel,
     handleDelete,
     handleComplete,
+    handleNoShow,
     handleEventDrop,
     handleEventResize,
   }

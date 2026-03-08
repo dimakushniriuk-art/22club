@@ -71,12 +71,28 @@
 }
 
 .fc .fc-col-header-cell-cushion {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
   color: #9AA0A6 !important;
+  padding: 0 !important;
+}
+
+.fc .fc-col-header-cell-cushion .fc-col-header-day {
   font-size: 11px !important;
   font-weight: 500 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.8px !important;
-  padding: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.fc .fc-col-header-cell-cushion .fc-col-header-date {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  line-height: 1.2 !important;
 }
 
 /* ========================================
@@ -498,4 +514,43 @@
 .fc .fc-daygrid-day-number:hover {
   background: rgba(2, 179, 191, 0.1) !important;
   color: #14b8a6 !important;
+}
+
+/* ========================================
+   DENSITÀ VISTA (compact / comfort / spacious)
+   ======================================== */
+
+.fc-density-compact .fc-timegrid-slot {
+  min-height: 2rem !important;
+}
+
+.fc-density-compact .fc-timegrid-slot-label,
+.fc-density-compact .fc-event-time {
+  font-size: 0.7rem !important;
+}
+
+.fc-density-compact .fc-daygrid-event,
+.fc-density-compact .fc-event {
+  padding: 1px 4px !important;
+}
+
+.fc-density-compact .fc-daygrid-day-frame {
+  min-height: 60px !important;
+}
+
+.fc-density-spacious .fc-timegrid-slot {
+  min-height: 3.5rem !important;
+}
+
+.fc-density-spacious .fc-timegrid-slot-label {
+  font-size: 0.875rem !important;
+}
+
+.fc-density-spacious .fc-daygrid-event,
+.fc-density-spacious .fc-event {
+  padding: 4px 8px !important;
+}
+
+.fc-density-spacious .fc-daygrid-day-frame {
+  min-height: 100px !important;
 }

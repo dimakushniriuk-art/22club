@@ -10,7 +10,7 @@ import type { JSX } from 'react'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Skeleton } from '@/components/ui'
-import { Plus, ChevronLeft, ChevronRight, Bell, Mail, MessageSquare } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Mail } from 'lucide-react'
 import type { Communication } from '@/hooks/use-communications'
 import { CommunicationCard } from './communication-card'
 
@@ -75,22 +75,27 @@ const EMPTY_STATE_BY_TAB: Record<
   tutte: {
     title: 'Nessuna comunicazione trovata',
     description: 'Inizia a inviare comunicazioni ai tuoi atleti',
-    icon: <Bell className="mx-auto h-12 w-12 text-text-tertiary" />,
-  },
-  push: {
-    title: 'Nessuna notifica push',
-    description: 'Invia la prima notifica push ai tuoi atleti',
-    icon: <Bell className="mx-auto h-12 w-12 text-text-tertiary" />,
-  },
-  email: {
-    title: 'Nessuna email inviata',
-    description: 'Invia la prima email dalla dashboard',
     icon: <Mail className="mx-auto h-12 w-12 text-text-tertiary" />,
   },
-  sms: {
-    title: 'Nessun SMS inviato',
-    description: 'Invia il primo SMS ai tuoi atleti',
-    icon: <MessageSquare className="mx-auto h-12 w-12 text-text-tertiary" />,
+  sent: {
+    title: 'Nessuna comunicazione inviata',
+    description: 'Le comunicazioni inviate con successo appariranno qui',
+    icon: <Mail className="mx-auto h-12 w-12 text-text-tertiary" />,
+  },
+  delivered: {
+    title: 'Nessuna consegnata',
+    description: 'Le comunicazioni consegnate ai destinatari appariranno qui',
+    icon: <Mail className="mx-auto h-12 w-12 text-text-tertiary" />,
+  },
+  pending: {
+    title: 'Nessuna in attesa',
+    description: 'Bozze, programmate e in invio appariranno qui',
+    icon: <Mail className="mx-auto h-12 w-12 text-text-tertiary" />,
+  },
+  failed: {
+    title: 'Nessun fallimento',
+    description: 'Le comunicazioni fallite appariranno qui',
+    icon: <Mail className="mx-auto h-12 w-12 text-text-tertiary" />,
   },
 }
 

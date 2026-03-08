@@ -32,13 +32,25 @@ export async function GET() {
       return NextResponse.json({ athletes: [] }, { status: 200 })
     }
 
-    const { data: myProfile } = await supabase
+    // Profilo utente: prima per user_id (auth.uid()), fallback su id per compatibilità
+    let myProfile: { org_id?: string } | null = null
+    const { data: byUserId } = await supabase
       .from('profiles')
       .select('org_id')
-      .eq('id', user.id)
-      .single()
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (byUserId) {
+      myProfile = byUserId as { org_id?: string }
+    } else {
+      const { data: byId } = await supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('id', user.id)
+        .maybeSingle()
+      myProfile = byId as { org_id?: string } | null
+    }
 
-    const orgId = (myProfile as { org_id?: string } | null)?.org_id
+    const orgId = myProfile?.org_id
     if (!orgId) {
       return NextResponse.json({ athletes: [] }, { status: 200 })
     }
@@ -47,6 +59,7 @@ export async function GET() {
       .from('profiles')
       .select('id, nome, cognome, first_name, last_name, email')
       .eq('org_id', orgId)
+      .eq('role', 'athlete')
 
     if (error) {
       return NextResponse.json({ athletes: [] }, { status: 200 })

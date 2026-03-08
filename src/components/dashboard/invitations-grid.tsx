@@ -46,15 +46,13 @@ export function InvitationsGrid({
           variant="trainer"
           className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 hover:shadow-blue-500/20 transition-all duration-200"
         >
-          {invitation.stato === 'inviato' && (
-            <div className="absolute left-3 top-3">
-              <Checkbox
-                checked={selectedIds.has(invitation.id)}
-                onChange={(e) => onToggleSelect(invitation.id, e.target.checked)}
-                aria-label={`Seleziona invito per ${invitation.nome_atleta}`}
-              />
-            </div>
-          )}
+          <div className="absolute left-3 top-3">
+            <Checkbox
+              checked={selectedIds.has(invitation.id)}
+              onChange={(e) => onToggleSelect(invitation.id, e.target.checked)}
+              aria-label={`Seleziona invito per ${invitation.nome_atleta}`}
+            />
+          </div>
           <CardContent className="p-4 pt-10 relative">
             <div className="mb-3 flex items-start justify-between">
               <div className="flex-1">
@@ -144,17 +142,15 @@ export function InvitationsGrid({
                 >
                   <QrCode className="h-4 w-4" />
                 </Button>
-                {invitation.stato === 'inviato' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDelete(invitation.id)}
-                    className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200"
-                    aria-label="Elimina invito"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(invitation.id)}
+                  className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200"
+                  aria-label="Elimina invito"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardContent>

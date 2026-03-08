@@ -6,8 +6,9 @@
 
 'use client'
 
+import Link from 'next/link'
 import { Button } from '@/components/ui'
-import { Plus } from 'lucide-react'
+import { Plus, FileText } from 'lucide-react'
 
 interface CommunicationsHeaderProps {
   onNewCommunication: () => void
@@ -21,13 +22,21 @@ export function CommunicationsHeader({ onNewCommunication }: CommunicationsHeade
           Comunicazioni
         </h1>
         <p className="text-text-secondary text-sm sm:text-base">
-          Invia notifiche push, email e SMS ai tuoi atleti
+          Invia email ai tuoi atleti
         </p>
       </div>
-      <Button variant="primary" onClick={onNewCommunication}>
-        <Plus className="mr-2 h-4 w-4" />
-        Nuova Comunicazione
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" asChild>
+          <Link href="/dashboard/comunicazioni/template">
+            <FileText className="mr-2 h-4 w-4" />
+            Template email
+          </Link>
+        </Button>
+        <Button variant="primary" onClick={onNewCommunication}>
+          <Plus className="mr-2 h-4 w-4" />
+          Nuova Comunicazione
+        </Button>
+      </div>
     </div>
   )
 }

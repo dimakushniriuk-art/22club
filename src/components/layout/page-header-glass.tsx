@@ -51,17 +51,18 @@ export function PageHeaderGlass({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl',
+        'fixed inset-x-0 top-0 z-20 overflow-hidden rounded-b-2xl p-4 backdrop-blur-xl pt-[env(safe-area-inset-top)]',
         className,
       )}
       style={{
         border: gradients.glassHeaderBorder,
+        borderTop: 'none',
         background: gradients.glassHeaderTeal,
         boxShadow: gradients.glassHeaderShadow,
       }}
     >
       <div
-        className="pointer-events-none absolute inset-0 rounded-2xl opacity-70"
+        className="pointer-events-none absolute inset-0 rounded-b-2xl opacity-70"
         style={{ background: gradients.glassHeaderRadial }}
         aria-hidden
       />

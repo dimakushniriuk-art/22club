@@ -1,8 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { X, User, Clock, MapPin, FileText, Tag, Calendar, ChevronDown, Repeat } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
+import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
+import { useAuth } from '@/providers/auth-provider'
+import {
+  getDefaultDurationsForRole,
+  DEFAULT_TYPE_COLORS,
+  FREE_PASS_DURATION_MINUTES,
+  APPOINTMENT_TYPE_LABELS,
+} from '@/lib/calendar-defaults'
 
 const logger = createLogger('components:calendar:appointment-form')
 import { Button, Switch } from '@/components/ui'
@@ -35,6 +43,7 @@ const COLOR_LABELS: Record<AppointmentColor, string> = {
   blu: 'Blu',
   viola_scuro: 'Viola',
   viola_chiaro: 'Lavanda',
+  lilla: 'Lilla',
   rosa: 'Rosa',
   rosso: 'Rosso',
   arancione: 'Arancione',
@@ -45,18 +54,25 @@ const COLOR_LABELS: Record<AppointmentColor, string> = {
   grigio: 'Grigio',
 }
 
-// Tipi di appuntamento con icone e colori
-const APPOINTMENT_TYPES = [
-  { value: 'allenamento', label: 'Allenamento', emoji: '🏋️' },
-  { value: 'prova', label: 'Prova', emoji: '🎯' },
-  { value: 'valutazione', label: 'Valutazione', emoji: '📊' },
-  { value: 'prima_visita', label: 'Prima Visita', emoji: '👋' },
-  { value: 'riunione', label: 'Riunione', emoji: '🤝' },
-  { value: 'massaggio', label: 'Massaggio', emoji: '💆' },
-  { value: 'nutrizionista', label: 'Nutrizionista', emoji: '🥗' },
-]
-// Opzione tipo per slot Libera prenotazione (stesso value 'allenamento' per il DB)
-const OPEN_BOOKING_TYPE = { value: 'allenamento' as const, label: 'Libera prenotazione', emoji: '📅' }
+// Emoji per tipo (per form)
+const TYPE_EMOJI: Record<string, string> = {
+  allenamento: '🏋️',
+  allenamento_singolo: '🏋️',
+  allenamento_doppio: '🏋️',
+  programma: '📋',
+  prova: '🎯',
+  valutazione: '📊',
+  prima_visita: '👋',
+  riunione: '🤝',
+  massaggio: '💆',
+  nutrizionista: '🥗',
+  privato: '🔒',
+  appuntamento_normale: '📅',
+  controllo: '✅',
+  slot_disponibile: '🟢',
+}
+// Opzione tipo per slot Libera prenotazione (Free Pass)
+const OPEN_BOOKING_TYPE = { value: 'allenamento' as const, label: 'Libera prenotazione (Free Pass)', emoji: '📅' }
 
 interface Athlete {
   id: string
@@ -103,21 +119,89 @@ export function AppointmentForm({
   defaultType,
   defaultColor,
 }: AppointmentFormProps) {
-  // Calcola orario fine (+90 minuti di default)
-  function calculateEndTime(startTime: string): string {
+  const { settings } = useStaffCalendarSettings()
+  const { role } = useAuth()
+  const defaultDurationsByRole = useMemo(
+    () => getDefaultDurationsForRole(role ?? ''),
+    [role],
+  )
+  const defaultDurations = useMemo(
+    () => (settings?.default_durations && Object.keys(settings.default_durations).length > 0
+      ? settings.default_durations
+      : defaultDurationsByRole),
+    [settings?.default_durations, defaultDurationsByRole],
+  )
+  const enabledTypes = useMemo(() => {
+    let system: string[]
+    if (settings?.enabled_appointment_types?.length) system = settings.enabled_appointment_types
+    else if (role === 'trainer' || role === 'admin')
+      system = ['allenamento_singolo', 'allenamento_doppio', 'programma', 'prova', 'riunione', 'privato', 'allenamento']
+    else if (role === 'nutrizionista')
+      system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'nutrizionista']
+    else if (role === 'massaggiatore')
+      system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'massaggio']
+    else system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'massaggio', 'nutrizionista']
+    const customKeys = (settings?.custom_appointment_types ?? []).map((c) => c.key)
+    return [...system, ...customKeys]
+  }, [settings?.enabled_appointment_types, settings?.custom_appointment_types, role])
+
+  /** Tipo di default per nuovo appuntamento: primo tra abilitati in impostazioni, altrimenti prop o fallback. */
+  const defaultTypeFromSettings = enabledTypes[0] ?? defaultType ?? 'allenamento'
+  /** Colore per tipo da impostazioni (usato come default e al cambio tipo). */
+  const colorForType = useCallback(
+    (type: string): AppointmentColor =>
+      (settings?.type_colors?.[type] as AppointmentColor) ?? (DEFAULT_TYPE_COLORS[type] as AppointmentColor) ?? 'azzurro',
+    [settings?.type_colors],
+  )
+  const appointmentTypes = useMemo(() => {
+    const customLabels = Object.fromEntries(
+      (settings?.custom_appointment_types ?? []).map((c) => [c.key, c.label]),
+    )
+    const list = enabledTypes.map((value) => ({
+      value,
+      label: customLabels[value] ?? APPOINTMENT_TYPE_LABELS[value] ?? value.replace(/_/g, ' '),
+      emoji: TYPE_EMOJI[value] ?? '📌',
+    }))
+    return list
+  }, [enabledTypes, settings?.custom_appointment_types])
+  const recurrenceOptionsList = useMemo(() => {
+    const opts = settings?.recurrence_options?.length
+      ? settings.recurrence_options
+      : ['none', '2_weeks', '1_month', '6_months', '1_year', 'until_lessons']
+    return [
+      { value: 'none', label: 'Nessuna' },
+      ...(opts.includes('2_weeks') ? [{ value: '2_weeks', label: 'Ogni settimana per 2 settimane' }] : []),
+      ...(opts.includes('1_month') ? [{ value: '1_month', label: 'Ogni settimana per 1 mese' }] : []),
+      ...(opts.includes('6_months') ? [{ value: '6_months', label: 'Ogni settimana per 6 mesi' }] : []),
+      ...(opts.includes('1_year') ? [{ value: '1_year', label: 'Ogni settimana per 1 anno' }] : []),
+      ...(opts.includes('until_lessons') ? [{ value: 'until_lessons', label: 'Fino a esaurimento lezioni' }] : []),
+    ]
+  }, [settings?.recurrence_options])
+
+  function getDurationForType(type: string, isOpenBooking: boolean): number {
+    if (isOpenBooking) return FREE_PASS_DURATION_MINUTES
+    return defaultDurations[type] ?? defaultDurationsByRole[type] ?? 90
+  }
+
+  function calculateEndTime(startTime: string, durationMinutes: number = 90): string {
     const [hours, minutes] = startTime.split(':').map(Number)
-    const totalMinutes = hours * 60 + minutes + 90
+    const totalMinutes = hours * 60 + minutes + durationMinutes
     const endHour = Math.floor(totalMinutes / 60) % 24
     const endMinute = totalMinutes % 60
     return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
   }
 
   const getDefaultDateTime = useCallback(() => {
+    const type = appointment && 'type' in appointment ? appointment.type : defaultTypeFromSettings
+    const isOpen = !!(appointment && 'is_open_booking_day' in appointment && appointment.is_open_booking_day)
+    const dur = isOpen
+      ? FREE_PASS_DURATION_MINUTES
+      : (defaultDurations[type] ?? defaultDurationsByRole[type] ?? 90)
     if (appointment?.starts_at) {
       const startLocal = extractLocalDateTime(appointment.starts_at)
       const endLocal = appointment.ends_at
         ? extractLocalDateTime(appointment.ends_at)
-        : { date: startLocal.date, time: calculateEndTime(startLocal.time) }
+        : { date: startLocal.date, time: calculateEndTime(startLocal.time, dur) }
       return {
         date: startLocal.date,
         start_time: startLocal.time,
@@ -139,7 +223,7 @@ export function AppointmentForm({
       defaultHour = 0
     }
     const startTimeStr = `${String(defaultHour).padStart(2, '0')}:${String(defaultMinute).padStart(2, '0')}`
-    const endTimeStr = calculateEndTime(startTimeStr)
+    const endTimeStr = calculateEndTime(startTimeStr, dur)
     const year = defaultDate.getFullYear()
     const month = String(defaultDate.getMonth() + 1).padStart(2, '0')
     const day = String(defaultDate.getDate()).padStart(2, '0')
@@ -148,7 +232,7 @@ export function AppointmentForm({
       start_time: startTimeStr,
       end_time: endTimeStr,
     }
-  }, [appointment])
+  }, [appointment, defaultTypeFromSettings, defaultDurations, defaultDurationsByRole])
 
   const defaultDateTime = getDefaultDateTime()
 
@@ -161,15 +245,15 @@ export function AppointmentForm({
     date: defaultDateTime.date,
     start_time: defaultDateTime.start_time,
     end_time: defaultDateTime.end_time,
-    type: appointment && 'type' in appointment ? appointment.type : (defaultType || 'allenamento'),
+    type: appointment && 'type' in appointment ? appointment.type : defaultTypeFromSettings,
     color: (appointment && 'color' in appointment && appointment.color
       ? appointment.color
-      : (defaultColor || 'azzurro')) as AppointmentColor,
+      : (defaultColor ?? colorForType(defaultTypeFromSettings))) as AppointmentColor,
     notes: appointment?.notes || '',
     location: appointment?.location || '22 Club',
     is_open_booking_day: !!(appointment && 'is_open_booking_day' in appointment && appointment.is_open_booking_day),
     is_all_day: false,
-    recurrence: 'none' as 'none' | '2_weeks' | '1_month' | '6_months' | '1_year',
+    recurrence: 'none' as 'none' | '2_weeks' | '1_month' | '6_months' | '1_year' | 'until_lessons',
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -206,10 +290,10 @@ export function AppointmentForm({
         date: newDateTime.date,
         start_time: newDateTime.start_time,
         end_time: newDateTime.end_time,
-        type: 'type' in appointment ? appointment.type : 'allenamento',
+        type: 'type' in appointment ? appointment.type : (enabledTypes[0] ?? 'allenamento'),
         color: ('color' in appointment && appointment.color
           ? appointment.color
-          : (defaultColor || 'azzurro')) as AppointmentColor,
+          : (defaultColor ?? colorForType('type' in appointment ? appointment.type : enabledTypes[0] ?? 'allenamento'))) as AppointmentColor,
         notes: appointment.notes || '',
         location: appointment.location || '22 Club',
         is_open_booking_day: !!(appointment && 'is_open_booking_day' in appointment && appointment.is_open_booking_day),
@@ -217,7 +301,7 @@ export function AppointmentForm({
         recurrence: 'none',
       })
     }
-  }, [appointment, getDefaultDateTime, athletes, defaultColor])
+  }, [appointment, getDefaultDateTime, athletes, defaultColor, enabledTypes, colorForType])
 
   useEffect(() => {
     if (athletes.length === 1 && !formData.athlete_id) {
@@ -232,7 +316,16 @@ export function AppointmentForm({
   }, [loading, isSubmitting])
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value }
+      if (field === 'type') {
+        const isOpen = prev.is_open_booking_day
+        const dur = getDurationForType(value, isOpen)
+        next.end_time = calculateEndTime(prev.start_time, dur)
+        next.color = colorForType(value)
+      }
+      return next
+    })
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }))
     }
@@ -293,14 +386,7 @@ export function AppointmentForm({
       const data: CreateAppointmentData = {
         ...(formData.is_open_booking_day ? {} : { athlete_id: formData.athlete_id! }),
         staff_id: '',
-        type: formData.type as
-          | 'allenamento'
-          | 'prova'
-          | 'valutazione'
-          | 'prima_visita'
-          | 'riunione'
-          | 'massaggio'
-          | 'nutrizionista',
+        type: formData.type as CreateAppointmentData['type'],
         starts_at,
         ends_at,
         org_id: undefined,
@@ -327,7 +413,8 @@ export function AppointmentForm({
   const handleStartTimeChange = (value: string) => {
     setFormData((prev) => {
       if (value) {
-        const endTimeStr = calculateEndTime(value)
+        const dur = getDurationForType(prev.type, prev.is_open_booking_day)
+        const endTimeStr = calculateEndTime(value, dur)
         return { ...prev, start_time: value, end_time: endTimeStr }
       }
       return { ...prev, start_time: value }
@@ -390,7 +477,8 @@ export function AppointmentForm({
                       ? {
                           notes: prev.notes || 'Libera prenotazione',
                           type: 'allenamento' as const,
-                          color: 'verde' as AppointmentColor,
+                          color: 'grigio' as AppointmentColor,
+                          end_time: calculateEndTime(prev.start_time, FREE_PASS_DURATION_MINUTES),
                         }
                       : {}),
                   }))
@@ -484,15 +572,23 @@ export function AppointmentForm({
                     />
                   </div>
                 </div>
-                <div className="rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 focus-within:border-[#8AB4F8]/50 transition-all duration-200">
+                <div
+                  className={cn(
+                    'rounded-lg border-2 bg-[#2a2a2d]/50 transition-all duration-200',
+                    formData.is_open_booking_day
+                      ? 'border-[#2a2a2d] opacity-70'
+                      : 'border-[#2a2a2d] focus-within:border-[#8AB4F8]/50',
+                  )}
+                >
                   <div className="flex items-center h-10 px-3">
                     <span className="text-[#9AA0A6] text-xs mr-2">fino</span>
                     <SimpleSelect
                       value={formData.end_time}
-                      onValueChange={(value) => handleInputChange('end_time', value)}
+                      onValueChange={(value) => !formData.is_open_booking_day && handleInputChange('end_time', value)}
                       options={TIME_OPTIONS}
                       className="flex-1"
                       unstyled
+                      disabled={formData.is_open_booking_day}
                     />
                   </div>
                 </div>
@@ -518,16 +614,10 @@ export function AppointmentForm({
                   onValueChange={(value) =>
                     setFormData((prev) => ({
                       ...prev,
-                      recurrence: value as 'none' | '2_weeks' | '1_month' | '6_months' | '1_year',
+                      recurrence: value as 'none' | '2_weeks' | '1_month' | '6_months' | '1_year' | 'until_lessons',
                     }))
                   }
-                  options={[
-                    { value: 'none', label: 'Nessuna' },
-                    { value: '2_weeks', label: 'Ogni settimana per 2 settimane' },
-                    { value: '1_month', label: 'Ogni settimana per 1 mese' },
-                    { value: '6_months', label: 'Ogni settimana per 6 mesi' },
-                    { value: '1_year', label: 'Ogni settimana per 1 anno' },
-                  ]}
+                  options={recurrenceOptionsList}
                   className="h-10 px-3"
                   unstyled
                 />
@@ -545,8 +635,8 @@ export function AppointmentForm({
           </label>
           <div className="flex flex-wrap gap-1.5">
             {(showOpenBookingOption && formData.is_open_booking_day
-              ? [OPEN_BOOKING_TYPE, ...APPOINTMENT_TYPES.filter((t) => t.value !== 'allenamento')]
-              : APPOINTMENT_TYPES
+              ? [OPEN_BOOKING_TYPE, ...appointmentTypes.filter((t) => t.value !== 'allenamento')]
+              : appointmentTypes
             ).map((type) => (
               <button
                 key={type.value}

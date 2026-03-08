@@ -9,6 +9,7 @@ import { createLogger } from '@/lib/logger'
 import type { Database, Tables } from '@/types/supabase'
 import { updateCommunicationStats } from './service'
 import { generateEmailHTML } from './email-template'
+import { getEmbeddedLogoDataUri } from './email-logo-server'
 import { processEmailBatches } from './email-batch-processor'
 
 const logger = createLogger('lib:communications:email')
@@ -126,19 +127,31 @@ export async function sendCommunicationEmail(
     }
 
     if (!recipients || recipients.length === 0) {
+      await updateCommunicationStats(communicationId)
+      await (supabase.from('communications') as ReturnType<typeof supabase.from>)
+        .update({
+          status: 'failed',
+          sent_at: new Date().toISOString(),
+        } as Record<string, unknown>)
+        .eq('id', communicationId)
       return {
-        success: true,
+        success: false,
         sent: 0,
         failed: 0,
         total: 0,
+        error: 'Nessun destinatario',
       }
     }
 
-    // Genera HTML email
+    // Genera HTML email (logo incorporato da public/logo.png se non c'è URL pubblico)
+    const baseMetadata = (communicationData.metadata as Record<string, unknown> | undefined) ?? {}
+    const logoUrl =
+      (typeof baseMetadata.logo_url === 'string' && baseMetadata.logo_url.trim()) || getEmbeddedLogoDataUri()
+    const metadataWithLogo = logoUrl ? { ...baseMetadata, logo_url: logoUrl } : baseMetadata
     const emailHTML = generateEmailHTML(
       communicationData.title,
       communicationData.message,
-      communicationData.metadata as Record<string, unknown> | undefined,
+      metadataWithLogo,
     )
 
     // Processa batch

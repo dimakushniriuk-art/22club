@@ -65,9 +65,31 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    const rows = data ?? []
+    const registratiEmails = rows
+      .filter((r) => r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato'))
+      .map((r) => r.email)
+      .filter(Boolean) as string[]
+
+    let filtered = rows
+    if (registratiEmails.length > 0) {
+      const { data: existingProfiles } = await supabase
+        .from('profiles')
+        .select('email')
+        .in('email', registratiEmails)
+        .or('is_deleted.eq.false,is_deleted.is.null')
+      const existingEmails = new Set((existingProfiles ?? []).map((p) => (p as { email: string }).email))
+      filtered = rows.filter((r) => {
+        const isRegistrato = r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato')
+        if (!isRegistrato) return true
+        return existingEmails.has(r.email)
+      })
+    }
+
+    const finalCount = !enablePagination && registratiEmails.length > 0 ? filtered.length : (count ?? filtered.length)
     return NextResponse.json({
-      data: data ?? [],
-      count: count ?? (data?.length ?? 0),
+      data: filtered,
+      count: finalCount,
     })
   } catch (error) {
     logger.error('Errore API list invitations', error)
