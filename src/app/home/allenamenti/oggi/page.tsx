@@ -15,7 +15,7 @@ import {
 } from '@/components/ui'
 import { RestTimer } from '@/components/workout/rest-timer'
 import { TrainerSessionModal } from '@/components/workout/trainer-session-modal'
-import { ArrowLeft, Check, Target, Dumbbell, Edit2, Info } from 'lucide-react'
+import { ArrowLeft, Check, Target, Dumbbell, Edit2, Info, Play } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useWorkoutSession } from '@/hooks/workouts/use-workout-session'
@@ -27,6 +27,36 @@ import type { WorkoutSession, WorkoutSetData } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 
 const logger = createLogger('app:home:allenamenti:oggi:page')
+
+/** Suono timer: crea e avvia un tono con Web Audio API (durata in ms, volume 0-1, frequenza Hz) */
+function playTimerTone(
+  audioContextRef: React.MutableRefObject<AudioContext | null>,
+  durationMs: number,
+  volume: number,
+  frequencyHz = 520,
+): void {
+  try {
+    if (typeof window === 'undefined') return
+    const ctx = audioContextRef.current ?? new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    if (!audioContextRef.current) audioContextRef.current = ctx
+    if (ctx.state === 'suspended') ctx.resume()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.value = frequencyHz
+    osc.type = 'sine'
+    const now = ctx.currentTime
+    gain.gain.setValueAtTime(0, now)
+    gain.gain.linearRampToValueAtTime(volume, now + 0.02)
+    gain.gain.setValueAtTime(volume, now + durationMs / 1000 - 0.05)
+    gain.gain.linearRampToValueAtTime(0, now + durationMs / 1000)
+    osc.start(now)
+    osc.stop(now + durationMs / 1000)
+  } catch {
+    // Ignora errori (es. autoplay policy)
+  }
+}
 
 // Componente per visualizzare video/immagine esercizio con gestione errori
 function ExerciseMediaDisplay({
@@ -44,6 +74,24 @@ function ExerciseMediaDisplay({
 }) {
   const [videoError, setVideoError] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
+  // Su mobile l'autoplay può essere bloccato: avvia play() via JS e, se fallisce, mostra overlay Play
+  const tryPlay = React.useCallback(() => {
+    const el = videoRef.current
+    if (!el) return
+    el.play().then(() => {
+      setAutoplayBlocked(false)
+    }).catch(() => {
+      setAutoplayBlocked(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!videoUrl || !isValidVideoUrl || videoError) return
+    setAutoplayBlocked(false)
+  }, [videoUrl, isValidVideoUrl, videoError])
 
   // Log per debug
   useEffect(() => {
@@ -80,18 +128,20 @@ function ExerciseMediaDisplay({
   return (
     <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-background-tertiary to-background-secondary border border-cyan-500/20">
       {shouldShowVideo ? (
-        <video
-          key={videoUrl}
-          className="h-full w-full object-cover"
-          src={videoUrl}
-          poster={isValidThumbUrl && thumbUrl ? thumbUrl : undefined}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          crossOrigin="anonymous"
-          autoPlay
-          onError={(ev) => {
+        <>
+          <video
+            ref={videoRef}
+            key={videoUrl}
+            className="h-full w-full object-cover"
+            src={videoUrl}
+            poster={isValidThumbUrl && thumbUrl ? thumbUrl : undefined}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            crossOrigin="anonymous"
+            autoPlay
+            onError={(ev) => {
             const videoElement = ev.currentTarget as HTMLVideoElement
             const error = videoElement.error
 
@@ -167,12 +217,32 @@ function ExerciseMediaDisplay({
           onCanPlay={(ev) => {
             const videoElement = ev.currentTarget as HTMLVideoElement
             videoElement.playbackRate = 1.1 // Velocizza del 10%
-            console.log('▶️ Video pronto per la riproduzione:', {
-              exerciseId: exercise.id,
-              videoUrl: videoUrl,
-            })
+            tryPlay()
+            if (process.env.NODE_ENV === 'development') {
+              console.log('▶️ Video pronto per la riproduzione:', {
+                exerciseId: exercise.id,
+                videoUrl: videoUrl,
+              })
+            }
           }}
-        />
+          />
+          {autoplayBlocked && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                tryPlay()
+              }}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity hover:bg-black/40 active:scale-95"
+              aria-label="Riproduci video"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/90 text-white shadow-lg">
+                <Play className="h-6 w-6 fill-current" />
+              </span>
+            </button>
+          )}
+        </>
       ) : shouldShowImage ? (
         <Image
           key={thumbUrl}
@@ -253,6 +323,8 @@ function AllenamentiOggiPageContent() {
   const [editingSets, setEditingSets] = useState<Set<string>>(new Set())
   /** Timestamp inizio sessione (per calcolo durata_minuti al completamento) */
   const sessionStartedAtRef = React.useRef<number | null>(null)
+  /** AudioContext per suoni timer (creato al primo uso dopo gesto utente) */
+  const timerAudioContextRef = React.useRef<AudioContext | null>(null)
 
   // Carica workout session quando user è disponibile
   useEffect(() => {
@@ -630,6 +702,7 @@ function AllenamentiOggiPageContent() {
       const finalValue = timerValue > 0 ? timerValue : 60
 
       if (inlineTimerSeconds === null) {
+        playTimerTone(timerAudioContextRef, 700, 0.5)
         setInlineTimerSeconds(finalValue)
         setInlineTimerRunning(true)
       } else {
@@ -678,6 +751,23 @@ function AllenamentiOggiPageContent() {
               navigator.vibrate([200, 100, 200])
             }
 
+            // Suoni ultimi 5 secondi: volume crescente; ultimo secondo = suono più prolungato
+            // (suoniamo in base al valore prima del decremento, quindi prev 2 = ultimo secondo)
+          } else if (prev <= 6) {
+            if (prev === 2) {
+              playTimerTone(timerAudioContextRef, 500, 0.95)
+            } else if (prev === 3) {
+              playTimerTone(timerAudioContextRef, 120, 0.8)
+            } else if (prev === 4) {
+              playTimerTone(timerAudioContextRef, 120, 0.6)
+            } else if (prev === 5) {
+              playTimerTone(timerAudioContextRef, 120, 0.4)
+            } else if (prev === 6) {
+              playTimerTone(timerAudioContextRef, 120, 0.25)
+            }
+          }
+
+          if (prev === null || prev <= 1) {
             // Quando il timer di recupero inline finisce, controlla se c'è execution_time_sec e mostra il timer di esecuzione
             const currentExerciseForTimer = workoutSession?.exercises?.[currentExerciseIndex] as
               | Record<string, unknown>
@@ -1232,7 +1322,7 @@ function AllenamentiOggiPageContent() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 overflow-auto px-3 pb-56 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-3 min-[834px]:py-4 space-y-3 min-[834px]:space-y-4"
+        className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-3 min-[834px]:py-4 space-y-3 min-[834px]:space-y-4"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 3.5rem + 10px)' }}
       >
         <header className="fixed inset-x-0 top-0 z-20 flex min-h-[3.5rem] items-center overflow-hidden rounded-b-xl border-b border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg pt-[env(safe-area-inset-top)]">
@@ -1516,13 +1606,24 @@ function AllenamentiOggiPageContent() {
                       <div className="space-y-2 pt-2.5">
                         {(() => {
                           const block = blocks[currentBlockIndex]
+                          const blockExercises = block
+                            ? (workoutSession?.exercises ?? []).slice(
+                                block.startIndex,
+                                block.endIndex + 1,
+                              )
+                            : []
+                          const allSetsCompletedForBlock =
+                            blockExercises.length > 0 &&
+                            blockExercises.every((ex) => {
+                              const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
+                              return sets.length === 0 || sets.every((s: Record<string, unknown>) => s.completed === true)
+                            })
                           const isBlockCompleted = block
-                            ? (workoutSession?.exercises ?? [])
-                                .slice(block.startIndex, block.endIndex + 1)
-                                .every(
-                                  (ex) => (ex as { is_completed?: boolean }).is_completed === true,
-                                )
+                            ? blockExercises.every(
+                                (ex) => (ex as { is_completed?: boolean }).is_completed === true,
+                              )
                             : false
+                          if (!allSetsCompletedForBlock) return null
                           return (
                             <Button
                               onClick={() => completeBlock(currentBlockIndex)}
@@ -1706,32 +1807,58 @@ function AllenamentiOggiPageContent() {
                               {sets.map((set: Record<string, unknown>, index: number) => (
                                 <div
                                   key={index}
+                                  role={circuitGroup.length === 0 ? 'button' : undefined}
+                                  tabIndex={circuitGroup.length === 0 ? 0 : undefined}
+                                  onClick={() => {
+                                    if (circuitGroup.length !== 0) return
+                                    if (set.completed as boolean) {
+                                      updateSet(currentExercise.id as string, set.set_number as number, { completed: false })
+                                      setInlineTimerSeconds(null)
+                                      setInlineTimerRunning(false)
+                                      return
+                                    }
+                                    updateSet(currentExercise.id as string, set.set_number as number, { completed: true })
+                                    const restSec =
+                                      ((set.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as number | null) ?? 0
+                                    const finalRest = restSec > 0 ? restSec : 60
+                                    playTimerTone(timerAudioContextRef, 700, 0.5)
+                                    setInlineTimerSeconds(finalRest)
+                                    setInlineTimerRunning(true)
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (circuitGroup.length === 0 && (e.key === 'Enter' || e.key === ' ')) {
+                                      e.preventDefault()
+                                      ;(e.currentTarget as HTMLElement).click()
+                                    }
+                                  }}
                                   className={`relative overflow-hidden rounded-lg p-2.5 transition-all duration-200 border ${
                                     set.completed
-                                      ? 'bg-green-500/10 border-green-500/30'
+                                      ? 'bg-cyan-500/20 border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
                                       : isSetEditing(
                                             currentExercise.id as string,
                                             set.set_number as number,
                                           )
                                         ? 'bg-cyan-500/10 border-cyan-500/40'
                                         : 'bg-background-tertiary/30 border-cyan-500/20'
-                                  }`}
+                                  } ${circuitGroup.length === 0 ? 'cursor-pointer hover:bg-cyan-500/10 hover:border-cyan-500/40' : ''}`}
                                 >
                                   <div
                                     className="grid grid-cols-[auto_1fr] gap-2 items-center"
                                     style={{ gridTemplateColumns: '40px 1fr' }}
                                   >
                                     <div
-                                      onClick={() =>
-                                        !(set.completed as boolean) &&
-                                        toggleSetEditMode(
-                                          currentExercise.id as string,
-                                          set.set_number as number,
-                                        )
-                                      }
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (!(set.completed as boolean)) {
+                                          toggleSetEditMode(
+                                            currentExercise.id as string,
+                                            set.set_number as number,
+                                          )
+                                        }
+                                      }}
                                       className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all duration-200 ${
                                         set.completed
-                                          ? 'bg-green-500/20 text-green-300 border border-green-500/50 cursor-not-allowed'
+                                          ? 'bg-cyan-500/30 text-cyan-100 border border-cyan-400/80'
                                           : isSetEditing(
                                                 currentExercise.id as string,
                                                 set.set_number as number,
@@ -1900,17 +2027,28 @@ function AllenamentiOggiPageContent() {
                       </div>
                     </div>
 
-                    {/* Azioni - Design Moderno e Uniforme */}
+                    {/* Azioni - Design Moderno e Uniforme: bottone solo quando tutte le serie sono completate */}
                     <div className="space-y-2 pt-2.5">
                       {(() => {
                         const block = blocks[currentBlockIndex]
+                        const blockExercises = block
+                          ? (workoutSession?.exercises ?? []).slice(
+                              block.startIndex,
+                              block.endIndex + 1,
+                            )
+                          : []
+                        const allSetsCompletedForBlock =
+                          blockExercises.length > 0 &&
+                          blockExercises.every((ex) => {
+                            const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
+                            return sets.length === 0 || sets.every((s: Record<string, unknown>) => s.completed === true)
+                          })
                         const isBlockCompleted = block
-                          ? (workoutSession?.exercises ?? [])
-                              .slice(block.startIndex, block.endIndex + 1)
-                              .every(
-                                (ex) => (ex as { is_completed?: boolean }).is_completed === true,
-                              )
+                          ? blockExercises.every(
+                              (ex) => (ex as { is_completed?: boolean }).is_completed === true,
+                            )
                           : false
+                        if (!allSetsCompletedForBlock) return null
                         return (
                           <Button
                             onClick={() => completeBlock(currentBlockIndex)}
@@ -1942,13 +2080,9 @@ function AllenamentiOggiPageContent() {
             })()
           : null}
 
-        {/* Timer circolari: fissato sopra la barra di navigazione */}
-        {/* Mostra sempre il container quando c'è un esercizio corrente */}
+        {/* Timer circolari: stesso piano del contenuto, sotto l'ultima card */}
         {currentExercise ? (
-          <Card
-            className="fixed inset-x-0 bottom-[4rem] z-20 overflow-hidden bg-transparent border-0 shadow-none p-0 px-3 sm:px-4 min-[834px]:px-6"
-            style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
-          >
+          <Card className="rounded-[16px] text-text-primary transition-all duration-200 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none border-border relative overflow-hidden border-0 bg-background-secondary/50 shadow-lg backdrop-blur-sm p-2.5">
             <CardContent className="p-2">
               <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
                 {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}

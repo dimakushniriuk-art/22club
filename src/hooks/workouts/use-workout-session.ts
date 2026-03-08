@@ -280,8 +280,8 @@ export function useWorkoutSession() {
             ? exercisesMap.get(exerciseRow.exercise_id)
             : null
 
-          // Recupera i set esistenti dal database
-          // Nota: rest_timer_sec non esiste nella tabella workout_sets, va preso dall'esercizio
+          // Recupera i set esistenti dal database (reps, peso, ecc.); stato completato sempre da capo
+          // Ogni ingresso in scheda = allenamento fresco; salvataggio solo alla fine
           const existingSets =
             setsMap.get(exerciseRow.id)?.map((setRow) => ({
               id: setRow.id ?? generateTempId('set'),
@@ -289,10 +289,9 @@ export function useWorkoutSession() {
               reps: setRow.reps ?? 0,
               weight_kg: setRow.weight_kg ?? null,
               execution_time_sec: setRow.execution_time_sec ?? null,
-              // rest_timer_sec non esiste nella tabella workout_sets, usa quello dell'esercizio
               rest_timer_sec: exerciseRow.rest_timer_sec ?? null,
-              completed_at: setRow.completed_at ?? null,
-              completed: Boolean(setRow.completed_at),
+              completed_at: null,
+              completed: false,
             })) ?? []
 
           // Crea sempre target_sets set, unendo quelli esistenti con quelli nuovi se necessario
