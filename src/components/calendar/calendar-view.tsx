@@ -221,7 +221,10 @@ export function CalendarView({
   const OPEN_BOOKING_BORDER = 'rgba(6, 182, 212, 0.55)'
 
   const BLOCK_BG = 'rgba(120, 120, 120, 0.35)'
-  const REASON_LABELS: Record<string, string> = { ferie: 'Ferie', chiusura: 'Chiusura', malattia: 'Malattia' }
+  const REASON_LABELS: Record<string, string> = useMemo(
+    () => ({ ferie: 'Ferie', chiusura: 'Chiusura', malattia: 'Malattia' }),
+    [],
+  )
 
   // Converti gli appuntamenti e i blocchi per FullCalendar
   const events: EventInput[] = useMemo(() => {
@@ -351,7 +354,7 @@ export function CalendarView({
     }
 
     return result
-  }, [appointments, calendarBlocks, openBookingAsBackground, view, slotBookingCounts, typeLabelMap])
+  }, [appointments, calendarBlocks, openBookingAsBackground, view, slotBookingCounts, typeLabelMap, REASON_LABELS])
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     if (!clickInfo.event.start) return

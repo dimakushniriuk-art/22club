@@ -336,17 +336,7 @@ export default function AllenamentiSchedaDetailPage() {
                                   <Info className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
                                 </Link>
                                 <div className="shrink-0 w-24 h-24 min-[834px]:w-28 min-[834px]:h-28 rounded-lg overflow-hidden border border-cyan-500/20 bg-background-tertiary/50 aspect-square">
-                                  {hasVideo && ex.video_url ? (
-                                    <video
-                                      src={ex.video_url}
-                                      poster={posterUrl || undefined}
-                                      className="w-full h-full object-cover"
-                                      muted
-                                      loop
-                                      playsInline
-                                      preload="metadata"
-                                    />
-                                  ) : posterUrl ? (
+                                  {posterUrl ? (
                                     <Image
                                       src={posterUrl}
                                       alt=""
@@ -354,6 +344,15 @@ export default function AllenamentiSchedaDetailPage() {
                                       height={96}
                                       className="w-full h-full object-cover"
                                       unoptimized={posterUrl.startsWith('http')}
+                                    />
+                                  ) : hasVideo && ex.video_url ? (
+                                    <video
+                                      src={ex.video_url}
+                                      className="w-full h-full object-cover"
+                                      muted
+                                      loop
+                                      playsInline
+                                      preload="metadata"
                                     />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center text-cyan-400/60">
@@ -423,17 +422,7 @@ export default function AllenamentiSchedaDetailPage() {
                                 className="w-full flex items-center gap-3 min-[834px]:gap-4 p-3 min-[834px]:p-4 text-left hover:bg-amber-500/10 transition-colors border-b border-amber-500/20 min-h-[44px]"
                               >
                                 <div className="shrink-0 w-24 h-24 min-[834px]:w-28 min-[834px]:h-28 rounded-lg overflow-hidden border border-amber-500/30 bg-background-tertiary/50 aspect-square">
-                                  {firstHasVideo && firstEx?.video_url ? (
-                                    <video
-                                      src={firstEx.video_url}
-                                      poster={firstPoster || undefined}
-                                      className="w-full h-full object-cover"
-                                      muted
-                                      loop
-                                      playsInline
-                                      preload="metadata"
-                                    />
-                                  ) : firstPoster ? (
+                                  {firstPoster ? (
                                     <Image
                                       src={firstPoster}
                                       alt=""
@@ -441,6 +430,15 @@ export default function AllenamentiSchedaDetailPage() {
                                       height={96}
                                       className="w-full h-full object-cover"
                                       unoptimized={firstPoster.startsWith('http')}
+                                    />
+                                  ) : firstHasVideo && firstEx?.video_url ? (
+                                    <video
+                                      src={firstEx.video_url}
+                                      className="w-full h-full object-cover"
+                                      muted
+                                      loop
+                                      playsInline
+                                      preload="metadata"
                                     />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center text-amber-400/60">

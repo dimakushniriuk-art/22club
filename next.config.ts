@@ -150,6 +150,10 @@ const nextConfig: NextConfig = {
         module: /@prisma\/instrumentation/,
         message: /Critical dependency: the request of a dependency is an expression/,
       },
+      {
+        module: /@opentelemetry\/instrumentation/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
       // Ignora moduli opzionali (resend, twilio, web-push) - importati dinamicamente solo quando necessari
       // Questi moduli sono gestiti come esterni tramite serverComponentsExternalPackages
       {

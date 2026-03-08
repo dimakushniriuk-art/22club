@@ -14,6 +14,7 @@ export interface BirthdayEntry {
  */
 export function useBirthdays(date: Date, orgId: string | null): BirthdayEntry[] {
   const [entries, setEntries] = useState<BirthdayEntry[]>([])
+  const dateTs = date.getTime()
 
   useEffect(() => {
     if (!orgId) {
@@ -46,7 +47,9 @@ export function useBirthdays(date: Date, orgId: string | null): BirthdayEntry[] 
     return () => {
       cancelled = true
     }
-  }, [orgId, date.getTime()])
+  // dateTs deriva da date; dipendere da date causerebbe re-run a ogni render se il parent passa new Date()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, dateTs])
 
   return entries
 }

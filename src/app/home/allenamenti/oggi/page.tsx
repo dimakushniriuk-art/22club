@@ -138,7 +138,7 @@ function ExerciseMediaDisplay({
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             crossOrigin="anonymous"
             autoPlay
             onError={(ev) => {
@@ -205,14 +205,13 @@ function ExerciseMediaDisplay({
           onLoadedMetadata={(ev) => {
             const videoElement = ev.currentTarget as HTMLVideoElement
             videoElement.playbackRate = 1.1 // Velocizza del 10%
-            console.log('✅ Video metadata caricato correttamente:', {
-              exerciseId: exercise.id,
-              videoUrl: videoUrl,
-            })
-            logger.debug('Video metadata caricato', {
-              exerciseId: exercise.id,
-              videoUrl: videoUrl,
-            })
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Video metadata caricato correttamente:', { exerciseId: exercise.id, videoUrl })
+            }
+            logger.debug('Video metadata caricato', { exerciseId: exercise.id, videoUrl })
+          }}
+          onLoadedData={() => {
+            tryPlay()
           }}
           onCanPlay={(ev) => {
             const videoElement = ev.currentTarget as HTMLVideoElement
@@ -234,10 +233,16 @@ function ExerciseMediaDisplay({
                 e.stopPropagation()
                 tryPlay()
               }}
-              className="absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity hover:bg-black/40 active:scale-95"
+              className="absolute inset-0 flex items-center justify-center transition-opacity hover:bg-black/30 active:scale-95"
+              style={
+                isValidThumbUrl && thumbUrl
+                  ? { background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${thumbUrl}) center/cover` }
+                  : undefined
+              }
               aria-label="Riproduci video"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/90 text-white shadow-lg">
+              {(!isValidThumbUrl || !thumbUrl) && <span className="absolute inset-0 bg-black/50" />}
+              <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/90 text-white shadow-lg">
                 <Play className="h-6 w-6 fill-current" />
               </span>
             </button>

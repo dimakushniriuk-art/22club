@@ -791,7 +791,7 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
     if (action === 'complete')
       return handleComplete(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
     return handleCancel(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
-  }, [confirmState, handleDelete, handleComplete, handleClosePopover])
+  }, [confirmState, handleDelete, handleComplete, handleCancel, handleClosePopover])
 
   const hoursUntilStart = cancelChoiceAppointment
     ? (new Date(cancelChoiceAppointment.starts_at).getTime() - Date.now()) / (1000 * 60 * 60)

@@ -734,7 +734,7 @@ export function useCalendarPage() {
         throw err
       }
     },
-    [staffProfileId, staffOrgId, athletes, calendarBlocks, fetchAppointments, notify],
+    [staffProfileId, staffOrgId, staffRole, athletes, calendarBlocks, fetchAppointments, notify],
   )
 
   const handleCancel = useCallback(
