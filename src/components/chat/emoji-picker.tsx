@@ -279,10 +279,10 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
   const pickerPanel = isOpen && (
     <div
       ref={pickerRef}
-      className="bg-background-secondary/95 backdrop-blur-xl fixed w-80 rounded-xl border border-cyan-500/30 shadow-2xl shadow-black/40 z-[9999]"
+      className="bg-background-secondary/95 backdrop-blur-xl fixed w-80 rounded-lg border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] z-[9999]"
       style={{ top: position.top, right: position.right, transform: 'translateY(-100%)' }}
     >
-      <div className="flex border-b border-cyan-500/20 p-2">
+      <div className="flex border-b border-white/10 p-2">
         {Object.keys(EMOJI_CATEGORIES).map((category) => (
           <button
             key={category}
@@ -291,8 +291,8 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
             className={cn(
               'rounded-lg px-3 py-1 text-xs font-medium transition-colors',
               activeCategory === category
-                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40'
-                : 'text-text-secondary hover:text-cyan-400 hover:bg-cyan-500/5',
+                ? 'bg-white/[0.06] text-primary border border-white/10'
+                : 'text-text-secondary hover:text-primary hover:bg-white/[0.04]',
             )}
           >
             {category}
@@ -306,7 +306,7 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
               key={emoji}
               type="button"
               onClick={() => handleEmojiClick(emoji)}
-              className="hover:bg-cyan-500/10 rounded p-2 text-lg transition-colors"
+              className="hover:bg-white/[0.06] rounded p-2 text-lg transition-colors"
               title={emoji}
             >
               {emoji}
@@ -324,7 +324,7 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
         variant="ghost"
         size="icon-sm"
         onClick={() => setIsOpen(!isOpen)}
-        className={cn('text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 min-h-[44px] min-w-[44px] touch-manipulation', className)}
+        className={cn('text-text-secondary hover:text-primary hover:bg-white/[0.06] min-h-[44px] min-w-[44px] touch-manipulation', className)}
         aria-label="Emoji"
       >
         <Smile className="h-4 w-4" />

@@ -3,9 +3,17 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-export type StaffContentTheme = 'teal' | 'amber'
+export type StaffContentTheme = 'teal' | 'amber' | 'default'
 
 const THEME_HEADER = {
+  default: {
+    iconBox: 'border border-white/10 bg-white/[0.04]',
+    iconColor: 'text-primary',
+    titleGradient: 'from-text-primary to-text-primary',
+    badgeBorder: 'border-white/10',
+    badgeBg: 'from-white/[0.04] to-white/[0.04]',
+    badgeAccent: 'text-text-primary',
+  },
   teal: {
     iconBox: 'bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border-2 border-teal-500/30 shadow-lg shadow-teal-500/10',
     iconColor: 'text-teal-400',
@@ -55,12 +63,12 @@ export function StaffContentLayout({
   actions,
   className,
 }: StaffContentLayoutProps) {
-  const t = THEME_HEADER[theme]
+  const _t = THEME_HEADER[theme]
   return (
-    <div className="relative min-h-dvh flex flex-col">
+    <div className="relative min-h-dvh flex flex-col bg-transparent">
       <div
         className={cn(
-          'flex-1 flex flex-col space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[1800px] mx-auto w-full relative',
+          'flex-1 flex flex-col space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[1800px] mx-auto w-full relative bg-transparent',
           'pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))]',
           className,
         )}
@@ -68,17 +76,12 @@ export function StaffContentLayout({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-              <h1
-                className={cn(
-                  'text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight bg-gradient-to-r bg-clip-text text-transparent break-words',
-                  t.titleGradient,
-                )}
-              >
+              <h1 className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight text-white break-words">
                 {title}
               </h1>
             </div>
             {description != null && description !== '' && (
-              <p className="text-text-secondary text-xs sm:text-sm md:text-base mt-0.5 sm:mt-0">
+              <p className="text-white/90 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-0">
                 {description}
               </p>
             )}

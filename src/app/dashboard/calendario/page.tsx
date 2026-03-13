@@ -5,17 +5,36 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { CalendarView, AppointmentPopover, MiniCalendar } from '@/components/calendar'
 import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
 import { useCalendarPage } from '@/hooks/calendar/use-calendar-page'
-import { useCalendarPageGuard, ALLOWED_CALENDAR_SETTINGS_ROLES } from '@/hooks/calendar/use-calendar-page-guard'
+import { useCalendarPageGuard } from '@/hooks/calendar/use-calendar-page-guard'
 import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
 import { useBirthdays } from '@/hooks/calendar/use-birthdays'
 import Link from 'next/link'
 import { useCalendarKeyboardShortcuts } from '@/hooks/calendar/use-calendar-keyboard-shortcuts'
 import { useAuth } from '@/providers/auth-provider'
 import { LoadingState } from '@/components/dashboard/loading-state'
-import { Clock, ChevronRight, Search, X, Filter, Keyboard, List, PanelLeftClose, PanelLeft, Settings } from 'lucide-react'
-import { Drawer, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button } from '@/components/ui'
+import {
+  Clock,
+  ChevronRight,
+  Search,
+  X,
+  Filter,
+  Keyboard,
+  Settings,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from 'lucide-react'
+import {
+  Drawer,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  Button,
+} from '@/components/ui'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
+import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
 
 type AthleteOption = { id: string; name: string }
 
@@ -45,11 +64,19 @@ const CALENDAR_THEME_CLASSES = {
   },
 } as const
 
+type FilterOption = { value: string; label: string }
+
 type CalendarSidebarContentProps = {
   searchQuery: string
   onSearchQueryChange: (value: string) => void
   selectedAthleteFilter: string
   onAthleteFilterChange: (value: string) => void
+  typeOptions: FilterOption[]
+  selectedTypeFilter: string
+  onTypeFilterChange: (value: string) => void
+  statusOptions: FilterOption[]
+  selectedStatusFilter: string
+  onStatusFilterChange: (value: string) => void
   athletes: AthleteOption[]
   appointmentDates: string[]
   selectedDate: Date
@@ -70,6 +97,12 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
   onSearchQueryChange,
   selectedAthleteFilter,
   onAthleteFilterChange,
+  typeOptions,
+  selectedTypeFilter,
+  onTypeFilterChange,
+  statusOptions,
+  selectedStatusFilter,
+  onStatusFilterChange,
   athletes,
   appointmentDates,
   selectedDate,
@@ -84,9 +117,10 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
   birthdays = [],
 }: CalendarSidebarContentProps) {
   const t = CALENDAR_THEME_CLASSES[themeKey]
+  const selectClass = `w-full h-10 min-h-[44px] px-3 rounded-md border border-white/10 bg-white/[0.04] text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 cursor-pointer ${t.ring}`
   return (
     <>
-      <div className="p-3 sm:p-4 border-b border-white/5">
+      <div className="p-3 sm:p-4 border-b border-white/10">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary" />
           <input
@@ -95,7 +129,7 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
             placeholder="Cerca appuntamenti..."
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
-            className={`w-full h-10 min-h-[44px] pl-9 pr-9 rounded-lg bg-background-secondary/40 border border-white/5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 ${t.ring}`}
+            className={`w-full h-10 min-h-[44px] pl-9 pr-9 rounded-md border border-white/10 bg-white/[0.04] text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${t.ring}`}
           />
           {searchQuery && (
             <button
@@ -108,7 +142,7 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
           )}
         </div>
       </div>
-      <div className="p-3 sm:p-4 border-b border-white/5">
+      <div className="p-3 sm:p-4 border-b border-white/10">
         <div className="flex items-center gap-2 mb-2">
           <Filter className="h-4 w-4 text-text-tertiary" />
           <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">
@@ -118,7 +152,7 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
         <select
           value={selectedAthleteFilter}
           onChange={(e) => onAthleteFilterChange(e.target.value)}
-          className={`w-full h-10 min-h-[44px] px-3 rounded-lg bg-background-secondary/40 border border-white/5 text-sm text-text-primary focus:outline-none focus:ring-2 cursor-pointer ${t.ring}`}
+          className={selectClass}
         >
           <option value="">Tutti gli atleti</option>
           {athletes.map((athlete) => (
@@ -127,17 +161,53 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
             </option>
           ))}
         </select>
-        {hasActiveFilters && (
+      </div>
+      <div className="p-3 sm:p-4 border-b border-white/10">
+        <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider block mb-2">
+          Tipo
+        </span>
+        <select
+          value={selectedTypeFilter}
+          onChange={(e) => onTypeFilterChange(e.target.value)}
+          className={selectClass}
+        >
+          <option value="">Tutti i tipi</option>
+          {typeOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="p-3 sm:p-4 border-b border-white/10">
+        <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider block mb-2">
+          Stato
+        </span>
+        <select
+          value={selectedStatusFilter}
+          onChange={(e) => onStatusFilterChange(e.target.value)}
+          className={selectClass}
+        >
+          <option value="">Tutti gli stati</option>
+          {statusOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      {hasActiveFilters && (
+        <div className="p-3 sm:p-4 border-b border-white/10">
           <button
             type="button"
             onClick={onClearFilters}
-            className={`mt-2 text-xs transition-colors min-h-[44px] flex items-center touch-manipulation ${t.accent}`}
+            className={`w-full text-xs transition-colors min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg border border-white/10 ${t.accent}`}
           >
-            Rimuovi filtri
+            Rimuovi tutti i filtri
           </button>
-        )}
-      </div>
-      <div className="p-3 sm:p-4 border-b border-white/5">
+        </div>
+      )}
+      <div className="p-3 sm:p-4 border-b border-white/10">
         <MiniCalendar
           selectedDate={selectedDate}
           onDateSelect={onDateSelect}
@@ -145,7 +215,7 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
         />
       </div>
       {birthdays.length > 0 && (
-        <div className="p-3 sm:p-4 border-b border-white/5 space-y-2">
+        <div className="p-3 sm:p-4 border-b border-white/10 space-y-2">
           <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider">
             Compleanni oggi
           </h3>
@@ -184,7 +254,7 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
           </div>
         )}
       </div>
-      <div className="p-3 sm:p-4 border-t border-white/5">
+      <div className="p-3 sm:p-4 border-t border-white/10">
         <button
           type="button"
           onClick={onOpenKeyboardHelp}
@@ -192,7 +262,9 @@ const CalendarSidebarContent = memo(function CalendarSidebarContent({
         >
           <Keyboard className="h-4 w-4" />
           <span>Scorciatoie tastiera</span>
-          <kbd className="ml-auto px-1.5 py-0.5 rounded bg-background-secondary/40 border border-white/5 text-[10px]">?</kbd>
+          <kbd className="ml-auto px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.04] text-[10px]">
+            ?
+          </kbd>
         </button>
       </div>
     </>
@@ -208,7 +280,11 @@ type VirtualizedUpcomingListProps = {
   theme?: CalendarTheme
 }
 
-const VirtualizedUpcomingList = memo(function VirtualizedUpcomingList({ items, onItemClick, theme: themeKey = 'default' }: VirtualizedUpcomingListProps) {
+const VirtualizedUpcomingList = memo(function VirtualizedUpcomingList({
+  items,
+  onItemClick,
+  theme: themeKey = 'default',
+}: VirtualizedUpcomingListProps) {
   const t = CALENDAR_THEME_CLASSES[themeKey]
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollState, setScrollState] = useState({ scrollTop: 0, height: 200 })
@@ -216,8 +292,7 @@ const VirtualizedUpcomingList = memo(function VirtualizedUpcomingList({ items, o
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-    const updateHeight = () =>
-      setScrollState((s) => ({ ...s, height: el.clientHeight }))
+    const updateHeight = () => setScrollState((s) => ({ ...s, height: el.clientHeight }))
     updateHeight()
     const ro = new ResizeObserver(updateHeight)
     ro.observe(el)
@@ -234,11 +309,11 @@ const VirtualizedUpcomingList = memo(function VirtualizedUpcomingList({ items, o
   const totalHeight = items.length * UPCOMING_ITEM_HEIGHT_PX
   const startIndex = Math.max(
     0,
-    Math.floor(scrollTop / UPCOMING_ITEM_HEIGHT_PX) - UPCOMING_OVERSCAN
+    Math.floor(scrollTop / UPCOMING_ITEM_HEIGHT_PX) - UPCOMING_OVERSCAN,
   )
   const endIndex = Math.min(
     items.length,
-    Math.ceil((scrollTop + height) / UPCOMING_ITEM_HEIGHT_PX) + UPCOMING_OVERSCAN
+    Math.ceil((scrollTop + height) / UPCOMING_ITEM_HEIGHT_PX) + UPCOMING_OVERSCAN,
   )
   const visibleItems = items.slice(startIndex, endIndex)
 
@@ -460,18 +535,19 @@ function KeyboardShortcutsModal({ open, onClose }: { open: boolean; onClose: () 
   )
 }
 
-const CALENDAR_LOADING_CLASS =
-  'flex min-h-[50vh] items-center justify-center bg-background'
+const CALENDAR_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 type CalendarPageContentProps = { basePath?: string }
 
-export function CalendarPageContent({ basePath = '/dashboard/calendario' }: CalendarPageContentProps) {
+export function CalendarPageContent({
+  basePath = '/dashboard/calendario',
+}: CalendarPageContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { role } = useAuth()
   const calendarTheme: CalendarTheme =
     role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
-  const themeButtonClasses = CALENDAR_THEME_CLASSES[calendarTheme].button
+  const _themeButtonClasses = CALENDAR_THEME_CLASSES[calendarTheme].button
   const { settings: calendarSettings } = useStaffCalendarSettings()
   const initialCalendarView =
     calendarSettings?.default_calendar_view === 'week'
@@ -512,11 +588,17 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   // Filtri: stato iniziale da URL, poi sincronizzati con URL ai cambi
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') ?? '')
   const [selectedAthleteFilter, setSelectedAthleteFilter] = useState<string>(
-    () => searchParams.get('athlete') ?? ''
+    () => searchParams.get('athlete') ?? '',
+  )
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>(
+    () => searchParams.get('type') ?? '',
+  )
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>(
+    () => searchParams.get('status') ?? '',
   )
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showFiltersDrawer, setShowFiltersDrawer] = useState(false)
-  const [showSidebar, setShowSidebar] = useState(true)
+  const [showSidebar, setShowSidebar] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [confirmState, setConfirmState] = useState<{
     action: 'delete' | 'cancel' | 'complete'
@@ -528,7 +610,6 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   } | null>(null)
   /** Dialog annullamento con regole 24h: annulla / annulla e scala / annulla senza scalare */
   const [cancelChoiceAppointment, setCancelChoiceAppointment] = useState<AppointmentUI | null>(null)
-  const filtersDrawerButtonRef = useRef<HTMLButtonElement>(null)
   const searchParamsRef = useRef(searchParams)
   searchParamsRef.current = searchParams
 
@@ -544,14 +625,18 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
 
   const urlQ = searchParams.get('q') ?? ''
   const urlAthlete = searchParams.get('athlete') ?? ''
+  const urlType = searchParams.get('type') ?? ''
+  const urlStatus = searchParams.get('status') ?? ''
   useEffect(() => {
     setSearchQuery(urlQ)
     setSelectedAthleteFilter(urlAthlete)
-  }, [urlQ, urlAthlete])
+    setSelectedTypeFilter(urlType)
+    setSelectedStatusFilter(urlStatus)
+  }, [urlQ, urlAthlete, urlType, urlStatus])
 
   // Aggiorna URL quando cambiano i filtri (persistenza e link condivisibili)
   const updateUrlFilters = useCallback(
-    (updates: { q?: string; athlete?: string }) => {
+    (updates: { q?: string; athlete?: string; type?: string; status?: string }) => {
       const params = new URLSearchParams(searchParamsRef.current.toString())
       if (updates.q !== undefined) {
         if (updates.q.trim()) params.set('q', updates.q.trim())
@@ -561,40 +646,129 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
         if (updates.athlete) params.set('athlete', updates.athlete)
         else params.delete('athlete')
       }
+      if (updates.type !== undefined) {
+        if (updates.type) params.set('type', updates.type)
+        else params.delete('type')
+      }
+      if (updates.status !== undefined) {
+        if (updates.status) params.set('status', updates.status)
+        else params.delete('status')
+      }
       const query = params.toString()
       router.replace(query ? `${basePath}?${query}` : basePath, {
         scroll: false,
       })
     },
-    [router, basePath]
+    [router, basePath],
   )
 
   const onSearchQueryChange = useCallback(
     (value: string) => {
       setSearchQuery(value)
-      updateUrlFilters({ q: value, athlete: selectedAthleteFilter })
+      updateUrlFilters({
+        q: value,
+        athlete: selectedAthleteFilter,
+        type: selectedTypeFilter,
+        status: selectedStatusFilter,
+      })
     },
-    [selectedAthleteFilter, updateUrlFilters]
+    [selectedAthleteFilter, selectedTypeFilter, selectedStatusFilter, updateUrlFilters],
   )
 
   const onAthleteFilterChange = useCallback(
     (value: string) => {
       setSelectedAthleteFilter(value)
-      updateUrlFilters({ q: searchQuery, athlete: value })
+      updateUrlFilters({
+        q: searchQuery,
+        athlete: value,
+        type: selectedTypeFilter,
+        status: selectedStatusFilter,
+      })
     },
-    [searchQuery, updateUrlFilters]
+    [searchQuery, selectedTypeFilter, selectedStatusFilter, updateUrlFilters],
   )
 
-  // Filtra appuntamenti in base a ricerca e filtro atleta
+  const onTypeFilterChange = useCallback(
+    (value: string) => {
+      setSelectedTypeFilter(value)
+      updateUrlFilters({
+        q: searchQuery,
+        athlete: selectedAthleteFilter,
+        type: value,
+        status: selectedStatusFilter,
+      })
+    },
+    [searchQuery, selectedAthleteFilter, selectedStatusFilter, updateUrlFilters],
+  )
+
+  const onStatusFilterChange = useCallback(
+    (value: string) => {
+      setSelectedStatusFilter(value)
+      updateUrlFilters({
+        q: searchQuery,
+        athlete: selectedAthleteFilter,
+        type: selectedTypeFilter,
+        status: value,
+      })
+    },
+    [searchQuery, selectedAthleteFilter, selectedTypeFilter, updateUrlFilters],
+  )
+
+  // Tipi per il filtro: tutte le tipologie abilitate in impostazioni (come in "Tipologie abilitate")
+  const typeOptions = useMemo(() => {
+    const customMap: Record<string, string> = {}
+    calendarSettings?.custom_appointment_types?.forEach((c) => {
+      customMap[c.key] = c.label
+    })
+    const getLabel = (key: string) =>
+      customMap[key] ?? APPOINTMENT_TYPE_LABELS[key] ?? key.replace(/_/g, ' ')
+
+    const enabled = calendarSettings?.enabled_appointment_types ?? []
+    const customKeys = (calendarSettings?.custom_appointment_types ?? []).map((c) => c.key)
+    if (enabled.length > 0 || customKeys.length > 0) {
+      const keys = [...enabled, ...customKeys]
+      return keys
+        .filter((k, i, arr) => arr.indexOf(k) === i)
+        .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
+        .map((value) => ({ value, label: getLabel(value) }))
+    }
+    // Fallback: tipi presenti negli appuntamenti (es. prima del primo salvataggio impostazioni)
+    const fromAppointments = Array.from(new Set(appointments.map((a) => a.type).filter(Boolean)))
+    return fromAppointments
+      .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
+      .map((value) => ({ value, label: getLabel(value) }))
+  }, [
+    appointments,
+    calendarSettings?.enabled_appointment_types,
+    calendarSettings?.custom_appointment_types,
+  ])
+
+  const statusOptions: FilterOption[] = useMemo(
+    () => [
+      { value: 'attivo', label: 'Attivi' },
+      { value: 'completato', label: 'Completati' },
+      { value: 'annullato', label: 'Annullati' },
+      { value: 'in_corso', label: 'In corso' },
+    ],
+    [],
+  )
+
+  // Filtra appuntamenti in base a tutti i filtri
   const filteredAppointments = useMemo(() => {
     let result = appointments
 
-    // Filtro per atleta
     if (selectedAthleteFilter) {
       result = result.filter((apt) => apt.athlete_id === selectedAthleteFilter)
     }
 
-    // Filtro per ricerca
+    if (selectedTypeFilter) {
+      result = result.filter((apt) => apt.type === selectedTypeFilter)
+    }
+
+    if (selectedStatusFilter) {
+      result = result.filter((apt) => apt.status === selectedStatusFilter)
+    }
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(
@@ -607,7 +781,7 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
     }
 
     return result
-  }, [appointments, selectedAthleteFilter, searchQuery])
+  }, [appointments, selectedAthleteFilter, selectedTypeFilter, selectedStatusFilter, searchQuery])
 
   // Prossimi appuntamenti (oggi e futuri, lista virtualizzata)
   const upcomingAppointments = useMemo(() => {
@@ -634,7 +808,7 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
 
   const appointmentDates = useMemo(
     () => filteredAppointments.map((apt) => apt.starts_at),
-    [filteredAppointments]
+    [filteredAppointments],
   )
 
   // Stato per comunicare navigazione al CalendarView
@@ -646,17 +820,18 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
     setEditingAppointment(null)
     const params = new URLSearchParams(searchParams.toString())
     params.delete('new')
-    const newUrl = params.toString()
-      ? `${basePath}?${params.toString()}`
-      : basePath
+    const newUrl = params.toString() ? `${basePath}?${params.toString()}` : basePath
     router.replace(newUrl, { scroll: false })
   }, [loading, searchParams, router, basePath])
 
-  const handleEventClick = useCallback((appointment: AppointmentUI, position: { x: number; y: number }) => {
-    setSelectedAppointment(appointment)
-    setPopoverPosition(position)
-    setShowPopover(true)
-  }, [])
+  const handleEventClick = useCallback(
+    (appointment: AppointmentUI, position: { x: number; y: number }) => {
+      setSelectedAppointment(appointment)
+      setPopoverPosition(position)
+      setShowPopover(true)
+    },
+    [],
+  )
 
   const handleDateClick = useCallback((dateStr?: string) => {
     if (dateStr) {
@@ -696,15 +871,18 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
   const clearFilters = useCallback(() => {
     setSearchQuery('')
     setSelectedAthleteFilter('')
-    updateUrlFilters({ q: '', athlete: '' })
+    setSelectedTypeFilter('')
+    setSelectedStatusFilter('')
+    updateUrlFilters({ q: '', athlete: '', type: '', status: '' })
   }, [updateUrlFilters])
 
-  const hasActiveFilters = Boolean(searchQuery || selectedAthleteFilter)
+  const hasActiveFilters = Boolean(
+    searchQuery || selectedAthleteFilter || selectedTypeFilter || selectedStatusFilter,
+  )
 
   const openFiltersDrawer = useCallback(() => setShowFiltersDrawer(true), [])
   const closeFiltersDrawer = useCallback(() => {
     setShowFiltersDrawer(false)
-    setTimeout(() => filtersDrawerButtonRef.current?.focus(), 100)
   }, [])
 
   const handleEventClickFromList = useCallback(
@@ -712,10 +890,13 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
       closeFiltersDrawer()
       handleEventClick(apt, position)
     },
-    [closeFiltersDrawer, handleEventClick]
+    [closeFiltersDrawer, handleEventClick],
   )
 
-  const formInitialAppointment = useMemo((): EditAppointmentData | CreateAppointmentData | undefined => {
+  const formInitialAppointment = useMemo(():
+    | EditAppointmentData
+    | CreateAppointmentData
+    | undefined => {
     if (editingAppointment) return editingAppointment
     if (selectedSlot) {
       return {
@@ -723,7 +904,12 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
         staff_id: '',
         starts_at: toLocalISOString(selectedSlot.start),
         ends_at: toLocalISOString(selectedSlot.end),
-        type: role === 'massaggiatore' ? 'massaggio' : role === 'nutrizionista' ? 'nutrizionista' : 'allenamento',
+        type:
+          role === 'massaggiatore'
+            ? 'massaggio'
+            : role === 'nutrizionista'
+              ? 'nutrizionista'
+              : 'allenamento',
         status: 'attivo' as const,
       }
     }
@@ -740,7 +926,7 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
       setSelectedSlot(null)
       handleCloseForm()
     },
-    [editingAppointment, handleCloseForm, handleFormSubmit]
+    [editingAppointment, handleCloseForm, handleFormSubmit],
   )
 
   const handleFormCancel = useCallback(() => {
@@ -787,10 +973,16 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
     if (!confirmState) return
     const { action, appointmentId } = confirmState
     if (action === 'delete')
-      return handleDelete(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
+      return handleDelete(appointmentId)
+        .then(handleClosePopover)
+        .then(() => setConfirmState(null))
     if (action === 'complete')
-      return handleComplete(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
-    return handleCancel(appointmentId).then(handleClosePopover).then(() => setConfirmState(null))
+      return handleComplete(appointmentId)
+        .then(handleClosePopover)
+        .then(() => setConfirmState(null))
+    return handleCancel(appointmentId)
+      .then(handleClosePopover)
+      .then(() => setConfirmState(null))
   }, [confirmState, handleDelete, handleComplete, handleCancel, handleClosePopover])
 
   const hoursUntilStart = cancelChoiceAppointment
@@ -815,7 +1007,6 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
 
   const handleDrawerOpenChange = useCallback((open: boolean) => {
     setShowFiltersDrawer(open)
-    if (!open) setTimeout(() => filtersDrawerButtonRef.current?.focus(), 100)
   }, [])
 
   useEffect(() => {
@@ -833,21 +1024,16 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
 
   return (
     <div className="h-[calc(100vh-3.5rem)] flex relative">
-      {/* Pulsante Filtri/Prospetto - solo sotto lg */}
-      <button
-        ref={filtersDrawerButtonRef}
-        type="button"
-        onClick={openFiltersDrawer}
-        className={`lg:hidden fixed bottom-5 right-5 z-30 flex items-center justify-center w-14 h-14 rounded-2xl text-white shadow-lg active:scale-95 transition-all touch-manipulation ${themeButtonClasses}`}
-        aria-label="Filtri e prossimi appuntamenti"
+      {/* Drawer filtri e prossimi - mobile (aperto da altro punto se necessario) */}
+      <Drawer
+        open={showFiltersDrawer}
+        onOpenChange={handleDrawerOpenChange}
+        side="left"
+        size="md"
+        className="w-[280px] max-w-[90vw] h-full"
       >
-        <List className="w-6 h-6" />
-      </button>
-
-      {/* Drawer filtri e prossimi - mobile */}
-      <Drawer open={showFiltersDrawer} onOpenChange={handleDrawerOpenChange} side="left" size="md" className="w-[280px] max-w-[90vw] h-full">
         <div className="flex flex-col h-full bg-background-secondary">
-          <div className="flex items-center justify-between p-4 border-b border-white/5">
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
             <span className="text-sm font-semibold text-text-primary">Filtri e prossimi</span>
             <button
               type="button"
@@ -864,6 +1050,12 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
               onSearchQueryChange={onSearchQueryChange}
               selectedAthleteFilter={selectedAthleteFilter}
               onAthleteFilterChange={onAthleteFilterChange}
+              typeOptions={typeOptions}
+              selectedTypeFilter={selectedTypeFilter}
+              onTypeFilterChange={onTypeFilterChange}
+              statusOptions={statusOptions}
+              selectedStatusFilter={selectedStatusFilter}
+              onStatusFilterChange={onStatusFilterChange}
               athletes={athletes}
               appointmentDates={appointmentDates}
               selectedDate={selectedDate}
@@ -883,12 +1075,18 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
 
       {/* Sidebar - desktop lg+ (nascondibile) */}
       {showSidebar && (
-        <aside className="hidden lg:flex w-[280px] flex-col border-r border-white/5 bg-background-secondary/30 backdrop-blur-sm shrink-0">
+        <aside className="hidden lg:flex w-[280px] flex-col shrink-0 border-r border-white/10 bg-gradient-to-b from-zinc-950 to-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <CalendarSidebarContent
             searchQuery={searchQuery}
             onSearchQueryChange={onSearchQueryChange}
             selectedAthleteFilter={selectedAthleteFilter}
             onAthleteFilterChange={onAthleteFilterChange}
+            typeOptions={typeOptions}
+            selectedTypeFilter={selectedTypeFilter}
+            onTypeFilterChange={onTypeFilterChange}
+            statusOptions={statusOptions}
+            selectedStatusFilter={selectedStatusFilter}
+            onStatusFilterChange={onStatusFilterChange}
             athletes={athletes}
             appointmentDates={appointmentDates}
             selectedDate={selectedDate}
@@ -898,16 +1096,18 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
             hasActiveFilters={hasActiveFilters}
             onClearFilters={clearFilters}
             onEventClickFromList={handleEventClickFromList}
-              onOpenKeyboardHelp={openKeyboardHelp}
-              theme={calendarTheme}
-              birthdays={birthdays}
+            onOpenKeyboardHelp={openKeyboardHelp}
+            theme={calendarTheme}
+            birthdays={birthdays}
           />
         </aside>
       )}
 
       <main className="flex-1 bg-background overflow-hidden relative min-w-0">
         <div role="status" aria-live="polite" className="sr-only">
-          {filteredAppointments.length === 1 ? '1 appuntamento' : `${filteredAppointments.length} appuntamenti`}
+          {filteredAppointments.length === 1
+            ? '1 appuntamento'
+            : `${filteredAppointments.length} appuntamenti`}
         </div>
         {appointmentsLoading ? (
           <CalendarPageSkeleton />
@@ -927,28 +1127,37 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
               initialWeekStart={initialWeekStart}
               calendarBlocks={calendarBlocks}
               toolbarLeftContent={
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={openFiltersDrawer}
+                    className="lg:hidden min-h-[44px] px-3 min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors flex"
+                    title="Filtri e prossimi"
+                    aria-label="Apri filtri"
+                  >
+                    <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => setShowSidebar((v) => !v)}
-                    className="hidden lg:flex items-center justify-center w-10 h-9 min-h-[44px] rounded-lg bg-background-secondary/90 border border-white/10 shadow-sm text-text-secondary hover:text-text-primary hover:bg-background-tertiary transition-colors shrink-0"
+                    className="hidden lg:flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors"
+                    title={showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'}
                     aria-label={showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'}
                   >
                     {showSidebar ? (
-                      <PanelLeftClose className="w-5 h-5" />
+                      <PanelLeftClose className="h-4 w-4 sm:h-5 sm:w-5" />
                     ) : (
-                      <PanelLeft className="w-5 h-5" />
+                      <PanelLeftOpen className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </button>
-                  {role && ALLOWED_CALENDAR_SETTINGS_ROLES.includes(role as (typeof ALLOWED_CALENDAR_SETTINGS_ROLES)[number]) && (
-                    <Link
-                      href="/dashboard/calendario/impostazioni"
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-background-secondary/90 border border-white/10 text-text-secondary hover:text-text-primary hover:bg-background-tertiary transition-colors text-sm shrink-0"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Impostazioni
-                    </Link>
-                  )}
+                  <Link
+                    href={`${basePath}/impostazioni`}
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors"
+                    title="Impostazioni calendario"
+                    aria-label="Impostazioni calendario"
+                  >
+                    <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </Link>
                 </div>
               }
             />
@@ -959,14 +1168,26 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
       {/* Modal Form */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
-          <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-md bg-background-secondary/95 rounded-t-2xl sm:rounded-2xl shadow-2xl p-4">
+          <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
             <Suspense fallback={<LoadingState message="Caricamento form..." />}>
               <AppointmentForm
                 appointment={formInitialAppointment}
                 athletes={athletes}
                 showOpenBookingOption={role !== 'massaggiatore' && role !== 'nutrizionista'}
-                defaultType={role === 'massaggiatore' ? 'massaggio' : role === 'nutrizionista' ? 'nutrizionista' : undefined}
-                defaultColor={role === 'massaggiatore' ? 'giallo' : role === 'nutrizionista' ? 'verde_chiaro' : undefined}
+                defaultType={
+                  role === 'massaggiatore'
+                    ? 'massaggio'
+                    : role === 'nutrizionista'
+                      ? 'nutrizionista'
+                      : undefined
+                }
+                defaultColor={
+                  role === 'massaggiatore'
+                    ? 'giallo'
+                    : role === 'nutrizionista'
+                      ? 'verde_chiaro'
+                      : undefined
+                }
                 onSubmit={handleFormSubmitClick}
                 onCancel={handleFormCancel}
                 loading={loading || athletesLoading}
@@ -986,7 +1207,11 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
           onDelete={handlePopoverDelete}
           onClose={handleClosePopover}
           onComplete={handlePopoverComplete}
-          onNoShow={handleNoShow ? () => handleNoShow(selectedAppointment.id, selectedAppointment) : undefined}
+          onNoShow={
+            handleNoShow
+              ? () => handleNoShow(selectedAppointment.id, selectedAppointment)
+              : undefined
+          }
           canComplete={canCompleteAppointment}
           canNoShow={
             !!selectedAppointment.athlete_id &&
@@ -1010,10 +1235,10 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
           }
           description={
             confirmState.action === 'delete'
-              ? 'L\'appuntamento verrà eliminato definitivamente. Continuare?'
+              ? "L'appuntamento verrà eliminato definitivamente. Continuare?"
               : confirmState.action === 'complete'
                 ? 'Confermi di completare la seduta? Verrà scalato 1 credito.'
-                : 'L\'appuntamento verrà annullato. Continuare?'
+                : "L'appuntamento verrà annullato. Continuare?"
           }
           confirmText={
             confirmState.action === 'delete'
@@ -1050,14 +1275,17 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
       )}
 
       {cancelChoiceAppointment && (
-        <Dialog open={!!cancelChoiceAppointment} onOpenChange={(open) => !open && setCancelChoiceAppointment(null)}>
+        <Dialog
+          open={!!cancelChoiceAppointment}
+          onOpenChange={(open) => !open && setCancelChoiceAppointment(null)}
+        >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Annulla appuntamento</DialogTitle>
               <DialogDescription>
                 {cancelWithin24h
                   ? 'Annullando con meno di 24 ore di preavviso puoi scegliere di scalare la lezione o annullare senza scalare.'
-                  : 'L\'appuntamento verrà annullato. La lezione non verrà scalata.'}
+                  : "L'appuntamento verrà annullato. La lezione non verrà scalata."}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-2 pt-2">
@@ -1070,13 +1298,21 @@ export function CalendarPageContent({ basePath = '/dashboard/calendario' }: Cale
                   >
                     Annulla e scala lezione
                   </Button>
-                  <Button variant="outline" onClick={() => handleCancelWithChoice(false, true)} disabled={loading}>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleCancelWithChoice(false, true)}
+                    disabled={loading}
+                  >
                     Annulla senza scalare
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="destructive" onClick={() => handleCancelWithChoice(false, false)} disabled={loading}>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleCancelWithChoice(false, false)}
+                    disabled={loading}
+                  >
                     Annulla
                   </Button>
                   <Button variant="ghost" onClick={() => setCancelChoiceAppointment(null)}>

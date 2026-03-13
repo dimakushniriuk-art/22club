@@ -108,7 +108,7 @@ export function ConversationList({
           placeholder="Cerca conversazioni..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={`w-full rounded-2xl border border-white/10 bg-background-secondary/25 text-text-primary placeholder:text-text-tertiary px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors min-h-[44px] touch-manipulation ${t.searchRing}`}
+          className={`w-full rounded-md border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors min-h-[44px] touch-manipulation ${t.searchRing}`}
         />
       </div>
 
@@ -207,7 +207,7 @@ function ConversationItem({
         }
       }}
       className={cn(
-        'w-full text-left rounded-2xl border bg-background-secondary/25 p-3 transition-colors min-h-[56px] flex items-center gap-2 sm:gap-3 border-white/10 hover:border-white/14 cursor-pointer group touch-manipulation active:scale-[0.99]',
+        'w-full text-left rounded-lg border border-white/10 bg-white/[0.02] p-3 transition-colors min-h-[56px] flex items-center gap-2 sm:gap-3 hover:border-white/20 cursor-pointer group touch-manipulation active:scale-[0.99]',
         currentConversationId === conversation.other_user_id && t.selectedItem,
       )}
     >

@@ -269,7 +269,7 @@ export function WorkoutWizardContent({
   return (
     <div className="relative flex flex-1 flex-col bg-background min-h-0">
       {/* Header fisso */}
-      <div className="relative flex-shrink-0 border-b border-white/5 bg-background px-4 sm:px-6 py-4">
+      <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4">
         <div className="pb-0 relative z-10 max-w-3xl mx-auto w-full">
           {/* Breadcrumb */}
           <div className="mb-3 hidden">
@@ -348,7 +348,7 @@ export function WorkoutWizardContent({
                     {index < STEPS.length - 1 && (
                       <div
                         className={`mx-2 md:mx-3 h-px flex-1 min-w-[12px] transition-colors ${
-                          isCompleted ? 'bg-green-500/40' : 'bg-white/5'
+                          isCompleted ? 'bg-green-500/40' : 'bg-white/10'
                         }`}
                       />
                     )}
@@ -361,7 +361,7 @@ export function WorkoutWizardContent({
       </div>
 
       {/* Barra navigazione (sopra il contenuto / prima degli esercizi) */}
-      <div className="relative flex-shrink-0 border-b border-white/5 bg-background px-4 sm:px-6 py-4">
+      <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4">
         <div className="relative z-10 flex items-center justify-between gap-4 max-w-3xl mx-auto w-full">
           <Button
             variant="outline"
@@ -378,7 +378,7 @@ export function WorkoutWizardContent({
               <Button
                 variant="ghost"
                 onClick={onCancel}
-                className="text-text-secondary hover:text-text-primary hover:bg-background-secondary/50 border border-transparent hover:border-white/5 whitespace-nowrap"
+                className="text-text-secondary hover:text-text-primary hover:bg-background-secondary/50 border border-transparent hover:border-white/10 whitespace-nowrap"
               >
                 Annulla
               </Button>
@@ -418,7 +418,7 @@ export function WorkoutWizardContent({
 
       {/* Sezione Circuito (solo step 3, sotto la barra navigazione) */}
       {currentStep === 3 && (
-        <div className="relative shrink-0 border-b border-white/5 bg-background px-4 sm:px-6 py-4">
+        <div className="relative shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4">
           <div className="max-w-3xl mx-auto w-full flex flex-wrap items-center justify-between gap-4">
             <div>
               <h3 className="text-text-primary text-lg font-bold flex items-center gap-2">
@@ -445,7 +445,7 @@ export function WorkoutWizardContent({
 
       {/* Lista circuiti configurati: uno sotto l'altro */}
       {currentStep === 3 && circuitList.length > 0 && (
-        <div className="shrink-0 border-b border-white/5 bg-background px-4 sm:px-6 py-4 space-y-4">
+        <div className="shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4 space-y-4">
           {circuitList.map((circuit) => {
             const day0 = wizardData.days[0]
             const isCircuitInDay1 =
@@ -454,7 +454,7 @@ export function WorkoutWizardContent({
             return (
               <Card
                 key={circuit.id}
-                variant="trainer"
+                variant="default"
                 role="button"
                 tabIndex={0}
                 onClick={() => toggleCircuitInDay(circuit.id)}
@@ -619,7 +619,7 @@ export function WorkoutWizardContent({
         }}
       >
         <DialogContent className="max-w-[1800px] w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-white/5 shrink-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-white/10 shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-amber-400" />
               {circuitPickerStep === 'select'
@@ -656,7 +656,7 @@ export function WorkoutWizardContent({
               />
             )}
           </div>
-          <DialogFooter className="px-6 py-4 border-t border-white/5 shrink-0">
+          <DialogFooter className="px-6 py-4 border-t border-white/10 shrink-0">
             {circuitPickerStep === 'select' ? (
               <>
                 <Button type="button" variant="outline" onClick={closeCircuitModal}>

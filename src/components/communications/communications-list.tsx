@@ -44,7 +44,7 @@ function CommunicationsListSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
-        <Card key={i} variant="elevated" className="border border-border overflow-hidden">
+        <Card key={i} variant="default" className="overflow-hidden">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
@@ -132,7 +132,7 @@ export function CommunicationsList({
 
   if (communications.length === 0) {
     return (
-      <Card variant="elevated" className="border border-border">
+      <Card variant="default">
         <CardContent className="py-12 text-center">
           <div className="mb-4 flex justify-center">{emptyState.icon}</div>
           <h3 className="text-text-primary mb-2 text-lg font-medium">{emptyState.title}</h3>
@@ -166,7 +166,7 @@ export function CommunicationsList({
 
       {/* Controlli Paginazione */}
       {totalCount !== null && totalCount !== undefined && totalCount > 0 && (
-        <Card variant="default" className="border border-border">
+        <Card variant="default">
           <CardContent className="flex items-center justify-between p-4">
             <div className="text-text-secondary text-sm">
               Mostrando {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount ?? 0)} -{' '}
@@ -181,7 +181,7 @@ export function CommunicationsList({
                 size="sm"
                 onClick={onPrevPage}
                 disabled={!hasPrevPage || loading}
-                className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                className="border-white/10 hover:border-primary/20 text-text-secondary"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Precedente
@@ -198,7 +198,7 @@ export function CommunicationsList({
                 size="sm"
                 onClick={onNextPage}
                 disabled={!hasNextPage || loading}
-                className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                className="border-white/10 hover:border-primary/20 text-text-secondary"
               >
                 Successiva
                 <ChevronRight className="h-4 w-4" />

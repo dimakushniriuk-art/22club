@@ -92,6 +92,8 @@ interface AppointmentFormProps {
   defaultType?: 'allenamento' | 'prova' | 'valutazione' | 'prima_visita' | 'riunione' | 'massaggio' | 'nutrizionista'
   /** Colore predefinito quando non si sta modificando un appuntamento (es. giallo per massaggiatore) */
   defaultColor?: AppointmentColor
+  /** Se true (calendario atleta): solo tipo Allenamento, nessun campo atleta, nessun Intero giorno, durata fissa 90 min */
+  athleteMode?: boolean
 }
 
 // Helper per estrarre data/ora locale da ISO string (gestisce correttamente timezone)
@@ -118,6 +120,7 @@ export function AppointmentForm({
   showOpenBookingOption = false,
   defaultType,
   defaultColor,
+  athleteMode = false,
 }: AppointmentFormProps) {
   const { settings } = useStaffCalendarSettings()
   const { role } = useAuth()
@@ -132,6 +135,7 @@ export function AppointmentForm({
     [settings?.default_durations, defaultDurationsByRole],
   )
   const enabledTypes = useMemo(() => {
+    if (athleteMode) return ['allenamento']
     let system: string[]
     if (settings?.enabled_appointment_types?.length) system = settings.enabled_appointment_types
     else if (role === 'trainer' || role === 'admin')
@@ -143,10 +147,10 @@ export function AppointmentForm({
     else system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'massaggio', 'nutrizionista']
     const customKeys = (settings?.custom_appointment_types ?? []).map((c) => c.key)
     return [...system, ...customKeys]
-  }, [settings?.enabled_appointment_types, settings?.custom_appointment_types, role])
+  }, [athleteMode, settings?.enabled_appointment_types, settings?.custom_appointment_types, role])
 
-  /** Tipo di default per nuovo appuntamento: primo tra abilitati in impostazioni, altrimenti prop o fallback. */
-  const defaultTypeFromSettings = enabledTypes[0] ?? defaultType ?? 'allenamento'
+  /** Tipo di default per nuovo appuntamento: in athleteMode sempre allenamento, altrimenti primo tra abilitati. */
+  const defaultTypeFromSettings = athleteMode ? 'allenamento' : (enabledTypes[0] ?? defaultType ?? 'allenamento')
   /** Colore per tipo da impostazioni (usato come default e al cambio tipo). */
   const colorForType = useCallback(
     (type: string): AppointmentColor =>
@@ -178,10 +182,22 @@ export function AppointmentForm({
     ]
   }, [settings?.recurrence_options])
 
-  function getDurationForType(type: string, isOpenBooking: boolean): number {
-    if (isOpenBooking) return FREE_PASS_DURATION_MINUTES
-    return defaultDurations[type] ?? defaultDurationsByRole[type] ?? 90
-  }
+  /** Durata per tipo: se in Impostazioni è impostata la durata per "Allenamento" (generico), vale per tutte le varianti (singolo/doppio). In athleteMode sempre 90 min. */
+  const getDurationForType = useCallback(
+    (type: string, isOpenBooking: boolean): number => {
+      if (athleteMode) return 90
+      if (isOpenBooking) return FREE_PASS_DURATION_MINUTES
+      const genericAllenamento = defaultDurations['allenamento']
+      if (type === 'allenamento')
+        return genericAllenamento ?? defaultDurations['allenamento_singolo'] ?? defaultDurationsByRole['allenamento'] ?? 90
+      if (type === 'allenamento_singolo')
+        return genericAllenamento ?? defaultDurations['allenamento_singolo'] ?? defaultDurationsByRole['allenamento_singolo'] ?? 90
+      if (type === 'allenamento_doppio')
+        return genericAllenamento ?? defaultDurations['allenamento_doppio'] ?? defaultDurationsByRole['allenamento_doppio'] ?? 90
+      return defaultDurations[type] ?? defaultDurationsByRole[type] ?? 90
+    },
+    [athleteMode, defaultDurations, defaultDurationsByRole],
+  )
 
   function calculateEndTime(startTime: string, durationMinutes: number = 90): string {
     const [hours, minutes] = startTime.split(':').map(Number)
@@ -194,9 +210,7 @@ export function AppointmentForm({
   const getDefaultDateTime = useCallback(() => {
     const type = appointment && 'type' in appointment ? appointment.type : defaultTypeFromSettings
     const isOpen = !!(appointment && 'is_open_booking_day' in appointment && appointment.is_open_booking_day)
-    const dur = isOpen
-      ? FREE_PASS_DURATION_MINUTES
-      : (defaultDurations[type] ?? defaultDurationsByRole[type] ?? 90)
+    const dur = getDurationForType(type, isOpen)
     if (appointment?.starts_at) {
       const startLocal = extractLocalDateTime(appointment.starts_at)
       const endLocal = appointment.ends_at
@@ -232,7 +246,7 @@ export function AppointmentForm({
       start_time: startTimeStr,
       end_time: endTimeStr,
     }
-  }, [appointment, defaultTypeFromSettings, defaultDurations, defaultDurationsByRole])
+  }, [appointment, defaultTypeFromSettings, getDurationForType])
 
   const defaultDateTime = getDefaultDateTime()
 
@@ -412,7 +426,7 @@ export function AppointmentForm({
 
   const handleStartTimeChange = (value: string) => {
     setFormData((prev) => {
-      if (value) {
+      if (value && !prev.is_open_booking_day) {
         const dur = getDurationForType(prev.type, prev.is_open_booking_day)
         const endTimeStr = calculateEndTime(value, dur)
         return { ...prev, start_time: value, end_time: endTimeStr }
@@ -431,18 +445,14 @@ export function AppointmentForm({
   const isEditing = appointment && 'id' in appointment
 
   return (
-    <div className="w-full max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden bg-[#1a1a1d] rounded-2xl shadow-2xl animate-in zoom-in-95 fade-in duration-200 my-auto">
+    <div className="w-full max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] animate-in zoom-in-95 fade-in duration-200 my-auto">
       {/* Header compatto */}
       <div
-        className="relative h-14 flex items-center px-4"
+        className="relative h-14 flex items-center px-4 border-b border-white/10"
         style={{
           background: `linear-gradient(135deg, ${selectedColor}ee 0%, ${selectedColor}99 100%)`,
         }}
       >
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1 right-8 w-14 h-14 rounded-full border-2 border-white" />
-          <div className="absolute -bottom-3 right-14 w-12 h-12 rounded-full border-2 border-white" />
-        </div>
         <div className="relative flex-1">
           <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider">
             {isEditing ? 'Modifica' : 'Nuovo'}
@@ -461,8 +471,8 @@ export function AppointmentForm({
       {/* Form compatto */}
       <form ref={formContainerRef} onSubmit={handleSubmit} className="p-4 space-y-3">
         {showOpenBookingOption && !isEditing && (
-          <div className="flex items-center justify-between rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 p-3 gap-3">
-            <label htmlFor="open-booking" className="text-sm text-[#E8EAED] font-medium min-w-0 flex-1">
+          <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] p-3 gap-3">
+            <label htmlFor="open-booking" className="text-sm text-text-primary font-medium min-w-0 flex-1">
               Libera prenotazione (slot in cui gli atleti possono prenotare)
             </label>
             <div className="w-11 shrink-0 flex justify-end">
@@ -478,7 +488,7 @@ export function AppointmentForm({
                           notes: prev.notes || 'Libera prenotazione',
                           type: 'allenamento' as const,
                           color: 'grigio' as AppointmentColor,
-                          end_time: calculateEndTime(prev.start_time, FREE_PASS_DURATION_MINUTES),
+                          end_time: '20:00',
                         }
                       : {}),
                   }))
@@ -487,19 +497,19 @@ export function AppointmentForm({
             </div>
           </div>
         )}
-        {/* Atleta */}
-        {(!formData.is_open_booking_day || !showOpenBookingOption) && (
+        {/* Atleta - nascosto in athleteMode (è sempre l'atleta loggato) */}
+        {!athleteMode && (!formData.is_open_booking_day || !showOpenBookingOption) && (
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#9AA0A6] uppercase tracking-wider">
+            <label className="flex items-center gap-1.5 text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
               <User className="h-3 w-3" />
               Atleta
             </label>
             <div
               className={cn(
-                'relative rounded-lg border-2 transition-all duration-200',
+                'relative rounded-lg border transition-all duration-200',
                 errors.athlete_id
                   ? 'border-red-500/50 bg-red-500/5'
-                  : 'border-[#2a2a2d] bg-[#2a2a2d]/50 hover:border-[#3a3a3d] focus-within:border-[#8AB4F8]/50',
+                  : 'border-white/10 bg-white/[0.04] hover:border-white/20 focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20',
               )}
             >
               <SimpleSelect
@@ -527,42 +537,44 @@ export function AppointmentForm({
 
         {/* Data e Ora - layout compatto: data + Intero giorno sulla stessa riga */}
         <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#9AA0A6] uppercase tracking-wider">
+          <label className="flex items-center gap-1.5 text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
             <Calendar className="h-3 w-3" />
             Data e ora
           </label>
-          <div className="grid grid-cols-1 min-[400px]:grid-cols-[1fr_auto] gap-2 items-center">
-            <div className="rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 hover:border-[#3a3a3d] focus-within:border-[#8AB4F8]/50 transition-all duration-200">
+          <div className={cn('grid gap-2 items-center', athleteMode ? 'grid-cols-1' : 'grid-cols-1 min-[400px]:grid-cols-[1fr_auto]')}>
+            <div className="rounded-lg border border-white/10 bg-white/[0.04] hover:border-white/20 focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
               <input
                 type="date"
                 value={formData.date}
                 onChange={(e) => handleInputChange('date', e.target.value)}
-                className="w-full h-10 px-3 bg-transparent text-[#E8EAED] text-sm focus:outline-none [color-scheme:dark]"
+                className="w-full h-10 px-3 bg-transparent text-text-primary text-sm focus:outline-none [color-scheme:dark]"
               />
             </div>
-            <div className="flex items-center justify-between rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 p-2.5 gap-2 min-[400px]:w-auto">
-              <label htmlFor="all-day" className="text-xs text-[#E8EAED] font-medium whitespace-nowrap">
-                Intero giorno
-              </label>
-              <Switch
-                id="all-day"
-                checked={formData.is_all_day}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({ ...prev, is_all_day: checked }))
-                }
-              />
-            </div>
+            {!athleteMode && (
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] p-2.5 gap-2 min-[400px]:w-auto">
+                <label htmlFor="all-day" className="text-xs text-text-primary font-medium whitespace-nowrap">
+                  Intero giorno
+                </label>
+                <Switch
+                  id="all-day"
+                  checked={formData.is_all_day}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, is_all_day: checked }))
+                  }
+                />
+              </div>
+            )}
           </div>
-          <p className="text-[#8AB4F8] text-xs font-medium capitalize">
+          <p className="text-primary text-xs font-medium capitalize">
             {formatDateDisplay(formData.date)}
           </p>
 
           {!formData.is_all_day && (
             <>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 focus-within:border-[#8AB4F8]/50 transition-all duration-200">
+                <div className="rounded-lg border border-white/10 bg-white/[0.04] focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
                   <div className="flex items-center h-10 px-3">
-                    <Clock className="h-3.5 w-3.5 text-[#9AA0A6] mr-2 shrink-0" />
+                    <Clock className="h-3.5 w-3.5 text-text-tertiary mr-2 shrink-0" />
                     <SimpleSelect
                       value={formData.start_time}
                       onValueChange={(value) => handleStartTimeChange(value)}
@@ -572,23 +584,15 @@ export function AppointmentForm({
                     />
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    'rounded-lg border-2 bg-[#2a2a2d]/50 transition-all duration-200',
-                    formData.is_open_booking_day
-                      ? 'border-[#2a2a2d] opacity-70'
-                      : 'border-[#2a2a2d] focus-within:border-[#8AB4F8]/50',
-                  )}
-                >
+                <div className="rounded-lg border border-white/10 bg-white/[0.04] focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
                   <div className="flex items-center h-10 px-3">
-                    <span className="text-[#9AA0A6] text-xs mr-2">fino</span>
+                    <span className="text-text-tertiary text-xs mr-2">fino</span>
                     <SimpleSelect
                       value={formData.end_time}
-                      onValueChange={(value) => !formData.is_open_booking_day && handleInputChange('end_time', value)}
+                      onValueChange={(value) => handleInputChange('end_time', value)}
                       options={TIME_OPTIONS}
                       className="flex-1"
                       unstyled
-                      disabled={formData.is_open_booking_day}
                     />
                   </div>
                 </div>
@@ -604,11 +608,11 @@ export function AppointmentForm({
 
           {!isEditing && (
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#9AA0A6] uppercase tracking-wider">
+              <label className="flex items-center gap-1.5 text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
                 <Repeat className="h-3 w-3" />
                 Ripetizione
               </label>
-              <div className="relative rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 hover:border-[#3a3a3d] focus-within:border-[#8AB4F8]/50 transition-all duration-200">
+              <div className="relative rounded-lg border border-white/10 bg-white/[0.04] hover:border-white/20 focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
                 <SimpleSelect
                   value={formData.recurrence}
                   onValueChange={(value) =>
@@ -627,54 +631,56 @@ export function AppointmentForm({
 
         </div>
 
-        {/* Tipo - Pills compatte */}
-        <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#9AA0A6] uppercase tracking-wider">
-            <Tag className="h-3 w-3" />
-            Tipo
-          </label>
-          <div className="flex flex-wrap gap-1.5">
-            {(showOpenBookingOption && formData.is_open_booking_day
-              ? [OPEN_BOOKING_TYPE, ...appointmentTypes.filter((t) => t.value !== 'allenamento')]
-              : appointmentTypes
-            ).map((type) => (
-              <button
-                key={type.value}
-                type="button"
-                onClick={() => handleInputChange('type', type.value)}
-                className={cn(
-                  'flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200',
-                  formData.type === type.value
-                    ? 'bg-[#8AB4F8] text-[#1a1a1d] shadow-[#8AB4F8]/20'
-                    : 'bg-[#2a2a2d] text-[#9AA0A6] hover:bg-[#3a3a3d] hover:text-[#E8EAED]',
-                )}
-              >
-                <span className="text-sm">{type.emoji}</span>
-                <span>{type.label}</span>
-              </button>
-            ))}
+        {/* Tipo - in athleteMode solo Allenamento (nascosto), altrimenti pills */}
+        {!athleteMode && (
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+              <Tag className="h-3 w-3" />
+              Tipo
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {(showOpenBookingOption && formData.is_open_booking_day
+                ? [OPEN_BOOKING_TYPE, ...appointmentTypes.filter((t) => t.value !== 'allenamento')]
+                : appointmentTypes
+              ).map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => handleInputChange('type', type.value)}
+                  className={cn(
+                    'flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200',
+                    formData.type === type.value
+                      ? 'bg-primary text-primary-foreground shadow-primary/20'
+                      : 'bg-white/[0.04] text-text-tertiary hover:bg-white/[0.06] hover:text-text-primary border border-white/10',
+                  )}
+                >
+                  <span className="text-sm">{type.emoji}</span>
+                  <span>{type.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Colore - compatto */}
         <div className="space-y-1.5">
           <button
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className="w-full flex items-center justify-between p-2.5 rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 hover:border-[#3a3a3d] transition-all duration-200"
+            className="w-full flex items-center justify-between p-2.5 rounded-lg border border-white/10 bg-white/[0.04] hover:border-white/20 transition-all duration-200"
           >
             <div className="flex items-center gap-2">
               <div
                 className="w-5 h-5 rounded-full ring-2 ring-white/20"
                 style={{ backgroundColor: selectedColor }}
               />
-              <span className="text-[#E8EAED] text-xs font-medium">
+              <span className="text-text-primary text-xs font-medium">
                 {COLOR_LABELS[formData.color]}
               </span>
             </div>
             <ChevronDown
               className={cn(
-                'h-3.5 w-3.5 text-[#9AA0A6] transition-transform duration-200',
+                'h-3.5 w-3.5 text-text-tertiary transition-transform duration-200',
                 showColorPicker && 'rotate-180',
               )}
             />
@@ -683,7 +689,7 @@ export function AppointmentForm({
             className={cn(
               'grid grid-cols-6 gap-1.5 overflow-hidden transition-all duration-300',
               showColorPicker
-                ? 'max-h-32 opacity-100 p-2 bg-[#2a2a2d]/30 rounded-lg'
+                ? 'max-h-32 opacity-100 p-2 bg-white/[0.02] rounded-lg border border-white/10'
                 : 'max-h-0 opacity-0',
             )}
           >
@@ -699,7 +705,7 @@ export function AppointmentForm({
                   className={cn(
                     'group relative w-8 h-8 rounded-lg transition-all duration-200',
                     formData.color === colorKey
-                      ? 'ring-2 ring-white ring-offset-2 ring-offset-[#1a1a1d] z-10'
+                      ? 'ring-2 ring-white ring-offset-2 ring-offset-background z-10'
                       : 'hover:z-10',
                   )}
                   style={{ backgroundColor: colorValue }}
@@ -710,7 +716,7 @@ export function AppointmentForm({
                       <div className="w-1.5 h-1.5 rounded-full bg-white" />
                     </div>
                   )}
-                  <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-[#1a1a1d] text-[10px] text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                  <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-zinc-900 border border-white/10 text-[10px] text-text-primary rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
                     {COLOR_LABELS[colorKey]}
                   </span>
                 </button>
@@ -721,51 +727,47 @@ export function AppointmentForm({
 
         {/* Location & Note - una riga ciascuna, compatte */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 focus-within:border-[#8AB4F8]/50 transition-all duration-200">
-            <MapPin className="h-3.5 w-3.5 text-[#9AA0A6] shrink-0" />
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/[0.04] focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
+            <MapPin className="h-3.5 w-3.5 text-text-tertiary shrink-0" />
             <input
               type="text"
               placeholder="Luogo (opz.)"
               value={formData.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
-              className="flex-1 min-w-0 bg-transparent text-[#E8EAED] text-xs placeholder:text-[#5F6368] focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-text-primary text-xs placeholder:text-text-tertiary focus:outline-none"
             />
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-[#2a2a2d] bg-[#2a2a2d]/50 focus-within:border-[#8AB4F8]/50 transition-all duration-200">
-            <FileText className="h-3.5 w-3.5 text-[#9AA0A6] shrink-0" />
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/[0.04] focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
+            <FileText className="h-3.5 w-3.5 text-text-tertiary shrink-0" />
             <input
               type="text"
               placeholder="Note (opz.)"
               value={formData.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
-              className="flex-1 min-w-0 bg-transparent text-[#E8EAED] text-xs placeholder:text-[#5F6368] focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-text-primary text-xs placeholder:text-text-tertiary focus:outline-none"
             />
           </div>
         </div>
 
         {/* Azioni: sticky su mobile, min 44px touch target */}
-        <div className="flex items-center justify-between pt-1 gap-3 sticky bottom-0 bg-[#1a1a1d] py-3 -mx-4 px-4 max-[851px]:min-h-[52px]">
-          <button
+        <div className="flex items-center justify-between pt-1 gap-3 sticky bottom-0 border-t border-white/10 bg-inherit py-3 -mx-4 px-4 max-[851px]:min-h-[52px]">
+          <Button
             type="button"
+            variant="outline"
             onClick={onCancel}
             disabled={loading || isSubmitting}
-            className="min-h-[44px] px-4 py-2 text-[#9AA0A6] hover:text-[#E8EAED] font-medium text-xs transition-colors disabled:opacity-50 touch-manipulation"
+            className="min-h-[44px] border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-text-tertiary hover:text-text-primary"
           >
             Annulla
-          </button>
+          </Button>
           <Button
             type="submit"
             disabled={loading || isSubmitting}
-            className={cn(
-              'relative min-h-[44px] px-6 py-2 font-semibold text-xs rounded-full transition-all duration-200 touch-manipulation',
-              'bg-gradient-to-r from-[#8AB4F8] to-[#669DF6] hover:from-[#AECBFA] hover:to-[#8AB4F8]',
-              'text-[#1a1a1d] shadow-[#8AB4F8]/20 hover:shadow-[#8AB4F8]/30',
-              'disabled:opacity-50',
-            )}
+            className="min-h-[44px] px-6 font-semibold text-xs touch-manipulation"
           >
             {loading || isSubmitting ? (
               <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 border-2 border-[#1a1a1d]/30 border-t-[#1a1a1d] rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                 Salvataggio...
               </span>
             ) : isEditing ? (

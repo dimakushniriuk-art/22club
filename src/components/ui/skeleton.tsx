@@ -24,7 +24,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-background-secondary',
+          'bg-gradient-to-b from-zinc-800/80 to-zinc-900/80',
           variants[variant],
           animations[animation],
           className,

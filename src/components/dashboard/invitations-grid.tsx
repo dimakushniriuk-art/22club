@@ -41,11 +41,7 @@ export function InvitationsGrid({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {invitations.map((invitation) => (
-        <Card
-          key={invitation.id}
-          variant="trainer"
-          className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 hover:shadow-blue-500/20 transition-all duration-200"
-        >
+        <Card key={invitation.id} variant="default" className="relative overflow-hidden">
           <div className="absolute left-3 top-3">
             <Checkbox
               checked={selectedIds.has(invitation.id)}
@@ -67,14 +63,14 @@ export function InvitationsGrid({
             <div className="space-y-3">
               {getStatusBadge(invitation.stato)}
 
-              <div className="bg-background-tertiary rounded p-3">
+              <div className="rounded border border-white/10 bg-white/[0.04] p-3">
                 <p className="text-text-secondary mb-1 text-xs font-medium">Codice invito:</p>
                 <p className="text-text-primary font-mono text-sm font-bold">
                   {invitation.codice}
                 </p>
               </div>
 
-              <div className="bg-background-tertiary rounded p-2">
+              <div className="rounded border border-white/10 bg-white/[0.04] p-2">
                 <p className="text-text-secondary mb-1 text-xs">Link registrazione:</p>
                 <p className="text-text-primary truncate text-xs">
                   {typeof window !== 'undefined'
@@ -99,7 +95,7 @@ export function InvitationsGrid({
                   variant="outline"
                   size="sm"
                   onClick={() => onCopyCode(invitation.codice)}
-                  className="flex-1 border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+                  className="flex-1 border-white/10 hover:border-primary/20"
                   aria-label="Copia codice"
                 >
                   {copiedText === invitation.codice ? (
@@ -118,7 +114,7 @@ export function InvitationsGrid({
                   variant="outline"
                   size="sm"
                   onClick={() => onCopyLink(invitation.codice)}
-                  className="flex-1 border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+                  className="flex-1 border-white/10 hover:border-primary/20"
                   aria-label="Copia link"
                 >
                   {copiedText === `link-${invitation.codice}` ? (
@@ -137,7 +133,7 @@ export function InvitationsGrid({
                   variant="outline"
                   size="sm"
                   onClick={() => onShowQR(invitation)}
-                  className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+                  className="border-white/10 hover:border-primary/20"
                   aria-label="Mostra QR Code"
                 >
                   <QrCode className="h-4 w-4" />

@@ -165,7 +165,7 @@ export function SimpleSelect({
     isOpen && dropdownPosition ? (
       <div
         ref={dropdownRef}
-        className="fixed z-[9999] overflow-hidden rounded-xl border border-primary/35 bg-background-secondary shadow-xl shadow-black/30 backdrop-blur-xl"
+        className="fixed z-[9999] overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl"
         style={{
           top: `${dropdownPosition.top}px`,
           left: `${dropdownPosition.left}px`,
@@ -208,8 +208,8 @@ export function SimpleSelect({
             'flex w-full items-center justify-between text-sm disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200',
             unstyled
               ? 'h-full bg-transparent border-0 px-0 py-0 focus:outline-none'
-              : 'min-h-[44px] w-full rounded-xl border border-primary/35 bg-background-secondary/80 px-4 py-2.5 text-base text-text-primary outline-none placeholder:text-text-tertiary focus:border-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0 hover:bg-background-secondary',
-            !unstyled && isOpen && 'border-primary ring-2 ring-primary/30',
+              : 'min-h-[44px] w-full rounded-md border border-white/10 px-4 py-2.5 text-base text-text-primary outline-none placeholder:text-text-tertiary bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none transition-[border-color,box-shadow] duration-150 disabled:from-zinc-900/80 disabled:to-zinc-900/80 disabled:shadow-none',
+            !unstyled && isOpen && 'border-primary ring-2 ring-primary/25',
           )}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}

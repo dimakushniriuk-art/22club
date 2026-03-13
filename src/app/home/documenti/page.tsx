@@ -22,7 +22,6 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   AlertTriangle,
-  ArrowLeft,
   Calendar,
   CheckCircle,
   Clock,
@@ -32,6 +31,7 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react'
+import { PageHeaderFixed } from '@/components/layout'
 import { getAllAthleteDocuments, type UnifiedDocumentItem } from '@/lib/all-athlete-documents'
 import {
   Badge,
@@ -66,28 +66,8 @@ const CATEGORIE_UPLOAD = [
 type DocStatus = 'valido' | 'scaduto' | 'in-revisione' | 'in_scadenza' | 'non_valido'
 type BadgeVariant = 'primary' | 'success' | 'warning' | 'neutral' | 'outline' | 'secondary'
 
-const CARD_VALIDI_STYLE = {
-  background: 'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
-} as const
-const CARD_SCADENZA_STYLE = {
-  background: 'linear-gradient(145deg, rgba(255,193,7,0.12) 0%, rgba(255,193,7,0.03) 50%, rgba(22,22,26,0.85) 100%)',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,193,7,0.15) inset',
-} as const
-const CARD_DOC_STYLE = {
-  borderColor: 'rgba(2, 179, 191, 0.35)',
-  background: 'linear-gradient(145deg, rgba(26,26,30,0.9) 0%, rgba(22,22,26,0.92) 100%)',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.02) inset',
-} as const
-const CARD_EMPTY_STYLE = {
-  borderColor: 'rgba(2, 179, 191, 0.35)',
-  background: 'linear-gradient(145deg, rgba(22,22,26,0.95) 0%, rgba(16,16,18,0.98) 100%)',
-  boxShadow: '0 2px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(2,179,191,0.08) inset',
-} as const
-const CARD_INFO_STYLE = {
-  background: 'linear-gradient(145deg, rgba(26,26,30,0.9) 0%, rgba(22,22,26,0.92) 100%)',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.02) inset',
-} as const
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
 
 function getStatusColor(status: DocStatus): BadgeVariant {
   switch (status) {
@@ -366,92 +346,62 @@ function DocumentiPageContent() {
 
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-[calc(5.5rem+10px+env(safe-area-inset-top,0px))] safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
-        {/* Header - fisso in alto, nero + linea cyan */}
-        <div className="fixed inset-x-0 top-0 z-20 overflow-hidden bg-black px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-lg pt-[calc(10px+env(safe-area-inset-top,0px))]">
-          <div
-            className="absolute inset-x-0 bottom-0 h-px"
-            style={{
-              background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
-            }}
-            aria-hidden
-          />
-          <div className="relative z-10 flex items-center gap-3">
-            <Button
-              onClick={handleBack}
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
-              aria-label="Indietro"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-              <FileText className="h-5 w-5 text-cyan-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg md:text-xl font-semibold text-text-primary truncate">
-                I miei Documenti
-              </h1>
-              <p className="text-[11px] text-text-tertiary line-clamp-1">
-                Gestisci i tuoi certificati e documenti
-              </p>
-            </div>
-            <Button
-              onClick={() => handleUploadDocument()}
-              disabled={uploading}
-              className="min-h-[44px] shrink-0 gap-2 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-50"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Caricamento...
-                </>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4" />
-                  Carica
-                </>
-              )}
-            </Button>
-          </div>
+      <PageHeaderFixed
+        title="I miei Documenti"
+        subtitle="Gestisci i tuoi certificati e documenti"
+        onBack={handleBack}
+        icon={<FileText className="h-5 w-5 text-cyan-400" />}
+      />
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:space-y-6 sm:px-5 min-[834px]:px-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={() => handleUploadDocument()}
+            disabled={uploading}
+            className="min-h-[44px] gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Caricamento...
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                Carica
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Stats - card compatte */}
-        <div className="grid grid-cols-2 gap-3 min-[834px]:gap-4">
-          <Card
-            className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
-            style={CARD_VALIDI_STYLE}
-          >
-            <div className="absolute left-0 top-0 h-full w-1 bg-cyan-400" aria-hidden />
-            <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 h-full w-1 bg-white" aria-hidden />
+            <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <CheckCircle className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                   Validi
                 </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 min-[834px]:text-2xl">
+                <p className="text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl">
                   {validCount}
                 </p>
               </div>
             </CardContent>
           </Card>
-          <Card
-            className="relative overflow-hidden rounded-xl border border-state-warn/50 backdrop-blur-md"
-            style={CARD_SCADENZA_STYLE}
-          >
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <div className="absolute left-0 top-0 h-full w-1 bg-state-warn" aria-hidden />
-            <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-state-warn/40 bg-state-warn/20">
+            <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Clock className="h-4 w-4 text-state-warn" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                   In scadenza
                 </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-state-warn min-[834px]:text-2xl">
+                <p className="text-xl font-bold tabular-nums leading-tight text-state-warn sm:text-2xl">
                   {expiringCount}
                 </p>
               </div>
@@ -461,12 +411,13 @@ function DocumentiPageContent() {
 
         {/* Lista documenti */}
         {allDocuments.length === 0 ? (
-          <Card
-            className="relative overflow-hidden rounded-xl border border-primary/35 backdrop-blur-md"
-            style={CARD_EMPTY_STYLE}
-          >
-            <CardContent className="relative z-10 px-4 py-8 text-center min-[834px]:px-6 min-[834px]:py-10">
-              <div className="mb-3 text-4xl opacity-50">📄</div>
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <CardContent className="relative z-10 px-4 py-8 text-center sm:px-6 sm:py-10">
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-2xl">
+                  📄
+                </div>
+              </div>
               <h3 className="mb-1.5 text-base font-bold text-text-primary md:text-lg">
                 Nessun documento caricato
               </h3>
@@ -474,7 +425,7 @@ function DocumentiPageContent() {
               <Button
                 onClick={() => handleUploadDocument()}
                 disabled={uploading}
-                className="min-h-[44px] gap-2 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-50"
+                className="min-h-[44px] gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {uploading ? (
                   <>
@@ -491,18 +442,14 @@ function DocumentiPageContent() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3 min-[834px]:space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {allDocuments.map((item) => (
-              <Card
-                key={item.id}
-                className="relative overflow-hidden rounded-xl border border-primary/35 backdrop-blur-md"
-                style={CARD_DOC_STYLE}
-              >
-                <div className="absolute left-0 top-0 h-full w-1 bg-primary" aria-hidden />
-                <CardContent className="relative z-10 p-4 min-[834px]:p-5">
+              <Card key={item.id} className={`relative overflow-hidden ${CARD_DS}`}>
+                <div className="absolute left-0 top-0 h-full w-1 bg-white" aria-hidden />
+                <CardContent className="relative z-10 p-4 sm:p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 flex-1 items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/40 bg-primary/20 text-base">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-base">
                         {getCategoryIcon(item.categoryKey)}
                       </div>
                       <div className="min-w-0 flex-1 space-y-1.5">
@@ -521,7 +468,7 @@ function DocumentiPageContent() {
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 shrink-0 text-primary" />
+                            <FileText className="h-4 w-4 shrink-0 text-cyan-400" />
                             <p className="truncate text-xs text-text-secondary">{item.label}</p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -542,7 +489,7 @@ function DocumentiPageContent() {
                           )}
                         </div>
                         {item.notes && (
-                          <div className="mt-2 rounded-lg border border-primary/15 bg-background-tertiary/30 p-2">
+                          <div className="mt-2 rounded-lg border border-white/10 bg-white/5 p-2">
                             <p className="line-clamp-2 text-xs text-text-secondary">{item.notes}</p>
                           </div>
                         )}
@@ -551,7 +498,7 @@ function DocumentiPageContent() {
                     <div className="flex shrink-0 items-center gap-2">
                       <Button
                         onClick={() => openDocument(item)}
-                        className="min-h-[44px] shrink-0 gap-2 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400"
+                        className="min-h-[44px] shrink-0 gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Eye className="h-4 w-4" />
                         Visualizza
@@ -560,7 +507,7 @@ function DocumentiPageContent() {
                         <Button
                           variant="outline"
                           onClick={() => handleUploadNew(item)}
-                          className="min-h-[44px] shrink-0 rounded-xl border-cyan-400/40 text-cyan-400 hover:bg-cyan-400/15"
+                          className="min-h-[44px] shrink-0 rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
                         >
                           <Upload className="h-4 w-4" />
                           Nuovo
@@ -575,13 +522,10 @@ function DocumentiPageContent() {
         )}
 
         {/* Info compatta */}
-        <Card
-          className="relative overflow-hidden rounded-xl border border-state-warn/40 backdrop-blur-md"
-          style={CARD_INFO_STYLE}
-        >
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
           <div className="absolute left-0 top-0 h-full w-1 bg-state-warn" aria-hidden />
-          <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-state-warn/20">
+          <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
               <AlertTriangle className="h-4 w-4 text-state-warn" />
             </div>
             <div className="min-w-0 flex-1">
@@ -598,7 +542,7 @@ function DocumentiPageContent() {
 
       {/* Dialog categoria upload - SimpleSelect */}
       <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
-        <DialogContent className="max-w-[90vw] border border-primary/35 bg-background-secondary backdrop-blur-sm">
+        <DialogContent className="max-w-[90vw] border border-white/10 bg-background-secondary">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-text-primary md:text-lg">
               Seleziona Categoria Documento
@@ -622,14 +566,14 @@ function DocumentiPageContent() {
                 setShowCategoryDialog(false)
                 setPendingFile(null)
               }}
-              className="min-h-[44px] rounded-xl border-border text-text-secondary hover:border-cyan-400/40 hover:text-cyan-400"
+              className="min-h-[44px] rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
             >
               Annulla
             </Button>
             <Button
               onClick={handleCategoryConfirm}
               disabled={uploading}
-              className="min-h-[44px] rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {uploading ? (
                 <>

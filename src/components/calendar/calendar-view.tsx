@@ -10,7 +10,7 @@ import type {
   EventDropArg,
 } from '@fullcalendar/core'
 import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, ZoomIn, ZoomOut } from 'lucide-react'
 import type { AppointmentUI, AppointmentColor } from '@/types/appointment'
 import { APPOINTMENT_COLORS } from '@/types/appointment'
 import type { CalendarBlock } from '@/types/calendar-block'
@@ -47,6 +47,8 @@ interface CalendarViewProps {
   initialWeekStart?: 0 | 1
   /** Blocchi calendario (ferie, chiusura) da mostrare come sfondo grigio */
   calendarBlocks?: CalendarBlock[]
+  /** Se true (es. calendario atleta): nasconde step griglia e zoom, slot fisso 1h */
+  compactToolbar?: boolean
 }
 
 type ViewType = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
@@ -57,6 +59,16 @@ const VIEW_LABELS: Record<ViewType, string> = {
   timeGridDay: 'Giorno',
   listWeek: 'Agenda',
 }
+
+const VALID_SLOT_MINUTES = [15, 30, 45, 60, 90]
+
+const SLOT_DURATION_OPTIONS: { value: number; label: string }[] = [
+  { value: 15, label: '15 min' },
+  { value: 30, label: '30 min' },
+  { value: 45, label: '45 min' },
+  { value: 60, label: '1 h' },
+  { value: 90, label: '1h 30min' },
+]
 
 export function CalendarView({
   appointments,
@@ -75,8 +87,9 @@ export function CalendarView({
   initialView,
   initialWeekStart = 1,
   calendarBlocks = [],
+  compactToolbar = false,
 }: CalendarViewProps) {
-  const { settings } = useStaffCalendarSettings()
+  const { settings, mutate: mutateSettings } = useStaffCalendarSettings()
   const typeLabelMap = useMemo(() => {
     const m: Record<string, string> = { ...APPOINTMENT_TYPE_LABELS }
     settings?.custom_appointment_types?.forEach((c) => {
@@ -86,6 +99,13 @@ export function CalendarView({
   }, [settings?.custom_appointment_types])
 
   const { slotMinTime, slotMaxTime } = useMemo(() => {
+    const toFull = (t: string) =>
+      t.length >= 8 ? t.slice(0, 8) : t.length === 5 ? `${t}:00` : `${t.slice(0, 5)}:00`
+    const gridMin = settings?.grid_min_time?.trim()
+    const gridMax = settings?.grid_max_time?.trim()
+    if (gridMin && gridMax) {
+      return { slotMinTime: toFull(gridMin), slotMaxTime: toFull(gridMax) }
+    }
     const def = { slotMinTime: '07:00:00', slotMaxTime: '22:00:00' }
     const wh = settings?.work_hours
     if (!wh || typeof wh !== 'object') return def
@@ -100,14 +120,22 @@ export function CalendarView({
       }
     })
     if (minStart === '24:00' || maxEnd === '00:00') return def
-    const toFull = (t: string) => (t.length >= 8 ? t.slice(0, 8) : t.length === 5 ? `${t}:00` : `${t.slice(0, 5)}:00`)
     return { slotMinTime: toFull(minStart), slotMaxTime: toFull(maxEnd) }
-  }, [settings?.work_hours])
+  }, [settings?.work_hours, settings?.grid_min_time, settings?.grid_max_time])
 
   const slotDurationStr = useMemo(() => {
+    if (compactToolbar) return '01:00:00'
     const min = settings?.slot_duration_minutes ?? 15
-    return min === 30 ? '00:30:00' : '00:15:00'
-  }, [settings?.slot_duration_minutes])
+    const clamped = VALID_SLOT_MINUTES.includes(min)
+      ? min
+      : VALID_SLOT_MINUTES.reduce((best, curr) =>
+          Math.abs(curr - min) < Math.abs(best - min) ? curr : best,
+        15,
+        )
+    const hours = Math.floor(clamped / 60)
+    const mins = clamped % 60
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:00`
+  }, [compactToolbar, settings?.slot_duration_minutes])
 
   const densityClass = useMemo(() => {
     const d = settings?.view_density ?? 'comfort'
@@ -118,6 +146,10 @@ export function CalendarView({
   void _onDateClick
   const [view, setView] = useState<ViewType>(initialView ?? 'dayGridMonth')
   const [hasAppliedInitialView, setHasAppliedInitialView] = useState(false)
+  const [zoomPercent, setZoomPercent] = useState(100)
+  const ZOOM_MIN = 80
+  const ZOOM_MAX = 140
+  const ZOOM_STEP = 10
   useEffect(() => {
     if (initialView && !hasAppliedInitialView) {
       setView(initialView)
@@ -179,6 +211,19 @@ export function CalendarView({
     loadCalendar()
   }, [])
 
+  // Sincronizza vista e firstDay quando initialView/initialWeekStart cambiano (es. dopo caricamento impostazioni)
+  useEffect(() => {
+    if (!calendarRef.current || !isLoaded) return
+    const api = calendarRef.current.getApi?.()
+    if (!api) return
+    if (initialView && api.view.type !== initialView) {
+      setView(initialView)
+      api.changeView(initialView)
+      setCurrentTitle(api.view.title)
+    }
+    api.setOption('firstDay', initialWeekStart)
+  }, [initialView, initialWeekStart, isLoaded])
+
   // Aggiorna il titolo quando cambia la vista
   useEffect(() => {
     if (calendarRef.current && isLoaded) {
@@ -215,6 +260,27 @@ export function CalendarView({
       }, 0)
     }
   }, [navigateToDate, isLoaded, onNavigateComplete])
+
+  // Vista Agenda (listWeek): se la settimana visibile non contiene eventi, vai alla settimana del primo evento (o primo futuro)
+  useEffect(() => {
+    if (!isLoaded || appointments.length === 0) return
+    const t = setTimeout(() => {
+      const api = apiRef.current
+      if (!api || (api.view.type as string) !== 'listWeek') return
+      const activeStart = api.view.activeStart
+      const activeEnd = api.view.activeEnd
+      const hasInRange = appointments.some((apt) => {
+        const start = new Date(apt.starts_at)
+        return start >= activeStart && start < activeEnd
+      })
+      if (hasInRange) return
+      const now = new Date()
+      const firstUpcoming = appointments.find((a) => new Date(a.starts_at) >= now) ?? appointments[0]
+      api.gotoDate(firstUpcoming.starts_at)
+      setCurrentTitle(api.view.title)
+    }, 100)
+    return () => clearTimeout(t)
+  }, [isLoaded, appointments, view])
 
   // Cyan sfumato per Libera prenotazione in vista atleta (allineato a cyan-500 del tema)
   const OPEN_BOOKING_BG = 'rgba(6, 182, 212, 0.42)'
@@ -285,7 +351,10 @@ export function CalendarView({
       if (isOpenSlot) {
         classNames.push('fc-event-open-booking')
       }
-      const typeLabel = typeLabelMap[appointment.type] || appointment.type?.replace(/_/g, ' ') || 'Appuntamento'
+      const cellWidth = compactToolbar ? 'full' : (settings?.type_cell_width?.[appointment.type] ?? 'half')
+      classNames.push(cellWidth === 'half' ? 'fc-event-half-cell' : 'fc-event-full-cell')
+      const typeLabel =
+        typeLabelMap[appointment.type] || appointment.type?.replace(/_/g, ' ') || 'Appuntamento'
       const title = appointment.athlete_name
         ? `${typeLabel} - ${appointment.athlete_name}`
         : typeLabel
@@ -354,15 +423,23 @@ export function CalendarView({
     }
 
     return result
-  }, [appointments, calendarBlocks, openBookingAsBackground, view, slotBookingCounts, typeLabelMap, REASON_LABELS])
+  }, [
+    appointments,
+    calendarBlocks,
+    compactToolbar,
+    openBookingAsBackground,
+    view,
+    slotBookingCounts,
+    typeLabelMap,
+    REASON_LABELS,
+    settings?.type_cell_width,
+  ])
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     if (!clickInfo.event.start) return
 
     const eventId = clickInfo.event.id as string
-    let baseAppointment: AppointmentUI | undefined = appointments.find(
-      (a) => a.id === eventId,
-    )
+    let baseAppointment: AppointmentUI | undefined = appointments.find((a) => a.id === eventId)
 
     // Vista mese: click su giorno con Libera prenotazione (evento sintetico all-day)
     if (!baseAppointment && eventId.startsWith('open-booking-day-')) {
@@ -373,10 +450,7 @@ export function CalendarView({
           return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         }
         baseAppointment = appointments.find(
-          (a) =>
-            a.is_open_booking_day &&
-            a.starts_at &&
-            toLocalDateStr(a.starts_at) === dayDate,
+          (a) => a.is_open_booking_day && a.starts_at && toLocalDateStr(a.starts_at) === dayDate,
         )
       }
     }
@@ -390,7 +464,9 @@ export function CalendarView({
     const appointment: AppointmentUI = {
       ...baseAppointment,
       starts_at: isDayCellClick ? baseAppointment.starts_at : clickInfo.event.start.toISOString(),
-      ends_at: isDayCellClick ? baseAppointment.ends_at : (clickInfo.event.end?.toISOString() ?? baseAppointment.ends_at),
+      ends_at: isDayCellClick
+        ? baseAppointment.ends_at
+        : (clickInfo.event.end?.toISOString() ?? baseAppointment.ends_at),
       athlete_name:
         (clickInfo.event.extendedProps?.athlete as string | undefined) ||
         baseAppointment.athlete_name ||
@@ -415,11 +491,17 @@ export function CalendarView({
         baseAppointment.recurrence_rule ??
         null,
       created_by_role:
-        (clickInfo.event.extendedProps?.created_by_role as 'athlete' | 'trainer' | 'admin' | undefined) ??
+        (clickInfo.event.extendedProps?.created_by_role as
+          | 'athlete'
+          | 'trainer'
+          | 'admin'
+          | undefined) ??
         baseAppointment.created_by_role ??
         null,
       is_open_booking_day:
-        clickInfo.event.extendedProps?.is_open_booking_day ?? baseAppointment.is_open_booking_day ?? false,
+        clickInfo.event.extendedProps?.is_open_booking_day ??
+        baseAppointment.is_open_booking_day ??
+        false,
     }
 
     const rect = clickInfo.el.getBoundingClientRect()
@@ -583,7 +665,7 @@ export function CalendarView({
   return (
     <div className="h-full flex flex-col">
       {/* Header: su mobile due righe, touch target min 44px */}
-      <div className="flex flex-col gap-2 py-2 px-1 sm:flex-row sm:items-center sm:justify-between sm:py-3 sm:gap-3 rounded-t-xl bg-gradient-to-r from-primary/10 via-transparent to-transparent border-b border-white/5 backdrop-blur-sm">
+      <div className="flex flex-col gap-2 py-2 px-1 sm:flex-row sm:items-center sm:justify-between sm:py-3 sm:gap-3 rounded-t-xl bg-gradient-to-r from-primary/10 via-transparent to-transparent border-b border-white/10 backdrop-blur-sm">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {toolbarLeftContent}
           <button
@@ -613,7 +695,57 @@ export function CalendarView({
             {currentTitle}
           </h2>
         </div>
-        <div className="flex items-center gap-1 rounded-lg p-1 bg-background-secondary/40 border border-white/5 shrink-0 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0 self-start sm:self-auto">
+          {!compactToolbar && (
+            <>
+              {/* Step griglia (slot duration) */}
+              <div className="flex items-center gap-1 rounded-lg p-1 bg-background-secondary/40 border border-white/5" title="Step griglia">
+                {SLOT_DURATION_OPTIONS.map(({ value, label }) => {
+                  const active = (settings?.slot_duration_minutes ?? 15) === value
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => mutateSettings({ slot_duration_minutes: value })}
+                      className={cn(
+                        'min-h-[40px] px-2 py-1.5 rounded-md text-xs font-medium transition-all duration-200 sm:px-2.5',
+                        active
+                          ? 'bg-primary/15 text-primary border border-primary/30'
+                          : 'text-text-secondary border border-transparent hover:bg-background-tertiary/50 hover:text-text-primary',
+                      )}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Zoom */}
+              <div className="flex items-center gap-0.5 rounded-lg p-1 bg-background-secondary/40 border border-white/5" title="Ingrandisci / riduci griglia">
+                <button
+                  type="button"
+                  onClick={() => setZoomPercent((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
+                  disabled={zoomPercent <= ZOOM_MIN}
+                  className="min-h-[40px] min-w-[36px] rounded-md text-text-secondary hover:bg-background-tertiary/50 hover:text-text-primary disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center"
+                  aria-label="Riduci zoom"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
+                <span className="min-h-[40px] px-2 flex items-center text-xs font-medium text-text-primary tabular-nums w-9 justify-center">
+                  {zoomPercent}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setZoomPercent((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+                  disabled={zoomPercent >= ZOOM_MAX}
+                  className="min-h-[40px] min-w-[36px] rounded-md text-text-secondary hover:bg-background-tertiary/50 hover:text-text-primary disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center"
+                  aria-label="Aumenta zoom"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
+          <div className="flex items-center gap-1 rounded-lg p-1 bg-background-secondary/40 border border-white/5">
           {(Object.keys(VIEW_LABELS) as ViewType[]).map((viewKey) => (
             <button
               key={viewKey}
@@ -629,11 +761,16 @@ export function CalendarView({
               {VIEW_LABELS[viewKey]}
             </button>
           ))}
+          </div>
         </div>
       </div>
 
-      {/* Calendar Content */}
-      <div className={cn('flex-1 min-h-0 relative', densityClass)}>
+      {/* Calendar Content: wrapper scrollabile + zoom sulla griglia */}
+      <div className="flex-1 min-h-0 min-w-0 overflow-auto relative">
+        <div
+          className={cn('relative origin-top-left', densityClass, compactToolbar && 'fc-athlete-full-cell')}
+          style={{ zoom: zoomPercent / 100 } as React.CSSProperties}
+        >
         <FullCalendar
           ref={(el) => {
             calendarRef.current = el
@@ -688,6 +825,7 @@ export function CalendarView({
           slotMinTime={slotMinTime}
           slotMaxTime={slotMaxTime}
           allDaySlot={false}
+          slotEventOverlap={false}
           nowIndicator={true}
           dayMaxEvents={5}
           moreLinkText="altri"
@@ -700,6 +838,7 @@ export function CalendarView({
           }}
           firstDay={initialWeekStart}
           weekNumbers={false}
+          noEventsContent="Nessun appuntamento in questo periodo. Prova il filtro «Tutti» o apri il pannello filtri."
           eventTextColor="#ffffff"
           slotDuration={slotDurationStr}
           snapDuration={slotDurationStr}
@@ -713,16 +852,19 @@ export function CalendarView({
                 html: `<div class="fc-open-booking-slot-label">${title}</div>`,
               }
             }
-            const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            const esc = (s: string) =>
+              s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             const escAttr = (s: string) => esc(s).replace(/"/g, '&quot;')
             // Vista Mese (day grid): avatar atleta + titolo compatto + badge lezioni
             if (arg.view.type === 'dayGridMonth') {
-              const p = arg.event.extendedProps as {
-                type?: string
-                athlete?: string
-                athlete_avatar_url?: string | null
-                lessons_remaining?: number
-              } | undefined
+              const p = arg.event.extendedProps as
+                | {
+                    type?: string
+                    athlete?: string
+                    athlete_avatar_url?: string | null
+                    lessons_remaining?: number
+                  }
+                | undefined
               const title = arg.event.title || ''
               const avatarUrl = p?.athlete_avatar_url?.trim()
               const athlete = p?.athlete?.trim() || ''
@@ -741,13 +883,18 @@ export function CalendarView({
             }
             // Vista Giorno / Settimana (time grid): avatar atleta, tipo, atleta, orario, lezioni
             if (arg.view.type === 'timeGridDay' || arg.view.type === 'timeGridWeek') {
-              const p = arg.event.extendedProps as {
-                type?: string
-                athlete?: string
-                athlete_avatar_url?: string | null
-                lessons_remaining?: number
-              } | undefined
-              const typeLabel = (p?.type && typeLabelMap[p.type]) || (p?.type ? p.type.replace(/_/g, ' ') : '') || 'Appuntamento'
+              const p = arg.event.extendedProps as
+                | {
+                    type?: string
+                    athlete?: string
+                    athlete_avatar_url?: string | null
+                    lessons_remaining?: number
+                  }
+                | undefined
+              const typeLabel =
+                (p?.type && typeLabelMap[p.type]) ||
+                (p?.type ? p.type.replace(/_/g, ' ') : '') ||
+                'Appuntamento'
               const athlete = p?.athlete?.trim() || ''
               const avatarUrl = p?.athlete_avatar_url?.trim()
               const start = arg.event.start
@@ -772,18 +919,25 @@ export function CalendarView({
             }
             // Vista Agenda: tipo, atleta, sede, lezioni
             if (arg.view.type === 'listWeek') {
-              const p = arg.event.extendedProps as {
-                type?: string
-                athlete?: string
-                location?: string
-                lessons_remaining?: number
-              } | undefined
-              const typeLabel = (p?.type && typeLabelMap[p.type]) || (p?.type ? p.type.replace(/_/g, ' ') : '') || 'Appuntamento'
+              const p = arg.event.extendedProps as
+                | {
+                    type?: string
+                    athlete?: string
+                    location?: string
+                    lessons_remaining?: number
+                  }
+                | undefined
+              const typeLabel =
+                (p?.type && typeLabelMap[p.type]) ||
+                (p?.type ? p.type.replace(/_/g, ' ') : '') ||
+                'Appuntamento'
               const main = p?.athlete ? `${typeLabel} – ${p.athlete}` : typeLabel
               const location = p?.location?.trim()
               const lessonsRem = p?.lessons_remaining
               const lessonsSpan =
-                lessonsRem !== undefined ? `<span class="text-xs opacity-80">${lessonsRem} lezioni</span>` : ''
+                lessonsRem !== undefined
+                  ? `<span class="text-xs opacity-80">${lessonsRem} lezioni</span>`
+                  : ''
               return {
                 html: `<div class="fc-list-event-detail flex flex-col gap-0.5"><span class="font-medium">${esc(main)}</span>${location ? `<span class="text-xs opacity-80">${esc(location)}</span>` : ''}${lessonsSpan}</div>`,
               }
@@ -791,6 +945,8 @@ export function CalendarView({
             return undefined
           }}
         />
+        </div>
+      </div>
 
         {/* Tooltip */}
         {tooltip && tooltip.visible && (
@@ -806,16 +962,15 @@ export function CalendarView({
             <div className="text-xs text-text-secondary mt-0.5">{tooltip.content.time}</div>
           </div>
         )}
-      </div>
 
       {/* FAB - solo se onNewAppointment fornito (es. nascosto se atleta senza trainer) */}
       {onNewAppointment && (
         <button
           onClick={onNewAppointment}
-          className="fixed z-50 w-14 h-14 min-w-[56px] min-h-[56px] rounded-full bg-primary shadow-[0_0_20px_rgba(0,255,200,0.4)] flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-[0_0_30px_rgba(0,255,200,0.6)] active:scale-95 right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]"
+          className="fixed z-50 w-14 h-14 min-w-[56px] min-h-[56px] rounded-full border border-cyan-400/80 bg-cyan-500 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_16px_rgba(34,211,238,0.25)] flex items-center justify-center transition-all duration-200 hover:border-cyan-300/90 hover:bg-cyan-400 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0_20px_rgba(34,211,238,0.35)] hover:scale-105 active:scale-95 active:bg-cyan-600 right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]"
           aria-label="Nuovo appuntamento"
         >
-          <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-primary" />
+          <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
         </button>
       )}
     </div>

@@ -43,7 +43,8 @@ export function DeviceInfoSection({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Data Rilevazione */}
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -88,7 +89,8 @@ export function DeviceInfoSection({
 
       {/* Dispositivo */}
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -106,7 +108,7 @@ export function DeviceInfoSection({
                 onChange={(e) =>
                   onDispositivoTipoChange((e.target.value || null) as DispositivoTipoEnum | null)
                 }
-                className="w-full px-3 py-2 bg-background-secondary border border-primary/20 rounded-lg text-text-primary"
+                className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
               >
                 <option value="">Non specificato</option>
                 {DISPOSITIVI_TIPO.map((tipo) => (

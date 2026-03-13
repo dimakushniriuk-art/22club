@@ -46,8 +46,6 @@ interface AthleteAdministrativeTabProps {
   athleteId: string
 }
 
-const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
-
 const TIPI_ABBONAMENTO: { value: TipoAbbonamentoEnum; label: string }[] = [
   { value: 'mensile', label: 'Mensile' },
   { value: 'trimestrale', label: 'Trimestrale' },
@@ -272,7 +270,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-4 w-4" />
             Modifica
@@ -282,7 +280,8 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
 
       {/* Abbonamento */}
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -313,7 +312,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                         tipo_abbonamento: (e.target.value || null) as TipoAbbonamentoEnum | null,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background-secondary border border-primary/20 rounded-lg text-text-primary"
+                    className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
                   >
                     <option value="">Non specificato</option>
                     {TIPI_ABBONAMENTO.map((tipo) => (
@@ -344,7 +343,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                         stato_abbonamento: (e.target.value || null) as StatoAbbonamentoEnum | null,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background-secondary border border-primary/20 rounded-lg text-text-primary"
+                    className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
                   >
                     <option value="">Non specificato</option>
                     {STATI_ABBONAMENTO.map((stato) => (
@@ -483,7 +482,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                           null) as MetodoPagamentoEnum | null,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background-secondary border border-primary/20 rounded-lg text-text-primary"
+                    className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
                   >
                     <option value="">Non specificato</option>
                     {METODI_PAGAMENTO.map((metodo) => (
@@ -509,7 +508,8 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
 
       {/* Documenti Contrattuali */}
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -536,7 +536,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
               {allDocuments.map((documento) => (
                 <div
                   key={documento.id}
-                  className="flex items-center justify-between p-4 bg-background-tertiary/30 rounded-lg border border-primary/20"
+                  className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02]"
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-primary" />
@@ -651,7 +651,8 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
 
       {/* Note Contrattuali */}
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <CardTitle className="text-lg">Note Contrattuali</CardTitle>
@@ -669,7 +670,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
               rows={4}
             />
           ) : administrative?.note_contrattuali ? (
-            <p className="text-text-primary whitespace-pre-wrap bg-background-tertiary/30 p-4 rounded-lg border border-primary/20">
+            <p className="text-text-primary whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
               {administrative.note_contrattuali}
             </p>
           ) : (
@@ -680,19 +681,20 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-primary/20">
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <X className="h-4 w-4" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="flex items-center gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-primary/20 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-primary/25 transition text-text-primary"
+            className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}

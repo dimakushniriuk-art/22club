@@ -578,6 +578,28 @@ export function useCalendarPage() {
             .eq('id', editingAppointment.id)
 
           if (error) throw error
+          if (data.athlete_id) {
+            fetch('/api/calendar/notify-appointment-change', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                appointmentId: editingAppointment.id,
+                action: 'modified',
+                previous: {
+                  starts_at: editingAppointment.starts_at,
+                  ends_at: editingAppointment.ends_at,
+                  type: editingAppointment.type,
+                  location: editingAppointment.location ?? null,
+                },
+                new: {
+                  starts_at: startsAt,
+                  ends_at: endsAt,
+                  type: data.type || 'allenamento',
+                  location: data.location ?? null,
+                },
+              }),
+            }).catch((e) => logger.error('Invio email modifica appuntamento atleta fallito', e))
+          }
         } else if (isOpenBooking) {
           if (!orgId) {
             notify('Organizzazione non disponibile per creare slot Free Pass.', 'error', 'Errore')
@@ -799,6 +821,13 @@ export function useCalendarPage() {
         }
 
         await fetchAppointments()
+        if (athleteId) {
+          fetch('/api/calendar/notify-appointment-change', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appointmentId, action: 'cancelled' }),
+          }).catch((e) => logger.error('Invio email annullamento atleta fallito', e))
+        }
       } catch (err) {
         logger.error('Errore cancellazione appuntamento', err, { appointmentId })
         const msg =
@@ -811,15 +840,52 @@ export function useCalendarPage() {
     [staffProfileId, fetchAppointments, notify],
   )
 
+  /** Elimina l'appuntamento da Supabase senza lasciare traccia. Pulizia correlati best-effort (non blocca se RLS/errore); fallisce solo se fallisce il delete su appointments. */
   const handleDelete = useCallback(
     async (appointmentId: string) => {
       setLoading(true)
       try {
+        const { data: apt } = await supabase
+          .from('appointments')
+          .select('athlete_id, starts_at, ends_at, type, location, staff_id')
+          .eq('id', appointmentId)
+          .single()
+        const snapshot =
+          apt && (apt as { athlete_id: string | null }).athlete_id
+            ? {
+                athlete_id: (apt as { athlete_id: string }).athlete_id,
+                starts_at: (apt as { starts_at: string }).starts_at,
+                ends_at: (apt as { ends_at: string }).ends_at,
+                type: (apt as { type: string }).type,
+                location: (apt as { location?: string | null }).location ?? null,
+                staff_id: (apt as { staff_id: string }).staff_id,
+              }
+            : null
+
+        await supabase
+          .from('appointment_cancellations')
+          .delete()
+          .eq('appointment_id', appointmentId)
+        const { error: notifErr } = await supabase
+          .from('notifications')
+          .delete()
+          .eq('appointment_id', appointmentId)
+        if (notifErr) logger.warn('Pulizia notifications (best-effort)', undefined, { appointmentId, err: notifErr.message })
+        const { error: ledgerErr } = await supabase
+          .from('credit_ledger')
+          .update({ appointment_id: null })
+          .eq('appointment_id', appointmentId)
+        if (ledgerErr) logger.warn('Pulizia credit_ledger (best-effort)', undefined, { appointmentId, err: ledgerErr.message })
         const { error } = await supabase.from('appointments').delete().eq('id', appointmentId)
-
         if (error) throw error
-
         await fetchAppointments()
+        if (snapshot) {
+          fetch('/api/calendar/notify-appointment-change', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appointmentId, action: 'deleted', snapshot }),
+          }).catch((e) => logger.error('Invio email eliminazione atleta fallito', e))
+        }
       } catch (err) {
         logger.error('Errore eliminazione appuntamento', err, { appointmentId })
         const msg =

@@ -15,6 +15,9 @@ export interface WorkoutPlanCardWorkout {
   staff_name?: string | null
 }
 
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200 cursor-pointer'
+
 interface WorkoutPlanCardProps {
   workout: WorkoutPlanCardWorkout
 }
@@ -22,35 +25,34 @@ interface WorkoutPlanCardProps {
 function WorkoutPlanCardComponent({ workout }: WorkoutPlanCardProps) {
   return (
     <Link href={`/home/allenamenti/${workout.id}`} className="block" prefetch={true}>
-      <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/60 backdrop-blur-sm hover:border-cyan-400/50 hover:shadow-md hover:shadow-cyan-500/10 transition-all cursor-pointer">
-        <div className="absolute inset-0 rounded-[16px] bg-gradient-to-br from-cyan-500/25 via-cyan-500/10 to-primary/15" aria-hidden />
-        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/50" aria-hidden />
-        <CardContent className="relative z-10 p-3 min-[834px]:p-4">
+      <Card className={`relative overflow-hidden ${CARD_DS}`}>
+        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+        <CardContent className="relative z-10 p-3 sm:p-4">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-text-primary mb-1 text-sm min-[834px]:text-base font-semibold truncate">{workout.name}</h3>
+            <div className="min-w-0 flex-1">
+              <h3 className="mb-1 truncate text-sm font-semibold text-cyan-400 sm:text-base">{workout.name}</h3>
               {workout.description && (
-                <p className="text-text-secondary text-xs mb-1.5 line-clamp-2">{workout.description}</p>
+                <p className="mb-1.5 line-clamp-2 text-xs text-text-secondary">{workout.description}</p>
               )}
               <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
                 {workout.difficulty && (
                   <div className="flex items-center gap-0.5">
-                    <Target className="text-cyan-400 h-3 w-3" />
-                    <span className="text-text-secondary capitalize truncate">{workout.difficulty}</span>
+                    <Target className="h-3 w-3 text-cyan-400" />
+                    <span className="truncate capitalize text-text-secondary">{workout.difficulty}</span>
                   </div>
                 )}
                 {workout.muscle_group && (
                   <div className="flex items-center gap-0.5">
-                    <Activity className="text-cyan-400 h-3 w-3" />
-                    <span className="text-text-secondary truncate">{workout.muscle_group}</span>
+                    <Activity className="h-3 w-3 text-cyan-400" />
+                    <span className="truncate text-text-secondary">{workout.muscle_group}</span>
                   </div>
                 )}
                 {workout.staff_name && (
-                  <span className="text-text-secondary truncate">PT: {workout.staff_name}</span>
+                  <span className="truncate text-text-secondary">PT: {workout.staff_name}</span>
                 )}
               </div>
             </div>
-            <Badge variant="secondary" size="sm" className="border-cyan-500/30 text-cyan-400 text-[10px] shrink-0">
+            <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] border-0 bg-cyan-500 text-white">
               Attiva
             </Badge>
           </div>

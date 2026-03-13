@@ -41,9 +41,7 @@ export function MotivationalAbandonmentsSection({
   onAbbandonoRemove,
 }: MotivationalAbandonmentsSectionProps) {
   return (
-    <Card
-      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -69,7 +67,7 @@ export function MotivationalAbandonmentsSection({
             {motivational.storico_abbandoni.map((abbandono, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-4 bg-background-tertiary/30 rounded-lg border border-primary/20"
+                className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02]"
               >
                 <div>
                   <p className="text-text-primary font-semibold">{abbandono.motivo}</p>
@@ -99,7 +97,7 @@ export function MotivationalAbandonmentsSection({
 
         {/* Form Aggiungi Abbandono */}
         {showAbbandonoForm && (
-          <div className="mt-4 p-4 bg-background-tertiary/30 rounded-lg border border-primary/20 space-y-3">
+          <div className="mt-4 p-4 rounded-lg border border-white/10 bg-white/[0.02] space-y-3">
             <div className="space-y-2">
               <Label htmlFor="abbandono-data">Data</Label>
               <Input
@@ -141,10 +139,10 @@ export function MotivationalAbandonmentsSection({
               />
             </div>
             <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => onShowAbbandonoFormChange(false)}>
+              <Button variant="outline" onClick={() => onShowAbbandonoFormChange(false)} className="border-white/10 hover:border-primary/20">
                 Annulla
               </Button>
-              <Button onClick={onAbbandonoAdd}>Aggiungi</Button>
+              <Button variant="default" onClick={onAbbandonoAdd}>Aggiungi</Button>
             </div>
           </div>
         )}

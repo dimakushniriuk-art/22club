@@ -36,9 +36,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Bordo con leggera sfumatura sempre visibile (highlight superiore sottile)
     const borderHighlight = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
 
-    // Base: forme coerenti (rounded-xl), transizioni e focus
+    // Base: forme coerenti (rounded-lg = 16px), transizioni e focus
     const baseClasses = cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium border',
+      'inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium border',
       masterAnimations.transition,
       masterAnimations.focus.outline,
       'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
@@ -101,13 +101,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const sizes = {
-      sm: 'h-9 min-h-9 px-3 text-xs rounded-lg',
-      md: 'h-11 min-h-11 px-5 text-sm rounded-xl',
-      lg: 'h-12 min-h-12 px-6 text-base rounded-xl',
-      xl: 'h-14 min-h-14 px-7 text-lg rounded-xl',
-      icon: 'h-10 w-10 min-h-10 min-w-10 rounded-xl',
-      'icon-sm': 'h-8 w-8 min-h-8 min-w-8 rounded-lg',
-      'icon-lg': 'h-12 w-12 min-h-12 min-w-12 rounded-xl',
+      sm: 'h-9 min-h-9 px-3 text-xs rounded-md',
+      md: 'h-11 min-h-11 px-5 text-sm rounded-lg',
+      lg: 'h-12 min-h-12 px-6 text-base rounded-lg',
+      xl: 'h-14 min-h-14 px-7 text-lg rounded-lg',
+      icon: 'h-10 w-10 min-h-10 min-w-10 rounded-lg',
+      'icon-sm': 'h-8 w-8 min-h-8 min-w-8 rounded-md',
+      'icon-lg': 'h-12 w-12 min-h-12 min-w-12 rounded-lg',
     }
 
     const isDisabled = disabled || loading

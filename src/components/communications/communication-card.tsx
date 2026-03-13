@@ -98,12 +98,12 @@ export function CommunicationCard({
   })()
 
   return (
-    <Card variant="elevated" className="border border-border overflow-hidden">
+    <Card variant="default" className="overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-stretch justify-between gap-4">
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="mb-2 flex items-center gap-3">
-              <div className="bg-muted/60 text-text-primary rounded-lg p-2 border border-border shrink-0">
+              <div className="bg-white/[0.04] text-text-primary rounded-lg p-2 border border-white/10 shrink-0">
                 {getTipoIcon(communication.type)}
               </div>
               <div className="flex-1 min-w-0">
@@ -183,7 +183,7 @@ export function CommunicationCard({
                   variant="outline"
                   size="sm"
                   onClick={() => onViewDetails(communication.id)}
-                  className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                  className="border-white/10 hover:border-primary/20 text-text-secondary"
                   title="Visualizza dettaglio destinatari"
                 >
                   <Eye className="mr-1 h-4 w-4" />
@@ -197,7 +197,7 @@ export function CommunicationCard({
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(communication.id)}
-                    className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                    className="border-white/10 hover:border-primary/20 text-text-secondary"
                   >
                     Modifica
                   </Button>
@@ -244,7 +244,7 @@ export function CommunicationCard({
                     // Se non è bloccata, prova a riprovare l'invio
                     onSend(communication.id)
                   }}
-                  className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                  className="border-white/10 hover:border-primary/20 text-text-secondary"
                 >
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                   Riprova invio
@@ -262,7 +262,7 @@ export function CommunicationCard({
                         onReset(communication.id)
                       }
                     }}
-                    className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                    className="border-white/10 hover:border-primary/20 text-text-secondary"
                   >
                     Reset
                   </Button>
@@ -276,7 +276,7 @@ export function CommunicationCard({
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(communication.id)}
-                    className="border-border hover:bg-background-tertiary/50 text-text-secondary"
+                    className="border-white/10 hover:border-primary/20 text-text-secondary"
                   >
                     Modifica
                   </Button>

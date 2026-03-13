@@ -56,9 +56,7 @@ export function FitnessExperienceGoalsSection({
   const obiettiviSecondariList = formData.obiettivi_secondari || []
 
   return (
-    <Card
-      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
@@ -77,7 +75,7 @@ export function FitnessExperienceGoalsSection({
                   livello_esperienza: (e.target.value || null) as LivelloEsperienzaEnum | null,
                 })
               }
-              className="w-full px-3 py-2 bg-background-secondary border border-primary/20 rounded-lg text-text-primary"
+              className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
             >
               <option value="">Non specificato</option>
               {LIVELLI_ESPERIENZA.map((livello) => (
@@ -107,7 +105,7 @@ export function FitnessExperienceGoalsSection({
                   obiettivo_primario: (e.target.value || null) as ObiettivoFitnessEnum | null,
                 })
               }
-              className="w-full px-3 py-2 bg-background-secondary border border-primary/20 rounded-lg text-text-primary"
+              className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
             >
               <option value="">Non specificato</option>
               {OBIETTIVI_FITNESS.map((obiettivo) => (

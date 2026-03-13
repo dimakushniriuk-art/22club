@@ -30,9 +30,8 @@ export function TrainerSessionModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="relative max-w-md w-[calc(100vw-2rem)] min-[834px]:w-full overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl p-4 min-[834px]:p-6">
-        {/* Decorative gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+      <DialogContent className="relative max-w-md w-[calc(100vw-2rem)] min-[834px]:w-full overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-xl p-4 min-[834px]:p-6">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-black/20" />
 
         <DialogHeader className="relative z-10">
           <DialogTitle className="text-text-primary text-xl min-[834px]:text-2xl font-bold text-center text-white">
@@ -47,7 +46,7 @@ export function TrainerSessionModal({
           <Button
             onClick={() => handleConfirm(true)}
             disabled={loading}
-            className="w-full min-h-[44px] py-4 min-[834px]:py-6 text-base min-[834px]:text-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 hover:scale-[1.02]"
+            className="w-full min-h-[44px] py-4 min-[834px]:py-6 text-base min-[834px]:text-lg border border-cyan-400/80 hover:border-cyan-300/90 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200 active:scale-[0.98] active:bg-cyan-600"
           >
             {loading ? (
               <>
@@ -66,7 +65,7 @@ export function TrainerSessionModal({
             onClick={() => handleConfirm(false)}
             disabled={loading}
             variant="outline"
-            className="w-full min-h-[44px] py-4 min-[834px]:py-6 text-base min-[834px]:text-lg font-medium border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50 transition-all duration-200"
+            className="w-full min-h-[44px] py-4 min-[834px]:py-6 text-base min-[834px]:text-lg font-medium border border-white/10 text-text-primary hover:bg-white/5 hover:border-white/20 transition-all duration-200"
           >
             {loading ? (
               <>
@@ -87,7 +86,7 @@ export function TrainerSessionModal({
             variant="outline"
             onClick={onClose}
             disabled={loading}
-            className="w-full min-h-[44px] border-border/30 text-text-secondary hover:bg-background-tertiary/50 hover:border-border/50 hover:text-text-primary transition-all duration-200"
+            className="w-full min-h-[44px] border border-white/10 text-text-secondary hover:bg-white/5 hover:border-white/20 hover:text-text-primary transition-all duration-200"
           >
             Annulla
           </Button>

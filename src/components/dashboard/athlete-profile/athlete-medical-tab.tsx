@@ -33,7 +33,8 @@ import {
 import type { RefertoMedico } from '@/types/athlete-profile'
 import { sanitizeString } from '@/lib/sanitize'
 
-const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
+const DS_CARD_CLASS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] overflow-hidden'
 
 interface AthleteMedicalTabProps {
   athleteId: string
@@ -176,7 +177,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-4 w-4" />
             Modifica
@@ -185,9 +186,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
       </div>
 
       {/* Certificato Medico */}
-      <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-      >
+      <Card variant="default" className={DS_CARD_CLASS}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -206,7 +205,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
         <CardContent className="space-y-4">
           {medical?.certificato_medico_url ? (
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-4 bg-background-tertiary/30 rounded-lg border border-primary/20">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02]">
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-primary" />
                   <div>
@@ -273,10 +272,11 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
               }
             >
               <Card
-                className="w-full max-w-md relative overflow-hidden border border-primary/25 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 shadow-[0_0_14px_rgba(2,179,191,0.25)]"
+                variant="default"
+                className="w-full max-w-md overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <CardHeader className="pb-2 border-b border-primary/20">
+                <CardHeader className="pb-2 border-b border-white/10">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-bold text-text-primary">
                       Carica Certificato Medico
@@ -298,7 +298,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     <Label htmlFor="file-certificato" className="text-xs">
                       File
                     </Label>
-                    <div className="rounded-lg border border-primary/25 bg-background-secondary/50 p-3">
+                    <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
                       <Input
                         id="file-certificato"
                         type="file"
@@ -332,7 +332,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                           e.target.value as 'agonistico' | 'non_agonistico' | 'sportivo',
                         )
                       }
-                      className="w-full px-2.5 py-2 text-xs bg-background-secondary/50 border border-primary/25 rounded-lg text-text-primary focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                      className="w-full px-2.5 py-2 text-xs rounded-md border border-white/10 bg-white/[0.04] text-text-primary focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
                       disabled={uploadCertificatoMutation.isPending}
                     >
                       <option value="non_agonistico">Non Agonistico</option>
@@ -350,7 +350,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                       type="date"
                       value={uploadScadenza}
                       onChange={(e) => setUploadScadenza(e.target.value)}
-                      className="bg-background-secondary/50 text-xs border-primary/25"
+                      className="border-white/10 bg-white/[0.04] text-xs"
                       disabled={uploadCertificatoMutation.isPending}
                     />
                   </div>
@@ -366,15 +366,16 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     <Button
                       variant="outline"
                       onClick={() => setShowUploadCertificato(false)}
-                      className="h-9 text-xs border-primary/25"
+                      className="h-9 text-xs border-white/10 hover:border-primary/20"
                       disabled={uploadCertificatoMutation.isPending}
                     >
                       Annulla
                     </Button>
                     <Button
+                      variant="default"
                       onClick={handleUploadCertificato}
                       disabled={uploadCertificatoMutation.isPending || !uploadFile || !uploadTipo}
-                      className="h-9 text-xs bg-primary/30 hover:bg-primary/40 border border-primary/25 text-primary transition-all"
+                      className="h-9 text-xs"
                     >
                       {uploadCertificatoMutation.isPending ? (
                         <span className="inline-flex items-center gap-2">
@@ -397,13 +398,11 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
       </Card>
 
       {/* Referti Medici */}
-      <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-      >
-        <CardHeader className="pb-2 border-b border-primary/20">
+      <Card variant="default" className={DS_CARD_CLASS}>
+        <CardHeader className="pb-2 border-b border-white/10">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20">
+              <div className="h-7 w-7 rounded-lg flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
                 <FileText className="h-3.5 w-3.5 text-primary" />
               </div>
               <span className="text-text-primary">
@@ -415,7 +414,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowUploadReferto(true)}
-                className="h-9 text-xs border-primary/25 hover:bg-primary/10 flex items-center gap-2"
+                className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0.04] flex items-center gap-2"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Aggiungi
@@ -429,7 +428,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
               {refertiList.map((referto: RefertoMedico, index: number) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-background-tertiary/30 rounded-lg border border-primary/20"
+                  className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/[0.02]"
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-4 w-4 text-primary" />
@@ -445,8 +444,8 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => openPrivateStorageFile('athlete-referti', referto.url)}
-                    className="h-9 text-xs border-primary/25 hover:bg-primary/10"
-                  >
+className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+                    >
                     <ExternalLink className="h-3.5 w-3.5 mr-2" />
                     Apri
                   </Button>
@@ -472,10 +471,11 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
               onClick={() => !uploadRefertoMutation.isPending && setShowUploadReferto(false)}
             >
               <Card
-                className="w-full max-w-md relative overflow-hidden border border-primary/25 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 shadow-[0_0_14px_rgba(2,179,191,0.25)]"
+                variant="default"
+                className="w-full max-w-md overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <CardHeader className="pb-2 border-b border-primary/20">
+                <CardHeader className="pb-2 border-b border-white/10">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-bold text-text-primary">
                       Carica Referto Medico
@@ -498,7 +498,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     <Label htmlFor="file-referto" className="text-xs">
                       File
                     </Label>
-                    <div className="rounded-lg border border-primary/25 bg-background-secondary/50 p-3">
+                    <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
                       <Input
                         id="file-referto"
                         type="file"
@@ -535,7 +535,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                       }
                       placeholder="Es. Esami del sangue, RX..."
                       maxLength={50}
-                      className="bg-background-secondary/50 text-xs border-primary/25"
+                      className="border-white/10 bg-white/[0.04] text-xs"
                       disabled={uploadRefertoMutation.isPending}
                     />
                   </div>
@@ -549,7 +549,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                       type="date"
                       value={refertoData.data}
                       onChange={(e) => setRefertoData({ ...refertoData, data: e.target.value })}
-                      className="bg-background-secondary/50 text-xs border-primary/25"
+                      className="border-white/10 bg-white/[0.04] text-xs"
                       disabled={uploadRefertoMutation.isPending}
                     />
                   </div>
@@ -569,7 +569,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                       }
                       maxLength={500}
                       placeholder="Note aggiuntive sul referto"
-                      className="bg-background-secondary/50 text-xs border-primary/25"
+                      className="border-white/10 bg-white/[0.04] text-xs"
                       rows={3}
                       disabled={uploadRefertoMutation.isPending}
                     />
@@ -586,12 +586,13 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     <Button
                       variant="outline"
                       onClick={() => setShowUploadReferto(false)}
-                      className="h-9 text-xs border-primary/25"
+                      className="h-9 text-xs border-white/10 hover:border-primary/20"
                       disabled={uploadRefertoMutation.isPending}
                     >
                       Annulla
                     </Button>
                     <Button
+                      variant="default"
                       onClick={handleUploadReferto}
                       disabled={
                         uploadRefertoMutation.isPending ||
@@ -599,7 +600,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                         !refertoData.tipo ||
                         !refertoData.data
                       }
-                      className="h-9 text-xs bg-primary/30 hover:bg-primary/40 border border-primary/25 text-primary transition-all"
+                      className="h-9 text-xs"
                     >
                       {uploadRefertoMutation.isPending ? (
                         <span className="inline-flex items-center gap-2">
@@ -624,10 +625,8 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
       {/* Allergie, Patologie */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Allergie */}
-        <Card
-          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-        >
-          <CardHeader className="pb-2 border-b border-primary/20">
+        <Card variant="default" className={DS_CARD_CLASS}>
+          <CardHeader className="pb-2 border-b border-white/10">
             <CardTitle className="text-sm font-bold text-text-primary">
               Allergie
             </CardTitle>
@@ -646,11 +645,13 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     }
                   }}
                   maxLength={100}
-                  className="bg-background-secondary/50 text-xs border-primary/25"
+                  className="border-white/10 bg-white/[0.04] text-xs"
                 />
                 <Button
+                  variant="default"
                   onClick={handleAddAllergia}
-                  className="h-9 w-10 px-0 bg-primary/30 hover:bg-primary/40 border border-primary/25 text-primary transition-all"
+                  size="icon"
+                  className="h-9 w-10 px-0"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -663,7 +664,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="flex items-center gap-1 text-[10px] bg-primary/15 text-primary border border-primary/30 rounded-full px-3 py-1"
+                    className="flex items-center gap-1 text-[10px] bg-white/[0.04] text-primary border border-white/10 rounded-full px-3 py-1"
                   >
                     {allergia}
                     {isEditing && (
@@ -686,10 +687,8 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
         </Card>
 
         {/* Patologie */}
-        <Card
-          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-        >
-          <CardHeader className="pb-2 border-b border-primary/20">
+        <Card variant="default" className={DS_CARD_CLASS}>
+          <CardHeader className="pb-2 border-b border-white/10">
             <CardTitle className="text-sm font-bold text-text-primary">
               Patologie
             </CardTitle>
@@ -708,11 +707,13 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     }
                   }}
                   maxLength={100}
-                  className="bg-background-secondary/50 text-xs border-primary/25"
+                  className="border-white/10 bg-white/[0.04] text-xs"
                 />
                 <Button
+                  variant="default"
                   onClick={handleAddPatologia}
-                  className="h-9 w-10 px-0 bg-primary/30 hover:bg-primary/40 border border-primary/25 text-primary transition-all"
+                  size="icon"
+                  className="h-9 w-10 px-0"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -724,7 +725,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="flex items-center gap-1 text-[10px] bg-primary/15 text-primary border border-primary/30 rounded-full px-3 py-1"
+                    className="flex items-center gap-1 text-[10px] bg-white/[0.04] text-primary border border-white/10 rounded-full px-3 py-1"
                   >
                     {patologia}
                     {isEditing && (
@@ -748,10 +749,8 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
       </div>
 
       {/* Note Mediche */}
-      <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-      >
-        <CardHeader className="pb-2 border-b border-primary/20">
+      <Card variant="default" className={DS_CARD_CLASS}>
+        <CardHeader className="pb-2 border-b border-white/10">
           <CardTitle className="text-sm font-bold text-text-primary">
             Note Mediche
           </CardTitle>
@@ -769,10 +768,10 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
               maxLength={2000}
               placeholder="Note mediche aggiuntive..."
               rows={4}
-              className="bg-background-secondary/50 text-xs border-primary/25"
+              className="border-white/10 bg-white/[0.04] text-xs"
             />
           ) : medical?.note_mediche ? (
-            <p className="text-text-primary text-sm whitespace-pre-wrap bg-background-tertiary/30 p-3 rounded-lg border border-primary/20">
+            <p className="text-text-primary text-sm whitespace-pre-wrap p-3 rounded-lg border border-white/10 bg-white/[0.02]">
               {medical.note_mediche}
             </p>
           ) : (
@@ -783,19 +782,20 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-primary/20">
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <X className="h-4 w-4" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="flex items-center gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-primary/20 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-primary/25 transition text-text-primary"
+            className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}

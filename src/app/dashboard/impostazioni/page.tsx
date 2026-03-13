@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo } from 'react'
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button } from '@/components/ui'
 import { Bell, Shield, Globe, UserCircle, Briefcase } from 'lucide-react'
@@ -19,13 +19,13 @@ import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
 import { Skeleton } from '@/components/ui'
 import { LoadingState as _LoadingState } from '@/components/dashboard/loading-state'
-import { ImpostazioniPageHeader } from '@/components/dashboard/impostazioni-page-header'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 
 const logger = createLogger('ImpostazioniPage')
 
 const TAB_TRIGGER_CLASS =
-  'flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=inactive]:text-text-tertiary hover:text-text-secondary'
+  'w-full h-full min-h-0 min-w-0 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=inactive]:text-text-tertiary hover:text-text-secondary'
 
 const DEFAULT_NOTIFICATIONS = {
   email: true,
@@ -51,16 +51,13 @@ const DEFAULT_ACCOUNT = {
   timeFormat: '24h',
 } as const
 
-const ImpostazioniBackgroundPattern = memo(function ImpostazioniBackgroundPattern() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-linear-to-br from-primary/5 via-transparent to-transparent" />
-      <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-linear-to-tl from-primary/5 via-transparent to-transparent" />
-    </div>
-  )
-})
-
-const IMPOSTAZIONI_TABS = ['profilo', 'notifiche', 'privacy', 'account', 'profilo-professionale'] as const
+const IMPOSTAZIONI_TABS = [
+  'profilo',
+  'notifiche',
+  'privacy',
+  'account',
+  'profilo-professionale',
+] as const
 type ImpostazioniTabValue = (typeof IMPOSTAZIONI_TABS)[number]
 type SaveErrorType = 'profile' | 'notifications' | 'privacy' | 'account'
 
@@ -73,7 +70,7 @@ const IMPOSTAZIONI_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-cente
 function SettingsTabSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-primary/20 bg-background-secondary/50 p-6 space-y-4">
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 space-y-4">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-4 w-3/4 max-w-md" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
@@ -124,16 +121,12 @@ export default function ImpostazioniPage() {
   const { notify } = useNotify()
   const { user: authUser, loading: authLoading } = useAuth()
   const { showLoader: showGuardLoader } = useImpostazioniPageGuard()
-  const {
-    settings,
-    loadSettings,
-    saveNotifications,
-    savePrivacy,
-    saveAccount,
-    saveTwoFactor,
-  } = useUserSettings()
+  const { settings, loadSettings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
+    useUserSettings()
 
-  const [notifications, setNotifications] = useState<NotificationSettings>({ ...DEFAULT_NOTIFICATIONS })
+  const [notifications, setNotifications] = useState<NotificationSettings>({
+    ...DEFAULT_NOTIFICATIONS,
+  })
   const [privacy, setPrivacy] = useState<PrivacySettings>({ ...DEFAULT_PRIVACY })
   const [account, setAccount] = useState<AccountSettings>({ ...DEFAULT_ACCOUNT })
 
@@ -180,7 +173,10 @@ export default function ImpostazioniPage() {
   const [showConfirmUnsaved, setShowConfirmUnsaved] = useState(false)
   const [pendingTabChange, setPendingTabChange] = useState<string | null>(null)
   const [showDisable2FADialog, setShowDisable2FADialog] = useState(false)
-  const [lastSaveError, setLastSaveError] = useState<{ message: string; type: SaveErrorType } | null>(null)
+  const [lastSaveError, setLastSaveError] = useState<{
+    message: string
+    type: SaveErrorType
+  } | null>(null)
 
   const isCurrentTabDirty = useCallback(() => {
     if (activeTab === 'profilo') return profileDirty
@@ -214,7 +210,8 @@ export default function ImpostazioniPage() {
         return
       }
       setActiveTab(tab)
-      const url = tab === 'profilo' ? '/dashboard/impostazioni' : `/dashboard/impostazioni?tab=${tab}`
+      const url =
+        tab === 'profilo' ? '/dashboard/impostazioni' : `/dashboard/impostazioni?tab=${tab}`
       router.replace(url, { scroll: false })
     },
     [router, activeTab, isCurrentTabDirty],
@@ -234,7 +231,11 @@ export default function ImpostazioniPage() {
     }
     const phoneTrimmed = profile.phone?.trim() ?? ''
     if (phoneTrimmed && !/^[\d\s+()-]{6,20}$/.test(phoneTrimmed)) {
-      notify('Inserisci un numero di telefono valido (6-20 caratteri).', 'error', 'Telefono non valido')
+      notify(
+        'Inserisci un numero di telefono valido (6-20 caratteri).',
+        'error',
+        'Telefono non valido',
+      )
       return
     }
     setLoading(true)
@@ -312,7 +313,8 @@ export default function ImpostazioniPage() {
       } else throw new Error(result.error || 'Errore nel salvare le impostazioni account')
     } catch (error) {
       logger.error('Errore nel salvare le impostazioni account', error)
-      const msg = error instanceof Error ? error.message : 'Errore nel salvare le impostazioni account'
+      const msg =
+        error instanceof Error ? error.message : 'Errore nel salvare le impostazioni account'
       notify(msg, 'error', 'Errore')
       setLastSaveError({ message: msg, type: 'account' })
     } finally {
@@ -322,11 +324,19 @@ export default function ImpostazioniPage() {
 
   const handleChangePassword = useCallback(async () => {
     if (passwords.new !== passwords.confirm) {
-      notify('Le password inserite non corrispondono. Verifica e riprova.', 'warning', 'Password non corrispondenti')
+      notify(
+        'Le password inserite non corrispondono. Verifica e riprova.',
+        'warning',
+        'Password non corrispondenti',
+      )
       return
     }
     if (passwords.new.length < 8) {
-      notify('La password deve essere di almeno 8 caratteri per motivi di sicurezza.', 'warning', 'Password troppo corta')
+      notify(
+        'La password deve essere di almeno 8 caratteri per motivi di sicurezza.',
+        'warning',
+        'Password troppo corta',
+      )
       return
     }
     setLoading(true)
@@ -337,7 +347,11 @@ export default function ImpostazioniPage() {
       setPasswords({ current: '', new: '', confirm: '' })
     } catch (error) {
       logger.error('Errore nel cambiare la password', error)
-      notify(`Errore durante l'aggiornamento della password: ${error instanceof Error ? error.message : 'Errore'}`, 'error', 'Errore password')
+      notify(
+        `Errore durante l'aggiornamento della password: ${error instanceof Error ? error.message : 'Errore'}`,
+        'error',
+        'Errore password',
+      )
     } finally {
       setLoading(false)
     }
@@ -352,7 +366,11 @@ export default function ImpostazioniPage() {
       else throw new Error(result.error || 'Errore nel disabilitare 2FA')
     } catch (error) {
       logger.error('Errore nel disabilitare 2FA', error)
-      notify(error instanceof Error ? error.message : 'Errore nel disabilitare 2FA', 'error', 'Errore')
+      notify(
+        error instanceof Error ? error.message : 'Errore nel disabilitare 2FA',
+        'error',
+        'Errore',
+      )
     } finally {
       setLoading(false)
     }
@@ -362,10 +380,13 @@ export default function ImpostazioniPage() {
     setShowDisable2FADialog(true)
   }, [])
 
-  const handleProfileChange = useCallback((field: string, value: unknown) => {
-    setProfile((prev) => ({ ...prev, [field]: value }))
-    setProfileDirty(true)
-  }, [setProfile])
+  const handleProfileChange = useCallback(
+    (field: string, value: unknown) => {
+      setProfile((prev) => ({ ...prev, [field]: value }))
+      setProfileDirty(true)
+    },
+    [setProfile],
+  )
   const handleNotificationChange = useCallback((field: string, value: unknown) => {
     setNotifications((prev) => ({ ...prev, [field]: value }))
     setNotificationsDirty(true)
@@ -400,7 +421,13 @@ export default function ImpostazioniPage() {
     else if (type === 'notifications') handleSaveNotifications()
     else if (type === 'privacy') handleSavePrivacy()
     else if (type === 'account') handleSaveAccount()
-  }, [lastSaveError, handleSaveProfile, handleSaveNotifications, handleSavePrivacy, handleSaveAccount])
+  }, [
+    lastSaveError,
+    handleSaveProfile,
+    handleSaveNotifications,
+    handleSavePrivacy,
+    handleSaveAccount,
+  ])
 
   if (showGuardLoader) {
     return (
@@ -411,11 +438,12 @@ export default function ImpostazioniPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <ImpostazioniBackgroundPattern />
-
-      <div className="flex-1 flex flex-col space-y-6 sm:space-y-8 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-[1200px] mx-auto w-full relative z-10">
-        <ImpostazioniPageHeader />
+    <StaffContentLayout
+      title="Impostazioni"
+      description="Gestisci le tue preferenze e configurazioni account"
+      theme="teal"
+      className="max-w-[1200px]"
+    >
 
         {/* Banner errore salvataggio con Riprova */}
         {lastSaveError && (
@@ -447,10 +475,9 @@ export default function ImpostazioniPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary backdrop-blur-xl shadow-lg shadow-primary/10">
-            <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/5" />
+          <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]">
             <div className="relative p-1.5">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-transparent gap-1">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-transparent gap-1 items-stretch justify-items-stretch h-10 p-0">
                 <TabsTrigger value="profilo" variant="default" className={TAB_TRIGGER_CLASS}>
                   <UserCircle className="h-4 w-4 shrink-0" />
                   <span className="hidden sm:inline">Profilo</span>
@@ -467,9 +494,13 @@ export default function ImpostazioniPage() {
                   <Globe className="h-4 w-4 shrink-0" />
                   <span className="hidden sm:inline">Account</span>
                 </TabsTrigger>
-                <TabsTrigger value="profilo-professionale" variant="default" className={TAB_TRIGGER_CLASS}>
+                <TabsTrigger
+                  value="profilo-professionale"
+                  variant="default"
+                  className={TAB_TRIGGER_CLASS}
+                >
                   <Briefcase className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Profilo professionale</span>
+                  <span className="hidden sm:inline truncate max-w-full">Profilo professionale</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -542,7 +573,6 @@ export default function ImpostazioniPage() {
             </Suspense>
           </TabsContent>
         </Tabs>
-      </div>
 
       {/* Conferma uscita con modifiche non salvate */}
       <ConfirmDialog
@@ -571,6 +601,6 @@ export default function ImpostazioniPage() {
         onConfirm={handleConfirmDisableTwoFactor}
         loading={loading}
       />
-    </div>
+    </StaffContentLayout>
   )
 }

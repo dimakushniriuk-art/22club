@@ -168,7 +168,6 @@ export async function middleware(request: NextRequest) {
   // Route pubbliche che non richiedono autenticazione
   const PUBLIC_ROUTES = [
     '/login',
-    '/reset',
     '/',
     '/registrati',
     '/forgot-password',

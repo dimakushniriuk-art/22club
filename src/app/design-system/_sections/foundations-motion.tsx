@@ -3,30 +3,23 @@
 import { Zap } from 'lucide-react'
 import { motion } from '@/lib/design-tokens'
 import { Card, CardTitle } from '@/components/ui'
-
-const cardFrameClass =
-  'overflow-hidden p-5 !rounded-[8px] !border-[rgb(255_255_255/0.5)] !shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.06),inset_0_1px_0_0_rgba(255,255,255,0.04),inset_0_-1px_0_0_rgba(0,0,0,0.06)]'
+import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS } from './helpers'
 
 const chipFrameClass =
-  'flex flex-col gap-0.5 !rounded-[8px] !border-[rgb(255_255_255/0.5)] bg-surface-200/60 !shadow-[0_2px_12px_-2px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.05),inset_0_1px_0_0_rgba(255,255,255,0.03)]'
+  'flex flex-col gap-0.5 rounded-md border border-white/10 bg-zinc-800/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]'
 
 export function FoundationsMotion() {
   return (
     <section id="motion" className="scroll-mt-24">
-      <h2 className="mb-6 flex items-center gap-2 text-2xl font-semibold">
+      <h2 className={DS_SECTION_TITLE_CLASS}>
         <Zap className="h-6 w-6 text-primary" />
         Motion
       </h2>
-      <p className="mb-6 text-sm text-text-secondary">
-        Duration, easing e keyframes da{' '}
-        <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">
-          @/lib/design-tokens/motion
-        </code>
-        . Tailwind espone{' '}
-        <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">animate-*</code>.
+      <p className={DS_SECTION_INTRO_CLASS}>
+        Duration, easing e keyframes da <code className={DS_CODE_CLASS}>@/lib/design-tokens/motion</code>. Tailwind espone <code className={DS_CODE_CLASS}>animate-*</code>.
       </p>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Card variant="default" className={cardFrameClass}>
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">Duration</CardTitle>
           <div className="flex flex-wrap gap-3">
             {Object.entries(motion.duration).map(([key, value]) => (
@@ -37,7 +30,7 @@ export function FoundationsMotion() {
             ))}
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">Easing</CardTitle>
           <div className="flex flex-wrap gap-2">
             {Object.entries(motion.easing).map(([key, value]) => (
@@ -53,7 +46,7 @@ export function FoundationsMotion() {
             ))}
           </div>
         </Card>
-        <Card variant="default" className={`${cardFrameClass} sm:col-span-2`}>
+        <Card variant="default" className={`${DS_CARD_FRAME_CLASS} sm:col-span-2`}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Animazioni (classi Tailwind)
           </CardTitle>

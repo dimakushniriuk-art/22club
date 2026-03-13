@@ -5,10 +5,7 @@ import { designSystem } from '@/config/design-system'
 import { colors } from '@/lib/design-tokens'
 import { Card, CardTitle } from '@/components/ui'
 import { RUOLI_CARD } from '@/lib/design-system-data'
-import { ColorSwatch } from './helpers'
-
-const cardFrameClass =
-  'overflow-hidden p-5 !rounded-[8px] !border-[rgb(255_255_255/0.5)] !shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.06),inset_0_1px_0_0_rgba(255,255,255,0.04),inset_0_-1px_0_0_rgba(0,0,0,0.06)]'
+import { ColorSwatch, DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_LABEL_CLASS } from './helpers'
 
 export function FoundationsColors() {
   const borderInput = {
@@ -26,19 +23,15 @@ export function FoundationsColors() {
 
   return (
     <section id="colori" className="scroll-mt-24">
-      <h2 className="mb-6 flex items-center gap-2 text-2xl font-semibold">
+      <h2 className={DS_SECTION_TITLE_CLASS}>
         <Palette className="h-6 w-6 text-primary" />
         Colori
       </h2>
-      <p className="mb-6 text-sm text-text-secondary">
-        Token da{' '}
-        <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">
-          @/lib/design-tokens
-        </code>{' '}
-        e UI (border/input da Tailwind).
+      <p className={DS_SECTION_INTRO_CLASS}>
+        Token da <code className={DS_CODE_CLASS}>@/lib/design-tokens</code> e UI (border/input da Tailwind).
       </p>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Card variant="default" className={cardFrameClass}>
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Background & Surface
           </CardTitle>
@@ -51,7 +44,7 @@ export function FoundationsColors() {
             <ColorSwatch label="surface 300" color={designSystem.colors.surface[300]} />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">Testo</CardTitle>
           <div className="flex flex-wrap gap-3">
             <ColorSwatch label="primary" color={designSystem.colors.text.primary} />
@@ -59,7 +52,7 @@ export function FoundationsColors() {
             <ColorSwatch label="muted" color={designSystem.colors.text.muted} />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Brand & Primary
           </CardTitle>
@@ -69,7 +62,7 @@ export function FoundationsColors() {
             <ColorSwatch label="active" color={designSystem.colors.primary.active} />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">Stati</CardTitle>
           <div className="flex flex-wrap gap-3">
             <ColorSwatch label="success" color={designSystem.colors.success} />
@@ -77,7 +70,7 @@ export function FoundationsColors() {
             <ColorSwatch label="error" color={designSystem.colors.error} />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Accent (gold / glow)
           </CardTitle>
@@ -86,7 +79,7 @@ export function FoundationsColors() {
             <ColorSwatch label="glow" color={designSystem.colors.accent.glow} />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Border & Input (Tailwind)
           </CardTitle>
@@ -99,16 +92,12 @@ export function FoundationsColors() {
             <ColorSwatch label="input error" color={borderInput.input.error} />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Card Trainer / Admin (ruoli)
           </CardTitle>
-          <p className="mb-3 text-xs text-text-muted">
-            Token da{' '}
-            <code className="rounded bg-surface-300 px-1 py-0.5 font-mono text-[10px]">
-              @/lib/design-tokens
-            </code>{' '}
-            (roleThemes). Varianti Card in Moduli e dashboard.
+          <p className={DS_LABEL_CLASS}>
+            Token da <code className={DS_CODE_CLASS}>@/lib/design-tokens</code> (roleThemes).
           </p>
           <div className="flex flex-wrap gap-3">
             {(
@@ -118,7 +107,7 @@ export function FoundationsColors() {
             ).map(([key, role]) => (
               <div key={key} className="flex flex-col items-center gap-1">
                 <div
-                  className={`h-10 w-10 rounded-xl border shadow-sm ${role.gradientPrimary} ${role.borderPrimary}`}
+                  className={`h-10 w-10 rounded-lg border shadow-sm ${role.gradientPrimary} ${role.borderPrimary}`}
                 />
                 <span className="text-xs font-medium text-text-secondary">{role.label}</span>
                 <span className="font-mono text-[10px] text-text-muted">{role.primary}</span>
@@ -126,13 +115,12 @@ export function FoundationsColors() {
             ))}
           </div>
         </Card>
-        <Card variant="default" className={`${cardFrameClass} sm:col-span-2`}>
+        <Card variant="default" className={`${DS_CARD_FRAME_CLASS} sm:col-span-2`}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Accenti atleta (blocchi Home / card)
           </CardTitle>
-          <p className="mb-3 text-xs text-text-muted">
-            Border e barra laterale per card: schede, appuntamenti, progressi, chat, nutrizionista,
-            massaggiatore, documenti, foto-risultati, profilo.
+          <p className={DS_LABEL_CLASS}>
+            Border e barra laterale per card blocchi home.
           </p>
           <div className="flex flex-wrap gap-3">
             {(
@@ -143,7 +131,7 @@ export function FoundationsColors() {
             ).map(([key, val]) => (
               <div key={key} className="flex flex-col items-center gap-1">
                 <div
-                  className="h-10 w-10 rounded-xl border border-border/70 shadow-sm"
+                  className="h-10 w-10 rounded-lg border border-white/10 shadow-sm"
                   style={{ backgroundColor: `${val.bar}18` }}
                 />
                 <span className="max-w-[90px] text-center text-xs text-text-muted">{key}</span>

@@ -20,10 +20,8 @@ interface AppointmentsStatsProps {
 
 export function AppointmentsStats({ stats, theme = 'teal' }: AppointmentsStatsProps) {
   const totalBadge =
-    theme === 'amber'
-      ? 'flex items-center gap-2 rounded-lg bg-background-tertiary/50 px-3 py-2 border border-amber-500/20'
-      : 'flex items-center gap-2 rounded-lg bg-background-tertiary/50 px-3 py-2 border border-teal-500/20'
-  const totalDot = theme === 'amber' ? 'h-2 w-2 rounded-full bg-amber-400' : 'h-2 w-2 rounded-full bg-teal-400'
+    'flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2'
+  const totalDot = theme === 'amber' ? 'h-2 w-2 rounded-full bg-amber-400' : 'h-2 w-2 rounded-full bg-primary'
   return (
     <div className="flex items-center gap-3 flex-wrap">
       <div className={totalBadge}>
@@ -39,7 +37,7 @@ export function AppointmentsStats({ stats, theme = 'teal' }: AppointmentsStatsPr
         </div>
       )}
       {stats.programmati > 0 && (
-        <div className="flex items-center gap-2 rounded-lg bg-background-tertiary/50 px-3 py-2 border border-white/40">
+        <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2">
           <div className="h-2 w-2 rounded-full bg-white/60"></div>
           <span className="text-text-primary text-sm font-semibold">{stats.programmati}</span>
           <span className="text-text-secondary text-xs">programmati</span>

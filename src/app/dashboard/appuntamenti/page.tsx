@@ -13,7 +13,10 @@ import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useAuth } from '@/providers/auth-provider'
+import { Button } from '@/components/ui'
+import { CalendarPlus } from 'lucide-react'
 
 const logger = createLogger('app:dashboard:appuntamenti:page')
 
@@ -43,13 +46,13 @@ function formatDateTime(isoString: string) {
 function getStatusColorClasses(status: string) {
   switch (status) {
     case 'completato':
-      return 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15 hover:border-green-500/40'
+      return 'border-l-4 border-l-green-500/50'
     case 'attivo':
-      return 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/30'
+      return 'border-l-4 border-l-primary/50'
     case 'annullato':
-      return 'bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/15 hover:border-orange-500/40'
+      return 'border-l-4 border-l-orange-500/50'
     default:
-      return 'bg-background-tertiary/50 border border-border/30 hover:bg-background-tertiary/60 hover:border-blue-500/30'
+      return 'border-l-4 border-l-white/20'
   }
 }
 
@@ -101,6 +104,9 @@ export default function AppuntamentiPage() {
   const [statusFilter, setStatusFilter] = useState<
     'tutti' | 'attivo' | 'completato' | 'annullato' | 'programmato'
   >('tutti')
+  const [dateRangeFilter, setDateRangeFilter] = useState<
+    'tutti' | 'ultimo_mese' | 'ultima_settimana' | 'ieri_oggi'
+  >('tutti')
   const [confirmState, setConfirmState] = useState<{
     appointment: AppointmentTable
     action: 'delete' | 'cancel'
@@ -132,9 +138,36 @@ export default function AppuntamentiPage() {
     [athletes],
   )
 
+  // Limiti data per filtro periodo (start of day in locale)
+  const dateRangeBounds = useMemo(() => {
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterdayStart = new Date(todayStart)
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1)
+    const weekStart = new Date(todayStart)
+    weekStart.setDate(weekStart.getDate() - 7)
+    const monthStart = new Date(todayStart)
+    monthStart.setDate(monthStart.getDate() - 30)
+    return { todayStart, yesterdayStart, weekStart, monthStart }
+  }, [])
+
   // Filtra appuntamenti
   const filteredAppointments = useMemo(() => {
     return appointments.filter((apt) => {
+      // Filtro periodo
+      if (dateRangeFilter !== 'tutti') {
+        const start = new Date(apt.starts_at)
+        const endOfToday = new Date(dateRangeBounds.todayStart)
+        endOfToday.setHours(23, 59, 59, 999)
+        if (dateRangeFilter === 'ieri_oggi') {
+          if (start < dateRangeBounds.yesterdayStart || start > endOfToday) return false
+        } else if (dateRangeFilter === 'ultima_settimana') {
+          if (start < dateRangeBounds.weekStart || start > endOfToday) return false
+        } else if (dateRangeFilter === 'ultimo_mese') {
+          if (start < dateRangeBounds.monthStart || start > endOfToday) return false
+        }
+      }
+
       // Filtro ricerca
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
@@ -155,7 +188,7 @@ export default function AppuntamentiPage() {
 
       return true
     })
-  }, [appointments, searchTerm, statusFilter])
+  }, [appointments, searchTerm, statusFilter, dateRangeFilter, dateRangeBounds])
 
   const handleEdit = useCallback((appointment: AppointmentTable) => {
     setEditingAppointment(toEditData(appointment))
@@ -291,39 +324,36 @@ export default function AppuntamentiPage() {
   }, [filteredAppointments])
 
   return (
-    <div className="h-full">
-      <div className="space-y-6 p-6">
+    <StaffContentLayout
+      title="Appuntamenti"
+      description={`Tutti i tuoi appuntamenti e sessioni (${filteredAppointments.length})`}
+      theme="teal"
+      actions={
+        <Button onClick={handleNewAppointment} size="sm" className="gap-2">
+          <CalendarPlus className="h-4 w-4" />
+          Nuovo appuntamento
+        </Button>
+      }
+    >
+      <div className="space-y-4 sm:space-y-6">
+        <AppointmentsStats stats={stats} />
+
         <AppointmentsHeader
           searchTerm={searchTerm}
           statusFilter={statusFilter}
           onSearchChange={setSearchTerm}
           onStatusFilterChange={setStatusFilter}
           onNewAppointment={handleNewAppointment}
+          dateRangeFilter={dateRangeFilter}
+          onDateRangeFilterChange={setDateRangeFilter}
         />
 
-        {/* Container principale con stile agenda */}
-        <div className="relative p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="mb-4">
-              <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-                Appuntamenti
-              </h1>
-              <p className="text-text-secondary text-sm sm:text-base">
-                Tutti i tuoi appuntamenti e sessioni ({filteredAppointments.length})
-              </p>
-            </div>
+        <div role="status" aria-live="polite" className="sr-only">
+          {filteredAppointments.length}{' '}
+          {filteredAppointments.length === 1 ? 'appuntamento' : 'appuntamenti'}
+        </div>
 
-            <AppointmentsStats stats={stats} />
-          </div>
-
-          <div role="status" aria-live="polite" className="sr-only">
-            {filteredAppointments.length}{' '}
-            {filteredAppointments.length === 1 ? 'appuntamento' : 'appuntamenti'}
-          </div>
-
-          {/* Events List */}
-          <AppointmentsList
+        <AppointmentsList
             appointments={filteredAppointments}
             appointmentsLoading={appointmentsLoading}
             searchTerm={searchTerm}
@@ -341,60 +371,59 @@ export default function AppuntamentiPage() {
             lessonsRemainingMap={lessonsRemainingMap}
             athleteEmailMap={athleteEmailMap}
           />
-        </div>
-
-        {/* Modals/Drawers - Lazy loaded solo quando aperti */}
-        {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
-              <Suspense fallback={<LoadingState message="Caricamento form appuntamento..." />}>
-                <AppointmentForm
-                  appointment={editingAppointment || undefined}
-                  athletes={athletes}
-                  onSubmit={handleFormSubmit}
-                  onCancel={handleCloseForm}
-                  loading={loading || athletesLoading}
-                />
-              </Suspense>
-            </div>
-          </div>
-        )}
-
-        {showDetail && selectedAppointment && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-            <div className="w-full max-w-md">
-              <Suspense fallback={<LoadingState message="Caricamento dettagli appuntamento..." />}>
-                <AppointmentDetail
-                  appointment={selectedAppointment}
-                  onEdit={handleEditFromDetail}
-                  onCancel={handleCancelFromDetail}
-                  onDelete={handleDeleteFromDetail}
-                  onClose={handleCloseDetail}
-                  loading={loading}
-                />
-              </Suspense>
-            </div>
-          </div>
-        )}
-
-        {confirmState && (
-          <ConfirmDialog
-            open={!!confirmState}
-            onOpenChange={(open) => !open && setConfirmState(null)}
-            title={confirmState.action === 'delete' ? 'Elimina appuntamento' : 'Annulla appuntamento'}
-            description={
-              confirmState.action === 'delete'
-                ? `Sei sicuro di voler eliminare l'appuntamento con ${confirmState.appointment.athlete_name || 'questo atleta'}? Questa azione non può essere annullata.`
-                : `Sei sicuro di voler annullare questo appuntamento? Lo stato passerà ad "Annullato".`
-            }
-            confirmText={confirmState.action === 'delete' ? 'Elimina' : 'Annulla'}
-            cancelText="Indietro"
-            variant={confirmState.action === 'delete' ? 'destructive' : 'default'}
-            loading={loading}
-            onConfirm={handleConfirmDialogConfirm}
-          />
-        )}
       </div>
-    </div>
+
+      {/* Modals/Drawers - Lazy loaded solo quando aperti */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
+            <Suspense fallback={<LoadingState message="Caricamento form appuntamento..." />}>
+              <AppointmentForm
+                appointment={editingAppointment || undefined}
+                athletes={athletes}
+                onSubmit={handleFormSubmit}
+                onCancel={handleCloseForm}
+                loading={loading || athletesLoading}
+              />
+            </Suspense>
+          </div>
+        </div>
+      )}
+
+      {showDetail && selectedAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+          <div className="w-full max-w-md">
+            <Suspense fallback={<LoadingState message="Caricamento dettagli appuntamento..." />}>
+              <AppointmentDetail
+                appointment={selectedAppointment}
+                onEdit={handleEditFromDetail}
+                onCancel={handleCancelFromDetail}
+                onDelete={handleDeleteFromDetail}
+                onClose={handleCloseDetail}
+                loading={loading}
+              />
+            </Suspense>
+          </div>
+        </div>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          open={!!confirmState}
+          onOpenChange={(open) => !open && setConfirmState(null)}
+          title={confirmState.action === 'delete' ? 'Elimina appuntamento' : 'Annulla appuntamento'}
+          description={
+            confirmState.action === 'delete'
+              ? `Sei sicuro di voler eliminare l'appuntamento con ${confirmState.appointment.athlete_name || 'questo atleta'}? Questa azione non può essere annullata.`
+              : `Sei sicuro di voler annullare questo appuntamento? Lo stato passerà ad "Annullato".`
+          }
+          confirmText={confirmState.action === 'delete' ? 'Elimina' : 'Annulla'}
+          cancelText="Indietro"
+          variant={confirmState.action === 'delete' ? 'destructive' : 'default'}
+          loading={loading}
+          onConfirm={handleConfirmDialogConfirm}
+        />
+      )}
+    </StaffContentLayout>
   )
 }

@@ -24,8 +24,8 @@ const PROGRESSI_CARDS: Array<{
 }> = [
   {
     href: '/home/progressi/misurazioni',
-    accent: 'primary',
-    icon: <Scale className={`${ICON_CLASS} text-primary`} />,
+    accent: 'white',
+    icon: <Scale className={`${ICON_CLASS} text-white/90`} />,
     title: 'Misurazioni del Corpo',
     description:
       'Monitora peso, composizione corporea, circonferenze e misure antropometriche con grafici e statistiche dettagliate.',

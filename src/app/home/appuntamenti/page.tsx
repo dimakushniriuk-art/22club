@@ -250,7 +250,7 @@ function AppuntamentiPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
           <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
-          <Card className="border border-cyan-500/30 bg-background-secondary/50 p-6 min-[834px]:p-8 text-center">
+          <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
             <p className="text-text-primary text-sm font-medium">
               Non hai accesso al calendario. Contatta l&apos;organizzazione per attivare il tuo
               profilo cliente.
@@ -271,7 +271,7 @@ function AppuntamentiPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
           <AppuntamentiPageHeader onBack={handleBack} />
-          <Card className="border border-state-error/50 bg-background-secondary/50 backdrop-blur-sm p-6 min-[834px]:p-8 text-center">
+          <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
             <div className="mb-3 text-4xl opacity-50">❌</div>
             <p className="text-text-primary mb-4 text-sm font-medium line-clamp-3">
               {typeof error === 'string'
@@ -282,7 +282,7 @@ function AppuntamentiPageContent() {
               onRefresh={() => refetch()}
               isLoading={loading}
               ariaLabel="Riprova caricamento appuntamenti"
-              className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]"
+              className="rounded-lg border border-white/10 hover:bg-white/5 min-h-[44px] text-text-primary"
             />
           </Card>
         </div>
@@ -375,10 +375,9 @@ function AppuntamentiPageContent() {
           <AppuntamentiPageHeader
             subtitle="Calendario e appuntamenti con il trainer"
             onBack={handleBack}
-            withBottomMargin
           />
 
-          <div className="min-h-[260px] rounded-xl border border-cyan-500/30 bg-background-secondary/50 overflow-hidden flex flex-col">
+          <div className="min-h-[260px] rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] overflow-hidden flex flex-col">
             {athleteCalendar.appointmentsLoading ? (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">
@@ -401,6 +400,7 @@ function AppuntamentiPageContent() {
                 }
                 openBookingAsBackground
                 slotBookingCounts={slotBookingCounts}
+                compactToolbar
               />
             )}
           </div>
@@ -408,7 +408,7 @@ function AppuntamentiPageContent() {
           {!athleteCalendar.appointmentsLoading && (
             <div className="mt-3 space-y-2">
               {!trainerStaffId && !athleteCalendar.trainerLoading && (
-                <p className="text-center text-sm text-text-secondary rounded-lg border border-cyan-500/20 bg-cyan-500/5 py-2.5 px-3">
+                <p className="text-center text-sm text-text-secondary rounded-lg border border-white/10 bg-white/5 py-2.5 px-3">
                   Non hai ancora un trainer assegnato. Contatta l&apos;organizzazione per poter
                   prenotare.
                 </p>
@@ -442,6 +442,7 @@ function AppuntamentiPageContent() {
                   }
                   onCancel={handleCloseForm}
                   loading={submitLoading || trainerLoading}
+                  athleteMode
                 />
               </Suspense>
             </div>

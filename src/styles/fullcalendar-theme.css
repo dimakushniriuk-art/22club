@@ -262,6 +262,34 @@
   border-radius: 4px !important;
 }
 
+/* Vista mese: mezza/intera cella (eventi affiancabili nel giorno) */
+.fc .fc-daygrid-day-events {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 2px !important;
+}
+
+.fc .fc-daygrid-event-harness:has(.fc-event-half-cell) {
+  flex: 0 0 calc(50% - 1px) !important;
+  max-width: calc(50% - 1px) !important;
+  min-width: 0 !important;
+}
+
+.fc .fc-daygrid-event-harness:has(.fc-event-full-cell) {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+}
+
+.fc .fc-daygrid-event.fc-event-half-cell {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.fc .fc-daygrid-event.fc-event-full-cell {
+  width: 100% !important;
+}
+
 .fc .fc-daygrid-dot-event {
   padding: 2px 4px !important;
 }
@@ -274,6 +302,29 @@
 .fc .fc-timegrid-event {
   border-radius: 4px !important;
   margin: 0 2px !important;
+}
+
+/* Larghezza cella: mezza (50%, affiancabili) o intera (con slotEventOverlap: false) */
+.fc .fc-timegrid-event.fc-event-half-cell {
+  width: 50% !important;
+  max-width: 50% !important;
+  box-sizing: border-box !important;
+}
+
+.fc .fc-timegrid-event.fc-event-full-cell {
+  width: 100% !important;
+}
+
+/* Calendario atleta: evento sempre su intera cella (nessun inset) */
+.fc-athlete-full-cell .fc .fc-timegrid-event-harness {
+  left: 0 !important;
+  right: 0 !important;
+  inset-inline-start: 0 !important;
+  inset-inline-end: 0 !important;
+}
+.fc-athlete-full-cell .fc .fc-timegrid-event.fc-event-full-cell {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .fc .fc-timegrid-event .fc-event-main {

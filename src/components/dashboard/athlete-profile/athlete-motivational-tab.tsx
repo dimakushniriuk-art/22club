@@ -10,7 +10,6 @@ import { useMemo } from 'react'
 import { Button } from '@/components/ui'
 import { useAthleteMotivational } from '@/hooks/athlete-profile/use-athlete-motivational'
 
-const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
 import { useAthleteMotivationalForm } from '@/hooks/athlete-profile/use-athlete-motivational-form'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
@@ -84,7 +83,7 @@ export function AthleteMotivationalTab({ athleteId }: AthleteMotivationalTabProp
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-4 w-4" />
             Modifica
@@ -146,19 +145,20 @@ export function AthleteMotivationalTab({ athleteId }: AthleteMotivationalTabProp
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-primary/20">
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <X className="h-4 w-4" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="flex items-center gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition text-white"
+            className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}

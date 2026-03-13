@@ -89,7 +89,7 @@ export function DialogContent({ children, className }: DialogContentProps) {
       {/* Dialog: full width sotto 852px, centrato desktop */}
       <div
         className={cn(
-          'bg-background border-border relative z-[100] w-full max-w-lg rounded-lg border p-6 shadow-lg',
+          'relative z-[100] w-full max-w-lg rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]',
           'mx-4 my-4 max-h-[90dvh] overflow-y-auto',
           'max-[851px]:max-w-[calc(100vw-2rem)] max-[851px]:w-full',
           className,
@@ -101,7 +101,7 @@ export function DialogContent({ children, className }: DialogContentProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-4 top-4 z-[110] hover:bg-background-tertiary/50 text-text-secondary hover:text-text-primary transition-all duration-200 rounded-full"
+          className="absolute right-4 top-4 z-[110] text-text-secondary hover:text-text-primary hover:bg-white/10 transition-all duration-200 rounded-full"
           onClick={(e) => {
             e.stopPropagation()
             onOpenChange(false)

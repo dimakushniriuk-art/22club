@@ -1,6 +1,5 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui'
 import { useModalActions } from './modals-wrapper'
@@ -240,95 +239,80 @@ export function AgendaTimeline({
 
   if (loading) {
     return (
-      <Card variant="trainer">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle size="md">Agenda di oggi</CardTitle>
-            <div className="flex space-x-2">
-              <div className="animate-pulse bg-background-tertiary h-6 w-8 rounded" />
-              <div className="animate-pulse bg-background-tertiary h-6 w-8 rounded" />
-              <div className="animate-pulse bg-background-tertiary h-6 w-8 rounded" />
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 md:p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="animate-pulse h-9 w-9 rounded-lg bg-white/10" />
+            <div className="space-y-2">
+              <div className="animate-pulse h-5 w-32 rounded bg-white/10" />
+              <div className="animate-pulse h-3 w-48 rounded bg-white/10" />
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-background-tertiary flex items-center space-x-4 rounded-lg p-3">
-                  <div className="bg-background-elevated h-6 w-16 rounded" />
-                  <div className="bg-background-elevated h-8 w-8 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <div className="bg-background-elevated h-4 w-32 rounded" />
-                    <div className="bg-background-elevated h-3 w-24 rounded" />
-                  </div>
-                  <div className="bg-background-elevated h-6 w-20 rounded-full" />
-                  <div className="bg-background-elevated h-8 w-16 rounded" />
-                </div>
-              </div>
-            ))}
+          <div className="flex gap-2">
+            <div className="animate-pulse h-8 w-16 rounded-lg bg-white/10" />
+            <div className="animate-pulse h-8 w-16 rounded-lg bg-white/10" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse rounded-lg border border-white/10 bg-black/20 flex items-center gap-4 p-4">
+              <div className="h-6 w-14 rounded bg-white/10" />
+              <div className="h-8 w-8 rounded-full bg-white/10" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 rounded bg-white/10" />
+                <div className="h-3 w-24 rounded bg-white/10" />
+              </div>
+              <div className="h-8 w-20 rounded bg-white/10" />
+            </div>
+          ))}
+        </div>
+      </div>
     )
   }
 
   if (events.length === 0) {
     return (
-      <Card
-        variant="elevated"
-        className="relative overflow-hidden rounded-3xl bg-background-secondary/40 backdrop-blur-2xl ring-1 ring-white/8 shadow-soft p-10 transition-all duration-300 ease-out"
-      >
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-80" />
-          <div className="absolute -top-24 right-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 sm:p-8 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+          <Calendar className="h-6 w-6" />
         </div>
-        <div className="relative z-10 max-w-md mx-auto text-center space-y-5">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white/6 ring-1 ring-primary/25 shadow-glow text-primary">
-            <Calendar className="h-10 w-10" />
-          </div>
-          <h2 className="text-xl font-bold text-text-primary">Agenda di oggi</h2>
-          <p className="text-sm text-text-secondary/90 max-w-md mx-auto">
-            Non hai appuntamenti programmati per oggi. Aggiungine uno per iniziare la giornata.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-4">
-            <Button
-              variant="primary"
-              onClick={handleAddAppointment}
-              className="min-h-[48px] min-w-[180px] px-8 shadow-glow transition-all duration-300 ease-out hover:brightness-110"
-              aria-label="Crea nuovo appuntamento"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Nuovo Appuntamento
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/dashboard/appuntamenti')}
-              className="min-h-[48px] min-w-[180px] border-primary/25 bg-white/0 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 ease-out"
-              aria-label="Visualizza calendario completo"
-            >
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Calendario Completo
-            </Button>
-          </div>
+        <h2 className="text-lg font-semibold text-text-primary">Agenda di oggi</h2>
+        <p className="text-sm text-text-secondary max-w-md">
+          Non hai appuntamenti programmati per oggi. Aggiungine uno per iniziare la giornata.
+        </p>
+        <div className="flex flex-wrap justify-center gap-2 pt-2">
+          <Button variant="primary" size="sm" onClick={handleAddAppointment} aria-label="Crea nuovo appuntamento">
+            <Calendar className="mr-2 h-4 w-4" />
+            Nuovo Appuntamento
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/dashboard/appuntamenti')}
+            className="border-white/20 hover:bg-white/5 hover:border-white/30"
+            aria-label="Visualizza calendario completo"
+          >
+            <CalendarDays className="mr-2 h-4 w-4" />
+            Calendario
+          </Button>
         </div>
-      </Card>
+      </div>
     )
   }
 
   return (
     <div className="relative transition-all duration-200">
-      <div className="relative p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-primary/10 p-3 text-primary">
-                <Calendar className="h-5 w-5" />
+      <div className="relative p-4 sm:p-5 md:p-6">
+        {/* Header — stile DS: titolo + descrizione, summary con token bordo/sfumatura */}
+        <div className="mb-4 sm:mb-6">
+          <div className="mb-3 sm:mb-4 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-text-primary">Agenda di oggi</h2>
-                <p className="text-text-secondary text-sm">I tuoi appuntamenti e sessioni</p>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-text-primary truncate">Agenda di oggi</h2>
+                <p className="text-xs sm:text-sm text-text-secondary">I tuoi appuntamenti e sessioni</p>
               </div>
             </div>
             {false && handleAddAppointment && (
@@ -338,11 +322,11 @@ export function AgendaTimeline({
             )}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {summaryCards.map((card) => (
               <div
                 key={card.label}
-                className="flex items-center gap-2 rounded-lg border border-border bg-background-secondary/60 px-3 py-2"
+                className="flex items-center gap-2 rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 px-3 py-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
               >
                 {card.icon}
                 <span className={`${card.valueClass} text-sm font-semibold`}>{card.value}</span>
@@ -352,34 +336,35 @@ export function AgendaTimeline({
           </div>
         </div>
 
-        {/* Events List */}
-        <div className="space-y-2">
+        {/* Events List — space-y-3 tra card (regole progetto), card con bordo DS e accento stato */}
+        <div className="space-y-3">
           {events.map((event, index) => {
             const timeStatus = getTimeStatus(event.time)
             const timeRemaining = getTimeRemaining(event.time)
             const isActive = event.status === 'in-progress' || timeStatus === 'starting'
             const isOverdue = timeStatus === 'overdue' || timeStatus === 'late'
 
-            const getStatusColorClasses = () => {
+            const getStatusBorderClass = () => {
               switch (event.status) {
                 case 'completed':
-                  return 'bg-success/10 border-success/30 hover:bg-success/15 hover:border-success/40'
+                  return 'border-l-4 border-l-success/50'
                 case 'in-progress':
-                  return 'bg-primary/10 border-primary/30 hover:bg-primary/15 hover:border-primary/40'
-                case 'scheduled':
-                  return 'bg-background-secondary/60 border-border hover:bg-muted/50 hover:border-border-strong'
+                  return 'border-l-4 border-l-primary/50'
                 case 'annullato':
                 case 'cancelled':
-                  return 'bg-state-error/10 border-state-error/30 hover:bg-state-error/15 hover:border-state-error/40'
+                  return 'border-l-4 border-l-state-error/50'
                 default:
-                  return 'bg-background-secondary/60 border border-border hover:bg-muted/50 hover:border-primary/30'
+                  return ''
               }
             }
 
             return (
               <div
                 key={event.id}
-                className={`group relative overflow-hidden rounded-lg transition-all duration-300 hover:shadow-glow border ${getStatusColorClasses()}`}
+                className={cn(
+                  'group relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20',
+                  getStatusBorderClass(),
+                )}
                 style={{
                   animationDelay: `${index * 100}ms`,
                   animation: 'fadeInUp 0.5s ease-out forwards',

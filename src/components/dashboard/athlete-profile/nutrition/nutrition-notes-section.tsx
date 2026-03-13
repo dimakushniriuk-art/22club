@@ -28,7 +28,8 @@ export function NutritionNotesSection({
 }: NutritionNotesSectionProps) {
   return (
     <Card
-      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+      variant="default"
+      className="overflow-hidden"
     >
       <CardHeader>
         <CardTitle className="text-lg font-bold text-text-primary">Note Nutrizionali</CardTitle>
@@ -47,7 +48,7 @@ export function NutritionNotesSection({
             className="text-base"
           />
         ) : nutrition?.note_nutrizionali ? (
-          <p className="text-text-primary text-sm md:text-base whitespace-pre-wrap bg-background-tertiary/30 p-4 rounded-lg border border-primary/20">
+          <p className="text-text-primary text-sm md:text-base whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
             {nutrition.note_nutrizionali}
           </p>
         ) : (

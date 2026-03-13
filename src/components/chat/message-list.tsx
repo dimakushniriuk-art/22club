@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Download, Eye, Check, CheckCheck, Trash2 } from 'lucide-react'
+import { Download, Eye, Check, CheckCheck, Trash2, MoreVertical } from 'lucide-react'
 import type { ChatMessage } from '@/types/chat'
 import { useIcon } from '@/components/ui/professional-icons'
 import { createLogger } from '@/lib/logger'
@@ -21,6 +21,18 @@ import {
 } from '@/components/ui/alert-dialog'
 
 const logger = createLogger('components:chat:message-list')
+
+/** Restituisce "Oggi", "Ieri" o data breve (es. "12 mar") per i separatori di gruppo in chat */
+function getDateGroupLabel(dateStr: string): string {
+  const d = new Date(dateStr)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const key = (x: Date) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
+  if (key(d) === key(today)) return 'Oggi'
+  if (key(d) === key(yesterday)) return 'Ieri'
+  return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
+}
 
 interface MessageListProps {
   messages: ChatMessage[]
@@ -45,6 +57,8 @@ export function MessageList({
   const messagesStartRef = useRef<HTMLDivElement>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null)
+  /** Id messaggio per cui sono visibili le azioni (bottone Elimina); null = tutti mostrano i 3 puntini */
+  const [expandedMessageId, setExpandedMessageId] = useState<string | null>(null)
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -52,9 +66,9 @@ export function MessageList({
   }, [messages.length])
 
   // Prepara le icone per i file
-  const imageIcon = useIcon('🖼️', { size: 16, className: 'text-cyan-400' })
-  const pdfIcon = useIcon('📄', { size: 16, className: 'text-cyan-400' })
-  const fileIcon = useIcon('📎', { size: 16, className: 'text-cyan-400' })
+  const imageIcon = useIcon('🖼️', { size: 16, className: 'text-primary' })
+  const pdfIcon = useIcon('📄', { size: 16, className: 'text-primary' })
+  const fileIcon = useIcon('📎', { size: 16, className: 'text-primary' })
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase()
@@ -127,130 +141,149 @@ export function MessageList({
     return (
       <div
         key={message.id}
-        className={cn('mb-2 flex group', isOwn ? 'justify-end' : 'justify-start')}
+        className={cn('mb-1 flex group', isOwn ? 'justify-end' : 'justify-start')}
       >
         <div className={cn('max-w-[75%] space-y-1', isOwn ? 'items-end' : 'items-start')}>
           {message.type === 'text' ? (
             <div
               className={cn(
-                'px-4 py-2.5 shadow-lg relative',
-                isOwn
-                  ? 'bg-cyan-700 text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm border border-cyan-600/50'
-                  : 'bg-background-tertiary text-text-primary rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl border border-cyan-500/20',
+                'relative min-w-0 max-w-full overflow-hidden rounded-[18px] border border-white/20 bg-zinc-800/80 text-zinc-100 shadow-md',
+                isOwn ? 'rounded-br-[6px]' : 'rounded-bl-[6px]',
               )}
             >
-              <div className="flex items-start justify-between gap-2">
-                <p className="whitespace-pre-wrap text-[15px] leading-relaxed flex-1">
+              <div className="flex items-start gap-2 px-3 pt-2 pb-0.5">
+                <p className="whitespace-pre-wrap break-words text-[14px] leading-snug select-text flex-1 min-w-0">
                   {message.message}
                 </p>
                 {isOwn && onDeleteMessage && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openDeleteDialog(message.id)}
-                    className="h-6 w-6 rounded-full bg-red-500/80 hover:bg-red-600 active:bg-red-700 text-white opacity-80 hover:opacity-100 transition-all shadow-md hover:shadow-lg hover:scale-110 flex-shrink-0"
-                    aria-label="Elimina messaggio"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  expandedMessageId === message.id ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openDeleteDialog(message.id)}
+                      className="h-6 w-6 shrink-0 rounded-full bg-red-500/90 hover:bg-red-500 text-white"
+                      aria-label="Elimina messaggio"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setExpandedMessageId(message.id)}
+                      className="h-6 w-6 shrink-0 rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-white/10"
+                      aria-label="Azioni messaggio"
+                    >
+                      <MoreVertical className="h-3.5 w-3.5" />
+                    </Button>
+                  )
                 )}
               </div>
-              <div className="mt-1 flex items-center justify-end gap-1">
-                <span className={cn('text-[11px]', isOwn ? 'text-cyan-50' : 'text-text-secondary')}>
+              <div
+                className={cn(
+                  'flex items-center gap-1 px-3 pb-1.5 pt-0',
+                  isOwn ? 'justify-end' : 'justify-start',
+                )}
+              >
+                <span className="text-[10px] tabular-nums text-zinc-400">
                   {formatTime(message.created_at)}
                 </span>
                 {isOwn && (
-                  <div className="flex items-center ml-1">
+                  <span className="shrink-0 text-zinc-400">
                     {isRead ? (
-                      <CheckCheck className="h-3.5 w-3.5 text-cyan-50" />
+                      <CheckCheck className="h-3.5 w-3.5" />
                     ) : (
-                      <Check className="h-3.5 w-3.5 text-cyan-50" />
+                      <Check className="h-3.5 w-3.5" />
                     )}
-                  </div>
+                  </span>
                 )}
               </div>
             </div>
           ) : message.type === 'file' ? (
             <div
               className={cn(
-                'max-w-xs p-3 shadow-lg relative',
-                isOwn
-                  ? 'bg-cyan-700 text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm border border-cyan-600/50'
-                  : 'bg-background-tertiary text-text-primary rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl border border-cyan-500/20',
+                'max-w-xs overflow-hidden',
+                'rounded-[18px] border border-white/20 bg-zinc-800/80 text-zinc-100 shadow-md',
+                isOwn ? 'rounded-br-[6px]' : 'rounded-bl-[6px]',
               )}
             >
-              <div className="flex items-start gap-3">
-                <div className="text-2xl">{getFileIcon(message.file_name || '')}</div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-medium">{message.file_name}</p>
-                      <p className={cn('text-xs', isOwn ? 'text-cyan-50' : 'text-text-secondary')}>
-                        {message.file_size ? `${Math.round(message.file_size / 1024)} KB` : ''}
-                      </p>
-                    </div>
-                    {isOwn && onDeleteMessage && (
+              <div className="p-2.5">
+                <div className="flex items-start gap-2">
+                  <div className="text-xl shrink-0">{getFileIcon(message.file_name || '')}</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{message.file_name}</p>
+                    <p className="text-xs text-zinc-400">
+                      {message.file_size ? `${Math.round(message.file_size / 1024)} KB` : ''}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        onClick={() => openDeleteDialog(message.id)}
-                        className="h-6 w-6 rounded-full bg-red-500/80 hover:bg-red-600 active:bg-red-700 text-white opacity-80 hover:opacity-100 transition-all shadow-md hover:shadow-lg hover:scale-110 flex-shrink-0"
-                        aria-label="Elimina messaggio"
+                        size="sm"
+                        onClick={() => window.open(message.file_url, '_blank')}
+                        className="h-7 px-2 text-xs rounded-md text-zinc-300 hover:bg-white/10"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Eye className="mr-1 h-3 w-3" />
+                        Visualizza
                       </Button>
-                    )}
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(message.file_url, '_blank')}
-                      className={cn(
-                        'h-7 px-2 text-xs',
-                        isOwn
-                          ? 'text-white hover:bg-cyan-400/30'
-                          : 'text-text-primary hover:bg-cyan-500/10',
-                      )}
-                    >
-                      <Eye className="mr-1 h-3 w-3" />
-                      Visualizza
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleFileDownload(message.file_url!, message.file_name!)}
-                      className={cn(
-                        'h-7 px-2 text-xs',
-                        isOwn
-                          ? 'text-white hover:bg-cyan-400/30'
-                          : 'text-text-primary hover:bg-cyan-500/10',
-                      )}
-                    >
-                      <Download className="mr-1 h-3 w-3" />
-                      Scarica
-                    </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleFileDownload(message.file_url!, message.file_name!)}
+                        className="h-7 px-2 text-xs rounded-md text-zinc-300 hover:bg-white/10"
+                      >
+                        <Download className="mr-1 h-3 w-3" />
+                        Scarica
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="mt-2 flex items-center justify-end gap-1">
-                <span className={cn('text-[11px]', isOwn ? 'text-cyan-50' : 'text-text-secondary')}>
+              <div
+                className={cn(
+                  'flex items-center gap-1 px-3 pb-1.5 pt-0',
+                  isOwn ? 'justify-end' : 'justify-start',
+                )}
+              >
+                <span className="text-[10px] tabular-nums text-zinc-400">
                   {formatTime(message.created_at)}
                 </span>
                 {isOwn && (
-                  <div className="flex items-center ml-1">
+                  <span className="shrink-0 text-zinc-400">
                     {isRead ? (
-                      <CheckCheck className="h-3.5 w-3.5 text-cyan-50" />
+                      <CheckCheck className="h-3.5 w-3.5" />
                     ) : (
-                      <Check className="h-3.5 w-3.5 text-cyan-50" />
+                      <Check className="h-3.5 w-3.5" />
                     )}
-                  </div>
+                  </span>
+                )}
+                {isOwn && onDeleteMessage && (
+                  expandedMessageId === message.id ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openDeleteDialog(message.id)}
+                      className="h-6 w-6 shrink-0 rounded-full bg-red-500/90 hover:bg-red-500 text-white ml-0.5"
+                      aria-label="Elimina messaggio"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setExpandedMessageId(message.id)}
+                      className="h-6 w-6 shrink-0 rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-white/10 ml-0.5"
+                      aria-label="Azioni messaggio"
+                    >
+                      <MoreVertical className="h-3.5 w-3.5" />
+                    </Button>
+                  )
                 )}
               </div>
             </div>
           ) : (
-            <div className="bg-background-secondary/50 px-3 py-2 rounded-lg border border-cyan-500/20">
-              <p className="text-text-secondary text-sm italic">{message.message}</p>
+            <div className="px-3 py-2 rounded-[18px] border border-white/20 bg-zinc-800/60">
+              <p className="text-zinc-400 text-sm italic">{message.message}</p>
             </div>
           )}
         </div>
@@ -269,21 +302,49 @@ export function MessageList({
               size="sm"
               onClick={onLoadMore}
               disabled={isLoading}
-              className="text-xs rounded-xl border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50"
+              className="text-xs rounded-lg border border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
             >
               {isLoading ? 'Caricamento...' : 'Carica messaggi precedenti'}
             </Button>
           </div>
         )}
 
-        {/* Messages - area contenuto (scroll sul main della pagina chat) */}
+        {/* Messages - raggruppati per data con label Oggi / Ieri / data */}
         <div className="flex-1 min-h-0 space-y-1">
           {messages.length > 0 ? (
-            <>
-              <div ref={messagesStartRef} />
-              {messages.map((msg) => renderMessage(msg))}
-              <div ref={messagesEndRef} />
-            </>
+            (() => {
+              const groups: { dateKey: string; label: string; msgs: ChatMessage[] }[] = []
+              let currentKey = ''
+              let currentGroup: ChatMessage[] = []
+              messages.forEach((msg) => {
+                const d = new Date(msg.created_at)
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                if (key !== currentKey) {
+                  if (currentGroup.length) groups.push({ dateKey: currentKey, label: getDateGroupLabel(currentGroup[0].created_at), msgs: currentGroup })
+                  currentKey = key
+                  currentGroup = [msg]
+                } else {
+                  currentGroup.push(msg)
+                }
+              })
+              if (currentGroup.length) groups.push({ dateKey: currentKey, label: getDateGroupLabel(currentGroup[0].created_at), msgs: currentGroup })
+              return (
+                <>
+                  <div ref={messagesStartRef} />
+                  {groups.map((g) => (
+                    <div key={g.dateKey} className="space-y-1">
+                      <div className="flex justify-center py-2">
+                        <span className="text-[10px] font-medium text-zinc-500">
+                          {g.label}
+                        </span>
+                      </div>
+                      {g.msgs.map((msg) => renderMessage(msg))}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </>
+              )
+            })()
           ) : (
             <div className="flex h-full min-h-[120px] items-center justify-center">
               <div className="text-text-secondary text-sm">
@@ -295,8 +356,14 @@ export function MessageList({
       </div>
 
       {/* AlertDialog per conferma eliminazione */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-background-secondary border-red-500/30">
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open)
+          if (!open) setExpandedMessageId(null)
+        }}
+      >
+        <AlertDialogContent className="bg-background-secondary border border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Elimina messaggio</AlertDialogTitle>
             <AlertDialogDescription>
@@ -304,7 +371,7 @@ export function MessageList({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
+            <AlertDialogCancel className="rounded-lg border border-white/10 hover:border-primary/20">
               Annulla
             </AlertDialogCancel>
             <AlertDialogAction

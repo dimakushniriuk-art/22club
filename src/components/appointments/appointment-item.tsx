@@ -10,7 +10,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
-import { User, Dumbbell, Edit, Trash2, CheckCircle2, XCircle, Mail } from 'lucide-react'
+import { User, Dumbbell, Edit, Trash2, CheckCircle2, XCircle, Mail, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AppointmentTable } from '@/types/appointment'
 import { EmailToAthleteModal } from './email-to-athlete-modal'
@@ -67,7 +67,10 @@ export function AppointmentItem({
   return (
     <div
       key={appointment.id}
-      className={`group relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-lg border ${getStatusColorClasses(appointment.status)}`}
+      className={cn(
+        'group relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-300 hover:border-white/20',
+        getStatusColorClasses(appointment.status),
+      )}
       style={{
         animationDelay: `${index * 100}ms`,
         animation: 'fadeInUp 0.5s ease-out forwards',
@@ -192,6 +195,21 @@ export function AppointmentItem({
               athleteEmail={athleteEmail}
             />
           )}
+
+          <Button
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (appointment.athlete_id) {
+                router.push(`/dashboard/chat?with=${appointment.athlete_id}`)
+              }
+            }}
+            className="rounded-full p-3 bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
+            title="Apri chat con atleta"
+            disabled={isLocked || !appointment.athlete_id}
+          >
+            <MessageCircle className="h-5 w-5" />
+          </Button>
 
           <Button
             variant="ghost"

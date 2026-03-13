@@ -76,12 +76,8 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
 
   if (day.exercises.length === 0) {
     return (
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-md shadow-teal-500/5 backdrop-blur-xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
-        <CardContent className="relative z-10 py-8 text-center">
+      <Card variant="default" className="relative overflow-hidden">
+        <CardContent className="py-8 text-center">
           <p className="text-text-tertiary text-sm italic">
             Nessun esercizio assegnato a questo giorno
           </p>
@@ -92,14 +88,8 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
 
   return (
     <>
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-md shadow-teal-500/5 backdrop-blur-xl"
-      >
-        {/* Decorative gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
-
-        <CardHeader className="relative z-10 border-b border-surface-300/30 pb-4">
+      <Card variant="default" className="relative overflow-hidden border-l-4 border-l-primary/30">
+        <CardHeader className="border-b border-white/10 pb-4">
           <div className="flex items-center justify-between">
             <CardTitle size="sm" className="text-text-primary">
               {day.title}
@@ -111,11 +101,11 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
             )}
           </div>
         </CardHeader>
-        <CardContent className="relative z-10 pt-4">
+        <CardContent className="pt-4">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-surface-300/30">
+                <tr className="border-b border-white/10">
                   <th className="text-text-secondary text-xs font-medium uppercase tracking-wide text-left py-3 px-4">
                     Esercizio
                   </th>
@@ -141,9 +131,9 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
                   <tr
                     key={`${row.exerciseId}-${row.setNumber}`}
                     className={cn(
-                      'border-b border-surface-300/20 transition-colors',
-                      index % 2 === 0 ? 'bg-background-secondary/30' : 'bg-background-secondary/10',
-                      'hover:bg-background-tertiary/50',
+                      'border-b border-white/10 transition-colors',
+                      index % 2 === 0 ? 'bg-white/[0.02]' : 'bg-transparent',
+                      'hover:bg-white/[0.04]',
                     )}
                   >
                     {/* Esercizio */}
@@ -166,16 +156,16 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
                               }
                             }}
                             className={cn(
-                              'flex items-center justify-center w-12 h-12 rounded-lg border transition-all duration-200',
+                              'flex items-center justify-center w-12 h-12 rounded-lg border border-white/10 transition-all duration-200',
                               row.videoUrl
-                                ? 'border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 hover:border-teal-500/50 cursor-pointer'
-                                : 'border-surface-300/20 bg-background-tertiary/50 cursor-not-allowed opacity-50',
+                                ? 'bg-primary/10 hover:bg-primary/20 hover:border-primary/30 cursor-pointer'
+                                : 'bg-white/[0.04] cursor-not-allowed opacity-50',
                             )}
                             disabled={!row.videoUrl}
                             title={row.videoUrl ? 'Riproduci video' : 'Video non disponibile'}
                           >
                             {row.videoUrl ? (
-                              <Play className="h-5 w-5 text-teal-400" fill="currentColor" />
+                              <Play className="h-5 w-5 text-primary" fill="currentColor" />
                             ) : row.imageUrl ? (
                               <ImageIcon className="h-5 w-5 text-text-tertiary" />
                             ) : null}

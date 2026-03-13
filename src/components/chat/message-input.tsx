@@ -116,7 +116,7 @@ export function MessageInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || isUploading}
-            className="max-h-32 min-h-[44px] resize-none pr-24 bg-background-secondary/80 border border-cyan-500/30 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/30 transition-all duration-200 rounded-xl"
+            className="max-h-32 min-h-[44px] resize-none pr-24 rounded-lg border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
             rows={1}
           />
 
@@ -127,7 +127,7 @@ export function MessageInput({
                 size="icon-sm"
                 onClick={() => document.getElementById('file-input')?.click()}
                 disabled={disabled || isUploading}
-                className="min-h-[44px] min-w-[44px] h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-lg transition-all duration-200 touch-manipulation"
+                className="min-h-[44px] min-w-[44px] h-8 w-8 text-text-secondary hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-200 touch-manipulation"
                 aria-label="Allega file"
               >
                 <Paperclip className="h-4 w-4" />
@@ -136,7 +136,7 @@ export function MessageInput({
 
             <EmojiPicker
               onEmojiSelect={handleEmojiSelect}
-              className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+              className="text-text-secondary hover:text-primary hover:bg-white/5"
             />
           </div>
 
@@ -168,7 +168,7 @@ export function MessageInput({
           onClick={handleSend}
           disabled={disabled || !canSend || isUploading}
           size="icon"
-          className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 rounded-xl border border-cyan-400/40 bg-cyan-500 text-white hover:bg-cyan-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+          className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 rounded-lg border border-white/10 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           aria-label="Invia messaggio"
         >
           <Send className="h-4 w-4" />

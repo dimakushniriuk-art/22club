@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Settings, Save, Loader2, Plus, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { Settings, Save, Loader2, Plus, Trash2, ChevronLeft } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useCalendarSettingsPageGuard } from '@/hooks/calendar/use-calendar-page-guard'
 import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
 import { useAuth } from '@/providers/auth-provider'
+import { useNotify } from '@/lib/ui/notify'
 import { Button, Input, Label } from '@/components/ui'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
@@ -21,6 +23,7 @@ import type {
   RecurrenceOption,
   CustomAppointmentType,
   ViewDensity,
+  TypeCellWidth,
 } from '@/types/staff-calendar-settings'
 
 const VIEW_OPTIONS: { value: CalendarViewType; label: string }[] = [
@@ -35,7 +38,7 @@ const WEEK_START_OPTIONS: { value: WeekStartType; label: string }[] = [
   { value: 'sunday', label: 'Domenica' },
 ]
 
-const DENSITY_OPTIONS: { value: ViewDensity; label: string }[] = [
+const _DENSITY_OPTIONS: { value: ViewDensity; label: string }[] = [
   { value: 'compact', label: 'Compatta' },
   { value: 'comfort', label: 'Comfort' },
   { value: 'spacious', label: 'Spaziosa' },
@@ -62,9 +65,26 @@ const WORK_DAYS: { key: string; label: string }[] = [
 
 const DEFAULT_WORK_SLOT = { start: '09:00', end: '18:00' }
 
+/** Etichette leggibili per i colori (utente finale, nessun codice) */
+const COLOR_LABELS: Record<string, string> = {
+  azzurro: 'Azzurro',
+  blu: 'Blu',
+  viola_scuro: 'Viola scuro',
+  viola_chiaro: 'Lavanda',
+  lilla: 'Lilla',
+  rosa: 'Rosa',
+  rosso: 'Rosso',
+  arancione: 'Arancione',
+  giallo: 'Giallo',
+  verde: 'Verde',
+  verde_chiaro: 'Verde chiaro',
+  marrone: 'Marrone',
+  grigio: 'Grigio',
+}
+
 const COLOR_OPTIONS = Object.entries(APPOINTMENT_COLORS).map(([key, hex]) => ({
   value: key as AppointmentColor,
-  label: key,
+  label: COLOR_LABELS[key] ?? key.replace(/_/g, ' '),
   hex,
 }))
 
@@ -100,6 +120,7 @@ function typesForRole(role: string | null): string[] {
 export default function CalendarioImpostazioniPage() {
   const { showLoader } = useCalendarSettingsPageGuard()
   const { role } = useAuth()
+  const { notify } = useNotify()
   const { settings, loading, saving, mutate, staffProfileId } = useStaffCalendarSettings()
 
   const [defaultView, setDefaultView] = useState<CalendarViewType>('month')
@@ -110,18 +131,32 @@ export default function CalendarioImpostazioniPage() {
   const [showFreePass, setShowFreePass] = useState(true)
   const [showCollaborators, setShowCollaborators] = useState(true)
   const [maxFreePassAthletes, setMaxFreePassAthletes] = useState(4)
-  const [recurrenceOptions, setRecurrenceOptions] = useState<RecurrenceOption[]>(['none', '2_weeks', '1_month', '6_months', '1_year', 'until_lessons'])
+  const [recurrenceOptions, setRecurrenceOptions] = useState<RecurrenceOption[]>([
+    'none',
+    '2_weeks',
+    '1_month',
+    '6_months',
+    '1_year',
+    'until_lessons',
+  ])
   const [slotDuration, setSlotDuration] = useState(15)
+  const [gridMinTime, setGridMinTime] = useState('07:00')
+  const [gridMaxTime, setGridMaxTime] = useState('22:00')
   const [customTypes, setCustomTypes] = useState<CustomAppointmentType[]>([])
   const [addCustomOpen, setAddCustomOpen] = useState(false)
   const [newCustomLabel, setNewCustomLabel] = useState('')
   const [newCustomDuration, setNewCustomDuration] = useState(60)
   const [newCustomColor, setNewCustomColor] = useState<string>('grigio')
-  const [workHours, setWorkHours] = useState<Record<string, { start: string; end: string } | null>>({})
+  const [workHours, setWorkHours] = useState<Record<string, { start: string; end: string } | null>>(
+    {},
+  )
   const [viewDensity, setViewDensity] = useState<ViewDensity>('comfort')
+  const [typeCellWidth, setTypeCellWidth] = useState<Record<string, TypeCellWidth>>({})
 
   const availableTypes = typesForRole(role ?? null)
   const isTrainerOrAdmin = role === 'trainer' || role === 'admin'
+  /** Solo admin e marketing possono attivare/disattivare i calendari collaboratori */
+  const canToggleCollaboratorsCalendars = role === 'admin' || role === 'marketing'
   /** Tutti i tipi da mostrare in Durate/Colori: abilitati di sistema + custom. */
   const allEnabledTypeKeys = useMemo(
     () => [...enabledTypes, ...customTypes.map((c) => c.key)],
@@ -146,17 +181,35 @@ export default function CalendarioImpostazioniPage() {
       setCustomTypes([])
       setWorkHours({})
       setViewDensity('comfort')
+      const halfAll: Record<string, TypeCellWidth> = {}
+      availableTypes.forEach((t) => {
+        halfAll[t] = 'half'
+      })
+      setTypeCellWidth(halfAll)
       return
     }
     setDefaultView(settings.default_calendar_view)
     setDefaultWeekStart(settings.default_week_start)
-    setEnabledTypes(settings.enabled_appointment_types.length ? settings.enabled_appointment_types : availableTypes)
-    setCustomTypes(settings.custom_appointment_types?.length ? settings.custom_appointment_types : [])
-    const mergedDurations = { ...getDefaultDurationsForRole(role ?? ''), ...settings.default_durations }
+    setEnabledTypes(
+      settings.enabled_appointment_types.length
+        ? settings.enabled_appointment_types
+        : availableTypes,
+    )
+    setCustomTypes(
+      settings.custom_appointment_types?.length ? settings.custom_appointment_types : [],
+    )
+    const mergedDurations = {
+      ...getDefaultDurationsForRole(role ?? ''),
+      ...settings.default_durations,
+    }
     settings.custom_appointment_types?.forEach((c) => {
       mergedDurations[c.key] = c.default_duration
     })
-    setDurations(Object.keys(mergedDurations).length ? mergedDurations : getDefaultDurationsForRole(role ?? ''))
+    setDurations(
+      Object.keys(mergedDurations).length
+        ? mergedDurations
+        : getDefaultDurationsForRole(role ?? ''),
+    )
     const mergedColors: Record<string, string> = {}
     availableTypes.forEach((t) => {
       mergedColors[t] = settings.type_colors[t] ?? DEFAULT_TYPE_COLORS[t] ?? 'grigio'
@@ -164,24 +217,53 @@ export default function CalendarioImpostazioniPage() {
     settings.custom_appointment_types?.forEach((c) => {
       mergedColors[c.key] = c.color
     })
-    setTypeColors(Object.keys(mergedColors).length ? mergedColors : Object.fromEntries(availableTypes.map((t) => [t, DEFAULT_TYPE_COLORS[t] ?? 'grigio'])))
+    setTypeColors(
+      Object.keys(mergedColors).length
+        ? mergedColors
+        : Object.fromEntries(availableTypes.map((t) => [t, DEFAULT_TYPE_COLORS[t] ?? 'grigio'])),
+    )
     setShowFreePass(settings.show_free_pass_calendar)
     setShowCollaborators(settings.show_collaborators_calendars)
     setMaxFreePassAthletes(settings.max_free_pass_athletes_per_slot)
-    setRecurrenceOptions(settings.recurrence_options.length ? settings.recurrence_options : ['none', '2_weeks', '1_month', '6_months', '1_year', 'until_lessons'])
-    setSlotDuration(settings.slot_duration_minutes)
-    const wh = settings.work_hours && typeof settings.work_hours === 'object' ? settings.work_hours : {}
+    setRecurrenceOptions(
+      settings.recurrence_options.length
+        ? settings.recurrence_options
+        : ['none', '2_weeks', '1_month', '6_months', '1_year', 'until_lessons'],
+    )
+    setSlotDuration(
+      [15, 30, 45, 60, 90].includes(settings.slot_duration_minutes)
+        ? settings.slot_duration_minutes
+        : 15,
+    )
+    const gMin = settings.grid_min_time?.trim()
+    const gMax = settings.grid_max_time?.trim()
+    setGridMinTime(gMin && /^\d{1,2}:\d{2}$/.test(gMin) ? gMin : '07:00')
+    setGridMaxTime(gMax && /^\d{1,2}:\d{2}$/.test(gMax) ? gMax : '22:00')
+    const wh =
+      settings.work_hours && typeof settings.work_hours === 'object' ? settings.work_hours : {}
     const merged: Record<string, { start: string; end: string } | null> = {}
     WORK_DAYS.forEach((d) => {
       const v = wh[d.key]
-      merged[d.key] = v && typeof v === 'object' && v.start && v.end ? { start: v.start, end: v.end } : null
+      merged[d.key] =
+        v && typeof v === 'object' && v.start && v.end ? { start: v.start, end: v.end } : null
     })
     setWorkHours(merged)
     setViewDensity((settings.view_density as ViewDensity) ?? 'comfort')
+    const fromSettings = (settings.type_cell_width ?? {}) as Record<string, TypeCellWidth>
+    const nextCellWidth: Record<string, TypeCellWidth> = {}
+    availableTypes.forEach((t) => {
+      nextCellWidth[t] = fromSettings[t] ?? 'half'
+    })
+    ;(settings.custom_appointment_types ?? []).forEach((c) => {
+      nextCellWidth[c.key] = fromSettings[c.key] ?? 'half'
+    })
+    setTypeCellWidth(nextCellWidth)
   }, [settings, role, availableTypes])
 
   const handleToggleType = (type: string) => {
-    setEnabledTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
+    setEnabledTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    )
   }
 
   const handleAddCustomType = () => {
@@ -197,6 +279,7 @@ export default function CalendarioImpostazioniPage() {
     setCustomTypes((prev) => [...prev, newCustom])
     setDurations((prev) => ({ ...prev, [key]: newCustomDuration }))
     setTypeColors((prev) => ({ ...prev, [key]: newCustomColor }))
+    setTypeCellWidth((prev) => ({ ...prev, [key]: 'half' }))
     setNewCustomLabel('')
     setNewCustomDuration(60)
     setNewCustomColor('grigio')
@@ -215,117 +298,214 @@ export default function CalendarioImpostazioniPage() {
       delete next[key]
       return next
     })
+    setTypeCellWidth((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
   }
 
   const handleSave = async () => {
-    const defaultDurationsFallback = role === 'trainer' || role === 'admin' ? DEFAULT_DURATIONS_TRAINER : DEFAULT_DURATIONS_COLLABORATOR
-    const durationsToSave: Record<string, number> = {}
-    allEnabledTypeKeys.forEach((t) => {
-      durationsToSave[t] = durations[t] ?? defaultDurationsFallback[t] ?? (customTypes.find((c) => c.key === t)?.default_duration ?? 60)
-    })
-    const customToSave: CustomAppointmentType[] = customTypes.map((c) => ({
-      key: c.key,
-      label: c.label,
-      default_duration: durations[c.key] ?? c.default_duration,
-      color: typeColors[c.key] ?? c.color,
-    }))
-    const workHoursToSave: Record<string, { start: string; end: string } | null> = {}
-    WORK_DAYS.forEach((d) => {
-      const v = workHours[d.key]
-      workHoursToSave[d.key] = v && v.start && v.end ? { start: v.start, end: v.end } : null
-    })
-    await mutate({
-      default_calendar_view: defaultView,
-      default_week_start: defaultWeekStart,
-      enabled_appointment_types: enabledTypes,
-      custom_appointment_types: customToSave,
-      default_durations: durationsToSave,
-      type_colors: typeColors,
-      show_free_pass_calendar: showFreePass,
-      show_collaborators_calendars: showCollaborators,
-      recurrence_options: recurrenceOptions,
-      slot_duration_minutes: slotDuration,
-      max_free_pass_athletes_per_slot: maxFreePassAthletes,
-      work_hours: workHoursToSave,
-      view_density: viewDensity,
-    })
+    try {
+      const defaultDurationsFallback =
+        role === 'trainer' || role === 'admin'
+          ? DEFAULT_DURATIONS_TRAINER
+          : DEFAULT_DURATIONS_COLLABORATOR
+      const durationsToSave: Record<string, number> = {}
+      allEnabledTypeKeys.forEach((t) => {
+        durationsToSave[t] =
+          durations[t] ??
+          defaultDurationsFallback[t] ??
+          customTypes.find((c) => c.key === t)?.default_duration ??
+          60
+      })
+      const customToSave: CustomAppointmentType[] = customTypes.map((c) => ({
+        key: c.key,
+        label: c.label,
+        default_duration: durations[c.key] ?? c.default_duration,
+        color: typeColors[c.key] ?? c.color,
+      }))
+      const workHoursToSave: Record<string, { start: string; end: string } | null> = {}
+      WORK_DAYS.forEach((d) => {
+        const v = workHours[d.key]
+        workHoursToSave[d.key] = v && v.start && v.end ? { start: v.start, end: v.end } : null
+      })
+      await mutate({
+        default_calendar_view: defaultView,
+        default_week_start: defaultWeekStart,
+        enabled_appointment_types: enabledTypes,
+        custom_appointment_types: customToSave,
+        default_durations: durationsToSave,
+        type_colors: typeColors,
+        show_free_pass_calendar: showFreePass,
+        ...(canToggleCollaboratorsCalendars && {
+          show_collaborators_calendars: showCollaborators,
+        }),
+        recurrence_options: recurrenceOptions,
+        slot_duration_minutes: slotDuration,
+        grid_min_time: gridMinTime,
+        grid_max_time: gridMaxTime,
+        max_free_pass_athletes_per_slot: maxFreePassAthletes,
+        work_hours: workHoursToSave,
+        view_density: viewDensity,
+        type_cell_width: typeCellWidth,
+      })
+      notify(
+        'Impostazioni salvate. I tipi personalizzati saranno disponibili nel form nuovo appuntamento.',
+        'success',
+      )
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      notify(msg, 'error', 'Errore salvataggio')
+    }
   }
 
   if (showLoader || (!loading && !staffProfileId)) {
     return <LoadingState />
   }
 
+  const calendarPath =
+    role === 'nutrizionista'
+      ? '/dashboard/nutrizionista/calendario'
+      : role === 'massaggiatore'
+        ? '/dashboard/massaggiatore/calendario'
+        : '/dashboard/calendario'
+
+  const DS_SECTION =
+    'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] overflow-hidden p-4 sm:p-5 md:p-6 space-y-4'
+  const sectionTitleClass = 'text-base sm:text-lg font-semibold text-text-primary'
+  const sectionDescClass = 'text-sm text-text-secondary'
+  const labelClass = 'text-sm font-medium text-text-secondary'
+  const inputClass =
+    'min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary focus:ring-2 focus:ring-primary/20 focus:border-primary/30'
+
   return (
     <StaffContentLayout
       title="Impostazioni calendario"
       description="Tipologie, durate, colori e preferenze vista."
       icon={<Settings className="h-8 w-8" />}
+      theme="default"
       actions={
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {saving ? 'Salvataggio...' : 'Salva'}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={calendarPath}
+            className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-lg border border-white/10 text-text-secondary hover:text-text-primary hover:border-primary/20 hover:bg-white/[0.04] transition-colors text-sm touch-manipulation"
+          >
+            <ChevronLeft className="h-4 w-4 shrink-0" />
+            <span>Calendario</span>
+          </Link>
+          <Button onClick={handleSave} disabled={saving} className="min-h-[44px]">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saving ? 'Salvataggio...' : 'Salva'}
+          </Button>
+        </div>
       }
-      className="space-y-4 sm:space-y-6"
+      className="space-y-4 sm:space-y-6 md:space-y-8"
     >
-      <div className="space-y-4 sm:space-y-6">
-        <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold">Tipologie abilitate</h2>
-          <div className="flex flex-wrap gap-x-4 gap-y-3">
+      <div className="space-y-4 sm:space-y-6 md:space-y-8">
+        <section className={DS_SECTION}>
+          <div>
+            <h2 className={sectionTitleClass}>Tipologie abilitate</h2>
+            <p className={sectionDescClass + ' mt-1'}>
+              Scegli quali tipi di appuntamento sono disponibili quando crei un evento.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-4 pt-1">
             {availableTypes.map((type) => (
-              <label key={type} className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={enabledTypes.includes(type)}
-                  onChange={() => handleToggleType(type)}
-                  className="h-4 w-4 rounded border-border"
-                />
-                <span className="capitalize">{type.replace(/_/g, ' ')}</span>
-              </label>
+              <div key={type} className="flex flex-col gap-1.5">
+                <label className="flex cursor-pointer items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] hover:border-white/20 transition-colors w-fit">
+                  <input
+                    type="checkbox"
+                    checked={enabledTypes.includes(type)}
+                    onChange={() => handleToggleType(type)}
+                    className="h-4 w-4 rounded border-white/20 bg-background-secondary text-primary focus:ring-primary/40"
+                  />
+                  <span className="text-sm text-text-primary capitalize">
+                    {type.replace(/_/g, ' ')}
+                  </span>
+                </label>
+                <select
+                  value={typeCellWidth[type] ?? 'half'}
+                  onChange={(e) =>
+                    setTypeCellWidth((prev) => ({
+                      ...prev,
+                      [type]: e.target.value as TypeCellWidth,
+                    }))
+                  }
+                  className="min-h-[40px] w-full min-w-[120px] rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
+                >
+                  <option value="half">Mezza cella</option>
+                  <option value="full">Intera cella</option>
+                </select>
+              </div>
             ))}
           </div>
           {customTypes.length > 0 && (
-            <div className="space-y-2 pt-2">
-              <p className="text-sm text-muted-foreground">Tipi personalizzati</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2 pt-2 border-t border-white/10">
+              <p className={labelClass}>Tipi personalizzati</p>
+              <div className="flex flex-wrap gap-3">
                 {customTypes.map((c) => (
-                  <span
-                    key={c.key}
-                    className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/40 px-2 py-1 text-sm"
-                  >
-                    {c.label}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCustomType(c.key)}
-                      className="rounded p-0.5 hover:bg-destructive/20"
-                      aria-label="Rimuovi tipo"
+                  <div key={c.key} className="flex flex-col gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-text-primary w-fit">
+                      {c.label}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomType(c.key)}
+                        className="rounded p-1 hover:bg-red-500/10 text-text-tertiary hover:text-red-400 transition-colors"
+                        aria-label="Rimuovi tipo"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                    <select
+                      value={typeCellWidth[c.key] ?? 'half'}
+                      onChange={(e) =>
+                        setTypeCellWidth((prev) => ({
+                          ...prev,
+                          [c.key]: e.target.value as TypeCellWidth,
+                        }))
+                      }
+                      className="min-h-[40px] w-full min-w-[120px] rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </span>
+                      <option value="half">Mezza cella</option>
+                      <option value="full">Intera cella</option>
+                    </select>
+                  </div>
                 ))}
               </div>
             </div>
           )}
-          <div className="pt-2">
+          <div className="pt-2 space-y-3">
+            <p className="text-sm text-text-secondary">
+              Puoi creare tipi personalizzati (es. Fisioterapia, Valutazione). Dopo aver cliccato{' '}
+              <strong>Aggiungi</strong>, il tipo apparirà nell’elenco sopra; clicca poi{' '}
+              <strong>Salva</strong> in alto per memorizzare. Il tipo sarà disponibile nel form
+              quando crei un nuovo appuntamento.
+            </p>
             {!addCustomOpen ? (
-              <Button type="button" variant="outline" size="sm" onClick={() => setAddCustomOpen(true)}>
-                <Plus className="mr-1 h-4 w-4" />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAddCustomOpen(true)}
+                className="min-h-[44px] border-white/10 hover:bg-white/[0.04] hover:border-primary/20"
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
                 Aggiungi tipo
               </Button>
             ) : (
-              <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-muted-foreground">Nome</Label>
+              <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label className={labelClass}>Nome</Label>
                   <Input
                     placeholder="es. Fisioterapia"
                     value={newCustomLabel}
                     onChange={(e) => setNewCustomLabel(e.target.value)}
-                    className="h-9 w-40"
+                    className={`w-40 ${inputClass}`}
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-muted-foreground">Durata (min)</Label>
+                <div className="flex flex-col gap-1.5">
+                  <Label className={labelClass}>Durata (min)</Label>
                   <Input
                     type="number"
                     min={15}
@@ -333,15 +513,15 @@ export default function CalendarioImpostazioniPage() {
                     step={15}
                     value={newCustomDuration}
                     onChange={(e) => setNewCustomDuration(Number(e.target.value) || 60)}
-                    className="h-9 w-20"
+                    className={`w-24 ${inputClass}`}
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-muted-foreground">Colore</Label>
+                <div className="flex flex-col gap-1.5">
+                  <Label className={labelClass}>Colore in calendario</Label>
                   <select
                     value={newCustomColor}
                     onChange={(e) => setNewCustomColor(e.target.value)}
-                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                    className={`h-11 min-h-[44px] w-36 rounded-md border border-white/10 bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
                   >
                     {COLOR_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -350,47 +530,77 @@ export default function CalendarioImpostazioniPage() {
                     ))}
                   </select>
                 </div>
-                <Button type="button" size="sm" onClick={handleAddCustomType} disabled={!newCustomLabel.trim()}>
-                  Aggiungi
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setAddCustomOpen(false)}>
-                  Annulla
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddCustomType}
+                    disabled={!newCustomLabel.trim()}
+                    className="min-h-[44px]"
+                  >
+                    Aggiungi
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAddCustomOpen(false)}
+                    className="min-h-[44px] text-text-secondary"
+                  >
+                    Annulla
+                  </Button>
+                </div>
               </div>
             )}
           </div>
         </section>
 
-        <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold">Durate default (minuti)</h2>
+        <section className={DS_SECTION}>
+          <div>
+            <h2 className={sectionTitleClass}>Durate default (minuti)</h2>
+            <p className={sectionDescClass + ' mt-1'}>
+              Durata predefinita quando crei un nuovo appuntamento di questo tipo.
+            </p>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             {allEnabledTypeKeys.map((type) => (
-              <div key={type} className="flex items-center gap-2">
-                <Label className="min-w-[140px] capitalize text-muted-foreground">{labelForType(type)}</Label>
+              <div key={type} className="flex items-center gap-3">
+                <Label className={`min-w-[140px] capitalize ${labelClass}`}>
+                  {labelForType(type)}
+                </Label>
                 <Input
                   type="number"
                   min={15}
                   max={240}
                   step={15}
                   value={durations[type] ?? ''}
-                  onChange={(e) => setDurations((prev) => ({ ...prev, [type]: Number(e.target.value) || 0 }))}
-                  className="w-20"
+                  onChange={(e) =>
+                    setDurations((prev) => ({ ...prev, [type]: Number(e.target.value) || 0 }))
+                  }
+                  className={`w-24 ${inputClass}`}
                 />
               </div>
             ))}
           </div>
         </section>
 
-        <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold">Colori per tipo</h2>
+        <section className={DS_SECTION}>
+          <div>
+            <h2 className={sectionTitleClass}>Colori per tipo</h2>
+            <p className={sectionDescClass + ' mt-1'}>
+              Colore con cui l’appuntamento appare in calendario.
+            </p>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             {allEnabledTypeKeys.map((type) => (
-              <div key={type} className="flex items-center gap-2">
-                <Label className="min-w-[140px] capitalize text-muted-foreground">{labelForType(type)}</Label>
+              <div key={type} className="flex items-center gap-3">
+                <Label className={`min-w-[140px] capitalize ${labelClass}`}>
+                  {labelForType(type)}
+                </Label>
                 <select
                   value={typeColors[type] ?? 'grigio'}
                   onChange={(e) => setTypeColors((prev) => ({ ...prev, [type]: e.target.value }))}
-                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  className={`min-h-[44px] w-32 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
                 >
                   {COLOR_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -399,23 +609,31 @@ export default function CalendarioImpostazioniPage() {
                   ))}
                 </select>
                 <span
-                  className="h-6 w-6 shrink-0 rounded border border-border"
-                  style={{ backgroundColor: APPOINTMENT_COLORS[(typeColors[type] as AppointmentColor) ?? 'grigio'] }}
+                  className="h-8 w-8 shrink-0 rounded-lg border border-white/10"
+                  style={{
+                    backgroundColor:
+                      APPOINTMENT_COLORS[(typeColors[type] as AppointmentColor) ?? 'grigio'],
+                  }}
                 />
               </div>
             ))}
           </div>
         </section>
 
-        <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold">Vista e griglia</h2>
-          <div className="flex flex-wrap gap-6">
-            <div>
-              <Label className="text-muted-foreground">Vista predefinita</Label>
+        <section className={DS_SECTION}>
+          <div>
+            <h2 className={sectionTitleClass}>Vista e griglia</h2>
+            <p className={sectionDescClass + ' mt-1'}>
+              Vista iniziale del calendario e step della griglia oraria.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-4">
+            <div className="flex flex-col gap-1.5">
+              <Label className={labelClass}>Vista predefinita</Label>
               <select
                 value={defaultView}
                 onChange={(e) => setDefaultView(e.target.value as CalendarViewType)}
-                className="mt-1 block h-9 rounded-md border border-input bg-background px-3 text-sm"
+                className={`min-h-[44px] w-40 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
               >
                 {VIEW_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -424,12 +642,12 @@ export default function CalendarioImpostazioniPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Inizio settimana</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label className={labelClass}>Inizio settimana</Label>
               <select
                 value={defaultWeekStart}
                 onChange={(e) => setDefaultWeekStart(e.target.value as WeekStartType)}
-                className="mt-1 block h-9 rounded-md border border-input bg-background px-3 text-sm"
+                className={`min-h-[44px] w-40 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
               >
                 {WEEK_START_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -438,105 +656,134 @@ export default function CalendarioImpostazioniPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Step griglia (min)</Label>
-              <Input
-                type="number"
-                min={15}
-                max={60}
-                step={15}
-                value={slotDuration}
-                onChange={(e) => setSlotDuration(Number(e.target.value) || 15)}
-                className="mt-1 w-20"
-              />
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Densità vista</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label className={labelClass}>Step griglia (min)</Label>
               <select
-                value={viewDensity}
-                onChange={(e) => setViewDensity(e.target.value as ViewDensity)}
-                className="mt-1 block h-9 rounded-md border border-input bg-background px-3 text-sm"
+                value={slotDuration}
+                onChange={(e) => setSlotDuration(Number(e.target.value))}
+                className={`min-h-[44px] w-24 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
               >
-                {DENSITY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                {[15, 30, 45, 60, 90].map((m) => (
+                  <option key={m} value={m}>
+                    {m === 90 ? '1h 30min' : `${m} min`}
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className={labelClass}>Griglia dalle</Label>
+              <input
+                type="time"
+                value={gridMinTime}
+                onChange={(e) => setGridMinTime(e.target.value)}
+                className={`min-h-[44px] w-32 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className={labelClass}>Griglia alle</Label>
+              <input
+                type="time"
+                value={gridMaxTime}
+                onChange={(e) => setGridMaxTime(e.target.value)}
+                className={`min-h-[44px] w-32 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+              />
             </div>
           </div>
         </section>
 
         {isTrainerOrAdmin && (
-          <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-            <h2 className="text-lg font-semibold">Calendario Free Pass e collaboratori</h2>
-            <div className="flex flex-wrap gap-6">
-              <label className="flex items-center gap-2">
+          <section className={DS_SECTION}>
+            <div>
+              <h2 className={sectionTitleClass}>Free Pass</h2>
+              <p className={sectionDescClass + ' mt-1'}>
+                Mostra nel calendario gli slot Libera prenotazione.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-4">
+              <label className="flex cursor-pointer items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] hover:border-white/20 transition-colors w-fit">
                 <input
                   type="checkbox"
                   checked={showFreePass}
                   onChange={(e) => setShowFreePass(e.target.checked)}
-                  className="h-4 w-4 rounded border-border"
+                  className="h-4 w-4 rounded border-white/20 bg-background-secondary text-primary focus:ring-primary/40"
                 />
-                <span>Mostra calendario Free Pass</span>
+                <span className="text-sm text-text-primary">Mostra calendario Free Pass</span>
               </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={showCollaborators}
-                  onChange={(e) => setShowCollaborators(e.target.checked)}
-                  className="h-4 w-4 rounded border-border"
-                />
-                <span>Mostra calendari collaboratori</span>
-              </label>
-              <div className="flex items-center gap-2">
-                <Label className="text-muted-foreground">Max atleti per slot Free Pass</Label>
+              {canToggleCollaboratorsCalendars && (
+                <label className="flex cursor-pointer items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] hover:border-white/20 transition-colors w-fit">
+                  <input
+                    type="checkbox"
+                    checked={showCollaborators}
+                    onChange={(e) => setShowCollaborators(e.target.checked)}
+                    className="h-4 w-4 rounded border-white/20 bg-background-secondary text-primary focus:ring-primary/40"
+                  />
+                  <span className="text-sm text-text-primary">Mostra calendari collaboratori</span>
+                </label>
+              )}
+              <div className="flex flex-col gap-1.5">
+                <Label className={labelClass}>Max atleti per slot Free Pass</Label>
                 <Input
                   type="number"
                   min={1}
                   max={20}
                   value={maxFreePassAthletes}
                   onChange={(e) => setMaxFreePassAthletes(Number(e.target.value) || 4)}
-                  className="w-20"
+                  className={`w-24 ${inputClass}`}
                 />
               </div>
             </div>
           </section>
         )}
 
-        <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold">Opzioni ripetizione</h2>
+        <section className={DS_SECTION}>
+          <div>
+            <h2 className={sectionTitleClass}>Opzioni ripetizione</h2>
+            <p className={sectionDescClass + ' mt-1'}>
+              Quali opzioni di ripetizione mostrare nel form nuovo appuntamento.
+            </p>
+          </div>
           <div className="flex flex-wrap gap-x-4 gap-y-3">
             {RECURRENCE_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex cursor-pointer items-center gap-2">
+              <label
+                key={opt.value}
+                className="flex cursor-pointer items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] hover:border-white/20 transition-colors"
+              >
                 <input
                   type="checkbox"
                   checked={recurrenceOptions.includes(opt.value)}
                   onChange={() =>
                     setRecurrenceOptions((prev) =>
-                      prev.includes(opt.value) ? prev.filter((r) => r !== opt.value) : [...prev, opt.value],
+                      prev.includes(opt.value)
+                        ? prev.filter((r) => r !== opt.value)
+                        : [...prev, opt.value],
                     )
                   }
-                  className="h-4 w-4 rounded border-border"
+                  className="h-4 w-4 rounded border-white/20 bg-background-secondary text-primary focus:ring-primary/40"
                 />
-                <span>{opt.label}</span>
+                <span className="text-sm text-text-primary">{opt.label}</span>
               </label>
             ))}
           </div>
         </section>
 
-        <section className="space-y-4 rounded-lg border border-border/60 bg-card/50 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold">Orari di lavoro</h2>
-          <p className="text-sm text-muted-foreground">
-            Imposta le fasce orarie in cui sei disponibile (opzionale). Utile per visualizzazioni e blocchi ricorrenti.
-          </p>
+        <section className={DS_SECTION}>
+          <div>
+            <h2 className={sectionTitleClass}>Orari di lavoro</h2>
+            <p className={sectionDescClass + ' mt-1'}>
+              Fasce orarie in cui sei disponibile (opzionale). Utili per visualizzazioni e blocchi
+              ricorrenti.
+            </p>
+          </div>
           <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {WORK_DAYS.map((d) => {
               const isActive = workHours[d.key] !== null && workHours[d.key] !== undefined
               const slot = workHours[d.key] ?? DEFAULT_WORK_SLOT
               return (
-                <div key={d.key} className="flex flex-wrap items-center gap-2 rounded-md border border-border/40 p-3">
-                  <label className="flex min-w-[100px] cursor-pointer items-center gap-2">
+                <div
+                  key={d.key}
+                  className="flex flex-wrap items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4"
+                >
+                  <label className="flex min-w-[100px] cursor-pointer items-center gap-2.5 min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={!!isActive}
@@ -546,9 +793,9 @@ export default function CalendarioImpostazioniPage() {
                           [d.key]: e.target.checked ? { start: slot.start, end: slot.end } : null,
                         }))
                       }}
-                      className="h-4 w-4 rounded border-border"
+                      className="h-4 w-4 rounded border-white/20 bg-background-secondary text-primary focus:ring-primary/40"
                     />
-                    <span className="font-medium">{d.label}</span>
+                    <span className="text-sm font-medium text-text-primary">{d.label}</span>
                   </label>
                   {isActive && (
                     <>
@@ -558,12 +805,15 @@ export default function CalendarioImpostazioniPage() {
                         onChange={(e) =>
                           setWorkHours((prev) => ({
                             ...prev,
-                            [d.key]: { ...(prev[d.key] ?? DEFAULT_WORK_SLOT), start: e.target.value },
+                            [d.key]: {
+                              ...(prev[d.key] ?? DEFAULT_WORK_SLOT),
+                              start: e.target.value,
+                            },
                           }))
                         }
-                        className="h-9 w-28"
+                        className={`w-28 ${inputClass}`}
                       />
-                      <span className="text-muted-foreground">–</span>
+                      <span className="text-text-tertiary">–</span>
                       <Input
                         type="time"
                         value={slot.end}
@@ -573,7 +823,7 @@ export default function CalendarioImpostazioniPage() {
                             [d.key]: { ...(prev[d.key] ?? DEFAULT_WORK_SLOT), end: e.target.value },
                           }))
                         }
-                        className="h-9 w-28"
+                        className={`w-28 ${inputClass}`}
                       />
                     </>
                   )}

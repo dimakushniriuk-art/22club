@@ -36,29 +36,36 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui'
 import { DesignSystemDialogDemo, DesignSystemDrawerDemo } from './demo-dialog-drawer'
-
-const cardFrameClass =
-  'overflow-hidden p-5 !rounded-[8px] !border-[rgb(255_255_255/0.5)] !shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.06),inset_0_1px_0_0_rgba(255,255,255,0.04),inset_0_-1px_0_0_rgba(0,0,0,0.06)]'
+import { cn } from '@/lib/utils'
+import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_LABEL_CLASS } from './helpers'
 
 export function SectionComponenti() {
   return (
     <section id="componenti" className="scroll-mt-24">
-      <h2 className="mb-6 flex items-center gap-2 text-2xl font-semibold">
+      <h2 className={DS_SECTION_TITLE_CLASS}>
         <Box className="h-6 w-6 text-primary" />
         Componenti
       </h2>
-      <p className="mb-6 text-sm text-text-secondary">
-        Set da <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">@/components/ui</code>. Regole comuni: <strong>riempimento unico</strong> (no gradienti), <strong>bordo con sfumatura leggera</strong> sempre visibile, <strong>forme coerenti</strong> (rounded-xl / rounded-lg). Varianti e dimensioni in uso nel progetto.
+      <p className={DS_SECTION_INTRO_CLASS}>
+        Set da <code className={DS_CODE_CLASS}>@/components/ui</code>
+        . Regole comuni: <strong>riempimento unico</strong> (no gradienti),{' '}
+        <strong>bordo con sfumatura leggera</strong> sempre visibile,{' '}
+        <strong>forme coerenti</strong> (rounded-xl / rounded-lg). Varianti e dimensioni in uso nel
+        progetto.
       </p>
-      <div className="space-y-8">
-        <Card variant="default" className={cardFrameClass}>
+      <div className="space-y-6 sm:space-y-8">
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Button</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Tutti i tipi di pulsante usati nel progetto. Primary/default per azione principale, Secondary/Outline per secondarie, Ghost per terziarie, Destructive per eliminazioni, Success per conferme, Warning per attenzione, Trainer per contesti PT, Link per link stilizzati.
+          <p className={cn(DS_LABEL_CLASS, 'mb-2')}>
+            Primary per CTA principale (Salva, Accedi). Outline/Secondary per azioni secondarie.
+            Ghost per toolbar e chiudi. Destructive per eliminazioni, Success per conferme,
+            Warning per attenzione, Trainer in contesti PT, Link per link stilizzati.
           </p>
-          {/* Varianti: all from @/components/ui/button.tsx */}
-          <p className="mb-2 text-xs font-medium text-text-tertiary">Varianti</p>
-          <div className="mb-6 flex flex-wrap items-end gap-4">
+          <p className="mb-4 text-[11px] text-text-muted italic">
+            Quando usare: un solo Primary per schermata; Outline per Annulla/Indietro; Ghost in header e card.
+          </p>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">Principali</p>
+          <div className="mb-4 flex flex-wrap items-end gap-4">
             {(
               [
                 { variant: 'primary' as const, label: 'Primary' },
@@ -66,6 +73,18 @@ export function SectionComponenti() {
                 { variant: 'secondary' as const, label: 'Secondary' },
                 { variant: 'outline' as const, label: 'Outline' },
                 { variant: 'ghost' as const, label: 'Ghost' },
+              ] as const
+            ).map(({ variant, label }) => (
+              <div key={variant} className="flex flex-col items-center gap-1.5">
+                <Button variant={variant}>{label}</Button>
+                <span className="text-xs text-text-muted">{variant}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">Stati e contesti</p>
+          <div className="mb-6 flex flex-wrap items-end gap-4">
+            {(
+              [
                 { variant: 'destructive' as const, label: 'Destructive' },
                 { variant: 'success' as const, label: 'Success' },
                 { variant: 'warning' as const, label: 'Warning' },
@@ -90,7 +109,9 @@ export function SectionComponenti() {
               ] as const
             ).map(({ size, label }) => (
               <div key={size} className="flex flex-col items-center gap-1.5">
-                <Button variant="primary" size={size}>{label}</Button>
+                <Button variant="primary" size={size}>
+                  {label}
+                </Button>
                 <span className="text-xs text-text-muted">{size}</span>
               </div>
             ))}
@@ -115,11 +136,15 @@ export function SectionComponenti() {
           <p className="mb-2 text-xs font-medium text-text-tertiary">Stati (loading)</p>
           <div className="mb-6 flex flex-wrap items-end gap-4">
             <div className="flex flex-col items-center gap-1.5">
-              <Button variant="primary" loading>Caricamento</Button>
+              <Button variant="primary" loading>
+                Caricamento
+              </Button>
               <span className="text-xs text-text-muted">loading</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Button variant="secondary" loading>Caricamento</Button>
+              <Button variant="secondary" loading>
+                Caricamento
+              </Button>
               <span className="text-xs text-text-muted">loading</span>
             </div>
           </div>
@@ -172,11 +197,31 @@ export function SectionComponenti() {
             ))}
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Badge</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Tutti i tipi usati nel progetto. Riempimento unico, bordo con sfumatura. Primary/default per accent, Success/Warning/Error per stati, Outline/Neutral/Secondario per secondari, Info per informativi, Destructive per eliminazioni.
+          <p className={cn(DS_LABEL_CLASS, 'mb-2')}>
+            Stati (prenotazione, scheda), ruoli (Atleta, PT), conteggi. Riempimento unico, bordo con
+            sfumatura. Success/Warning/Error per stati; Outline/Neutral per secondari; Info per
+            informativi.
           </p>
+          <p className="mb-4 text-[11px] text-text-muted italic">
+            Casi d&apos;uso: lista appuntamenti (Confermato, In attesa), card atleta (ruolo), notifiche (conteggio).
+          </p>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">In contesto</p>
+          <div className="mb-4 flex flex-wrap gap-4">
+            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2">
+              <span className="text-sm text-text-primary">Appuntamento 12:00</span>
+              <Badge variant="success">Confermato</Badge>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2">
+              <span className="text-sm text-text-primary">Mario R.</span>
+              <Badge variant="primary">Atleta</Badge>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2">
+              <span className="text-sm text-text-primary">Scheda A</span>
+              <Badge variant="warning">In scadenza</Badge>
+            </div>
+          </div>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Varianti</p>
           <div className="mb-6 flex flex-wrap items-end gap-4">
             {(
@@ -202,48 +247,73 @@ export function SectionComponenti() {
           <p className="mb-2 text-xs font-medium text-text-tertiary">Dimensioni (Primary)</p>
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex flex-col items-center gap-1.5">
-              <Badge variant="primary" size="sm">sm</Badge>
+              <Badge variant="primary" size="sm">
+                sm
+              </Badge>
               <span className="text-xs text-text-muted">sm</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Badge variant="primary" size="md">md</Badge>
+              <Badge variant="primary" size="md">
+                md
+              </Badge>
               <span className="text-xs text-text-muted">md</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Badge variant="primary" size="lg">lg</Badge>
+              <Badge variant="primary" size="lg">
+                lg
+              </Badge>
               <span className="text-xs text-text-muted">lg</span>
             </div>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Avatar</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Icona utente con fallback su iniziale. Dimensioni sm, md, lg, xl per contesti diversi (liste, header, profilo).
+          <p className={cn(DS_LABEL_CLASS, 'mb-2')}>
+            Icona utente con fallback su iniziale (es. Mario Rossi → MR). Dimensioni sm (liste),
+            md (card/righe), lg (header), xl (profilo).
+          </p>
+          <p className="mb-4 text-[11px] text-text-muted italic">
+            Se manca l&apos;immagine viene mostrata l&apos;iniziale da nome/cognome o fallbackText.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Dimensioni</p>
-          <div className="flex flex-wrap items-end gap-4">
+          <div className="mb-4 flex flex-wrap items-end gap-4">
             <div className="flex flex-col items-center gap-1.5">
-              <Avatar fallbackText="A" size="sm" />
+              <Avatar fallbackText="MR" size="sm" />
               <span className="text-xs text-text-muted">sm</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Avatar fallbackText="B" size="md" />
+              <Avatar fallbackText="LV" size="md" />
               <span className="text-xs text-text-muted">md</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Avatar fallbackText="C" size="lg" />
+              <Avatar fallbackText="GP" size="lg" />
               <span className="text-xs text-text-muted">lg</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Avatar fallbackText="D" size="xl" />
+              <Avatar fallbackText="AC" size="xl" />
               <span className="text-xs text-text-muted">xl</span>
             </div>
           </div>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">In contesto (lista / header)</p>
+          <div className="flex flex-wrap gap-6">
+            <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2">
+              <Avatar fallbackText="MR" size="md" />
+              <div>
+                <p className="text-sm font-medium text-text-primary">Mario Rossi</p>
+                <p className="text-xs text-text-muted">Atleta</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2">
+              <Avatar fallbackText="LV" size="sm" />
+              <span className="text-sm text-text-primary">Laura Verdi</span>
+            </div>
+          </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Input</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Campo di testo singola riga. Supporta label, placeholder, stati error/success e validazione.
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
+            Campo di testo singola riga. Supporta label, placeholder, stati error/success e
+            validazione.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempi</p>
           <div className="max-w-sm space-y-4">
@@ -253,9 +323,9 @@ export function SectionComponenti() {
             <Input variant="success" placeholder="Stato success" />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Textarea</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Campo di testo multiriga. Label, placeholder e messaggio di errore per validazione.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempi</p>
@@ -265,10 +335,13 @@ export function SectionComponenti() {
             <Textarea errorMessage="Campo obbligatorio" placeholder="Errore" />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
-          <h3 className="mb-1 text-sm font-medium text-text-secondary">Select (nativo) & SimpleSelect</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Selezione da elenco. Select nativo per form semplici, SimpleSelect per UI custom e ricerca.
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
+          <h3 className="mb-1 text-sm font-medium text-text-secondary">
+            Select (nativo) & SimpleSelect
+          </h3>
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
+            Selezione da elenco. Select nativo per form semplici, SimpleSelect per UI custom e
+            ricerca.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempi</p>
           <div className="flex flex-wrap gap-8">
@@ -290,9 +363,9 @@ export function SectionComponenti() {
             </div>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Checkbox</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Scelta singola o multipla. Label opzionale, stati checked e errore per validazione.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempi</p>
@@ -303,10 +376,11 @@ export function SectionComponenti() {
             <Checkbox label="Errore" errorMessage="Obbligatorio" />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Switch & Progress</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Switch per toggle on/off. Progress: riempimento unico, track con bordo e sfumatura. Varianti default, success, warning, error.
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
+            Switch per toggle on/off. Progress: riempimento unico, track con bordo e sfumatura.
+            Varianti default, success, warning, error.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Switch</p>
           <div className="mb-4 flex flex-wrap items-center gap-6">
@@ -350,9 +424,9 @@ export function SectionComponenti() {
             </div>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Slider</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Selezione di un valore numerico su un intervallo (es. volume, intensità, range).
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempio</p>
@@ -361,9 +435,9 @@ export function SectionComponenti() {
             <span className="mt-1 block text-xs text-text-muted">valore default 50</span>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Spinner</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Indicatore di caricamento. Dimensioni sm, md, lg, xl per inline, bottoni o full-screen.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Dimensioni</p>
@@ -386,10 +460,11 @@ export function SectionComponenti() {
             </div>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Skeleton</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Placeholder animato per contenuti in caricamento. Adatta classi per forma (pulsante, card, testo).
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
+            Placeholder animato per contenuti in caricamento. Adatta classi per forma (pulsante,
+            card, testo).
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempi</p>
           <div className="flex flex-wrap items-end gap-4">
@@ -398,15 +473,16 @@ export function SectionComponenti() {
               <span className="text-xs text-text-muted">pulsante</span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <Skeleton className="h-20 w-40 rounded-xl" />
+              <Skeleton className="h-20 w-40 rounded-lg" />
               <span className="text-xs text-text-muted">card</span>
             </div>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Tabs</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Navigazione tra pannelli di contenuto. TabsList + TabsTrigger per le tab, TabsContent per il corpo.
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
+            Navigazione tra pannelli di contenuto. TabsList + TabsTrigger per le tab, TabsContent
+            per il corpo.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempio</p>
           <Tabs defaultValue="tab1" className="w-full max-w-md">
@@ -420,9 +496,9 @@ export function SectionComponenti() {
             <TabsContent value="tab3">Contenuto tab 3.</TabsContent>
           </Tabs>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Stepper</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Flusso a step con stati completed, active e pending. Per wizard, checkout o onboarding.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempio</p>
@@ -435,13 +511,14 @@ export function SectionComponenti() {
             variant="default"
           />
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Table</h3>
-          <p className="mb-4 text-xs text-text-muted">
-            Tabella dati con TableHeader, TableBody, TableRow, TableHead, TableCell. Per liste utenti, report, dati tabellari.
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
+            Tabella dati con TableHeader, TableBody, TableRow, TableHead, TableCell. Per liste
+            utenti, report, dati tabellari.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempio</p>
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="overflow-hidden rounded-lg border border-white/10">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -462,23 +539,23 @@ export function SectionComponenti() {
             </Table>
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Dialog</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Modale centrato per conferme, form o contenuti focali. Trigger + contenuto.
           </p>
           <DesignSystemDialogDemo />
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Drawer</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Pannello laterale scorrevole per dettagli, filtri o azioni secondarie.
           </p>
           <DesignSystemDrawerDemo />
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">DropdownMenu</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Menu a tendina su click. Trigger + voci e separatori.
           </p>
           <DropdownMenu>
@@ -493,9 +570,9 @@ export function SectionComponenti() {
             </DropdownMenuContent>
           </DropdownMenu>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Separator</h3>
-          <p className="mb-4 text-xs text-text-muted">
+          <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
             Linea di separazione orizzontale tra blocchi di contenuto.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Esempio</p>

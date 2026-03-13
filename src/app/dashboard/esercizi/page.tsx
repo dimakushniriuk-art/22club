@@ -21,6 +21,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useToast } from '@/components/ui/toast'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
@@ -138,7 +139,7 @@ function EserciziPageSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-white/10 bg-background-secondary/60 overflow-hidden animate-pulse"
+          className="rounded-lg border border-white/10 bg-white/[0.04] overflow-hidden animate-pulse"
         >
           <div className="h-40 w-full bg-background-tertiary" />
           <div className="p-4 space-y-3">
@@ -149,7 +150,7 @@ function EserciziPageSkeleton() {
             </div>
             <div className="h-4 w-full rounded bg-background-tertiary/80" />
             <div className="h-4 w-1/2 rounded bg-background-tertiary/80" />
-            <div className="flex justify-between pt-3 border-t border-white/5">
+            <div className="flex justify-between pt-3 border-t border-white/10">
               <div className="h-6 w-20 rounded-full bg-background-tertiary" />
               <div className="flex gap-2">
                 <div className="h-8 w-16 rounded bg-background-tertiary" />
@@ -479,44 +480,37 @@ export default function EserciziPage() {
   const virtualSlice = useVirtualTable ? filtered.slice(virtualStart, virtualEnd) : filtered
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full relative">
-        {/* Header - SOFT BORDER SPORT PRO */}
-        <div className="rounded-3xl bg-gradient-to-r from-primary/5 via-transparent to-primary/5 border border-white/5 backdrop-blur-xl p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Esercizi</h1>
-              <p className="mt-1 text-sm text-text-secondary">
-                Catalogo esercizi per piani di allenamento
-              </p>
-              <div className="mt-4 h-[3px] w-28 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={load}
-                disabled={loading}
-                variant="outline"
-                size="sm"
-                className="rounded-full border border-white/5 bg-background-secondary/35 text-text-primary hover:bg-primary/10 hover:border-primary/20 transition-all duration-300"
-              >
-                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Aggiorna
-              </Button>
-              <Button
-                onClick={() => {
-                  setEditing(null)
-                  setShowForm(true)
-                }}
-                size="sm"
-                className="rounded-full bg-gradient-to-br from-primary/90 to-primary/80 text-white font-semibold shadow-md shadow-primary/25 ring-1 ring-primary/30 hover:shadow-glow transition-all duration-200"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Nuovo Esercizio
-              </Button>
-            </div>
-          </div>
+    <StaffContentLayout
+      title="Esercizi"
+      description="Catalogo esercizi per piani di allenamento"
+      theme="teal"
+      actions={
+        <div className="flex gap-2">
+          <Button
+            onClick={load}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+            className="border-white/10 hover:border-primary/20"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Aggiorna
+          </Button>
+          <Button
+            onClick={() => {
+              setEditing(null)
+              setShowForm(true)
+            }}
+            size="sm"
+            variant="primary"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nuovo Esercizio
+          </Button>
         </div>
-
+      }
+    >
+      <div className="space-y-4 sm:space-y-6">
         {/* Banner errore caricamento con retry */}
         {loadError && (
           <Card
@@ -549,7 +543,7 @@ export default function EserciziPage() {
                 onClick={() => setShowFilters(!showFilters)}
                 variant="outline"
                 size="sm"
-                className="bg-background-secondary/25 border border-white/5 text-text-primary hover:bg-primary/8 hover:border-primary/20 transition-all duration-200"
+                className="border-white/10 hover:border-primary/20"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Filtri
@@ -567,15 +561,15 @@ export default function EserciziPage() {
               )}
             </div>
 
-            {/* Toggle Griglia / Tabella - SOFT BORDER */}
-            <div className="flex items-center gap-0 rounded-full p-1 bg-background-secondary/30 border border-white/5">
+            {/* Toggle Griglia / Tabella */}
+            <div className="flex items-center gap-0 rounded-full p-1 border border-white/10 bg-white/[0.04]">
               <button
                 type="button"
                 onClick={() => setView('grid')}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                   view === 'grid'
-                    ? 'bg-primary/18 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,255,200,0.18)]'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-primary/10 text-primary border border-primary/30'
+                    : 'text-text-tertiary hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
                 <Grid3x3 className="h-4 w-4" />
@@ -586,8 +580,8 @@ export default function EserciziPage() {
                 onClick={() => setView('table')}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                   view === 'table'
-                    ? 'bg-primary/18 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,255,200,0.18)]'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-primary/10 text-primary border border-primary/30'
+                    : 'text-text-tertiary hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
                 <TableIcon className="h-4 w-4" />
@@ -598,11 +592,8 @@ export default function EserciziPage() {
 
           {/* Filtri collapsibili */}
           {showFilters && (
-            <Card
-              variant="trainer"
-              className="relative overflow-hidden border border-white/5 bg-gradient-to-br from-background-secondary/60 via-background-secondary/40 to-background-tertiary/40 shadow-[0_0_20px_rgba(0,0,0,0.12)] backdrop-blur-sm mb-4"
-            >
-              <CardContent className="relative p-4 space-y-4">
+            <Card variant="default" className="mb-4">
+              <CardContent className="p-4 space-y-4">
                 {/* Filtro visuale gruppi muscolari */}
                 <div>
                   <label className="text-text-secondary text-sm font-medium mb-2 block">
@@ -625,7 +616,7 @@ export default function EserciziPage() {
                 </div>
 
                 {/* Toolbar con altri filtri */}
-                <div className="flex flex-col gap-4 md:flex-row md:items-center pt-4 border-t border-white/5">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center pt-4 border-t border-white/10">
                   <div className="flex flex-wrap gap-3 flex-1">
                     <div className="w-full sm:w-auto min-w-[240px] flex-1">
                       <Input
@@ -633,7 +624,7 @@ export default function EserciziPage() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         leftIcon={<Search className="h-4 w-4" />}
-                        className="bg-background-secondary/25 border border-white/5 placeholder:text-white/35 hover:bg-background-secondary/35 focus:border-primary/25 focus:ring-2 focus:ring-primary/20 focus:ring-offset-0 transition-colors"
+                        className="bg-white/[0.04] border-white/10 placeholder:text-white/35 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-0 transition-colors"
                       />
                     </div>
                     <div className="w-full sm:w-auto min-w-[160px] flex-1">
@@ -646,7 +637,7 @@ export default function EserciziPage() {
                         }
                         placeholder="Tutte le difficoltà"
                         options={DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-                        className="w-full [&_button]:bg-background-secondary/25 [&_button]:border-white/5 [&_button]:hover:bg-background-secondary/35 [&_button]:focus:ring-primary [&_button]:focus:border-primary/25"
+                        className="w-full [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
                       />
                     </div>
                     <div className="w-full sm:w-auto min-w-[160px] flex-1">
@@ -658,7 +649,7 @@ export default function EserciziPage() {
                           { value: 'all', label: 'Tutti gli attrezzi' },
                           ...equipments.map((eq) => ({ value: eq, label: eq })),
                         ]}
-                        className="w-full [&_button]:bg-background-secondary/25 [&_button]:border-white/5 [&_button]:hover:bg-background-secondary/35 [&_button]:focus:ring-primary [&_button]:focus:border-primary/25"
+                        className="w-full [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
                       />
                     </div>
                   </div>
@@ -680,7 +671,7 @@ export default function EserciziPage() {
             </div>
             {view === 'grid' ? (
               <div className="relative p-4">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/25 px-3 py-1.5 text-primary shadow-[0_0_12px_rgba(0,255,200,0.15)]">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-text-primary">
                   <span className="text-sm font-medium">Libreria</span>
                   <span className="text-white font-semibold">
                     {filtered.length}{' '}
@@ -700,12 +691,12 @@ export default function EserciziPage() {
                     {filtered.map((e) => (
                       <Card
                         key={e.id}
-                        variant="trainer"
-                        className="group relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-black/20 hover:border-primary/20 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer after:absolute after:inset-0 after:bg-gradient-to-br after:from-primary/6 after:via-transparent after:to-cyan-500/5 after:opacity-0 after:transition-opacity group-hover:after:opacity-100 after:pointer-events-none"
+                        variant="default"
+                        className="group relative flex min-h-0 flex-col overflow-hidden hover:border-white/20 transition-all duration-300 cursor-pointer"
                       >
-                        <CardContent className="relative flex min-h-0 flex-1 flex-col p-0">
+                        <CardContent className="flex min-h-0 flex-1 flex-col p-0">
                           <ExerciseMedia exercise={e} />
-                          <div className="relative z-10 flex min-h-0 flex-1 flex-col p-4">
+                          <div className="relative flex min-h-0 flex-1 flex-col p-4">
                             <div className="space-y-3">
                               <h3 className="text-white text-lg font-semibold line-clamp-1 transition-colors group-hover:text-primary">
                                 {e.name}
@@ -736,7 +727,7 @@ export default function EserciziPage() {
                                 </p>
                               )}
                             </div>
-                            <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/5 pt-3">
+                            <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-3">
                               <span
                                 className={`rounded-full px-3 py-1 text-xs font-medium border ${
                                   e.difficulty === 'bassa'
@@ -752,7 +743,7 @@ export default function EserciziPage() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-8 gap-1.5 bg-background-secondary/30 border border-white/5 text-text-primary hover:bg-primary/10 hover:border-primary/20 transition-all duration-200"
+                                  className="h-8 gap-1.5 border border-white/10 text-text-primary hover:bg-primary/10 hover:border-primary/20 transition-all duration-200"
                                   onClick={(ev) => {
                                     ev.stopPropagation()
                                     setEditing(e)
@@ -784,7 +775,7 @@ export default function EserciziPage() {
               </div>
             ) : (
               <div className="relative p-4">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/25 px-3 py-1.5 text-primary shadow-[0_0_12px_rgba(0,255,200,0.15)]">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-text-primary">
                   <span className="text-sm font-medium">Elenco esercizi</span>
                   <span className="text-white font-semibold">
                     {filtered.length}{' '}
@@ -1009,13 +1000,13 @@ export default function EserciziPage() {
           <button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-teal-400/40 bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/25 ring-2 ring-teal-400/20 transition-transform hover:scale-105 hover:shadow-teal-500/35 hover:ring-teal-400/30 focus:outline-none focus:ring-2 focus:ring-teal-400/50"
+            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-primary/30 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
             aria-label="Torna su"
           >
             <ArrowUp className="h-5 w-5" />
           </button>
         )}
       </div>
-    </div>
+    </StaffContentLayout>
   )
 }

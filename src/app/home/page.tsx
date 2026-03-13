@@ -18,7 +18,6 @@ import {
 } from 'lucide-react'
 import { iconMap } from '@/components/ui/professional-icons'
 import { getBloccoAccentColors, type BloccoAccentColors } from '@/lib/design-system-data'
-import { colors } from '@/lib/design-tokens'
 
 /** Blocchi che usano icona Lucide invece di emoji (single source of truth). */
 const LUCIDE_BLOCCO_IDS = new Set([
@@ -48,13 +47,6 @@ const SKELETON_CONTAINER_STYLE = { overflow: 'auto' as const }
 
 // --- Sub-componenti (stesso file, nessuna modifica ad altri file) ---
 
-const PLACEHOLDER_NAMES = new Set(['Nome', 'Cognome', 'Nome Cognome'])
-
-function toDisplayName(nome: string | undefined, cognome: string | undefined): string {
-  const raw = [nome, cognome].filter(Boolean).join(' ').trim()
-  return PLACEHOLDER_NAMES.has(raw) ? '' : raw
-}
-
 interface WelcomeHeaderProps {
   nome: string | undefined
   cognome: string | undefined
@@ -63,43 +55,23 @@ interface WelcomeHeaderProps {
   onOpenWizard: () => void
 }
 
-function WelcomeHeader({ nome, cognome, isAtleta, invitiCount, onOpenWizard }: WelcomeHeaderProps) {
-  const displayName = toDisplayName(nome, cognome)
+function WelcomeHeader({ nome, cognome: _cognome, isAtleta, invitiCount, onOpenWizard }: WelcomeHeaderProps) {
   return (
-    <div
-      className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5 animate-fade-in"
-      style={{
-        border: '1px solid rgba(2, 179, 191, 0.4)',
-        background: 'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.06) 100%)',
-        boxShadow: '0 4px 28px rgba(0,0,0,0.22), 0 0 0 1px rgba(2,179,191,0.12) inset',
-      }}
-    >
-      <div
-        className="absolute inset-0 rounded-2xl opacity-70"
-        style={{ background: 'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)' }}
-        aria-hidden
-      />
-      <div className="relative z-10 flex items-start justify-between gap-3">
+    <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 min-[834px]:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] animate-fade-in">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="mb-1 text-lg font-bold tracking-tight text-white min-[834px]:text-xl">
-            Benvenuto{displayName ? `, ${displayName}` : ''} 👋
+          <h1 className="mb-1 text-lg font-bold tracking-tight text-cyan-400 min-[834px]:text-xl">
+            Benvenuto{nome?.trim() ? `, ${nome.trim()}` : ''}
           </h1>
           <p className="text-xs text-text-secondary min-[834px]:text-sm">
             Gestisci i tuoi allenamenti, progressi e molto altro
-          </p>
-          <p className="mt-2 text-[11px] font-medium min-[834px]:text-xs text-primary">
-            Pronto per l&apos;allenamento? Tutto sotto il tuo controllo.
           </p>
         </div>
         {isAtleta && invitiCount > 0 && (
           <button
             type="button"
             onClick={onOpenWizard}
-            className="flex shrink-0 items-center justify-center rounded-xl w-10 h-10 text-white shadow-lg transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-background border-0"
-            style={{
-              background: `linear-gradient(to right, ${colors.athleteAccents.teal.bar}, ${colors.athleteAccents.cyan.bar})`,
-              boxShadow: `0 8px 16px -4px ${colors.athleteAccents.teal.bar}50`,
-            }}
+            className="flex shrink-0 items-center justify-center rounded-lg w-10 h-10 border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
             aria-label="Nuovo invito da un professionista"
           >
             <Mail className="h-5 w-5 shrink-0" aria-hidden />
@@ -118,7 +90,7 @@ interface HomeBloccoCardProps {
   EmojiIconComponent: React.ComponentType<{ size?: number; color?: string; className?: string }> | null
 }
 
-function HomeBloccoCard({ blocco, accent, useLucide, EmojiIconComponent }: HomeBloccoCardProps) {
+function HomeBloccoCard({ blocco, accent: _accent, useLucide, EmojiIconComponent }: HomeBloccoCardProps) {
   const IconComponent = blocco.lucideIcon
   const isProfilo = blocco.id === 'profilo'
 
@@ -126,36 +98,17 @@ function HomeBloccoCard({ blocco, accent, useLucide, EmojiIconComponent }: HomeB
     <Link
       href={blocco.href}
       prefetch={true}
-      className={`group relative flex min-h-[100px] flex-col items-center justify-center gap-2 rounded-2xl py-4 px-3 backdrop-blur-md transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background min-[834px]:min-h-[112px] min-[834px]:gap-2.5 min-[834px]:py-5 min-[834px]:px-4 ${isProfilo ? 'col-span-2 min-[834px]:col-span-3 min-[834px]:min-h-[100px] w-full' : ''}`}
-      style={{
-        border: `1px solid ${accent.border}`,
-        background: 'linear-gradient(145deg, rgba(26,26,30,0.88) 0%, rgba(22,22,26,0.92) 100%)',
-        boxShadow: `inset 6px 0 0 0 ${accent.bar}, inset -6px 0 0 0 ${accent.bar}, 0 4px 20px rgba(0,0,0,0.24), 0 0 0 1px rgba(255,255,255,0.04) inset`,
-      }}
+      className={`group relative flex min-h-[100px] flex-col items-center justify-center gap-2 rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 py-4 px-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200 ease-out hover:border-white/20 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background min-[834px]:min-h-[112px] min-[834px]:gap-2.5 min-[834px]:py-5 min-[834px]:px-4 ${isProfilo ? 'col-span-2 min-[834px]:col-span-3 min-[834px]:min-h-[100px] w-full' : ''}`}
       aria-label={`Vai a ${blocco.label}`}
     >
-      <div
-        className="absolute inset-0 rounded-2xl opacity-100 transition-opacity duration-200 ease-out group-hover:opacity-0"
-        style={{
-          background: `radial-gradient(ellipse 85% 60% at 50% 0%, ${accent.gradientStart} 0%, transparent 65%)`,
-          boxShadow: `inset 0 0 32px ${accent.glow}`,
-        }}
-        aria-hidden
-      />
       <div className="relative z-10 flex items-center justify-center">
         {useLucide && IconComponent ? (
-          <div
-            className="rounded-xl p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3"
-            style={{ backgroundColor: accent.iconBg }}
-          >
-            <IconComponent className="h-6 w-6 text-white min-[834px]:h-8 min-[834px]:w-8" strokeWidth={2.25} />
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3">
+            <IconComponent className="h-6 w-6 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" strokeWidth={2.25} />
           </div>
         ) : EmojiIconComponent ? (
-          <div
-            className="rounded-xl p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3"
-            style={{ backgroundColor: accent.iconBg }}
-          >
-            <EmojiIconComponent size={24} color="#ffffff" className="h-6 w-6 min-[834px]:h-8 min-[834px]:w-8" />
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3">
+            <EmojiIconComponent size={24} color="#22d3ee" className="h-6 w-6 min-[834px]:h-8 min-[834px]:w-8" />
           </div>
         ) : null}
       </div>
@@ -165,10 +118,7 @@ function HomeBloccoCard({ blocco, accent, useLucide, EmojiIconComponent }: HomeB
       <span className="relative z-10 line-clamp-2 px-1 text-center text-[10px] leading-snug text-white/65 transition-colors duration-200 group-hover:text-white/90 min-[834px]:text-xs">
         {blocco.description}
       </span>
-      <div
-        className="absolute bottom-2 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full transition-all duration-200 ease-out group-hover:w-12"
-        style={{ backgroundColor: accent.bar }}
-      />
+      <div className="absolute bottom-2 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full bg-white/30 transition-all duration-200 ease-out group-hover:w-12" aria-hidden />
     </Link>
   )
 }
@@ -212,7 +162,6 @@ export default function HomePage() {
     () => ({
       overflow: 'auto' as const,
       minHeight: 'calc(100dvh - 56px)',
-      background: 'radial-gradient(ellipse 120% 80% at 70% -20%, rgba(2,179,191,0.07) 0%, transparent 50%), radial-gradient(ellipse 80% 50% at 0% 50%, rgba(6,182,212,0.05) 0%, transparent 45%), #101012',
     }),
     []
   )
@@ -237,7 +186,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="relative min-h-0 w-full max-w-full space-y-5 min-[834px]:space-y-6 px-3 pb-6 pt-4 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:py-5"
+      className="relative min-h-0 w-full max-w-full bg-background space-y-5 min-[834px]:space-y-6 px-3 pb-6 pt-4 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:py-5"
       style={mainContainerStyle}
     >
       <WelcomeHeader

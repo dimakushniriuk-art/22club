@@ -9,14 +9,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent } from '@/components/ui'
+import { Card, CardContent, Button } from '@/components/ui'
 import { Dumbbell, ArrowLeft, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react'
 
-const glassSurface =
-  'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-cyan-950/22 backdrop-blur-xl'
-const framePrimary = 'border border-primary/22 hover:border-primary/30 transition'
-const frameSoft = 'border border-white/10 hover:border-white/14 transition'
-const shadowSport = 'shadow-[0_10px_30px_rgba(0,0,0,0.45)]'
+const DS_LIST_ITEM = 'flex items-center justify-between gap-2 p-3 rounded-lg border border-white/10 bg-white/[0.02]'
 
 interface AthleteWorkoutsTabProps {
   athleteId: string
@@ -143,12 +139,8 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
   }, [athleteId])
 
   return (
-    <Card
-      variant="trainer"
-      className={`relative overflow-hidden rounded-3xl ${glassSurface} ${framePrimary} ${shadowSport}`}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
-      <CardContent className="p-6 relative z-10 space-y-6">
+    <Card variant="default" className="overflow-hidden">
+      <CardContent className="p-6 space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-text-primary text-xl font-bold flex items-center gap-2">
@@ -158,14 +150,13 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
             <p className="text-text-secondary text-sm mt-1">
               {schedeAttive} {schedeAttive === 1 ? 'scheda attiva' : 'schede attive'}
             </p>
-            <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+            <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
           </div>
-          <Link
-            href={`/dashboard/schede?athlete_id=${athleteId}`}
-            className="rounded-full px-5 py-2.5 font-bold text-sm bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition inline-flex items-center gap-2"
-          >
-            Vedi tutte le schede
-            <ArrowLeft className="h-4 w-4 rotate-180" />
+          <Link href={`/dashboard/schede?athlete_id=${athleteId}`}>
+            <Button variant="default" size="sm">
+              Vedi tutte le schede
+              <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+            </Button>
           </Link>
         </div>
 
@@ -173,18 +164,15 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
           <p className="text-text-secondary text-sm py-4">Caricamento...</p>
         ) : schedeAttive === 0 && workoutLogs.length === 0 && appointments.length === 0 ? (
           <div className="text-center py-12">
-            <div className="rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-primary/12 text-primary border border-primary/22">
+            <div className="rounded-lg p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
               <Dumbbell className="h-8 w-8" />
             </div>
             <p className="text-text-primary font-medium mb-2">Nessuna scheda attiva</p>
             <p className="text-text-secondary text-sm mb-4">
               Crea una nuova scheda di allenamento per questo atleta
             </p>
-            <Link
-              href={`/dashboard/schede?athlete_id=${athleteId}&new=true`}
-              className="rounded-full px-5 py-2.5 font-bold text-sm bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition inline-flex items-center justify-center"
-            >
-              Crea Prima Scheda
+            <Link href={`/dashboard/schede?athlete_id=${athleteId}&new=true`}>
+              <Button variant="default" size="sm">Crea Prima Scheda</Button>
             </Link>
           </div>
         ) : (
@@ -199,10 +187,7 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
               ) : (
                 <ul className="space-y-2">
                   {schede.map((s) => (
-                    <li
-                      key={s.id}
-                      className={`flex items-center justify-between gap-2 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}
-                    >
+                    <li key={s.id} className={DS_LIST_ITEM}>
                       <span className="text-text-primary font-medium truncate">{s.name}</span>
                       <span className="text-text-secondary text-xs shrink-0 flex items-center gap-2">
                         {formatDate(s.start_date)} → {formatDate(s.end_date)}
@@ -228,10 +213,7 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
               ) : (
                 <ul className="space-y-2 max-h-48 overflow-y-auto">
                   {workoutLogs.map((log) => (
-                    <li
-                      key={log.id}
-                      className={`flex items-center justify-between gap-2 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}
-                    >
+                    <li key={log.id} className={DS_LIST_ITEM}>
                       <span className="text-text-primary text-sm">
                         {formatDate(log.data ?? log.created_at)}
                       </span>
@@ -262,10 +244,7 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
                   {appointments.map((a) => {
                     const variant = statusVariant(a.status)
                     return (
-                      <li
-                        key={a.id}
-                        className={`flex items-center justify-between gap-2 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}
-                      >
+                      <li key={a.id} className={DS_LIST_ITEM}>
                         <div className="min-w-0">
                           <span className="text-text-primary text-sm block">
                             {formatDateTime(a.starts_at)}

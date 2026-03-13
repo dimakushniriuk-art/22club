@@ -34,7 +34,7 @@ interface AppointmentPopoverProps {
 
 export function AppointmentPopover({
   appointment,
-  position,
+  position: _position,
   onEdit,
   onCancel,
   onDelete,
@@ -85,29 +85,8 @@ export function AppointmentPopover({
     }
   }, [onClose])
 
-  const getAdjustedPosition = () => {
-    if (asModal) return { x: 0, y: 0, width: Math.min(400, window.innerWidth - 32) }
-    const padding = 16
-    const popoverWidth = Math.min(300, window.innerWidth - padding * 2)
-    const popoverHeight = Math.min(320, window.innerHeight - padding * 2)
-
-    let x = position.x
-    let y = position.y
-
-    if (x + popoverWidth > window.innerWidth - padding) {
-      x = window.innerWidth - popoverWidth - padding
-    }
-    if (x < padding) x = padding
-
-    if (y + popoverHeight > window.innerHeight - padding) {
-      y = window.innerHeight - popoverHeight - padding
-    }
-    if (y < padding) y = padding
-
-    return { x, y, width: popoverWidth }
-  }
-
-  const adjustedPos = getAdjustedPosition()
+  const popoverWidth = asModal ? Math.min(400, typeof window !== 'undefined' ? window.innerWidth - 32 : 400) : Math.min(300, typeof window !== 'undefined' ? window.innerWidth - 32 : 300)
+  const popoverMaxHeight = typeof window !== 'undefined' ? window.innerHeight - 32 : 400
   const { settings } = useStaffCalendarSettings()
   const typeLabelMap = useMemo(() => {
     const m: Record<string, string> = { ...APPOINTMENT_TYPE_LABELS }
@@ -148,16 +127,12 @@ export function AppointmentPopover({
       ref={popoverRef}
       className={cn(
         'z-[100] max-w-[calc(100vw-2rem)] bg-[#202124] rounded-lg shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150',
-        asModal ? 'w-full max-h-[90dvh] overflow-y-auto' : 'fixed',
+        asModal ? 'w-full max-h-[90dvh] overflow-y-auto' : 'w-[var(--popover-w)] max-h-[var(--popover-max-h)] overflow-y-auto',
       )}
       style={
         asModal
           ? undefined
-          : {
-              left: adjustedPos.x,
-              top: adjustedPos.y,
-              width: 'width' in adjustedPos ? adjustedPos.width : 300,
-            }
+          : { '--popover-w': `${popoverWidth}px`, '--popover-max-h': `${popoverMaxHeight}px` } as React.CSSProperties
       }
     >
       {/* Header colorato - touch target min 44px su mobile */}
@@ -333,5 +308,9 @@ export function AppointmentPopover({
     )
   }
 
-  return content
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+      {content}
+    </div>
+  )
 }

@@ -20,7 +20,6 @@ import {
 } from 'lucide-react'
 import { ClienteDropdownMenu } from '@/components/dashboard/cliente-dropdown-menu'
 import type { Cliente, ClienteSort } from '@/types/cliente'
-import { colors } from '@/lib/design-tokens'
 
 interface ClientiTableViewProps {
   clienti: Cliente[]
@@ -173,18 +172,13 @@ export function ClientiTableView({
   }
 
   return (
-    <div className="relative p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div style={{ color: colors.athleteAccents.teal.bar }}>
-            <User className="h-5 w-5" />
-          </div>
-          <h3 className="text-lg font-bold text-text-primary">Lista Clienti ({total})</h3>
-        </div>
+    <div className="relative p-4 sm:p-5 md:p-6">
+      <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+        <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">Lista Clienti ({total})</h3>
       </div>
-      <div className="overflow-hidden rounded-lg">
+      <div className="overflow-hidden rounded-lg border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-black/20">
             <TableRow>
               <TableHead className="w-12">
                 <Checkbox
@@ -279,7 +273,7 @@ export function ClientiTableView({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-primary/10 font-bold text-primary">
                       {getInitials(cliente)}
                     </div>
                     <div>

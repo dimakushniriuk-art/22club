@@ -13,30 +13,12 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background flex flex-col relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-brand/5 animate-pulse-glow" />
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(2, 179, 191, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(2, 179, 191, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-        }}
-      />
-      <div className="absolute top-20 left-10 w-72 h-72 bg-brand/5 rounded-full blur-3xl animate-pulse" />
-      <div
-        className="absolute bottom-20 right-10 w-96 h-96 bg-brand/5 rounded-full blur-3xl animate-pulse"
-        style={{ animationDelay: '1s' }}
-      />
-
+    <div className="min-h-screen min-h-dvh bg-background text-text-primary flex flex-col">
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+      <header className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 border-b border-white/10">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-text-secondary hover:text-brand text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary text-sm font-medium transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
           Torna indietro
@@ -47,7 +29,7 @@ export default function PrivacyPolicyPage() {
             alt="22 Club"
             width={120}
             height={48}
-            className="h-10 w-auto object-contain"
+            className="h-10 w-auto object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]"
             priority
           />
         </Link>
@@ -55,9 +37,9 @@ export default function PrivacyPolicyPage() {
       </header>
 
       {/* Content */}
-      <main className="relative z-10 flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <FadeIn>
-          <Card className="mx-auto max-w-3xl border-border bg-background-secondary/95 backdrop-blur-sm rounded-2xl shadow-xl">
+          <Card className="mx-auto max-w-3xl rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="p-6 sm:p-8">
               <PrivacyAccordion />
             </CardContent>

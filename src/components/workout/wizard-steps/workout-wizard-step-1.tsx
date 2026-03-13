@@ -26,11 +26,10 @@ export function WorkoutWizardStep1({
 }: WorkoutWizardStep1Props) {
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-background focus-within:outline-none"
+      variant="default"
+      className="relative overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-background focus-within:outline-none"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-      <CardContent className="relative z-10 p-6 sm:p-8">
+      <CardContent className="p-6 sm:p-8">
         <div className="space-y-6">
           <div className="mb-6">
             <h3 className="text-text-primary mb-2 text-xl font-bold">Informazioni generali</h3>

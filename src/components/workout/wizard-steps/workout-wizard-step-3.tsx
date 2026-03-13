@@ -37,20 +37,19 @@ export function WorkoutWizardStep3({
 }: WorkoutWizardStep3Props) {
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl transition-all duration-200"
+      variant="default"
+      className="relative overflow-hidden transition-all duration-200"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-      <CardContent className="relative z-10 p-6 sm:p-8">
-    <div className="space-y-8">
-      <div className="mb-6">
+      <CardContent className="p-6 sm:p-8">
+    <div className="space-y-4 sm:space-y-6">
+      <div>
         <h3 className="text-text-primary mb-2 text-xl font-bold">Esercizi per giorno</h3>
         <p className="text-text-secondary text-sm leading-relaxed">
           Scegli gli esercizi per ogni giorno di allenamento
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-6">
         {wizardData.days.map((day, dayIndex) => {
           const dayItems = getDayItems(day)
           const circuitExerciseIdsInDay = new Set<string>()
@@ -66,12 +65,10 @@ export function WorkoutWizardStep3({
           return (
           <Card
             key={dayIndex}
-            variant="trainer"
-            className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/40 shadow-md shadow-teal-500/5 backdrop-blur-xl transition-all duration-200 hover:border-primary/20"
+            variant="default"
+            className="relative overflow-hidden transition-all duration-200 hover:border-white/20"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-
-            <CardHeader className="relative z-10 border-b border-white/5 bg-background-secondary/50">
+            <CardHeader className="border-b border-white/10">
               <div className="flex items-center justify-between">
                 <CardTitle size="sm" className="flex items-center gap-3">
                   <Badge
@@ -88,7 +85,7 @@ export function WorkoutWizardStep3({
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="relative z-10 pt-6">
+            <CardContent className="pt-6">
               <ExerciseCatalog
                 exercises={exercises}
                 onExerciseSelect={(exercise) => onExerciseSelect(dayIndex, exercise)}

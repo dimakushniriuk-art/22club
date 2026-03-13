@@ -17,29 +17,25 @@ interface WorkoutPlansEmptyStateProps {
 
 export function WorkoutPlansEmptyState({ searchTerm, statusFilter }: WorkoutPlansEmptyStateProps) {
   return (
-    <div className="relative py-16 text-center">
-      <div className="mb-6 flex justify-center">
-        <div className="bg-teal-500/20 text-teal-400 rounded-full p-6">
-          <Target className="h-12 w-12" />
-        </div>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 sm:p-8 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+        <Target className="h-6 w-6" />
       </div>
-      <h3 className="text-text-primary mb-2 text-xl font-semibold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
+      <h3 className="text-lg font-semibold text-text-primary">
         {searchTerm || statusFilter ? 'Nessuna scheda trovata' : 'Nessuna scheda creata'}
       </h3>
-      <p className="text-text-secondary text-sm mb-6 max-w-md mx-auto">
+      <p className="text-sm text-text-secondary max-w-md">
         {searchTerm || statusFilter
           ? 'Prova a modificare i filtri di ricerca'
           : 'Crea la tua prima scheda di allenamento per i tuoi atleti'}
       </p>
       {!searchTerm && !statusFilter && (
-        <Link href="/dashboard/schede/nuova" prefetch>
-          <Button
-            className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 hover:scale-105"
-          >
+        <Button variant="primary" size="sm" asChild className="mt-2">
+          <Link href="/dashboard/schede/nuova" prefetch>
             <Plus className="mr-2 h-4 w-4" />
             Crea prima scheda
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       )}
     </div>
   )

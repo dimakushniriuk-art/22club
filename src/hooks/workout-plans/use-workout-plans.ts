@@ -433,7 +433,13 @@ export function useWorkoutPlans() {
       const newWorkout = newWorkoutData as (WorkoutRow & { created_by_profile_id?: string | null }) | null
 
       if (createError || !newWorkout) {
-        throw createError || new Error('Creazione scheda fallita')
+        const errMsg =
+          createError?.message ?? 'Creazione scheda fallita'
+        logger.error('Error creating workout', createError ?? undefined, {
+          code: (createError as { code?: string } | null)?.code,
+          details: (createError as { details?: string } | null)?.details,
+        })
+        throw new Error(errMsg)
       }
 
       // Inserisci giorni ed esercizi
@@ -457,7 +463,12 @@ export function useWorkoutPlans() {
         const typedNewDay = newDay as WorkoutDayIdRow | null
 
         if (dayError || !typedNewDay) {
-          throw new Error(`Errore creazione giorno ${dayIndex + 1}: ${dayError?.message}`)
+          const msg = dayError?.message ?? 'Giorno non creato'
+          logger.error('Error creating workout day', dayError ?? undefined, {
+            dayIndex: dayIndex + 1,
+            code: (dayError as { code?: string } | null)?.code,
+          })
+          throw new Error(`Errore creazione giorno ${dayIndex + 1}: ${msg}`)
         }
 
         // Inserisci esercizi per questo giorno (con circuit_block_id se circuitList fornita)
@@ -502,9 +513,12 @@ export function useWorkoutPlans() {
           const typedNewExercise = newExercise as WorkoutDayExerciseIdRow | null
 
           if (exError || !typedNewExercise) {
-            throw new Error(
-              `Errore aggiunta esercizio al giorno ${dayIndex + 1}: ${exError?.message}`,
-            )
+            const msg = exError?.message ?? 'Esercizio non inserito'
+            logger.error('Error creating workout_day_exercise', exError ?? undefined, {
+              dayIndex: dayIndex + 1,
+              code: (exError as { code?: string } | null)?.code,
+            })
+            throw new Error(`Errore aggiunta esercizio al giorno ${dayIndex + 1}: ${msg}`)
           }
 
           // Salva i set in workout_sets
@@ -544,6 +558,10 @@ export function useWorkoutPlans() {
             )
 
             if (setsError) {
+              logger.error('Error creating workout_sets', setsError, {
+                dayIndex: dayIndex + 1,
+                code: (setsError as { code?: string })?.code,
+              })
               throw new Error(
                 `Errore aggiunta set per esercizio al giorno ${dayIndex + 1}: ${setsError.message}`,
               )
@@ -597,8 +615,12 @@ export function useWorkoutPlans() {
         setWorkouts((prev) => [transformedWorkout, ...prev])
       }
     } catch (error) {
-      logger.error('Error creating workout', error)
-      setError(error instanceof Error ? error.message : 'Errore nella creazione della scheda')
+      const errMsg = error instanceof Error ? error.message : 'Errore nella creazione della scheda'
+      logger.error('Error creating workout', error, {
+        message: errMsg,
+        name: error instanceof Error ? error.name : undefined,
+      })
+      setError(errMsg)
       throw error
     }
   }, [])

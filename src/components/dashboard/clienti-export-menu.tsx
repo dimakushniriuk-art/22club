@@ -35,8 +35,8 @@ export function ClientiExportMenu({
           aria-label={isExporting ? 'Export in corso' : 'Esporta dati clienti'}
           aria-busy={isExporting}
           className={cn(
-            'rounded-full border border-white/5 text-primary bg-transparent hover:bg-primary/10 hover:border-primary/20 hover:shadow-[0_0_20px_rgba(2,179,191,0.2)] px-5 transition-all duration-300',
-            isMobile ? 'min-h-[44px] touch-manipulation' : 'h-10',
+            'rounded-lg border-white/20 text-text-secondary hover:bg-white/5 hover:border-white/30',
+            isMobile && 'min-h-[44px] touch-manipulation',
           )}
         >
           <Download className="mr-2 h-4 w-4" aria-hidden="true" />

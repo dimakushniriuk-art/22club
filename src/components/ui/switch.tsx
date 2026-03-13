@@ -43,15 +43,17 @@ export function Switch({
       onClick={handleToggle}
       className={cn(
         'relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ease-in-out',
-        checked ? 'bg-green-500 border-0' : 'bg-gray-300 border border-white/30',
+        checked
+          ? 'bg-emerald-500 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]'
+          : 'border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
         disabled && 'cursor-not-allowed opacity-50',
-        !disabled && 'hover:opacity-80',
+        !disabled && !checked && 'hover:from-zinc-700/90 hover:to-zinc-800/90',
         className,
       )}
     >
       <span
         className={cn(
-          'bg-white inline-block h-4 w-4 transform rounded-full transition-transform duration-200 ease-in-out shadow-sm',
+          'inline-block h-4 w-4 transform rounded-full transition-transform duration-200 ease-in-out shadow-md border border-white/20 bg-white',
           checked ? 'translate-x-6' : 'translate-x-1',
         )}
       />

@@ -8,8 +8,6 @@ export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const trackHighlight = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
-
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
   ({ className, value = 0, max = 100, variant = 'default', size = 'md', ...props }, ref) => {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100)
@@ -32,8 +30,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-slate-800 relative w-full overflow-hidden rounded-full border border-slate-600/70',
-          trackHighlight,
+          'relative w-full overflow-hidden rounded-full border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
           sizes[size],
           className,
         )}

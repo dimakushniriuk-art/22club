@@ -646,13 +646,13 @@ export function ExerciseFormModal({
   return (
     <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] relative overflow-hidden rounded-xl border border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary backdrop-blur-xl shadow-lg shadow-teal-500/10 p-0 flex flex-col">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+      <DialogContent className="max-w-4xl max-h-[90vh] relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0 flex flex-col">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-black/20" />
         <div className="relative z-10 p-6 overflow-y-auto flex-1">
           {/* Header con icona */}
-          <DialogHeader className="pb-4 border-b border-teal-500/20 mb-0">
+          <DialogHeader className="pb-4 border-b border-white/10 mb-0">
             <div className="flex items-center gap-3">
-              <div className="bg-teal-500/20 text-teal-400 rounded-lg p-2">
+              <div className="bg-white/10 text-cyan-400 rounded-lg p-2">
                 <Dumbbell className="h-5 w-5" />
               </div>
               <div>
@@ -670,7 +670,7 @@ export function ExerciseFormModal({
             {/* Informazioni Base */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                <Target className="h-4 w-4 text-teal-400" />
+                <Target className="h-4 w-4 text-cyan-400" />
                 Informazioni Base
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -779,7 +779,7 @@ export function ExerciseFormModal({
                       {selectedEquipment.map((equipment, index) => (
                         <div
                           key={index}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-500/20 border border-teal-500/30 text-teal-400 text-sm"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-sm"
                         >
                           <span>{equipment}</span>
                           <button
@@ -824,7 +824,7 @@ export function ExerciseFormModal({
             {/* Media Upload Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                <Video className="h-4 w-4 text-teal-400" />
+                <Video className="h-4 w-4 text-cyan-400" />
                 Media (Video e Immagine)
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -836,10 +836,10 @@ export function ExerciseFormModal({
                   <div
                     className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
                       dragVideo
-                        ? 'border-teal-500 bg-teal-500/20'
+                        ? 'border-cyan-500 bg-cyan-500/20'
                         : form.video_url
                           ? 'border-green-500 bg-green-900'
-                          : 'border-teal-500/30 bg-background-tertiary hover:border-teal-500/50'
+                          : 'border-white/10 bg-background-tertiary hover:border-cyan-500/50'
                     }`}
                     onDragOver={(e) => {
                       e.preventDefault()
@@ -889,7 +889,7 @@ export function ExerciseFormModal({
                           <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary">
                             {videoLoading && (
                               <div className="absolute inset-0 flex items-center justify-center bg-background-secondary/80 z-10">
-                                <Loader2 className="h-8 w-8 animate-spin text-teal-400" />
+                                <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
                               </div>
                             )}
                             <video
@@ -950,7 +950,7 @@ export function ExerciseFormModal({
                         htmlFor="video-upload"
                         className="flex flex-col items-center justify-center p-6 cursor-pointer"
                       >
-                        <div className="mb-3 bg-teal-500/20 text-teal-400 rounded-full p-3">
+                        <div className="mb-3 bg-cyan-500/20 text-cyan-400 rounded-full p-3">
                           {uploadingVideo ? (
                             <Loader2 className="h-6 w-6 animate-spin" />
                           ) : (
@@ -1088,7 +1088,7 @@ export function ExerciseFormModal({
             {/* Altri campi */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                <Clock className="h-4 w-4 text-teal-400" />
+                <Clock className="h-4 w-4 text-cyan-400" />
                 Dettagli aggiuntivi
               </div>
               <Textarea
@@ -1102,12 +1102,12 @@ export function ExerciseFormModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-teal-500/20 mt-6">
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10 mt-6">
             <Button
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={loading || uploadingVideo || uploadingThumb}
-              className="border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50 transition-all duration-200"
+              className="border-white/10 text-text-primary hover:bg-white/5 hover:border-white/20 transition-all duration-200"
             >
               <X className="mr-2 h-4 w-4" />
               Annulla
@@ -1115,7 +1115,7 @@ export function ExerciseFormModal({
             <Button
               onClick={handleSave}
               disabled={loading || uploadingVideo || uploadingThumb}
-              className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200"
+              className="border border-cyan-400/80 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200"
             >
               {loading ? (
                 <>

@@ -13,17 +13,22 @@ import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
 import { useLessonCounters } from '@/hooks/use-lesson-counters'
 import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { Button } from '@/components/ui'
 
 const logger = createLogger('DashboardPage')
+
+const QUICK_ACTION_CARD_CLASS =
+  'flex min-h-[70px] flex-col items-center justify-center rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20'
 
 type QuickActionLink = {
   href: string
   icon: LucideIcon
   label: string
   sublabel: string
-  accentClass: string
+  iconBoxClass: string
 }
-type QuickActionAppointment = { href: null; accentClass: string; sublabel: string }
+type QuickActionAppointment = { href: null; sublabel: string; iconBoxClass: string }
 type QuickActionItem = QuickActionLink | QuickActionAppointment
 
 const QUICK_ACTIONS: QuickActionItem[] = [
@@ -32,29 +37,33 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     icon: UserPlus,
     label: 'Invita Cliente',
     sublabel: 'Invita un atleta',
-    accentClass: 'from-emerald-500/14 to-teal-500/6',
+    iconBoxClass: 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400',
   },
-  { href: null, accentClass: 'from-cyan-500/16 to-teal-500/6', sublabel: 'Pianifica una sessione' },
+  {
+    href: null,
+    sublabel: 'Pianifica una sessione',
+    iconBoxClass: 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400',
+  },
   {
     href: '/dashboard/schede/nuova',
     icon: FileText,
     label: 'Nuova Scheda',
     sublabel: 'Crea workout',
-    accentClass: 'from-amber-500/14 to-orange-500/6',
+    iconBoxClass: 'border-amber-500/30 bg-amber-500/20 text-amber-400',
   },
   {
     href: '/dashboard/chat',
     icon: MessageSquare,
     label: 'Messaggi',
     sublabel: 'Rispondi subito',
-    accentClass: 'from-purple-500/14 to-fuchsia-500/6',
+    iconBoxClass: 'border-purple-500/30 bg-purple-500/20 text-purple-400',
   },
   {
     href: '/dashboard/statistiche',
     icon: BarChart3,
     label: 'Statistiche',
     sublabel: 'KPI & trend',
-    accentClass: 'from-blue-500/14 to-indigo-500/6',
+    iconBoxClass: 'border-blue-500/30 bg-blue-500/20 text-blue-400',
   },
 ]
 
@@ -203,11 +212,7 @@ async function fetchTodayAgenda(
     let type: AgendaEvent['type'] = 'appuntamento'
     const typeValue = apt.type ?? ''
     if (typeValue === 'allenamento') type = 'allenamento'
-    else if (
-      typeValue === 'consulenza' ||
-      typeValue === 'prima_visita' ||
-      typeValue === 'riunione'
-    )
+    else if (typeValue === 'consulenza' || typeValue === 'prima_visita' || typeValue === 'riunione')
       type = 'consulenza'
 
     const description =
@@ -318,8 +323,7 @@ export default function DashboardPage() {
         if (!e.athlete_id) return { ...e, lessons_remaining: undefined }
         const fromCounter = rimastiMap.get(e.athlete_id)
         const stats = lessonStatsMap.get(e.athlete_id)
-        const computed =
-          stats != null ? stats.acquired - stats.used : undefined
+        const computed = stats != null ? stats.acquired - stats.used : undefined
         return {
           ...e,
           lessons_remaining: fromCounter !== undefined ? fromCounter : computed,
@@ -329,89 +333,75 @@ export default function DashboardPage() {
   )
 
   return (
-    <div
-      className="relative flex flex-col h-full space-y-10 px-6 py-6 overflow-y-auto"
-      aria-busy={loading}
+    <StaffContentLayout
+      title="Dashboard"
+      description="Panoramica e agenda di oggi"
+      theme="teal"
+      className="overflow-y-auto min-h-0"
     >
-      {/* Ambient sportivo */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full bg-primary/12 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-black/25" />
-      </div>
-
-      <section className="shrink-0" aria-label="Azioni rapide">
-        <div className="grid gap-3 md:grid-cols-5">
-          {QUICK_ACTIONS.map((item) =>
-            item.href ? (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch
-                aria-label={`${item.label}, ${item.sublabel}`}
-                className="group relative flex min-h-[90px] flex-col items-center justify-center overflow-hidden rounded-xl bg-background-secondary/42 backdrop-blur-2xl ring-1 ring-white/8 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-glow active:scale-[0.98] p-3 text-center"
-              >
-                <div className="pointer-events-none absolute inset-0">
+      <section className="shrink-0" aria-label="Azioni rapide" aria-busy={loading}>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-5 md:gap-2">
+          {QUICK_ACTIONS.map((item) => {
+            if (item.href) {
+              const linkItem = item as QuickActionLink
+              const Icon = linkItem.icon
+              return (
+                <Link
+                  key={linkItem.href}
+                  href={linkItem.href}
+                  prefetch
+                  aria-label={`${linkItem.label}, ${linkItem.sublabel}`}
+                  className={QUICK_ACTION_CARD_CLASS}
+                >
                   <div
                     className={cn(
-                      'absolute inset-0 bg-gradient-to-br opacity-80',
-                      item.accentClass,
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+                      linkItem.iconBoxClass,
                     )}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-white/5" />
-                  <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-primary/60 via-primary/40 to-transparent opacity-70" />
-                </div>
-                <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/6 ring-1 ring-white/12 shadow-inner transition-all duration-300 group-hover:scale-105 group-hover:ring-primary/25 text-text-primary/90 group-hover:text-primary">
-                  <item.icon className="h-3.5 w-3.5" />
-                </div>
-                <span className="relative z-10 mt-1.5 block text-xs font-semibold text-text-primary">
-                  {item.label}
-                </span>
-                <span className="relative z-10 mt-0.5 block text-[10px] text-text-secondary/90">
-                  {item.sublabel}
-                </span>
-              </Link>
-            ) : (
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className="mt-2 block text-[10px] font-semibold text-text-primary">
+                    {linkItem.label}
+                  </span>
+                  <span className="text-[9px] text-text-secondary">{linkItem.sublabel}</span>
+                </Link>
+              )
+            }
+            return (
               <NewAppointmentButton
                 key="appointment"
-                accentClass={item.accentClass}
                 sublabel={item.sublabel}
+                iconBoxClass={item.iconBoxClass}
               />
-            ),
-          )}
+            )
+          })}
         </div>
       </section>
 
-      {/* Agenda Timeline Section */}
       <section className="flex-1 min-h-0" aria-label="Agenda di oggi">
         {loading ? (
           <SkeletonAgendaTimeline rows={4} />
         ) : loadError ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-xl bg-surface-200/60 p-8 text-center">
+          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <p className="text-sm text-text-secondary">{loadError}</p>
-            <button
-              type="button"
-              onClick={() => void loadAgenda()}
-              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98]"
-            >
+            <Button variant="primary" size="sm" onClick={() => void loadAgenda()}>
               Riprova
-            </button>
+            </Button>
           </div>
         ) : agendaData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-xl bg-surface-200/40 p-8 text-center">
+          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <p className="text-sm text-text-secondary">Nessun appuntamento oggi</p>
-            <Link
-              href="/dashboard/calendario"
-              prefetch
-              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98]"
-            >
-              Vai al calendario
-            </Link>
+            <Button variant="primary" size="sm" asChild>
+              <Link href="/dashboard/calendario" prefetch>
+                Vai al calendario
+              </Link>
+            </Button>
           </div>
         ) : (
           <AgendaClient initialEvents={initialEvents} />
         )}
       </section>
-    </div>
+    </StaffContentLayout>
   )
 }

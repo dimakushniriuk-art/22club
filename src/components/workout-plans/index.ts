@@ -4,6 +4,7 @@
  */
 
 export { WorkoutPlansHeader } from './workout-plans-header'
+export { SchedeHeaderActions } from './schede-header-actions'
 export { WorkoutPlansFilters } from './workout-plans-filters'
 export { WorkoutPlansList } from './workout-plans-list'
 export { WorkoutCard } from './workout-card'

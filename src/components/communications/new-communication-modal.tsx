@@ -345,7 +345,7 @@ function AthleteSelector({ selectedAthletes, onSelectionChange }: AthleteSelecto
 
   if (loading) {
     return (
-      <div className="mt-4 p-4 border border-border rounded-lg bg-background-secondary/50">
+      <div className="mt-4 p-4 rounded-lg border border-white/10 bg-white/[0.02]">
         <div className="flex items-center justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-text-tertiary" />
           <span className="ml-2 text-text-tertiary text-sm">Caricamento atleti...</span>
@@ -355,9 +355,9 @@ function AthleteSelector({ selectedAthletes, onSelectionChange }: AthleteSelecto
   }
 
   return (
-    <div className="mt-4 border border-border rounded-lg bg-background-secondary/50">
+    <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.02]">
       {/* Search bar */}
-      <div className="p-3 border-b border-border">
+      <div className="border-b border-white/10 p-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
           <Input
@@ -381,7 +381,7 @@ function AthleteSelector({ selectedAthletes, onSelectionChange }: AthleteSelecto
             {filteredAthletes.map((athlete) => (
               <label
                 key={athlete.id}
-                className="flex items-center space-x-3 p-2 rounded hover:bg-background-tertiary/50 cursor-pointer transition-colors"
+                className="flex items-center space-x-3 p-2 rounded hover:bg-white/[0.04] cursor-pointer transition-colors"
               >
                 <Checkbox
                   checked={selectedAthletes.includes(athlete.id)}
@@ -400,7 +400,7 @@ function AthleteSelector({ selectedAthletes, onSelectionChange }: AthleteSelecto
       </div>
 
       {/* Footer con conteggio */}
-      <div className="p-3 border-t border-border bg-background-secondary/30">
+      <div className="border-t border-white/10 bg-white/[0.02] p-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-text-secondary">
             {selectedAthletes.length} atleta{selectedAthletes.length !== 1 ? 'i' : ''} selezionato

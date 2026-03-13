@@ -6,7 +6,7 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
+import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
@@ -37,14 +37,10 @@ export function SettingsProfileTab({
   onSaveProfile,
 }: SettingsProfileTabProps) {
   return (
-    <Card
-      variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+    <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
       <CardHeader className="relative pb-4">
         <CardTitle className="flex items-center gap-2.5 text-xl">
-          <UserCircle className="h-5 w-5 text-teal-400 shrink-0" />
+          <UserCircle className="h-5 w-5 text-primary shrink-0" />
           Profilo Utente
         </CardTitle>
         <CardDescription className="text-text-secondary mt-1.5">
@@ -54,7 +50,7 @@ export function SettingsProfileTab({
       <CardContent className="space-y-6 relative pt-0">
         {profileLoading ? (
           <div className="flex items-center justify-center py-8">
-            <RefreshCw className="h-6 w-6 animate-spin text-teal-400" />
+            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
           <>
@@ -65,7 +61,7 @@ export function SettingsProfileTab({
                 alt={`${profile.nome} ${profile.cognome}`}
                 fallbackText={`${profile.nome?.[0] || ''}${profile.cognome?.[0] || ''}`}
                 size="xl"
-                className="ring-2 ring-teal-500/30 shrink-0"
+                className="ring-2 ring-white/10 shrink-0"
               />
               <div className="flex-1 space-y-2 min-w-0">
                 <AvatarUploader
@@ -118,12 +114,8 @@ export function SettingsProfileTab({
             </div>
 
             {/* Salva Profilo */}
-            <div className="flex justify-end pt-4 border-t border-teal-500/10">
-              <Button
-                onClick={onSaveProfile}
-                disabled={loading}
-                className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 min-w-[140px]"
-              >
+            <div className="flex justify-end pt-4 border-t border-white/10">
+              <Button onClick={onSaveProfile} disabled={loading} className="min-w-[140px]">
                 {loading ? (
                   <>
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -140,6 +132,6 @@ export function SettingsProfileTab({
           </>
         )}
       </CardContent>
-    </Card>
+    </div>
   )
 }

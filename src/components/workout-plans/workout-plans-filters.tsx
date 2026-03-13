@@ -65,33 +65,31 @@ export function WorkoutPlansFilters({
   )
 
   return (
-    <div className="space-y-4">
-      {/* Barra ricerca principale */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex-1">
+    <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] space-y-4">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center">
+        <div className="flex-1 min-w-0">
           <Input
             placeholder="Cerca per nome scheda, atleta o PT..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             leftIcon={<Search className="h-4 w-4" />}
-            className="bg-background-secondary/30 border border-white/5 focus-visible:border-primary/30 focus-visible:shadow-[0_0_25px_rgba(2,179,191,0.2)] transition-all duration-300"
+            className="rounded-md border-white/10 bg-black/20 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
         {hasActiveFilters && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleClearFilters}
-            className="text-text-secondary hover:text-text-primary transition-colors"
+            className="rounded-lg border-white/20 text-text-secondary hover:bg-white/5 hover:border-white/30 shrink-0"
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="mr-2 h-4 w-4" />
             Reset filtri
           </Button>
         )}
       </div>
 
-      {/* Filtri avanzati in griglia */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         <div className="space-y-2">
           <label className="text-text-secondary text-xs font-medium flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5" />

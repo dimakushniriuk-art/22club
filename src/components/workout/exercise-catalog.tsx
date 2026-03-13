@@ -573,17 +573,16 @@ export function ExerciseCatalog({
       {/* Filtri */}
       {showFilters && (
         <Card
-          variant="trainer"
-          className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl"
+          variant="default"
+          className="relative overflow-hidden transition-all duration-200"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-          <CardHeader className="relative z-10 border-b border-white/5 bg-background-secondary/50">
+          <CardHeader className="border-b border-white/10">
             <CardTitle size="sm" className="flex items-center gap-2">
               <span className="text-lg">🔍</span>
               <span>Filtri</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="relative space-y-4 pt-6">
+          <CardContent className="space-y-4 pt-6">
             {/* Ricerca */}
             <div>
               <Input
@@ -681,19 +680,13 @@ export function ExerciseCatalog({
             return (
               <Card
                 key={exercise.id}
-                variant="trainer"
-                className={`group relative overflow-hidden cursor-pointer transition-all duration-200 border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-md hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-400/40 hover:scale-[1.02] ${
-                  isSelected
-                    ? 'ring-2 ring-teal-500/60 bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-cyan-500/10 border-teal-500/40 shadow-teal-500/20'
-                    : 'shadow-teal-500/5'
-                }`}
+                variant="default"
+                className={cn(
+                  'group relative overflow-hidden cursor-pointer transition-all duration-200 border-l-4 border-l-primary/30 hover:border-white/20 hover:border-l-primary/50',
+                  isSelected && 'ring-2 ring-primary/50 border-primary/30',
+                )}
                 onClick={() => onExerciseSelect(exercise)}
               >
-                {/* Selected indicator overlay */}
-                {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-cyan-500/10 pointer-events-none" />
-                )}
-                {/* Badge numero sequenza in alto a destra (stesso stile di ✓ Selezionato) */}
                 {selectionIndex != null && (
                   <div className="absolute top-3 right-3 z-10 pointer-events-none">
                     <span className="inline-flex items-center transition-all duration-200 bg-green-500 text-white border border-green-500 px-2 py-1 text-xs font-medium rounded-lg shadow-sm">
@@ -701,9 +694,9 @@ export function ExerciseCatalog({
                     </span>
                   </div>
                 )}
-                <CardContent className="relative p-4">
+                <CardContent className="p-4">
                   {/* Video thumbnail o placeholder */}
-                  <div className="relative bg-gradient-to-br from-background-tertiary via-background-tertiary to-surface-200/20 mb-3 flex aspect-video items-center justify-center rounded-lg overflow-hidden group-hover:shadow-lg transition-shadow w-full">
+                  <div className="relative bg-white/[0.04] border border-white/10 mb-3 flex aspect-video items-center justify-center rounded-lg overflow-hidden group-hover:shadow-lg transition-shadow w-full">
                     <ExerciseImage
                       exercise={exercise}
                       getMuscleGroupIcon={getMuscleGroupIcon}
@@ -794,18 +787,13 @@ export function ExerciseCatalog({
             return (
               <Card
                 key={exercise.id}
-                variant="trainer"
-                className={`group relative overflow-hidden cursor-pointer transition-all duration-200 border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-md hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-400/40 ${
-                  isSelected
-                    ? 'ring-2 ring-teal-500/60 bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-cyan-500/10 border-teal-500/40 shadow-teal-500/20'
-                    : 'shadow-teal-500/5'
-                }`}
+                variant="default"
+                className={cn(
+                  'group relative overflow-hidden cursor-pointer transition-all duration-200 border-l-4 border-l-primary/30 hover:border-white/20 hover:border-l-primary/50',
+                  isSelected && 'ring-2 ring-primary/50 border-primary/30',
+                )}
                 onClick={() => onExerciseSelect(exercise)}
               >
-                {/* Selected indicator overlay */}
-                {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-cyan-500/10 pointer-events-none" />
-                )}
                 {selectionIndex != null && (
                   <div className="absolute top-3 right-3 z-10 pointer-events-none">
                     <span className="inline-flex items-center transition-all duration-200 bg-green-500 text-white border border-green-500 px-2 py-1 text-xs font-medium rounded-lg shadow-sm">
@@ -813,10 +801,10 @@ export function ExerciseCatalog({
                     </span>
                   </div>
                 )}
-                <CardContent className="relative p-4">
+                <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     {/* Video thumbnail o placeholder */}
-                    <div className="relative bg-gradient-to-br from-background-tertiary via-background-tertiary to-surface-200/20 flex-shrink-0 w-32 h-24 flex items-center justify-center rounded-lg overflow-hidden group-hover:shadow-lg transition-shadow">
+                    <div className="relative bg-white/[0.04] border border-white/10 shrink-0 w-32 h-24 flex items-center justify-center rounded-lg overflow-hidden group-hover:shadow-lg transition-shadow">
                       <ExerciseImage
                         exercise={exercise}
                         getMuscleGroupIcon={getMuscleGroupIcon}
@@ -896,12 +884,8 @@ export function ExerciseCatalog({
 
       {/* Empty state */}
       {filteredExercises.length === 0 && (
-        <Card
-          variant="trainer"
-          className="relative overflow-hidden border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-teal-500/5 backdrop-blur-xl"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-          <CardContent className="relative py-12 text-center">
+        <Card variant="default" className="relative overflow-hidden">
+          <CardContent className="py-12 text-center">
             <div className="mb-4 text-6xl opacity-50">🔍</div>
             <h3 className="text-text-primary mb-2 text-lg font-medium">Nessun esercizio trovato</h3>
             <p className="text-text-secondary mb-4 text-sm">

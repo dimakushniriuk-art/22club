@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { PageHeaderFixed } from '@/components/layout'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import {
@@ -10,7 +11,6 @@ import {
   Dumbbell,
   Clock,
   TrendingUp,
-  ArrowLeft,
   History,
   Download,
 } from 'lucide-react'
@@ -355,10 +355,12 @@ export default function StoricoAllenamentiAtletaPage() {
     }
   }
 
+  const handleBack = useCallback(() => router.back(), [router])
+
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-24">
           <LoadingState message="Caricamento storico allenamenti..." size="md" />
         </div>
       </div>
@@ -368,160 +370,93 @@ export default function StoricoAllenamentiAtletaPage() {
   if (error) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-24">
           <ErrorState message={error} onRetry={loadData} />
         </div>
       </div>
     )
   }
 
+  const CARD_DS =
+    'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
+
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-6">
-        {/* Header — stile Nutrizionista: glass + accento teal/cyan */}
-        <div
-          className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5"
-          style={{
-            border: '1px solid rgba(2, 179, 191, 0.4)',
-            background:
-              'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.22), 0 0 0 1px rgba(2,179,191,0.1) inset',
-          }}
-        >
-          <div
-            className="absolute inset-0 rounded-2xl opacity-70"
-            style={{
-              background:
-                'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
-            }}
-            aria-hidden
-          />
-          <div className="relative z-10 flex items-center gap-4">
-            <Button
-              onClick={() => router.back()}
-              variant="ghost"
-              size="sm"
-              className="h-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl p-0 text-text-secondary transition-colors duration-200 hover:bg-primary/15 hover:text-primary"
-              aria-label="Indietro"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex flex-1 items-center gap-3 min-w-0">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl min-[834px]:h-14 min-[834px]:w-14"
-                style={{
-                  backgroundColor: 'rgba(2, 179, 191, 0.2)',
-                  border: '1px solid rgba(2, 179, 191, 0.35)',
-                }}
-              >
-                <History className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="truncate text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
-                  Storico Allenamenti
-                </h1>
-                <p className="mt-0.5 truncate text-xs text-text-tertiary">
-                  {userProfile
-                    ? `${userProfile.nome} ${userProfile.cognome}`
-                    : 'Visualizza allenamenti completati e statistiche'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24">
+        <PageHeaderFixed
+          title="Storico Allenamenti"
+          subtitle={
+            userProfile
+              ? `${userProfile.nome} ${userProfile.cognome}`
+              : 'Visualizza allenamenti completati e statistiche'
+          }
+          onBack={handleBack}
+          icon={<History className="h-5 w-5 text-cyan-400" />}
+        />
 
-        {/* Stats — card compatte come Nutrizionista */}
         <div className="grid grid-cols-2 min-[834px]:grid-cols-4 gap-3 min-[834px]:gap-4">
-          <Card
-            className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
-            style={{
-              background:
-                'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
-            }}
-          >
-            <div className="absolute left-0 top-0 h-full w-1 bg-cyan-400" aria-hidden />
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 h-full w-1 bg-white rounded-l-lg" aria-hidden />
             <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Dumbbell className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                   Totali
                 </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 min-[834px]:text-2xl">
+                <p className="text-xl font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-2xl">
                   {stats.total_workouts}
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card
-            className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
-            style={{
-              background:
-                'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
-            }}
-          >
-            <div className="absolute left-0 top-0 h-full w-1 bg-cyan-400" aria-hidden />
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 h-full w-1 bg-white rounded-l-lg" aria-hidden />
             <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Clock className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                   Ore
                 </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 min-[834px]:text-2xl">
+                <p className="text-xl font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-2xl">
                   {stats.total_hours}h
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card
-            className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
-            style={{
-              background:
-                'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
-            }}
-          >
-            <div className="absolute left-0 top-0 h-full w-1 bg-cyan-400" aria-hidden />
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 h-full w-1 bg-white rounded-l-lg" aria-hidden />
             <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <TrendingUp className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                   Media/Sett
                 </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 min-[834px]:text-2xl">
+                <p className="text-xl font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-2xl">
                   {stats.avg_per_week}
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card
-            className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
-            style={{
-              background:
-                'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
-            }}
-          >
-            <div className="absolute left-0 top-0 h-full w-1 bg-cyan-400" aria-hidden />
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 h-full w-1 bg-white rounded-l-lg" aria-hidden />
             <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Calendar className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                   Streak
                 </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 min-[834px]:text-2xl">
+                <p className="text-xl font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-2xl">
                   {stats.current_streak}
                 </p>
               </div>
@@ -529,28 +464,8 @@ export default function StoricoAllenamentiAtletaPage() {
           </Card>
         </div>
 
-        {/* Main Content — stile Nutrizionista: card con header e contenuto */}
-        <Card
-          className="relative overflow-hidden rounded-xl border backdrop-blur-md"
-          style={{
-            borderColor: 'rgba(2, 179, 191, 0.35)',
-            background:
-              'linear-gradient(145deg, rgba(22,22,26,0.95) 0%, rgba(16,16,18,0.98) 100%)',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(2,179,191,0.08) inset',
-          }}
-        >
-          <div
-            className="absolute inset-0 rounded-xl opacity-60"
-            style={{
-              background:
-                'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(2,179,191,0.1) 0%, transparent 60%)',
-            }}
-            aria-hidden
-          />
-          <CardHeader
-            className="relative z-10 flex flex-col gap-3 border-b px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4 sm:flex-row sm:items-center sm:justify-between"
-            style={{ borderColor: 'rgba(2, 179, 191, 0.2)' }}
-          >
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className="relative z-10 flex flex-col gap-3 border-b border-white/10 px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-base font-bold text-text-primary md:text-lg">
                 Allenamenti Completati
@@ -569,10 +484,10 @@ export default function StoricoAllenamentiAtletaPage() {
                 <button
                   key={period.value}
                   onClick={() => setSelectedPeriod(period.value)}
-                  className={`min-h-[44px] rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 min-[834px]:min-h-9 min-[834px]:px-3.5 min-[834px]:py-1.5 min-[834px]:text-sm ${
+                  className={`min-h-[44px] rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200 min-[834px]:min-h-9 min-[834px]:px-3.5 min-[834px]:py-1.5 min-[834px]:text-sm ${
                     selectedPeriod === period.value
-                      ? 'border border-cyan-400/40 bg-cyan-500/20 text-cyan-400'
-                      : 'border border-border text-text-secondary hover:border-cyan-400/40 hover:text-text-primary'
+                      ? 'border border-white/20 bg-white/10 text-text-primary'
+                      : 'border border-white/10 bg-white/[0.04] text-text-secondary hover:bg-white/5 hover:text-text-primary'
                   }`}
                 >
                   {period.label}
@@ -582,7 +497,7 @@ export default function StoricoAllenamentiAtletaPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleExportPDF}
-                className="min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-cyan-400/40 p-0 hover:bg-cyan-500/10 hover:text-cyan-400 min-[834px]:min-h-9 min-[834px]:min-w-9"
+                className="min-h-[44px] min-w-[44px] shrink-0 rounded-lg border border-white/10 p-0 hover:bg-white/5 text-text-primary min-[834px]:min-h-9 min-[834px]:min-w-9"
                 title="Esporta PDF"
               >
                 <Download className="h-4 w-4" />
@@ -592,7 +507,7 @@ export default function StoricoAllenamentiAtletaPage() {
           <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
             {workouts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-xl border border-cyan-400/40 bg-cyan-500/20 min-[834px]:h-16 min-[834px]:w-16">
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-16 min-[834px]:w-16">
                   <Dumbbell className="h-7 w-7 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" />
                 </div>
                 <h3 className="text-text-primary text-sm font-semibold min-[834px]:text-base">
@@ -607,12 +522,12 @@ export default function StoricoAllenamentiAtletaPage() {
                 {workouts.map((workout) => (
                   <div
                     key={workout.id}
-                    className="relative overflow-hidden rounded-xl border border-border/50 bg-background-secondary/30 p-3 min-[834px]:p-3.5 transition-colors hover:border-cyan-400/30 hover:bg-background-secondary/50"
+                    className="relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.04] p-3 min-[834px]:p-3.5 transition-colors hover:border-white/20"
                   >
                     <div className="flex flex-col gap-2 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                             <Dumbbell className="h-4 w-4 text-cyan-400" />
                           </div>
                           <h3 className="text-text-primary truncate text-sm font-semibold min-[834px]:text-base">
@@ -624,16 +539,13 @@ export default function StoricoAllenamentiAtletaPage() {
                             </Badge>
                           )}
                           {workout.stato === 'completato' && (
-                            <Badge
-                              variant="outline"
-                              className="shrink-0 text-[10px] px-1.5 py-0 border-cyan-400/40 text-cyan-400"
-                            >
+                            <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0 border-white/20 text-text-secondary">
                               {workout.is_coached ? 'Con trainer' : 'Da solo'}
                             </Badge>
                           )}
                         </div>
                         <div className="mt-1.5 flex items-center gap-2 text-text-secondary text-xs">
-                          <Calendar className="h-3.5 w-3.5 shrink-0" />
+                          <Calendar className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
                           <span>{formatDate(workout.started_at)}</span>
                         </div>
                         {workout.note && (
@@ -642,9 +554,9 @@ export default function StoricoAllenamentiAtletaPage() {
                           </p>
                         )}
                       </div>
-                      <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1.5">
+                      <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5">
                         <Clock className="h-3.5 w-3.5 text-cyan-400" />
-                        <span className="text-cyan-400 text-sm font-semibold tabular-nums">
+                        <span className="text-text-primary text-sm font-semibold tabular-nums">
                           {formatDuration(workout.duration_minutes)}
                         </span>
                       </div>

@@ -46,9 +46,11 @@ function roleLabel(role: ChatRecipientRole): string {
 }
 
 const HEADER_BASE_CLASS =
-  'relative overflow-hidden bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg'
-const HEADER_FULL_CLASS = 'rounded-b-xl border-b border-cyan-500/30 z-10 shrink-0'
-const HEADER_STANDALONE_CLASS = 'rounded-xl border border-cyan-500/30 mb-4'
+  'relative overflow-hidden p-3 min-[834px]:p-4'
+const HEADER_FULL_CLASS =
+  'rounded-b-xl border-b border-white/10 bg-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] z-10 shrink-0'
+const HEADER_STANDALONE_CLASS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 
 function ChatPageHeader({
   onBack,
@@ -71,18 +73,11 @@ function ChatPageHeader({
     HEADER_BASE_CLASS,
     variant === 'full' ? HEADER_FULL_CLASS : HEADER_STANDALONE_CLASS,
   )
-  const roundedClass = variant === 'full' ? 'rounded-b-xl' : 'rounded-xl'
   const titleClass = size === 'compact' ? 'text-sm min-[834px]:text-base' : 'text-2xl md:text-3xl'
   const subtitleClass = size === 'compact' ? 'text-[10px] min-[834px]:text-xs' : 'text-xs'
   if (skeleton) {
     return (
       <header className={wrapperClass}>
-        <div
-          className={cn(
-            'absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5',
-            roundedClass,
-          )}
-        />
         <div className="relative z-10 flex items-center gap-3">
           <div className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-xl bg-background-tertiary animate-pulse shrink-0" />
           <div className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-xl bg-background-tertiary animate-pulse shrink-0" />
@@ -96,18 +91,12 @@ function ChatPageHeader({
   }
   return (
     <header className={wrapperClass}>
-      <div
-        className={cn(
-          'absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5',
-          roundedClass,
-        )}
-      />
       <div className="relative z-10 flex items-center gap-3">
         {onBack && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+            className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary"
             onClick={onBack}
             aria-label="Indietro"
           >
@@ -115,7 +104,7 @@ function ChatPageHeader({
           </Button>
         )}
         {icon && (
-          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
             {icon}
           </div>
         )}
@@ -130,7 +119,7 @@ function ChatPageHeader({
 
 function ChatErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <Card className="border border-state-error/50 bg-background-secondary/50 backdrop-blur-sm p-6 min-[834px]:p-8 text-center">
+    <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
       <div className="mb-3 text-4xl opacity-50">😞</div>
       <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">
         Errore nel caricamento
@@ -139,7 +128,7 @@ function ChatErrorState({ error, onRetry }: { error: string; onRetry: () => void
       <Button
         onClick={onRetry}
         aria-label="Riprova a caricare le conversazioni"
-        className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]"
+        className="rounded-lg border border-white/10 hover:bg-white/5 min-h-[44px] text-text-primary"
       >
         Riprova
       </Button>
@@ -157,7 +146,7 @@ function ChatEmptyState({
   description: string
 }) {
   return (
-    <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-4 min-[834px]:p-6 text-center">
+    <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-4 min-[834px]:p-6 text-center">
       <div className="mb-2.5 text-4xl opacity-50">{emoji}</div>
       <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">
         {title}
@@ -169,10 +158,10 @@ function ChatEmptyState({
 
 function ChatLoadingCard() {
   return (
-    <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+    <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
       <div className="p-6 min-[834px]:p-8">
         <div className="animate-pulse space-y-4">
-          <div className="bg-background-tertiary h-48 rounded-xl" />
+          <div className="bg-white/10 h-48 rounded-lg" />
         </div>
       </div>
     </Card>
@@ -185,12 +174,12 @@ function ChatLoadingFullPage({ footerChildren }: { footerChildren?: ReactNode })
       <ChatPageHeader skeleton title="" subtitle="" variant="full" />
       <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
         <div className="animate-pulse space-y-3 w-full px-3 sm:px-4 min-[834px]:px-6">
-          <div className="bg-background-tertiary h-14 rounded-xl" />
-          <div className="bg-background-tertiary h-14 rounded-xl" />
-          <div className="bg-background-tertiary h-14 rounded-xl" />
+          <div className="bg-white/10 h-14 rounded-lg" />
+          <div className="bg-white/10 h-14 rounded-lg" />
+          <div className="bg-white/10 h-14 rounded-lg" />
         </div>
       </div>
-      <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black p-3 min-[834px]:p-4 shadow-lg pt-px pb-[env(safe-area-inset-bottom)]">
+      <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-background border-t border-white/10 p-3 min-[834px]:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-px pb-[env(safe-area-inset-bottom)]">
         <div
           className="absolute inset-x-0 top-0 h-px z-20"
           style={{
@@ -632,12 +621,12 @@ function AthleteChatPageContent() {
         />
         <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
           <div className="animate-pulse space-y-3 w-full px-3 sm:px-4 min-[834px]:px-6">
-            <div className="bg-background-tertiary h-14 rounded-xl" />
-            <div className="bg-background-tertiary h-14 rounded-xl" />
-            <div className="bg-background-tertiary h-14 rounded-xl" />
+            <div className="bg-white/10 h-14 rounded-lg" />
+            <div className="bg-white/10 h-14 rounded-lg" />
+            <div className="bg-white/10 h-14 rounded-lg" />
           </div>
         </div>
-        <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black p-3 min-[834px]:p-4 shadow-lg pt-px pb-[env(safe-area-inset-bottom)]">
+        <footer className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-background border-t border-white/10 p-3 min-[834px]:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-px pb-[env(safe-area-inset-bottom)]">
           <div
             className="absolute inset-x-0 top-0 h-px z-20"
             style={{
@@ -672,13 +661,17 @@ function AthleteChatPageContent() {
   const avatarUrl =
     effectiveConversation.participant.avatar ?? selectedRecipient?.avatar_url ?? null
 
+  const headerHeight = 'calc(5.5rem+10px+env(safe-area-inset-top,0px))'
+  const footerHeight = 'calc(5.5rem+env(safe-area-inset-bottom,0px))'
+
   return (
     <div
-      className="flex flex-col min-h-0 flex-1 bg-background w-full max-w-full overflow-hidden"
+      className="flex h-full min-h-0 flex-col w-full max-w-full overflow-hidden bg-background"
       role="main"
       aria-label="Chat"
     >
-      <header className="fixed inset-x-0 top-0 z-20 overflow-hidden bg-black p-3 min-[834px]:p-4 shadow-lg pt-[calc(10px+env(safe-area-inset-top,0px))]">
+      <div className="shrink-0" style={{ height: headerHeight }} aria-hidden />
+      <header className="fixed inset-x-0 top-0 z-20 overflow-hidden bg-black border-b border-white/10 p-3 min-[834px]:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-[calc(10px+env(safe-area-inset-top,0px))]">
         <div
           className="absolute inset-x-0 bottom-0 h-px"
           style={{
@@ -690,7 +683,7 @@ function AthleteChatPageContent() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+            className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary"
             onClick={handleBack}
             aria-label="Indietro"
           >
@@ -706,15 +699,15 @@ function AthleteChatPageContent() {
                   type="button"
                   onClick={() => handleRecipientChange(r.id)}
                   className={cn(
-                    'flex items-center gap-2 shrink-0 rounded-xl p-2 min-[834px]:p-2.5 border transition-all text-left',
+                    'flex items-center gap-2 shrink-0 rounded-lg p-2 min-[834px]:p-2.5 border transition-all text-left',
                     isSelected
-                      ? 'border-cyan-500/50 bg-cyan-500/15 shadow-[0_0_20px_rgba(2,179,191,0.15)]'
-                      : 'border-white/10 bg-background-secondary/40 hover:border-cyan-500/30 hover:bg-cyan-500/10',
+                      ? 'border-white/20 bg-white/10'
+                      : 'border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/5',
                   )}
                   aria-label={`Chatta con ${name}, ${roleLabel(r.role)}`}
                   aria-pressed={isSelected}
                 >
-                  <div className="relative h-9 w-9 min-[834px]:h-10 min-[834px]:w-10 shrink-0 rounded-full overflow-hidden border border-cyan-500/20 bg-cyan-500/10">
+                  <div className="relative h-9 w-9 min-[834px]:h-10 min-[834px]:w-10 shrink-0 rounded-full overflow-hidden border border-white/10 bg-white/5">
                     {r.avatar_url ? (
                       <Image
                         src={r.avatar_url}
@@ -743,7 +736,7 @@ function AthleteChatPageContent() {
           ) : (
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {avatarUrl ? (
-                <div className="relative h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-full overflow-hidden border border-cyan-500/30 bg-cyan-500/10">
+                <div className="relative h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-full overflow-hidden border border-white/10 bg-white/5">
                   <Image
                     src={avatarUrl}
                     alt={displayName}
@@ -753,7 +746,7 @@ function AthleteChatPageContent() {
                   />
                 </div>
               ) : (
-                <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/10">
+                <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
                   <User className="h-5 w-5 text-cyan-400" />
                 </div>
               )}
@@ -771,7 +764,7 @@ function AthleteChatPageContent() {
       </header>
 
       <main
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain flex flex-col space-y-1 p-4 pt-[calc(5.5rem+10px+env(safe-area-inset-top,0px))] pb-[calc(5rem+env(safe-area-inset-bottom))] bg-background"
+        className="relative z-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain flex flex-col space-y-1 p-4 bg-background"
         aria-label="Messaggi della conversazione"
       >
         <MessageList
@@ -785,8 +778,9 @@ function AthleteChatPageContent() {
         />
       </main>
 
+      <div className="shrink-0" style={{ height: footerHeight }} aria-hidden />
       <footer
-        className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black px-3 min-[834px]:px-4 py-[10px] shadow-lg pt-[calc(10px+1px)] pb-[calc(10px+env(safe-area-inset-bottom))]"
+        className="fixed inset-x-0 bottom-0 z-20 overflow-hidden bg-black border-t border-white/10 px-3 min-[834px]:px-4 py-[10px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-[calc(10px+1px)] pb-[calc(10px+env(safe-area-inset-bottom))]"
         aria-label="Input messaggio"
       >
         <div

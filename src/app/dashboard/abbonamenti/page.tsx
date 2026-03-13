@@ -30,6 +30,7 @@ import { useToast } from '@/components/ui/toast'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useAuth } from '@/hooks/use-auth'
 import { addReversalFromPayment } from '@/lib/credits/ledger'
 import {
@@ -1241,12 +1242,32 @@ export default function AbbonamentiPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full relative">
-        {/* Header */}
-        {/* Banner errore con retry (non full-page) */}
+    <StaffContentLayout
+      title="Abbonamenti"
+      description="Gestione abbonamenti e pagamenti atleti"
+      theme="teal"
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={filteredAbbonamenti.length === 0}
+            className="border-white/10 hover:border-primary/20"
+          >
+            <Download className="mr-1.5 h-4 w-4" />
+            Esporta CSV
+          </Button>
+          <Button onClick={() => setShowModal(true)} size="sm" variant="primary">
+            <Plus className="mr-2 h-4 w-4" />
+            Nuovo Pagamento
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-4 sm:space-y-6">
         {error && (
-          <Card variant="trainer" className="border-red-500/30 bg-red-500/10">
+          <Card variant="default" className="border-red-500/30 bg-red-500/10">
             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-red-200">{error}</p>
               <Button
@@ -1315,40 +1336,9 @@ export default function AbbonamentiPage() {
         </div>
         )}
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Abbonamenti
-            </h1>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Gestione abbonamenti e pagamenti atleti
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              disabled={filteredAbbonamenti.length === 0}
-              className={t.buttonOutline}
-            >
-              <Download className="mr-1.5 h-4 w-4" />
-              Esporta CSV
-            </Button>
-            <Button
-              onClick={() => setShowModal(true)}
-              className={`${t.buttonPrimary} transition-all duration-200`}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Nuovo Pagamento
-            </Button>
-          </div>
-        </div>
-
         {/* Filtri */}
-        <div className="relative p-4">
+        <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Ricerca */}
             <div className="flex-1 min-w-[200px]">
               <Input
                 placeholder="Cerca per nome atleta..."
@@ -1364,7 +1354,7 @@ export default function AbbonamentiPage() {
                   })
                 }}
                 leftIcon={<Search className="h-4 w-4" />}
-                className={`bg-background-secondary/50 ${t.inputBorder}`}
+                className="bg-white/[0.04] border-white/10 focus:border-primary"
               />
             </div>
 
@@ -1445,7 +1435,7 @@ export default function AbbonamentiPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleResetFilters}
-                className={t.buttonOutline}
+                className="border-white/10 hover:border-primary/20"
               >
                 <X className="mr-2 h-4 w-4" />
                 Rimuovi filtri
@@ -1469,14 +1459,11 @@ export default function AbbonamentiPage() {
         </div>
 
         {/* Tabella Abbonamenti */}
-        <Card
-          variant="trainer"
-          className={`relative overflow-hidden bg-transparent transition-all duration-200 ${t.cardBorder}`}
-        >
-          <CardContent className="relative p-0">
+        <Card variant="default" className="overflow-hidden">
+          <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className={`bg-background-tertiary/50 border-b ${t.tableBorder}`}>
+                <thead className="border-b border-white/10 bg-white/[0.02]">
                   <tr>
                     <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
                       Atleta
@@ -1510,7 +1497,7 @@ export default function AbbonamentiPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className={`divide-y ${t.tableDivide}`}>
+                <tbody className="divide-y divide-white/10">
                   {filteredAbbonamenti.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-4 py-12 text-center text-text-secondary">
@@ -1557,7 +1544,7 @@ export default function AbbonamentiPage() {
                     filteredAbbonamenti.map((abb) => (
                       <tr
                         key={abb.id}
-                        className="hover:bg-background-tertiary/30 transition-colors cursor-pointer"
+                        className="hover:bg-white/[0.04] transition-colors cursor-pointer"
                         onClick={() => setDrilldownRow(abb)}
                       >
                         <td className="px-4 py-3 text-text-primary font-medium">
@@ -1617,7 +1604,7 @@ export default function AbbonamentiPage() {
                                       athlete: abb.athlete_name,
                                     })
                                   }
-                                  className={t.buttonOutline}
+                                  className="border-white/10 hover:border-primary/20"
                                   title="Visualizza fattura"
                                 >
                                   <Eye className="h-4 w-4" />
@@ -1626,7 +1613,7 @@ export default function AbbonamentiPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleDownloadInvoice(abb.invoice_url!)}
-                                  className={t.buttonOutline}
+                                  className="border-white/10 hover:border-primary/20"
                                   title="Scarica fattura"
                                 >
                                   <Download className="h-4 w-4" />
@@ -1663,7 +1650,7 @@ export default function AbbonamentiPage() {
 
         {/* Paginazione */}
         {enablePagination && Math.ceil(totalCount / ABBONAMENTI_PER_PAGE) > 1 && (
-          <div className="flex items-center justify-between border-t border-border pt-4">
+          <div className="flex items-center justify-between border-t border-white/10 pt-4">
             <div className="text-text-secondary text-sm">
               Mostrando {currentPage * ABBONAMENTI_PER_PAGE + 1} -{' '}
               {Math.min((currentPage + 1) * ABBONAMENTI_PER_PAGE, totalCount)} di {totalCount}{' '}
@@ -1807,6 +1794,6 @@ export default function AbbonamentiPage() {
           />
         )
       })()}
-    </div>
+    </StaffContentLayout>
   )
 }

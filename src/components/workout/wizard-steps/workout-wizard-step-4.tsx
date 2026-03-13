@@ -118,11 +118,10 @@ export function WorkoutWizardStep4({
 
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl transition-all duration-200"
+      variant="default"
+      className="relative overflow-hidden transition-all duration-200"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-      <CardContent className="relative z-10 p-6 sm:p-8">
+      <CardContent className="p-6 sm:p-8">
     <div className="space-y-6">
       <div className="mb-6">
         <h3 className="text-text-primary mb-2 text-xl font-bold">Target e parametri</h3>
@@ -135,11 +134,10 @@ export function WorkoutWizardStep4({
         {wizardData.days.map((day, dayIndex) => (
           <Card
             key={dayIndex}
-            variant="trainer"
-            className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/40 shadow-md shadow-teal-500/5 backdrop-blur-xl transition-all duration-200 hover:border-primary/20"
+            variant="default"
+            className="relative overflow-hidden transition-all duration-200 hover:border-white/20"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-            <CardHeader className="relative z-10 border-b border-white/5 bg-background-secondary/50">
+            <CardHeader className="border-b border-white/10">
               <CardTitle size="sm" className="flex items-center gap-2">
                 <Badge
                   variant="outline"
@@ -151,7 +149,7 @@ export function WorkoutWizardStep4({
                 <span>{day.title}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10 space-y-5 pt-6">
+            <CardContent className="space-y-5 pt-6">
               {(() => {
                 const items = getDayItems(day)
                 if (items.length === 0) {
@@ -258,11 +256,10 @@ export function WorkoutWizardStep4({
                   const exerciseBlock = (
                     <div
                       key={`${dayIndex}-${itemIndex}-ex`}
-                      className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/40 p-5 hover:border-primary/20 transition-all duration-200 shadow-md shadow-teal-500/5"
+                      className="relative overflow-hidden rounded-lg border border-white/10 bg-[#141414] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
                       {/* Titolo a tutta larghezza sopra video e tabella */}
-                      <div className="relative mb-4 flex items-center justify-between">
+                      <div className="mb-4 flex items-center justify-between">
                         <h4 className="text-text-primary font-semibold text-base">
                           {exerciseData?.name || 'Esercizio'}
                         </h4>
@@ -275,10 +272,10 @@ export function WorkoutWizardStep4({
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className="relative flex gap-4 items-start">
+                      <div className="flex gap-4 items-start">
                         {/* Colonna sinistra: video (allineato alla tabella) */}
                         {hasVideoUrl && exerciseData?.video_url && (
-                          <div className="shrink-0 w-64 sm:w-72 rounded-xl overflow-hidden border border-white/5 bg-background-tertiary/30 aspect-video">
+                          <div className="shrink-0 w-64 sm:w-72 rounded-lg overflow-hidden border border-white/10 bg-white/[0.04] aspect-video">
                             <video
                               src={exerciseData.video_url}
                               poster={posterUrl || undefined}
@@ -294,32 +291,31 @@ export function WorkoutWizardStep4({
                         {/* Colonna destra: tabella, note, serie */}
                         <div className="flex-1 min-w-0">
                           {/* Tabella target base */}
-                      <div className="relative overflow-hidden rounded-xl border border-white/5 bg-background-tertiary/30 mb-4 shadow-sm">
-                        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-                        <table className="w-full relative">
+                      <div className="rounded-lg border border-white/10 bg-white/[0.02] mb-4 overflow-hidden">
+                        <table className="w-full">
                           <thead>
-                            <tr className="bg-background-tertiary/60 border-b border-white/5">
-                              <th className="px-4 py-3 text-left">
+                            <tr className="border-b border-white/10">
+                              <th className="px-4 py-3 text-left bg-white/[0.02]">
                                 <span className="text-text-secondary text-xs font-semibold uppercase tracking-wider">
                                   Serie
                                 </span>
                               </th>
-                              <th className="px-4 py-3 text-left border-l border-white/5">
+                              <th className="px-4 py-3 text-left border-l border-white/10 bg-white/[0.02]">
                                 <span className="text-text-secondary text-xs font-semibold uppercase tracking-wider">
                                   Ripetizioni
                                 </span>
                               </th>
-                              <th className="px-4 py-3 text-left border-l border-white/5">
+                              <th className="px-4 py-3 text-left border-l border-white/10 bg-white/[0.02]">
                                 <span className="text-text-secondary text-xs font-semibold uppercase tracking-wider">
                                   Peso (kg)
                                 </span>
                               </th>
-                              <th className="px-4 py-3 text-left border-l border-white/5">
+                              <th className="px-4 py-3 text-left border-l border-white/10 bg-white/[0.02]">
                                 <span className="text-text-secondary text-xs font-semibold uppercase tracking-wider">
                                   Tempo esecuzione (sec)
                                 </span>
                               </th>
-                              <th className="px-4 py-3 text-left border-l border-white/5">
+                              <th className="px-4 py-3 text-left border-l border-white/10 bg-white/[0.02]">
                                 <span className="text-text-secondary text-xs font-semibold uppercase tracking-wider">
                                   Recupero (sec)
                                 </span>
@@ -342,7 +338,7 @@ export function WorkoutWizardStep4({
                                   className="w-full"
                                 />
                               </td>
-                              <td className="px-4 py-4 border-l border-white/5">
+                              <td className="px-4 py-4 border-l border-white/10">
                                 <Input
                                   type="number"
                                   value={exercise.target_reps || ''}
@@ -356,10 +352,10 @@ export function WorkoutWizardStep4({
                                   className="w-full"
                                 />
                               </td>
-                              <td className="px-4 py-4 border-l border-white/5">
-                                <Input
-                                  type="number"
-                                  value={exercise.target_weight || ''}
+<td className="px-4 py-4 border-l border-white/10">
+                                  <Input
+                                    type="number"
+                                    value={exercise.target_weight || ''}
                                   onChange={(e) =>
                                     onExerciseUpdate(dayIndex, itemIndex, {
                                       target_weight: Number(e.target.value) || 0,
@@ -371,7 +367,7 @@ export function WorkoutWizardStep4({
                                   className="w-full"
                                 />
                               </td>
-                              <td className="px-4 py-4 border-l border-white/5">
+                              <td className="px-4 py-4 border-l border-white/10">
                                 <Input
                                   type="number"
                                   value={exercise.execution_time_sec || ''}
@@ -386,7 +382,7 @@ export function WorkoutWizardStep4({
                                   className="w-full"
                                 />
                               </td>
-                              <td className="px-4 py-4 border-l border-white/5">
+                              <td className="px-4 py-4 border-l border-white/10">
                                 <Input
                                   type="number"
                                   value={exercise.rest_timer_sec || ''}
@@ -422,7 +418,7 @@ export function WorkoutWizardStep4({
                             })
                           }
                           placeholder="Inserisci note specifiche per questo esercizio (es. tecnica, respirazione, posizione, ecc.)"
-                          className="w-full min-h-[80px] resize-y bg-background-secondary/50 border-white/5 text-text-primary placeholder:text-text-tertiary focus:border-primary focus:ring-primary/20"
+                          className="w-full min-h-[80px] resize-y bg-white/[0.04] border border-white/10 text-text-primary placeholder:text-text-tertiary focus:border-primary focus:ring-primary/20"
                           rows={3}
                         />
                         {exercise.note && (
@@ -433,7 +429,7 @@ export function WorkoutWizardStep4({
                       </div>
 
                       {/* Pulsante aggiungi serie */}
-                      <div className="mb-4 flex items-center justify-between relative z-10">
+                      <div className="mb-4 flex items-center justify-between">
                         <Button
                           type="button"
                           variant="outline"
@@ -454,7 +450,7 @@ export function WorkoutWizardStep4({
                               target_sets: currentSets.length + 2, // Totale serie: 1 (tabella) + serie aggiunte
                             })
                           }}
-                          className="border-primary/25 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md relative z-10"
+                          className="border-primary/25 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 shadow-sm hover:shadow-md"
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Aggiungi serie
@@ -471,7 +467,7 @@ export function WorkoutWizardStep4({
 
                       {/* Lista serie aggiunte */}
                       {exercise.sets_detail && exercise.sets_detail.length > 0 && (
-                        <div className="space-y-3 mt-4 pt-5 border-t border-white/5">
+                        <div className="space-y-3 mt-4 pt-5 border-t border-white/10">
                           <h5 className="text-text-secondary text-sm font-semibold mb-4 flex items-center gap-2">
                             <span>Serie configurate</span>
                             <Badge
@@ -486,10 +482,9 @@ export function WorkoutWizardStep4({
                             {exercise.sets_detail.map((set, setIndex) => (
                               <div
                                 key={set.id}
-                                className="relative overflow-hidden flex items-start gap-3 p-4 rounded-lg border border-white/5 bg-background-tertiary/30 hover:border-primary/20 hover:bg-background-tertiary/40 transition-all duration-200"
+                                className="flex items-start gap-3 p-4 rounded-lg border border-white/10 bg-white/[0.04] hover:border-white/20 transition-all duration-200"
                               >
-                                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-                                <div className="relative shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shadow-sm">
+                                <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                                   {set.set_number}
                                 </div>
                                 <div className="relative flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">

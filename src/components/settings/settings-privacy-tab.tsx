@@ -6,7 +6,7 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
+import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Switch } from '@/components/ui'
 import { Label } from '@/components/ui'
@@ -43,11 +43,7 @@ export function SettingsPrivacyTab({
   }
 
   return (
-    <Card
-      variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+    <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
       <CardHeader className="relative pb-4">
         <div className="flex items-center justify-between">
           <div className="flex-1">
@@ -75,7 +71,7 @@ export function SettingsPrivacyTab({
       </CardHeader>
       <CardContent className="space-y-6 relative pt-0">
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
             <div className="min-w-0 flex-1">
               <Label htmlFor="profile-visible" className="text-text-primary font-medium text-sm">
                 Profilo Pubblico
@@ -92,7 +88,7 @@ export function SettingsPrivacyTab({
               />
             </div>
           </div>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
             <div className="min-w-0 flex-1">
               <Label htmlFor="show-email" className="text-text-primary font-medium text-sm">
                 Mostra Email
@@ -109,7 +105,7 @@ export function SettingsPrivacyTab({
               />
             </div>
           </div>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
             <div className="min-w-0 flex-1">
               <Label htmlFor="show-phone" className="text-text-primary font-medium text-sm">
                 Mostra Telefono
@@ -126,7 +122,7 @@ export function SettingsPrivacyTab({
               />
             </div>
           </div>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
             <div className="min-w-0 flex-1">
               <Label htmlFor="analytics" className="text-text-primary font-medium text-sm">
                 Condividi Analytics
@@ -146,11 +142,11 @@ export function SettingsPrivacyTab({
         </div>
 
         {/* Salva */}
-        <div className="flex justify-end pt-4 border-t border-teal-500/10">
+        <div className="flex justify-end pt-4 border-t border-white/10">
           <Button
             onClick={onSave}
             disabled={loading}
-            className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 min-w-[180px]"
+            className="min-w-[180px]"
           >
             {loading ? (
               <>
@@ -166,6 +162,6 @@ export function SettingsPrivacyTab({
           </Button>
         </div>
       </CardContent>
-    </Card>
+    </div>
   )
 }

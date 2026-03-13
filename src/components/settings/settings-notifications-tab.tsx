@@ -6,7 +6,7 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
+import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Switch } from '@/components/ui'
 import { Label } from '@/components/ui'
@@ -81,11 +81,7 @@ export function SettingsNotificationsTab({
   }
 
   return (
-    <Card
-      variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+    <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
       <CardHeader className="relative pb-4">
         <div className="flex items-center justify-between">
           <div className="flex-1">
@@ -119,7 +115,7 @@ export function SettingsNotificationsTab({
         <div className="space-y-3">
           <h3 className="text-text-primary font-semibold text-base mb-1">Canali di Notifica</h3>
           <div className="space-y-2.5">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <Mail className="h-4 w-4" />
@@ -139,7 +135,7 @@ export function SettingsNotificationsTab({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <Smartphone className="h-4 w-4" />
@@ -161,7 +157,7 @@ export function SettingsNotificationsTab({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <Smartphone className="h-4 w-4" />
@@ -191,7 +187,7 @@ export function SettingsNotificationsTab({
         <div className="space-y-3">
           <h3 className="text-text-primary font-semibold text-base mb-1">Tipi di Notifiche</h3>
           <div className="space-y-2.5">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <UserPlus className="h-4 w-4" />
@@ -216,7 +212,7 @@ export function SettingsNotificationsTab({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <CreditCard className="h-4 w-4" />
@@ -238,7 +234,7 @@ export function SettingsNotificationsTab({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <Calendar className="h-4 w-4" />
@@ -263,7 +259,7 @@ export function SettingsNotificationsTab({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="bg-teal-500/20 text-teal-400 rounded-full p-2 shrink-0">
                   <MessageSquare className="h-4 w-4" />
@@ -289,11 +285,11 @@ export function SettingsNotificationsTab({
         </div>
 
         {/* Salva */}
-        <div className="flex justify-end pt-4 border-t border-teal-500/10">
+        <div className="flex justify-end pt-4 border-t border-white/10">
           <Button
             onClick={onSave}
             disabled={loading}
-            className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 min-w-[180px]"
+            className="min-w-[180px]"
           >
             {loading ? (
               <>
@@ -309,6 +305,6 @@ export function SettingsNotificationsTab({
           </Button>
         </div>
       </CardContent>
-    </Card>
+    </div>
   )
 }

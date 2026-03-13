@@ -16,7 +16,6 @@ import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { Progress } from '@/components/ui'
 import {
-  ArrowLeft,
   Send,
   Target,
   Weight,
@@ -480,7 +479,7 @@ function RiepilogoPageContent() {
             <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
               <div className="mb-3 text-4xl opacity-50">🔒</div>
               <p className="text-text-primary mb-4 text-sm min-[834px]:text-base font-medium">Accesso richiesto</p>
-              <Button onClick={() => router.push('/login')} className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white">
+              <Button onClick={() => router.push('/login')} className="min-h-[44px] h-9 rounded-lg bg-primary text-sm text-primary-foreground hover:bg-primary/90 sm:h-10">
                 Vai al login
               </Button>
             </CardContent>
@@ -524,7 +523,7 @@ function RiepilogoPageContent() {
               <div className="mb-3 text-4xl opacity-50">❌</div>
               <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">{error || 'Nessun allenamento completato trovato'}</h3>
               <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-2">Completa un allenamento per vedere il riepilogo</p>
-              <Button onClick={() => router.push('/home/allenamenti')} className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-medium">
+              <Button onClick={() => router.push('/home/allenamenti')} className="min-h-[44px] h-9 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10">
                 Vai agli Allenamenti
               </Button>
             </CardContent>
@@ -538,12 +537,12 @@ function RiepilogoPageContent() {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 flex items-center justify-center">
-          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 mx-auto w-full max-w-md">
-            <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
+          <Card className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+            <CardContent className="relative z-10 p-6 text-center sm:p-8">
               <div className="mb-3 text-5xl">🎉</div>
-              <h1 className="text-text-primary mb-2 text-lg min-[834px]:text-xl font-bold text-cyan-400">Allenamento completato!</h1>
-              <p className="text-text-secondary mb-4 text-sm min-[834px]:text-base">I tuoi risultati sono stati inviati al tuo trainer.</p>
-              <div className="border-cyan-400 mx-auto h-7 w-7 animate-spin rounded-full border-2 border-t-transparent" />
+              <h1 className="mb-2 text-lg font-bold text-text-primary sm:text-xl">Allenamento completato!</h1>
+              <p className="mb-4 text-sm text-text-secondary sm:text-base">I tuoi risultati sono stati inviati al tuo trainer.</p>
+              <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-cyan-400" />
               <p className="text-text-tertiary mt-3 text-xs min-[834px]:text-sm">Reindirizzamento alla home...</p>
             </CardContent>
           </Card>
@@ -562,14 +561,13 @@ function RiepilogoPageContent() {
           icon={<Trophy className="h-5 w-5 text-cyan-400" />}
         />
 
-        {/* Card principale — design 7: barra accento, stats compatte */}
-        <Card className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/50 shadow-lg backdrop-blur-sm">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/5" />
-          <CardContent className="p-4 min-[834px]:p-6 relative z-10">
-            <div className="mb-4 min-[834px]:mb-5 text-center">
-              <div className="mb-3 min-[834px]:mb-4 flex justify-center">
-                <div className="flex h-12 w-12 min-[834px]:h-14 min-[834px]:w-14 shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
-                  <Trophy className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-cyan-400" />
+        {/* Card principale */}
+        <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+          <CardContent className="relative z-10 p-4 sm:p-6">
+            <div className="mb-4 text-center sm:mb-5">
+              <div className="mb-3 flex justify-center sm:mb-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-14 sm:w-14">
+                  <Trophy className="h-6 w-6 text-cyan-400 sm:h-7 sm:w-7" />
                 </div>
               </div>
               <h2 className="text-lg min-[834px]:text-xl font-semibold text-text-primary truncate">
@@ -580,42 +578,42 @@ function RiepilogoPageContent() {
               </p>
             </div>
 
-            {/* Statistiche compatte — design 7: icona in box + label + numero */}
-            <div className="mb-4 min-[834px]:mb-5 grid grid-cols-2 min-[834px]:grid-cols-4 gap-2 min-[834px]:gap-3">
-              <div className="relative flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-background-tertiary/40 p-3 min-[834px]:p-3.5 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+            {/* Statistiche compatte */}
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-5 sm:grid-cols-4 sm:gap-3">
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <Activity className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs uppercase tracking-wide text-text-tertiary">Esercizi</div>
-                  <div className="text-xl font-bold text-cyan-400">{summary.completed_exercises}/{summary.total_exercises}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Esercizi</div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">{summary.completed_exercises}/{summary.total_exercises}</div>
                 </div>
               </div>
-              <div className="relative flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-background-tertiary/40 p-3 min-[834px]:p-3.5 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <CheckCircle2 className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs uppercase tracking-wide text-text-tertiary">Set</div>
-                  <div className="text-xl font-bold text-cyan-400">{summary.completed_sets}/{summary.total_sets}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Set</div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">{summary.completed_sets}/{summary.total_sets}</div>
                 </div>
               </div>
-              <div className="relative flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-background-tertiary/40 p-3 min-[834px]:p-3.5 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <Clock className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs uppercase tracking-wide text-text-tertiary">Durata</div>
-                  <div className="text-xl font-bold text-cyan-400">{formatTime(summary.total_time)}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Durata</div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">{formatTime(summary.total_time)}</div>
                 </div>
               </div>
-              <div className="relative flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-background-tertiary/40 p-3 min-[834px]:p-3.5 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <TrendingUp className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs uppercase tracking-wide text-text-tertiary">Consistenza</div>
-                  <div className="text-xl font-bold text-cyan-400">{summary.performance_stats.consistency_score}%</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Consistenza</div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">{summary.performance_stats.consistency_score}%</div>
                 </div>
               </div>
             </div>
@@ -637,23 +635,26 @@ function RiepilogoPageContent() {
           </CardContent>
         </Card>
 
-        {/* Dettagli esercizi — design 7: barra accento, card compatte */}
-        <Card className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/50 shadow-lg backdrop-blur-sm">
-          <CardHeader className="relative z-10 py-3 min-[834px]:py-4 border-b border-cyan-500/20">
-            <CardTitle size="md" className="text-sm min-[834px]:text-base font-semibold text-text-primary">
-              Esercizi eseguiti 💪
+        {/* Esercizi eseguiti — CARD_DS, card esercizio neutre + icon box cyan */}
+        <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+          <CardHeader className="relative z-10 py-3 min-[834px]:py-4 border-b border-white/10">
+            <CardTitle size="md" className="flex items-center gap-2 text-sm min-[834px]:text-base font-semibold text-text-primary">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg">
+                💪
+              </span>
+              Esercizi eseguiti
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 relative z-10 pt-3 min-[834px]:pt-4">
             {summary.exercises.map((exercise) => (
               <div
                 key={exercise.id}
-                className="relative overflow-hidden rounded-xl border border-cyan-500/20 bg-background-tertiary/30 p-3 transition-all duration-200 hover:border-cyan-500/30"
+                className="relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-3 transition-all duration-200 hover:border-white/20 hover:bg-white/10"
               >
-                <div className="relative pl-1">
+                <div className="relative pl-0">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20 text-lg">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg">
                         {getMuscleGroupIcon(exercise.exercise.muscle_group)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -692,20 +693,20 @@ function RiepilogoPageContent() {
                     {exercise.sets.map((set, setIndex) => (
                       <div
                         key={setIndex}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-cyan-500/20 bg-background-secondary/50 p-2"
+                        className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 p-2"
                       >
                         <span className="text-xs font-medium text-text-tertiary shrink-0">Set {set.set_number}</span>
                         <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                           {set.performed_weight > 0 && (
                             <div className="flex items-center gap-1">
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-cyan-500/10">
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5">
                                 <Weight className="h-3 w-3 text-cyan-400" />
                               </div>
                               <span className="text-xs font-semibold text-text-primary">{set.performed_weight}kg</span>
                             </div>
                           )}
                           <div className="flex items-center gap-1">
-                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-cyan-500/10">
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5">
                               <Target className="h-3 w-3 text-cyan-400" />
                             </div>
                             <span className="text-xs font-semibold text-text-primary">{set.performed_reps} reps</span>
@@ -723,64 +724,67 @@ function RiepilogoPageContent() {
           </CardContent>
         </Card>
 
-        {/* Performance stats — design 7: stats compatte con icona in box + barra */}
-        <Card className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/50 shadow-lg backdrop-blur-sm">
-          <CardHeader className="relative z-10 py-3 border-b border-cyan-500/20">
-            <CardTitle size="md" className="text-sm font-semibold text-text-primary">
-              Statistiche Performance 📊
+        {/* Statistiche performance — CARD_DS, stat box neutri + icone cyan */}
+        <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+          <CardHeader className="relative z-10 py-3 border-b border-white/10">
+            <CardTitle size="md" className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                <Activity className="h-4 w-4 text-cyan-400" />
+              </span>
+              Statistiche performance
             </CardTitle>
           </CardHeader>
           <CardContent className="relative z-10 pt-3">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="relative flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-background-tertiary/40 p-3 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <TrendingUp className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Aumento peso medio</div>
-                  <div className="text-lg font-bold text-cyan-400">+{summary.performance_stats.average_weight_increase}kg</div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">+{summary.performance_stats.average_weight_increase}kg</div>
                 </div>
               </div>
-              <div className="relative flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-background-tertiary/40 p-3 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <Weight className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Volume totale</div>
-                  <div className="text-lg font-bold text-cyan-400">{summary.performance_stats.total_volume}kg</div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">{summary.performance_stats.total_volume}kg</div>
                 </div>
               </div>
-              <div className="relative flex items-center gap-3 rounded-xl border border-green-500/30 bg-background-tertiary/40 p-3 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-green-400/40 bg-green-500/20">
-                  <Activity className="h-4 w-4 text-green-400" />
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                  <Activity className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Consistenza</div>
-                  <div className="text-lg font-bold text-green-400">{summary.performance_stats.consistency_score}%</div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">{summary.performance_stats.consistency_score}%</div>
                 </div>
               </div>
-              <div className="relative flex items-center gap-3 rounded-xl border border-amber-500/30 bg-background-tertiary/40 p-3 backdrop-blur-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-400/40 bg-amber-500/20">
-                  <Trophy className="h-4 w-4 text-amber-400" />
+              <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                  <Trophy className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Nuovi PR</div>
-                  <div className="text-lg font-bold text-amber-400">{summary.performance_stats.personal_records}</div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">{summary.performance_stats.personal_records}</div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Motivational — design 7.4 card info compatta */}
-        <div className="flex items-center gap-3 rounded-xl border border-cyan-500/20 bg-background-secondary/40 py-3 pl-3 pr-4">
-          <div className="flex shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20 p-2">
-            <span className="text-xl">💪</span>
+        {/* Messaggio motivazionale */}
+        <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 py-3 pl-3 pr-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl">
+            💪
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-text-primary">Ottimo lavoro!</h3>
             <p className="text-xs text-text-secondary mt-0.5">
-              Hai completato tutti gli esercizi con successo. Continua così per raggiungere i tuoi obiettivi!
+              Hai completato tutti gli esercizi con successo. Continua così per raggiungere i tuoi obiettivi.
             </p>
             <p className="text-[10px] text-text-tertiary italic mt-1.5">
               &ldquo;Il successo è la somma di piccoli sforzi ripetuti giorno dopo giorno.&rdquo;
@@ -793,11 +797,11 @@ function RiepilogoPageContent() {
           <Button
             onClick={handleSubmitToPT}
             disabled={isSubmitting}
-            className="w-full min-h-[44px] h-10 min-[834px]:h-11 text-xs min-[834px]:text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold"
+            className="min-h-11 w-full rounded-xl border border-cyan-400/80 bg-cyan-500 text-sm font-semibold text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:border-cyan-300/90 hover:bg-cyan-400 active:scale-[0.98] active:bg-cyan-600"
           >
             {isSubmitting ? (
               <>
-                <div className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 Invio in corso...
               </>
             ) : (
@@ -810,7 +814,7 @@ function RiepilogoPageContent() {
           <Button
             onClick={() => router.push('/home')}
             variant="outline"
-            className="w-full min-h-[44px] h-9 min-[834px]:h-10 text-xs min-[834px]:text-sm rounded-xl border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+            className="min-h-10 w-full rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 hover:border-white/20"
           >
             Torna alla home
           </Button>

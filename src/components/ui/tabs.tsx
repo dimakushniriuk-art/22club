@@ -53,19 +53,21 @@ const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variants = {
       default:
-        'inline-flex h-10 items-center justify-center rounded-lg bg-background-secondary p-1 text-text-tertiary shadow-sm max-[851px]:flex-wrap max-[851px]:gap-2',
+        'inline-flex h-10 items-center justify-center rounded-lg border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 p-1 text-text-tertiary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] max-[851px]:flex-wrap max-[851px]:gap-2',
       pills:
-        'inline-flex h-10 items-center justify-center rounded-full bg-background-secondary p-1 text-text-tertiary shadow-sm max-[851px]:flex-wrap max-[851px]:gap-2',
+        'inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 p-1 text-text-tertiary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] max-[851px]:flex-wrap max-[851px]:gap-2',
       underline:
-        'inline-flex h-10 items-center justify-center border-b border-border text-text-tertiary max-[851px]:flex-wrap max-[851px]:gap-2',
+        'inline-flex h-10 items-center justify-center border-b border-white/10 text-text-tertiary max-[851px]:flex-wrap max-[851px]:gap-2',
     }
 
-    // Se className contiene !bg-transparent, non applicare il background del variant
     const shouldSkipBackground =
       className?.includes('!bg-transparent') || className?.includes('bg-transparent')
     const variantClass =
       shouldSkipBackground && variant !== 'underline'
-        ? variants[variant].replace('bg-background-secondary', '')
+        ? variants[variant].replace(
+            ' border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+            '',
+          )
         : variants[variant]
 
     return <div ref={ref} className={cn(variantClass, className)} {...props} />
@@ -86,11 +88,11 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
 
     const variants = {
       default:
-        'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background-elevated data-[state=active]:text-text-primary data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
+        'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:pointer-events-none disabled:opacity-50 data-[state=inactive]:text-text-tertiary data-[state=active]:border data-[state=active]:border-white/10 data-[state=active]:bg-gradient-to-b data-[state=active]:from-zinc-700/90 data-[state=active]:to-zinc-800/90 data-[state=active]:text-text-primary data-[state=active]:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
       pills:
-        'inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=inactive]:text-text-tertiary data-[state=inactive]:hover:text-text-secondary data-[state=inactive]:hover:bg-white/5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/25 data-[state=active]:ring-2 data-[state=active]:ring-primary/40 max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
+        'inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:pointer-events-none disabled:opacity-50 data-[state=inactive]:text-text-tertiary data-[state=inactive]:hover:text-text-secondary data-[state=inactive]:hover:bg-white/5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/25 data-[state=active]:ring-2 data-[state=active]:ring-primary/40 max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
       underline:
-        'inline-flex items-center justify-center whitespace-nowrap px-4 py-2 text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-semibold max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
+        'inline-flex items-center justify-center whitespace-nowrap px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-semibold max-[851px]:min-h-[44px] max-[851px]:touch-manipulation',
     }
 
     return (

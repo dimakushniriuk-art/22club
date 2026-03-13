@@ -64,6 +64,10 @@ STILE UI
 - Apple-like.
 - Coerenza > creatività.
 
+PAGINA DESIGN SYSTEM (/design-system)
+- Ogni modifica, aggiunta o rimozione dalla pagina Design System (route /design-system, file in src/app/design-system/ e _sections/) deve essere documentata in src/app/design-system/GUIDA_DESIGN_SYSTEM.md.
+- Aggiornare la guida in parallelo alle modifiche: nuove sezioni, token, componenti mostrati, pattern o regole cambiate vanno descritti o aggiornati nella guida.
+
 SPAZIATURA (verificare in ogni pagina dashboard/staff)
 - Tra sezioni principali: space-y-4 sm:space-y-6 (o gap-4 / gap-6 in flex-col).
 - Tra header (titolo/azioni) e contenuto: ereditato da StaffContentLayout (gap-4 sm:gap-6 md:gap-8).

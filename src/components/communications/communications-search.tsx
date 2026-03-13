@@ -17,7 +17,7 @@ interface CommunicationsSearchProps {
 
 export function CommunicationsSearch({ searchTerm, onSearchChange }: CommunicationsSearchProps) {
   return (
-    <Card variant="elevated" className="border border-border">
+    <Card variant="default">
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           <div className="flex-1">

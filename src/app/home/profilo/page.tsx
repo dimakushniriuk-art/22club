@@ -22,7 +22,7 @@ import {
 } from '@/components/home-profile'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { PageHeaderGlass } from '@/components/layout'
+import { PageHeaderFixed } from '@/components/layout'
 import {
   Button,
   Card,
@@ -45,15 +45,10 @@ import { useProfileId } from '@/lib/utils/profile-id-utils'
 
 const logger = createLogger('app:home:profilo:page')
 
-const CONTENT_WRAPPER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' as const }
-const PROFILO_CARD_STYLE = {
-  borderColor: 'rgba(2, 179, 191, 0.35)',
-  background: 'linear-gradient(145deg, rgba(22,22,26,0.95) 0%, rgba(16,16,18,0.98) 100%)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(2,179,191,0.08) inset',
-} as const
-const PROFILO_CARD_OVERLAY_STYLE = {
-  background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(2,179,191,0.1) 0%, transparent 60%)',
-} as const
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+const TABS_LIST_CLASS =
+  'h-auto w-full grid gap-1.5 rounded-lg border border-white/10 bg-white/5 p-1.5 sm:gap-2 sm:p-2 min-h-[44px]'
 
 const TAB_TRIGGER_CLASS =
   'text-xs px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 flex items-center justify-center gap-1 sm:gap-1.5 min-h-[40px] min-w-0'
@@ -241,34 +236,22 @@ export default function ProfiloPage() {
 
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div
-        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24"
-        style={CONTENT_WRAPPER_STYLE}
-      >
-        <PageHeaderGlass
-          title="Il mio Profilo"
-          subtitle="Informazioni e statistiche"
-          onBack={handleBack}
-          icon={<User className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />}
-        />
-
+      <PageHeaderFixed
+        title="Il mio Profilo"
+        subtitle="Informazioni e statistiche"
+        onBack={handleBack}
+        icon={<User className="h-5 w-5 text-cyan-400" />}
+      />
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:space-y-6 sm:px-5 min-[834px]:px-6">
         <AthleteProfileHeaderHome user={user} avatarInitials={avatarInitials} />
 
-        <AthleteStatsCards stats={stats} />
+        <AthleteStatsCards stats={stats} hideIcons />
 
-        {/* Card principale — stile Nutrizionista */}
-        <Card
-          className="relative overflow-hidden rounded-xl border backdrop-blur-md"
-          style={PROFILO_CARD_STYLE}
-        >
-          <div
-            className="pointer-events-none absolute inset-0 rounded-xl opacity-60"
-            style={PROFILO_CARD_OVERLAY_STYLE}
-            aria-hidden
-          />
-          <CardContent className="relative z-10 p-3 min-[834px]:p-4">
+        {/* Card principale */}
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
+          <CardContent className="relative z-10 p-3 sm:p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="h-auto grid w-full grid-cols-3 gap-1.5 sm:gap-2 border border-primary/20 bg-background-tertiary/50 p-1.5 sm:p-2 rounded-xl min-h-[44px]">
+              <TabsList className={`grid w-full grid-cols-3 ${TABS_LIST_CLASS}`}>
                 <TabsTrigger value="overview" className={TAB_TRIGGER_CLASS}>
                   <BarChart3 className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">Overview</span>
@@ -290,7 +273,7 @@ export default function ProfiloPage() {
               <TabsContent value="profilo" className="mt-2 pt-0">
                 {athleteUserId ? (
                   <Tabs value={activeProfileTab} onValueChange={setActiveProfileTab} className="w-full">
-                    <TabsList className="h-auto grid grid-cols-2 min-[834px]:grid-cols-3 w-full gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-xl border border-primary/20 bg-background-tertiary/50 min-h-0 mb-5">
+                    <TabsList className={`grid grid-cols-2 w-full min-[834px]:grid-cols-3 mb-5 min-h-0 ${TABS_LIST_CLASS}`}>
                       <TabsTrigger value="anagrafica" className={PROFILE_TAB_TRIGGER_CLASS}>
                         <User className="h-3 w-3 shrink-0" />
                         <span className="truncate">Anagrafica</span>
@@ -357,15 +340,12 @@ export default function ProfiloPage() {
           </CardContent>
         </Card>
 
-        {/* Azioni — card stile Nutrizionista */}
-        <Card
-          className="relative overflow-hidden rounded-xl border backdrop-blur-md"
-          style={PROFILO_CARD_STYLE}
-        >
-          <CardContent className="relative z-10 p-3 min-[834px]:p-4 space-y-2">
+        {/* Azioni */}
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
+          <CardContent className="relative z-10 space-y-2 p-3 sm:p-4">
             <Button
               variant="outline"
-              className="min-h-[44px] w-full justify-start rounded-xl border-primary/30 text-text-primary hover:bg-primary/10 hover:border-primary/50"
+              className="min-h-[44px] w-full justify-start rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
               onClick={handleGoProgressi}
             >
               <TrendingUp className="mr-2 h-4 w-4 shrink-0" />
@@ -373,7 +353,7 @@ export default function ProfiloPage() {
             </Button>
             <Button
               variant="destructive"
-              className="min-h-[44px] w-full justify-start rounded-xl text-sm"
+              className="min-h-[44px] w-full justify-start rounded-lg text-sm"
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4 shrink-0" />

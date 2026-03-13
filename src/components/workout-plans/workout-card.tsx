@@ -46,7 +46,7 @@ export function WorkoutCard({
     : 'rounded-md bg-white/5 border border-white/10 text-text-tertiary text-xs font-medium px-2.5 py-0.5 shrink-0'
 
   const cardClass =
-    'group relative overflow-hidden cursor-pointer rounded-xl bg-background-secondary border border-border shadow-sm transition-all duration-200 hover:border-white/15 hover:shadow-md'
+    'group relative overflow-hidden cursor-pointer rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20'
   const iconClass = 'h-4 w-4 shrink-0 text-text-tertiary'
   const labelClass = 'text-xs text-text-tertiary font-medium'
   const valueClass = 'text-sm text-text-primary'
@@ -99,7 +99,7 @@ export function WorkoutCard({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-border">
+            <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
               <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onViewClick(workout) }}>
                 Visualizza
               </Button>
@@ -107,7 +107,7 @@ export function WorkoutCard({
                 Modifica
               </Button>
               {onDeleteClick && (
-                <Button variant="ghost" size="sm" className="text-text-tertiary hover:text-red-400 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true) }}>
+                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true) }}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
@@ -154,7 +154,7 @@ export function WorkoutCard({
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col justify-end space-y-0">
-          <div className="space-y-3 pb-3 border-b border-border">
+          <div className="space-y-3 pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <Goal className={iconClass} />
               <span className={`text-sm line-clamp-1 ${workout.objective ? 'text-text-primary' : 'text-text-tertiary italic'}`}>
@@ -162,7 +162,7 @@ export function WorkoutCard({
               </span>
             </div>
           </div>
-          <div className="space-y-2 py-3 border-b border-border">
+          <div className="space-y-2 py-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <Target className={iconClass} />
               <span className={valueClass}>{workout.staff_name || '—'}</span>
@@ -187,7 +187,7 @@ export function WorkoutCard({
               Modifica
             </Button>
             {onDeleteClick && (
-              <Button variant="ghost" size="sm" className="text-text-tertiary hover:text-red-400 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true) }}>
+              <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true) }}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}

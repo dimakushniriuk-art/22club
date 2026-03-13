@@ -91,10 +91,10 @@ export default function PostLoginPage() {
     }
   }, [user, role, loading, router])
 
-  // Mostra loading durante il redirect
+  // Mostra loading durante il redirect (stile trainer: sfondo #0d0d0d)
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="flex items-center justify-center min-h-screen min-h-dvh bg-background text-text-primary">
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-primary" aria-hidden />
     </div>
   )
 }

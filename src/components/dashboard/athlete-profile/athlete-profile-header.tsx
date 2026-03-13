@@ -23,11 +23,8 @@ import {
 } from 'lucide-react'
 import type { Cliente } from '@/types/cliente'
 
-const frameSoft = 'border border-white/10 hover:border-white/14 transition'
-const framePrimary = 'border border-primary/22 hover:border-primary/30 transition'
-const glassSurface =
-  'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-cyan-950/22 backdrop-blur-xl'
-const shadowSport = 'shadow-[0_10px_30px_rgba(0,0,0,0.45)]'
+const DS_CARD =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]'
 
 interface AthleteProfileHeaderProps {
   athlete: Cliente
@@ -85,7 +82,7 @@ export function AthleteProfileHeader({
             <Button
               variant="outline"
               size="sm"
-              className="rounded-full bg-background-secondary/25 text-text-primary border border-primary/10 hover:bg-primary/8 hover:border-primary/25 transition"
+              className="rounded-full border border-white/10 text-text-primary hover:border-primary/20 hover:bg-white/[0.04] transition"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
               Chat
@@ -93,9 +90,9 @@ export function AthleteProfileHeader({
           </Link>
           {showEditButton && (
             <Button
+              variant="default"
               onClick={onEditClick}
               size="sm"
-              className="rounded-full bg-gradient-to-br from-primary/90 to-primary/80 text-white font-semibold shadow-md shadow-primary/25 ring-1 ring-primary/30 hover:shadow-glow transition-all duration-200"
             >
               <Edit className="mr-2 h-4 w-4" />
               Modifica
@@ -104,16 +101,11 @@ export function AthleteProfileHeader({
         </div>
       </div>
 
-      {/* Card profilo principale — Hero Sport */}
-      <div
-        className={`relative overflow-hidden rounded-3xl ${glassSurface} ${framePrimary} ${shadowSport} p-6 sm:p-8`}
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_25%_0%,rgba(2,179,191,0.22),transparent_62%)]" />
-        <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-primary/16 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
+      {/* Card profilo principale */}
+      <div className={`relative overflow-hidden ${DS_CARD} p-6 sm:p-8`}>
         <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
           <div className="relative shrink-0">
-            <div className="flex h-20 w-20 min-[834px]:h-24 min-[834px]:w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary/35 via-cyan-500/15 to-transparent border border-primary/22 shadow-glow">
+            <div className="flex h-20 w-20 min-[834px]:h-24 min-[834px]:w-24 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/[0.04]">
               <Avatar
                 src={athlete.avatar_url}
                 alt={`${athlete.nome} ${athlete.cognome}`}
@@ -131,7 +123,7 @@ export function AthleteProfileHeader({
                 <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary">
                   {athlete.nome} {athlete.cognome}
                 </h2>
-                <div className="mt-2 h-[3px] w-28 rounded-full bg-gradient-to-r from-primary via-cyan-400/50 to-transparent" />
+                <div className="mt-2 h-[3px] w-28 rounded-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
               </div>
               {athlete.stato === 'attivo' ? (
                 <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold bg-emerald-500/14 text-emerald-300 border border-emerald-500/22 shadow-[0_0_18px_rgba(16,185,129,0.16)]">
@@ -147,8 +139,8 @@ export function AthleteProfileHeader({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className={`flex items-center gap-3 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary border border-primary/22">
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
                   <Mail className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -158,9 +150,9 @@ export function AthleteProfileHeader({
               </div>
 
               {athlete.phone && (
-                <div className={`flex items-center gap-3 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary border border-primary/22">
-                    <Phone className="h-4 w-4" />
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
+                  <Phone className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-text-secondary text-xs mb-0.5">Telefono</p>
@@ -169,8 +161,8 @@ export function AthleteProfileHeader({
                 </div>
               )}
 
-              <div className={`flex items-center gap-3 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary border border-primary/22">
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
                   <Calendar className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -182,9 +174,9 @@ export function AthleteProfileHeader({
               </div>
 
               {stats.ultimo_accesso && (
-                <div className={`flex items-center gap-3 p-3 rounded-2xl bg-background-secondary/25 ${frameSoft}`}>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary border border-primary/22">
-                    <Clock className="h-4 w-4" />
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
+                  <Clock className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-text-secondary text-xs mb-0.5">Ultimo accesso</p>
@@ -199,17 +191,11 @@ export function AthleteProfileHeader({
                 <div
                   className={
                     kpiTone === 'positive'
-                      ? 'flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-primary/14 via-background-secondary/20 to-cyan-500/10 border border-primary/30 shadow-glow'
-                      : `flex items-center gap-3 p-4 rounded-2xl bg-background-secondary/25 ${frameSoft}`
+                      ? 'flex items-center gap-3 p-4 rounded-lg border border-white/10 bg-white/[0.04]'
+                      : 'flex items-center gap-3 p-4 rounded-lg border border-white/10 bg-white/[0.02]'
                   }
                 >
-                  <div
-                    className={
-                      kpiTone === 'positive'
-                        ? 'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/16 text-primary border border-primary/22'
-                        : 'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary border border-primary/22'
-                    }
-                  >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
                     <Dumbbell className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">

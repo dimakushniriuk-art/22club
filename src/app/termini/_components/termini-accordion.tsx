@@ -115,17 +115,17 @@ export function TerminiAccordion() {
         return (
           <div
             key={section.id}
-            className="rounded-lg border border-border overflow-hidden bg-background/30"
+            className="rounded-lg border border-white/10 overflow-hidden bg-white/[0.02]"
           >
             <button
               type="button"
               onClick={() => setOpenId(isOpen ? null : section.id)}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left text-text-primary font-semibold hover:bg-background/50 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/50 focus:ring-inset"
+              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left text-text-primary font-semibold hover:bg-white/[0.04] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset focus:ring-offset-0"
               aria-expanded={isOpen}
               aria-controls={`termini-content-${section.id}`}
               id={`termini-trigger-${section.id}`}
             >
-              <span className="text-brand">{section.title}</span>
+              <span className="text-text-primary">{section.title}</span>
               <ChevronDown
                 className={`w-5 h-5 shrink-0 text-text-secondary transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                 aria-hidden
@@ -139,7 +139,7 @@ export function TerminiAccordion() {
               style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
             >
               <div className="overflow-hidden">
-                <div className="px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-border">
+                <div className="px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-white/10">
                   {section.content}
                 </div>
               </div>

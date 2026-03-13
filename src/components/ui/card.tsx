@@ -3,8 +3,10 @@ import { cn } from '@/lib/utils'
 import { masterAnimations, masterCards } from '@/config/master-design.config'
 
 const glassHighlight = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
-/** Classe radius fissa per evitare hydration mismatch (stesso valore di designSystem.radius.lg) */
-const CARD_RADIUS = 'rounded-[16px]'
+const cardBase =
+  'border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]'
+/** Radius card = designSystem.radius.lg (16px) */
+const CARD_RADIUS = 'rounded-lg'
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'outlined' | 'athlete' | 'trainer' | 'admin' | 'glass'
@@ -14,19 +16,17 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', hoverable = false, ...props }, ref) => {
     const variants: Record<string, string> = {
-      default: 'bg-background-secondary border border-border',
-      elevated: 'bg-background-secondary border border-border shadow-lg',
-      outlined: 'bg-background-secondary border-2 border-border',
+      default: cardBase,
+      elevated: cn(cardBase, 'shadow-lg'),
+      outlined: cn(
+        'border-2 border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]',
+      ),
       athlete: masterCards.athlete.base,
       trainer: masterCards.trainer.base,
       admin: masterCards.admin.base,
-      glass: cn(
-        'bg-white/[0.04] border border-white/10 backdrop-blur-xl',
-        glassHighlight,
-      ),
+      glass: cn('bg-white/[0.04] border border-white/10 backdrop-blur-xl', glassHighlight),
     }
 
-    // Verifica se className contiene !bg-transparent o bg-transparent
     const shouldSkipBackground =
       className?.includes('!bg-transparent') || className?.includes('bg-transparent')
 
@@ -43,9 +43,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           hoverable &&
             !shouldSkipBackground &&
             cn(
-              masterAnimations.hover.lift,
-              masterAnimations.hover.glow,
-              'hover:bg-background-tertiary',
+              'hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/10 hover:bg-white/[0.03]',
             ),
           className,
         )}

@@ -132,7 +132,7 @@ function ToastItem({ toast, onClose, index }: ToastItemProps) {
   return (
     <div
       className={cn(
-        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-sm transition-all duration-300 animate-slide-in-right',
+        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border p-4 shadow-lg backdrop-blur-sm transition-all duration-300 animate-slide-in-right',
         variant.bg,
         'hover:shadow-xl hover:scale-[1.02]',
       )}
@@ -153,7 +153,7 @@ function ToastItem({ toast, onClose, index }: ToastItemProps) {
       {/* Close button */}
       <button
         onClick={onClose}
-        className="text-text-tertiary hover:text-text-primary flex-shrink-0 rounded-lg p-1 transition-colors hover:bg-white/10"
+        className="text-text-tertiary hover:text-text-primary flex-shrink-0 rounded-md p-1 transition-colors hover:bg-white/10"
         aria-label="Chiudi notifica"
       >
         <X className="h-4 w-4" />

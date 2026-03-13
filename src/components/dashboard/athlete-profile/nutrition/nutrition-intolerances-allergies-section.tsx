@@ -49,7 +49,8 @@ export function NutritionIntolerancesAllergiesSection({
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card
-          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+          variant="default"
+        className="overflow-hidden"
         >
           <CardHeader>
             <CardTitle className="text-lg font-bold text-text-primary">Intolleranze Alimentari</CardTitle>
@@ -90,7 +91,8 @@ export function NutritionIntolerancesAllergiesSection({
         </Card>
 
         <Card
-          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+          variant="default"
+        className="overflow-hidden"
         >
           <CardHeader>
             <CardTitle className="text-lg font-bold text-text-primary">Allergie Alimentari</CardTitle>
@@ -133,7 +135,8 @@ export function NutritionIntolerancesAllergiesSection({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <CardTitle className="text-lg font-bold text-text-primary">Intolleranze Alimentari</CardTitle>
@@ -154,7 +157,8 @@ export function NutritionIntolerancesAllergiesSection({
       </Card>
 
       <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+        variant="default"
+        className="overflow-hidden"
       >
         <CardHeader>
           <CardTitle className="text-lg font-bold text-text-primary">Allergie Alimentari</CardTitle>

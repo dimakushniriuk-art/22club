@@ -31,7 +31,7 @@ function AppointmentListCardComponent({ appointment, variant, onClick, onKeyDown
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className="rounded-xl border border-cyan-500/20 bg-background-tertiary/50 space-y-2 p-3 hover:border-cyan-400/40 transition-colors cursor-pointer"
+      className="rounded-lg border border-white/10 bg-white/[0.04] space-y-2 p-3 hover:border-white/20 transition-colors cursor-pointer"
     >
       <div className="flex items-center justify-between gap-2">
         {variant === 'future' ? (
@@ -41,7 +41,7 @@ function AppointmentListCardComponent({ appointment, variant, onClick, onKeyDown
             {appointment.type || 'Allenamento'}
           </h4>
         )}
-        <Badge variant={statusColor} size="sm" className="text-[10px] shrink-0 border-cyan-500/20">
+        <Badge variant={statusColor} size="sm" className="text-[10px] shrink-0">
           {statusText}
         </Badge>
       </div>
@@ -71,7 +71,7 @@ function AppointmentListCardComponent({ appointment, variant, onClick, onKeyDown
               </div>
             )}
             {appointment.notes && (
-              <div className="flex items-start gap-1.5 mt-1.5 p-2 rounded-lg bg-background/50 border border-cyan-500/20">
+              <div className="flex items-start gap-1.5 mt-1.5 p-2 rounded-lg bg-white/5 border border-white/10">
                 <MessageSquare className="h-3 w-3 text-cyan-400 mt-0.5 shrink-0" />
                 <p className="text-[10px] line-clamp-2 text-text-secondary">{appointment.notes}</p>
               </div>

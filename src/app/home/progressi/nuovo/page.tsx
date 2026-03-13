@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { createLogger } from '@/lib/logger'
@@ -12,8 +12,8 @@ const logger = createLogger('app:home:progressi:nuovo:page')
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
+import { PageHeaderFixed } from '@/components/layout'
 import {
-  ArrowLeft,
   Save,
   Scale,
   Ruler,
@@ -26,6 +26,14 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import Link from 'next/link'
+
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+const CARD_HEADER = 'relative z-10 pb-2.5 border-b border-white/10'
+const CARD_TITLE_ROW =
+  'text-sm font-bold text-text-primary flex items-center gap-2'
+const ICON_BOX = 'p-1.5 rounded-lg border border-white/10 bg-white/5'
+const ICON_CYAN = 'h-3.5 w-3.5 text-cyan-400'
 
 interface FormData {
   // Valori principali
@@ -858,89 +866,50 @@ export default function NuovoProgressoPage() {
     }
   }
 
-  // Mostra un indicatore di caricamento mentre carica l'ultima misurazione
+  const handleBack = useCallback(() => router.push('/home/progressi'), [router])
+
   if (loadingLastMeasurement) {
     return (
-      <div
-        className="bg-black min-w-[402px] min-h-[874px] space-y-4 px-3 py-4"
-        style={{ overflow: 'auto' }}
-      >
-        {/* Header - Design Moderno e Uniforme */}
-        <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 p-3 shadow-lg shadow-primary/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
-          <div className="relative z-10 flex items-center gap-2">
-            <Link href="/home/progressi">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-text-secondary hover:text-text-primary hover:bg-primary/10 transition-colors flex-shrink-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent truncate">
-                Nuova Misurazione
-              </h1>
-              <p className="text-text-secondary text-xs">Caricamento ultima misurazione...</p>
-            </div>
-          </div>
+      <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
+        <div className="space-y-4 px-3 pt-24 pb-24 py-4 sm:px-4 min-[834px]:px-6">
+          <PageHeaderFixed
+            title="Nuova Misurazione"
+            subtitle="Caricamento ultima misurazione..."
+            onBack={handleBack}
+            icon={<Scale className="h-5 w-5 text-cyan-400" />}
+          />
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <CardContent className="p-12 text-center relative z-10">
+              <div className="mb-3 text-4xl opacity-50">📊</div>
+              <p className="text-text-secondary text-sm font-medium">Caricamento dati...</p>
+            </CardContent>
+          </Card>
         </div>
-        <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
-          <CardContent className="p-12 text-center relative z-10">
-            <div className="mb-3 text-4xl opacity-50">📊</div>
-            <p className="text-text-secondary text-sm font-medium">Caricamento dati...</p>
-          </CardContent>
-        </Card>
       </div>
     )
   }
 
   return (
-    <div
-      className="bg-black min-w-[402px] min-h-[874px] space-y-4 px-3 py-4"
-      style={{ overflow: 'auto' }}
-    >
-      {/* Header - Design Moderno e Uniforme */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 p-3 shadow-lg shadow-primary/10">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
-        <div className="relative z-10 flex items-center gap-2">
-          <Link href="/home/progressi">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-text-secondary hover:text-text-primary hover:bg-primary/10 transition-colors flex-shrink-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent truncate">
-              Nuova Misurazione
-            </h1>
-            <p className="text-text-secondary text-xs line-clamp-1">
-              Registra i tuoi progressi completi
-              {formData.peso_kg && <span className="ml-1 text-primary">(precompilato)</span>}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
+      <div className="space-y-4 px-3 pt-24 pb-24 py-4 sm:px-4 min-[834px]:px-6">
+        <PageHeaderFixed
+          title="Nuova Misurazione"
+          subtitle={
+            formData.peso_kg
+              ? 'Registra i tuoi progressi completi (precompilato)'
+              : 'Registra i tuoi progressi completi'
+          }
+          onBack={handleBack}
+          icon={<Scale className="h-5 w-5 text-cyan-400" />}
+        />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Data */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Ruler className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Ruler className={ICON_CYAN} />
               </div>
               <span className="truncate">Data Misurazione</span>
             </CardTitle>
@@ -957,18 +926,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Valori Principali */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Scale className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Scale className={ICON_CYAN} />
               </div>
               <span className="truncate">Valori Principali</span>
             </CardTitle>
@@ -1049,18 +1011,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Circonferenze */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Ruler className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Ruler className={ICON_CYAN} />
               </div>
               <span className="truncate">Circonferenze (cm)</span>
             </CardTitle>
@@ -1280,18 +1235,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Misure Antropometriche Aggiuntive */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Ruler className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Ruler className={ICON_CYAN} />
               </div>
               <span className="truncate">Misure Antropometriche Aggiuntive</span>
             </CardTitle>
@@ -1333,18 +1281,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Composizione Corporea Aggiuntiva */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Layers className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Layers className={ICON_CYAN} />
               </div>
               <span className="truncate">Composizione Corporea (4 Componenti)</span>
             </CardTitle>
@@ -1376,18 +1317,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Perimetri Corretti */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Ruler className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Ruler className={ICON_CYAN} />
               </div>
               <span className="truncate">Perimetri Corretti (cm)</span>
             </CardTitle>
@@ -1429,18 +1363,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Indici Principali */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Calculator className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Calculator className={ICON_CYAN} />
               </div>
               <span className="truncate">Indici Principali</span>
             </CardTitle>
@@ -1531,18 +1458,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Metabolismo */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Activity className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Activity className={ICON_CYAN} />
               </div>
               <span className="truncate">Metabolismo</span>
             </CardTitle>
@@ -1576,7 +1496,7 @@ export default function NuovoProgressoPage() {
                   Livello Attività
                 </label>
                 <select
-                  className="flex w-full rounded-xl border border-primary/30 bg-background-secondary/50 px-3 py-2 text-xs text-white placeholder:text-gray-400 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                  className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                   value={formData.livello_attivita}
                   onChange={(e) => handleInputChange('livello_attivita', e.target.value)}
                 >
@@ -1594,18 +1514,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Somatotipo (Heath-Carter) */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Dna className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Dna className={ICON_CYAN} />
               </div>
               <span className="truncate">Somatotipo (Heath-Carter)</span>
             </CardTitle>
@@ -1647,18 +1560,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Pliche Cutanee */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Target className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Target className={ICON_CYAN} />
               </div>
               <span className="truncate">Pliche Cutanee (mm)</span>
             </CardTitle>
@@ -1750,18 +1656,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Diametri Ossei */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <Ruler className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <Ruler className={ICON_CYAN} />
               </div>
               <span className="truncate">Diametri Ossei (cm)</span>
             </CardTitle>
@@ -1803,18 +1702,11 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Osservazioni Cliniche */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 group-hover:from-primary/30 group-hover:to-primary/30 transition-all duration-300">
-                <AlertTriangle className="h-3.5 w-3.5 text-primary" />
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className={CARD_TITLE_ROW}>
+              <div className={ICON_BOX}>
+                <AlertTriangle className={ICON_CYAN} />
               </div>
               <span className="truncate">Osservazioni Cliniche</span>
             </CardTitle>
@@ -1826,7 +1718,7 @@ export default function NuovoProgressoPage() {
                   Rischio Cardiometabolico
                 </label>
                 <select
-                  className="flex w-full rounded-xl border border-primary/30 bg-background-secondary/50 px-3 py-2 text-xs text-white placeholder:text-gray-400 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                  className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                   value={formData.rischio_cardiometabolico}
                   onChange={(e) => handleInputChange('rischio_cardiometabolico', e.target.value)}
                 >
@@ -1842,7 +1734,7 @@ export default function NuovoProgressoPage() {
                   Adiposità Centrale
                 </label>
                 <select
-                  className="flex w-full rounded-xl border border-primary/30 bg-background-secondary/50 px-3 py-2 text-xs text-white placeholder:text-gray-400 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                  className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                   value={formData.adiposita_centrale}
                   onChange={(e) => handleInputChange('adiposita_centrale', e.target.value)}
                 >
@@ -1857,7 +1749,7 @@ export default function NuovoProgressoPage() {
                   Struttura Muscolo-Scheletrica
                 </label>
                 <textarea
-                  className="bg-background-secondary text-text-primary placeholder:text-text-tertiary focus:ring-brand w-full rounded-xl border border-primary/40 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all duration-200"
+                  className="bg-white/[0.04] text-text-primary placeholder:text-text-tertiary w-full rounded-lg border border-white/10 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
                   rows={3}
                   value={formData.struttura_muscolo_scheletrica}
                   onChange={(e) =>
@@ -1871,7 +1763,7 @@ export default function NuovoProgressoPage() {
                   Capacità di Dispersione del Calore
                 </label>
                 <textarea
-                  className="bg-background-secondary text-text-primary placeholder:text-text-tertiary focus:ring-brand w-full rounded-xl border border-primary/40 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all duration-200"
+                  className="bg-white/[0.04] text-text-primary placeholder:text-text-tertiary w-full rounded-lg border border-white/10 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
                   rows={3}
                   value={formData.capacita_dispersione_calore}
                   onChange={(e) => handleInputChange('capacita_dispersione_calore', e.target.value)}
@@ -1883,22 +1775,15 @@ export default function NuovoProgressoPage() {
         </Card>
 
         {/* Note */}
-        <Card
-          variant="default"
-          className="group relative overflow-hidden border border-primary/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardHeader className="relative z-10 pb-2.5 border-b border-primary/20">
-            <CardTitle
-              size="sm"
-              className="text-sm font-bold bg-gradient-to-r from-white via-primary/20 to-primary/20 bg-clip-text text-transparent"
-            >
+        <Card variant="default" className={`group relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle size="sm" className="text-sm font-bold text-text-primary">
               Note (opzionale)
             </CardTitle>
           </CardHeader>
           <CardContent className="relative z-10">
             <textarea
-              className="bg-background-secondary text-text-primary placeholder:text-text-tertiary focus:ring-brand w-full rounded-xl border border-primary/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all duration-200"
+              className="bg-white/[0.04] text-text-primary placeholder:text-text-tertiary w-full rounded-lg border border-white/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
               rows={3}
               value={formData.note}
               onChange={(e) => handleInputChange('note', e.target.value)}
@@ -1907,12 +1792,11 @@ export default function NuovoProgressoPage() {
           </CardContent>
         </Card>
 
-        {/* Submit - Design Moderno e Uniforme */}
-        <div className="flex flex-col gap-2.5 pt-3">
+        <div className="flex flex-col gap-2 pt-4 sm:pt-6">
           <Button
             type="submit"
             loading={loading}
-            className="w-full gap-1.5 h-10 text-xs bg-gradient-to-r from-primary to-primary hover:from-primary-hover hover:to-primary-hover text-primary-foreground font-semibold transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02]"
+            className="w-full gap-1.5 h-10 min-h-[44px] text-sm rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
           >
             <Save className="h-3.5 w-3.5" />
             Salva Misurazione
@@ -1920,13 +1804,14 @@ export default function NuovoProgressoPage() {
           <Link href="/home/progressi" className="w-full">
             <Button
               variant="outline"
-              className="w-full h-9 text-xs border-primary/30 text-white hover:border-primary hover:bg-primary/10 transition-all duration-200"
+              className="w-full h-10 min-h-[44px] text-sm rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
             >
               Annulla
             </Button>
           </Link>
         </div>
       </form>
+      </div>
     </div>
   )
 }

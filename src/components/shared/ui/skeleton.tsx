@@ -60,12 +60,12 @@ export const SkeletonClientiList: React.FC<{ cards?: number; className?: string 
   className = '',
 }) => (
   <div
-    className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 ${className}`}
+    className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 ${className}`}
     role="status"
     aria-label="Caricamento elenco clienti"
   >
     {Array.from({ length: cards }).map((_, i) => (
-      <div key={i} className="rounded-2xl p-4 bg-surface-200/80 border border-white/5">
+      <div key={i} className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
         <div className="flex items-center gap-3 mb-3">
           <Skeleton height={48} width={48} className="shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-1">
@@ -115,12 +115,12 @@ export const SkeletonWorkoutList: React.FC<{ cards?: number; className?: string 
   className = '',
 }) => (
   <div
-    className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${className}`}
+    className={`grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${className}`}
     role="status"
     aria-label="Caricamento schede"
   >
     {Array.from({ length: cards }).map((_, i) => (
-      <div key={i} className="rounded-2xl p-4 bg-surface-200/80 border border-white/5 flex flex-col">
+      <div key={i} className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] flex flex-col">
         <div className="flex items-start justify-between mb-3">
           <Skeleton height={20} width="70%" className="rounded" />
           <Skeleton height={20} width={56} className="rounded-full shrink-0" />

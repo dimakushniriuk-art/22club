@@ -107,15 +107,14 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
           <Card
             key={exercise.exercise_id}
             variant="default"
-            className="group relative overflow-hidden border border-teal-500/30 bg-gradient-to-br from-background-secondary/50 via-background-secondary/30 to-background-tertiary/20 hover:border-teal-400/60 transition-all duration-300 hover:shadow-lg hover:shadow-teal-500/20 backdrop-blur-sm"
+            className="!border-white/10 !bg-gradient-to-b !from-zinc-900/95 !to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:!border-white/20 group relative overflow-hidden rounded-lg transition-all duration-200"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            <CardHeader className="relative z-10 pb-2.5 border-b border-teal-500/20">
+            <CardHeader className="relative z-10 pb-2.5 border-b border-white/10">
               <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 flex-wrap">
                   <CardTitle
                     size="sm"
-                    className="text-sm font-bold bg-gradient-to-r from-white via-teal-100 to-cyan-100 bg-clip-text text-transparent"
+                    className="text-sm font-bold text-text-primary"
                   >
                     {exercise.exercise_name}
                   </CardTitle>
@@ -133,7 +132,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
                           <div className="text-text-tertiary text-[10px] uppercase tracking-wide">
                             Peso Medio
                           </div>
-                          <div className="text-teal-300 text-xs font-bold">
+                          <div className="text-text-primary text-xs font-bold">
                             {exercise.average_weight != null
                               ? `${exercise.average_weight.toFixed(1)} kg`
                               : 'N/A'}
@@ -143,7 +142,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
                           <div className="text-text-tertiary text-[10px] uppercase tracking-wide">
                             Peso Max
                           </div>
-                          <div className="text-teal-300 text-xs font-bold">
+                          <div className="text-text-primary text-xs font-bold">
                             {exercise.max_weight != null
                               ? `${exercise.max_weight.toFixed(1)} kg`
                               : 'N/A'}
@@ -156,7 +155,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
                         <div className="text-text-tertiary text-[10px] uppercase tracking-wide">
                           Reps media
                         </div>
-                        <div className="text-teal-300 text-xs font-bold">
+                        <div className="text-text-primary text-xs font-bold">
                           {exercise.average_reps.toFixed(0)}
                         </div>
                       </div>
@@ -166,7 +165,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
                         <div className="text-text-tertiary text-[10px] uppercase tracking-wide">
                           Tempo (s)
                         </div>
-                        <div className="text-teal-300 text-xs font-bold">
+                        <div className="text-text-primary text-xs font-bold">
                           {exercise.average_seconds.toFixed(0)} s
                         </div>
                       </div>
@@ -175,7 +174,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
                       <div className="text-text-tertiary text-[10px] uppercase tracking-wide">
                         Sessioni
                       </div>
-                      <div className="text-teal-300 text-xs font-bold">{exercise.total_sessions}</div>
+                      <div className="text-text-primary text-xs font-bold">{exercise.total_sessions}</div>
                     </div>
                     {chartData.length > 1 && (hasWeight || hasReps) && (
                       <div className="flex items-center gap-1">

@@ -203,7 +203,7 @@ export function DropdownMenuContent({
     <div
       ref={ref}
       className={cn(
-        'fixed z-[9999] min-w-[12rem] rounded-xl bg-background-secondary/90 backdrop-blur-xl ring-1 ring-white/10 p-1 shadow-soft',
+        'fixed z-[9999] min-w-[12rem] rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl',
         alignClasses[align],
         className,
       )}
@@ -242,7 +242,7 @@ export function DropdownMenuItem({
     return React.cloneElement(child, {
       ...child.props,
       className: cn(
-        'flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+        'flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
         disabled
           ? 'text-text-tertiary cursor-not-allowed opacity-50'
           : 'text-text-primary hover:bg-primary/10 hover:text-text-primary',
@@ -260,7 +260,7 @@ export function DropdownMenuItem({
   return (
     <button
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+        'flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
         disabled
           ? 'text-text-tertiary cursor-not-allowed opacity-50'
           : 'text-text-primary hover:bg-primary/10 hover:text-text-primary',

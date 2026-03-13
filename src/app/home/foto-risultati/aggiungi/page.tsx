@@ -3,7 +3,6 @@
 import type { ReactElement, RefObject } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { PageHeaderFixed } from '@/components/layout'
 import {
@@ -95,6 +94,9 @@ function FigureLato({ className }: { className?: string } = {}) {
 }
 
 const ALL_ANGLES: Angle[] = ['fronte', 'retro', 'profilo']
+
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
 
 export default function AggiungiFotoPage() {
   const router = useRouter()
@@ -248,7 +250,7 @@ export default function AggiungiFotoPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
         <PageHeaderFixed
           title="Aggiungi foto"
           subtitle="Scegli la vista e scatta: si aprirà la fotocamera"
@@ -273,7 +275,7 @@ export default function AggiungiFotoPage() {
       />
 
       <Dialog open={choiceOpen} onOpenChange={setChoiceOpen}>
-        <DialogContent className="bg-background border-cyan-500/30 max-w-sm">
+        <DialogContent className="max-w-sm border border-white/10 bg-background">
           <DialogHeader>
             <DialogTitle className="text-text-primary">
               {selectedAngle ? OPTIONS.find((o) => o.angle === selectedAngle)?.label : 'Aggiungi foto'}
@@ -287,7 +289,7 @@ export default function AggiungiFotoPage() {
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
               onClick={handleChooseGallery}
-              className="w-full gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500 text-cyan-950 hover:bg-cyan-400"
+              className="w-full gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <ImagePlus className="h-4 w-4" />
               Carica da galleria
@@ -295,7 +297,7 @@ export default function AggiungiFotoPage() {
             <Button
               onClick={handleChooseCamera}
               variant="outline"
-              className="w-full gap-2 rounded-xl border-cyan-400/40 text-cyan-400 hover:bg-cyan-500/20"
+              className="w-full gap-2 rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
             >
               <Camera className="h-4 w-4" />
               Scatta foto
@@ -305,28 +307,28 @@ export default function AggiungiFotoPage() {
       </Dialog>
 
         {/* 3 pulsanti con figure */}
-        <div className="grid grid-cols-3 gap-2 min-[834px]:gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {OPTIONS.map(({ angle, label, Figure }) => (
             <button
               key={angle}
               type="button"
               onClick={() => handleCardClick(angle)}
               disabled={uploading}
-              className="group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-3 min-[834px]:p-4 transition-all duration-300 hover:border-cyan-400/50 disabled:opacity-60 disabled:pointer-events-none min-h-[180px] min-[834px]:min-h-[200px]"
+              className={`group relative flex min-h-[180px] flex-1 flex-col items-center justify-center gap-2 p-3 disabled:pointer-events-none disabled:opacity-60 sm:min-h-[200px] sm:p-4 ${CARD_DS}`}
             >
-              <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/40" />
+              <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
               {addedInThisSession.has(angle) && (
-                <div className="absolute top-2 right-2 z-20 rounded-full bg-state-valid/90 p-0.5" title="Aggiunta in questo inserimento">
+                <div className="absolute right-2 top-2 z-20 rounded-full bg-state-valid/90 p-0.5" title="Aggiunta in questo inserimento">
                   <CheckCircle2 className="h-5 w-5 text-white" />
                 </div>
               )}
-              <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 text-center flex-1 min-h-0 w-full">
-                <div className="text-cyan-400/90 group-hover:text-cyan-300 transition-colors flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden rounded-lg [&>svg]:max-h-full [&>svg]:max-w-full [&>svg]:w-auto [&>img]:max-h-full [&>img]:max-w-full [&>img]:w-auto [&>img]:h-full [&>img]:object-cover relative">
+              <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-lg text-center">
+                <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-lg [&>img]:h-full [&>img]:max-h-full [&>img]:w-auto [&>img]:max-w-full [&>img]:object-cover [&>svg]:max-h-full [&>svg]:max-w-full [&>svg]:w-auto">
                   {previewUrls[angle] ? (
                     <Image
                       src={previewUrls[angle]}
                       alt={label}
-                      className="h-full w-full object-cover rounded-lg"
+                      className="h-full w-full rounded-lg object-cover"
                       fill
                       unoptimized
                     />
@@ -334,7 +336,7 @@ export default function AggiungiFotoPage() {
                     <Figure />
                   )}
                 </div>
-                <span className="font-semibold text-text-primary text-sm min-[834px]:text-base shrink-0">
+                <span className="shrink-0 text-sm font-semibold text-text-primary sm:text-base">
                   {addedInThisSession.has(angle) ? `${label} · Tocca per aggiungere` : label}
                 </span>
               </div>
@@ -343,7 +345,7 @@ export default function AggiungiFotoPage() {
         </div>
 
         {uploading && (
-          <div className="flex items-center justify-center gap-2 text-cyan-400 text-sm">
+          <div className="flex items-center justify-center gap-2 text-sm text-text-secondary">
             <Loader2 className="h-5 w-5 animate-spin" />
             Caricamento in corso...
           </div>
@@ -357,12 +359,12 @@ export default function AggiungiFotoPage() {
           <div className="flex flex-col items-center gap-2 pt-2">
             <Button
               onClick={handleSalvaLeFoto}
-              className="w-full max-w-xs min-h-[44px] min-[834px]:h-10 gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500 text-cyan-950 hover:bg-cyan-400 font-semibold text-sm min-[834px]:text-base"
+              className="min-h-[44px] w-full max-w-xs gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 sm:h-10 sm:text-base"
             >
-              <CheckCircle2 className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
               Salva le foto
             </Button>
-            <span className="text-text-tertiary text-[10px] min-[834px]:text-xs">
+            <span className="text-[10px] text-text-tertiary sm:text-xs">
               Abbinate alla data odierna ({formatDate(today)})
             </span>
           </div>

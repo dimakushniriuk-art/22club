@@ -29,9 +29,10 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
         container: 'flex items-center',
         indicator:
           'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200',
-        active: 'bg-brand border-brand text-text-primary shadow-sm glow',
-        completed: 'bg-brand border-brand text-text-primary',
-        pending: 'bg-background-secondary border-border text-text-tertiary',
+        active: 'bg-primary border-primary text-primary-foreground shadow-sm',
+        completed: 'bg-primary border-primary text-primary-foreground',
+        pending:
+          'border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 text-text-tertiary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
         content: 'ml-4 flex-1',
         label: 'text-sm font-medium text-text-primary',
         description: 'text-xs text-text-secondary mt-1',
@@ -40,9 +41,10 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
         container: 'flex items-center',
         indicator:
           'flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium transition-all duration-200',
-        active: 'bg-brand text-text-primary shadow-sm',
-        completed: 'bg-brand text-text-primary',
-        pending: 'bg-background-tertiary text-text-tertiary',
+        active: 'bg-primary text-primary-foreground shadow-sm',
+        completed: 'bg-primary text-primary-foreground',
+        pending:
+          'bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-text-tertiary',
         content: 'ml-3 flex-1',
         label: 'text-sm font-medium text-text-primary',
         description: 'text-xs text-text-secondary mt-0.5',
@@ -51,9 +53,9 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
         container: 'flex items-center',
         indicator:
           'flex items-center justify-center w-4 h-4 rounded-full transition-all duration-200',
-        active: 'bg-brand',
-        completed: 'bg-brand',
-        pending: 'bg-border',
+        active: 'bg-primary',
+        completed: 'bg-primary',
+        pending: 'bg-zinc-700',
         content: 'ml-3 flex-1',
         label: 'text-sm text-text-primary',
         description: 'text-xs text-text-secondary mt-0.5',
@@ -94,7 +96,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                     )}
                   </div>
                 </div>
-                {!isLast && <div className="absolute left-4 top-8 w-0.5 h-6 bg-border" />}
+                {!isLast && <div className="absolute left-4 top-8 w-0.5 h-6 bg-white/10" />}
               </div>
             )
           })}
@@ -133,7 +135,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                   )}
                 </div>
               </div>
-              {!isLast && <div className="flex-1 h-0.5 bg-border mx-4" />}
+              {!isLast && <div className="flex-1 h-0.5 bg-white/10 mx-4" />}
             </React.Fragment>
           )
         })}

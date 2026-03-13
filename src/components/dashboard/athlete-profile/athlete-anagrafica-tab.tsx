@@ -18,11 +18,6 @@ import { ErrorState } from '@/components/dashboard/error-state'
 import { User, Mail, Phone, Calendar, MapPin, Edit, Save, X, AlertCircle } from 'lucide-react'
 import { sanitizeString, sanitizeEmail, sanitizePhone } from '@/lib/sanitize'
 
-const glassSurface =
-  'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-cyan-950/22 backdrop-blur-xl'
-const framePrimary = 'border border-primary/22 hover:border-primary/30 transition'
-const frameSoft = 'border border-white/10 hover:border-white/14 transition'
-const shadowSport = 'shadow-[0_10px_30px_rgba(0,0,0,0.45)]'
 
 interface AthleteAnagraficaTabProps {
   athleteId: string
@@ -72,12 +67,8 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
 
   if (!anagrafica) {
     return (
-      <Card
-        variant="trainer"
-        className={`relative overflow-hidden rounded-3xl ${glassSurface} ${framePrimary} ${shadowSport}`}
-      >
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
-        <CardContent className="p-6 relative z-10">
+      <Card variant="default" className="overflow-hidden">
+        <CardContent className="p-6">
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <AlertCircle className="h-12 w-12 text-text-tertiary mb-4" />
             <p className="text-text-secondary">Nessun dato anagrafico disponibile</p>
@@ -105,7 +96,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
             onClick={() => setIsEditing(true)}
             variant="outline"
             size="sm"
-            className={`flex items-center gap-1.5 h-8 text-xs rounded-full bg-background-secondary/25 text-text-primary flex-shrink-0 self-start sm:self-center ${frameSoft}`}
+            className="flex items-center gap-1.5 h-8 text-xs flex-shrink-0 self-start sm:self-center border border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-3 w-3" />
             Modifica
@@ -114,19 +105,15 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
       </div>
 
       <div className="space-y-4">
-        <Card
-          variant="default"
-          className={`group relative overflow-hidden rounded-3xl ${glassSurface} ${framePrimary} ${shadowSport}`}
-        >
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-cyan-500/6" />
-          <CardHeader className="pb-3 pt-4 px-6 relative z-10 space-y-2">
+        <Card variant="default" className="overflow-hidden">
+          <CardHeader className="pb-3 pt-4 px-6 space-y-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
               <User className="h-3.5 w-3.5 text-primary flex-shrink-0" />
               Informazioni Personali
             </CardTitle>
             <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
           </CardHeader>
-          <CardContent className="pt-2 pb-6 px-6 space-y-3 relative z-10">
+          <CardContent className="pt-2 pb-6 px-6 space-y-3">
             <div className="space-y-1">
               <Label
                 htmlFor="nome"
@@ -279,7 +266,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                         | null,
                     })
                   }
-                  className="w-full h-9 px-2.5 text-xs bg-background-secondary border border-white/10 rounded-lg text-text-primary focus:ring-2 focus:ring-primary/50 focus:ring-offset-0 focus:border-primary/30"
+                  className="w-full h-9 px-2.5 text-xs rounded-md border border-white/10 bg-white/[0.04] text-text-primary focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                 >
                   <option value="">Non specificato</option>
                   <option value="maschio">Maschio</option>
@@ -296,19 +283,15 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
           </CardContent>
         </Card>
 
-        <Card
-          variant="default"
-          className={`group relative overflow-hidden rounded-3xl ${glassSurface} ${framePrimary} ${shadowSport}`}
-        >
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-cyan-500/6" />
-          <CardHeader className="pb-3 pt-4 px-6 relative z-10 space-y-2">
+        <Card variant="default" className="overflow-hidden">
+          <CardHeader className="pb-3 pt-4 px-6 space-y-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
               <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
               Dettagli Aggiuntivi
             </CardTitle>
             <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
           </CardHeader>
-          <CardContent className="pt-2 pb-6 px-6 space-y-3 relative z-10">
+          <CardContent className="pt-2 pb-6 px-6 space-y-3">
             <div className="space-y-1">
               <Label
                 htmlFor="codice_fiscale"
@@ -614,19 +597,15 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
           </CardContent>
         </Card>
 
-        <Card
-          variant="default"
-          className={`group relative overflow-hidden rounded-3xl ${glassSurface} ${framePrimary} ${shadowSport}`}
-        >
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-cyan-500/6" />
-          <CardHeader className="pb-3 pt-4 px-6 relative z-10 space-y-2">
+        <Card variant="default" className="overflow-hidden">
+          <CardHeader className="pb-3 pt-4 px-6 space-y-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
               <AlertCircle className="h-3.5 w-3.5 text-primary flex-shrink-0" />
               Contatto di Emergenza
             </CardTitle>
             <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
           </CardHeader>
-          <CardContent className="pt-2 pb-6 px-6 relative z-10">
+          <CardContent className="pt-2 pb-6 px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label
@@ -731,16 +710,16 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
             variant="outline"
             onClick={handleCancel}
             size="sm"
-            className={`flex items-center gap-1.5 h-9 text-xs rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <X className="h-3.5 w-3.5" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
             size="sm"
-            className="flex items-center gap-1.5 h-9 text-xs rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition text-white"
           >
             <Save className="h-3.5 w-3.5" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}

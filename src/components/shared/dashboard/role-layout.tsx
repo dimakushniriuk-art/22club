@@ -13,7 +13,7 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
   return (
     <TransitionWrapper className="w-full min-w-0">
       <div
-        className="flex flex-col md:flex-row min-h-screen w-full min-w-0 bg-background text-text-primary transition-all duration-300"
+        className="flex flex-col md:flex-row min-h-screen w-full min-w-0 text-text-primary transition-all duration-300"
         suppressHydrationWarning
       >
         {role === 'staff' && (
@@ -26,7 +26,7 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
         )}
 
         <main
-          className="flex-1 flex flex-col min-h-0 min-w-0 w-full pt-[env(safe-area-inset-top,0px)]"
+          className="flex-1 flex flex-col min-h-0 min-w-0 w-full pt-[env(safe-area-inset-top,0px)] bg-transparent"
           style={{ paddingLeft: 'max(0px, env(safe-area-inset-left))', paddingRight: 'max(0px, env(safe-area-inset-right))' }}
           suppressHydrationWarning
         >

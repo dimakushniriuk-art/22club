@@ -98,9 +98,10 @@ interface AthleteProfileTabsProps {
   onPrefetchTab: (tabName: string) => void
 }
 
-const glassSurface =
-  'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-cyan-950/22 backdrop-blur-xl'
-const frameSoft = 'border border-white/10 hover:border-white/14 transition'
+const DS_TABS_LIST =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-2'
+const TAB_TRIGGER =
+  'rounded-lg px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/[0.04] transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-white/[0.06] data-[state=active]:border data-[state=active]:border-white/10'
 
 export function AthleteProfileTabs({
   athleteId,
@@ -114,33 +115,21 @@ export function AthleteProfileTabs({
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList
-        className={`grid w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-6 rounded-2xl p-2 ${glassSurface} ${frameSoft} h-auto min-h-10 items-center justify-items-center`}
+        className={`grid w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-6 ${DS_TABS_LIST} h-auto min-h-10 items-center justify-items-center`}
       >
-        <TabsTrigger
-          value="profilo"
-          className="rounded-full px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
-        >
+        <TabsTrigger value="profilo" className={TAB_TRIGGER}>
           <User className="mr-2 h-4 w-4" />
           Profilo
         </TabsTrigger>
-        <TabsTrigger
-          value="allenamenti"
-          className="rounded-full px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
-        >
+        <TabsTrigger value="allenamenti" className={TAB_TRIGGER}>
           <Dumbbell className="mr-2 h-4 w-4" />
           Allenamenti
         </TabsTrigger>
-        <TabsTrigger
-          value="progressi"
-          className="rounded-full px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
-        >
+        <TabsTrigger value="progressi" className={TAB_TRIGGER}>
           <BarChart3 className="mr-2 h-4 w-4" />
           Progressi
         </TabsTrigger>
-        <TabsTrigger
-          value="documenti"
-          className="rounded-full px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
-        >
+        <TabsTrigger value="documenti" className={TAB_TRIGGER}>
           <FileText className="mr-2 h-4 w-4" />
           Documenti
         </TabsTrigger>
@@ -150,11 +139,11 @@ export function AthleteProfileTabs({
         {athleteUserId ? (
           <Tabs value={activeProfileTab} onValueChange={setActiveProfileTab} className="w-full">
             <TabsList
-              className={`grid w-full grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 mb-6 rounded-2xl p-2 ${glassSurface} ${frameSoft} overflow-x-auto h-auto min-h-10 items-center justify-items-center`}
+              className={`grid w-full grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 mb-6 ${DS_TABS_LIST} overflow-x-auto h-auto min-h-10 items-center justify-items-center`}
             >
               <TabsTrigger
                 value="anagrafica"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('anagrafica')}
               >
                 <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -162,7 +151,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="medica"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('medica')}
               >
                 <Heart className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -170,7 +159,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="fitness"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('fitness')}
               >
                 <Dumbbell className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -178,7 +167,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="motivazionale"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('motivazionale')}
               >
                 <Target className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -186,7 +175,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="nutrizione"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('nutrizione')}
               >
                 <Utensils className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -194,7 +183,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="massaggio"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('massaggio')}
               >
                 <Hand className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -202,7 +191,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="amministrativo"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('amministrativo')}
               >
                 <CreditCard className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -210,7 +199,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="smart-tracking"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('smart-tracking')}
               >
                 <ActivityIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -218,7 +207,7 @@ export function AthleteProfileTabs({
               </TabsTrigger>
               <TabsTrigger
                 value="ai-data"
-                className="rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/6 transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/26 data-[state=active]:to-cyan-500/12 data-[state=active]:border data-[state=active]:border-primary/22 data-[state=active]:shadow-[0_0_22px_rgba(2,179,191,0.14)]"
+                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
                 onMouseEnter={() => onPrefetchTab('ai-data')}
               >
                 <Brain className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />

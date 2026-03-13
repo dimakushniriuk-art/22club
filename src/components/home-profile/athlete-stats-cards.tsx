@@ -16,58 +16,58 @@ interface AthleteStatsCardsProps {
     allenamenti_totali: number
     lezioni_rimanenti: number
   }
+  /** Se true, nasconde le icon box decorative in angolo (solo pagina profilo). */
+  hideIcons?: boolean
 }
 
-const statCardBase =
-  'relative overflow-hidden rounded-xl border bg-background-secondary/80 [background-image:none!important] transition-all duration-200 active:scale-[0.98]'
+const CARD_DS =
+  'relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200 active:scale-[0.98]'
+const ICON_BOX = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-10 sm:w-10'
 
-export function AthleteStatsCards({ stats }: AthleteStatsCardsProps) {
+export function AthleteStatsCards({ stats, hideIcons = false }: AthleteStatsCardsProps) {
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3">
-      <Card
-        variant="default"
-        className={`${statCardBase} border-teal-500/30 hover:border-teal-400/50 hover:shadow-lg hover:shadow-teal-500/10`}
-      >
-        <CardContent className="p-3 sm:p-4 text-center relative">
-          <div className="absolute top-1.5 right-1.5 opacity-25">
-            <Calendar className="h-8 w-8 sm:h-10 sm:w-10 text-teal-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-white relative z-10 tabular-nums">
+      <Card variant="default" className={CARD_DS}>
+        <CardContent className="relative p-3 text-center sm:p-4">
+          {!hideIcons && (
+            <div className={`absolute right-1.5 top-1.5 ${ICON_BOX}`}>
+              <Calendar className="h-4 w-4 text-cyan-400 sm:h-5 sm:w-5" />
+            </div>
+          )}
+          <div className="relative z-10 text-2xl font-bold tabular-nums text-text-primary sm:text-3xl">
             {stats.allenamenti_mese}
           </div>
-          <div className="text-text-secondary text-[11px] sm:text-xs font-medium relative z-10 mt-0.5 leading-tight">
+          <div className="relative z-10 mt-0.5 text-[11px] font-medium leading-tight text-text-secondary sm:text-xs">
             Allenamenti mese
           </div>
         </CardContent>
       </Card>
-      <Card
-        variant="default"
-        className={`${statCardBase} border-green-500/30 hover:border-green-400/50 hover:shadow-lg hover:shadow-green-500/10`}
-      >
-        <CardContent className="p-3 sm:p-4 text-center relative">
-          <div className="absolute top-1.5 right-1.5 opacity-25">
-            <TrendingUp className="h-8 w-8 sm:h-10 sm:w-10 text-green-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-white relative z-10 tabular-nums">
+      <Card variant="default" className={CARD_DS}>
+        <CardContent className="relative p-3 text-center sm:p-4">
+          {!hideIcons && (
+            <div className={`absolute right-1.5 top-1.5 ${ICON_BOX}`}>
+              <TrendingUp className="h-4 w-4 text-state-valid sm:h-5 sm:w-5" />
+            </div>
+          )}
+          <div className="relative z-10 text-2xl font-bold tabular-nums text-text-primary sm:text-3xl">
             {stats.lezioni_rimanenti}
           </div>
-          <div className="text-text-secondary text-[11px] sm:text-xs font-medium relative z-10 mt-0.5 leading-tight">
+          <div className="relative z-10 mt-0.5 text-[11px] font-medium leading-tight text-text-secondary sm:text-xs">
             Lezioni rimanenti
           </div>
         </CardContent>
       </Card>
-      <Card
-        variant="default"
-        className={`${statCardBase} border-cyan-500/30 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10`}
-      >
-        <CardContent className="p-3 sm:p-4 text-center relative">
-          <div className="absolute top-1.5 right-1.5 opacity-25">
-            <Activity className="h-8 w-8 sm:h-10 sm:w-10 text-cyan-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-white relative z-10 tabular-nums">
+      <Card variant="default" className={CARD_DS}>
+        <CardContent className="relative p-3 text-center sm:p-4">
+          {!hideIcons && (
+            <div className={`absolute right-1.5 top-1.5 ${ICON_BOX}`}>
+              <Activity className="h-4 w-4 text-cyan-400 sm:h-5 sm:w-5" />
+            </div>
+          )}
+          <div className="relative z-10 text-2xl font-bold tabular-nums text-text-primary sm:text-3xl">
             {stats.allenamenti_totali}
           </div>
-          <div className="text-text-secondary text-[11px] sm:text-xs font-medium relative z-10 mt-0.5 leading-tight">
+          <div className="relative z-10 mt-0.5 text-[11px] font-medium leading-tight text-text-secondary sm:text-xs">
             Totale sessioni
           </div>
         </CardContent>

@@ -41,16 +41,14 @@ export function WorkoutPlansList({
 
   return (
     <div className="space-y-4">
-      {/* Conteggio risultati */}
       {workouts.length > 0 && (
-        <div className="text-text-secondary text-sm">
+        <p className="text-sm text-text-secondary">
           {workouts.length} {workouts.length === 1 ? 'scheda trovata' : 'schede trovate'}
-        </div>
+        </p>
       )}
 
-      {/* Vista griglia o lista */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {workouts.map((workout) => (
             <WorkoutCard
               key={workout.id}

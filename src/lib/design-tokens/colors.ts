@@ -6,7 +6,7 @@
 export const colors = {
   // Neutral / Background
   background: {
-    DEFAULT: '#101012',
+    DEFAULT: '#0d0d0d',
     elevated: '#16161A',
     subtle: '#1C1C20',
     secondary: '#1A1A1E',
@@ -50,13 +50,14 @@ export const colors = {
     error: '#FF3B30',
   },
   // Athlete role accents (for home blocks, card bar) — unica fonte per design system e app
+  // iconBg unificato su primary #02b3bf (stesso colore della sezione Colori)
   athleteAccents: {
     teal: {
       DEFAULT: '#02A1AC',
       border: 'rgba(2,161,172,0.45)',
       bar: '#02A1AC',
       bg: 'rgba(2,161,172,0.1)',
-      iconBg: 'rgba(2,161,172,0.25)',
+      iconBg: 'rgba(2,179,191,0.25)',
       glow: 'rgba(2,161,172,0.15)',
       gradientStart: 'rgba(2,161,172,0.14)',
     },
@@ -65,7 +66,7 @@ export const colors = {
       border: 'rgba(2,145,155,0.4)',
       bar: '#02919B',
       bg: 'rgba(2,145,155,0.1)',
-      iconBg: 'rgba(2,145,155,0.22)',
+      iconBg: 'rgba(2,179,191,0.25)',
       glow: 'rgba(2,145,155,0.12)',
       gradientStart: 'rgba(2,145,155,0.14)',
     },
@@ -74,7 +75,7 @@ export const colors = {
       border: 'rgba(1,130,139,0.4)',
       bar: '#01828B',
       bg: 'rgba(1,130,139,0.1)',
-      iconBg: 'rgba(1,130,139,0.22)',
+      iconBg: 'rgba(2,179,191,0.25)',
       glow: 'rgba(1,130,139,0.12)',
       gradientStart: 'rgba(1,130,139,0.14)',
     },
@@ -83,7 +84,7 @@ export const colors = {
       border: 'rgba(1,117,125,0.4)',
       bar: '#01757D',
       bg: 'rgba(1,117,125,0.1)',
-      iconBg: 'rgba(1,117,125,0.22)',
+      iconBg: 'rgba(2,179,191,0.25)',
       glow: 'rgba(1,117,125,0.12)',
       gradientStart: 'rgba(1,117,125,0.14)',
     },
@@ -92,7 +93,7 @@ export const colors = {
       border: 'rgba(1,106,113,0.4)',
       bar: '#016A71',
       bg: 'rgba(1,106,113,0.1)',
-      iconBg: 'rgba(1,106,113,0.22)',
+      iconBg: 'rgba(2,179,191,0.25)',
       glow: 'rgba(1,106,113,0.12)',
       gradientStart: 'rgba(1,106,113,0.14)',
     },

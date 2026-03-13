@@ -3,27 +3,20 @@
 import { Type } from 'lucide-react'
 import { designSystem } from '@/config/design-system'
 import { Card, CardTitle } from '@/components/ui'
-import { TypographySample } from './helpers'
-
-const cardFrameClass =
-  'overflow-hidden p-5 !rounded-[8px] !border-[rgb(255_255_255/0.5)] !shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.06),inset_0_1px_0_0_rgba(255,255,255,0.04),inset_0_-1px_0_0_rgba(0,0,0,0.06)]'
+import { TypographySample, DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS } from './helpers'
 
 export function FoundationsTypography() {
   return (
     <section id="tipografia" className="scroll-mt-24">
-      <h2 className="mb-6 flex items-center gap-2 text-2xl font-semibold">
+      <h2 className={DS_SECTION_TITLE_CLASS}>
         <Type className="h-6 w-6 text-primary" />
         Tipografia
       </h2>
-      <p className="mb-6 text-sm text-text-secondary">
-        Scala dimensioni e font da Tailwind (fontSize, fontFamily). Token in{' '}
-        <code className="rounded bg-surface-300 px-1.5 py-0.5 font-mono text-xs">
-          design-system
-        </code>
-        .
+      <p className={DS_SECTION_INTRO_CLASS}>
+        Scala dimensioni e font da Tailwind (fontSize, fontFamily). Token in <code className={DS_CODE_CLASS}>design-system</code>.
       </p>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Card variant="default" className={cardFrameClass}>
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Scala dimensioni (text-*)
           </CardTitle>
@@ -45,7 +38,7 @@ export function FoundationsTypography() {
             <TypographySample className="text-6xl" label="6xl" size="3.75rem" lineHeight="1" />
           </div>
         </Card>
-        <Card variant="default" className={cardFrameClass}>
+        <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Famiglie font
           </CardTitle>

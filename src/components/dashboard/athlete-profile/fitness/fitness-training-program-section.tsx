@@ -38,9 +38,7 @@ export function FitnessTrainingProgramSection({
   const preferenzeOrarioList = formData.preferenze_orario || []
 
   return (
-    <Card
-      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />

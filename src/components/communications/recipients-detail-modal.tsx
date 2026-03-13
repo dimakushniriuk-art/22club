@@ -169,7 +169,7 @@ export function RecipientsDetailModal({
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Statistiche */}
             <div className="grid grid-cols-6 gap-2 mb-4">
-              <div className="bg-background-secondary rounded-lg p-3 text-center">
+              <div className="rounded-lg bg-white/[0.02] p-3 text-center">
                 <div className="text-text-secondary text-xs mb-1">Totali</div>
                 <div className="text-text-primary text-lg font-semibold">{stats.total}</div>
               </div>
@@ -221,15 +221,15 @@ export function RecipientsDetailModal({
                   placeholder="Cerca per nome, email o telefono..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-background-secondary border border-border rounded-lg text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/30"
                 />
               </div>
             </div>
 
             {/* Tabella */}
-            <div className="flex-1 overflow-auto border border-border rounded-lg">
+            <div className="flex-1 overflow-auto rounded-lg border border-white/10">
               <table className="w-full text-sm">
-                <thead className="bg-background-secondary sticky top-0">
+                <thead className="sticky top-0 bg-white/[0.02]">
                   <tr>
                     <th className="text-left p-3 text-text-primary font-medium">Nome</th>
                     <th className="text-left p-3 text-text-primary font-medium">Email</th>
@@ -252,7 +252,7 @@ export function RecipientsDetailModal({
                     filteredRecipients.map((recipient) => (
                       <tr
                         key={recipient.id}
-                        className="border-t border-border hover:bg-background-secondary/50"
+                        className="border-t border-white/10 hover:bg-white/[0.04]"
                       >
                         <td className="p-3 text-text-primary">{recipient.name}</td>
                         <td className="p-3 text-text-secondary">{recipient.email || '-'}</td>

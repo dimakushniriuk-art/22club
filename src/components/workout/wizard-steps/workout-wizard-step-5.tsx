@@ -56,11 +56,10 @@ export function WorkoutWizardStep5({
 
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl transition-all duration-200"
+      variant="default"
+      className="relative overflow-hidden transition-all duration-200"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-      <CardContent className="relative z-10 p-6 sm:p-8">
+      <CardContent className="p-6 sm:p-8">
     <div className="space-y-6">
       <div className="mb-6">
         <h3 className="text-text-primary mb-2 text-xl font-bold">Riepilogo e conferma</h3>
@@ -72,19 +71,18 @@ export function WorkoutWizardStep5({
       <div className="space-y-6">
         {/* Riepilogo scheda */}
         <Card
-          variant="trainer"
-          className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/40 shadow-md shadow-teal-500/5"
+          variant="default"
+          className="relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-          <CardHeader className="relative z-10 border-b border-white/5 bg-background-secondary/50">
+          <CardHeader className="border-b border-white/10">
             <CardTitle size="sm" className="flex items-center gap-2">
               <Check className="h-4 w-4 text-emerald-400" />
               Riepilogo scheda
             </CardTitle>
           </CardHeader>
-          <CardContent className="relative z-10 pt-6">
+          <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <span className="text-text-secondary flex items-center gap-2">
                   <List className="h-4 w-4 text-primary" />
                   Nome:
@@ -93,7 +91,7 @@ export function WorkoutWizardStep5({
                   {wizardData.title || 'Non definito'}
                 </span>
               </div>
-              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <span className="text-text-secondary flex items-center gap-2">
                   <User className="h-4 w-4 text-blue-400" />
                   Atleta:
@@ -104,7 +102,7 @@ export function WorkoutWizardStep5({
                   )}
                 </span>
               </div>
-              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <span className="text-text-secondary flex items-center gap-2">
                   <Goal className="h-4 w-4 text-teal-400" />
                   Obiettivo:
@@ -117,7 +115,7 @@ export function WorkoutWizardStep5({
                   )}
                 </span>
               </div>
-              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <span className="text-text-secondary flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-violet-400" />
                   Giorni:
@@ -141,14 +139,13 @@ export function WorkoutWizardStep5({
 
         {wizardData.notes && (
           <Card
-            variant="trainer"
-            className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/40 shadow-md shadow-teal-500/5"
+            variant="default"
+            className="relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-            <CardHeader className="relative z-10 border-b border-white/5 bg-background-secondary/50">
+            <CardHeader className="border-b border-white/10">
               <CardTitle size="sm">Note aggiuntive</CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10 pt-6">
+            <CardContent className="pt-6">
               <p className="text-text-secondary text-sm whitespace-pre-wrap">{wizardData.notes}</p>
             </CardContent>
           </Card>

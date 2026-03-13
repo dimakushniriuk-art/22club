@@ -17,17 +17,20 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <div
-      className={cn('flex flex-col items-center justify-center gap-4 py-12 text-center', className)}
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+        className,
+      )}
       role="alert"
       aria-live="assertive"
     >
-      <AlertCircle className="text-state-error h-12 w-12" aria-hidden="true" />
-      <div>
-        <h3 className="text-text-primary mb-2 text-lg font-medium">{title}</h3>
-        <p className="text-text-secondary text-sm">{message}</p>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-state-error/30 bg-state-error/20 text-state-error">
+        <AlertCircle className="h-6 w-6" aria-hidden="true" />
       </div>
+      <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+      <p className="text-sm text-text-secondary">{message}</p>
       {onRetry && (
-        <Button onClick={onRetry} className="bg-brand hover:bg-brand/90 mt-2">
+        <Button variant="primary" size="sm" onClick={onRetry}>
           Riprova
         </Button>
       )}

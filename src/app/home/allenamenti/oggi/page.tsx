@@ -15,7 +15,7 @@ import {
 } from '@/components/ui'
 import { RestTimer } from '@/components/workout/rest-timer'
 import { TrainerSessionModal } from '@/components/workout/trainer-session-modal'
-import { ArrowLeft, Check, Target, Dumbbell, Edit2, Info, Play } from 'lucide-react'
+import { Check, Target, Dumbbell, Edit2, Info, Play } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useWorkoutSession } from '@/hooks/workouts/use-workout-session'
@@ -127,7 +127,7 @@ function ExerciseMediaDisplay({
     (!shouldShowVideo || videoError) && isValidThumbUrl && thumbUrl && !imageError
 
   return (
-    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-background-tertiary to-background-secondary border border-cyan-500/20">
+    <div className="relative w-full aspect-video overflow-hidden rounded-lg border border-white/10 bg-white/5">
       {shouldShowVideo ? (
         <>
           <video
@@ -1217,7 +1217,7 @@ function AllenamentiOggiPageContent() {
             onBack={() => router.back()}
             icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
           />
-          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50">
+          <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
               <div className="mb-3 text-4xl opacity-50">💪</div>
               <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
@@ -1233,7 +1233,7 @@ function AllenamentiOggiPageContent() {
               <div className="flex gap-2 justify-center flex-wrap">
                 <Button
                   onClick={() => router.push('/home/allenamenti')}
-                  className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-medium"
+                  className="min-h-[44px] h-9 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10"
                 >
                   Vai agli Allenamenti
                 </Button>
@@ -1241,7 +1241,7 @@ function AllenamentiOggiPageContent() {
                   <Button
                     variant="outline"
                     onClick={() => router.back()}
-                    className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+                    className="min-h-[44px] h-9 rounded-lg border border-white/10 text-sm text-text-primary hover:bg-white/5 sm:h-10"
                   >
                     Indietro
                   </Button>
@@ -1350,19 +1350,16 @@ function AllenamentiOggiPageContent() {
               // Vista circuito: griglia 3x3 video + lista info per ogni esercizio
               if (circuitGroup.length > 0) {
                 return (
-                  <Card className="relative overflow-hidden border-0 bg-background-secondary/50 shadow-lg backdrop-blur-sm p-2.5">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
                     <CardHeader
-                      className="relative z-10 border-b border-cyan-500/20 py-1.5 px-3"
+                      className="relative z-10 border-b border-white/10 px-3 py-1.5"
                       padding="sm"
                     >
-                      <CardTitle size="md" className="text-white flex items-center gap-2 text-sm">
-                        <div className="p-0.5 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                          <Dumbbell className="h-3 w-3 text-cyan-400 flex-shrink-0" />
-                        </div>
-                        <span className="truncate flex-1">
-                          Circuito · {circuitGroup.length} esercizi
+                      <CardTitle size="md" className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                          <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
                         </span>
+                        Circuito · {circuitGroup.length} esercizi
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10 space-y-2 pt-2 p-0">
@@ -1387,7 +1384,7 @@ function AllenamentiOggiPageContent() {
                           return (
                             <div
                               key={String(item.id)}
-                              className={`relative w-full aspect-video rounded-lg overflow-hidden border border-cyan-500/20 bg-background-tertiary ${canEnlarge ? 'cursor-pointer hover:border-cyan-400/50 hover:ring-2 hover:ring-cyan-500/40 transition-all' : ''}`}
+                              className={`relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-white/5 ${canEnlarge ? 'cursor-pointer transition-all hover:border-white/20 hover:ring-2 hover:ring-white/20' : ''}`}
                               role={canEnlarge ? 'button' : undefined}
                               tabIndex={canEnlarge ? 0 : undefined}
                               onClick={() =>
@@ -1491,63 +1488,202 @@ function AllenamentiOggiPageContent() {
                                   ))}
                                 </div>
                               </div>
-                              {circuitGroup.map((item, i) => {
+                              {circuitGroup.map((item) => {
                                 const ex = (item.exercise ?? {}) as Record<string, unknown>
                                 const name = (ex.name as string) ?? 'Esercizio'
                                 const sets = (item.sets as Record<string, unknown>[]) ?? []
-                                const firstSet = sets[0]
-                                const weight =
-                                  (item.target_weight as number) ??
-                                  (firstSet?.weight_kg as number) ??
-                                  0
-                                const reps =
-                                  (item.target_reps as number) ?? (firstSet?.reps as number) ?? 0
-                                const rest =
-                                  (item.rest_timer_sec as number) ??
-                                  (firstSet?.rest_timer_sec as number) ??
-                                  60
-                                const time = (firstSet?.execution_time_sec as number | null) ?? null
                                 return (
-                                  <div key={String(item.id)} className="space-y-0.5">
-                                    <div className="text-text-primary text-[11px] font-medium truncate pl-0.5">
+                                  <div key={String(item.id)} className="space-y-1.5">
+                                    <div className="text-text-primary text-xs font-medium truncate pl-0.5">
                                       {name}
                                     </div>
-                                    <div className="relative overflow-hidden rounded-md p-1.5 transition-all border bg-background-tertiary/30 border-cyan-500/20">
+                                    {sets.map((set: Record<string, unknown>, index: number) => (
                                       <div
-                                        className="grid grid-cols-[auto_1fr] gap-1.5"
-                                        style={{ gridTemplateColumns: '32px 1fr' }}
+                                        key={index}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => {
+                                          if (set.completed as boolean) {
+                                            updateSet(item.id as string, set.set_number as number, {
+                                              completed: false,
+                                            })
+                                            setInlineTimerSeconds(null)
+                                            setInlineTimerRunning(false)
+                                            return
+                                          }
+                                          updateSet(item.id as string, set.set_number as number, {
+                                            completed: true,
+                                          })
+                                          const restSec =
+                                            ((set.rest_timer_sec ?? item.rest_timer_sec ?? null) as
+                                              | number
+                                              | null) ?? 0
+                                          const finalRest = restSec > 0 ? restSec : 60
+                                          playTimerTone(timerAudioContextRef, 700, 0.5)
+                                          setInlineTimerSeconds(finalRest)
+                                          setInlineTimerRunning(true)
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault()
+                                            ;(e.currentTarget as HTMLElement).click()
+                                          }
+                                        }}
+                                        className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 cursor-pointer hover:border-white/20 hover:bg-white/10 ${
+                                          set.completed
+                                            ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
+                                            : isSetEditing(item.id as string, set.set_number as number)
+                                              ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                                              : 'border-white/10 bg-white/5'
+                                        }`}
                                       >
-                                        <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-background-tertiary/50 text-white border border-cyan-500/40 font-bold text-[11px]">
-                                          {i + 1}
-                                        </div>
                                         <div
-                                          className="grid gap-1 md:gap-2"
-                                          style={{
-                                            gridTemplateColumns: `repeat(${columnCount}, minmax(50px, 1fr))`,
-                                          }}
+                                          className="grid grid-cols-[auto_1fr] gap-2 items-center"
+                                          style={{ gridTemplateColumns: '40px 1fr' }}
                                         >
-                                          {visibleColumns.map((col) => {
-                                            const value =
-                                              col.field === 'weight_kg'
-                                                ? weight
-                                                : col.field === 'reps'
-                                                  ? reps
-                                                  : col.field === 'rest_timer_sec'
-                                                    ? rest
-                                                    : col.field === 'execution_time_sec'
-                                                      ? (time ?? 0)
-                                                      : 0
-                                            return (
-                                              <div key={col.key} className="text-center">
-                                                <div className="text-sm font-bold text-white whitespace-nowrap">
-                                                  {value}
+                                          <div
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              if (!(set.completed as boolean)) {
+                                                toggleSetEditMode(
+                                                  item.id as string,
+                                                  set.set_number as number,
+                                                )
+                                              }
+                                            }}
+                                            className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
+                                              set.completed
+                                                ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
+                                                : isSetEditing(
+                                                      item.id as string,
+                                                      set.set_number as number,
+                                                    )
+                                                  ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
+                                                  : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
+                                            }`}
+                                            title={
+                                              set.completed ? 'Set completato' : 'Clicca per modificare'
+                                            }
+                                          >
+                                            {!set.completed && (
+                                              <Edit2
+                                                className={`h-3 w-3 ${
+                                                  isSetEditing(
+                                                    item.id as string,
+                                                    set.set_number as number,
+                                                  )
+                                                    ? 'text-orange-400'
+                                                    : 'text-text-tertiary'
+                                                }`}
+                                              />
+                                            )}
+                                            <span>{set.set_number as number}</span>
+                                          </div>
+                                          <div
+                                            className="grid gap-2 md:gap-3 items-center"
+                                            style={{
+                                              gridTemplateColumns: `repeat(${columnCount}, minmax(60px, 1fr))`,
+                                            }}
+                                          >
+                                            {visibleColumns.map((col) => {
+                                              const value =
+                                                col.field === 'rest_timer_sec'
+                                                  ? (((set[col.field] ??
+                                                      item.rest_timer_sec ??
+                                                      null) as number | null) ?? 0)
+                                                  : col.field === 'reps'
+                                                    ? (((set[col.field] ??
+                                                        item.target_reps ??
+                                                        null) as number | null | undefined) ?? 0)
+                                                    : col.field === 'weight_kg'
+                                                      ? (((set[col.field] ??
+                                                          item.target_weight ??
+                                                          null) as number | null | undefined) ?? 0)
+                                                      : ((set[col.field] as number | null | undefined) ??
+                                                          0)
+                                              return (
+                                                <div
+                                                  key={col.key}
+                                                  className="text-center flex items-center justify-center min-h-[2rem]"
+                                                >
+                                                  {isSetEditing(
+                                                    item.id as string,
+                                                    set.set_number as number,
+                                                  ) &&
+                                                  !set.completed &&
+                                                  col.field === 'weight_kg' ? (
+                                                    <Input
+                                                      type="number"
+                                                      value={value || ''}
+                                                      onChange={(e) => {
+                                                        updateSet(item.id as string, (set.set_number as number) || 1, {
+                                                          weight_kg: Number(e.target.value) || 0,
+                                                        })
+                                                      }}
+                                                      className="text-xl font-bold text-orange-400 bg-transparent border-0 p-0 h-auto focus:ring-0 focus:outline-none focus-visible:ring-0 text-center w-full opacity-100"
+                                                      min="0"
+                                                      placeholder="0"
+                                                    />
+                                                  ) : (
+                                                    <div
+                                                      className={`text-base font-bold text-white text-center whitespace-nowrap ${
+                                                        (set.completed as boolean)
+                                                          ? 'opacity-70'
+                                                          : 'opacity-100'
+                                                      }`}
+                                                    >
+                                                      {col.field === 'rest_timer_sec'
+                                                        ? (((set.rest_timer_sec ??
+                                                            item.rest_timer_sec ??
+                                                            null) as number | null) ?? 0)
+                                                        : col.field === 'execution_time_sec'
+                                                          ? ((set.execution_time_sec as
+                                                              | number
+                                                              | null
+                                                              | undefined) ?? 0)
+                                                          : col.field === 'reps'
+                                                            ? ((set.reps as number | null | undefined) ??
+                                                                (item.target_reps as
+                                                                  | number
+                                                                  | null
+                                                                  | undefined) ??
+                                                                0)
+                                                            : col.field === 'weight_kg'
+                                                              ? (() => {
+                                                                  const setWeight = set.weight_kg as
+                                                                    | number
+                                                                    | null
+                                                                    | undefined
+                                                                  const exerciseWeight =
+                                                                    item.target_weight as
+                                                                      | number
+                                                                      | null
+                                                                      | undefined
+                                                                  if (
+                                                                    setWeight !== null &&
+                                                                    setWeight !== undefined
+                                                                  )
+                                                                    return setWeight
+                                                                  if (
+                                                                    exerciseWeight !== null &&
+                                                                    exerciseWeight !== undefined
+                                                                  )
+                                                                    return exerciseWeight
+                                                                  return '-'
+                                                                })()
+                                                              : ((set[(col as { field: string }).field] as
+                                                                  | number
+                                                                  | null
+                                                                  | undefined) ?? '-')}
+                                                    </div>
+                                                  )}
                                                 </div>
-                                              </div>
-                                            )
-                                          })}
+                                              )
+                                            })}
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
+                                    ))}
                                   </div>
                                 )
                               })}
@@ -1606,22 +1742,21 @@ function AllenamentiOggiPageContent() {
               }
 
               return (
-                <Card className="relative overflow-hidden border-0 bg-background-secondary/50 shadow-lg backdrop-blur-sm p-2.5">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
                   <CardHeader
-                    className="relative z-10 border-b border-cyan-500/20 py-1.5 px-3"
+                    className="relative z-10 border-b border-white/10 px-3 py-1.5"
                     padding="sm"
                   >
-                    <CardTitle size="md" className="text-white flex items-center gap-2 text-sm">
-                      <div className="p-0.5 rounded-lg bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                        <Dumbbell className="h-3 w-3 text-cyan-400 flex-shrink-0" />
-                      </div>
+                    <CardTitle size="md" className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                        <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
+                      </span>
                       <span className="truncate flex-1">{exercise.name as string}</span>
                       {Boolean(exercise.description) && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 flex-shrink-0 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-full p-0"
+                          className="h-5 w-5 shrink-0 rounded-full p-0 text-cyan-400 hover:bg-white/5 hover:text-cyan-300"
                           onClick={(e) => {
                             e.stopPropagation()
                             setSelectedExerciseDescription({
@@ -1650,11 +1785,11 @@ function AllenamentiOggiPageContent() {
 
                     {/* Nota esercizio - Visualizzata sotto il video */}
                     {exerciseNote ? (
-                      <div className="mt-3 pt-3 border-t border-cyan-500/20">
-                        <div className="text-text-secondary text-[10px] font-medium uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                          <div className="p-0.5 rounded bg-gradient-to-br from-cyan-500/20 to-primary/20">
-                            <Target className="h-2.5 w-2.5 text-cyan-400 flex-shrink-0" />
-                          </div>
+                      <div className="mt-3 border-t border-white/10 pt-3">
+                        <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+                          <span className="flex h-6 w-6 items-center justify-center rounded border border-white/10 bg-white/5">
+                            <Target className="h-2.5 w-2.5 shrink-0 text-cyan-400" />
+                          </span>
                           <span>Note</span>
                         </div>
                         <p className="text-text-primary text-xs leading-relaxed whitespace-pre-wrap break-words">
@@ -1783,16 +1918,16 @@ function AllenamentiOggiPageContent() {
                                       ;(e.currentTarget as HTMLElement).click()
                                     }
                                   }}
-                                  className={`relative overflow-hidden rounded-lg p-2.5 transition-all duration-200 border ${
+                                  className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
                                     set.completed
-                                      ? 'bg-cyan-500/20 border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
+                                      ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
                                       : isSetEditing(
                                             currentExercise.id as string,
                                             set.set_number as number,
                                           )
-                                        ? 'bg-cyan-500/10 border-cyan-500/40'
-                                        : 'bg-background-tertiary/30 border-cyan-500/20'
-                                  } ${circuitGroup.length === 0 ? 'cursor-pointer hover:bg-cyan-500/10 hover:border-cyan-500/40' : ''}`}
+                                        ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                                        : 'border-white/10 bg-white/5'
+                                  } ${circuitGroup.length === 0 ? 'cursor-pointer hover:border-white/20 hover:bg-white/10' : ''}`}
                                 >
                                   <div
                                     className="grid grid-cols-[auto_1fr] gap-2 items-center"
@@ -1808,15 +1943,15 @@ function AllenamentiOggiPageContent() {
                                           )
                                         }
                                       }}
-                                      className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center gap-1 font-bold text-xs transition-all duration-200 ${
+                                      className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
                                         set.completed
-                                          ? 'bg-cyan-500/30 text-cyan-100 border border-cyan-400/80'
+                                          ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
                                           : isSetEditing(
                                                 currentExercise.id as string,
                                                 set.set_number as number,
                                               )
-                                            ? 'bg-gradient-to-br from-cyan-500/30 to-primary/30 text-cyan-100 border-2 border-cyan-400/60 hover:from-cyan-500/40 hover:to-primary/40 cursor-pointer shadow-lg shadow-cyan-500/30'
-                                            : 'bg-background-tertiary/50 text-white border-2 border-cyan-500/40 hover:border-cyan-400/60 hover:bg-cyan-500/15 cursor-pointer hover:shadow-md hover:shadow-cyan-500/20'
+                                            ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
+                                            : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
                                       }`}
                                       title={
                                         set.completed ? 'Set completato' : 'Clicca per modificare'
@@ -1829,21 +1964,12 @@ function AllenamentiOggiPageContent() {
                                               currentExercise.id as string,
                                               set.set_number as number,
                                             )
-                                              ? 'text-cyan-300'
-                                              : 'text-cyan-400/70'
+                                              ? 'text-orange-400'
+                                              : 'text-text-tertiary'
                                           }`}
                                         />
                                       )}
-                                      <span
-                                        className={
-                                          isSetEditing(
-                                            currentExercise.id as string,
-                                            set.set_number as number,
-                                          )
-                                            ? 'text-cyan-300'
-                                            : 'text-white'
-                                        }
-                                      >
+                                      <span>
                                         {set.set_number as number}
                                       </span>
                                     </div>
@@ -1900,7 +2026,7 @@ function AllenamentiOggiPageContent() {
                                                     updateData,
                                                   )
                                                 }}
-                                                className="text-xl font-bold text-white bg-transparent border-0 p-0 h-auto focus:ring-0 text-center w-full opacity-100"
+                                                className="text-xl font-bold text-orange-400 bg-transparent border-0 p-0 h-auto focus:ring-0 focus:outline-none focus-visible:ring-0 text-center w-full opacity-100"
                                                 min="0"
                                                 placeholder="0"
                                               />
@@ -1960,7 +2086,7 @@ function AllenamentiOggiPageContent() {
                                                             // Se non c'è nessun peso, mostra '-'
                                                             return '-'
                                                           })()
-                                                        : ((set[col.field] as
+                                                        : ((set[(col as { field: string }).field] as
                                                             | number
                                                             | null
                                                             | undefined) ?? '-')}
@@ -2034,7 +2160,7 @@ function AllenamentiOggiPageContent() {
 
         {/* Timer circolari: stesso piano del contenuto, sotto l'ultima card */}
         {currentExercise ? (
-          <Card className="rounded-[16px] text-text-primary transition-all duration-200 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none border-border relative overflow-hidden border-0 bg-background-secondary/50 shadow-lg backdrop-blur-sm p-2.5">
+          <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="p-2">
               <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
                 {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}
@@ -2313,30 +2439,23 @@ function AllenamentiOggiPageContent() {
         ) : null}
 
         {/* Navigazione esercizi - fissata in basso (stile header: nero + linea cyan) */}
-        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-none border-0 bg-black shadow-lg pt-px pb-[env(safe-area-inset-bottom)] p-0">
-          <div
-            className="absolute inset-x-0 top-0 h-px"
-            style={{
-              background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
-            }}
-            aria-hidden
-          />
-          <CardContent className="relative z-10 p-2">
+        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-x-0 border-t border-white/10 bg-background shadow-[0_-4px_24px_-4px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)] pt-px">
+          <CardContent className="relative z-10 p-3">
             <div className="flex items-center justify-between gap-2">
               <Button
                 onClick={previousExercise}
                 disabled={currentBlockIndex === 0}
                 variant="outline"
-                className="h-9 text-[10px] rounded-xl border border-cyan-500/30 text-white hover:bg-cyan-500/10 hover:border-cyan-500/50 disabled:opacity-30"
+                className="h-9 rounded-lg border border-white/10 text-[10px] text-text-primary hover:bg-white/5 disabled:opacity-30"
               >
                 ← Precedente
               </Button>
 
-              <div className="flex flex-col items-center min-w-0">
-                <span className="text-text-secondary text-[10px] uppercase tracking-wider">
+              <div className="flex min-w-0 flex-col items-center">
+                <span className="text-[10px] uppercase tracking-wider text-text-secondary">
                   Esercizio
                 </span>
-                <span className="text-text-primary font-bold text-sm text-white">
+                <span className="text-sm font-bold text-text-primary">
                   {currentBlockIndex + 1} / {blocks.length}
                 </span>
               </div>
@@ -2345,7 +2464,7 @@ function AllenamentiOggiPageContent() {
                 onClick={nextExercise}
                 disabled={currentBlockIndex === blocks.length - 1}
                 variant="outline"
-                className="h-9 text-[10px] rounded-xl border border-cyan-500/30 text-white hover:bg-cyan-500/10 hover:border-cyan-500/50 disabled:opacity-30"
+                className="h-9 rounded-lg border border-white/10 text-[10px] text-text-primary hover:bg-white/5 disabled:opacity-30"
               >
                 Successivo →
               </Button>
@@ -2403,7 +2522,7 @@ function AllenamentiOggiPageContent() {
           if (!open) setEnlargedCircuitVideo(null)
         }}
       >
-        <DialogContent className="relative max-w-4xl w-[95vw] overflow-hidden bg-black border border-cyan-500/30 shadow-xl">
+        <DialogContent className="relative w-[95vw] max-w-4xl overflow-hidden rounded-lg border border-white/10 bg-background shadow-xl">
           {enlargedCircuitVideo && (
             <>
               <DialogHeader>
@@ -2411,7 +2530,7 @@ function AllenamentiOggiPageContent() {
                   {enlargedCircuitVideo.name}
                 </DialogTitle>
               </DialogHeader>
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-background-tertiary border border-cyan-500/20 mt-2">
+              <div className="relative mt-2 aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-white/5">
                 {enlargedCircuitVideo.videoUrl ? (
                   <video
                     className="h-full w-full object-contain"
@@ -2447,13 +2566,15 @@ function AllenamentiOggiPageContent() {
           }
         }}
       >
-        <DialogContent className="relative max-w-md overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-border shadow-lg backdrop-blur-xl">
+        <DialogContent className="relative max-w-md overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <DialogHeader>
-            <DialogTitle className="text-text-primary text-lg font-bold flex items-center gap-2">
-              <Info className="h-5 w-5 text-cyan-400" />
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                <Info className="h-5 w-5 text-cyan-400" />
+              </span>
               {selectedExerciseDescription?.name || 'Descrizione Esercizio'}
             </DialogTitle>
-            <DialogDescription className="text-text-secondary text-sm mt-3 whitespace-pre-wrap break-words leading-relaxed">
+            <DialogDescription className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-text-secondary">
               {selectedExerciseDescription?.description || 'Nessuna descrizione disponibile.'}
             </DialogDescription>
           </DialogHeader>

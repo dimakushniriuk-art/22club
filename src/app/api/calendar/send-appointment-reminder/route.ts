@@ -75,12 +75,57 @@ export async function POST(request: Request) {
     const staffIds = [...new Set(toProcess.map((a) => a.staff_id))]
     const athleteIds = [...new Set(toProcess.map((a) => a.athlete_id!).filter(Boolean))]
 
-    const [profilesRes, settingsRes] = await Promise.all([
+    const [profilesRes, settingsRes, countersRes, completedRes] = await Promise.all([
       supabase.from('profiles').select('id, email, nome, cognome').in('id', [...staffIds, ...athleteIds]),
       supabase.from('staff_calendar_settings').select('staff_id, custom_appointment_types').in('staff_id', staffIds),
+      supabase.from('lesson_counters').select('athlete_id, count, lesson_type').in('athlete_id', athleteIds),
+      supabase.from('appointments').select('athlete_id').in('athlete_id', athleteIds).eq('status', 'completato'),
     ])
 
     const profiles = (profilesRes.data ?? []) as (ProfileRow & { id: string })[]
+    type CounterRow = { athlete_id: string; count: number | null; lesson_type?: string }
+    const byAthlete = new Map<string, CounterRow[]>()
+    ;(countersRes.data ?? []).forEach((r: CounterRow) => {
+      const list = byAthlete.get(r.athlete_id) ?? []
+      list.push(r)
+      byAthlete.set(r.athlete_id, list)
+    })
+    const lessonCountMap = new Map<string, number>()
+    byAthlete.forEach((rows, athleteId) => {
+      const training = rows.find((r) => r.lesson_type === 'training')
+      const row = training ?? rows[0]
+      lessonCountMap.set(athleteId, row?.count ?? 0)
+    })
+
+    const lessonsCompletedByAthlete = new Map<string, number>()
+    ;(completedRes.data ?? []).forEach((r: { athlete_id: string | null }) => {
+      if (r.athlete_id == null) return
+      lessonsCompletedByAthlete.set(
+        r.athlete_id,
+        (lessonsCompletedByAthlete.get(r.athlete_id) ?? 0) + 1,
+      )
+    })
+
+    // Fallback: stesso calcolo del tab Amministrativo (payments - appuntamenti completati) se lesson_counters vuoto
+    const missingAthletes = athleteIds.filter((id) => !lessonCountMap.has(id))
+    if (missingAthletes.length > 0) {
+      const payRes = await supabase
+        .from('payments')
+        .select('athlete_id, lessons_purchased')
+        .in('athlete_id', missingAthletes)
+        .eq('status', 'completed')
+      const purchasedByAthlete = new Map<string, number>()
+      ;(payRes.data ?? []).forEach((r: { athlete_id: string; lessons_purchased?: number | null }) => {
+        const cur = purchasedByAthlete.get(r.athlete_id) ?? 0
+        purchasedByAthlete.set(r.athlete_id, cur + (r.lessons_purchased ?? 0))
+      })
+      missingAthletes.forEach((aid) => {
+        const used = lessonsCompletedByAthlete.get(aid) ?? 0
+        const purchased = purchasedByAthlete.get(aid) ?? 0
+        lessonCountMap.set(aid, Math.max(0, purchased - used))
+      })
+    }
+
     const profileMap = new Map(profiles.map((p) => [p.id, p]))
     const settingsList = (settingsRes.data ?? []) as { staff_id: string; custom_appointment_types: unknown }[]
     const settingsByStaff = new Map<string, CustomType[]>(
@@ -106,6 +151,8 @@ export async function POST(request: Request) {
       const customTypes = settingsByStaff.get(apt.staff_id) ?? []
       const typeLabel = getTypeLabel(apt.type, customTypes)
 
+      const lessonsRemaining = apt.athlete_id ? lessonCountMap.get(apt.athlete_id) : undefined
+      const lessonsCompleted = apt.athlete_id ? (lessonsCompletedByAthlete.get(apt.athlete_id) ?? 0) : 0
       const result = await sendAppointmentReminderEmail({
         appointmentId: apt.id,
         athleteEmail: email,
@@ -116,6 +163,8 @@ export async function POST(request: Request) {
         endsAt: apt.ends_at,
         location: apt.location ?? null,
         notes: apt.notes ?? null,
+        lessonsRemaining,
+        lessonsCompleted,
       })
       if (result.success) sent++
     }

@@ -18,7 +18,7 @@ function TrialBanner() {
   if (role !== 'athlete' || user?.stato !== 'trial') return null
   return (
     <div
-      className="shrink-0 border-b border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm text-primary"
+      className="shrink-0 border-b border-white/10 bg-white/5 px-3 py-2 text-center text-sm text-text-primary"
       role="status"
     >
       <span className="font-medium">Periodo di prova</span>
@@ -39,14 +39,7 @@ export function HomeLayoutClient({ children }: HomeLayoutClientProps) {
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
       {/* Header visibile solo sulla home */}
       {isHomePage && (
-        <header
-          className="sticky top-0 z-50 shrink-0 safe-area-inset-top backdrop-blur-xl"
-          style={{
-            borderBottom: '1px solid rgba(2, 179, 191, 0.35)',
-            background: 'linear-gradient(180deg, rgba(16,16,18,0.92) 0%, rgba(16,16,18,0.85) 100%)',
-            boxShadow: '0 1px 0 0 rgba(2,179,191,0.08)',
-          }}
-        >
+        <header className="sticky top-0 z-50 shrink-0 safe-area-inset-top border-b border-white/10 bg-background/95 backdrop-blur-xl">
           <div className="flex items-center justify-between px-3 sm:px-4 min-[834px]:px-6 py-2.5 sm:py-3 min-[834px]:py-3">
             <LogoRefresh />
             <div className="flex-1" />

@@ -15,7 +15,7 @@ export interface PageHeaderGlassProps {
 }
 
 const HEADER_CLASS =
-  'fixed inset-x-0 top-0 z-20 overflow-hidden bg-black px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-lg pt-[calc(10px+env(safe-area-inset-top,0px))]'
+  'fixed inset-x-0 top-0 z-20 overflow-hidden bg-background border-b border-white/10 px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-[calc(10px+env(safe-area-inset-top,0px))]'
 
 const CYAN_LINE_STYLE = {
   background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
@@ -36,7 +36,7 @@ export function PageHeaderGlass({
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary"
         aria-label="Indietro"
         asChild
       >
@@ -48,7 +48,7 @@ export function PageHeaderGlass({
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
+        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary"
         aria-label="Indietro"
         onClick={onBack}
       >
@@ -61,7 +61,7 @@ export function PageHeaderGlass({
       <div className="relative z-10 flex items-center gap-3">
         {backContent}
         {icon != null && (
-          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
             {icon}
           </div>
         )}

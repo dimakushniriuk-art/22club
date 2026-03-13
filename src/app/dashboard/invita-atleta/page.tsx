@@ -33,6 +33,7 @@ import { ErrorState } from '@/components/dashboard/error-state'
 import { exportToCSV } from '@/lib/export-utils'
 import { createInvitoSchema } from '@/lib/validations/invito'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -78,7 +79,7 @@ function InvitationsListSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: SKELETON_CARD_COUNT }).map((_, i) => (
-        <Card key={i} variant="trainer" className="border-blue-500/30 overflow-hidden">
+        <Card key={i} variant="default" className="overflow-hidden">
           <CardContent className="p-4 pt-10">
             <div className="space-y-3">
               <div className="flex items-start justify-between">
@@ -549,189 +550,151 @@ export default function InvitaAtletaPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-linear-to-br from-blue-500/5 via-transparent to-transparent" />
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-linear-to-tl from-indigo-500/5 via-transparent to-transparent" />
-      </div>
-
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Invita Atleta
-            </h1>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Genera codici invito per i tuoi atleti
-            </p>
-          </div>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nuovo Invito
-          </Button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card
-            variant="trainer"
-            className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
-            style={{ animationDelay: '100ms' }}
-          >
-            <CardContent className="p-4 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-secondary text-sm">Totale Inviti</p>
-                  <p className="text-text-primary text-2xl font-bold">{stats.total}</p>
-                </div>
-                <div className="bg-blue-500/20 text-blue-400 rounded-full p-3">
-                  <Users className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            variant="trainer"
-            className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-yellow-500/30 shadow-lg shadow-yellow-500/10 backdrop-blur-xl hover:border-yellow-400/50 transition-all duration-200"
-            style={{ animationDelay: '200ms' }}
-          >
-            <div className="absolute inset-0 bg-linear-to-br from-yellow-500/5 via-transparent to-orange-500/5" />
-            <CardContent className="p-4 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-secondary text-sm">Inviati</p>
-                  <p className="text-text-primary text-2xl font-bold">{stats.inviati}</p>
-                </div>
-                <div className="bg-yellow-500/20 text-yellow-400 rounded-full p-3">
-                  <Mail className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            variant="trainer"
-            className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-green-500/30 shadow-lg shadow-green-500/10 backdrop-blur-xl hover:border-green-400/50 transition-all duration-200"
-            style={{ animationDelay: '300ms' }}
-          >
-            <div className="absolute inset-0 bg-linear-to-br from-green-500/5 via-transparent to-emerald-500/5" />
-            <CardContent className="p-4 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-secondary text-sm">Registrati</p>
-                  <p className="text-text-primary text-2xl font-bold">{stats.registrati}</p>
-                </div>
-                <div className="bg-green-500/20 text-green-400 rounded-full p-3">
-                  <CheckCircle className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            variant="trainer"
-            className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-red-500/30 shadow-lg shadow-red-500/10 backdrop-blur-xl hover:border-red-400/50 transition-all duration-200"
-            style={{ animationDelay: '400ms' }}
-          >
-            <div className="absolute inset-0 bg-linear-to-br from-red-500/5 via-transparent to-pink-500/5" />
-            <CardContent className="p-4 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-secondary text-sm">Scaduti</p>
-                  <p className="text-text-primary text-2xl font-bold">{stats.scaduti}</p>
-                </div>
-                <div className="bg-red-500/20 text-red-400 rounded-full p-3">
-                  <XCircle className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Toolbar */}
-        <Card
-          variant="trainer"
-          className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
-        >
+    <StaffContentLayout
+      title="Invita Atleta"
+      description="Genera codici invito per i tuoi atleti"
+      theme="teal"
+      actions={
+        <Button onClick={() => setShowCreateForm(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Nuovo Invito
+        </Button>
+      }
+    >
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <Card variant="default" className="relative overflow-hidden">
           <CardContent className="p-4 relative">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center">
-              <div className="flex-1">
-                <Input
-                  placeholder="Cerca per nome, email o codice..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  leftIcon={<Search className="h-4 w-4" />}
-                />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-secondary text-sm">Totale Inviti</p>
+                <p className="text-text-primary text-2xl font-bold">{stats.total}</p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={statoFilter === 'tutti' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatoFilter('tutti')}
-                  className={
-                    statoFilter === 'tutti'
-                      ? 'bg-blue-500 text-white'
-                      : 'border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50'
-                  }
-                >
-                  Tutti
-                </Button>
-                <Button
-                  variant={statoFilter === 'inviato' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatoFilter('inviato')}
-                  className={
-                    statoFilter === 'inviato'
-                      ? 'bg-blue-500 text-white'
-                      : 'border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50'
-                  }
-                >
-                  Inviati
-                </Button>
-                <Button
-                  variant={statoFilter === 'registrato' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatoFilter('registrato')}
-                  className={
-                    statoFilter === 'registrato'
-                      ? 'bg-blue-500 text-white'
-                      : 'border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50'
-                  }
-                >
-                  Registrati
-                </Button>
-                <Button
-                  variant={statoFilter === 'scaduto' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatoFilter('scaduto')}
-                  className={
-                    statoFilter === 'scaduto'
-                      ? 'bg-blue-500 text-white'
-                      : 'border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50'
-                  }
-                >
-                  Scaduti
-                </Button>
+              <div className="rounded-full border border-white/10 bg-white/[0.04] p-3 text-primary">
+                <Users className="h-5 w-5" />
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
-                onClick={handleExportCSV}
-                disabled={filteredInvitations.length === 0}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
             </div>
           </CardContent>
         </Card>
+
+        <Card variant="default" className="relative overflow-hidden">
+          <CardContent className="p-4 relative">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-secondary text-sm">Inviati</p>
+                <p className="text-text-primary text-2xl font-bold">{stats.inviati}</p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-amber-500/10 p-3 text-amber-400">
+                <Mail className="h-5 w-5" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card variant="default" className="relative overflow-hidden">
+          <CardContent className="p-4 relative">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-secondary text-sm">Registrati</p>
+                <p className="text-text-primary text-2xl font-bold">{stats.registrati}</p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-green-500/10 p-3 text-green-400">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card variant="default" className="relative overflow-hidden">
+          <CardContent className="p-4 relative">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-secondary text-sm">Scaduti</p>
+                <p className="text-text-primary text-2xl font-bold">{stats.scaduti}</p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-red-500/10 p-3 text-red-400">
+                <XCircle className="h-5 w-5" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Toolbar */}
+      <Card variant="default" className="relative overflow-hidden">
+        <CardContent className="p-4 relative">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="flex-1">
+              <Input
+                placeholder="Cerca per nome, email o codice..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                leftIcon={<Search className="h-4 w-4" />}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={statoFilter === 'tutti' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatoFilter('tutti')}
+                className={
+                  statoFilter === 'tutti'
+                    ? ''
+                    : 'border-white/10 hover:border-primary/20'
+                }
+              >
+                Tutti
+              </Button>
+              <Button
+                variant={statoFilter === 'inviato' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatoFilter('inviato')}
+                className={
+                  statoFilter === 'inviato'
+                    ? ''
+                    : 'border-white/10 hover:border-primary/20'
+                }
+              >
+                Inviati
+              </Button>
+              <Button
+                variant={statoFilter === 'registrato' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatoFilter('registrato')}
+                className={
+                  statoFilter === 'registrato'
+                    ? ''
+                    : 'border-white/10 hover:border-primary/20'
+                }
+              >
+                Registrati
+              </Button>
+              <Button
+                variant={statoFilter === 'scaduto' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatoFilter('scaduto')}
+                className={
+                  statoFilter === 'scaduto'
+                    ? ''
+                    : 'border-white/10 hover:border-primary/20'
+                }
+              >
+                Scaduti
+              </Button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/10 hover:border-primary/20"
+              onClick={handleExportCSV}
+              disabled={filteredInvitations.length === 0}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
         {/* Sort & Select */}
         <div className="flex items-center justify-between">
@@ -750,7 +713,7 @@ export default function InvitaAtletaPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200"
+                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
                 onClick={handleBulkDelete}
               >
                 <Trash2 className="mr-1 h-4 w-4" />
@@ -759,7 +722,7 @@ export default function InvitaAtletaPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-all duration-200"
+                className="text-text-secondary hover:text-primary hover:bg-white/[0.04]"
                 onClick={() => setSelectedIds(new Set())}
                 aria-label="Deseleziona tutti"
               >
@@ -781,10 +744,7 @@ export default function InvitaAtletaPage() {
         {loading && invitations.length === 0 ? (
           <InvitationsListSkeleton />
         ) : filteredInvitations.length === 0 ? (
-          <Card
-            variant="trainer"
-            className="relative overflow-hidden bg-linear-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl"
-          >
+          <Card variant="default" className="relative overflow-hidden">
             <CardContent className="p-12 text-center relative">
               <Users className="text-text-tertiary mx-auto mb-4 h-16 w-16" />
               <h3 className="text-text-primary mb-2 text-lg font-medium">
@@ -799,18 +759,11 @@ export default function InvitaAtletaPage() {
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {debouncedSearch || statoFilter !== 'tutti' ? (
-                  <Button
-                    variant="outline"
-                    onClick={handleClearFilters}
-                    className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50"
-                  >
+                  <Button variant="outline" onClick={handleClearFilters} className="border-white/10 hover:border-primary/20">
                     Azzera filtri
                   </Button>
                 ) : (
-                  <Button
-                    onClick={() => setShowCreateForm(true)}
-                    className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-                  >
+                  <Button onClick={() => setShowCreateForm(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Crea Primo Invito
                   </Button>
@@ -834,42 +787,41 @@ export default function InvitaAtletaPage() {
         )}
 
         {/* Paginazione */}
-        {enablePagination && totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border pt-4">
-            <div className="text-text-secondary text-sm">
-              Mostrando {currentPage * 50 + 1} - {Math.min((currentPage + 1) * 50, totalCount)} di{' '}
-              {totalCount} inviti
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadPage(currentPage - 1)}
-                disabled={currentPage === 0 || loading}
-                className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Precedente
-              </Button>
-              <div className="flex items-center gap-2">
-                <span className="text-text-secondary text-sm">
-                  Pagina {currentPage + 1} di {totalPages}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadPage(currentPage + 1)}
-                disabled={!hasMore || loading}
-                className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50"
-              >
-                Successiva
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+      {enablePagination && totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-white/10 pt-4">
+          <div className="text-text-secondary text-sm">
+            Mostrando {currentPage * 50 + 1} - {Math.min((currentPage + 1) * 50, totalCount)} di{' '}
+            {totalCount} inviti
           </div>
-        )}
-      </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadPage(currentPage - 1)}
+              disabled={currentPage === 0 || loading}
+              className="border-white/10 hover:border-primary/20"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Precedente
+            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-text-secondary text-sm">
+                Pagina {currentPage + 1} di {totalPages}
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadPage(currentPage + 1)}
+              disabled={!hasMore || loading}
+              className="border-white/10 hover:border-primary/20"
+            >
+              Successiva
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Create Form Dialog */}
       <Dialog open={showCreateForm} onOpenChange={handleRequestCloseCreateForm}>
@@ -965,7 +917,7 @@ export default function InvitaAtletaPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+                className="border-white/10 hover:border-primary/20"
                 onClick={() => handleRequestCloseCreateForm(false)}
               >
                 Annulla
@@ -973,8 +925,7 @@ export default function InvitaAtletaPage() {
               <Button
                 type="submit"
                 disabled={submitting || !formData.nome_atleta.trim() || !(formData.email ?? '').trim()}
-                className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-              >
+                              >
                 {submitting ? (
                   <>
                     <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -1018,7 +969,7 @@ export default function InvitaAtletaPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="bg-background-tertiary rounded p-3">
+                <div className="rounded border border-white/10 bg-white/[0.04] p-3">
                   <p className="text-text-secondary mb-1 text-xs">Link registrazione:</p>
                   <p className="text-text-primary break-all text-sm">
                     {`${window.location.origin}/registrati?codice=${encodeURIComponent(selectedInvitation.codice)}`}
@@ -1030,7 +981,7 @@ export default function InvitaAtletaPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleCopyCode(selectedInvitation.codice)}
-                    className="flex-1 border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+                    className="flex-1 border-white/10 hover:border-primary/20"
                   >
                     <Copy className="mr-1 h-4 w-4" />
                     Copia Codice
@@ -1039,7 +990,7 @@ export default function InvitaAtletaPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleCopyLink(selectedInvitation.codice)}
-                    className="flex-1 border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+                    className="flex-1 border-white/10 hover:border-primary/20"
                   >
                     <Share2 className="mr-1 h-4 w-4" />
                     Copia Link
@@ -1048,10 +999,7 @@ export default function InvitaAtletaPage() {
               </div>
 
               <DialogFooter>
-                <Button
-                  onClick={() => setShowQRModal(false)}
-                  className="bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-                >
+                <Button onClick={() => setShowQRModal(false)}>
                   Chiudi
                 </Button>
               </DialogFooter>
@@ -1104,6 +1052,6 @@ export default function InvitaAtletaPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </StaffContentLayout>
   )
 }

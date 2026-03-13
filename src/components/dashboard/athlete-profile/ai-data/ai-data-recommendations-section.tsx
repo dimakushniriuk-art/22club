@@ -28,7 +28,8 @@ export function AIDataRecommendationsSection({
 
   return (
     <Card
-      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
+      variant="default"
+      className="overflow-hidden"
     >
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
@@ -43,7 +44,7 @@ export function AIDataRecommendationsSection({
             return (
               <div
                 key={index}
-                className="p-4 bg-background-tertiary/30 rounded-lg border border-primary/20"
+                className="p-4 rounded-lg border border-white/10 bg-white/[0.02]"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">

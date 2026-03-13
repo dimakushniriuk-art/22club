@@ -4,12 +4,16 @@ import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { PageHeaderFixed } from '@/components/layout'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useProgressAnalytics, type ProgressKPI } from '@/hooks/use-progress-analytics'
-import { ArrowLeft, Plus, Scale, Dumbbell } from 'lucide-react'
+import { Plus, Scale, Dumbbell } from 'lucide-react'
 import Link from 'next/link'
 import { RangeStatusMeter } from '@/components/dashboard/range-status-meter'
 import { getValueRange, PROGRESS_RANGES, type ValueRange } from '@/lib/constants/progress-ranges'
+
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 
 /** Range ottimale come 25%-75% del range (zona centrale) */
 function optimalFromRange(r: ValueRange): { optimalMin: number; optimalMax: number } {
@@ -216,33 +220,6 @@ const MISURAZIONI_ENTRIES: MeasurementEntry[] = [
 ]
 
 const SCROLL_CONTAINER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' } as const
-const CARD_LOADING_STYLE = {
-  borderColor: 'rgba(2, 179, 191, 0.35)',
-  background: 'linear-gradient(145deg, rgba(22,22,26,0.95) 0%, rgba(16,16,18,0.98) 100%)',
-} as const
-const HEADER_STYLE = {
-  border: '1px solid rgba(2, 179, 191, 0.4)',
-  background:
-    'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.22), 0 0 0 1px rgba(2,179,191,0.1) inset',
-} as const
-const HEADER_OVERLAY_STYLE = {
-  background:
-    'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
-} as const
-const HEADER_ICON_STYLE = {
-  backgroundColor: 'rgba(2, 179, 191, 0.2)',
-  border: '1px solid rgba(2, 179, 191, 0.35)',
-} as const
-const CARD_HEADER_BORDER_STYLE = { borderColor: 'rgba(2, 179, 191, 0.2)' } as const
-const CARD_MAIN_STYLE = {
-  borderColor: 'rgba(2, 179, 191, 0.35)',
-  background: 'linear-gradient(145deg, rgba(22,22,26,0.95) 0%, rgba(16,16,18,0.98) 100%)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(2,179,191,0.08) inset',
-} as const
-const CARD_MAIN_OVERLAY_STYLE = {
-  background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(2,179,191,0.1) 0%, transparent 60%)',
-} as const
 
 function MisurazioniValuesContent({ data }: { data: ProgressKPI }) {
   const sections = useMemo(() => {
@@ -291,7 +268,7 @@ function MisurazioniValuesContent({ data }: { data: ProgressKPI }) {
       {/* Forza: valori senza range di riferimento */}
       <div>
         <h3 className="text-sm font-semibold text-text-primary mb-3 pb-1.5 border-b border-white/10 flex items-center gap-2">
-          <Dumbbell className="h-4 w-4 text-primary" />
+          <Dumbbell className="h-4 w-4 text-cyan-400" />
           Forza
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -362,8 +339,8 @@ function MisurazioniContent() {
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-6">
-          <Card className="relative overflow-hidden rounded-xl border backdrop-blur-md" style={CARD_LOADING_STYLE}>
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-24">
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <CardContent className="p-8 min-[834px]:p-12 text-center">
               <div className="mb-3 text-4xl opacity-50">📊</div>
               <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">
@@ -383,69 +360,28 @@ function MisurazioniContent() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-6"
+        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24"
         style={SCROLL_CONTAINER_STYLE}
       >
-        {/* Header — stile Nutrizionista: glass + accento teal/cyan */}
-        <div
-          className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5"
-          style={HEADER_STYLE}
-        >
-          <div className="absolute inset-0 rounded-2xl opacity-70" style={HEADER_OVERLAY_STYLE} aria-hidden />
-          <div className="relative z-10 flex flex-col gap-3 min-[834px]:gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={handleBack}
-                variant="ghost"
-                size="sm"
-                className="h-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl p-0 text-text-secondary transition-colors duration-200 hover:bg-primary/15 hover:text-primary"
-                aria-label="Indietro"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex flex-1 items-center gap-3 min-w-0">
-                <div
-                  className="flex h-12 w-12 items-center justify-center rounded-xl min-[834px]:h-14 min-[834px]:w-14"
-                  style={HEADER_ICON_STYLE}
-                >
-                  <Scale className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
-                    Dashboard Misurazioni
-                  </h1>
-                  <p className="mt-0.5 truncate text-xs text-text-tertiary">
-                    Grafici e analisi dei tuoi progressi
-                  </p>
-                </div>
-              </div>
-            </div>
-            <Link href="/home/progressi/nuovo" className="w-full">
-              <Button
-                className="w-full min-h-[44px] gap-1.5 h-10 text-sm rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary-hover transition-all duration-200"
-                variant="default"
-              >
-                <Plus className="h-4 w-4" />
-                Nuova Misurazione
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <PageHeaderFixed
+          title="Dashboard Misurazioni"
+          subtitle="Grafici e analisi dei tuoi progressi"
+          onBack={handleBack}
+          icon={<Scale className="h-5 w-5 text-cyan-400" />}
+        />
 
-        {/* Main Content — stile Nutrizionista: una card con header e contenuto */}
-        <Card
-          className="relative overflow-hidden rounded-xl border backdrop-blur-md"
-          style={CARD_MAIN_STYLE}
-        >
-          <div
-            className="absolute inset-0 rounded-xl opacity-60"
-            style={CARD_MAIN_OVERLAY_STYLE}
-            aria-hidden
-          />
-          <CardHeader
-            className="relative z-10 border-b px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4"
-            style={CARD_HEADER_BORDER_STYLE}
+        <Link href="/home/progressi/nuovo" className="block w-full">
+          <Button
+            className="w-full min-h-[44px] gap-1.5 h-10 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+            variant="default"
           >
+            <Plus className="h-4 w-4" />
+            Nuova Misurazione
+          </Button>
+        </Link>
+
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4">
             <CardTitle className="text-base font-bold text-text-primary md:text-lg">
               Tutti i valori
             </CardTitle>
@@ -473,8 +409,8 @@ function MisurazioniContent() {
               </div>
             ) : !progressData ? (
               <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center px-4">
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-xl border border-primary/40 bg-primary/20 min-[834px]:h-16 min-[834px]:w-16">
-                  <Scale className="h-7 w-7 text-primary min-[834px]:h-8 min-[834px]:w-8" />
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-16 min-[834px]:w-16">
+                  <Scale className="h-7 w-7 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" />
                 </div>
                 <p className="text-text-primary text-sm font-semibold min-[834px]:text-base">
                   Nessun dato disponibile
@@ -484,7 +420,7 @@ function MisurazioniContent() {
                 </p>
                 <Link href="/home/progressi/nuovo" className="mt-4 inline-block w-full max-w-xs">
                   <Button
-                    className="w-full min-h-[44px] gap-1.5 h-10 text-sm rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary-hover"
+                    className="w-full min-h-[44px] gap-1.5 h-10 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
                     variant="default"
                   >
                     <Plus className="h-4 w-4" />
@@ -508,10 +444,10 @@ export default function MisurazioniPage() {
       fallback={
         <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
           <div
-            className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 sm:px-5 min-[834px]:px-6 min-[834px]:pt-6"
+            className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 sm:px-5 min-[834px]:px-6 min-[834px]:pt-24"
             style={SCROLL_CONTAINER_STYLE}
           >
-            <Card className="relative overflow-hidden rounded-xl border backdrop-blur-md" style={CARD_MAIN_STYLE}>
+            <Card className={`relative overflow-hidden ${CARD_DS}`}>
               <CardContent className="relative z-10 p-8 min-[834px]:p-12 text-center">
                 <div className="mb-3 text-4xl opacity-50">📊</div>
                 <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">

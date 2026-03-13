@@ -50,17 +50,21 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     }
 
     return (
-      <div className="space-y-2">
-        {label && <label className="text-text-primary text-sm font-medium">{label}</label>}
+      <div className="space-y-1.5">
+        {label && (
+          <label className="block text-sm font-medium text-text-primary tracking-tight">
+            {label}
+          </label>
+        )}
         <div className="relative">
           <select
             className={cn(
-              'appearance-none flex items-center w-full rounded-xl border border-primary/35 bg-background-secondary/80 text-text-primary px-4 py-2.5 text-base outline-none',
-              'min-h-[44px] transition-all duration-200',
-              'hover:bg-background-secondary focus:border-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-0',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-              errorMessage && 'border-red-500/50 focus-visible:ring-red-500/30',
+              'appearance-none flex items-center w-full rounded-md border text-text-primary px-4 py-2.5 text-base outline-none',
+              'min-h-[44px] transition-[border-color,box-shadow] duration-150',
+              'border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+              'focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25',
+              'disabled:cursor-not-allowed disabled:opacity-60 disabled:from-zinc-900/80 disabled:to-zinc-900/80 disabled:shadow-none',
+              errorMessage && 'border-red-500/60 bg-gradient-to-b from-red-950/30 to-red-950/50 focus-visible:border-red-500 focus-visible:ring-red-500/25',
               sizes[size],
               className,
             )}
@@ -88,9 +92,13 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </div>
         </div>
         {helperText && !errorMessage && (
-          <p className="text-text-tertiary text-xs mt-1">{helperText}</p>
+          <p className="text-xs leading-relaxed text-text-tertiary">{helperText}</p>
         )}
-        {errorMessage && <p className="text-red-400 text-xs mt-1 font-medium">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="text-xs leading-relaxed text-red-400" role="alert">
+            {errorMessage}
+          </p>
+        )}
       </div>
     )
   },
@@ -106,7 +114,10 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     type="button"
     className={cn(
-      'placeholder:text-white/50 focus-visible:ring-primary/50 flex w-full items-center justify-between rounded-lg border border-border/50 bg-background-secondary/80 text-white px-3 py-2 text-sm shadow-lg shadow-black/10 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background-secondary hover:shadow-xl hover:shadow-black/20',
+      'flex w-full items-center justify-between rounded-md border border-white/10 text-text-primary px-3 py-2 text-sm placeholder:text-text-tertiary',
+      'bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+      'focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 transition-[border-color,box-shadow] duration-150',
+      'disabled:cursor-not-allowed disabled:opacity-60 disabled:from-zinc-900/80 disabled:to-zinc-900/80',
       className,
     )}
     {...props}
@@ -124,7 +135,7 @@ SelectValue.displayName = 'SelectValue'
 const SelectContent = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'mt-2 rounded-lg border border-border/50 bg-background-secondary/95 backdrop-blur-xl shadow-2xl shadow-black/30 text-white',
+      'mt-2 rounded-md border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]',
       className,
     )}
     {...props}

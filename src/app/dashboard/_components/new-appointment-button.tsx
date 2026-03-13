@@ -8,15 +8,18 @@ import { cn } from '@/lib/utils'
 
 const logger = createLogger('app:dashboard:_components:new-appointment-button')
 
-const DEFAULT_ACCENT = 'from-cyan-500/16 to-teal-500/6'
+const CARD_CLASS =
+  'flex min-h-[70px] w-full flex-col items-center justify-center rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20'
+
+const DEFAULT_ICON_BOX = 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400'
 const DEFAULT_SUBLABEL = 'Pianifica una sessione'
 
 export function NewAppointmentButton({
-  accentClass = DEFAULT_ACCENT,
   sublabel = DEFAULT_SUBLABEL,
+  iconBoxClass = DEFAULT_ICON_BOX,
 }: {
-  accentClass?: string
   sublabel?: string
+  iconBoxClass?: string
 }) {
   const { openAppointment, isAvailable } = useModalActions()
   const router = useRouter()
@@ -45,30 +48,15 @@ export function NewAppointmentButton({
       aria-label="Nuovo Appuntamento, Pianifica una sessione"
       aria-disabled={!isAvailable}
       title={isAvailable ? undefined : 'Vai al calendario per creare un appuntamento'}
-      className={cn(
-        'group relative flex min-h-[90px] w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-background-secondary/42 backdrop-blur-2xl ring-1 ring-white/8 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-glow active:scale-[0.98] p-3 text-center',
-        !isAvailable && 'opacity-80',
-      )}
+      className={cn(CARD_CLASS, !isAvailable && 'opacity-80')}
     >
-      <div className="pointer-events-none absolute inset-0">
-        <div
-          className={cn(
-            'absolute inset-0 bg-gradient-to-br opacity-80',
-            accentClass,
-          )}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-white/5" />
-        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-primary/60 via-primary/40 to-transparent opacity-70" />
+      <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border', iconBoxClass)}>
+        <Calendar className="h-4 w-4" />
       </div>
-      <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/6 ring-1 ring-white/12 shadow-inner transition-all duration-300 group-hover:scale-105 group-hover:ring-primary/25 text-text-primary/90 group-hover:text-primary">
-        <Calendar className="h-3.5 w-3.5" />
-      </div>
-      <span className="relative z-10 mt-1.5 block text-xs font-semibold text-text-primary">
+      <span className="mt-2 block text-[10px] font-semibold text-text-primary">
         Nuovo Appuntamento
       </span>
-      <span className="relative z-10 mt-0.5 block text-[10px] text-text-secondary/90">
-        {sublabel}
-      </span>
+      <span className="text-[9px] text-text-secondary">{sublabel}</span>
     </button>
   )
 }

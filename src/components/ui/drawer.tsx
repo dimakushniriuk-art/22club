@@ -62,7 +62,7 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
         <div
           ref={ref}
           className={cn(
-            'fixed bg-background-secondary border-border shadow-2xl transition-all duration-300 ease-in-out',
+            'fixed border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out',
             sideClasses[side],
             sizeClasses[size],
             side === 'left' && 'animate-slide-in-left',
@@ -91,11 +91,11 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
     return (
       <div ref={ref} className={cn('flex flex-col h-full', className)} {...props}>
         {showCloseButton && (
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex-1" />
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-background-tertiary transition-colors duration-200"
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
             >
               <X className="w-4 h-4 text-text-secondary" />
             </button>
@@ -116,7 +116,7 @@ export interface DrawerHeaderProps extends React.HTMLAttributes<HTMLDivElement> 
 const DrawerHeader = React.forwardRef<HTMLDivElement, DrawerHeaderProps>(
   ({ className, title, description, children, ...props }, ref) => {
     return (
-      <div ref={ref} className={cn('p-6 border-b border-border', className)} {...props}>
+      <div ref={ref} className={cn('p-6 border-b border-white/10', className)} {...props}>
         {title && <h2 className="text-xl font-semibold text-text-primary mb-2">{title}</h2>}
         {description && <p className="text-sm text-text-secondary">{description}</p>}
         {children}
@@ -142,7 +142,7 @@ const DrawerFooter = React.forwardRef<HTMLDivElement, DrawerFooterProps>(
     return (
       <div
         ref={ref}
-        className={cn('p-6 border-t border-border flex items-center justify-end gap-3', className)}
+        className={cn('p-6 border-t border-white/10 flex items-center justify-end gap-3', className)}
         {...props}
       />
     )

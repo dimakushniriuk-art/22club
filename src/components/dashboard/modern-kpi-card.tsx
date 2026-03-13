@@ -158,23 +158,51 @@ export const ModernKPICard: React.FC<ModernKPICardProps> = ({
 
   const cardContent = (
     <Card
-      variant="trainer"
-      className={`relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary ${!accent ? colorClassesForColor.border : ''} ${!accent ? `shadow-lg ${colorClassesForColor.shadow}` : ''} backdrop-blur-xl ${hoverBorderClass} transition-all duration-200 h-full ${compact ? 'min-h-0' : 'min-h-[120px]'} ${
+      variant="default"
+      className={`relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ${!accent ? colorClassesForColor.border : ''} ${hoverBorderClass} transition-colors hover:border-white/20 h-full ${compact ? 'min-h-0' : 'min-h-[100px]'} ${
         onClick || href ? 'cursor-pointer' : ''
       }`}
       style={cardStyle}
     >
       <div
-        className={!accent ? `absolute top-0 left-0 right-0 h-[60%] bg-gradient-to-br ${colorClassesForColor.gradient}` : 'absolute top-0 left-0 right-0 h-[60%]'}
+        className={
+          !accent
+            ? `absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-br ${colorClassesForColor.gradient} opacity-80`
+            : 'absolute top-0 left-0 right-0 h-[50%]'
+        }
         style={accent ? gradientOverlayStyle : undefined}
       />
-      <CardContent className={compact ? 'p-2 sm:p-3 relative h-full flex flex-col justify-center' : 'p-4 relative h-full flex flex-col justify-center'}>
+      <CardContent
+        className={
+          compact
+            ? 'p-2 sm:p-3 relative h-full flex flex-col justify-center'
+            : 'p-4 relative h-full flex flex-col justify-center'
+        }
+      >
         <div className="flex flex-col">
-          <p className={compact ? 'text-text-secondary text-xs mb-0.5' : 'text-text-secondary text-sm mb-2'}>{title}</p>
+          <p
+            className={
+              compact ? 'text-text-secondary text-xs mb-0.5' : 'text-text-secondary text-sm mb-2'
+            }
+          >
+            {title}
+          </p>
           <div className="flex items-center justify-between gap-2">
-            <p className={compact ? 'text-text-primary text-lg font-bold' : 'text-text-primary text-2xl font-bold'}>{value}</p>
+            <p
+              className={
+                compact
+                  ? 'text-text-primary text-lg font-bold'
+                  : 'text-text-primary text-2xl font-bold'
+              }
+            >
+              {value}
+            </p>
             <div
-              className={!accent ? `${colorClassesForColor.iconBg} ${colorClassesForColor.iconText} rounded-full flex-shrink-0 ${compact ? 'p-1.5' : 'p-3'}` : `rounded-full flex-shrink-0 ${compact ? 'p-1.5' : 'p-3'}`}
+              className={
+                !accent
+                  ? `${colorClassesForColor.iconBg} ${colorClassesForColor.iconText} rounded-full flex-shrink-0 ${compact ? 'p-1.5' : 'p-3'}`
+                  : `rounded-full flex-shrink-0 ${compact ? 'p-1.5' : 'p-3'}`
+              }
               style={accent ? iconBoxStyle : undefined}
             >
               <div className={compact ? 'h-4 w-4 text-base' : 'h-5 w-5'}>{icon}</div>

@@ -97,7 +97,7 @@ export default function TrainerProfilePage() {
     overflow: 'auto',
     minHeight: 'calc(100dvh - 56px)',
     background:
-      'radial-gradient(ellipse 120% 80% at 70% -20%, rgba(2,179,191,0.07) 0%, transparent 50%), radial-gradient(ellipse 80% 50% at 0% 50%, rgba(6,182,212,0.05) 0%, transparent 45%), #101012',
+      'radial-gradient(ellipse 120% 80% at 70% -20%, rgba(2,179,191,0.07) 0%, transparent 50%), radial-gradient(ellipse 80% 50% at 0% 50%, rgba(6,182,212,0.05) 0%, transparent 45%), #0d0d0d',
   }
 
   if (error) {

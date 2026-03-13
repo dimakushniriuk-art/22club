@@ -8,7 +8,6 @@
 
 import * as React from 'react'
 import {
-  Card,
   CardContent,
   CardHeader,
   CardTitle,
@@ -69,11 +68,7 @@ export function SettingsAccountTab({
   return (
     <div className="space-y-6">
       {/* Lingua e Regione */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Globe className="h-5 w-5 text-teal-400 shrink-0" />
@@ -117,14 +112,10 @@ export function SettingsAccountTab({
             </Select>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Formato Data e Ora */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Globe className="h-5 w-5 text-teal-400 shrink-0" />
@@ -165,14 +156,14 @@ export function SettingsAccountTab({
             </Select>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Salva */}
       <div className="flex justify-end pt-2">
         <Button
           onClick={onSave}
           disabled={loading}
-          className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 min-w-[180px]"
+          className="min-w-[180px]"
         >
           {loading ? (
             <>
@@ -189,11 +180,7 @@ export function SettingsAccountTab({
       </div>
 
       {/* Cambio Password */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Lock className="h-5 w-5 text-teal-400 shrink-0" />
@@ -215,7 +202,7 @@ export function SettingsAccountTab({
                 value={passwords.current}
                 onChange={(e) => onPasswordChange('current', e.target.value)}
                 placeholder="Inserisci password attuale"
-                className="bg-background-secondary/50 border-teal-500/30 focus:border-teal-500/50"
+                className="border-white/10 bg-white/[0.04] focus:border-primary/30 focus:ring-primary/20"
               />
               <Button
                 type="button"
@@ -239,7 +226,7 @@ export function SettingsAccountTab({
                 value={passwords.new}
                 onChange={(e) => onPasswordChange('new', e.target.value)}
                 placeholder="Inserisci nuova password (min. 8 caratteri)"
-                className="bg-background-secondary/50 border-teal-500/30 focus:border-teal-500/50"
+                className="border-white/10 bg-white/[0.04] focus:border-primary/30 focus:ring-primary/20"
               />
               <Button
                 type="button"
@@ -263,7 +250,7 @@ export function SettingsAccountTab({
                 value={passwords.confirm}
                 onChange={(e) => onPasswordChange('confirm', e.target.value)}
                 placeholder="Conferma nuova password"
-                className="bg-background-secondary/50 border-teal-500/30 focus:border-teal-500/50"
+                className="border-white/10 bg-white/[0.04] focus:border-primary/30 focus:ring-primary/20"
               />
               <Button
                 type="button"
@@ -276,11 +263,11 @@ export function SettingsAccountTab({
               </Button>
             </div>
           </div>
-          <div className="flex justify-end pt-4 border-t border-teal-500/10">
+          <div className="flex justify-end pt-4 border-t border-white/10">
             <Button
               onClick={onChangePassword}
               disabled={loading || !passwords.new || !passwords.confirm}
-              className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200 min-w-[160px]"
+              className="min-w-[160px]"
             >
               {loading ? (
                 <>
@@ -296,14 +283,10 @@ export function SettingsAccountTab({
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Autenticazione a Due Fattori (2FA) */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Shield className="h-5 w-5 text-teal-400 shrink-0" />
@@ -314,7 +297,7 @@ export function SettingsAccountTab({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background-tertiary/30 border border-teal-500/10 hover:border-teal-500/20 transition-all duration-200 gap-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02] hover:border-primary/20 transition-all duration-200 gap-4">
             <div className="flex-1 min-w-0">
               <Label
                 htmlFor="2fa-enabled"
@@ -345,7 +328,7 @@ export function SettingsAccountTab({
             </div>
           </div>
           {twoFactorEnabled && (
-            <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20">
+            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
               <p className="text-text-secondary text-sm">
                 ✅ 2FA attivo. Usa un&apos;app autenticatore (Google Authenticator, Authy, ecc.) per
                 generare codici di accesso.
@@ -353,7 +336,7 @@ export function SettingsAccountTab({
             </div>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Drawer 2FA Setup */}
       {onTwoFactorSetup && <TwoFactorSetup open={show2FADrawer} onOpenChange={setShow2FADrawer} />}

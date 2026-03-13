@@ -6,9 +6,9 @@ import { createLogger } from '@/lib/logger'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { SkeletonClientiList } from '@/components/shared/ui/skeleton'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { ModernKPICard } from '@/components/dashboard/modern-kpi-card'
-import { ClientiPageHeader } from '@/components/dashboard/clienti/clienti-page-header'
 import { ClientiToolbar } from '@/components/dashboard/clienti/clienti-toolbar'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { ClientiHeaderActions } from '@/components/dashboard/clienti/clienti-header-actions'
 import { ClientiTableView } from '@/components/dashboard/clienti/clienti-table-view'
 import { ClientiGridView } from '@/components/dashboard/clienti/clienti-grid-view'
 import { ClientiEmptyState } from '@/components/dashboard/clienti/clienti-empty-state'
@@ -22,6 +22,7 @@ import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { useInvitiClientePendentiStaff } from '@/hooks/use-inviti-cliente'
 import { exportToCSV, exportToPDF, formatClientiForExport } from '@/lib/export-utils'
 import { useNotify } from '@/lib/ui/notify'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/providers/auth-provider'
 import { UserPlus, Users, UserCheck, UserRoundPlus } from 'lucide-react'
 import type { ClienteFilters, Cliente, ClienteStats } from '@/types/cliente'
@@ -55,7 +56,40 @@ const InvitaClienteModal = lazy(() =>
   })),
 )
 
-const KPI_ICON_CLASS = 'h-5 w-5'
+const STATS_CARD_CLASS =
+  'flex min-h-[70px] flex-col items-center justify-center rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20'
+
+const STATS_CARDS: Array<{
+  key: keyof ClienteStats | 'pendenti'
+  title: string
+  icon: typeof Users
+  iconBoxClass: string
+}> = [
+  {
+    key: 'totali',
+    title: 'Clienti Totali',
+    icon: Users,
+    iconBoxClass: 'border-teal-500/30 bg-teal-500/20 text-teal-400',
+  },
+  {
+    key: 'attivi',
+    title: 'Clienti Attivi',
+    icon: UserCheck,
+    iconBoxClass: 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400',
+  },
+  {
+    key: 'nuovi_mese',
+    title: 'Nuovi Questo Mese',
+    icon: UserPlus,
+    iconBoxClass: 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400',
+  },
+  {
+    key: 'pendenti',
+    title: 'Clienti invitati',
+    icon: UserRoundPlus,
+    iconBoxClass: 'border-purple-500/30 bg-purple-500/20 text-purple-400',
+  },
+]
 
 const ClientiStatsCards = memo(function ClientiStatsCards({
   displayStats,
@@ -65,40 +99,35 @@ const ClientiStatsCards = memo(function ClientiStatsCards({
   pendentiCount: number
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-      <ModernKPICard
-        title="Clienti Totali"
-        value={displayStats.totali}
-        icon={<Users className={KPI_ICON_CLASS} />}
-        color="teal"
-        animationDelay="100ms"
-      />
-      <ModernKPICard
-        title="Clienti Attivi"
-        value={displayStats.attivi}
-        icon={<UserCheck className={KPI_ICON_CLASS} />}
-        color="green"
-        animationDelay="200ms"
-      />
-      <ModernKPICard
-        title="Nuovi Questo Mese"
-        value={displayStats.nuovi_mese}
-        icon={<UserPlus className={KPI_ICON_CLASS} />}
-        color="cyan"
-        animationDelay="300ms"
-      />
-      <ModernKPICard
-        title="Clienti invitati"
-        value={pendentiCount}
-        icon={<UserRoundPlus className={KPI_ICON_CLASS} />}
-        color="purple"
-        animationDelay="400ms"
-      />
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-2">
+      {STATS_CARDS.map(({ key, title, icon: Icon, iconBoxClass }) => {
+        const value = key === 'pendenti' ? pendentiCount : displayStats[key]
+        return (
+          <div
+            key={key}
+            className={STATS_CARD_CLASS}
+            aria-label={`${title}: ${value}`}
+          >
+            <div
+              className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+                iconBoxClass,
+              )}
+            >
+              <Icon className="h-4 w-4" />
+            </div>
+            <span className="mt-2 block text-sm font-semibold text-text-primary">
+              {value}
+            </span>
+            <span className="text-[9px] text-text-secondary">{title}</span>
+          </div>
+        )
+      })}
     </div>
   )
 })
 
-const CLIENTI_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
+const _CLIENTI_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 export default function ClientiPage() {
   const router = useRouter()
@@ -400,47 +429,51 @@ export default function ClientiPage() {
 
   if (showGuardLoader) {
     return (
-      <div className={CLIENTI_LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
+      <StaffContentLayout title="Clienti" description="Gestisci i tuoi atleti e monitora i progressi" theme="teal">
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      </StaffContentLayout>
     )
   }
 
-  // Loading state - DOPO tutti gli hooks (skeleton dedicato alla lista)
   if (loading && displayClienti.length === 0) {
     return (
-      <div className="h-full bg-background p-6">
+      <StaffContentLayout title="Clienti" description="Gestisci i tuoi atleti e monitora i progressi" theme="teal">
         <SkeletonClientiList cards={8} className="py-4" />
-      </div>
+      </StaffContentLayout>
     )
   }
 
-  // Error state - DOPO tutti gli hooks
   if (error) {
     return (
-      <div className="h-full bg-background p-6">
+      <StaffContentLayout title="Clienti" description="Gestisci i tuoi atleti e monitora i progressi" theme="teal">
         <ErrorState
           title="Impossibile caricare l'elenco clienti"
           message={error}
           onRetry={refetch}
         />
-      </div>
+      </StaffContentLayout>
     )
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="flex-1 flex flex-col space-y-6 sm:space-y-10 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full relative min-w-0">
-        <ClientiPageHeader
+    <StaffContentLayout
+      title="Clienti"
+      description="Gestisci i tuoi atleti e monitora i progressi"
+      theme="teal"
+      actions={
+        <ClientiHeaderActions
           canAddOrInvite={canAddOrInvite}
           canInvitaCliente={canInvitaCliente}
           onCreaAtleta={openCreaAtleta}
           onInvitaCliente={openInvitaCliente}
           creaAtletaButtonRef={creaAtletaButtonRef}
         />
-
-        {/* Toolbar con filtri e ricerca */}
-        <ClientiToolbar
+      }
+    >
+      {/* Toolbar con filtri e ricerca */}
+      <ClientiToolbar
           searchTerm={searchTerm}
           statoFilter={statoFilter}
           viewMode={viewMode}
@@ -512,12 +545,12 @@ export default function ClientiPage() {
           />
         )}
 
-        {/* Stats: dati filtrati (clienti in pagina), non totali globali */}
-        <section className="shrink-0 mt-6" aria-label="Statistiche clienti">
-          <ClientiStatsCards displayStats={displayStats} pendentiCount={pendenti.length} />
-        </section>
+      {/* Stats: dati filtrati — spacing DS */}
+      <section className="shrink-0" aria-label="Statistiche clienti">
+        <ClientiStatsCards displayStats={displayStats} pendentiCount={pendenti.length} />
+      </section>
 
-        {/* Modali e Azioni Bulk - Lazy loaded */}
+      {/* Modali e Azioni Bulk - Lazy loaded */}
         <Suspense fallback={null}>
           <ClientiFiltriAvanzati
             open={showFiltriAvanzati}
@@ -566,7 +599,6 @@ export default function ClientiPage() {
             />
           </Suspense>
         )}
-      </div>
-    </div>
+    </StaffContentLayout>
   )
 }

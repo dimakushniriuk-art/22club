@@ -7,7 +7,8 @@ import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { SkeletonWorkoutList } from '@/components/shared/ui/skeleton'
 import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
-import { WorkoutPlansHeader, WorkoutPlansList } from '@/components/workout-plans'
+import { SchedeHeaderActions, WorkoutPlansList } from '@/components/workout-plans'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useToast } from '@/components/ui/toast'
 import type { Workout } from '@/types/workout'
 
@@ -92,32 +93,31 @@ export default function SchedePage() {
 
   if (loading) {
     return (
-      <div className="relative min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-          <SkeletonWorkoutList cards={8} />
-        </div>
-      </div>
+      <StaffContentLayout title="Schede" description="Gestisci le schede di allenamento per i tuoi atleti" theme="teal">
+        <SkeletonWorkoutList cards={8} />
+      </StaffContentLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="relative min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-          <ErrorState
-            title="Impossibile caricare le schede"
-            message={error}
-            onRetry={handleRetry}
-          />
-        </div>
-      </div>
+      <StaffContentLayout title="Schede" description="Gestisci le schede di allenamento per i tuoi atleti" theme="teal">
+        <ErrorState
+          title="Impossibile caricare le schede"
+          message={error}
+          onRetry={handleRetry}
+        />
+      </StaffContentLayout>
     )
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full relative">
-        <WorkoutPlansHeader
+    <StaffContentLayout
+      title="Schede"
+      description="Gestisci le schede di allenamento per i tuoi atleti"
+      theme="teal"
+      actions={
+        <SchedeHeaderActions
           totalCount={stats.total}
           activeCount={stats.active}
           viewMode={viewMode}
@@ -125,8 +125,9 @@ export default function SchedePage() {
           showFilters={showFilters}
           onShowFiltersChange={setShowFilters}
         />
-
-        {showFilters && (
+      }
+    >
+      {showFilters && (
           <Suspense fallback={<LoadingState message="Caricamento filtri..." />}>
             <WorkoutPlansFilters
               searchTerm={searchTerm}
@@ -142,22 +143,21 @@ export default function SchedePage() {
           </Suspense>
         )}
 
-        <div role="status" aria-live="polite" className="sr-only">
-          {workouts.length} {workouts.length === 1 ? 'scheda' : 'schede'}
-        </div>
-        <WorkoutPlansList
-          workouts={workouts}
-          viewMode={viewMode}
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
-          onWorkoutClick={handleWorkoutClick}
-          onViewClick={handleWorkoutClick}
-          onDeleteClick={handleDeleteClick}
-          getStatusColor={getStatusColor}
-          getStatusText={getStatusText}
-          formatDate={formatDate}
-        />
+      <div role="status" aria-live="polite" className="sr-only">
+        {workouts.length} {workouts.length === 1 ? 'scheda' : 'schede'}
       </div>
+      <WorkoutPlansList
+        workouts={workouts}
+        viewMode={viewMode}
+        searchTerm={searchTerm}
+        statusFilter={statusFilter}
+        onWorkoutClick={handleWorkoutClick}
+        onViewClick={handleWorkoutClick}
+        onDeleteClick={handleDeleteClick}
+        getStatusColor={getStatusColor}
+        getStatusText={getStatusText}
+        formatDate={formatDate}
+      />
 
       {/* Workout Detail Modal - Lazy loaded solo quando aperto */}
       {selectedWorkoutId && (
@@ -169,6 +169,6 @@ export default function SchedePage() {
           />
         </Suspense>
       )}
-    </div>
+    </StaffContentLayout>
   )
 }

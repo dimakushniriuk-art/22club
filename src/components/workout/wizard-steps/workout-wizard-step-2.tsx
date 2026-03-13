@@ -28,11 +28,10 @@ export function WorkoutWizardStep2({
 }: WorkoutWizardStep2Props) {
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl transition-all duration-200 focus-within:ring-0 focus-within:ring-offset-0"
+      variant="default"
+      className="relative overflow-hidden transition-all duration-200"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-      <CardContent className="relative z-10 p-6 sm:p-8">
+      <CardContent className="p-6 sm:p-8">
     <div className="space-y-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -55,8 +54,8 @@ export function WorkoutWizardStep2({
         {wizardData.days.map((day, index) => (
           <Card
             key={index}
-            variant="trainer"
-            className="relative overflow-hidden rounded-xl border border-white/5 bg-background-secondary/30 shadow-sm hover:border-primary/20 transition-all duration-200"
+            variant="default"
+            className="relative overflow-hidden hover:border-white/20 transition-all duration-200"
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
@@ -87,10 +86,7 @@ export function WorkoutWizardStep2({
         ))}
 
         {wizardData.days.length === 0 && (
-          <Card
-            variant="trainer"
-            className="rounded-xl border border-white/5 bg-background-secondary/30 shadow-sm"
-          >
+          <Card variant="default" className="shadow-sm">
             <CardContent className="py-12 text-center">
               <div className="mb-4 flex justify-center">
                 <div className="bg-primary/10 text-primary border border-primary/25 rounded-full p-4">

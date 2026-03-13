@@ -55,7 +55,7 @@ export function Slider({
       />
       <div
         className={cn(
-          'bg-background-tertiary relative h-2 w-full rounded-full',
+          'relative h-2 w-full rounded-full border border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
           disabled && 'opacity-50',
         )}
         onClick={(e) => {
@@ -75,7 +75,7 @@ export function Slider({
           style={{ width: `${percentage}%` }}
         />
         <div
-          className="bg-brand border-background absolute top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer rounded-full border-2 transition-all hover:scale-110"
+          className="border-background absolute top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer rounded-full border-2 border-white/20 bg-white shadow-md transition-all hover:scale-110"
           style={{ left: `calc(${percentage}% - 0.5rem)` }}
         />
       </div>

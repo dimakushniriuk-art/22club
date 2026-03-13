@@ -16,10 +16,10 @@ export interface PageHeaderFixedProps {
 }
 
 const HEADER_BASE =
-  'overflow-hidden bg-black px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-lg'
+  'overflow-hidden bg-background px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 const HEADER_FIXED =
-  'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))]'
-const HEADER_STATIC = 'relative rounded-xl pt-3'
+  'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))] border-x-0 border-t-0'
+const HEADER_STATIC = 'relative rounded-lg pt-3 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]'
 
 const CYAN_LINE_STYLE = {
   background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
@@ -34,7 +34,7 @@ export function PageHeaderFixed({
   className,
   static: isStatic = false,
 }: PageHeaderFixedProps) {
-  const headerClass = `${HEADER_BASE} ${isStatic ? HEADER_STATIC : HEADER_FIXED}${className ? ` ${className}` : ''}`
+  const headerClass = `${HEADER_BASE} ${isStatic ? HEADER_STATIC : HEADER_FIXED}${className ? ` ${className}` : ''}`.trim()
   const hasBack = backHref != null || onBack != null
   const backContent =
     hasBack &&
@@ -67,7 +67,7 @@ export function PageHeaderFixed({
       <div className="relative z-10 flex items-center gap-3">
         {backContent}
         {icon != null && (
-          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-cyan-400">
             {icon}
           </div>
         )}

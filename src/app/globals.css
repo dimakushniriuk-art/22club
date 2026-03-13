@@ -6,7 +6,7 @@
 @layer base {
   :root {
     /* 🌙 22Club Design System - Dark Theme Tokens */
-    --color-bg: #0a0f12;
+    --color-bg: #0d0d0d;
     --color-bg-elevated: #10171c;
     --color-bg-subtle: #151b20;
     --color-text: #eaf0f2;
@@ -39,10 +39,7 @@
   }
 
   body {
-    background:
-      radial-gradient(40% 60% at 10% 0%, rgba(2, 179, 191, 0.08) 0%, rgba(2, 179, 191, 0) 60%),
-      radial-gradient(50% 40% at 90% 10%, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0) 60%),
-      var(--color-bg);
+    background: #0d0d0d;
     color: var(--color-text);
     font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;

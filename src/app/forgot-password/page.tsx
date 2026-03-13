@@ -8,8 +8,17 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeft, Mail, CheckCircle2, AlertCircle } from 'lucide-react'
-import { AthleteBackground } from '@/components/athlete/athlete-background'
 import Image from 'next/image'
+import {
+  AUTH_PAGE_WRAPPER_CLASS,
+  AUTH_CARD_CLASS,
+  AUTH_CARD_CONTENT_CLASS,
+  AUTH_LOGO_CLASS,
+  AUTH_INPUT_WITH_LEFT_ICON_CLASS,
+  AUTH_BUTTON_PRIMARY_CLASS,
+  AUTH_ERROR_BOX_CLASS,
+  AUTH_LINK_BACK_CLASS,
+} from '@/lib/auth-page-styles'
 
 const logger = createLogger('app:forgot-password:page')
 
@@ -56,29 +65,16 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="page-login min-h-screen flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 relative overflow-hidden safe-area-inset bg-background" style={{ minHeight: '100dvh' }}>
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <AthleteBackground />
-        </div>
+      <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
         <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
-          <Card variant="default" className="login-card w-full max-w-md min-[834px]:max-w-lg backdrop-blur-xl border border-border rounded-xl min-[834px]:rounded-2xl bg-background-secondary/95">
-            <CardContent className="p-5 sm:p-6 min-[834px]:p-8 text-center">
+          <Card variant="default" className={AUTH_CARD_CLASS}>
+            <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
               <div className="mb-6 min-[834px]:mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
                 <div className="mb-4 min-[834px]:mb-6 flex justify-center">
-                  <div className="relative">
-                    <Image
-                      src="/logo.svg"
-                      alt="22 PERSONAL TRAINING Club"
-                      width={180}
-                      height={180}
-                      className="w-auto h-24 object-contain drop-shadow-[0_0_20px_rgba(2,179,191,0.25)]"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-primary/15 blur-xl -z-10" />
-                  </div>
+                  <Image src="/logo.svg" alt="22 PERSONAL TRAINING Club" width={180} height={180} className={AUTH_LOGO_CLASS} priority />
                 </div>
-                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in bg-primary/20">
-                  <CheckCircle2 className="w-10 h-10 text-primary" />
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in bg-white/[0.06] border border-white/10">
+                  <CheckCircle2 className="w-10 h-10 text-text-primary" />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">Email inviata!</h2>
                 <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
@@ -86,13 +82,13 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
               <div className="space-y-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
-                <div className="rounded-xl p-4 mb-4 bg-background-tertiary/50 border border-border">
+                <div className="rounded-lg p-4 mb-4 bg-white/[0.04] border border-white/10">
                   <p className="text-sm mb-2 text-text-secondary">
-                    <Mail className="w-4 h-4 inline mr-2 text-primary" />
+                    <Mail className="w-4 h-4 inline mr-2 text-text-muted" />
                     Non hai ricevuto l&apos;email? Controlla anche la cartella spam.
                   </p>
                   {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
-                    <div className="mt-3 pt-3 border-t border-border">
+                    <div className="mt-3 pt-3 border-t border-white/10">
                       <p className="text-xs mb-2 text-text-tertiary">
                         <strong className="text-text-secondary">Sviluppo locale:</strong> Le email vengono inviate a Inbucket.
                       </p>
@@ -111,10 +107,7 @@ export default function ForgotPasswordPage() {
                   )}
                 </div>
                 <Link href="/login">
-                  <Button
-                    variant="primary"
-                    className="w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-br from-teal-600 to-cyan-600 text-white font-semibold shadow-md shadow-primary/30 border border-teal-500/50 hover:from-teal-500 hover:to-cyan-500"
-                  >
+                  <Button variant="primary" className={`${AUTH_BUTTON_PRIMARY_CLASS} w-full`}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Torna al Login
                   </Button>
@@ -128,67 +121,46 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="page-login min-h-screen flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 relative overflow-hidden safe-area-inset bg-background" style={{ minHeight: '100dvh' }}>
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <AthleteBackground />
-      </div>
+    <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
       <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
-        <Card variant="default" className="login-card w-full max-w-md min-[834px]:max-w-lg backdrop-blur-xl border border-border rounded-xl min-[834px]:rounded-2xl bg-background-secondary/95">
-          <CardContent className="p-5 sm:p-6 min-[834px]:p-8">
+        <Card variant="default" className={AUTH_CARD_CLASS}>
+          <CardContent className={AUTH_CARD_CONTENT_CLASS}>
             <div className="mb-6 animate-fade-in">
-              <Link
-                href="/login"
-                className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-text-primary transition-colors group"
-              >
+              <Link href="/login" className={AUTH_LINK_BACK_CLASS}>
                 <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
                 Torna al Login
               </Link>
             </div>
-
             <div className="text-center mb-6 min-[834px]:mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
               <div className="mb-4 min-[834px]:mb-6 flex justify-center">
-                <div className="relative">
-                  <Image
-                    src="/logo.svg"
-                    alt="22 PERSONAL TRAINING Club"
-                    width={200}
-                    height={200}
-                    className="w-auto h-24 sm:h-28 min-[834px]:h-32 object-contain drop-shadow-[0_0_20px_rgba(2,179,191,0.25)]"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-primary/15 blur-xl -z-10" />
-                </div>
+                <Image src="/logo.svg" alt="22 PERSONAL TRAINING Club" width={200} height={200} className={AUTH_LOGO_CLASS} priority />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold mb-2 min-[834px]:mb-3 text-text-primary mt-4 min-[834px]:mt-6">Password dimenticata?</h2>
               <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
                 Inserisci la tua email e ti invieremo le istruzioni per reimpostare la password.
               </p>
             </div>
-
             <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
               <form onSubmit={handleResetPassword} className="space-y-5 min-[834px]:space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-text-primary">
-                    Email
-                  </Label>
+                  <Label htmlFor="email" className="text-sm font-medium text-text-primary">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none text-text-muted" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-text-muted" />
                     <Input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="la.tua@email.com"
-                      className="min-h-[44px] sm:min-h-10 pl-9 sm:pl-10 rounded-xl bg-background-secondary border-border text-text-primary placeholder:text-text-muted focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background text-base"
+                      className={AUTH_INPUT_WITH_LEFT_ICON_CLASS}
                       style={{ paddingLeft: '2.25rem' }}
                       required
                       disabled={loading}
                     />
                   </div>
                 </div>
-
                 {error && (
-                  <div className="flex items-start gap-3 rounded-xl p-4 animate-fade-in bg-state-error/10 border border-state-error/20">
+                  <div className={AUTH_ERROR_BOX_CLASS} role="alert">
                     <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-state-error" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-state-error">Errore</p>
@@ -196,13 +168,7 @@ export default function ForgotPasswordPage() {
                     </div>
                   </div>
                 )}
-
-                <Button
-                  type="submit"
-                  disabled={loading || !email.trim()}
-                  variant="primary"
-                  className="w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-br from-teal-600 to-cyan-600 text-white font-semibold shadow-md shadow-primary/30 border border-teal-500/50 hover:from-teal-500 hover:to-cyan-500 active:from-teal-700 active:to-cyan-700 disabled:opacity-60 disabled:from-teal-800 disabled:to-cyan-800"
-                >
+                <Button type="submit" disabled={loading || !email.trim()} variant="primary" className={AUTH_BUTTON_PRIMARY_CLASS}>
                   {loading ? (
                     <>
                       <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" aria-hidden />
@@ -215,7 +181,6 @@ export default function ForgotPasswordPage() {
                     </>
                   )}
                 </Button>
-
                 <p className="text-center text-sm text-text-secondary pt-1">
                   Ricordi la password?{' '}
                   <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">

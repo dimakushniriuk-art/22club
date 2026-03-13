@@ -27,9 +27,7 @@ export function FitnessNotesSection({
   onFormDataChange,
 }: FitnessNotesSectionProps) {
   return (
-    <Card
-      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg">Note Fitness</CardTitle>
       </CardHeader>
@@ -47,7 +45,7 @@ export function FitnessNotesSection({
             rows={4}
           />
         ) : fitness?.note_fitness ? (
-          <p className="text-text-primary whitespace-pre-wrap bg-background-tertiary/30 p-4 rounded-lg border border-primary/20">
+          <p className="text-text-primary whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
             {fitness.note_fitness}
           </p>
         ) : (

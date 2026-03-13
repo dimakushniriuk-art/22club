@@ -34,7 +34,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
 }) {
   const avatarInitials = useAvatarInitials(cliente.nome, cliente.cognome, cliente.email)
   const displayName =
-    (cliente.nome?.trim() || cliente.cognome?.trim())
+    cliente.nome?.trim() || cliente.cognome?.trim()
       ? `${cliente.nome ?? ''} ${cliente.cognome ?? ''}`.trim()
       : cliente.email || 'Profilo da completare'
   const isBlocked = Boolean(cliente.invitatoInAttesa)
@@ -42,16 +42,14 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/35 backdrop-blur-xl shadow-[0_0_40px_rgba(2,179,191,0.05)] p-4 sm:p-5 transition-all duration-300',
-        isBlocked
-          ? 'opacity-75 pointer-events-none hover:shadow-[0_0_40px_rgba(2,179,191,0.05)]'
-          : 'hover:shadow-[0_0_60px_rgba(2,179,191,0.12)] hover:-translate-y-1 max-[851px]:hover:translate-y-0 max-[851px]:hover:shadow-[0_0_40px_rgba(2,179,191,0.05)]',
+        'group relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors',
+        isBlocked ? 'opacity-75 pointer-events-none' : 'hover:border-white/20',
       )}
     >
       <div className="relative flex flex-col h-full">
         <div className="mb-3 sm:mb-4 flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="relative flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-primary/10 shadow-[0_0_20px_rgba(2,179,191,0.25)]">
+            <div className="relative flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-primary/10">
               {cliente.avatar_url ? (
                 <Image
                   src={cliente.avatar_url}
@@ -61,9 +59,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
                   unoptimized
                 />
               ) : (
-                <span className="text-lg font-semibold text-primary">
-                  {avatarInitials}
-                </span>
+                <span className="text-lg font-semibold text-primary">{avatarInitials}</span>
               )}
             </div>
             <div className="min-w-0">
@@ -154,13 +150,24 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
             <div className="text-text-secondary text-xs font-medium">Allenamenti</div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-text-secondary text-xs">Acquistati:</span>
-              <span className={cn('font-medium text-text-primary', (cliente.lessons_acquired ?? 0) > 0 && 'font-bold text-primary drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]')}>
+              <span
+                className={cn(
+                  'font-medium text-text-primary',
+                  (cliente.lessons_acquired ?? 0) > 0 &&
+                    'font-bold text-primary drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
+                )}
+              >
                 {cliente.lessons_acquired !== undefined ? cliente.lessons_acquired : '–'}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-text-secondary text-xs">Eseguiti:</span>
-              <span className={cn('font-bold tracking-tight text-primary', (cliente.lessons_used ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]')}>
+              <span
+                className={cn(
+                  'font-bold tracking-tight text-primary',
+                  (cliente.lessons_used ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
+                )}
+              >
                 {cliente.lessons_used !== undefined ? cliente.lessons_used : '–'}
               </span>
             </div>

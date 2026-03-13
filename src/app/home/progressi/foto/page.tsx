@@ -15,7 +15,6 @@ import {
 } from '@/components/progress-photo-image'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import {
-  ArrowLeft,
   Camera,
   Calendar,
   Image as ImageIcon,
@@ -42,7 +41,7 @@ function CompareDatesCard({
   getPhotosForDate: (date: string) => ProgressPhoto[]
 }) {
   return (
-    <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+    <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
       <CardHeader>
         <CardTitle size="md" className="text-text-primary">Seleziona Date da Confrontare</CardTitle>
       </CardHeader>
@@ -56,14 +55,14 @@ function CompareDatesCard({
                   key={`first-${date}`}
                   type="button"
                   onClick={() => onDateSelect(date, 'first')}
-                  className={`w-full rounded-xl border p-3 text-left ${
+                  className={`w-full rounded-lg border p-3 text-left ${
                     selectedDates.first === date
-                      ? 'border-cyan-400/40 bg-cyan-500/10 text-cyan-400'
-                      : 'bg-background-secondary text-text-primary border-border'
+                      ? 'border-white/20 bg-white/10 text-text-primary'
+                      : 'border-white/10 bg-white/[0.04] text-text-primary'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="h-4 w-4 text-cyan-400" />
                     <span className="font-medium">{formatDate(date)}</span>
                   </div>
                   <div className="text-text-tertiary mt-1 text-xs">
@@ -81,14 +80,14 @@ function CompareDatesCard({
                   key={`second-${date}`}
                   type="button"
                   onClick={() => onDateSelect(date, 'second')}
-                  className={`w-full rounded-xl border p-3 text-left ${
+                  className={`w-full rounded-lg border p-3 text-left ${
                     selectedDates.second === date
-                      ? 'border-cyan-400/40 bg-cyan-500/10 text-cyan-400'
-                      : 'bg-background-secondary text-text-primary border-border'
+                      ? 'border-white/20 bg-white/10 text-text-primary'
+                      : 'border-white/10 bg-white/[0.04] text-text-primary'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="h-4 w-4 text-cyan-400" />
                     <span className="font-medium">{formatDate(date)}</span>
                   </div>
                   <div className="text-text-tertiary mt-1 text-xs">
@@ -147,7 +146,7 @@ function PhotoCompareView({
     </div>
   )
   return (
-    <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+    <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
       <CardHeader>
         <CardTitle size="md" className="text-text-primary">
           Confronto {formatDate(firstDate)} vs {formatDate(secondDate)}
@@ -175,22 +174,22 @@ function PhotoListItemCard({
   onShare: (photo: ProgressPhoto) => void
 }) {
   return (
-    <Card className="overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+    <Card className="overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
       <CardContent className="p-0">
         <div className="space-y-0">
           <div className="flex items-center justify-between p-4 pb-2">
             <div className="flex items-center gap-2">
               <Calendar className="text-cyan-400 h-4 w-4" />
               <span className="text-text-primary font-medium">{formatDate(photo.date)}</span>
-              <Badge variant="secondary" size="sm" className="border-cyan-500/30 text-cyan-400">
+              <Badge variant="secondary" size="sm">
                 {photo.angle}
               </Badge>
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" className="text-cyan-400 hover:bg-cyan-500/10" onClick={() => onDownload(photo)}>
+              <Button variant="ghost" size="sm" className="text-text-secondary hover:bg-white/5" onClick={() => onDownload(photo)}>
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-cyan-400 hover:bg-cyan-500/10" onClick={() => onShare(photo)}>
+              <Button variant="ghost" size="sm" className="text-text-secondary hover:bg-white/5" onClick={() => onShare(photo)}>
                 <Share2 className="h-4 w-4" />
               </Button>
             </div>
@@ -371,10 +370,10 @@ export default function FotoProgressiPage() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
           <div className="animate-pulse space-y-4">
-            <div className="bg-background-tertiary h-12 w-56 rounded-xl" />
+            <div className="bg-white/10 h-12 w-56 rounded-lg" />
             <div className="space-y-3">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-background-tertiary h-48 rounded-xl" />
+                <div key={i} className="bg-white/10 h-48 rounded-lg" />
               ))}
             </div>
           </div>
@@ -401,10 +400,10 @@ export default function FotoProgressiPage() {
                 key={angle}
                 type="button"
                 onClick={() => handleAngleChange(angle)}
-                className={`rounded-xl border px-4 py-2 text-sm font-medium transition-all ${
+                className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
                   selectedAngle === angle
-                    ? 'border-cyan-400/40 bg-cyan-500/20 text-cyan-400'
-                    : 'border-border bg-background-secondary/50 text-text-secondary hover:bg-background-tertiary/50 hover:text-text-primary'
+                    ? 'border-white/20 bg-white/10 text-text-primary'
+                    : 'border-white/10 bg-white/[0.04] text-text-secondary hover:bg-white/5 hover:text-text-primary'
                 }`}
               >
                 {angle.charAt(0).toUpperCase() + angle.slice(1)}
@@ -417,11 +416,7 @@ export default function FotoProgressiPage() {
               variant="outline"
               onClick={handleCompareToggle}
               disabled={uniqueDates.length < 2}
-              className={
-                compareMode
-                  ? 'rounded-xl border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'
-                  : 'rounded-xl border-cyan-400/40 text-cyan-400 hover:bg-cyan-500/10'
-              }
+              className="rounded-lg border border-white/10 hover:bg-white/5 text-text-primary"
             >
               <RotateCcw className="mr-2 h-4 w-4" />
               {compareMode ? 'Esci Confronto' : 'Confronta Date'}
@@ -434,7 +429,7 @@ export default function FotoProgressiPage() {
 
         {/* Contenuto principale */}
         {photos.length === 0 ? (
-          <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
+          <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="py-12 text-center">
               <div className="mb-4 text-6xl opacity-50">📸</div>
               <h3 className="text-text-primary mb-2 text-lg font-medium">Nessuna foto caricata</h3>
@@ -443,7 +438,7 @@ export default function FotoProgressiPage() {
               </p>
               <Button
                 onClick={() => router.push('/home/foto-risultati/aggiungi')}
-                className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+                className="rounded-lg border border-white/10 hover:bg-white/5 text-text-primary"
               >
                 <Camera className="mr-2 h-4 w-4" />
                 Aggiungi Foto
@@ -496,19 +491,19 @@ export default function FotoProgressiPage() {
         )}
 
         {error && (
-          <Card className="border-state-error/50 bg-background-secondary/50">
+          <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="py-4 text-center">
               <p className="text-state-error text-sm">{error}</p>
-              <Button variant="outline" size="sm" onClick={refresh} className="mt-2 rounded-xl border-cyan-400/40 text-cyan-400 hover:bg-cyan-500/10">
+              <Button variant="outline" size="sm" onClick={refresh} className="mt-2 rounded-lg border border-white/10 hover:bg-white/5 text-text-primary">
                 Riprova
               </Button>
             </CardContent>
           </Card>
         )}
 
-        <Card className="border border-cyan-500/20 bg-background-secondary/40">
+        <Card className="rounded-lg border border-white/10 bg-white/5">
           <CardContent className="flex items-center gap-3 py-3 pl-3 pr-4">
-            <div className="h-8 w-1 shrink-0 rounded-full bg-cyan-500/40" />
+            <div className="h-8 w-1 shrink-0 rounded-full bg-white/30" />
             <div className="flex items-center gap-2 min-w-0">
               <ImageIcon className="h-4 w-4 shrink-0 text-cyan-400" />
               <p className="text-text-secondary text-xs">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { createLogger } from '@/lib/logger'
-import type { Json } from '@/lib/supabase/types'
+import type { Database, Json } from '@/lib/supabase/types'
 import type {
   StaffCalendarSettings,
   StaffCalendarSettingsUpdate,
@@ -41,9 +41,12 @@ function mapRowToSettings(row: Record<string, unknown>): StaffCalendarSettings {
     show_collaborators_calendars: (row.show_collaborators_calendars as boolean) ?? true,
     recurrence_options: (row.recurrence_options as RecurrenceOption[]) ?? DEFAULT_RECURRENCE_OPTIONS,
     work_hours: (row.work_hours as StaffCalendarSettings['work_hours']) ?? null,
+    grid_min_time: (row.grid_min_time as string | null) ?? null,
+    grid_max_time: (row.grid_max_time as string | null) ?? null,
     slot_duration_minutes: (row.slot_duration_minutes as number) ?? 15,
     max_free_pass_athletes_per_slot: (row.max_free_pass_athletes_per_slot as number) ?? 4,
     view_density: (row.view_density as StaffCalendarSettings['view_density']) ?? 'comfort',
+    type_cell_width: (row.type_cell_width as StaffCalendarSettings['type_cell_width']) ?? undefined,
     created_at: row.created_at as string | undefined,
     updated_at: row.updated_at as string | undefined,
   }
@@ -110,28 +113,53 @@ export function useStaffCalendarSettings() {
       if (!staffProfileId || !orgId) return
       setSaving(true)
       try {
-        const payload = {
-          ...updates,
-          updated_at: new Date().toISOString(),
-        }
-        const row = {
+        const jsonColumns = [
+          'default_durations',
+          'enabled_appointment_types',
+          'custom_appointment_types',
+          'type_colors',
+          'recurrence_options',
+          'work_hours',
+          'type_cell_width',
+        ] as const
+        const rowForDb: Record<string, unknown> = {
           staff_id: staffProfileId,
           org_id: orgId,
-          ...payload,
+          updated_at: new Date().toISOString(),
         }
-        const rowForDb = {
-          ...row,
-          custom_appointment_types:
-            row.custom_appointment_types !== undefined
-              ? (row.custom_appointment_types as unknown as Json)
-              : undefined,
+        const VALID_SLOT_DURATIONS = [15, 30, 45, 60, 90]
+        for (const [key, value] of Object.entries(updates)) {
+          if (value === undefined) continue
+          if (key === 'slot_duration_minutes') {
+            const num = typeof value === 'number' ? value : Number(value)
+            const valid = Number.isFinite(num) && VALID_SLOT_DURATIONS.includes(num)
+            const clamped = valid
+              ? num
+              : VALID_SLOT_DURATIONS.reduce(
+                  (best, curr) =>
+                    Math.abs(curr - (Number.isFinite(num) ? num : 15)) <
+                    Math.abs(best - (Number.isFinite(num) ? num : 15))
+                      ? curr
+                      : best,
+                  15,
+                )
+            rowForDb[key] = clamped
+            continue
+          }
+          rowForDb[key] = jsonColumns.includes(key as (typeof jsonColumns)[number])
+            ? (value as unknown as Json)
+            : value
         }
+        type StaffCalendarSettingsInsert = Database['public']['Tables']['staff_calendar_settings']['Insert']
         const { data, error } = await supabase
           .from('staff_calendar_settings')
-          .upsert(rowForDb, { onConflict: 'staff_id' })
+          .upsert(rowForDb as StaffCalendarSettingsInsert, { onConflict: 'staff_id' })
           .select()
           .single()
-        if (error) throw error
+        if (error) {
+          logger.error(`useStaffCalendarSettings mutate: ${error.message}`, error)
+          throw error
+        }
         setSettings(data ? mapRowToSettings(data as Record<string, unknown>) : null)
       } catch (err) {
         logger.error('useStaffCalendarSettings mutate', err)

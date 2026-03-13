@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 import { Users, UserPlus } from 'lucide-react'
-import { colors } from '@/lib/design-tokens'
 
 interface ClientiEmptyStateProps {
   searchTerm: string
@@ -29,41 +28,31 @@ export function ClientiEmptyState({
     if (hasActiveFilters) {
       return 'Nessun cliente corrisponde alla ricerca o allo stato selezionato. Prova a modificare i filtri.'
     }
-    return 'Non ci sono ancora clienti nell’organizzazione. Invita i tuoi primi atleti per gestire progressi e allenamenti.'
+    return "Non ci sono ancora clienti nell'organizzazione. Invita i tuoi primi atleti per gestire progressi e allenamenti."
   }
 
   return (
-    <div className="relative py-16 text-center">
-      <div className="mb-6 flex justify-center">
-        <div style={{ color: colors.athleteAccents.teal.bar }}>
-          <Users className="h-12 w-12" />
-        </div>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 sm:p-8 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+        <Users className="h-6 w-6" />
       </div>
-      <h3 className="text-text-primary mb-2 text-xl font-semibold">{title}</h3>
-      <p className="text-text-secondary mb-6 text-sm max-w-md mx-auto">
-        {getEmptyMessage()}
-      </p>
-      {(totali > 0 || hasActiveFilters) && (
-        <div className="mb-4">
-          <Button variant="outline" onClick={onResetFilters}>
+      <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+      <p className="text-sm text-text-secondary max-w-md">{getEmptyMessage()}</p>
+      <div className="flex flex-wrap justify-center gap-2 pt-2">
+        {(totali > 0 || hasActiveFilters) && (
+          <Button variant="outline" size="sm" onClick={onResetFilters} className="border-white/20 hover:bg-white/5 hover:border-white/30">
             {totali > 0 ? 'Rimuovi tutti i filtri' : 'Rimuovi filtri'}
           </Button>
-        </div>
-      )}
-      {isEmptyOrg && (
-        <Link href="/dashboard/invita-atleta" prefetch>
-          <Button
-            className="text-white font-semibold shadow-lg transition-all duration-200 hover:opacity-90"
-            style={{
-              background: `linear-gradient(to right, ${colors.athleteAccents.teal.bar}, ${colors.athleteAccents.cyan.bar})`,
-              boxShadow: `0 10px 15px -3px ${colors.athleteAccents.teal.bar}30`,
-            }}
-          >
-            <UserPlus className="mr-2 h-4 w-4" />
-            Invita primo atleta
+        )}
+        {isEmptyOrg && (
+          <Button variant="primary" size="sm" asChild>
+            <Link href="/dashboard/invita-atleta" prefetch>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Invita primo atleta
+            </Link>
           </Button>
-        </Link>
-      )}
+        )}
+      </div>
     </div>
   )
 }

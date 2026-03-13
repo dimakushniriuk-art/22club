@@ -89,10 +89,10 @@ export function AppuntamentiListView({
           onBack={onBack}
         />
 
-        <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
-          <CardHeader className="pb-2.5 border-b border-cyan-500/20">
+        <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+          <CardHeader className="pb-2.5 border-b border-white/10">
             <CardTitle size="sm" className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Calendar className="h-4 w-4 text-cyan-400" />
               </div>
               <span className="truncate">Prossimi Appuntamenti</span>
@@ -108,7 +108,7 @@ export function AppuntamentiListView({
                   onRefresh={() => refetch()}
                   isLoading={loading}
                   ariaLabel="Ricarica appuntamenti"
-                  className="rounded-xl border border-cyan-400/40 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 min-h-[44px]"
+                  className="rounded-lg border border-white/10 hover:bg-white/5 min-h-[44px] text-text-primary"
                 />
               </div>
             ) : (
@@ -128,10 +128,10 @@ export function AppuntamentiListView({
         </Card>
 
         {pastAppointments.length > 0 && (
-          <Card className="border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm">
-            <CardHeader className="pb-2.5 border-b border-cyan-500/20">
+          <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+            <CardHeader className="pb-2.5 border-b border-white/10">
               <CardTitle size="sm" className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <Clock className="h-4 w-4 text-cyan-400" />
                 </div>
                 <span className="truncate">Appuntamenti Passati</span>

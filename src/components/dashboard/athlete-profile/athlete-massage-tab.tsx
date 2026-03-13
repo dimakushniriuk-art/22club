@@ -42,17 +42,11 @@ const INTENSITA_MASSAGGIO: { value: IntensitaMassaggioEnum; label: string }[] = 
   { value: 'intensa', label: 'Intensa' },
 ]
 
-/** Card base: semi-border + glow (palette primary) */
-const MASSAGE_CARD_CLASS =
-  'group relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300'
-
-/** Chip tipo massaggio: tag style primary */
+/** Chip tipo massaggio */
 const CHIP_BASE =
   'min-h-[44px] shrink-0 rounded-full border px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
-const CHIP_SELECTED = 'bg-primary/15 text-primary border border-primary/30'
-const CHIP_UNSELECTED = 'border border-primary/20 bg-transparent text-text-secondary hover:border-primary/40 hover:text-primary'
-
-const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
+const CHIP_SELECTED = 'bg-white/[0.06] text-primary border border-white/10'
+const CHIP_UNSELECTED = 'border border-white/10 bg-transparent text-text-secondary hover:border-primary/20 hover:bg-white/[0.04]'
 
 export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
   const { data: massage, isLoading, error } = useAthleteMassage(athleteId)
@@ -111,7 +105,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className={`min-h-[44px] shrink-0 gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="min-h-[44px] shrink-0 gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-4 w-4" />
             Modifica
@@ -121,7 +115,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
 
       {/* Preferenze Massaggio */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className={MASSAGE_CARD_CLASS}>
+        <Card variant="default" className="overflow-hidden">
           <CardHeader className="relative z-10">
             <CardTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
               <Hand className="h-5 w-5 text-primary" />
@@ -162,7 +156,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
           </CardContent>
         </Card>
 
-        <Card className={MASSAGE_CARD_CLASS}>
+        <Card variant="default" className="overflow-hidden">
           <CardHeader className="relative z-10">
             <CardTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
               <Hand className="h-5 w-5 text-primary" />
@@ -197,7 +191,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
       {/* Zone Problematiche e Allergie Prodotti */}
       {isEditing && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className={MASSAGE_CARD_CLASS}>
+          <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg font-bold text-text-primary">Zone Problematiche</CardTitle>
             </CardHeader>
@@ -207,7 +201,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   placeholder="Aggiungi zona"
                   value={newArrayItem.zona || ''}
                   maxLength={100}
-                  className="min-h-[44px] rounded-xl border-primary/25 text-base focus:ring-2 focus:ring-primary/30"
+                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                   onChange={(e) => {
                     const sanitized = sanitizeString(e.target.value, 100)
                     setNewArrayItem({ ...newArrayItem, zona: sanitized || '' })
@@ -221,7 +215,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="min-h-[44px] min-w-[44px] shrink-0 rounded-full border-primary/30 text-primary hover:bg-primary/15"
+                  className="min-h-[44px] min-w-[44px] shrink-0 border border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-primary"
                   onClick={() => {
                     if (newArrayItem.zona) {
                       addArrayItem('zone_problematiche', newArrayItem.zona)
@@ -246,7 +240,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
             </CardContent>
           </Card>
 
-          <Card className={MASSAGE_CARD_CLASS}>
+          <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg font-bold text-text-primary">Allergie Prodotti</CardTitle>
             </CardHeader>
@@ -256,7 +250,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   placeholder="Aggiungi allergia"
                   value={newArrayItem.allergia || ''}
                   maxLength={100}
-                  className="min-h-[44px] rounded-xl border-primary/25 text-base focus:ring-2 focus:ring-primary/30"
+                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                   onChange={(e) => {
                     const sanitized = sanitizeString(e.target.value, 100)
                     setNewArrayItem({ ...newArrayItem, allergia: sanitized || '' })
@@ -270,7 +264,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="min-h-[44px] min-w-[44px] shrink-0 rounded-full border-primary/30 text-primary hover:bg-primary/15"
+                  className="min-h-[44px] min-w-[44px] shrink-0 border border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-primary"
                   onClick={() => {
                     if (newArrayItem.allergia) {
                       addArrayItem('allergie_prodotti', newArrayItem.allergia)
@@ -300,7 +294,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
       {/* Visualizzazione Zone e Allergie (non editing) */}
       {!isEditing && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className={MASSAGE_CARD_CLASS}>
+          <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg font-bold text-text-primary">Zone Problematiche</CardTitle>
             </CardHeader>
@@ -319,7 +313,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
             </CardContent>
           </Card>
 
-          <Card className={MASSAGE_CARD_CLASS}>
+          <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg font-bold text-text-primary">Allergie Prodotti</CardTitle>
             </CardHeader>
@@ -341,7 +335,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
       )}
 
       {/* Storico Massaggi */}
-      <Card className={MASSAGE_CARD_CLASS}>
+      <Card variant="default" className="overflow-hidden">
         <CardHeader className="relative z-10">
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
@@ -351,7 +345,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
             {isEditing && (
               <Button
                 variant="outline"
-                className="min-h-[44px] shrink-0 gap-2 rounded-full border-primary/30 text-primary hover:bg-primary/15"
+                className="min-h-[44px] shrink-0 gap-2 border border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-primary"
                 onClick={() => setShowMassaggioForm(true)}
               >
                 <Plus className="h-4 w-4" />
@@ -366,7 +360,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               {massaggiList.map((massaggio, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-primary/15 bg-background-tertiary/30 p-4"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-text-primary">
@@ -390,7 +384,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   {isEditing && (
                     <Button
                       variant="outline"
-                      className="min-h-[44px] min-w-[44px] shrink-0 rounded-xl border border-primary/20 text-text-secondary hover:border-state-error/50 hover:text-state-error"
+                      className="min-h-[44px] min-w-[44px] shrink-0 rounded-lg border border-white/10 text-text-secondary hover:border-state-error/50 hover:text-state-error hover:bg-white/[0.04]"
                       onClick={() => removeMassaggio(index)}
                       aria-label="Rimuovi massaggio"
                     >
@@ -406,13 +400,13 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
 
           {/* Form Aggiungi Massaggio */}
           {showMassaggioForm && (
-            <div className="mt-4 space-y-4 rounded-xl border border-primary/25 bg-background-tertiary/50 p-4 backdrop-blur-sm min-[834px]:p-5">
+            <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-4 min-[834px]:p-5">
               <div className="space-y-2">
                 <Label htmlFor="massaggio-data" className="text-text-tertiary">Data</Label>
                 <Input
                   id="massaggio-data"
                   type="date"
-                  className="min-h-[44px] rounded-xl border-primary/25 text-base focus:ring-2 focus:ring-primary/30"
+                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                   value={newArrayItem.massaggio?.data || ''}
                   onChange={(e) =>
                     setNewArrayItem({
@@ -446,7 +440,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   type="number"
                   min={15}
                   max={180}
-                  className="min-h-[44px] rounded-xl border-primary/25 text-base focus:ring-2 focus:ring-primary/30"
+                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                   value={newArrayItem.massaggio?.durata_minuti || ''}
                   onChange={(e) => {
                     const sanitized = sanitizeNumber(
@@ -471,7 +465,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   id="massaggio-note"
                   value={newArrayItem.massaggio?.note || ''}
                   maxLength={500}
-                  className="min-h-[44px] rounded-xl border-primary/25 text-base focus:ring-2 focus:ring-primary/30"
+                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
                   onChange={(e) => {
                     const sanitized = sanitizeString(e.target.value, 500)
                     setNewArrayItem({
@@ -486,12 +480,12 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <Button
                   variant="outline"
-                  className="min-h-[44px] rounded-xl border border-primary/20 text-text-secondary hover:border-primary/40 hover:text-primary"
+                  className="min-h-[44px] rounded-lg border border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
                   onClick={() => setShowMassaggioForm(false)}
                 >
                   Annulla
                 </Button>
-                <Button className="min-h-[44px] rounded-xl bg-cyan-500 text-white hover:bg-cyan-400" onClick={addMassaggio}>
+                <Button variant="default" className="min-h-[44px]" onClick={addMassaggio}>
                   Aggiungi
                 </Button>
               </div>
@@ -501,7 +495,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
       </Card>
 
       {/* Note Terapeutiche */}
-      <Card className={MASSAGE_CARD_CLASS}>
+      <Card variant="default" className="overflow-hidden">
         <CardHeader className="relative z-10">
           <CardTitle className="text-lg font-bold text-text-primary">Note Terapeutiche</CardTitle>
         </CardHeader>
@@ -519,7 +513,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               rows={4}
             />
           ) : massage?.note_terapeutiche ? (
-            <p className="whitespace-pre-wrap rounded-xl border border-primary/15 bg-background-tertiary/30 p-4 text-text-primary">
+            <p className="whitespace-pre-wrap rounded-lg border border-white/10 bg-white/[0.02] p-4 text-text-primary">
               {massage.note_terapeutiche}
             </p>
           ) : (
@@ -530,19 +524,20 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-primary/20 pt-4">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-white/10 pt-4">
           <Button
             variant="outline"
-            className={`min-h-[44px] gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="min-h-[44px] gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
             onClick={handleCancel}
           >
             <X className="h-4 w-4" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="min-h-[44px] gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition text-white"
+            className="min-h-[44px] gap-2"
           >
             <Save className="h-4 w-4" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}

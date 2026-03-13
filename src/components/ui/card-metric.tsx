@@ -27,26 +27,22 @@ export function CardMetric({
   return (
     <Card
       className={cn(
-        'relative overflow-hidden rounded-xl border bg-background-secondary/50 backdrop-blur-sm',
+        'relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.3)]',
         className,
       )}
-      style={{
-        borderColor: accentData.border,
-      }}
       {...props}
     >
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
-        style={{ backgroundColor: `${accentData.bar}66` }}
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+        style={{ backgroundColor: accentData.bar }}
         aria-hidden
       />
       <CardContent className="relative z-10 flex items-center gap-3 p-4">
         {icon != null && (
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10"
             style={{
-              borderColor: accentData.border,
-              backgroundColor: accentData.iconBg,
+              backgroundColor: accentData.iconBg ?? `${accentData.bar}20`,
             }}
           >
             <span style={{ color: accentData.bar }}>{icon}</span>

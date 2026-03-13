@@ -68,13 +68,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   // Stili critici inline: visibili anche se il CSS esterno (es. layout.css) non si carica
-  const criticalCss = `html,body{background-color:#0A0F12 !important;color:#EAF0F2}body{min-height:100vh}.page-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;position:relative;overflow:hidden}.page-login .login-card{width:100%;max-width:28rem;background:#1A2024;border:1px solid #242A2E;border-radius:1rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.5)}.page-login .login-card>*{padding:2rem}`
+  const criticalCss = `html,body{background:#0d0d0d !important;color:#EAF0F2}body{min-height:100vh}.page-login{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1rem}`
 
   return (
     <html lang="it">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ backgroundColor: '#0A0F12' }}
+        style={{ backgroundColor: '#0d0d0d' }}
         suppressHydrationWarning
       >
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />

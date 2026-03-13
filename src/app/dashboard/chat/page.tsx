@@ -28,7 +28,8 @@ const DEFAULT_PLACEHOLDER = 'Scrivi un consiglio motivazionale...'
 
 import { CHAT_THEME_CLASSES, type ChatTheme } from '@/components/chat/chat-theme'
 
-const SHADOW_SPORT = 'shadow-[0_10px_30px_rgba(0,0,0,0.45)]'
+const DS_PANEL_CLASS =
+  'overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]'
 
 const CONTAINER_CLASS =
   'flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full'
@@ -45,8 +46,8 @@ function StaffChatPageSkeleton() {
           </div>
         </div>
         <div className="flex flex-1 min-h-0 gap-4 sm:gap-6">
-          <div className="w-full lg:w-[320px] bg-background-secondary/30 rounded-3xl min-h-[300px]" />
-          <div className="flex-1 bg-background-secondary/30 rounded-3xl min-h-[300px]" />
+          <div className="w-full lg:w-[320px] rounded-lg border border-white/10 bg-zinc-900/50 min-h-[300px]" />
+          <div className="flex-1 rounded-lg border border-white/10 bg-zinc-900/50 min-h-[300px]" />
         </div>
       </div>
     </div>
@@ -60,11 +61,11 @@ const _StaffChatErrorState = memo(function StaffChatErrorState({
   error: string
   onRetry: () => void
 }) {
-  const def = CHAT_THEME_CLASSES.default
+  const _def = CHAT_THEME_CLASSES.default
   return (
     <div className={CONTAINER_CLASS}>
       <div
-        className={`relative overflow-hidden rounded-3xl ${def.glass} ${def.frame} ${SHADOW_SPORT} p-6 sm:p-8 text-center`}
+        className={`relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-6 sm:p-8 text-center`}
       >
         <div className="mb-4 flex justify-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/12 text-primary border border-primary/22">
@@ -110,7 +111,9 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
   } = useChat()
 
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
-  const [requestedParticipant, setRequestedParticipant] = useState<ConversationParticipant | null>(null)
+  const [requestedParticipant, setRequestedParticipant] = useState<ConversationParticipant | null>(
+    null,
+  )
   const [isMobile, setIsMobile] = useState(false)
   const [hasMessageDraft, setHasMessageDraft] = useState(false)
   const [showLeaveDraftConfirm, setShowLeaveDraftConfirm] = useState(false)
@@ -153,7 +156,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
   const messagePlaceholder = (role && PLACEHOLDER_BY_ROLE[role]) || DEFAULT_PLACEHOLDER
   const totalUnreadCount = useMemo(
     () => visibleConversations.reduce((sum, conv) => sum + conv.unread_count, 0),
-    [visibleConversations]
+    [visibleConversations],
   )
 
   // Persistenza ultima conversazione
@@ -222,7 +225,11 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
     return currentConversation.messages.filter(
       (m) => m.sender_id === selectedConversationId || m.receiver_id === selectedConversationId,
     )
-  }, [selectedConversationId, currentConversation?.participant.other_user_id, currentConversation?.messages])
+  }, [
+    selectedConversationId,
+    currentConversation?.participant.other_user_id,
+    currentConversation?.messages,
+  ])
 
   const handleSelectConversation = useCallback(
     async (userId: string) => {
@@ -230,7 +237,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
       await setCurrentConversation(userId)
       router.replace(`${basePath}?with=${userId}`, { scroll: false })
     },
-    [setCurrentConversation, router, basePath]
+    [setCurrentConversation, router, basePath],
   )
 
   const doBackToList = useCallback(() => {
@@ -268,10 +275,13 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
     }
   }, [pendingBackAction, doBackToList, router])
 
-  const handleRemoveFromList = useCallback((userId: string) => {
-    setHiddenConversationIds((prev) => new Set([...prev, userId]))
-    setSelectedConversationId((prev) => (prev === userId ? null : prev))
-  }, [setHiddenConversationIds])
+  const handleRemoveFromList = useCallback(
+    (userId: string) => {
+      setHiddenConversationIds((prev) => new Set([...prev, userId]))
+      setSelectedConversationId((prev) => (prev === userId ? null : prev))
+    },
+    [setHiddenConversationIds],
+  )
 
   const handleSendMessage = useCallback(
     async (
@@ -293,7 +303,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
         logger.error('Error sending message', err, { conversationId: selectedConversationId })
       }
     },
-    [selectedConversationId, sendMessage]
+    [selectedConversationId, sendMessage],
   )
 
   const handleUploadFile = useCallback(
@@ -305,7 +315,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
         throw err
       }
     },
-    [uploadFile, selectedConversationId]
+    [uploadFile, selectedConversationId],
   )
 
   const handleLoadMore = useCallback(() => {
@@ -338,8 +348,8 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
         </div>
       )}
 
-      {/* Header - compatto, back 44px su mobile */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
+      {/* Header - compatto, back 44px su mobile, fisso in alto allo scroll */}
+      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-6 bg-gradient-to-b from-zinc-950 to-black border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Button
             variant="ghost"
@@ -376,9 +386,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
       <div className="flex flex-1 min-h-0 min-w-0 gap-4 sm:gap-6 overflow-hidden">
         {/* Pannello lista conversazioni: nascosto su mobile quando una chat è aperta */}
         {(!isMobile || showListOnly) && (
-          <div
-            className={`w-full lg:w-[320px] shrink-0 flex flex-col min-h-0 overflow-hidden rounded-3xl ${t.glass} ${SHADOW_SPORT}`}
-          >
+          <div className={`w-full lg:w-[320px] shrink-0 flex flex-col min-h-0 ${DS_PANEL_CLASS}`}>
             <ConversationList
               conversations={visibleConversations}
               currentConversationId={selectedConversationId || undefined}
@@ -392,9 +400,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
 
         {/* Pannello messaggi + input: su mobile mostrato solo con conversazione selezionata, con back */}
         {(!isMobile || showConversationOnly) && (
-          <div
-            className={`flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden rounded-3xl ${t.glass} ${SHADOW_SPORT}`}
-          >
+          <div className={`flex-1 flex flex-col min-w-0 min-h-0 ${DS_PANEL_CLASS}`}>
             {showConversationOnly && (
               <div className="flex items-center gap-2 shrink-0 px-3 py-2 border-b border-white/10 min-h-[44px]">
                 <Button
@@ -411,7 +417,8 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
                 </span>
               </div>
             )}
-            {selectedConversationId && currentConversation?.participant.other_user_id === selectedConversationId ? (
+            {selectedConversationId &&
+            currentConversation?.participant.other_user_id === selectedConversationId ? (
               <>
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                   <MessageList
@@ -423,7 +430,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
                     className="flex-1 min-h-0"
                   />
                 </div>
-                <div className="sticky bottom-0 z-10 border-t border-white/10 bg-background-secondary backdrop-blur-sm px-4 py-3 sm:p-4 shrink-0 rounded-b-3xl">
+                <div className="sticky bottom-0 z-10 border-t border-white/10 bg-background-secondary backdrop-blur-sm px-4 py-3 sm:p-4 shrink-0 rounded-b-lg">
                   <MessageInput
                     onSendMessage={handleSendMessage}
                     onUploadFile={handleUploadFile}

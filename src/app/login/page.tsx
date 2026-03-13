@@ -4,7 +4,6 @@ import { Suspense, useState, useEffect, useMemo, useCallback, useRef } from 'rea
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { AthleteBackground } from '@/components/athlete/athlete-background'
 import { LoginCard } from '@/components/auth/LoginCard'
 
 const logger = createLogger('LoginPage')
@@ -273,12 +272,9 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <div
-      className="page-login min-h-screen flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 relative overflow-hidden safe-area-inset bg-background"
+      className="page-login min-h-screen min-w-0 bg-background text-text-primary flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 safe-area-inset"
       style={{ minHeight: '100dvh' }}
     >
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <AthleteBackground />
-      </div>
       <Suspense fallback={<LoginCard skeleton title="Accedi" />}>
         <LoginContent />
       </Suspense>

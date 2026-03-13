@@ -9,7 +9,6 @@
 import { Button } from '@/components/ui'
 import { useAthleteNutrition } from '@/hooks/athlete-profile/use-athlete-nutrition'
 
-const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
 import { useAthleteNutritionForm } from '@/hooks/athlete-profile/use-athlete-nutrition-form'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
@@ -62,7 +61,7 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-text-primary md:text-2xl">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/30 bg-primary/15">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
               <Utensils className="h-4 w-4 text-primary md:h-5 md:w-5" />
             </span>
             Dati Nutrizionali
@@ -76,7 +75,7 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className={`w-full min-h-[44px] shrink-0 gap-2 rounded-full bg-background-secondary/25 sm:w-auto ${frameSoft}`}
+            className="w-full min-h-[44px] shrink-0 gap-2 sm:w-auto border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-4 w-4" />
             Modifica
@@ -161,19 +160,20 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-primary/20">
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className={`flex min-h-[44px] items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex min-h-[44px] items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <X className="h-4 w-4" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="flex min-h-[44px] items-center gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-cyan-500/14 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-cyan-500/18 transition text-white"
+            className="flex min-h-[44px] items-center gap-2"
           >
             <Save className="h-4 w-4" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}

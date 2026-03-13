@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import Image from 'next/image'
-import { ArrowLeft, ChevronDown, ChevronRight, Dumbbell, Play, Calendar, Target, Activity, Zap, Info } from 'lucide-react'
+import { ChevronDown, ChevronRight, Dumbbell, Play, Calendar, Target, Activity, Zap, Info } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
@@ -270,7 +270,7 @@ export default function AllenamentiSchedaDetailPage() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 flex flex-col items-center justify-center gap-4">
           <p className="text-text-secondary text-sm">Accesso non consentito.</p>
-          <Button variant="outline" size="sm" onClick={() => router.push('/home/allenamenti')} className="rounded-xl border-cyan-400/40 text-cyan-400 hover:bg-cyan-500/10">
+          <Button variant="outline" size="sm" onClick={() => router.push('/home/allenamenti')} className="rounded-lg border border-white/10 text-text-primary hover:bg-white/5">
             Torna agli allenamenti
           </Button>
         </div>
@@ -308,23 +308,25 @@ export default function AllenamentiSchedaDetailPage() {
                 const isExpanded = expandedDayId === day.id
                 const dayTitle = day.title || day.day_name || `Giorno ${day.day_number}`
                 return (
-                  <Card key={day.id} className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm hover:border-cyan-400/50 transition-all">
+                  <Card key={day.id} className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all">
                     <div className="relative">
-                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/40" aria-hidden />
-                    <div className="relative z-10 w-full p-4 min-[834px]:p-5 flex items-center justify-between gap-3">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+                    <div className="relative z-10 flex w-full items-center justify-between gap-4 p-4 sm:p-5">
                       <button
                         type="button"
                         onClick={() => setExpandedDayId(isExpanded ? null : day.id)}
-                        className="flex items-center gap-3 min-w-0 flex-1 text-left min-h-[44px]"
+                        className="flex min-h-[44px] min-w-0 flex-1 items-center gap-3 text-left"
                       >
-                        {isExpanded ? (
-                          <ChevronDown className="h-5 w-5 min-[834px]:h-6 min-[834px]:w-6 text-cyan-400 shrink-0" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5 min-[834px]:h-6 min-[834px]:w-6 text-cyan-400 shrink-0" />
-                        )}
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-10 sm:w-10">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-cyan-400 sm:h-5 sm:w-5" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-cyan-400 sm:h-5 sm:w-5" />
+                          )}
+                        </span>
                         <div className="min-w-0">
-                          <span className="text-text-primary font-semibold block truncate text-sm min-[834px]:text-base">{dayTitle}</span>
-                          <span className="text-text-tertiary text-xs min-[834px]:text-sm">
+                          <span className="block truncate text-sm font-semibold text-cyan-400 sm:text-base">{dayTitle}</span>
+                          <span className="mt-0.5 block text-xs text-text-secondary sm:text-sm">
                             {(() => {
                               const circuitCount = day.items.reduce((n, it) => n + (it.type === 'circuit' ? it.exercises.length : 0), 0)
                               const singleCount = day.items.filter((it) => it.type === 'exercise').length
@@ -337,14 +339,14 @@ export default function AllenamentiSchedaDetailPage() {
                       <Link
                         href={`/home/allenamenti/oggi?workout_plan_id=${planId}&workout_day_id=${day.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] h-9 min-[834px]:h-10 px-3 min-[834px]:px-4 text-xs min-[834px]:text-sm font-medium rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        className="inline-flex h-9 min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-cyan-500 px-4 text-xs font-medium text-white hover:bg-cyan-400 sm:h-10 sm:text-sm"
                       >
-                        <Play className="h-3.5 w-3.5 min-[834px]:h-4 min-[834px]:w-4" />
+                        <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Avvia
                       </Link>
                     </div>
                   {isExpanded && (
-                    <CardContent className="relative z-10 pt-0 pb-4 min-[834px]:pb-5 px-4 min-[834px]:px-5 border-t border-cyan-500/20">
+                    <CardContent className="relative z-10 border-t border-white/10 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
                       <ul className="space-y-4 min-[834px]:space-y-5 mt-3 mb-4 min-[834px]:mb-5">
                         {day.items.map((item, itemIdx) => {
                           if (item.type === 'exercise') {
@@ -357,17 +359,17 @@ export default function AllenamentiSchedaDetailPage() {
                             return (
                               <li
                                 key={`ex-${ex.exercise_id}-${itemIdx}`}
-                                className="relative flex gap-3 min-[834px]:gap-4 p-3 min-[834px]:p-4 rounded-xl border border-cyan-500/20 bg-background-tertiary/20"
+                                className="relative flex gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:gap-4 sm:p-4"
                               >
                                 <Link
                                   href={`/home/allenamenti/esercizio/${ex.exercise_id}?planId=${planId ?? ''}`}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="absolute top-3 right-3 z-10 flex min-h-[44px] min-w-[44px] h-8 w-8 min-[834px]:h-9 min-[834px]:w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                                  className="absolute right-3 top-3 z-10 flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 bg-white/5 text-cyan-400 transition-colors hover:bg-white/10 sm:h-9 sm:w-9"
                                   aria-label="Dettaglio esercizio"
                                 >
-                                  <Info className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
+                                  <Info className="h-4 w-4 sm:h-5 sm:w-5" />
                                 </Link>
-                                <div className="shrink-0 w-24 h-24 min-[834px]:w-28 min-[834px]:h-28 rounded-lg overflow-hidden border border-cyan-500/20 bg-background-tertiary/50 aspect-square">
+                                <div className="aspect-square h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5 sm:h-28 sm:w-28">
                                   {posterUrl ? (
                                     <Image
                                       src={posterUrl}
@@ -380,13 +382,13 @@ export default function AllenamentiSchedaDetailPage() {
                                   ) : hasVideo && ex.video_url ? (
                                     <ListVideoPreview videoUrl={ex.video_url} />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-cyan-400/60">
+                                    <div className="flex h-full w-full items-center justify-center text-cyan-400">
                                       <Dumbbell className="h-8 w-8" />
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex-1 min-w-0 pr-10 min-[834px]:pr-12">
-                                  <h4 className="text-text-primary font-semibold text-sm min-[834px]:text-base mb-1.5 truncate">
+                                <div className="min-w-0 flex-1 pr-10 sm:pr-12">
+                                  <h4 className="mb-1.5 truncate text-sm font-semibold text-text-primary sm:text-base">
                                     {ex.name}
                                   </h4>
                                   <div className="flex flex-wrap gap-1.5">
@@ -437,61 +439,59 @@ export default function AllenamentiSchedaDetailPage() {
                           return (
                             <li
                               key={`circuit-${itemIdx}`}
-                              className="rounded-xl border border-amber-500/30 bg-amber-500/5 overflow-hidden"
+                              className="overflow-hidden rounded-lg border border-white/10 bg-white/5"
                             >
                               <button
                                 type="button"
                                 onClick={() =>
                                   setExpandedCircuitKey((k) => (k === circuitKey ? null : circuitKey))
                                 }
-                                className="w-full flex items-center gap-3 min-[834px]:gap-4 p-3 min-[834px]:p-4 text-left hover:bg-amber-500/10 transition-colors border-b border-amber-500/20 min-h-[44px]"
+                                className="flex min-h-[44px] w-full items-center gap-3 border-b border-white/10 p-3 text-left transition-colors hover:bg-white/5 sm:gap-4 sm:p-4"
                               >
-                                <div className="shrink-0 w-24 h-24 min-[834px]:w-28 min-[834px]:h-28 rounded-lg overflow-hidden border border-amber-500/30 bg-background-tertiary/50 aspect-square">
+                                <div className="aspect-square h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5 sm:h-28 sm:w-28">
                                   {firstPoster ? (
                                     <Image
                                       src={firstPoster}
                                       alt=""
                                       width={96}
                                       height={96}
-                                      className="w-full h-full object-cover"
+                                      className="h-full w-full object-cover"
                                       unoptimized={firstPoster.startsWith('http')}
                                     />
                                   ) : firstHasVideo && firstEx?.video_url ? (
                                     <ListVideoPreview videoUrl={firstEx.video_url} />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-amber-400/60">
+                                    <div className="flex h-full w-full items-center justify-center text-cyan-400">
                                       <Zap className="h-8 w-8" />
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <Zap className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5 text-amber-400 shrink-0" />
-                                    <span className="text-text-primary font-semibold text-sm min-[834px]:text-base">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                                      <Zap className="h-4 w-4 text-cyan-400 sm:h-5 sm:w-5" />
+                                    </span>
+                                    <span className="text-sm font-semibold text-text-primary sm:text-base">
                                       Circuito
                                     </span>
-                                    <Badge
-                                      variant="outline"
-                                      size="sm"
-                                      className="text-[10px] min-[834px]:text-xs bg-amber-500/20 text-amber-300 border-amber-500/40"
-                                    >
+                                    <Badge variant="secondary" size="sm" className="text-[10px] border-white/10 text-text-secondary sm:text-xs">
                                       {item.exercises.length} esercizi
                                     </Badge>
                                   </div>
-                                  <p className="text-text-secondary text-xs min-[834px]:text-sm mt-0.5">
+                                  <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
                                     Clicca per aprire la lista
                                   </p>
                                 </div>
-                                <div className="shrink-0 text-amber-400">
+                                <span className="shrink-0 text-cyan-400">
                                   {isCircuitExpanded ? (
-                                    <ChevronDown className="h-5 w-5 min-[834px]:h-6 min-[834px]:w-6" />
+                                    <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6" />
                                   ) : (
-                                    <ChevronRight className="h-5 w-5 min-[834px]:h-6 min-[834px]:w-6" />
+                                    <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
                                   )}
-                                </div>
+                                </span>
                               </button>
                               {isCircuitExpanded && (
-                              <ul className="divide-y divide-surface-300/20">
+                              <ul className="divide-y divide-white/10">
                                 {item.exercises.map((ex, idx) => {
                                   const hasVideo =
                                     ex.video_url &&
@@ -501,17 +501,17 @@ export default function AllenamentiSchedaDetailPage() {
                                   return (
                                     <li
                                       key={`${ex.exercise_id}-${idx}`}
-                                      className="relative flex gap-3 min-[834px]:gap-4 p-3 min-[834px]:p-4 bg-background-tertiary/10"
+                                      className="relative flex gap-3 bg-white/5 p-3 sm:gap-4 sm:p-4"
                                     >
                                       <Link
                                         href={`/home/allenamenti/esercizio/${ex.exercise_id}?planId=${planId ?? ''}`}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="absolute top-3 right-3 z-10 flex min-h-[44px] min-w-[44px] h-8 w-8 min-[834px]:h-9 min-[834px]:w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                                        className="absolute right-3 top-3 z-10 flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 bg-white/5 text-cyan-400 transition-colors hover:bg-white/10 sm:h-9 sm:w-9"
                                         aria-label="Dettaglio esercizio"
                                       >
-                                        <Info className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
+                                        <Info className="h-4 w-4 sm:h-5 sm:w-5" />
                                       </Link>
-                                      <div className="shrink-0 w-20 h-20 min-[834px]:w-24 min-[834px]:h-24 rounded-lg overflow-hidden border border-cyan-500/20 bg-background-tertiary/50 aspect-square">
+                                      <div className="aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5 sm:h-24 sm:w-24">
                                         {hasVideo && ex.video_url ? (
                                           <video
                                             src={ex.video_url}
@@ -532,13 +532,13 @@ export default function AllenamentiSchedaDetailPage() {
                                             unoptimized={posterUrl.startsWith('http')}
                                           />
                                         ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-cyan-400/60">
+                                          <div className="flex h-full w-full items-center justify-center text-cyan-400">
                                             <Dumbbell className="h-6 w-6" />
                                           </div>
                                         )}
                                       </div>
-                                      <div className="flex-1 min-w-0 pr-10 min-[834px]:pr-12">
-                                        <h4 className="text-text-primary font-semibold text-sm min-[834px]:text-base mb-1.5 truncate">
+                                      <div className="min-w-0 flex-1 pr-10 sm:pr-12">
+                                        <h4 className="mb-1.5 truncate text-sm font-semibold text-text-primary sm:text-base">
                                           {ex.name}
                                         </h4>
                                         <div className="flex flex-wrap gap-1.5">
@@ -590,9 +590,9 @@ export default function AllenamentiSchedaDetailPage() {
                       >
                         <Button
                           size="sm"
-                          className="w-full min-h-[44px] min-[834px]:h-10 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white border-0 text-xs min-[834px]:text-sm"
+                          className="min-h-[44px] w-full gap-2 rounded-lg bg-cyan-500 text-xs text-white hover:bg-cyan-400 sm:h-10 sm:text-sm"
                         >
-                          <Play className="mr-2 h-4 w-4" />
+                          <Play className="h-4 w-4" />
                           Inizia questo giorno
                         </Button>
                       </Link>

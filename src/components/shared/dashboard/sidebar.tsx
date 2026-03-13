@@ -158,20 +158,27 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
     e.stopPropagation()
   }
 
+  const linkBase =
+    'flex items-center gap-3 min-h-[44px] p-3 rounded-lg transition-colors duration-200 group min-w-0 border'
+  const linkActive =
+    'bg-white/[0.06] border-white/10 text-primary font-medium'
+  const linkInactive =
+    'border-transparent text-text-secondary hover:text-primary hover:bg-white/[0.04] hover:border-white/20'
+
   return (
     <aside
-      className={`hidden md:flex flex-col transition-all duration-300 ${
+      className={`hidden md:flex flex-col transition-all duration-300 shrink-0 border-r border-white/10 bg-transparent ${
         isCollapsed ? 'w-20' : 'w-64'
       } p-4`}
       suppressHydrationWarning
     >
       {/* Logo - nascosto quando collassata */}
       {!isCollapsed && (
-        <div className="mb-[7px] flex items-center justify-center">
+        <div className="mb-5 flex items-center justify-center shrink-0">
           <Logo22Club className="w-full max-w-[180px] h-auto" />
         </div>
       )}
-      <nav className="flex flex-col gap-2 flex-1" suppressHydrationWarning>
+      <nav className="flex flex-col gap-1.5 flex-1 min-h-0" suppressHydrationWarning>
         {nav.map((item) => {
           const itemPath = item.href.split('?')[0]
           const isHomePage =
@@ -189,29 +196,24 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
               href={item.href}
               prefetch
               onClick={handleLinkClick}
-              className={`flex items-center gap-3 p-3 rounded-lg transition-colors duration-200 group min-w-0 ring-1 ${
-                isCollapsed ? 'justify-center' : ''
-              } ${
-                active
-                  ? 'bg-primary/12 ring-primary/25 text-primary font-medium'
-                  : 'ring-white/5 text-text-secondary/95 hover:text-primary hover:bg-white/4 hover:ring-white/8'
+              className={`${linkBase} ${isCollapsed ? 'justify-center' : ''} ${
+                active ? linkActive : linkInactive
               }`}
               title={isCollapsed ? item.label : undefined}
               suppressHydrationWarning
             >
               <Icon
-                className={`w-5 h-5 transition-transform group-hover:scale-110 shrink-0 ${
-                  active ? 'text-primary' : 'text-text-secondary/95 group-hover:text-primary'
+                className={`w-5 h-5 shrink-0 transition-colors ${
+                  active ? 'text-primary' : 'text-text-secondary group-hover:text-primary'
                 }`}
               />
               {!isCollapsed && (
                 <>
-                  {/* FIX CRITICO #2: Aggiunto whitespace-nowrap per evitare wrapping, flex-1 per occupare spazio disponibile */}
-                  <span className="text-sm font-medium whitespace-nowrap flex-1 min-w-0">
+                  <span className="text-sm font-medium whitespace-nowrap flex-1 min-w-0 truncate">
                     {item.label}
                   </span>
                   {active && (
-                    <div className="ml-auto w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
+                    <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                   )}
                 </>
               )}
@@ -223,56 +225,55 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
           <Link
             href="/dashboard/admin"
             onClick={handleLinkClick}
-            className={`flex items-center gap-3 p-3 rounded-lg transition-colors duration-200 group ring-1 ${
-              isCollapsed ? 'justify-center' : ''
-            } ${
+            className={`${linkBase} ${isCollapsed ? 'justify-center' : ''} ${
               path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
-                ? 'bg-primary/12 ring-primary/25 text-primary font-medium'
-                : 'ring-white/5 text-text-secondary/95 hover:text-primary hover:bg-white/4 hover:ring-white/8'
+                ? linkActive
+                : linkInactive
             }`}
             title={isCollapsed ? 'Admin' : undefined}
             suppressHydrationWarning
           >
             <Shield
-              className={`w-5 h-5 transition-transform group-hover:scale-110 shrink-0 ${
+              className={`w-5 h-5 shrink-0 transition-colors ${
                 path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
                   ? 'text-primary'
-                  : 'text-text-secondary/95 group-hover:text-primary'
+                  : 'text-text-secondary group-hover:text-primary'
               }`}
             />
             {!isCollapsed && (
               <>
-                {/* FIX CRITICO #2: Aggiunto whitespace-nowrap e min-w-0 per evitare troncamento errato del testo */}
-                <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1">Admin</span>
+                <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1 truncate">Admin</span>
                 {(path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')) && (
-                  <div className="ml-auto w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
+                  <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                 )}
               </>
             )}
           </Link>
         )}
-        {/* Bottone Logout */}
-        <button
-          onClick={handleLogout}
-          className={`mt-auto flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-state-error hover:bg-state-error/10 font-medium ${
-            isCollapsed ? 'justify-center' : 'min-w-0'
-          }`}
-          title={isCollapsed ? 'Esci' : undefined}
-          suppressHydrationWarning
-        >
-          <LogOut className="w-5 h-5 transition-transform group-hover:scale-110 flex-shrink-0" />
-          {/* FIX CRITICO #2: Aggiunto whitespace-nowrap per evitare troncamento errato del testo */}
-          {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap">Esci</span>}
-        </button>
-        {/* Bottone Toggle Collapse */}
-        <button
-          onClick={toggleCollapse}
-          className="mt-2 flex items-center justify-center p-3 rounded-lg transition-colors duration-200 text-text-primary hover:bg-muted/60"
-          title={isCollapsed ? 'Espandi sidebar' : 'Riduci sidebar'}
-          suppressHydrationWarning
-        >
-          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
+        {/* Esci + Toggle collapse */}
+        <div className="mt-auto pt-3 border-t border-white/10 space-y-1.5">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={`flex w-full items-center gap-3 min-h-[44px] p-3 rounded-lg transition-colors duration-200 text-state-error font-medium border border-transparent hover:bg-state-error/10 hover:border-state-error/30 ${
+              isCollapsed ? 'justify-center' : 'min-w-0'
+            }`}
+            title={isCollapsed ? 'Esci' : undefined}
+            suppressHydrationWarning
+          >
+            <LogOut className="w-5 h-5 shrink-0" />
+            {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap">Esci</span>}
+          </button>
+          <button
+            type="button"
+            onClick={toggleCollapse}
+            className="flex w-full items-center justify-center min-h-[44px] p-3 rounded-lg transition-colors duration-200 text-text-secondary hover:text-primary border border-transparent hover:bg-white/[0.04] hover:border-white/20"
+            title={isCollapsed ? 'Espandi sidebar' : 'Riduci sidebar'}
+            suppressHydrationWarning
+          >
+            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
+        </div>
       </nav>
     </aside>
   )

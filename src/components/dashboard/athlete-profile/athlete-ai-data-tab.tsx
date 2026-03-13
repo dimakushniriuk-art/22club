@@ -10,7 +10,6 @@ import { useMemo } from 'react'
 import { Button } from '@/components/ui'
 import { Card, CardContent } from '@/components/ui'
 
-const frameSoft = 'border border-primary/20 hover:border-primary/30 transition'
 import { useAthleteAIData } from '@/hooks/athlete-profile/use-athlete-ai-data'
 import { useAthleteAIDataForm } from '@/hooks/athlete-profile/use-athlete-ai-data-form'
 import { LoadingState } from '@/components/dashboard/loading-state'
@@ -119,7 +118,7 @@ export function AthleteAIDataTab({ athleteId }: AthleteAIDataTabProps) {
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <Edit className="h-4 w-4" />
             Modifica
@@ -179,19 +178,20 @@ export function AthleteAIDataTab({ athleteId }: AthleteAIDataTabProps) {
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-primary/20">
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className={`flex items-center gap-2 rounded-full bg-background-secondary/25 ${frameSoft}`}
+            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
             <X className="h-4 w-4" />
             Annulla
           </Button>
           <Button
+            variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="flex items-center gap-2 rounded-full px-5 font-bold bg-gradient-to-br from-primary/30 to-primary/20 border border-primary/26 shadow-[0_0_24px_rgba(2,179,191,0.16)] hover:from-primary/36 hover:to-primary/25 transition text-text-primary"
+            className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
@@ -201,9 +201,7 @@ export function AthleteAIDataTab({ athleteId }: AthleteAIDataTabProps) {
 
       {/* Messaggio se nessun dato */}
       {!aiData && (
-        <Card
-          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardContent className="p-6">
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Brain className="h-12 w-12 text-text-tertiary mb-4" />

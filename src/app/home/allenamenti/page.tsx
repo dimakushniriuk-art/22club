@@ -21,6 +21,9 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 
 const logger = createLogger('app:home:allenamenti:page')
 
+const CARD_DS =
+  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+
 // Funzione helper per formattare la data in italiano
 function formatAppointmentDate(dateString: string): { day: string; time: string } {
   try {
@@ -272,15 +275,15 @@ function organizeWorkoutLogs(
 function AllenamentiLoadingSkeleton() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-        <div className="animate-pulse">
-          <div className="h-12 w-56 bg-background-tertiary rounded-xl mb-4" />
-          <div className="grid grid-cols-2 min-[834px]:grid-cols-4 gap-2.5 min-[834px]:gap-3 mb-6">
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-12 w-56 rounded-lg bg-white/10" />
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 bg-background-tertiary rounded-xl" />
+              <div key={i} className="h-20 rounded-lg bg-white/10" />
             ))}
           </div>
-          <div className="h-64 bg-background-tertiary rounded-xl" />
+          <div className="h-64 rounded-lg bg-white/10" />
         </div>
       </div>
     </div>
@@ -558,37 +561,30 @@ function AllenamentiHomePageContent() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div
-        className="min-h-0 flex-1 overflow-auto px-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5"
-        style={{
-          paddingTop: 'calc(5.5rem + env(safe-area-inset-top, 0px))',
-          paddingBottom: 'calc(20rem + env(safe-area-inset-bottom, 0px))',
-        }}
-      >
-        <AllenamentiPageHeader onBack={handleBack} />
-
-        <div className="grid grid-cols-2 min-[834px]:grid-cols-4 gap-2.5 min-[834px]:gap-4">
-          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-3">
-            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/40" />
-            <CardContent className="p-0 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+      <AllenamentiPageHeader onBack={handleBack} />
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-[calc(12rem+env(safe-area-inset-bottom))] pt-24 safe-area-inset-bottom sm:space-y-6 sm:px-5 min-[834px]:px-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-4">
+          <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+            <CardContent className="flex items-center gap-2.5 p-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Activity className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Questa settimana</div>
-                <div className="text-base font-bold text-cyan-400 leading-tight">{stats.settimana}</div>
+                <div className="text-base font-bold leading-tight text-text-primary">{stats.settimana}</div>
               </div>
             </CardContent>
           </Card>
-          <Card className="relative overflow-hidden border border-cyan-500/30 bg-background-secondary/50 backdrop-blur-sm p-3">
-            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-cyan-500/40" />
-            <CardContent className="p-0 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+          <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
+            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+            <CardContent className="flex items-center gap-2.5 p-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <TrendingUp className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Questo mese</div>
-                <div className="text-base font-bold text-cyan-400 leading-tight">{stats.mese}</div>
+                <div className="text-base font-bold leading-tight text-text-primary">{stats.mese}</div>
               </div>
             </CardContent>
           </Card>
@@ -606,9 +602,9 @@ function AllenamentiHomePageContent() {
         )}
 
         {workoutsAttivi.length > 0 && (
-          <div>
-            <h2 className="text-text-primary mb-2.5 text-base min-[834px]:text-lg font-semibold">Schede Assegnate</h2>
-            <div className="space-y-2.5 min-[834px]:space-y-3">
+          <div className="space-y-3 sm:space-y-4">
+            <h2 className="text-base font-semibold text-text-primary sm:text-lg">Schede Assegnate</h2>
+            <div className="space-y-2.5 sm:space-y-3">
               {workoutsAttivi.map((workout) => (
                 <WorkoutPlanCard key={workout.id} workout={workout} />
               ))}
@@ -616,24 +612,31 @@ function AllenamentiHomePageContent() {
           </div>
         )}
 
-        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-0 bg-background-secondary/50 backdrop-blur-sm px-3 sm:px-4 min-[834px]:px-6 pb-[env(safe-area-inset-bottom)]">
-          <CardContent className="p-4 min-[834px]:p-5 text-center">
-            <div className="mb-2 min-[834px]:mb-2.5 flex justify-center">
+        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900 to-black shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.04)] px-4 pb-[env(safe-area-inset-bottom)] sm:px-5 min-[834px]:px-6">
+          <CardContent className="flex flex-col items-center gap-4 py-5 sm:gap-5 sm:py-6">
+            <div className="h-0.5 w-12 rounded-full bg-cyan-400/80" aria-hidden />
+            <div className="flex items-center justify-center gap-4 sm:gap-5">
               {trainerAvatarUrl ? (
-                <div className="relative h-12 w-12 min-[834px]:h-14 min-[834px]:w-14 overflow-hidden rounded-full border-2 border-cyan-500/40">
-                  <Image src={trainerAvatarUrl} alt="Il tuo trainer" fill className="object-cover" sizes="(min-width: 834px) 56px, 48px" unoptimized={trainerAvatarUrl.startsWith('http')} />
+                <div className="relative h-14 w-14 overflow-hidden rounded-full ring-2 ring-white/10 ring-offset-2 ring-offset-transparent sm:h-16 sm:w-16">
+                  <Image src={trainerAvatarUrl} alt="Il tuo trainer" fill className="object-cover" sizes="64px" unoptimized={trainerAvatarUrl.startsWith('http')} />
                 </div>
               ) : (
-                <div className="text-2xl animate-bounce">🏆</div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-3xl sm:h-16 sm:w-16">
+                  🏆
+                </div>
               )}
+              <div className="min-w-0 text-left">
+                <h3 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">Ottimo lavoro questa settimana!</h3>
+                <p className="mt-0.5 text-sm leading-snug text-text-secondary sm:text-base">
+                  Hai completato{' '}
+                  <span className="font-bold tabular-nums text-cyan-400">{stats.settimana}</span>{' '}
+                  {stats.settimana === 1 ? 'allenamento' : 'allenamenti'}. Continua così!
+                </p>
+              </div>
             </div>
-            <h3 className="text-text-primary mb-1 text-base min-[834px]:text-lg font-semibold">Ottimo lavoro questa settimana!</h3>
-            <p className="text-text-secondary mb-2 text-xs min-[834px]:text-sm">
-              Hai completato <span className="text-cyan-400 font-bold">{stats.settimana}</span> allenamenti. Continua così!
-            </p>
-            <Link href="/home/progressi" prefetch={true} className="inline-block w-full">
-              <Button variant="outline" size="sm" className="min-h-[44px] h-9 min-[834px]:h-10 text-xs min-[834px]:text-sm w-full rounded-xl border border-cyan-400/40 text-cyan-400 hover:bg-cyan-500/10">
-                <Award className="mr-1.5 h-3.5 w-3.5" />
+            <Link href="/home/progressi" prefetch={true} className="w-full sm:max-w-xs">
+              <Button className="h-10 min-h-[44px] w-full gap-2 rounded-lg bg-cyan-500 text-sm font-medium text-white hover:bg-cyan-400 sm:h-11 sm:text-base">
+                <Award className="h-4 w-4 sm:h-5 sm:w-5" />
                 Vedi i tuoi progressi
               </Button>
             </Link>
@@ -649,15 +652,15 @@ export default function AllenamentiHomePage() {
     <Suspense
       fallback={
         <div className="flex min-h-0 flex-1 flex-col bg-background">
-          <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-            <div className="animate-pulse">
-              <div className="h-12 w-56 bg-background-tertiary rounded-xl mb-4" />
-              <div className="grid grid-cols-2 min-[834px]:grid-cols-4 gap-2.5 min-[834px]:gap-3 mb-6">
+          <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-12 w-56 rounded-lg bg-white/10" />
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-4">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-20 bg-background-tertiary rounded-xl" />
+                  <div key={i} className="h-20 rounded-lg bg-white/10" />
                 ))}
               </div>
-              <div className="h-64 bg-background-tertiary rounded-xl" />
+              <div className="h-64 rounded-lg bg-white/10" />
             </div>
           </div>
         </div>

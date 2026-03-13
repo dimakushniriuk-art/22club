@@ -42,7 +42,7 @@ export function ClientiToolbar({
   const btnClass = isMobile ? 'min-h-[44px] touch-manipulation' : ''
   return (
     <>
-      <div className="relative p-3 sm:p-4">
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
         <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center">
           <div className="flex-1 min-w-0">
             <Input
@@ -50,7 +50,10 @@ export function ClientiToolbar({
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               aria-label="Cerca clienti per nome o email"
-              className={cn('h-12 rounded-full bg-background-secondary/30 border border-white/5 px-4 focus-visible:border-primary/30 focus-visible:shadow-[0_0_25px_rgba(2,179,191,0.2)] transition-all duration-300', isMobile && 'min-h-[44px]')}
+              className={cn(
+                'h-11 rounded-md border-white/10 bg-black/20 px-3 focus-visible:ring-2 focus-visible:ring-primary',
+                isMobile && 'min-h-[44px]',
+              )}
             />
           </div>
           <div className="flex flex-wrap gap-2 max-w-full">
@@ -66,11 +69,15 @@ export function ClientiToolbar({
                   aria-label={`Filtra per ${value === 'tutti' ? 'tutti i clienti' : `clienti ${value}`}${isActive ? ' (attivo)' : ''}`}
                   aria-pressed={isActive}
                   className={cn(
-                    'rounded-full font-medium transition-all duration-300',
+                    'rounded-lg font-medium border-white/20 hover:bg-white/5 hover:border-white/30',
                     btnClass,
-                    isActive && isInattivo && 'bg-warning/10 text-warning border border-warning/25 hover:bg-warning/15',
-                    isActive && !isInattivo && 'bg-primary/15 text-primary border border-primary/30 hover:bg-primary/10',
-                    !isActive && 'bg-background-secondary/35 border border-white/5 text-text-secondary hover:bg-primary/10 hover:border-primary/20',
+                    isActive &&
+                      isInattivo &&
+                      'bg-warning/10 text-warning border-warning/30 hover:bg-warning/15',
+                    isActive &&
+                      !isInattivo &&
+                      'bg-primary/15 text-primary border-primary/30 hover:bg-primary/10',
+                    !isActive && 'text-text-secondary',
                   )}
                 >
                   {value === 'tutti' ? 'Tutti' : value === 'attivo' ? 'Attivi' : 'Inattivi'}
@@ -82,7 +89,10 @@ export function ClientiToolbar({
               size="sm"
               onClick={onShowFiltriAvanzati}
               aria-label="Mostra filtri avanzati"
-              className={cn('rounded-full border border-white/5 bg-background-secondary/35 text-text-secondary hover:bg-primary/10 hover:border-primary/20 transition-all duration-300', btnClass)}
+              className={cn(
+                'rounded-lg border-white/20 text-text-secondary hover:bg-white/5 hover:border-white/30',
+                btnClass,
+              )}
             >
               <Filter className="mr-1 h-4 w-4" aria-hidden="true" />
               Filtri avanzati
@@ -91,25 +101,33 @@ export function ClientiToolbar({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap">
+      <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+            variant={viewMode === 'grid' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => onViewModeChange('grid')}
             aria-label="Vista griglia"
-            className={cn(viewMode === 'grid' ? 'font-semibold shadow-glow' : '', btnClass)}
+            className={cn(
+              'rounded-lg',
+              viewMode !== 'grid' && 'border-white/20 hover:bg-white/5',
+              btnClass,
+            )}
           >
             <Grid3x3 className="mr-2 h-4 w-4" />
             Griglia
           </Button>
           {!isMobile && (
             <Button
-              variant={viewMode === 'table' ? 'primary' : 'ghost'}
+              variant={viewMode === 'table' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => onViewModeChange('table')}
               aria-label="Vista tabella"
-              className={cn(viewMode === 'table' ? 'font-semibold shadow-glow' : '', btnClass)}
+              className={cn(
+                'rounded-lg',
+                viewMode !== 'table' && 'border-white/20 hover:bg-white/5',
+                btnClass,
+              )}
             >
               <TableIcon className="mr-2 h-4 w-4" />
               Tabella

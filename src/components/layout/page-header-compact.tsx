@@ -50,18 +50,14 @@ export function PageHeaderCompact({
   return (
     <header
       className={cn(
-        'relative overflow-hidden rounded-xl border border-cyan-500/30 bg-background-secondary/80 backdrop-blur-sm p-3 min-[834px]:p-4 shadow-lg',
+        'relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 min-[834px]:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.3)]',
         className,
       )}
     >
-      <div
-        className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/10 via-transparent to-teal-500/5"
-        aria-hidden
-      />
       <div className="relative z-10 flex items-center gap-3">
         {backContent}
         {icon != null && (
-          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+          <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-white/10 bg-cyan-500/10 text-cyan-400">
             {icon}
           </div>
         )}

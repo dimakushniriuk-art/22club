@@ -33,9 +33,7 @@ export function MotivationalMainSection({
 }: MotivationalMainSectionProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
@@ -56,7 +54,7 @@ export function MotivationalMainSection({
               maxLength={1000}
             />
           ) : motivational?.motivazione_principale ? (
-            <p className="text-text-primary whitespace-pre-wrap bg-background-tertiary/30 p-4 rounded-lg border border-primary/20">
+            <p className="text-text-primary whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
               {motivational.motivazione_principale}
             </p>
           ) : (
@@ -65,9 +63,7 @@ export function MotivationalMainSection({
         </CardContent>
       </Card>
 
-      <Card
-        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-background-secondary/40 backdrop-blur-xl shadow-[0_0_30px_rgba(2,179,191,0.08)] hover:shadow-[0_0_40px_rgba(2,179,191,0.15)] transition-all duration-300"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />

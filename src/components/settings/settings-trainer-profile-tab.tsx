@@ -5,7 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button, Input, Textarea, Select, Checkbox } from '@/components/ui'
 import { useTrainerProfile } from '@/hooks/use-trainer-profile'
 import { supabase } from '@/lib/supabase/client'
-import { Briefcase, FileText, Save, RefreshCw, GraduationCap, Plus, Pencil, Trash2, Award, BookOpen, Target, Building2, ClipboardList, BarChart3, Quote, ImageIcon, Scale, FileCheck, Smartphone, Video } from 'lucide-react'
+import {
+  Briefcase,
+  FileText,
+  Save,
+  RefreshCw,
+  GraduationCap,
+  Plus,
+  Pencil,
+  Trash2,
+  Award,
+  BookOpen,
+  Target,
+  Building2,
+  ClipboardList,
+  BarChart3,
+  Quote,
+  ImageIcon,
+  Scale,
+  FileCheck,
+  Smartphone,
+  Video,
+} from 'lucide-react'
 import { useNotify } from '@/lib/ui/notify'
 import { uploadTrainerCertificate, uploadTrainerMedia } from '@/lib/trainer-storage'
 
@@ -89,7 +110,15 @@ export function SettingsTrainerProfileTab() {
     numero_certificato: string
     stato: 'attivo' | 'aggiornamento' | 'scaduto'
     file_url: string
-  }>({ id: null, nome: '', ente: '', anno: '', numero_certificato: '', stato: 'attivo', file_url: '' })
+  }>({
+    id: null,
+    nome: '',
+    ente: '',
+    anno: '',
+    numero_certificato: '',
+    stato: 'attivo',
+    file_url: '',
+  })
   const [showCertificationsForm, setShowCertificationsForm] = useState(false)
   const [certUploading, setCertUploading] = useState(false)
   const [certUploadError, setCertUploadError] = useState<string | null>(null)
@@ -121,7 +150,15 @@ export function SettingsTrainerProfileTab() {
     data_fine: string
     collaborazioni: string
     atleti_seguiti: string
-  }>({ id: null, nome_struttura: '', ruolo: '', data_inizio: '', data_fine: '', collaborazioni: '', atleti_seguiti: '' })
+  }>({
+    id: null,
+    nome_struttura: '',
+    ruolo: '',
+    data_inizio: '',
+    data_fine: '',
+    collaborazioni: '',
+    atleti_seguiti: '',
+  })
   const [showExperienceForm, setShowExperienceForm] = useState(false)
   const [testimonialsSaving, setTestimonialsSaving] = useState(false)
   const [testimonialsForm, setTestimonialsForm] = useState<{
@@ -133,7 +170,16 @@ export function SettingsTrainerProfileTab() {
     risultato: string
     feedback: string
     valutazione: string
-  }>({ id: null, nome_cliente: '', eta: '', obiettivo: '', durata_percorso: '', risultato: '', feedback: '', valutazione: '' })
+  }>({
+    id: null,
+    nome_cliente: '',
+    eta: '',
+    obiettivo: '',
+    durata_percorso: '',
+    risultato: '',
+    feedback: '',
+    valutazione: '',
+  })
   const [showTestimonialsForm, setShowTestimonialsForm] = useState(false)
   const [transformationsSaving, setTransformationsSaving] = useState(false)
   const [transformationsForm, setTransformationsForm] = useState<{
@@ -144,7 +190,15 @@ export function SettingsTrainerProfileTab() {
     risultato: string
     verificato: boolean
     consenso: boolean
-  }>({ id: null, prima_dopo_urls: '', durata_settimane: '', obiettivo: '', risultato: '', verificato: false, consenso: false })
+  }>({
+    id: null,
+    prima_dopo_urls: '',
+    durata_settimane: '',
+    obiettivo: '',
+    risultato: '',
+    verificato: false,
+    consenso: false,
+  })
   const [showTransformationsForm, setShowTransformationsForm] = useState(false)
   const [metodoSaving, setMetodoSaving] = useState(false)
   const [risultatiSaving, setRisultatiSaving] = useState(false)
@@ -258,7 +312,8 @@ export function SettingsTrainerProfileTab() {
         .from('profiles')
         .update({
           titolo_professionale: identita.titolo_professionale || null,
-          anni_esperienza: identita.anni_esperienza === '' ? null : Number(identita.anni_esperienza),
+          anni_esperienza:
+            identita.anni_esperienza === '' ? null : Number(identita.anni_esperienza),
           modalita_lavoro: identita.modalita_lavoro.length ? identita.modalita_lavoro : null,
           stato_profilo: identita.stato_profilo || 'bozza',
         })
@@ -274,7 +329,10 @@ export function SettingsTrainerProfileTab() {
 
   const handleSaveBio = async () => {
     const targetArr = bio.target_clienti
-      ? bio.target_clienti.split(/\n/).map((s) => s.trim()).filter(Boolean)
+      ? bio.target_clienti
+          .split(/\n/)
+          .map((s) => s.trim())
+          .filter(Boolean)
       : null
     const payload = {
       descrizione_breve: bio.descrizione_breve.trim() || null,
@@ -295,7 +353,7 @@ export function SettingsTrainerProfileTab() {
     }
   }
 
-  const openEducationForm = (item?: typeof education[0]) => {
+  const openEducationForm = (item?: (typeof education)[0]) => {
     if (item) {
       setEducationForm({
         id: item.id,
@@ -320,7 +378,14 @@ export function SettingsTrainerProfileTab() {
 
   const closeEducationForm = () => {
     setShowEducationForm(false)
-    setEducationForm({ id: null, tipo: 'laurea', titolo: '', istituto: '', anno: '', documento_url: '' })
+    setEducationForm({
+      id: null,
+      tipo: 'laurea',
+      titolo: '',
+      istituto: '',
+      anno: '',
+      documento_url: '',
+    })
   }
 
   const handleSaveEducation = async () => {
@@ -453,7 +518,11 @@ export function SettingsTrainerProfileTab() {
       await refetch()
       closeCertificationsForm()
     } catch (e) {
-      notify(e instanceof Error ? e.message : 'Errore salvataggio certificazione', 'error', 'Errore')
+      notify(
+        e instanceof Error ? e.message : 'Errore salvataggio certificazione',
+        'error',
+        'Errore',
+      )
     } finally {
       setCertificationsSaving(false)
     }
@@ -563,7 +632,8 @@ export function SettingsTrainerProfileTab() {
     }
     setCoursesSaving(true)
     try {
-      const durataValore = coursesForm.durata_valore === '' ? null : parseInt(coursesForm.durata_valore, 10)
+      const durataValore =
+        coursesForm.durata_valore === '' ? null : parseInt(coursesForm.durata_valore, 10)
       if (coursesForm.id) {
         const { error } = await supabase
           .from('trainer_courses')
@@ -636,14 +706,22 @@ export function SettingsTrainerProfileTab() {
       const payload = {
         nome: specializationsForm.nome.trim(),
         livello: (specializationsForm.livello as 'base' | 'avanzato' | 'expert') || null,
-        anni_esperienza: specializationsForm.anni_esperienza === '' ? null : parseInt(specializationsForm.anni_esperienza, 10),
+        anni_esperienza:
+          specializationsForm.anni_esperienza === ''
+            ? null
+            : parseInt(specializationsForm.anni_esperienza, 10),
       }
       if (specializationsForm.id) {
-        const { error } = await supabase.from('trainer_specializations').update(payload).eq('id', specializationsForm.id)
+        const { error } = await supabase
+          .from('trainer_specializations')
+          .update(payload)
+          .eq('id', specializationsForm.id)
         if (error) throw error
         notify('Specializzazione aggiornata', 'success', 'Salvato')
       } else {
-        const { error } = await supabase.from('trainer_specializations').insert({ profile_id: profileId, ...payload })
+        const { error } = await supabase
+          .from('trainer_specializations')
+          .insert({ profile_id: profileId, ...payload })
         if (error) throw error
         notify('Specializzazione aggiunta', 'success', 'Salvato')
       }
@@ -680,13 +758,29 @@ export function SettingsTrainerProfileTab() {
         atleti_seguiti: item.atleti_seguiti != null ? String(item.atleti_seguiti) : '',
       })
     } else {
-      setExperienceForm({ id: null, nome_struttura: '', ruolo: '', data_inizio: '', data_fine: '', collaborazioni: '', atleti_seguiti: '' })
+      setExperienceForm({
+        id: null,
+        nome_struttura: '',
+        ruolo: '',
+        data_inizio: '',
+        data_fine: '',
+        collaborazioni: '',
+        atleti_seguiti: '',
+      })
     }
     setShowExperienceForm(true)
   }
   const closeExperienceForm = () => {
     setShowExperienceForm(false)
-    setExperienceForm({ id: null, nome_struttura: '', ruolo: '', data_inizio: '', data_fine: '', collaborazioni: '', atleti_seguiti: '' })
+    setExperienceForm({
+      id: null,
+      nome_struttura: '',
+      ruolo: '',
+      data_inizio: '',
+      data_fine: '',
+      collaborazioni: '',
+      atleti_seguiti: '',
+    })
   }
   const handleSaveExperience = async () => {
     if (!profileId || !experienceForm.nome_struttura.trim() || !experienceForm.data_inizio) {
@@ -701,14 +795,20 @@ export function SettingsTrainerProfileTab() {
         data_inizio: experienceForm.data_inizio,
         data_fine: experienceForm.data_fine || null,
         collaborazioni: experienceForm.collaborazioni.trim() || null,
-        atleti_seguiti: experienceForm.atleti_seguiti === '' ? null : parseInt(experienceForm.atleti_seguiti, 10),
+        atleti_seguiti:
+          experienceForm.atleti_seguiti === '' ? null : parseInt(experienceForm.atleti_seguiti, 10),
       }
       if (experienceForm.id) {
-        const { error } = await supabase.from('trainer_experience').update(payload).eq('id', experienceForm.id)
+        const { error } = await supabase
+          .from('trainer_experience')
+          .update(payload)
+          .eq('id', experienceForm.id)
         if (error) throw error
         notify('Esperienza aggiornata', 'success', 'Salvato')
       } else {
-        const { error } = await supabase.from('trainer_experience').insert({ profile_id: profileId, ...payload })
+        const { error } = await supabase
+          .from('trainer_experience')
+          .insert({ profile_id: profileId, ...payload })
         if (error) throw error
         notify('Esperienza aggiunta', 'success', 'Salvato')
       }
@@ -746,13 +846,31 @@ export function SettingsTrainerProfileTab() {
         valutazione: item.valutazione != null ? String(item.valutazione) : '',
       })
     } else {
-      setTestimonialsForm({ id: null, nome_cliente: '', eta: '', obiettivo: '', durata_percorso: '', risultato: '', feedback: '', valutazione: '' })
+      setTestimonialsForm({
+        id: null,
+        nome_cliente: '',
+        eta: '',
+        obiettivo: '',
+        durata_percorso: '',
+        risultato: '',
+        feedback: '',
+        valutazione: '',
+      })
     }
     setShowTestimonialsForm(true)
   }
   const closeTestimonialsForm = () => {
     setShowTestimonialsForm(false)
-    setTestimonialsForm({ id: null, nome_cliente: '', eta: '', obiettivo: '', durata_percorso: '', risultato: '', feedback: '', valutazione: '' })
+    setTestimonialsForm({
+      id: null,
+      nome_cliente: '',
+      eta: '',
+      obiettivo: '',
+      durata_percorso: '',
+      risultato: '',
+      feedback: '',
+      valutazione: '',
+    })
   }
   const handleSaveTestimonial = async () => {
     if (!profileId || !testimonialsForm.feedback.trim()) {
@@ -768,14 +886,22 @@ export function SettingsTrainerProfileTab() {
         durata_percorso: testimonialsForm.durata_percorso.trim() || null,
         risultato: testimonialsForm.risultato.trim() || null,
         feedback: testimonialsForm.feedback.trim(),
-        valutazione: testimonialsForm.valutazione === '' ? null : Math.min(5, Math.max(1, parseInt(testimonialsForm.valutazione, 10) || 0)),
+        valutazione:
+          testimonialsForm.valutazione === ''
+            ? null
+            : Math.min(5, Math.max(1, parseInt(testimonialsForm.valutazione, 10) || 0)),
       }
       if (testimonialsForm.id) {
-        const { error } = await supabase.from('trainer_testimonials').update(payload).eq('id', testimonialsForm.id)
+        const { error } = await supabase
+          .from('trainer_testimonials')
+          .update(payload)
+          .eq('id', testimonialsForm.id)
         if (error) throw error
         notify('Testimonianza aggiornata', 'success', 'Salvato')
       } else {
-        const { error } = await supabase.from('trainer_testimonials').insert({ profile_id: profileId, ...payload })
+        const { error } = await supabase
+          .from('trainer_testimonials')
+          .insert({ profile_id: profileId, ...payload })
         if (error) throw error
         notify('Testimonianza aggiunta', 'success', 'Salvato')
       }
@@ -804,9 +930,10 @@ export function SettingsTrainerProfileTab() {
     if (item) {
       setTransformationsForm({
         id: item.id,
-        prima_dopo_urls: typeof item.prima_dopo_urls === 'object' && item.prima_dopo_urls
-          ? JSON.stringify(item.prima_dopo_urls, null, 2)
-          : '',
+        prima_dopo_urls:
+          typeof item.prima_dopo_urls === 'object' && item.prima_dopo_urls
+            ? JSON.stringify(item.prima_dopo_urls, null, 2)
+            : '',
         durata_settimane: item.durata_settimane != null ? String(item.durata_settimane) : '',
         obiettivo: item.obiettivo ?? '',
         risultato: item.risultato ?? '',
@@ -814,13 +941,29 @@ export function SettingsTrainerProfileTab() {
         consenso: item.consenso ?? false,
       })
     } else {
-      setTransformationsForm({ id: null, prima_dopo_urls: '', durata_settimane: '', obiettivo: '', risultato: '', verificato: false, consenso: false })
+      setTransformationsForm({
+        id: null,
+        prima_dopo_urls: '',
+        durata_settimane: '',
+        obiettivo: '',
+        risultato: '',
+        verificato: false,
+        consenso: false,
+      })
     }
     setShowTransformationsForm(true)
   }
   const closeTransformationsForm = () => {
     setShowTransformationsForm(false)
-    setTransformationsForm({ id: null, prima_dopo_urls: '', durata_settimane: '', obiettivo: '', risultato: '', verificato: false, consenso: false })
+    setTransformationsForm({
+      id: null,
+      prima_dopo_urls: '',
+      durata_settimane: '',
+      obiettivo: '',
+      risultato: '',
+      verificato: false,
+      consenso: false,
+    })
   }
   const handleSaveTransformation = async () => {
     if (!profileId) return
@@ -836,7 +979,10 @@ export function SettingsTrainerProfileTab() {
       }
       const payload = {
         prima_dopo_urls: urls,
-        durata_settimane: transformationsForm.durata_settimane === '' ? null : parseInt(transformationsForm.durata_settimane, 10),
+        durata_settimane:
+          transformationsForm.durata_settimane === ''
+            ? null
+            : parseInt(transformationsForm.durata_settimane, 10),
         obiettivo: transformationsForm.obiettivo.trim() || null,
         risultato: transformationsForm.risultato.trim() || null,
         verificato: transformationsForm.verificato,
@@ -845,11 +991,16 @@ export function SettingsTrainerProfileTab() {
       type Json = import('@/lib/supabase/types').Json
       const payloadJson = { ...payload, prima_dopo_urls: (payload.prima_dopo_urls ?? null) as Json }
       if (transformationsForm.id) {
-        const { error } = await supabase.from('trainer_transformations').update(payloadJson).eq('id', transformationsForm.id)
+        const { error } = await supabase
+          .from('trainer_transformations')
+          .update(payloadJson)
+          .eq('id', transformationsForm.id)
         if (error) throw error
         notify('Trasformazione aggiornata', 'success', 'Salvato')
       } else {
-        const { error } = await supabase.from('trainer_transformations').insert({ profile_id: profileId, ...payloadJson })
+        const { error } = await supabase
+          .from('trainer_transformations')
+          .insert({ profile_id: profileId, ...payloadJson })
         if (error) throw error
         notify('Trasformazione aggiunta', 'success', 'Salvato')
       }
@@ -895,7 +1046,11 @@ export function SettingsTrainerProfileTab() {
       const current = parsePrimaDopoUrls(transformationsForm.prima_dopo_urls)
       const next = { ...current, prima: url }
       setTransformationsForm((p) => ({ ...p, prima_dopo_urls: JSON.stringify(next, null, 2) }))
-      notify('Immagine "prima" caricata. Salva la trasformazione per confermare.', 'success', 'Upload')
+      notify(
+        'Immagine "prima" caricata. Salva la trasformazione per confermare.',
+        'success',
+        'Upload',
+      )
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Upload fallito'
       setTransformazioneUploadError(msg)
@@ -912,7 +1067,11 @@ export function SettingsTrainerProfileTab() {
       const current = parsePrimaDopoUrls(transformationsForm.prima_dopo_urls)
       const next = { ...current, dopo: url }
       setTransformationsForm((p) => ({ ...p, prima_dopo_urls: JSON.stringify(next, null, 2) }))
-      notify('Immagine "dopo" caricata. Salva la trasformazione per confermare.', 'success', 'Upload')
+      notify(
+        'Immagine "dopo" caricata. Salva la trasformazione per confermare.',
+        'success',
+        'Upload',
+      )
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Upload fallito'
       setTransformazioneUploadError(msg)
@@ -930,7 +1089,9 @@ export function SettingsTrainerProfileTab() {
         valutazione_iniziale: metodo.valutazione_iniziale,
         test_funzionali: metodo.test_funzionali,
         analisi_postura: metodo.analisi_postura,
-        misurazioni_corporee: metodo.misurazioni_corporee.length ? metodo.misurazioni_corporee : null,
+        misurazioni_corporee: metodo.misurazioni_corporee.length
+          ? metodo.misurazioni_corporee
+          : null,
         periodizzazione: metodo.periodizzazione,
         check_settimanali: metodo.check_settimanali,
         report_progressi: metodo.report_progressi,
@@ -951,9 +1112,11 @@ export function SettingsTrainerProfileTab() {
     setRisultatiSaving(true)
     try {
       const { error } = await updateProfile({
-        clienti_seguiti: risultati.clienti_seguiti.trim() === '' ? null : Number(risultati.clienti_seguiti),
+        clienti_seguiti:
+          risultati.clienti_seguiti.trim() === '' ? null : Number(risultati.clienti_seguiti),
         pct_successo: risultati.pct_successo.trim() === '' ? null : Number(risultati.pct_successo),
-        media_kg_persi: risultati.media_kg_persi.trim() === '' ? null : Number(risultati.media_kg_persi),
+        media_kg_persi:
+          risultati.media_kg_persi.trim() === '' ? null : Number(risultati.media_kg_persi),
         media_aumento_forza: risultati.media_aumento_forza.trim() || null,
       })
       if (error) throw error
@@ -1017,7 +1180,9 @@ export function SettingsTrainerProfileTab() {
       const { error } = await updateProfile({
         app_monitoraggio: strumenti.app_monitoraggio.trim() || null,
         software_programmazione: strumenti.software_programmazione.trim() || null,
-        metodi_misurazione: strumenti.metodi_misurazione.length ? strumenti.metodi_misurazione : null,
+        metodi_misurazione: strumenti.metodi_misurazione.length
+          ? strumenti.metodi_misurazione
+          : null,
       })
       if (error) throw error
       notify('Strumenti salvati', 'success', 'Salvato')
@@ -1067,9 +1232,12 @@ export function SettingsTrainerProfileTab() {
         uso_app: trainerProfile.uso_app ?? false,
       })
       setRisultatiState({
-        clienti_seguiti: trainerProfile.clienti_seguiti != null ? String(trainerProfile.clienti_seguiti) : '',
-        pct_successo: trainerProfile.pct_successo != null ? String(trainerProfile.pct_successo) : '',
-        media_kg_persi: trainerProfile.media_kg_persi != null ? String(trainerProfile.media_kg_persi) : '',
+        clienti_seguiti:
+          trainerProfile.clienti_seguiti != null ? String(trainerProfile.clienti_seguiti) : '',
+        pct_successo:
+          trainerProfile.pct_successo != null ? String(trainerProfile.pct_successo) : '',
+        media_kg_persi:
+          trainerProfile.media_kg_persi != null ? String(trainerProfile.media_kg_persi) : '',
         media_aumento_forza: trainerProfile.media_aumento_forza ?? '',
       })
       setEticaState({
@@ -1142,11 +1310,9 @@ export function SettingsTrainerProfileTab() {
   return (
     <div className="space-y-6">
       {/* Blocco 1: Identità professionale (profiles) */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Briefcase className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1166,7 +1332,9 @@ export function SettingsTrainerProfileTab() {
               <Input
                 label="Titolo professionale"
                 value={identita.titolo_professionale}
-                onChange={(e) => setIdentita((p) => ({ ...p, titolo_professionale: e.target.value }))}
+                onChange={(e) =>
+                  setIdentita((p) => ({ ...p, titolo_professionale: e.target.value }))
+                }
                 placeholder="es. Personal Trainer, Preparatore atletico"
                 maxLength={60}
                 className="w-full"
@@ -1233,14 +1401,12 @@ export function SettingsTrainerProfileTab() {
             </>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 2: Bio e presentazione (trainer_profiles) */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <FileText className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1311,14 +1477,12 @@ export function SettingsTrainerProfileTab() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 3: Formazione (trainer_education) */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <GraduationCap className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1341,7 +1505,9 @@ export function SettingsTrainerProfileTab() {
                     <span className="text-text-tertiary text-sm ml-2">({item.tipo})</span>
                     {(item.istituto || item.anno) && (
                       <p className="text-text-tertiary text-sm mt-0.5">
-                        {[item.istituto, item.anno != null ? String(item.anno) : null].filter(Boolean).join(' · ')}
+                        {[item.istituto, item.anno != null ? String(item.anno) : null]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </p>
                     )}
                   </div>
@@ -1413,7 +1579,9 @@ export function SettingsTrainerProfileTab() {
                 <Input
                   label="URL documento (opzionale)"
                   value={educationForm.documento_url}
-                  onChange={(e) => setEducationForm((p) => ({ ...p, documento_url: e.target.value }))}
+                  onChange={(e) =>
+                    setEducationForm((p) => ({ ...p, documento_url: e.target.value }))
+                  }
                   placeholder="https://... o carica file sotto"
                   className="w-full"
                 />
@@ -1425,10 +1593,16 @@ export function SettingsTrainerProfileTab() {
                     disabled={educationUploading}
                     onClick={() => educationFileInputRef.current?.click()}
                   >
-                    {educationUploading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <FileText className="h-4 w-4 mr-1" />}
+                    {educationUploading ? (
+                      <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                    ) : (
+                      <FileText className="h-4 w-4 mr-1" />
+                    )}
                     Carica file
                   </Button>
-                  {educationUploadError && <span className="text-state-error text-sm">{educationUploadError}</span>}
+                  {educationUploadError && (
+                    <span className="text-state-error text-sm">{educationUploadError}</span>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
@@ -1437,7 +1611,11 @@ export function SettingsTrainerProfileTab() {
                   disabled={educationSaving}
                   className="bg-teal-500/90 hover:bg-teal-500 text-white"
                 >
-                  {educationSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
+                  {educationSaving ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-1" />
+                  )}
                   {educationForm.id ? 'Aggiorna' : 'Aggiungi'}
                 </Button>
                 <Button variant="outline" onClick={closeEducationForm} disabled={educationSaving}>
@@ -1448,7 +1626,7 @@ export function SettingsTrainerProfileTab() {
           ) : (
             <Button
               variant="outline"
-              className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
               onClick={() => openEducationForm()}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -1456,14 +1634,12 @@ export function SettingsTrainerProfileTab() {
             </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 4: Certificazioni (trainer_certifications) */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Award className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1483,10 +1659,14 @@ export function SettingsTrainerProfileTab() {
                 >
                   <div className="min-w-0">
                     <span className="font-medium text-text-primary">{item.nome}</span>
-                    <span className="text-text-tertiary text-sm ml-2 capitalize">({item.stato})</span>
+                    <span className="text-text-tertiary text-sm ml-2 capitalize">
+                      ({item.stato})
+                    </span>
                     {(item.ente || item.anno) && (
                       <p className="text-text-tertiary text-sm mt-0.5">
-                        {[item.ente, item.anno != null ? String(item.anno) : null].filter(Boolean).join(' · ')}
+                        {[item.ente, item.anno != null ? String(item.anno) : null]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </p>
                     )}
                   </div>
@@ -1539,7 +1719,9 @@ export function SettingsTrainerProfileTab() {
               <Input
                 label="Numero certificato"
                 value={certificationsForm.numero_certificato}
-                onChange={(e) => setCertificationsForm((p) => ({ ...p, numero_certificato: e.target.value }))}
+                onChange={(e) =>
+                  setCertificationsForm((p) => ({ ...p, numero_certificato: e.target.value }))
+                }
                 placeholder="opzionale"
                 className="w-full"
               />
@@ -1548,7 +1730,10 @@ export function SettingsTrainerProfileTab() {
                   label="Stato"
                   value={certificationsForm.stato}
                   onValueChange={(v) =>
-                    setCertificationsForm((p) => ({ ...p, stato: v as 'attivo' | 'aggiornamento' | 'scaduto' }))
+                    setCertificationsForm((p) => ({
+                      ...p,
+                      stato: v as 'attivo' | 'aggiornamento' | 'scaduto',
+                    }))
                   }
                 >
                   {CERT_STATO_OPTS.map((opt) => (
@@ -1573,7 +1758,9 @@ export function SettingsTrainerProfileTab() {
                 <Input
                   label="URL documento (opzionale)"
                   value={certificationsForm.file_url}
-                  onChange={(e) => setCertificationsForm((p) => ({ ...p, file_url: e.target.value }))}
+                  onChange={(e) =>
+                    setCertificationsForm((p) => ({ ...p, file_url: e.target.value }))
+                  }
                   placeholder="https://... o carica file sotto"
                   className="w-full"
                 />
@@ -1585,10 +1772,16 @@ export function SettingsTrainerProfileTab() {
                     disabled={certUploading}
                     onClick={() => certFileInputRef.current?.click()}
                   >
-                    {certUploading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <FileText className="h-4 w-4 mr-1" />}
+                    {certUploading ? (
+                      <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                    ) : (
+                      <FileText className="h-4 w-4 mr-1" />
+                    )}
                     Carica file
                   </Button>
-                  {certUploadError && <span className="text-state-error text-sm">{certUploadError}</span>}
+                  {certUploadError && (
+                    <span className="text-state-error text-sm">{certUploadError}</span>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
@@ -1604,7 +1797,11 @@ export function SettingsTrainerProfileTab() {
                   )}
                   {certificationsForm.id ? 'Aggiorna' : 'Aggiungi'}
                 </Button>
-                <Button variant="outline" onClick={closeCertificationsForm} disabled={certificationsSaving}>
+                <Button
+                  variant="outline"
+                  onClick={closeCertificationsForm}
+                  disabled={certificationsSaving}
+                >
                   Annulla
                 </Button>
               </div>
@@ -1612,7 +1809,7 @@ export function SettingsTrainerProfileTab() {
           ) : (
             <Button
               variant="outline"
-              className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
               onClick={() => openCertificationsForm()}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -1620,14 +1817,12 @@ export function SettingsTrainerProfileTab() {
             </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 5: Corsi (trainer_courses) */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <BookOpen className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1649,7 +1844,12 @@ export function SettingsTrainerProfileTab() {
                     <span className="font-medium text-text-primary">{item.nome}</span>
                     {(item.durata_valore != null || item.anno) && (
                       <p className="text-text-tertiary text-sm mt-0.5">
-                        {[item.durata_valore != null ? `${item.durata_valore} ${item.durata_unita ?? 'ore'}` : null, item.anno != null ? String(item.anno) : null]
+                        {[
+                          item.durata_valore != null
+                            ? `${item.durata_valore} ${item.durata_unita ?? 'ore'}`
+                            : null,
+                          item.anno != null ? String(item.anno) : null,
+                        ]
                           .filter(Boolean)
                           .join(' · ')}
                       </p>
@@ -1735,7 +1935,7 @@ export function SettingsTrainerProfileTab() {
           ) : (
             <Button
               variant="outline"
-              className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
               onClick={() => openCoursesForm()}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -1743,31 +1943,57 @@ export function SettingsTrainerProfileTab() {
             </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 6: Specializzazioni */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Target className="h-5 w-5 text-teal-400 shrink-0" />
             Specializzazioni
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Aree di competenza e livello</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Aree di competenza e livello
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           {specializations.length > 0 && (
             <ul className="space-y-2">
               {specializations.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2"
+                >
                   <div>
                     <span className="font-medium text-text-primary">{item.nome}</span>
-                    <span className="text-text-tertiary text-sm ml-2 capitalize">({item.livello ?? '-'})</span>
-                    {item.anni_esperienza != null && <p className="text-text-tertiary text-sm mt-0.5">{item.anni_esperienza} anni</p>}
+                    <span className="text-text-tertiary text-sm ml-2 capitalize">
+                      ({item.livello ?? '-'})
+                    </span>
+                    {item.anni_esperienza != null && (
+                      <p className="text-text-tertiary text-sm mt-0.5">
+                        {item.anni_esperienza} anni
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openSpecializationsForm(item)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-state-error hover:text-state-error" onClick={() => handleDeleteSpecialization(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => openSpecializationsForm(item)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-state-error hover:text-state-error"
+                      onClick={() => handleDeleteSpecialization(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </li>
               ))}
@@ -1775,46 +2001,117 @@ export function SettingsTrainerProfileTab() {
           )}
           {showSpecializationsForm ? (
             <div className="rounded-lg border border-teal-500/20 bg-background-tertiary/50 p-4 space-y-3">
-              <Input label="Nome" value={specializationsForm.nome} onChange={(e) => setSpecializationsForm((p) => ({ ...p, nome: e.target.value }))} placeholder="es. Functional training" className="w-full" />
+              <Input
+                label="Nome"
+                value={specializationsForm.nome}
+                onChange={(e) => setSpecializationsForm((p) => ({ ...p, nome: e.target.value }))}
+                placeholder="es. Functional training"
+                className="w-full"
+              />
               <div className="max-w-[180px]">
-                <Select label="Livello" value={specializationsForm.livello} onValueChange={(v) => setSpecializationsForm((p) => ({ ...p, livello: v }))}>
-                  {LIVELLO_OPTS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                <Select
+                  label="Livello"
+                  value={specializationsForm.livello}
+                  onValueChange={(v) => setSpecializationsForm((p) => ({ ...p, livello: v }))}
+                >
+                  {LIVELLO_OPTS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
-              <Input label="Anni esperienza" type="number" value={specializationsForm.anni_esperienza} onChange={(e) => setSpecializationsForm((p) => ({ ...p, anni_esperienza: e.target.value }))} placeholder="opzionale" className="w-full max-w-[120px]" />
+              <Input
+                label="Anni esperienza"
+                type="number"
+                value={specializationsForm.anni_esperienza}
+                onChange={(e) =>
+                  setSpecializationsForm((p) => ({ ...p, anni_esperienza: e.target.value }))
+                }
+                placeholder="opzionale"
+                className="w-full max-w-[120px]"
+              />
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleSaveSpecialization} disabled={specializationsSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white">{specializationsSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}{specializationsForm.id ? 'Aggiorna' : 'Aggiungi'}</Button>
-                <Button variant="outline" onClick={closeSpecializationsForm} disabled={specializationsSaving}>Annulla</Button>
+                <Button
+                  onClick={handleSaveSpecialization}
+                  disabled={specializationsSaving}
+                  className="bg-teal-500/90 hover:bg-teal-500 text-white"
+                >
+                  {specializationsSaving ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-1" />
+                  )}
+                  {specializationsForm.id ? 'Aggiorna' : 'Aggiungi'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={closeSpecializationsForm}
+                  disabled={specializationsSaving}
+                >
+                  Annulla
+                </Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10" onClick={() => openSpecializationsForm()}><Plus className="h-4 w-4 mr-2" />Aggiungi specializzazione</Button>
+            <Button
+              variant="outline"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
+              onClick={() => openSpecializationsForm()}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Aggiungi specializzazione
+            </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 7: Esperienza lavorativa */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Building2 className="h-5 w-5 text-teal-400 shrink-0" />
             Esperienza lavorativa
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Strutture e ruoli</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Strutture e ruoli
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           {experience.length > 0 && (
             <ul className="space-y-2">
               {experience.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2"
+                >
                   <div>
                     <span className="font-medium text-text-primary">{item.nome_struttura}</span>
-                    {(item.ruolo || item.data_inizio) && <p className="text-text-tertiary text-sm mt-0.5">{[item.ruolo, item.data_inizio, item.data_fine].filter(Boolean).join(' · ')}</p>}
+                    {(item.ruolo || item.data_inizio) && (
+                      <p className="text-text-tertiary text-sm mt-0.5">
+                        {[item.ruolo, item.data_inizio, item.data_fine].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openExperienceForm(item)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-state-error hover:text-state-error" onClick={() => handleDeleteExperience(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => openExperienceForm(item)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-state-error hover:text-state-error"
+                      onClick={() => handleDeleteExperience(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </li>
               ))}
@@ -1822,34 +2119,102 @@ export function SettingsTrainerProfileTab() {
           )}
           {showExperienceForm ? (
             <div className="rounded-lg border border-teal-500/20 bg-background-tertiary/50 p-4 space-y-3">
-              <Input label="Nome struttura" value={experienceForm.nome_struttura} onChange={(e) => setExperienceForm((p) => ({ ...p, nome_struttura: e.target.value }))} placeholder="es. Palestra XYZ" className="w-full" />
-              <Input label="Ruolo" value={experienceForm.ruolo} onChange={(e) => setExperienceForm((p) => ({ ...p, ruolo: e.target.value }))} placeholder="es. Personal trainer" className="w-full" />
+              <Input
+                label="Nome struttura"
+                value={experienceForm.nome_struttura}
+                onChange={(e) =>
+                  setExperienceForm((p) => ({ ...p, nome_struttura: e.target.value }))
+                }
+                placeholder="es. Palestra XYZ"
+                className="w-full"
+              />
+              <Input
+                label="Ruolo"
+                value={experienceForm.ruolo}
+                onChange={(e) => setExperienceForm((p) => ({ ...p, ruolo: e.target.value }))}
+                placeholder="es. Personal trainer"
+                className="w-full"
+              />
               <div className="grid grid-cols-2 gap-2">
-                <Input label="Data inizio" type="date" value={experienceForm.data_inizio} onChange={(e) => setExperienceForm((p) => ({ ...p, data_inizio: e.target.value }))} className="w-full" />
-                <Input label="Data fine" type="date" value={experienceForm.data_fine} onChange={(e) => setExperienceForm((p) => ({ ...p, data_fine: e.target.value }))} className="w-full" />
+                <Input
+                  label="Data inizio"
+                  type="date"
+                  value={experienceForm.data_inizio}
+                  onChange={(e) =>
+                    setExperienceForm((p) => ({ ...p, data_inizio: e.target.value }))
+                  }
+                  className="w-full"
+                />
+                <Input
+                  label="Data fine"
+                  type="date"
+                  value={experienceForm.data_fine}
+                  onChange={(e) => setExperienceForm((p) => ({ ...p, data_fine: e.target.value }))}
+                  className="w-full"
+                />
               </div>
-              <Textarea label="Collaborazioni" value={experienceForm.collaborazioni} onChange={(e) => setExperienceForm((p) => ({ ...p, collaborazioni: e.target.value }))} rows={2} className="w-full" />
-              <Input label="Atleti seguiti" type="number" value={experienceForm.atleti_seguiti} onChange={(e) => setExperienceForm((p) => ({ ...p, atleti_seguiti: e.target.value }))} placeholder="opzionale" className="w-full max-w-[120px]" />
+              <Textarea
+                label="Collaborazioni"
+                value={experienceForm.collaborazioni}
+                onChange={(e) =>
+                  setExperienceForm((p) => ({ ...p, collaborazioni: e.target.value }))
+                }
+                rows={2}
+                className="w-full"
+              />
+              <Input
+                label="Atleti seguiti"
+                type="number"
+                value={experienceForm.atleti_seguiti}
+                onChange={(e) =>
+                  setExperienceForm((p) => ({ ...p, atleti_seguiti: e.target.value }))
+                }
+                placeholder="opzionale"
+                className="w-full max-w-[120px]"
+              />
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleSaveExperience} disabled={experienceSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white">{experienceSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}{experienceForm.id ? 'Aggiorna' : 'Aggiungi'}</Button>
-                <Button variant="outline" onClick={closeExperienceForm} disabled={experienceSaving}>Annulla</Button>
+                <Button
+                  onClick={handleSaveExperience}
+                  disabled={experienceSaving}
+                  className="bg-teal-500/90 hover:bg-teal-500 text-white"
+                >
+                  {experienceSaving ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-1" />
+                  )}
+                  {experienceForm.id ? 'Aggiorna' : 'Aggiungi'}
+                </Button>
+                <Button variant="outline" onClick={closeExperienceForm} disabled={experienceSaving}>
+                  Annulla
+                </Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10" onClick={() => openExperienceForm()}><Plus className="h-4 w-4 mr-2" />Aggiungi esperienza</Button>
+            <Button
+              variant="outline"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
+              onClick={() => openExperienceForm()}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Aggiungi esperienza
+            </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 8: Metodo di lavoro */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <ClipboardList className="h-5 w-5 text-teal-400 shrink-0" />
             Metodo di lavoro
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Valutazioni, periodizzazione, report</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Valutazioni, periodizzazione, report
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           <div className="flex flex-wrap gap-6">
@@ -1863,64 +2228,163 @@ export function SettingsTrainerProfileTab() {
               { key: 'uso_app' as const, label: 'Uso app' },
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center gap-2 cursor-pointer">
-                <Checkbox checked={metodo[key]} onChange={() => setMetodoState((p) => ({ ...p, [key]: !p[key] }))} />
+                <Checkbox
+                  checked={metodo[key]}
+                  onChange={() => setMetodoState((p) => ({ ...p, [key]: !p[key] }))}
+                />
                 <span className="text-sm text-text-secondary">{label}</span>
               </label>
             ))}
           </div>
-          <Input label="Misurazioni corporee (separate da virgola)" value={(metodo.misurazioni_corporee ?? []).join(', ')} onChange={(e) => setMetodoState((p) => ({ ...p, misurazioni_corporee: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) }))} placeholder="es. plicometria, circonferenze" className="w-full" />
+          <Input
+            label="Misurazioni corporee (separate da virgola)"
+            value={(metodo.misurazioni_corporee ?? []).join(', ')}
+            onChange={(e) =>
+              setMetodoState((p) => ({
+                ...p,
+                misurazioni_corporee: e.target.value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              }))
+            }
+            placeholder="es. plicometria, circonferenze"
+            className="w-full"
+          />
           <div className="flex justify-end pt-4 border-t border-teal-500/10">
-            <Button onClick={handleSaveMetodo} disabled={metodoSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]">{metodoSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}Salva metodo</Button>
+            <Button
+              onClick={handleSaveMetodo}
+              disabled={metodoSaving}
+              className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]"
+            >
+              {metodoSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salva metodo
+            </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 9: Risultati e statistiche */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <BarChart3 className="h-5 w-5 text-teal-400 shrink-0" />
             Risultati e statistiche
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Dati aggregati (opzionale)</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Dati aggregati (opzionale)
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Clienti seguiti" type="number" value={risultati.clienti_seguiti} onChange={(e) => setRisultatiState((p) => ({ ...p, clienti_seguiti: e.target.value }))} placeholder="n." className="w-full" />
-            <Input label="% successo" type="number" value={risultati.pct_successo} onChange={(e) => setRisultatiState((p) => ({ ...p, pct_successo: e.target.value }))} placeholder="es. 85" className="w-full" />
-            <Input label="Media kg persi" type="number" value={risultati.media_kg_persi} onChange={(e) => setRisultatiState((p) => ({ ...p, media_kg_persi: e.target.value }))} placeholder="es. 5.2" className="w-full" />
-            <Input label="Media aumento forza" value={risultati.media_aumento_forza} onChange={(e) => setRisultatiState((p) => ({ ...p, media_aumento_forza: e.target.value }))} placeholder="es. +15% 1RM" className="w-full" />
+            <Input
+              label="Clienti seguiti"
+              type="number"
+              value={risultati.clienti_seguiti}
+              onChange={(e) =>
+                setRisultatiState((p) => ({ ...p, clienti_seguiti: e.target.value }))
+              }
+              placeholder="n."
+              className="w-full"
+            />
+            <Input
+              label="% successo"
+              type="number"
+              value={risultati.pct_successo}
+              onChange={(e) => setRisultatiState((p) => ({ ...p, pct_successo: e.target.value }))}
+              placeholder="es. 85"
+              className="w-full"
+            />
+            <Input
+              label="Media kg persi"
+              type="number"
+              value={risultati.media_kg_persi}
+              onChange={(e) => setRisultatiState((p) => ({ ...p, media_kg_persi: e.target.value }))}
+              placeholder="es. 5.2"
+              className="w-full"
+            />
+            <Input
+              label="Media aumento forza"
+              value={risultati.media_aumento_forza}
+              onChange={(e) =>
+                setRisultatiState((p) => ({ ...p, media_aumento_forza: e.target.value }))
+              }
+              placeholder="es. +15% 1RM"
+              className="w-full"
+            />
           </div>
           <div className="flex justify-end pt-4 border-t border-teal-500/10">
-            <Button onClick={handleSaveRisultati} disabled={risultatiSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]">{risultatiSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}Salva risultati</Button>
+            <Button
+              onClick={handleSaveRisultati}
+              disabled={risultatiSaving}
+              className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]"
+            >
+              {risultatiSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salva risultati
+            </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 10: Testimonianze */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Quote className="h-5 w-5 text-teal-400 shrink-0" />
             Testimonianze
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Feedback e recensioni clienti</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Feedback e recensioni clienti
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           {testimonials.length > 0 && (
             <ul className="space-y-2">
               {testimonials.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2"
+                >
                   <div className="min-w-0 flex-1">
-                    <span className="font-medium text-text-primary">{item.nome_cliente || 'Anonimo'}</span>
-                    {item.valutazione != null && <span className="text-text-tertiary text-sm ml-2">★ {item.valutazione}</span>}
-                    <p className="text-text-tertiary text-sm mt-0.5 line-clamp-2">{item.feedback}</p>
+                    <span className="font-medium text-text-primary">
+                      {item.nome_cliente || 'Anonimo'}
+                    </span>
+                    {item.valutazione != null && (
+                      <span className="text-text-tertiary text-sm ml-2">★ {item.valutazione}</span>
+                    )}
+                    <p className="text-text-tertiary text-sm mt-0.5 line-clamp-2">
+                      {item.feedback}
+                    </p>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openTestimonialsForm(item)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-state-error hover:text-state-error" onClick={() => handleDeleteTestimonial(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => openTestimonialsForm(item)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-state-error hover:text-state-error"
+                      onClick={() => handleDeleteTestimonial(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </li>
               ))}
@@ -1928,46 +2392,145 @@ export function SettingsTrainerProfileTab() {
           )}
           {showTestimonialsForm ? (
             <div className="rounded-lg border border-teal-500/20 bg-background-tertiary/50 p-4 space-y-3">
-              <Input label="Nome cliente" value={testimonialsForm.nome_cliente} onChange={(e) => setTestimonialsForm((p) => ({ ...p, nome_cliente: e.target.value }))} placeholder="opzionale" className="w-full" />
-              <Input label="Età" type="number" value={testimonialsForm.eta} onChange={(e) => setTestimonialsForm((p) => ({ ...p, eta: e.target.value }))} className="w-full max-w-[80px]" />
-              <Input label="Obiettivo" value={testimonialsForm.obiettivo} onChange={(e) => setTestimonialsForm((p) => ({ ...p, obiettivo: e.target.value }))} placeholder="opzionale" className="w-full" />
-              <Input label="Durata percorso" value={testimonialsForm.durata_percorso} onChange={(e) => setTestimonialsForm((p) => ({ ...p, durata_percorso: e.target.value }))} placeholder="es. 6 mesi" className="w-full" />
-              <Textarea label="Risultato" value={testimonialsForm.risultato} onChange={(e) => setTestimonialsForm((p) => ({ ...p, risultato: e.target.value }))} rows={2} className="w-full" />
-              <Textarea label="Feedback *" value={testimonialsForm.feedback} onChange={(e) => setTestimonialsForm((p) => ({ ...p, feedback: e.target.value }))} rows={3} className="w-full" required />
-              <Input label="Valutazione (1-5)" type="number" min={1} max={5} value={testimonialsForm.valutazione} onChange={(e) => setTestimonialsForm((p) => ({ ...p, valutazione: e.target.value }))} className="w-full max-w-[80px]" />
+              <Input
+                label="Nome cliente"
+                value={testimonialsForm.nome_cliente}
+                onChange={(e) =>
+                  setTestimonialsForm((p) => ({ ...p, nome_cliente: e.target.value }))
+                }
+                placeholder="opzionale"
+                className="w-full"
+              />
+              <Input
+                label="Età"
+                type="number"
+                value={testimonialsForm.eta}
+                onChange={(e) => setTestimonialsForm((p) => ({ ...p, eta: e.target.value }))}
+                className="w-full max-w-[80px]"
+              />
+              <Input
+                label="Obiettivo"
+                value={testimonialsForm.obiettivo}
+                onChange={(e) => setTestimonialsForm((p) => ({ ...p, obiettivo: e.target.value }))}
+                placeholder="opzionale"
+                className="w-full"
+              />
+              <Input
+                label="Durata percorso"
+                value={testimonialsForm.durata_percorso}
+                onChange={(e) =>
+                  setTestimonialsForm((p) => ({ ...p, durata_percorso: e.target.value }))
+                }
+                placeholder="es. 6 mesi"
+                className="w-full"
+              />
+              <Textarea
+                label="Risultato"
+                value={testimonialsForm.risultato}
+                onChange={(e) => setTestimonialsForm((p) => ({ ...p, risultato: e.target.value }))}
+                rows={2}
+                className="w-full"
+              />
+              <Textarea
+                label="Feedback *"
+                value={testimonialsForm.feedback}
+                onChange={(e) => setTestimonialsForm((p) => ({ ...p, feedback: e.target.value }))}
+                rows={3}
+                className="w-full"
+                required
+              />
+              <Input
+                label="Valutazione (1-5)"
+                type="number"
+                min={1}
+                max={5}
+                value={testimonialsForm.valutazione}
+                onChange={(e) =>
+                  setTestimonialsForm((p) => ({ ...p, valutazione: e.target.value }))
+                }
+                className="w-full max-w-[80px]"
+              />
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleSaveTestimonial} disabled={testimonialsSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white">{testimonialsSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}{testimonialsForm.id ? 'Aggiorna' : 'Aggiungi'}</Button>
-                <Button variant="outline" onClick={closeTestimonialsForm} disabled={testimonialsSaving}>Annulla</Button>
+                <Button
+                  onClick={handleSaveTestimonial}
+                  disabled={testimonialsSaving}
+                  className="bg-teal-500/90 hover:bg-teal-500 text-white"
+                >
+                  {testimonialsSaving ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-1" />
+                  )}
+                  {testimonialsForm.id ? 'Aggiorna' : 'Aggiungi'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={closeTestimonialsForm}
+                  disabled={testimonialsSaving}
+                >
+                  Annulla
+                </Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10" onClick={() => openTestimonialsForm()}><Plus className="h-4 w-4 mr-2" />Aggiungi testimonianza</Button>
+            <Button
+              variant="outline"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
+              onClick={() => openTestimonialsForm()}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Aggiungi testimonianza
+            </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 11: Trasformazioni */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <ImageIcon className="h-5 w-5 text-teal-400 shrink-0" />
             Trasformazioni
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Prima/dopo (con consenso clienti)</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Prima/dopo (con consenso clienti)
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           {transformations.length > 0 && (
             <ul className="space-y-2">
               {transformations.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-teal-500/10 bg-background-secondary/50 px-3 py-2"
+                >
                   <div>
                     <span className="text-text-primary">{item.obiettivo || 'Trasformazione'}</span>
-                    {item.durata_settimane != null && <span className="text-text-tertiary text-sm ml-2">{item.durata_settimane} sett.</span>}
+                    {item.durata_settimane != null && (
+                      <span className="text-text-tertiary text-sm ml-2">
+                        {item.durata_settimane} sett.
+                      </span>
+                    )}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openTransformationsForm(item)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-state-error hover:text-state-error" onClick={() => handleDeleteTransformation(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => openTransformationsForm(item)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-state-error hover:text-state-error"
+                      onClick={() => handleDeleteTransformation(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </li>
               ))}
@@ -2003,52 +2566,151 @@ export function SettingsTrainerProfileTab() {
                   <div className="space-y-1">
                     <label className="text-text-tertiary text-xs">Immagine prima</label>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Button type="button" variant="outline" size="sm" disabled={transformazionePrimaUploading} onClick={() => transformazionePrimaInputRef.current?.click()}>
-                        {transformazionePrimaUploading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <ImageIcon className="h-4 w-4 mr-1" />}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={transformazionePrimaUploading}
+                        onClick={() => transformazionePrimaInputRef.current?.click()}
+                      >
+                        {transformazionePrimaUploading ? (
+                          <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4 mr-1" />
+                        )}
                         Carica prima
                       </Button>
-                      {parsePrimaDopoUrls(transformationsForm.prima_dopo_urls).prima && <span className="text-state-valid text-xs">✓ caricata</span>}
+                      {parsePrimaDopoUrls(transformationsForm.prima_dopo_urls).prima && (
+                        <span className="text-state-valid text-xs">✓ caricata</span>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-text-tertiary text-xs">Immagine dopo</label>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Button type="button" variant="outline" size="sm" disabled={transformazioneDopoUploading} onClick={() => transformazioneDopoInputRef.current?.click()}>
-                        {transformazioneDopoUploading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <ImageIcon className="h-4 w-4 mr-1" />}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={transformazioneDopoUploading}
+                        onClick={() => transformazioneDopoInputRef.current?.click()}
+                      >
+                        {transformazioneDopoUploading ? (
+                          <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4 mr-1" />
+                        )}
                         Carica dopo
                       </Button>
-                      {parsePrimaDopoUrls(transformationsForm.prima_dopo_urls).dopo && <span className="text-state-valid text-xs">✓ caricata</span>}
+                      {parsePrimaDopoUrls(transformationsForm.prima_dopo_urls).dopo && (
+                        <span className="text-state-valid text-xs">✓ caricata</span>
+                      )}
                     </div>
                   </div>
                 </div>
-                {transformazioneUploadError && <p className="text-state-error text-sm">{transformazioneUploadError}</p>}
-                <Textarea label="URL prima/dopo (modifica manuale, opzionale)" value={transformationsForm.prima_dopo_urls} onChange={(e) => setTransformationsForm((p) => ({ ...p, prima_dopo_urls: e.target.value }))} rows={2} placeholder='{"prima":"url1","dopo":"url2"}' className="w-full" />
+                {transformazioneUploadError && (
+                  <p className="text-state-error text-sm">{transformazioneUploadError}</p>
+                )}
+                <Textarea
+                  label="URL prima/dopo (modifica manuale, opzionale)"
+                  value={transformationsForm.prima_dopo_urls}
+                  onChange={(e) =>
+                    setTransformationsForm((p) => ({ ...p, prima_dopo_urls: e.target.value }))
+                  }
+                  rows={2}
+                  placeholder='{"prima":"url1","dopo":"url2"}'
+                  className="w-full"
+                />
               </div>
-              <Input label="Durata (settimane)" type="number" value={transformationsForm.durata_settimane} onChange={(e) => setTransformationsForm((p) => ({ ...p, durata_settimane: e.target.value }))} className="w-full max-w-[120px]" />
-              <Input label="Obiettivo" value={transformationsForm.obiettivo} onChange={(e) => setTransformationsForm((p) => ({ ...p, obiettivo: e.target.value }))} className="w-full" />
-              <Textarea label="Risultato" value={transformationsForm.risultato} onChange={(e) => setTransformationsForm((p) => ({ ...p, risultato: e.target.value }))} rows={2} className="w-full" />
-              <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={transformationsForm.verificato} onChange={() => setTransformationsForm((p) => ({ ...p, verificato: !p.verificato }))} /><span className="text-sm">Verificato</span></label>
-              <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={transformationsForm.consenso} onChange={() => setTransformationsForm((p) => ({ ...p, consenso: !p.consenso }))} /><span className="text-sm">Consenso cliente</span></label>
+              <Input
+                label="Durata (settimane)"
+                type="number"
+                value={transformationsForm.durata_settimane}
+                onChange={(e) =>
+                  setTransformationsForm((p) => ({ ...p, durata_settimane: e.target.value }))
+                }
+                className="w-full max-w-[120px]"
+              />
+              <Input
+                label="Obiettivo"
+                value={transformationsForm.obiettivo}
+                onChange={(e) =>
+                  setTransformationsForm((p) => ({ ...p, obiettivo: e.target.value }))
+                }
+                className="w-full"
+              />
+              <Textarea
+                label="Risultato"
+                value={transformationsForm.risultato}
+                onChange={(e) =>
+                  setTransformationsForm((p) => ({ ...p, risultato: e.target.value }))
+                }
+                rows={2}
+                className="w-full"
+              />
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={transformationsForm.verificato}
+                  onChange={() =>
+                    setTransformationsForm((p) => ({ ...p, verificato: !p.verificato }))
+                  }
+                />
+                <span className="text-sm">Verificato</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={transformationsForm.consenso}
+                  onChange={() => setTransformationsForm((p) => ({ ...p, consenso: !p.consenso }))}
+                />
+                <span className="text-sm">Consenso cliente</span>
+              </label>
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleSaveTransformation} disabled={transformationsSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white">{transformationsSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}{transformationsForm.id ? 'Aggiorna' : 'Aggiungi'}</Button>
-                <Button variant="outline" onClick={closeTransformationsForm} disabled={transformationsSaving}>Annulla</Button>
+                <Button
+                  onClick={handleSaveTransformation}
+                  disabled={transformationsSaving}
+                  className="bg-teal-500/90 hover:bg-teal-500 text-white"
+                >
+                  {transformationsSaving ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-1" />
+                  )}
+                  {transformationsForm.id ? 'Aggiorna' : 'Aggiungi'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={closeTransformationsForm}
+                  disabled={transformationsSaving}
+                >
+                  Annulla
+                </Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10" onClick={() => openTransformationsForm()}><Plus className="h-4 w-4 mr-2" />Aggiungi trasformazione</Button>
+            <Button
+              variant="outline"
+              className="border-white/10 text-primary hover:border-primary/20 hover:bg-white/[0.04]"
+              onClick={() => openTransformationsForm()}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Aggiungi trasformazione
+            </Button>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 12: Etica */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Scale className="h-5 w-5 text-teal-400 shrink-0" />
             Etica e valori
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Principi dichiarati</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Principi dichiarati
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           <div className="flex flex-col gap-2">
@@ -2061,69 +2723,189 @@ export function SettingsTrainerProfileTab() {
               { key: 'privacy_garantita' as const, label: 'Privacy garantita' },
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center gap-2 cursor-pointer">
-                <Checkbox checked={etica[key]} onChange={() => setEticaState((p) => ({ ...p, [key]: !p[key] }))} />
+                <Checkbox
+                  checked={etica[key]}
+                  onChange={() => setEticaState((p) => ({ ...p, [key]: !p[key] }))}
+                />
                 <span className="text-sm text-text-secondary">{label}</span>
               </label>
             ))}
           </div>
           <div className="flex justify-end pt-4 border-t border-teal-500/10">
-            <Button onClick={handleSaveEtica} disabled={eticaSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]">{eticaSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}Salva etica</Button>
+            <Button
+              onClick={handleSaveEtica}
+              disabled={eticaSaving}
+              className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]"
+            >
+              {eticaSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salva etica
+            </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Blocco 13: Dati legali */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <FileCheck className="h-5 w-5 text-teal-400 shrink-0" />
             Dati legali
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">P.IVA, assicurazione, registro</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            P.IVA, assicurazione, registro
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
-          <Input label="Partita IVA" value={legale.partita_iva} onChange={(e) => setLegaleState((p) => ({ ...p, partita_iva: e.target.value }))} placeholder="opzionale" className="w-full max-w-[200px]" />
-          <Input label="Registro professionale" value={legale.registro_professionale} onChange={(e) => setLegaleState((p) => ({ ...p, registro_professionale: e.target.value }))} placeholder="opzionale" className="w-full" />
-          <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={legale.assicurazione} onChange={() => setLegaleState((p) => ({ ...p, assicurazione: !p.assicurazione }))} /><span className="text-sm">Assicurazione RC professionale</span></label>
-          {legale.assicurazione && <Input label="URL documento assicurazione" value={legale.assicurazione_url} onChange={(e) => setLegaleState((p) => ({ ...p, assicurazione_url: e.target.value }))} placeholder="https://..." className="w-full" />}
-          <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={legale.consenso_immagini_clienti} onChange={() => setLegaleState((p) => ({ ...p, consenso_immagini_clienti: !p.consenso_immagini_clienti }))} /><span className="text-sm">Consenso uso immagini clienti</span></label>
-          <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={legale.termini_accettati} onChange={() => setLegaleState((p) => ({ ...p, termini_accettati: !p.termini_accettati }))} /><span className="text-sm">Termini e condizioni accettati</span></label>
+          <Input
+            label="Partita IVA"
+            value={legale.partita_iva}
+            onChange={(e) => setLegaleState((p) => ({ ...p, partita_iva: e.target.value }))}
+            placeholder="opzionale"
+            className="w-full max-w-[200px]"
+          />
+          <Input
+            label="Registro professionale"
+            value={legale.registro_professionale}
+            onChange={(e) =>
+              setLegaleState((p) => ({ ...p, registro_professionale: e.target.value }))
+            }
+            placeholder="opzionale"
+            className="w-full"
+          />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={legale.assicurazione}
+              onChange={() => setLegaleState((p) => ({ ...p, assicurazione: !p.assicurazione }))}
+            />
+            <span className="text-sm">Assicurazione RC professionale</span>
+          </label>
+          {legale.assicurazione && (
+            <Input
+              label="URL documento assicurazione"
+              value={legale.assicurazione_url}
+              onChange={(e) => setLegaleState((p) => ({ ...p, assicurazione_url: e.target.value }))}
+              placeholder="https://..."
+              className="w-full"
+            />
+          )}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={legale.consenso_immagini_clienti}
+              onChange={() =>
+                setLegaleState((p) => ({
+                  ...p,
+                  consenso_immagini_clienti: !p.consenso_immagini_clienti,
+                }))
+              }
+            />
+            <span className="text-sm">Consenso uso immagini clienti</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={legale.termini_accettati}
+              onChange={() =>
+                setLegaleState((p) => ({ ...p, termini_accettati: !p.termini_accettati }))
+              }
+            />
+            <span className="text-sm">Termini e condizioni accettati</span>
+          </label>
           <div className="flex justify-end pt-4 border-t border-teal-500/10">
-            <Button onClick={handleSaveLegale} disabled={legaleSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]">{legaleSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}Salva dati legali</Button>
+            <Button
+              onClick={handleSaveLegale}
+              disabled={legaleSaving}
+              className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]"
+            >
+              {legaleSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salva dati legali
+            </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Strumenti (app, software, metodi misurazione) */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Smartphone className="h-5 w-5 text-teal-400 shrink-0" />
             Strumenti
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">App monitoraggio, software programmazione</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            App monitoraggio, software programmazione
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
-          <Input label="App monitoraggio" value={strumenti.app_monitoraggio} onChange={(e) => setStrumentiState((p) => ({ ...p, app_monitoraggio: e.target.value }))} placeholder="es. Strava, MyFitnessPal" className="w-full" />
-          <Input label="Software programmazione" value={strumenti.software_programmazione} onChange={(e) => setStrumentiState((p) => ({ ...p, software_programmazione: e.target.value }))} placeholder="es. Trainerize, TrueCoach" className="w-full" />
-          <Input label="Metodi misurazione (separati da virgola)" value={(strumenti.metodi_misurazione ?? []).join(', ')} onChange={(e) => setStrumentiState((p) => ({ ...p, metodi_misurazione: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) }))} placeholder="es. plicometria, BIA, circonferenze" className="w-full" />
+          <Input
+            label="App monitoraggio"
+            value={strumenti.app_monitoraggio}
+            onChange={(e) => setStrumentiState((p) => ({ ...p, app_monitoraggio: e.target.value }))}
+            placeholder="es. Strava, MyFitnessPal"
+            className="w-full"
+          />
+          <Input
+            label="Software programmazione"
+            value={strumenti.software_programmazione}
+            onChange={(e) =>
+              setStrumentiState((p) => ({ ...p, software_programmazione: e.target.value }))
+            }
+            placeholder="es. Trainerize, TrueCoach"
+            className="w-full"
+          />
+          <Input
+            label="Metodi misurazione (separati da virgola)"
+            value={(strumenti.metodi_misurazione ?? []).join(', ')}
+            onChange={(e) =>
+              setStrumentiState((p) => ({
+                ...p,
+                metodi_misurazione: e.target.value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              }))
+            }
+            placeholder="es. plicometria, BIA, circonferenze"
+            className="w-full"
+          />
           <div className="flex justify-end pt-4 border-t border-teal-500/10">
-            <Button onClick={handleSaveStrumenti} disabled={strumentiSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]">{strumentiSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}Salva strumenti</Button>
+            <Button
+              onClick={handleSaveStrumenti}
+              disabled={strumentiSaving}
+              className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]"
+            >
+              {strumentiSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salva strumenti
+            </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Media (video presentazione, galleria) */}
-      <Card variant="trainer" className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/20 shadow-lg shadow-teal-500/10 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
+      <div
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
+      >
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Video className="h-5 w-5 text-teal-400 shrink-0" />
             Media
           </CardTitle>
-          <CardDescription className="text-text-secondary mt-1.5">Video presentazione e galleria immagini</CardDescription>
+          <CardDescription className="text-text-secondary mt-1.5">
+            Video presentazione e galleria immagini
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 relative pt-0">
           <input
@@ -2149,28 +2931,88 @@ export function SettingsTrainerProfileTab() {
             }}
           />
           <div className="space-y-2">
-            <Input label="URL video presentazione" value={media.url_video_presentazione} onChange={(e) => setMediaState((p) => ({ ...p, url_video_presentazione: e.target.value }))} placeholder="https://... o carica video sotto" className="w-full" />
-            <Button type="button" variant="outline" size="sm" disabled={mediaVideoUploading} onClick={() => mediaVideoInputRef.current?.click()}>
-              {mediaVideoUploading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <Video className="h-4 w-4 mr-1" />}
+            <Input
+              label="URL video presentazione"
+              value={media.url_video_presentazione}
+              onChange={(e) =>
+                setMediaState((p) => ({ ...p, url_video_presentazione: e.target.value }))
+              }
+              placeholder="https://... o carica video sotto"
+              className="w-full"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={mediaVideoUploading}
+              onClick={() => mediaVideoInputRef.current?.click()}
+            >
+              {mediaVideoUploading ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Video className="h-4 w-4 mr-1" />
+              )}
               Carica video (MP4/WebM, max 100 MB)
             </Button>
           </div>
           <div className="space-y-2">
-            <Textarea label="URL galleria (uno per riga)" value={(media.galleria_urls ?? []).join('\n')} onChange={(e) => setMediaState((p) => ({ ...p, galleria_urls: e.target.value.split(/\n/).map((s) => s.trim()).filter(Boolean) }))} rows={3} placeholder="https://img1... o aggiungi immagini sotto" className="w-full" />
+            <Textarea
+              label="URL galleria (uno per riga)"
+              value={(media.galleria_urls ?? []).join('\n')}
+              onChange={(e) =>
+                setMediaState((p) => ({
+                  ...p,
+                  galleria_urls: e.target.value
+                    .split(/\n/)
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                }))
+              }
+              rows={3}
+              placeholder="https://img1... o aggiungi immagini sotto"
+              className="w-full"
+            />
             <div className="flex items-center gap-2 flex-wrap">
-              <Button type="button" variant="outline" size="sm" disabled={mediaGalleriaUploading || (media.galleria_urls ?? []).length >= GALLERIA_MAX} onClick={() => mediaGalleriaInputRef.current?.click()}>
-                {mediaGalleriaUploading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <ImageIcon className="h-4 w-4 mr-1" />}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={
+                  mediaGalleriaUploading || (media.galleria_urls ?? []).length >= GALLERIA_MAX
+                }
+                onClick={() => mediaGalleriaInputRef.current?.click()}
+              >
+                {mediaGalleriaUploading ? (
+                  <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                ) : (
+                  <ImageIcon className="h-4 w-4 mr-1" />
+                )}
                 Aggiungi alla galleria (max {GALLERIA_MAX})
               </Button>
-              {(media.galleria_urls ?? []).length >= GALLERIA_MAX && <span className="text-text-secondary text-sm">Galleria piena</span>}
-              {mediaUploadError && <span className="text-state-error text-sm">{mediaUploadError}</span>}
+              {(media.galleria_urls ?? []).length >= GALLERIA_MAX && (
+                <span className="text-text-secondary text-sm">Galleria piena</span>
+              )}
+              {mediaUploadError && (
+                <span className="text-state-error text-sm">{mediaUploadError}</span>
+              )}
             </div>
           </div>
           <div className="flex justify-end pt-4 border-t border-teal-500/10">
-            <Button onClick={handleSaveMedia} disabled={mediaSaving} className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]">{mediaSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}Salva media</Button>
+            <Button
+              onClick={handleSaveMedia}
+              disabled={mediaSaving}
+              className="bg-teal-500/90 hover:bg-teal-500 text-white min-w-[120px]"
+            >
+              {mediaSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salva media
+            </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </div>
   )
 }

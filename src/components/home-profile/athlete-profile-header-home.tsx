@@ -40,12 +40,12 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
     setShowUploader(false)
   }
 
+  const cardClass =
+    'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+
   return (
-    <Card
-      variant="default"
-      className="relative overflow-hidden border border-teal-500/30 bg-background-secondary/80 [background-image:none!important]"
-    >
-      <CardContent className="p-4 sm:p-5 relative">
+    <Card variant="default" className={`relative overflow-hidden ${cardClass}`}>
+      <CardContent className="relative p-4 sm:p-5">
         <div className="flex items-center gap-4">
           <div className="relative group shrink-0">
             <Avatar
@@ -53,7 +53,7 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
               alt={`${user.nome} ${user.cognome}`}
               fallbackText={avatarInitials}
               size="xl"
-              className="ring-2 ring-teal-500/30"
+              className="ring-2 ring-white/10"
             />
             <button
               onClick={() => setShowUploader(true)}
@@ -64,7 +64,7 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
             </button>
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-semibold text-white truncate">
+            <h2 className="truncate text-lg font-semibold text-text-primary">
               {user.nome} {user.cognome}
             </h2>
             <p className="text-text-secondary text-sm flex items-center gap-1.5 mt-0.5">
@@ -77,7 +77,7 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
           </div>
         </div>
         {showUploader && (
-          <div className="mt-4 pt-4 border-t border-teal-500/20">
+          <div className="mt-4 border-t border-white/10 pt-4">
             <AvatarUploader userId={user.id} onUploaded={handleAvatarUploaded} />
           </div>
         )}

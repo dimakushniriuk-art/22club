@@ -1,6 +1,5 @@
 'use client'
 
-import { User } from 'lucide-react'
 import { ClienteCard } from '@/components/dashboard/cliente-card'
 import type { Cliente } from '@/types/cliente'
 import { Button } from '@/components/ui'
@@ -37,14 +36,11 @@ export function ClientiGridView({
   onEnable,
 }: ClientiGridViewProps) {
   return (
-    <div className="relative p-4 sm:p-6">
-      <div className="mb-4 sm:mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          <User className="h-5 w-5 shrink-0 text-primary" />
-          <h3 className="text-base sm:text-lg font-bold text-text-primary truncate">Lista Clienti ({total})</h3>
-        </div>
+    <div className="relative p-4 sm:p-5 md:p-6">
+      <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+        <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">Lista Clienti ({total})</h3>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
         {clienti.map((cliente, index) => (
           <ClienteCard
             key={cliente.id}
@@ -76,7 +72,7 @@ export function ClientiGridView({
               disabled={page === 1}
               aria-label={`Vai alla pagina precedente${page > 1 ? ` (pagina ${page - 1})` : ''}`}
               aria-disabled={page === 1}
-              className="min-h-[44px] min-w-[44px] touch-manipulation max-[851px]:flex-1"
+              className="min-h-[44px] min-w-[44px] touch-manipulation max-[851px]:flex-1 rounded-lg border-white/20 hover:bg-white/5"
             >
               Precedente
             </Button>
@@ -87,7 +83,7 @@ export function ClientiGridView({
               disabled={page === totalPages}
               aria-label={`Vai alla pagina successiva${page < totalPages ? ` (pagina ${page + 1})` : ''}`}
               aria-disabled={page === totalPages}
-              className="min-h-[44px] min-w-[44px] touch-manipulation max-[851px]:flex-1"
+              className="min-h-[44px] min-w-[44px] touch-manipulation max-[851px]:flex-1 rounded-lg border-white/20 hover:bg-white/5"
             >
               Successiva
             </Button>

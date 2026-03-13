@@ -197,7 +197,7 @@ function LoginFormContent() {
                     <Link href="/">← Torna alla homepage</Link>
                   </Button>
                   <Button variant="link" asChild className="text-white">
-                    <Link href="/reset">Password dimenticata?</Link>
+                    <Link href="/forgot-password">Password dimenticata?</Link>
                   </Button>
                 </div>
               </div>
