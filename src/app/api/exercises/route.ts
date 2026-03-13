@@ -75,11 +75,20 @@ export async function POST(request: NextRequest) {
     }
     const profileTyped = profile as ProfileRow
 
-    // Inserimento: solo created_by_profile_id (profiles.id)
+    // muscle_group: form invia muscle_group (string), API accetta anche muscle_groups (array)
+    const muscleGroupValue =
+      body.muscle_groups !== undefined
+        ? Array.isArray(body.muscle_groups)
+          ? body.muscle_groups.join(', ')
+          : body.muscle_groups
+        : body.muscle_group !== undefined
+          ? (typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group))
+          : null
+
     const exerciseData: Database['public']['Tables']['exercises']['Insert'] = {
       name: body.name,
       description: body.description || null,
-      muscle_group: Array.isArray(body.muscle_groups) ? body.muscle_groups.join(', ') : (body.muscle_groups || null),
+      muscle_group: muscleGroupValue,
       equipment: body.equipment || null,
       difficulty: body.difficulty || null,
       video_url: body.video_url || null,

@@ -633,9 +633,12 @@ export function ExerciseFormModal({
       onOpenChange(false)
       onSuccess?.()
     } catch (e) {
+      const message =
+        e instanceof Error ? e.message : typeof e === 'object' && e !== null && 'message' in e ? String((e as { message: unknown }).message) : 'Salvataggio fallito. Riprova.'
+      logger.error('Errore salvataggio esercizio', e, { editing: !!editing })
       addToast({
         title: 'Errore',
-        message: e instanceof Error ? e.message : 'Errore',
+        message: message || 'Salvataggio fallito. Riprova.',
         variant: 'error',
       })
     } finally {

@@ -1,5 +1,5 @@
 'use client'
-import { supabase } from '@/lib/supabase/client'
+import { supabase, handleRefreshTokenError } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type { AuthContext as AuthContextType, UserProfile, UserRole } from '@/types/user'
@@ -393,13 +393,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!isMounted) return
 
         if (userError || !authUser) {
-          const errMsg = (userError as { message?: string })?.message ?? ''
-          if (
-            errMsg.includes('Invalid Refresh Token') ||
-            errMsg.includes('Refresh Token Not Found')
-          ) {
-            await supabase.auth.signOut()
-          }
+          if (handleRefreshTokenError(userError)) return
           setLoading(false)
           return
         }
@@ -431,11 +425,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             (error instanceof Error && error.name === 'AbortError') ||
             msg.includes('aborted') ||
             msg.includes('lock broken')
-          if (msg.includes('invalid refresh token') || msg.includes('refresh token not found')) {
-            await supabase.auth.signOut()
-            setLoading(false)
-            return
-          }
+          if (handleRefreshTokenError(error)) return
           if (isAbort) {
             setLoading(false)
             return

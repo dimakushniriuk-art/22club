@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase, handleRefreshTokenError } from '@/lib/supabase/client'
 
 // Stabilizza supabase come singleton per evitare loop infiniti
 const stableSupabase = supabase
@@ -73,6 +73,7 @@ export function useSupabase() {
         }
       } catch (err) {
         console.error(`[useSupabase] Errore getSession (${context})`, err)
+        if (isMounted && handleRefreshTokenError(err)) return null
         if (isMounted) {
           setUser(null)
           setLoading(false)
@@ -196,7 +197,7 @@ export function useSupabase() {
           clearTimeout(loadingTimeout)
           loadingTimeout = null
         }
-        // Se c'è un errore, imposta loading = false per permettere al componente di continuare
+        if (isMounted && handleRefreshTokenError(err)) return
         if (isMounted) {
           setUser(null)
           setLoading(false)
