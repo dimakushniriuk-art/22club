@@ -41,7 +41,7 @@ const MUSCLE_GROUP_MAPPING: Record<MuscleGroupFilterType, string[]> = {
   avambracci: ['avambracci', 'forearms'],
   polpacci: ['polpacci', 'calves'],
   tibiale: ['tibiale', 'tibialis', 'tibialis anterior'],
-  'vita-addome': ['vita', 'addome', 'abs', 'core'],
+  'vita-addome': ['vita', 'addome', 'addominali', 'abs', 'core'],
 }
 
 const MUSCLE_GROUP_OPTIONS: MuscleGroupOption[] = [
@@ -58,7 +58,7 @@ const MUSCLE_GROUP_OPTIONS: MuscleGroupOption[] = [
   { id: 'avambracci', label: 'Avambracci', dbValue: 'avambracci' },
   { id: 'polpacci', label: 'Polpacci', dbValue: 'polpacci' },
   { id: 'tibiale', label: 'Tibiale', dbValue: 'tibiale' },
-  { id: 'vita-addome', label: 'Vita', dbValue: 'vita' },
+  { id: 'vita-addome', label: 'Addominali', dbValue: 'addominali' },
 ]
 
 // Mappatura tra ID filtro e percorso SVG

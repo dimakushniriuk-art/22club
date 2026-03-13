@@ -67,8 +67,10 @@ export async function apiCall<T>(
   }
 
   try {
+    const isGet = (options.method ?? 'GET').toUpperCase() === 'GET'
     const response = await fetch(endpoint, {
       ...options,
+      cache: isGet ? 'no-store' : options.cache,
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,

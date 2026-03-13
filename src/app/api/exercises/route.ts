@@ -166,6 +166,8 @@ export async function PUT(request: NextRequest) {
     if (body.description !== undefined) updateData.description = body.description
     if (body.muscle_groups !== undefined) {
       updateData.muscle_group = Array.isArray(body.muscle_groups) ? body.muscle_groups.join(', ') : body.muscle_groups
+    } else if (body.muscle_group !== undefined) {
+      updateData.muscle_group = typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group)
     }
     if (body.equipment !== undefined) updateData.equipment = body.equipment
     if (body.difficulty !== undefined) updateData.difficulty = body.difficulty
