@@ -77,6 +77,7 @@ export default function EsercizioDetailPage() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
           <PageHeaderFixed
+            variant="chat"
             title="Esercizio"
             subtitle="Dettaglio esercizio"
             backHref={backHref}
@@ -102,6 +103,7 @@ export default function EsercizioDetailPage() {
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 sm:space-y-5 min-[834px]:px-6">
         <PageHeaderFixed
+          variant="chat"
           title={exercise.name}
           subtitle="Dettaglio esercizio"
           backHref={backHref}

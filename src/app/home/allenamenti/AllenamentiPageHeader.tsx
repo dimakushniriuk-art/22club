@@ -22,6 +22,7 @@ export function AllenamentiPageHeader({
 }: AllenamentiPageHeaderProps) {
   return (
     <PageHeaderFixed
+      variant="chat"
       title={title}
       subtitle={subtitle}
       onBack={onBack}

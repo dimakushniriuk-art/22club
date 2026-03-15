@@ -19,6 +19,7 @@ export function AppuntamentiPageHeader({
 }: AppuntamentiPageHeaderProps) {
   return (
     <PageHeaderFixed
+      variant="chat"
       title={title}
       subtitle={subtitle}
       onBack={onBack}

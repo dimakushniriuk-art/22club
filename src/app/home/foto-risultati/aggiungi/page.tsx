@@ -252,6 +252,7 @@ export default function AggiungiFotoPage() {
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
         <PageHeaderFixed
+          variant="chat"
           title="Aggiungi foto"
           subtitle="Scegli la vista e scatta: si aprirà la fotocamera"
           backHref="/home/foto-risultati"

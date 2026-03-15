@@ -331,6 +331,21 @@ function AllenamentiOggiPageContent() {
   const sessionStartedAtRef = React.useRef<number | null>(null)
   /** AudioContext per suoni timer (creato al primo uso dopo gesto utente) */
   const timerAudioContextRef = React.useRef<AudioContext | null>(null)
+  /** Ref del contenitore scrollabile per header/barra visibili solo in cima/fondo */
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+  const [showHeaderScroll, setShowHeaderScroll] = useState(true)
+  const [showBottomBarScroll, setShowBottomBarScroll] = useState(false)
+  const SCROLL_THRESHOLD = 60
+
+  const handleScrollOggi = React.useCallback(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const { scrollTop, clientHeight, scrollHeight } = el
+    const atTop = scrollTop <= SCROLL_THRESHOLD
+    const atBottom = scrollTop + clientHeight >= scrollHeight - SCROLL_THRESHOLD
+    setShowHeaderScroll(atTop)
+    setShowBottomBarScroll(atBottom)
+  }, [])
 
   // Carica workout session quando user è disponibile
   useEffect(() => {
@@ -520,6 +535,11 @@ function AllenamentiOggiPageContent() {
   const totalExercisesCount = workoutSession?.exercises?.length || 0
   const isWorkoutComplete =
     completedExercisesCount > 0 && completedExercisesCount === totalExercisesCount
+
+  // Ricalcola visibilità header/barra in base allo scroll quando cambia esercizio o contenuto
+  useEffect(() => {
+    handleScrollOggi()
+  }, [handleScrollOggi, currentBlockIndex, workoutSession?.exercises?.length])
 
   // Reset quando cambia il blocco (video rimosso)
   useEffect(() => {
@@ -1213,6 +1233,7 @@ function AllenamentiOggiPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
           <PageHeaderFixed
+            variant="chat"
             title="Allenamento"
             onBack={() => router.back()}
             icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
@@ -1260,6 +1281,7 @@ function AllenamentiOggiPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
           <PageHeaderFixed
+            variant="chat"
             title="Allenamento di Oggi"
             onBack={() => router.back()}
             icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
@@ -1292,14 +1314,22 @@ function AllenamentiOggiPageContent() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-3 min-[834px]:py-4 space-y-3 min-[834px]:space-y-4"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 3.5rem + 10px)' }}
+        ref={scrollContainerRef}
+        onScroll={handleScrollOggi}
+        className="min-h-0 flex-1 overflow-auto px-3 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-3 min-[834px]:py-4 space-y-3 min-[834px]:space-y-4"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 4.5rem + 10px)',
+          paddingBottom: 'calc(71px + 10px + env(safe-area-inset-bottom))',
+        }}
       >
-        <PageHeaderFixed
-          title={workoutSession.day_title ?? 'Allenamento'}
-          onBack={() => router.back()}
-          icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
-        />
+        {showHeaderScroll && (
+          <PageHeaderFixed
+            variant="chat"
+            title={workoutSession.day_title ?? 'Allenamento'}
+            onBack={() => router.back()}
+            icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
+          />
+        )}
 
         {/* Esercizio corrente */}
         {currentExercise
@@ -2438,10 +2468,21 @@ function AllenamentiOggiPageContent() {
           </Card>
         ) : null}
 
-        {/* Navigazione esercizi - fissata in basso (stile header: nero + linea cyan) */}
-        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-x-0 border-t border-white/10 bg-background shadow-[0_-4px_24px_-4px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)] pt-px">
-          <CardContent className="relative z-10 p-3">
-            <div className="flex items-center justify-between gap-2">
+        {/* Navigazione esercizi - stessa configurazione di PageHeaderFixed chat (sfondo nero, padding, linea cyan), visibile solo a fondo pagina */}
+        {showBottomBarScroll && (
+          <header
+            className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-xl border-t border-white/10 bg-black p-3 min-[834px]:p-4"
+            style={{ paddingBottom: 'calc(10px + env(safe-area-inset-bottom))' }}
+          >
+            <div
+              className="absolute inset-x-0 top-0 h-px"
+              style={{
+                background:
+                  'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+              }}
+              aria-hidden
+            />
+            <div className="relative z-10 flex items-center justify-between gap-2">
               <Button
                 onClick={previousExercise}
                 disabled={currentBlockIndex === 0}
@@ -2450,7 +2491,6 @@ function AllenamentiOggiPageContent() {
               >
                 ← Precedente
               </Button>
-
               <div className="flex min-w-0 flex-col items-center">
                 <span className="text-[10px] uppercase tracking-wider text-text-secondary">
                   Esercizio
@@ -2459,7 +2499,6 @@ function AllenamentiOggiPageContent() {
                   {currentBlockIndex + 1} / {blocks.length}
                 </span>
               </div>
-
               <Button
                 onClick={nextExercise}
                 disabled={currentBlockIndex === blocks.length - 1}
@@ -2469,8 +2508,8 @@ function AllenamentiOggiPageContent() {
                 Successivo →
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </header>
+        )}
       </div>
 
       {/* Rest Timer Modal */}

@@ -364,6 +364,7 @@ function MisurazioniContent() {
         style={SCROLL_CONTAINER_STYLE}
       >
         <PageHeaderFixed
+          variant="chat"
           title="Dashboard Misurazioni"
           subtitle="Grafici e analisi dei tuoi progressi"
           onBack={handleBack}

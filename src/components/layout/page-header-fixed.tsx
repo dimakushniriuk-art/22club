@@ -13,12 +13,17 @@ export interface PageHeaderFixedProps {
   className?: string
   /** Se true, header non fixed (per anteprime design-system). Default false. */
   static?: boolean
+  /** Stile come pagina chat: bg-black, border-b, padding uniforme. */
+  variant?: 'default' | 'chat'
 }
 
 const HEADER_BASE =
   'overflow-hidden bg-background px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
+const HEADER_BASE_CHAT =
+  'overflow-hidden bg-black border-b border-white/10 p-3 min-[834px]:p-4'
 const HEADER_FIXED =
   'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))] border-x-0 border-t-0'
+const HEADER_FIXED_CHAT = 'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))]'
 const HEADER_STATIC = 'relative rounded-lg pt-3 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]'
 
 const CYAN_LINE_STYLE = {
@@ -33,8 +38,11 @@ export function PageHeaderFixed({
   icon,
   className,
   static: isStatic = false,
+  variant = 'default',
 }: PageHeaderFixedProps) {
-  const headerClass = `${HEADER_BASE} ${isStatic ? HEADER_STATIC : HEADER_FIXED}${className ? ` ${className}` : ''}`.trim()
+  const base = variant === 'chat' ? HEADER_BASE_CHAT : HEADER_BASE
+  const fixed = variant === 'chat' ? HEADER_FIXED_CHAT : HEADER_FIXED
+  const headerClass = `${base} ${isStatic ? HEADER_STATIC : fixed}${className ? ` ${className}` : ''}`.trim()
   const hasBack = backHref != null || onBack != null
   const backContent =
     hasBack &&

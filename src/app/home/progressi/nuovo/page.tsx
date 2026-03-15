@@ -873,6 +873,7 @@ export default function NuovoProgressoPage() {
       <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
         <div className="space-y-4 px-3 pt-24 pb-24 py-4 sm:px-4 min-[834px]:px-6">
           <PageHeaderFixed
+            variant="chat"
             title="Nuova Misurazione"
             subtitle="Caricamento ultima misurazione..."
             onBack={handleBack}
@@ -893,6 +894,7 @@ export default function NuovoProgressoPage() {
     <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
       <div className="space-y-4 px-3 pt-24 pb-24 py-4 sm:px-4 min-[834px]:px-6">
         <PageHeaderFixed
+          variant="chat"
           title="Nuova Misurazione"
           subtitle={
             formData.peso_kg

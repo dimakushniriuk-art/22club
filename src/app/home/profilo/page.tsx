@@ -237,6 +237,7 @@ export default function ProfiloPage() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <PageHeaderFixed
+        variant="chat"
         title="Il mio Profilo"
         subtitle="Informazioni e statistiche"
         onBack={handleBack}

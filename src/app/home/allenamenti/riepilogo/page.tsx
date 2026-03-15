@@ -513,6 +513,7 @@ function RiepilogoPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
           <PageHeaderFixed
+            variant="chat"
             title="Riepilogo Allenamento"
             subtitle="Riepilogo sessione"
             onBack={() => router.back()}
@@ -555,6 +556,7 @@ function RiepilogoPageContent() {
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
         <PageHeaderFixed
+          variant="chat"
           title="Riepilogo Allenamento"
           subtitle={summary.workout_title}
           onBack={() => router.back()}

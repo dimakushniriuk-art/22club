@@ -283,6 +283,7 @@ export default function AllenamentiSchedaDetailPage() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
           <PageHeaderFixed
+            variant="chat"
             title="Scheda"
             subtitle="Dettaglio scheda allenamento"
             backHref="/home/allenamenti"
@@ -609,6 +610,7 @@ export default function AllenamentiSchedaDetailPage() {
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
         <PageHeaderFixed
+          variant="chat"
           title={plan.name}
           subtitle={plan.description ?? 'Scheda di allenamento'}
           backHref="/home/allenamenti"

@@ -413,9 +413,6 @@ function AppuntamentiPageContent() {
                   prenotare.
                 </p>
               )}
-              <p className="text-center text-xs text-text-tertiary">
-                Le fasce in evidenza sono libere per la prenotazione (max 6 posti per orario).
-              </p>
             </div>
           )}
 
