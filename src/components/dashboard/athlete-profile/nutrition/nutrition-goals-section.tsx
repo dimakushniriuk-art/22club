@@ -76,7 +76,10 @@ export function NutritionGoalsSection({
                 })
               }
               placeholder="Non specificato"
-              options={[{ value: '', label: 'Non specificato' }, ...OBIETTIVI_NUTRIZIONALI]}
+              options={[
+                { value: '', label: 'Non specificato' },
+                ...[...OBIETTIVI_NUTRIZIONALI].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+              ]}
             />
           ) : (
             nutrition?.obiettivo_nutrizionale && (
@@ -130,7 +133,10 @@ export function NutritionGoalsSection({
                 })
               }
               placeholder="Non specificato"
-              options={[{ value: '', label: 'Non specificato' }, ...DIETE]}
+              options={[
+                { value: '', label: 'Non specificato' },
+                ...[...DIETE].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+              ]}
             />
           ) : (
             nutrition?.dieta_seguita && (

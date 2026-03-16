@@ -60,15 +60,15 @@ export function WorkoutPlansHeader({
             <Filter className="h-4 w-4 mr-2" />
             Filtri
           </Button>
-          <div className="flex items-center gap-1 border border-white/5 rounded-lg p-1 bg-background-secondary/35">
+          <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
             <Button
               onClick={() => onViewModeChange('grid')}
               variant={viewMode === 'grid' ? 'primary' : 'ghost'}
               size="sm"
               className={
                 viewMode === 'grid'
-                  ? 'bg-primary/10 text-primary border border-primary/20'
-                  : 'text-text-secondary hover:text-primary hover:bg-primary/10 border-0'
+                  ? 'bg-cyan-500 text-white border-cyan-400/80 hover:bg-cyan-400 active:bg-cyan-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
+                  : 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent'
               }
             >
               <Grid3x3 className="h-4 w-4" />
@@ -79,8 +79,8 @@ export function WorkoutPlansHeader({
               size="sm"
               className={
                 viewMode === 'list'
-                  ? 'bg-primary/10 text-primary border border-primary/20'
-                  : 'text-text-secondary hover:text-primary hover:bg-primary/10 border-0'
+                  ? 'bg-cyan-500 text-white border-cyan-400/80 hover:bg-cyan-400 active:bg-cyan-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
+                  : 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent'
               }
             >
               <ListIcon className="h-4 w-4" />

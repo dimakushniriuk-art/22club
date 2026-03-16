@@ -51,16 +51,20 @@ export function WorkoutPlansFilters({
   const athleteOptions = useMemo(
     () => [
       { value: '', label: 'Tutti gli atleti' },
-      ...athletes.map((athlete) => ({
-        value: athlete.id,
-        label: athlete.name,
-      })),
+      ...athletes
+        .map((athlete) => ({ value: athlete.id, label: athlete.name }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'it')),
     ],
     [athletes],
   )
 
   const objectiveOptions = useMemo(
-    () => [{ value: '', label: 'Tutti gli obiettivi' }, ...WORKOUT_OBJECTIVES],
+    () => [
+      { value: '', label: 'Tutti gli obiettivi' },
+      ...[...WORKOUT_OBJECTIVES]
+        .map((o) => ({ value: o.value, label: o.label }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'it')),
+    ],
     [],
   )
 
@@ -100,10 +104,10 @@ export function WorkoutPlansFilters({
             onValueChange={onStatusFilterChange}
             options={[
               { value: '', label: 'Tutti gli stati' },
+              { value: 'archiviato', label: 'Archiviate' },
               { value: 'attivo', label: 'Attive' },
               { value: 'completato', label: 'Completate' },
-              { value: 'archiviato', label: 'Archiviate' },
-            ]}
+            ].sort((a, b) => (a.value === '' ? -1 : b.value === '' ? 1 : a.label.localeCompare(b.label, 'it')))}
             placeholder="Filtra per stato"
           />
         </div>

@@ -697,9 +697,10 @@ export function ExerciseFormModal({
                       }
                     }}
                     placeholder="Seleziona gruppo muscolare"
-                    options={MUSCLE_GROUPS.filter((g) => !selectedMuscleGroups.includes(g)).map(
-                      (g) => ({ value: g, label: g }),
-                    )}
+                    options={MUSCLE_GROUPS.filter((g) => !selectedMuscleGroups.includes(g))
+                      .slice()
+                      .sort((a, b) => a.localeCompare(b, 'it'))
+                      .map((g) => ({ value: g, label: g }))}
                   />
                 </div>
               </div>
@@ -746,7 +747,9 @@ export function ExerciseFormModal({
                         // Non resettare gli attrezzi già selezionati quando cambia categoria
                       }}
                       placeholder="Seleziona categoria"
-                      options={EQUIPMENT_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+                      options={[...EQUIPMENT_CATEGORIES]
+                        .sort((a, b) => a.localeCompare(b, 'it'))
+                        .map((cat) => ({ value: cat, label: cat }))}
                     />
                   </div>
                   <div>
@@ -769,6 +772,8 @@ export function ExerciseFormModal({
                       disabled={!equipmentCategory}
                       options={getFilteredEquipment()
                         .filter((e) => !selectedEquipment.includes(e))
+                        .slice()
+                        .sort((a, b) => a.localeCompare(b, 'it'))
                         .map((e) => ({ value: e, label: e }))}
                     />
                   </div>
@@ -814,10 +819,10 @@ export function ExerciseFormModal({
                     }
                     placeholder="Seleziona difficoltà"
                     options={[
-                      { value: 'bassa', label: 'Principiante' },
-                      { value: 'media', label: 'Intermedio' },
                       { value: 'alta', label: 'Avanzato' },
-                    ]}
+                      { value: 'media', label: 'Intermedio' },
+                      { value: 'bassa', label: 'Principiante' },
+                    ].sort((a, b) => a.label.localeCompare(b.label, 'it'))}
                   />
                 </div>
                 <div />

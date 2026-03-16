@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { Progress } from '@/components/ui'
+import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui'
 import { ExerciseCatalog } from './exercise-catalog'
-import { ChevronLeft, ChevronRight, Check, ArrowLeft, Zap, Plus, Pencil, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, Zap, Plus, Pencil, Trash2 } from 'lucide-react'
 import type { Exercise, WorkoutWizardData, WorkoutDayExerciseData, WorkoutDayData, DayItem } from '@/types/workout'
 import { useWorkoutWizard } from '@/hooks/workout/use-workout-wizard'
 import {
@@ -20,7 +19,6 @@ import { List, Calendar, Dumbbell, Target } from 'lucide-react'
 import { Badge } from '@/components/ui'
 import { Card, CardContent } from '@/components/ui'
 import Image from 'next/image'
-import Link from 'next/link'
 
 interface WorkoutWizardContentProps {
   /** (workoutData, circuitList) – circuitList opzionale per persistenza circuiti in Supabase */
@@ -96,6 +94,14 @@ export function WorkoutWizardContent({
     },
   })
 
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0)
+
+  useEffect(() => {
+    if (wizardData.days.length > 0 && selectedDayIndex >= wizardData.days.length) {
+      setSelectedDayIndex(Math.max(0, wizardData.days.length - 1))
+    }
+  }, [wizardData.days.length, selectedDayIndex])
+
   const [circuitPickerOpen, setCircuitPickerOpen] = useState(false)
   const [circuitPickerStep, setCircuitPickerStep] = useState<'select' | 'configure'>('select')
   const [circuitExerciseIds, setCircuitExerciseIds] = useState<string[]>([])
@@ -149,23 +155,23 @@ export function WorkoutWizardContent({
     } else {
       const newId = `circuit-${Date.now()}`
       setCircuitList((prev) => [...prev, { id: newId, params: [...circuitExerciseParams] }])
-      addCircuitToDay(0, newId)
+      addCircuitToDay(selectedDayIndex, newId)
     }
     setCircuitExerciseIds([])
     setCircuitExerciseParams([])
     closeCircuitModal()
-  }, [editingCircuitId, circuitExerciseParams, closeCircuitModal, addCircuitToDay])
+  }, [editingCircuitId, circuitExerciseParams, closeCircuitModal, addCircuitToDay, selectedDayIndex])
 
   const toggleCircuitInDay = useCallback(
     (circuitId: string) => {
-      const day0 = wizardData.days[0]
-      const inDay1 =
-        day0 &&
-        getDayItems(day0).some((i) => i.type === 'circuit' && i.circuitId === circuitId)
-      if (inDay1) removeCircuitFromDay(0, circuitId)
-      else addCircuitToDay(0, circuitId)
+      const day = wizardData.days[selectedDayIndex]
+      const inDay =
+        day &&
+        getDayItems(day).some((i) => i.type === 'circuit' && i.circuitId === circuitId)
+      if (inDay) removeCircuitFromDay(selectedDayIndex, circuitId)
+      else addCircuitToDay(selectedDayIndex, circuitId)
     },
-    [wizardData.days, getDayItems, addCircuitToDay, removeCircuitFromDay],
+    [wizardData.days, selectedDayIndex, getDayItems, addCircuitToDay, removeCircuitFromDay],
   )
 
   const removeCircuit = useCallback(
@@ -206,6 +212,244 @@ export function WorkoutWizardContent({
     }))
   }
 
+  /** Rimuove il circuito solo dal giorno corrente (non elimina la definizione) */
+  const removeCircuitFromCurrentDay = useCallback(
+    (circuitId: string) => {
+      removeCircuitFromDay(selectedDayIndex, circuitId)
+    },
+    [selectedDayIndex, removeCircuitFromDay],
+  )
+
+  const renderCircuitSection = () => {
+    const currentDay = wizardData.days[selectedDayIndex]
+    const dayLabel = currentDay?.title?.trim() || (currentDay ? `Giorno ${currentDay.day_number}` : '')
+    const dayItems = currentDay ? getDayItems(currentDay) : []
+    const circuitIdsInDay = dayItems
+      .filter((i): i is { type: 'circuit'; circuitId: string } => i.type === 'circuit')
+      .map((i) => i.circuitId)
+    const circuitsInThisDay = circuitIdsInDay
+      .map((id) => circuitList.find((c) => c.id === id))
+      .filter((c): c is { id: string; params: WorkoutDayExerciseData[] } => Boolean(c))
+    const circuitsNotInThisDay = circuitList.filter((c) => !circuitIdsInDay.includes(c.id))
+
+    const renderCircuitCard = (
+      circuit: { id: string; params: WorkoutDayExerciseData[] },
+      options: { inThisDay: boolean; onRemove?: () => void },
+    ) => (
+      <Card
+        key={circuit.id}
+        variant="default"
+        role={options.inThisDay ? undefined : 'button'}
+        tabIndex={options.inThisDay ? undefined : 0}
+        onClick={options.inThisDay ? undefined : () => addCircuitToDay(selectedDayIndex, circuit.id)}
+        onKeyDown={
+          options.inThisDay
+            ? undefined
+            : (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  addCircuitToDay(selectedDayIndex, circuit.id)
+                }
+              }
+        }
+        className={`relative w-full transition-all duration-200 border-teal-500/20 shadow-md hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-400/40 ${
+          options.inThisDay
+            ? 'ring-2 ring-teal-500/60 bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-cyan-500/10 border-teal-500/40 shadow-teal-500/20'
+            : 'cursor-pointer hover:scale-[1.01] bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-amber-500/20 bg-amber-500/5'
+        }`}
+      >
+        {options.inThisDay && (
+          <div className="absolute top-3 right-3 z-10 pointer-events-none">
+            <span className="inline-flex items-center bg-green-500 text-white border border-green-500 px-2 py-1 text-xs font-medium rounded-lg shadow-sm">
+              ✓ In questo giorno
+            </span>
+          </div>
+        )}
+        <CardContent className="relative p-4">
+          <div className="flex gap-4">
+            <div className="grid grid-cols-3 grid-rows-3 gap-1.5 w-[132px] h-[132px] shrink-0">
+              {Array.from({ length: 9 }).map((_, cellIndex) => {
+                const param = circuit.params[cellIndex]
+                if (!param) {
+                  return (
+                    <div
+                      key={`empty-${circuit.id}-${cellIndex}`}
+                      className="rounded-lg bg-surface-300/20 border border-surface-300/30"
+                    />
+                  )
+                }
+                const ex = exercises.find((e) => e.id === param.exercise_id)
+                const posterUrl = ex?.thumb_url || ex?.image_url || null
+                const videoUrl =
+                  ex?.video_url &&
+                  typeof ex.video_url === 'string' &&
+                  ex.video_url.startsWith('http')
+                    ? ex.video_url
+                    : null
+                return (
+                  <div
+                    key={`${circuit.id}-${param.exercise_id}`}
+                    className="relative rounded-lg overflow-hidden border border-amber-500/30 bg-background-tertiary/50 aspect-square"
+                  >
+                    {videoUrl ? (
+                      <video
+                        src={videoUrl}
+                        poster={posterUrl || undefined}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : posterUrl ? (
+                      <Image
+                        src={posterUrl}
+                        alt="Anteprima esercizio"
+                        className="w-full h-full object-cover"
+                        fill
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-amber-500/10 text-amber-400/60 text-xs">
+                        {cellIndex + 1}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <Zap className="h-5 w-5 text-amber-400 shrink-0" />
+                  <span className="text-text-primary font-semibold">Circuito configurato</span>
+                  <Badge
+                    variant="outline"
+                    size="sm"
+                    className="bg-amber-500/20 text-amber-400 border-amber-500/40 shrink-0"
+                  >
+                    {circuit.params.length} esercizi
+                  </Badge>
+                </div>
+                {options.inThisDay && options.onRemove ? (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        editCircuit(circuit)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4 mr-1.5" />
+                      Modifica
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:bg-red-500/10"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        options.onRemove?.()
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1.5" />
+                      Rimuovi da questo giorno
+                    </Button>
+                  </div>
+                ) : (
+                  !options.inThisDay && (
+                    <span className="text-text-tertiary text-sm shrink-0">
+                      Clicca per aggiungere a questo giorno
+                    </span>
+                  )
+                )}
+              </div>
+              <ul className="mt-3 space-y-1 text-text-secondary text-sm">
+                {circuit.params.map((param, idx) => {
+                  const ex = exercises.find((e) => e.id === param.exercise_id)
+                  const label = ex?.name ?? 'Esercizio'
+                  const details = [
+                    param.target_sets != null && `${param.target_sets} serie`,
+                    param.target_reps != null && `${param.target_reps} rip`,
+                    param.target_weight != null &&
+                      param.target_weight > 0 &&
+                      `${param.target_weight} kg`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')
+                  return (
+                    <li key={param.exercise_id} className="flex items-center gap-2">
+                      <span className="text-amber-400/80 font-medium w-6">{idx + 1}.</span>
+                      <span className="text-text-primary">{label}</span>
+                      {details && (
+                        <span className="text-text-tertiary text-xs">({details})</span>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h3 className="text-text-primary text-lg font-bold flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-400" />
+              Circuito
+            </h3>
+            <p className="text-text-secondary text-sm mt-1">
+              Solo per questo giorno ({dayLabel}). Crea un nuovo circuito o riusa uno esistente da un altro giorno.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/60 shrink-0"
+            onClick={openNewCircuit}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Aggiungi esercizi per il circuito
+          </Button>
+        </div>
+
+        {/* Circuiti presenti in questo giorno */}
+        {circuitsInThisDay.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-text-primary text-sm font-semibold">Circuiti in questo giorno</h4>
+            {circuitsInThisDay.map((circuit) =>
+              renderCircuitCard(circuit, {
+                inThisDay: true,
+                onRemove: () => removeCircuitFromCurrentDay(circuit.id),
+              }),
+            )}
+          </div>
+        )}
+
+        {/* Circuiti esistenti (altri giorni) che si possono aggiungere a questo giorno */}
+        {circuitsNotInThisDay.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-text-primary text-sm font-semibold">Riusa circuito da un altro giorno</h4>
+            <div className="space-y-3">
+              {circuitsNotInThisDay.map((circuit) =>
+                renderCircuitCard(circuit, { inThisDay: false }),
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -233,6 +477,8 @@ export function WorkoutWizardContent({
             onExerciseSelect={addExerciseToDay}
             circuitList={circuitList}
             getDayItems={getDayItemsForStep}
+            selectedDayIndex={selectedDayIndex}
+            circuitSection={renderCircuitSection()}
           />
         )
       case 4:
@@ -268,54 +514,33 @@ export function WorkoutWizardContent({
 
   return (
     <div className="relative flex flex-1 flex-col bg-background min-h-0">
-      {/* Header fisso */}
+      {/* Header unico: titolo + riga con Indietro, stepper al centro, Annulla/Avanti */}
       <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4">
-        <div className="pb-0 relative z-10 max-w-3xl mx-auto w-full">
-          {/* Breadcrumb */}
-          <div className="mb-3 hidden">
-            <Link
-              href="/dashboard/schede"
-              className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-teal-400 transition-colors group"
+        <div className="relative z-10 max-w-5xl mx-auto w-full space-y-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-center text-text-primary">
+            Nuova Scheda Allenamento
+          </h1>
+
+          <div className="flex items-center justify-between gap-4 min-w-0">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="flex-shrink-0 border-white/10 text-text-secondary hover:bg-background-secondary/50 hover:text-text-primary hover:border-primary/20 whitespace-nowrap"
             >
-              <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-              <span>Torna alle schede</span>
-            </Link>
-          </div>
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Indietro
+            </Button>
 
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold truncate text-text-primary">
-                Nuova Scheda Allenamento
-              </h1>
-            </div>
-          </div>
-
-          {/* Progress bar con step indicator */}
-          <div>
-            <div className="hidden">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-text-primary text-xs font-medium truncate">
-                  {currentStepData.title}
-                </span>
-                <span className="text-text-tertiary text-[10px] whitespace-nowrap">
-                  · Passo {currentStep} di {STEPS.length}
-                </span>
-              </div>
-              <span className="text-text-secondary text-xs font-medium whitespace-nowrap ml-2">
-                {Math.round(progress)}%
-              </span>
-            </div>
-            <Progress value={progress} className="h-1.5 hidden" />
-
-            {/* Step indicators - compatti per mobile */}
-            <div className="flex items-center justify-start gap-2 overflow-x-auto pb-1 pt-2.5">
+            {/* Stepper centrato tra i pulsanti */}
+            <div className="flex flex-1 items-center justify-center gap-2 overflow-x-auto pb-1 min-w-0 px-2">
               {STEPS.map((step, index) => {
                 const StepIconComponent = step.icon
                 const isActive = index + 1 === currentStep
                 const isCompleted = index + 1 < currentStep
 
                 return (
-                  <div key={step.id} className="flex flex-1 items-center min-w-0">
+                  <div key={step.id} className="flex flex-1 items-center min-w-0 max-w-[72px] sm:max-w-none">
                     <div className="flex flex-col items-center flex-1 min-w-0">
                       <div
                         className={`flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full border-2 transition-all duration-300 flex-shrink-0 ${
@@ -347,7 +572,7 @@ export function WorkoutWizardContent({
                     </div>
                     {index < STEPS.length - 1 && (
                       <div
-                        className={`mx-2 md:mx-3 h-px flex-1 min-w-[12px] transition-colors ${
+                        className={`mx-1 md:mx-3 h-px flex-1 min-w-[8px] transition-colors flex-shrink-0 ${
                           isCompleted ? 'bg-green-500/40' : 'bg-white/10'
                         }`}
                       />
@@ -356,257 +581,77 @@ export function WorkoutWizardContent({
                 )
               })}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Barra navigazione (sopra il contenuto / prima degli esercizi) */}
-      <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4">
-        <div className="relative z-10 flex items-center justify-between gap-4 max-w-3xl mx-auto w-full">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="border-white/10 text-text-secondary hover:bg-background-secondary/50 hover:text-text-primary hover:border-primary/20 whitespace-nowrap"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Indietro
-          </Button>
+            <div className="flex flex-shrink-0 gap-3">
+              {onCancel && (
+                <Button
+                  variant="ghost"
+                  onClick={onCancel}
+                  className="text-text-secondary hover:text-text-primary hover:bg-background-secondary/50 border border-transparent hover:border-white/10 whitespace-nowrap"
+                >
+                  Annulla
+                </Button>
+              )}
 
-          <div className="flex gap-3">
-            {onCancel && (
-              <Button
-                variant="ghost"
-                onClick={onCancel}
-                className="text-text-secondary hover:text-text-primary hover:bg-background-secondary/50 border border-transparent hover:border-white/10 whitespace-nowrap"
-              >
-                Annulla
-              </Button>
-            )}
-
-            {currentStep === STEPS.length ? (
-              <Button
-                onClick={handleSave}
-                disabled={!canProceed() || isLoading}
-                className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Salvataggio...
-                  </>
-                ) : (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Salva scheda
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
-              >
-                Avanti
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Sezione Circuito (solo step 3, sotto la barra navigazione) */}
-      {currentStep === 3 && (
-        <div className="relative shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4">
-          <div className="max-w-3xl mx-auto w-full flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h3 className="text-text-primary text-lg font-bold flex items-center gap-2">
-                <Zap className="h-5 w-5 text-amber-400" />
-                Circuito
-              </h3>
-              <p className="text-text-secondary text-sm mt-1">
-                Aggiungi esercizi da eseguire a circuito (in sequenza, con eventuali giri)
-              </p>
+              {currentStep === STEPS.length ? (
+                <Button
+                  onClick={handleSave}
+                  disabled={!canProceed() || isLoading}
+                  className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Salvataggio...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Salva scheda
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
+                >
+                  Avanti
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/60 shrink-0"
-              onClick={openNewCircuit}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Aggiungi esercizi per il circuito
-            </Button>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Lista circuiti configurati: uno sotto l'altro */}
-      {currentStep === 3 && circuitList.length > 0 && (
-        <div className="shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-4 space-y-4">
-          {circuitList.map((circuit) => {
-            const day0 = wizardData.days[0]
-            const isCircuitInDay1 =
-              day0 &&
-              getDayItems(day0).some((i) => i.type === 'circuit' && i.circuitId === circuit.id)
-            return (
-              <Card
-                key={circuit.id}
-                variant="default"
-                role="button"
-                tabIndex={0}
-                onClick={() => toggleCircuitInDay(circuit.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    toggleCircuitInDay(circuit.id)
-                  }
-                }}
-                className={`relative w-full cursor-pointer transition-all duration-200 border-teal-500/20 shadow-md hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-400/40 hover:scale-[1.01] ${
-                  isCircuitInDay1
-                    ? 'ring-2 ring-teal-500/60 bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-cyan-500/10 border-teal-500/40 shadow-teal-500/20'
-                    : 'bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-amber-500/20 bg-amber-500/5'
-                }`}
-              >
-                {isCircuitInDay1 && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-cyan-500/10 pointer-events-none rounded-[16px]" />
-                )}
-                {isCircuitInDay1 && (
-                  <div className="absolute top-3 right-3 z-10 pointer-events-none">
-                    <span className="inline-flex items-center bg-green-500 text-white border border-green-500 px-2 py-1 text-xs font-medium rounded-lg shadow-sm">
-                      ✓ Selezionato
-                    </span>
-                  </div>
-                )}
-                <CardContent className="relative p-4">
-                <div className="flex gap-4">
-                  {/* Griglia 3x3 anteprime video/immagini a sinistra */}
-                  <div className="grid grid-cols-3 grid-rows-3 gap-1.5 w-[132px] h-[132px] shrink-0">
-                    {Array.from({ length: 9 }).map((_, cellIndex) => {
-                      const param = circuit.params[cellIndex]
-                      if (!param) {
-                        return (
-                          <div
-                            key={`empty-${circuit.id}-${cellIndex}`}
-                            className="rounded-lg bg-surface-300/20 border border-surface-300/30"
-                          />
-                        )
-                      }
-                      const ex = exercises.find((e) => e.id === param.exercise_id)
-                      const posterUrl = ex?.thumb_url || ex?.image_url || null
-                      const videoUrl =
-                        ex?.video_url &&
-                        typeof ex.video_url === 'string' &&
-                        ex.video_url.startsWith('http')
-                          ? ex.video_url
-                          : null
-                      return (
-                        <div
-                          key={`${circuit.id}-${param.exercise_id}`}
-                          className="relative rounded-lg overflow-hidden border border-amber-500/30 bg-background-tertiary/50 aspect-square"
-                        >
-                          {videoUrl ? (
-                            <video
-                              src={videoUrl}
-                              poster={posterUrl || undefined}
-                              className="w-full h-full object-cover"
-                              muted
-                              loop
-                              playsInline
-                              preload="metadata"
-                            />
-                          ) : posterUrl ? (
-                            <Image
-                              src={posterUrl}
-                              alt="Anteprima esercizio"
-                              className="w-full h-full object-cover"
-                              fill
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-amber-500/10 text-amber-400/60 text-xs">
-                              {cellIndex + 1}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                  {/* Testi a destra */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <Zap className="h-5 w-5 text-amber-400 shrink-0" />
-                        <span className="text-text-primary font-semibold">Circuito configurato</span>
-                        <Badge
-                          variant="outline"
-                          size="sm"
-                          className="bg-amber-500/20 text-amber-400 border-amber-500/40 shrink-0"
-                        >
-                          {circuit.params.length} esercizi
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            editCircuit(circuit)
-                          }}
-                        >
-                          <Pencil className="h-4 w-4 mr-1.5" />
-                          Modifica
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-400 hover:bg-red-500/10"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            removeCircuit(circuit.id)
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1.5" />
-                          Rimuovi
-                        </Button>
-                      </div>
-                    </div>
-                    <ul className="mt-3 space-y-1 text-text-secondary text-sm">
-                      {circuit.params.map((param, idx) => {
-                        const ex = exercises.find((e) => e.id === param.exercise_id)
-                        const label = ex?.name ?? 'Esercizio'
-                        const details = [
-                          param.target_sets != null && `${param.target_sets} serie`,
-                          param.target_reps != null && `${param.target_reps} rip`,
-                          param.target_weight != null &&
-                            param.target_weight > 0 &&
-                            `${param.target_weight} kg`,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')
-                        return (
-                          <li key={param.exercise_id} className="flex items-center gap-2">
-                            <span className="text-amber-400/80 font-medium w-6">{idx + 1}.</span>
-                            <span className="text-text-primary">{label}</span>
-                            {details && (
-                              <span className="text-text-tertiary text-xs">({details})</span>
-                            )}
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            )
-          })}
+      {/* Tab giorni (step 3, 4, 5: quantità da wizardData.days aggiunti in step 2) */}
+      {currentStep >= 3 && wizardData.days.length > 0 && (
+        <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-3">
+          <div className="max-w-3xl mx-auto w-full">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+              {wizardData.days.map((day, index) => {
+                const isActive = selectedDayIndex === index
+                const label = day.title?.trim() || `Giorno ${day.day_number}`
+                return (
+                  <Button
+                    key={index}
+                    type="button"
+                    variant={isActive ? undefined : 'outline'}
+                    onClick={() => setSelectedDayIndex(index)}
+                    className={
+                      isActive
+                        ? 'flex-shrink-0 h-11 min-h-11 px-5 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 border-0 whitespace-nowrap transition-all'
+                        : 'flex-shrink-0 h-11 min-h-11 px-5 border-white/10 text-text-secondary hover:bg-background-secondary/50 hover:text-text-primary hover:border-primary/20 whitespace-nowrap'
+                    }
+                  >
+                    {label}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
         </div>
       )}
 
@@ -699,7 +744,7 @@ export function WorkoutWizardContent({
       {/* Contenuto scrollabile */}
       <div className="relative flex-1 overflow-y-auto px-4 sm:px-6 py-6 min-h-0">
         <div
-          className={`relative z-10 mx-auto w-full ${
+          className={`relative z-10 mx-auto w-full flex flex-col gap-6 ${
             currentStep === 3 || currentStep === 4
               ? 'max-w-[1800px]'
               : currentStep === 1

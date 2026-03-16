@@ -174,7 +174,10 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   })
                 }
                 placeholder="Non specificato"
-                options={[{ value: '', label: 'Non specificato' }, ...INTENSITA_MASSAGGIO]}
+                options={[
+                  { value: '', label: 'Non specificato' },
+                  ...[...INTENSITA_MASSAGGIO].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                ]}
               />
             ) : (
               massage?.intensita_preferita && (
@@ -430,7 +433,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                     })
                   }
                   placeholder="Seleziona tipo"
-                  options={TIPI_MASSAGGIO}
+                  options={[...TIPI_MASSAGGIO].sort((a, b) => a.label.localeCompare(b.label, 'it'))}
                 />
               </div>
               <div className="space-y-2">

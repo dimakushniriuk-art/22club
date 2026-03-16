@@ -141,19 +141,12 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="relative overflow-hidden max-w-md rounded-2xl border border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary backdrop-blur-xl shadow-xl shadow-teal-500/10 p-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+      <DialogContent className="relative overflow-hidden max-w-md rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0">
         <div className="relative z-10 p-6">
-          <DialogHeader className="pb-4 border-b border-teal-500/20 mb-5">
+          <DialogHeader className="pb-4 border-b border-white/10 mb-5">
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                style={{
-                  backgroundColor: colors.athleteAccents.teal.bg,
-                  border: `1px solid ${colors.athleteAccents.teal.border}`,
-                }}
-              >
-                <UserRoundPlus className="h-5 w-5" style={{ color: colors.athleteAccents.teal.bar }} />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                <UserRoundPlus className="h-5 w-5" />
               </div>
               <div>
                 <DialogTitle className="text-xl font-bold text-text-primary">

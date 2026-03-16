@@ -133,9 +133,10 @@ export function WorkoutWizardStep4({
       <div className="space-y-6">
         {wizardData.days.map((day, dayIndex) => (
           <Card
+            id={`day-${dayIndex}`}
             key={dayIndex}
             variant="default"
-            className="relative overflow-hidden transition-all duration-200 hover:border-white/20"
+            className="relative overflow-hidden transition-all duration-200 hover:border-white/20 scroll-mt-4"
           >
             <CardHeader className="border-b border-white/10">
               <CardTitle size="sm" className="flex items-center gap-2">

@@ -55,16 +55,24 @@ export const mockPayments: Payment[] = [
   },
 ]
 
-export const PAYMENT_METHODS = [
+const _PAYMENT_METHODS_BASE = [
   { value: '', label: 'Tutti i metodi' },
   { value: 'Contanti', label: 'Contanti' },
   { value: 'Bonifico', label: 'Bonifico' },
   { value: 'Carta di Credito', label: 'Carta di Credito' },
   { value: 'PayPal', label: 'PayPal' },
 ]
+export const PAYMENT_METHODS = [
+  _PAYMENT_METHODS_BASE[0],
+  ..._PAYMENT_METHODS_BASE.slice(1).sort((a, b) => a.label.localeCompare(b.label, 'it')),
+]
 
-export const PAYMENT_FILTERS = [
+const _PAYMENT_FILTERS_BASE = [
   { value: '', label: 'Tutti i pagamenti' },
   { value: 'active', label: 'Solo attivi' },
   { value: 'reversals', label: 'Solo storni' },
+]
+export const PAYMENT_FILTERS = [
+  _PAYMENT_FILTERS_BASE[0],
+  ..._PAYMENT_FILTERS_BASE.slice(1).sort((a, b) => a.label.localeCompare(b.label, 'it')),
 ]

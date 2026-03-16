@@ -463,12 +463,11 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
   return (
     <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] relative overflow-hidden rounded-xl border border-teal-500/20 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary backdrop-blur-xl shadow-lg shadow-teal-500/10 p-0 flex flex-col">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+      <DialogContent className="max-w-2xl max-h-[90vh] relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0 flex flex-col">
         <div className="relative z-10 p-6 overflow-y-auto flex-1">
-          <DialogHeader className="pb-4 border-b border-teal-500/20 mb-6">
+          <DialogHeader className="pb-4 border-b border-white/10 mb-6">
             <div className="flex items-center gap-3">
-              <div className="bg-teal-500/20 text-teal-400 rounded-full p-2">
+              <div className="bg-primary/10 text-primary rounded-full p-2 border border-primary/20">
                 <Euro className="h-5 w-5" />
               </div>
               <div>
@@ -501,10 +500,12 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
                   setFormData((prev) => ({ ...prev, athlete_id: value || '' }))
                 }}
                 placeholder="Seleziona atleta..."
-                options={athletes.map((athlete) => ({
-                  value: athlete.id,
-                  label: `${athlete.nome} ${athlete.cognome}`,
-                }))}
+                options={athletes
+                  .map((athlete) => ({
+                    value: athlete.id,
+                    label: `${athlete.nome} ${athlete.cognome}`,
+                  }))
+                  .sort((a, b) => a.label.localeCompare(b.label, 'it'))}
               />
             </div>
 
@@ -599,11 +600,11 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
                 )}
               </div>
               {invoicePreview && (
-                <div className="mt-2 p-3 bg-background-tertiary/50 rounded-lg border border-teal-500/20">
+                <div className="mt-2 p-3 bg-background-tertiary/50 rounded-lg border border-white/10">
                   <p className="text-text-secondary text-xs mb-2">Anteprima fattura:</p>
                   <iframe
                     src={invoicePreview}
-                    className="w-full h-64 rounded border border-teal-500/20"
+                    className="w-full h-64 rounded border border-white/10"
                     title="Anteprima fattura"
                   />
                 </div>
@@ -624,7 +625,7 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
               <Button
                 type="submit"
                 disabled={loading || uploading}
-                className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200"
+                className="bg-cyan-500 text-white hover:bg-cyan-400 font-semibold border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200"
               >
                 {loading || uploading ? (
                   <>

@@ -59,7 +59,12 @@ export function WorkoutWizardStep1({
               <SimpleSelect
                 value={wizardData.objective || ''}
                 onValueChange={(value) => onWizardDataChange({ objective: value || undefined })}
-                options={[{ value: '', label: 'Seleziona un obiettivo' }, ...WORKOUT_OBJECTIVES]}
+                options={[
+                  { value: '', label: 'Seleziona un obiettivo' },
+                  ...[...WORKOUT_OBJECTIVES]
+                    .map((o) => ({ value: o.value, label: o.label }))
+                    .sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                ]}
                 placeholder="Seleziona un obiettivo"
               />
               <p className="text-text-tertiary mt-2 text-sm leading-relaxed">
@@ -74,10 +79,9 @@ export function WorkoutWizardStep1({
                 onValueChange={(value) => onWizardDataChange({ athlete_id: value })}
                 options={[
                   { value: '', label: 'Seleziona un atleta' },
-                  ...athletes.map((athlete) => ({
-                    value: athlete.id,
-                    label: athlete.name,
-                  })),
+                  ...athletes
+                    .map((athlete) => ({ value: athlete.id, label: athlete.name }))
+                    .sort((a, b) => a.label.localeCompare(b.label, 'it')),
                 ]}
                 placeholder="Seleziona un atleta"
               />

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import Image from 'next/image'
+import { LayoutGrid } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type MuscleGroupFilterType =
@@ -83,9 +84,11 @@ interface MuscleGroupFilterProps {
   selectedGroup: string
   onSelect: (groupId: MuscleGroupFilterType | null) => void
   className?: string
+  /** Se true, i pulsanti si ridimensionano per restare in una riga entro il contenitore (nessuno scroll) */
+  responsive?: boolean
 }
 
-export function MuscleGroupFilter({ selectedGroup, onSelect, className }: MuscleGroupFilterProps) {
+export function MuscleGroupFilter({ selectedGroup, onSelect, className, responsive }: MuscleGroupFilterProps) {
   // Trova quale filtro è selezionato in base al valore del database
   const selectedFilterId = useMemo(() => {
     if (!selectedGroup) return null
@@ -111,7 +114,13 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className }: Muscle
   }
 
   return (
-    <div className={cn('flex flex-wrap gap-2', className)}>
+    <div
+      className={cn(
+        'flex gap-2',
+        responsive ? 'w-full min-w-0 flex-nowrap' : 'flex-wrap',
+        className,
+      )}
+    >
       {MUSCLE_GROUP_OPTIONS.map((option) => {
         const isSelected = selectedFilterId === option.id
 
@@ -121,24 +130,30 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className }: Muscle
             type="button"
             onClick={() => handleClick(option)}
             className={cn(
-              'flex flex-col items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 transition-all duration-200',
-              'w-[90px] h-[92px] cursor-pointer',
+              'flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 transition-all duration-200 cursor-pointer',
+              responsive
+                ? 'min-w-[56px] flex-1 max-w-[120px] basis-0 shrink'
+                : 'w-[90px] h-[92px] shrink-0',
+              !responsive && 'h-[92px]',
+              responsive && 'min-h-[72px] max-h-[92px]',
               isSelected
-                ? 'bg-primary/14 border border-primary/30 shadow-[0_0_14px_rgba(0,255,200,0.18)] ring-1 ring-primary/15'
+                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 border border-cyan-400/80 shadow-md shadow-teal-500/20 text-white'
                 : 'bg-background-secondary/25 border border-white/5 hover:bg-primary/8 hover:border-primary/20 hover:ring-1 hover:ring-primary/15',
             )}
           >
             {/* Icona SVG o testo speciale per Multipli */}
             <div
               className={cn(
-                'h-[45px] w-[45px] flex items-center justify-center rounded-lg overflow-hidden relative',
-                isSelected ? 'bg-primary/20 drop-shadow-[0_0_10px_rgba(0,255,200,0.25)]' : 'bg-background-tertiary/50',
+                'flex items-center justify-center rounded-lg overflow-hidden relative shrink-0',
+                responsive ? 'h-8 w-8 min-w-8 min-h-8' : 'h-[45px] w-[45px]',
+                isSelected ? 'bg-white/20' : 'bg-background-tertiary/50',
               )}
             >
               {option.id === 'multipli' ? (
                 <span className={cn(
-                  'text-base font-bold',
-                  isSelected ? 'text-primary' : 'text-text-secondary'
+                  'font-bold',
+                  responsive ? 'text-xs' : 'text-base',
+                  isSelected ? 'text-white' : 'text-text-secondary'
                 )}>
                   MIX
                 </span>
@@ -146,9 +161,9 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className }: Muscle
                 <Image
                   src={MUSCLE_GROUP_ICONS[option.id]}
                   alt={option.label}
-                  width={45}
-                  height={45}
-                  className="object-contain"
+                  width={responsive ? 32 : 45}
+                  height={responsive ? 32 : 45}
+                  className={cn('object-contain', isSelected && 'brightness-0 invert')}
                   onError={(e) => {
                     // Fallback se l'immagine non esiste - mostra iniziale del gruppo
                     const target = e.target as HTMLImageElement
@@ -166,8 +181,9 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className }: Muscle
             </div>
             <span
               className={cn(
-                'text-xs font-medium text-center',
-                isSelected ? 'text-primary' : 'text-text-secondary',
+                'font-medium text-center truncate w-full px-0.5',
+                responsive ? 'text-[10px] leading-tight' : 'text-xs',
+                isSelected ? 'text-white' : 'text-text-secondary',
               )}
             >
               {option.label}
@@ -175,6 +191,41 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className }: Muscle
           </button>
         )
       })}
+      {/* TUTTI: nessun filtro, visualizza tutti gli esercizi */}
+      <button
+        type="button"
+        onClick={() => onSelect(null)}
+        className={cn(
+          'flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 transition-all duration-200 cursor-pointer',
+          responsive
+            ? 'min-w-[56px] flex-1 max-w-[120px] basis-0 shrink'
+            : 'w-[90px] h-[92px] shrink-0',
+          !responsive && 'h-[92px]',
+          responsive && 'min-h-[72px] max-h-[92px]',
+          selectedFilterId === null
+            ? 'bg-gradient-to-r from-teal-500 to-cyan-500 border border-cyan-400/80 shadow-md shadow-teal-500/20 text-white'
+            : 'bg-background-secondary/25 border border-white/5 hover:bg-primary/8 hover:border-primary/20 hover:ring-1 hover:ring-primary/15',
+        )}
+      >
+        <div
+          className={cn(
+            'flex items-center justify-center rounded-lg overflow-hidden relative shrink-0',
+            responsive ? 'h-8 w-8 min-w-8 min-h-8' : 'h-[45px] w-[45px]',
+            selectedFilterId === null ? 'bg-white/20' : 'bg-background-tertiary/50',
+          )}
+        >
+          <LayoutGrid className={cn('h-5 w-5', responsive && 'h-4 w-4', selectedFilterId === null ? 'text-white' : 'text-text-secondary')} />
+        </div>
+        <span
+          className={cn(
+            'font-medium text-center truncate w-full px-0.5',
+            responsive ? 'text-[10px] leading-tight' : 'text-xs',
+            selectedFilterId === null ? 'text-white' : 'text-text-secondary',
+          )}
+        >
+          Tutti
+        </span>
+      </button>
     </div>
   )
 }

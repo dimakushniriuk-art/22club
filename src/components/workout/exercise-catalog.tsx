@@ -5,12 +5,18 @@ import * as React from 'react'
 import Image from 'next/image'
 import { Filter, Grid3x3, List as ListIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { SimpleSelect } from '@/components/ui/simple-select'
 import { useIcon } from '@/components/ui/professional-icons'
+import {
+  MuscleGroupFilter,
+  muscleGroupFilterToDbValue,
+  dbValueMatchesFilter,
+  type MuscleGroupFilterType,
+} from '@/components/dashboard/muscle-group-filter'
 import type { Exercise, ExerciseFilter, MuscleGroup, Equipment } from '@/types/workout'
 
 function ExerciseImage({
@@ -279,12 +285,7 @@ export function ExerciseCatalog({
   // Prepara le icone di base
   const defaultMuscleIcon = useIcon('💪', { size: 16, className: 'text-teal-400' })
   const defaultEquipmentIcon = useIcon('🏋️', { size: 16, className: 'text-teal-400' })
-  const [tempFilters, setTempFilters] = useState<ExerciseFilter>({
-    search: '',
-    muscle_group: 'all',
-    equipment: 'all',
-    difficulty: 'all',
-  })
+  const [muscleGroupFilterId, setMuscleGroupFilterId] = useState<MuscleGroupFilterType | null>('multipli')
   const [filters, setFilters] = useState<ExerciseFilter>({
     search: '',
     muscle_group: 'all',
@@ -317,10 +318,9 @@ export function ExerciseCatalog({
         exercise.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         exercise.description?.toLowerCase().includes(filters.search.toLowerCase())
 
-      const matchesMuscleGroup =
-        filters.muscle_group === 'all' || !filters.muscle_group
-          ? true
-          : exercise.muscle_group === filters.muscle_group
+      const matchesMuscleGroup = muscleGroupFilterId
+        ? dbValueMatchesFilter(exercise.muscle_group ?? '', muscleGroupFilterId)
+        : true
 
       const matchesEquipment =
         filters.equipment === 'all' || !filters.equipment
@@ -334,25 +334,20 @@ export function ExerciseCatalog({
 
       return matchesSearch && matchesMuscleGroup && matchesEquipment && matchesDifficulty
     })
-  }, [exercises, filters])
+  }, [exercises, filters, muscleGroupFilterId])
 
   const handleFilterChange = (key: keyof ExerciseFilter, value: string) => {
-    setTempFilters((prev: ExerciseFilter) => ({ ...prev, [key]: value }))
-  }
-
-  const applyFilters = () => {
-    setFilters(tempFilters)
+    setFilters((prev: ExerciseFilter) => ({ ...prev, [key]: value }))
   }
 
   const clearFilters = () => {
-    const emptyFilters: ExerciseFilter = {
+    setMuscleGroupFilterId(null)
+    setFilters({
       search: '',
       muscle_group: 'all',
       equipment: 'all',
       difficulty: 'all',
-    }
-    setTempFilters(emptyFilters)
-    setFilters(emptyFilters)
+    })
   }
 
   const getDifficultyColor = (difficulty: string) => {
@@ -523,153 +518,127 @@ export function ExerciseCatalog({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h3 className="text-text-primary text-xl font-bold">Catalogo Esercizi</h3>
-          <p className="text-text-secondary text-sm leading-relaxed">
-            Scegli gli esercizi per il tuo allenamento
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => setShowFilters(!showFilters)}
-            variant="outline"
-            size="sm"
-            className="border-white/10 text-primary hover:bg-primary/10 hover:border-primary/25"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filtri
-          </Button>
-          <div className="flex items-center gap-2 border border-white/10 rounded-lg p-1 bg-background-secondary/30">
-            <Button
-              onClick={() => setViewMode('grid')}
-              variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-              size="sm"
-              className={
-                viewMode === 'grid'
-                  ? 'bg-teal-500/20 text-teal-400'
-                  : 'text-teal-400/60 hover:text-teal-400'
-              }
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button
-              onClick={() => setViewMode('list')}
-              variant={viewMode === 'list' ? 'primary' : 'ghost'}
-              size="sm"
-              className={
-                viewMode === 'list'
-                  ? 'bg-teal-500/20 text-teal-400'
-                  : 'text-teal-400/60 hover:text-teal-400'
-              }
-            >
-              <ListIcon className="h-4 w-4" />
-            </Button>
+      {/* Blocco unico: titolo + gruppi muscolari (una riga) + filtri estesi + view toggle */}
+      <Card
+        variant="default"
+        className="rounded-lg p-4 text-text-primary transition-all duration-200 border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none"
+      >
+        <CardContent className="p-0 space-y-3">
+          {/* Riga 1: Titolo + Filtri button + view toggle */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="min-w-0">
+              <h3 className="text-text-primary text-lg font-bold">Catalogo Esercizi</h3>
+              <p className="text-text-secondary text-sm">
+                Scegli gli esercizi per il tuo allenamento
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                onClick={() => setShowFilters(!showFilters)}
+                variant="outline"
+                size="sm"
+                className="border-white/10 text-primary hover:bg-primary/10 hover:border-primary/25"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filtri
+              </Button>
+              <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
+                <Button
+                  onClick={() => setViewMode('grid')}
+                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                  size="sm"
+                  className={
+                    viewMode === 'grid'
+                      ? 'bg-cyan-500 text-white border-cyan-400/80 hover:bg-cyan-400 active:bg-cyan-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
+                      : 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent'
+                  }
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => setViewMode('list')}
+                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                  size="sm"
+                  className={
+                    viewMode === 'list'
+                      ? 'bg-cyan-500 text-white border-cyan-400/80 hover:bg-cyan-400 active:bg-cyan-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
+                      : 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent'
+                  }
+                >
+                  <ListIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Filtri */}
-      {showFilters && (
-        <Card
-          variant="default"
-          className="relative overflow-hidden transition-all duration-200"
-        >
-          <CardHeader className="border-b border-white/10">
-            <CardTitle size="sm" className="flex items-center gap-2">
-              <span className="text-lg">🔍</span>
-              <span>Filtri</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            {/* Ricerca */}
-            <div>
-              <Input
-                placeholder="Cerca esercizi..."
-                value={tempFilters.search}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleFilterChange('search', e.target.value)
-                }
-                leftIcon="🔍"
+          {/* Riga 2: Gruppi muscolari in un'unica riga (si adattano o scroll orizzontale) */}
+          <div className="min-w-0">
+            <label className="text-text-secondary text-xs font-medium mb-1.5 block">
+              Gruppi muscolari
+            </label>
+            <div className="overflow-x-auto pb-1 scrollbar-thin -mx-0.5">
+              <MuscleGroupFilter
+                selectedGroup={muscleGroupFilterId ? muscleGroupFilterToDbValue(muscleGroupFilterId) : ''}
+                onSelect={setMuscleGroupFilterId}
+                responsive
               />
             </div>
+          </div>
 
-            {/* Filtri a griglia */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {/* Gruppo muscolare */}
-              <div>
-                <label className="text-text-primary text-sm font-medium">Gruppo muscolare</label>
-                <SimpleSelect
-                  value={tempFilters.muscle_group}
-                  onValueChange={(value: string) => handleFilterChange('muscle_group', value)}
-                  options={[
-                    { value: 'all', label: 'Tutti' },
-                    ...muscleGroups.map((group: MuscleGroup) => ({
-                      value: group.id,
-                      label: group.name,
-                    })),
-                  ]}
-                  placeholder="Seleziona gruppo"
+          {/* Riga 3: Ricerca + Difficoltà + Attrezzi + Reset (quando "Filtri" aperto) */}
+          {showFilters && (
+            <div className="flex w-full min-w-0 flex-col gap-3 pt-3 border-t border-white/10 sm:flex-row sm:items-center sm:flex-wrap">
+              <div className="w-full min-w-0 sm:min-w-[180px] sm:max-w-[240px]">
+                <Input
+                  placeholder="Cerca esercizi..."
+                  value={filters.search}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleFilterChange('search', e.target.value)
+                  }
+                  leftIcon="🔍"
                 />
               </div>
-
-              {/* Attrezzatura */}
-              <div>
-                <label className="text-text-primary text-sm font-medium">Attrezzatura</label>
+              <div className="flex items-center gap-2 flex-wrap">
                 <SimpleSelect
-                  value={tempFilters.equipment}
-                  onValueChange={(value: string) => handleFilterChange('equipment', value)}
-                  options={[
-                    { value: 'all', label: 'Tutte' },
-                    ...equipment.map((eq: Equipment) => ({
-                      value: eq.id,
-                      label: eq.name,
-                    })),
-                  ]}
-                  placeholder="Seleziona attrezzatura"
-                />
-              </div>
-
-              {/* Difficoltà */}
-              <div>
-                <label className="text-text-primary text-sm font-medium">Difficoltà</label>
-                <SimpleSelect
-                  value={tempFilters.difficulty}
+                  value={filters.difficulty}
                   onValueChange={(value: string) => handleFilterChange('difficulty', value)}
+                  placeholder="Tutte le difficoltà"
                   options={[
-                    { value: 'all', label: 'Tutte' },
-                    ...difficulties.map((diff: { id: string; name: string }) => ({
-                      value: diff.id,
-                      label: diff.name,
-                    })),
+                    { value: 'all', label: 'Tutte le difficoltà' },
+                    ...[...difficulties]
+                      .sort((a, b) => a.name.localeCompare(b.name, 'it'))
+                      .map((diff: { id: string; name: string }) => ({
+                        value: diff.id,
+                        label: diff.name,
+                      })),
                   ]}
-                  placeholder="Seleziona difficoltà"
                 />
+                <SimpleSelect
+                  value={filters.equipment}
+                  onValueChange={(value: string) => handleFilterChange('equipment', value)}
+                  placeholder="Tutti gli attrezzi"
+                  options={[
+                    { value: 'all', label: 'Tutti gli attrezzi' },
+                    ...[...equipment]
+                      .sort((a, b) => a.name.localeCompare(b.name, 'it'))
+                      .map((eq: Equipment) => ({
+                        value: eq.id,
+                        label: eq.name,
+                      })),
+                  ]}
+                />
+                <Button onClick={clearFilters} variant="ghost" size="sm">
+                  Reset filtri
+                </Button>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            {/* Pulsanti filtri */}
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={applyFilters}
-                variant="primary"
-                size="sm"
-                className="w-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold"
-              >
-                Applica
-              </Button>
-              <Button onClick={clearFilters} variant="ghost" size="sm" className="w-full">
-                Reset filtri
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Lista esercizi */}
+      {/* Lista esercizi - stesso layout della pagina Dashboard Esercizi */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredExercises.map((exercise) => {
             const isSelected = selectedExercises.includes(exercise.id)
             const selectionIndex =
@@ -682,8 +651,9 @@ export function ExerciseCatalog({
                 key={exercise.id}
                 variant="default"
                 className={cn(
-                  'group relative overflow-hidden cursor-pointer transition-all duration-200 border-l-4 border-l-primary/30 hover:border-white/20 hover:border-l-primary/50',
-                  isSelected && 'ring-2 ring-primary/50 border-primary/30',
+                  'group relative flex min-h-0 flex-col overflow-hidden hover:border-white/20 transition-all duration-300 cursor-pointer rounded-lg text-text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]',
+                  isSelected &&
+                    'bg-cyan-500/15 border-cyan-400/40 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_4px_24px_-4px_rgba(0,0,0,0.5)]',
                 )}
                 onClick={() => onExerciseSelect(exercise)}
               >
@@ -694,9 +664,9 @@ export function ExerciseCatalog({
                     </span>
                   </div>
                 )}
-                <CardContent className="p-4">
-                  {/* Video thumbnail o placeholder */}
-                  <div className="relative bg-white/[0.04] border border-white/10 mb-3 flex aspect-video items-center justify-center rounded-lg overflow-hidden group-hover:shadow-lg transition-shadow w-full">
+                <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+                  {/* Media in alto - stessa altezza e stile della dashboard */}
+                  <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-gradient-to-br from-black/25 via-primary/5 to-transparent">
                     <ExerciseImage
                       exercise={exercise}
                       getMuscleGroupIcon={getMuscleGroupIcon}
@@ -712,64 +682,48 @@ export function ExerciseCatalog({
                       onSelectClick={() => onExerciseSelect(exercise)}
                     />
                   </div>
-
-                  {/* Nome esercizio */}
-                  <h4 className="text-text-primary mb-2 line-clamp-2 font-semibold">
-                    {exercise.name}
-                  </h4>
-
-                  {/* Tags */}
-                  <div className="mb-3 flex flex-col gap-1 items-start">
-                    <Badge
-                      variant="info"
-                      size="sm"
-                      className="text-xs bg-blue-500 border-blue-500 text-white hover:bg-blue-500/90"
-                    >
-                      {getMuscleGroupName(exercise.muscle_group) || 'Non specificato'}
-                    </Badge>
-
-                    <Badge variant="warning" size="sm" className="text-xs">
-                      {getEquipmentIcon(exercise.equipment)}{' '}
-                      {getEquipmentName(exercise.equipment) || 'Non specificato'}
-                    </Badge>
-
-                    <Badge
-                      variant={
-                        getDifficultyColor(exercise.difficulty) as
-                          | 'default'
-                          | 'success'
-                          | 'warning'
-                          | 'error'
-                          | 'info'
-                          | 'outline'
-                          | 'secondary'
-                      }
-                      size="sm"
-                      className={cn(
-                        'text-xs',
-                        exercise.difficulty === 'media' &&
-                          'bg-orange-500 text-white border-orange-500 hover:bg-orange-500/90',
+                  <div className="relative flex min-h-0 flex-1 flex-col p-4">
+                    <div className="space-y-3">
+                      <h3 className="text-white text-lg font-semibold line-clamp-1 transition-colors group-hover:text-primary">
+                        {exercise.name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-500/20 px-2.5 py-1 text-xs font-medium text-teal-400">
+                          {getMuscleGroupIcon(exercise.muscle_group)}
+                          {getMuscleGroupName(exercise.muscle_group) || 'Non specificato'}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/20 px-2.5 py-1 text-xs font-medium text-blue-400">
+                          {getEquipmentIcon(exercise.equipment)}
+                          {getEquipmentName(exercise.equipment) || 'Non specificato'}
+                        </span>
+                        <span
+                          className={cn(
+                            'rounded-full border px-3 py-1 text-xs font-medium',
+                            exercise.difficulty === 'bassa' &&
+                              'border-green-500/40 bg-green-500/20 text-green-400',
+                            exercise.difficulty === 'alta' &&
+                              'border-red-500/40 bg-red-500/20 text-red-400',
+                            exercise.difficulty === 'media' &&
+                              'border-amber-500/40 bg-amber-500/20 text-amber-400',
+                          )}
+                        >
+                          {difficulties.find((d) => d.id === exercise.difficulty)?.name}
+                        </span>
+                      </div>
+                      {exercise.description && (
+                        <p className="text-white/70 line-clamp-2 text-xs leading-relaxed">
+                          {exercise.description}
+                        </p>
                       )}
-                    >
-                      {difficulties.find((d) => d.id === exercise.difficulty)?.name}
-                    </Badge>
-                  </div>
-
-                  {/* Descrizione */}
-                  {exercise.description && (
-                    <p className="text-text-secondary line-clamp-2 text-xs">
-                      {exercise.description}
-                    </p>
-                  )}
-
-                  {/* Stato selezione */}
-                  {isSelected && (
-                    <div className="mt-3 flex items-center justify-center">
-                      <Badge variant="success" size="sm" className="shadow-sm">
-                        ✓ Selezionato
-                      </Badge>
                     </div>
-                  )}
+                    {isSelected && (
+                      <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-3 mt-3">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-green-500/40 bg-green-500/20 px-2.5 py-1 text-xs font-medium text-green-400">
+                          ✓ Selezionato
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )
@@ -789,8 +743,9 @@ export function ExerciseCatalog({
                 key={exercise.id}
                 variant="default"
                 className={cn(
-                  'group relative overflow-hidden cursor-pointer transition-all duration-200 border-l-4 border-l-primary/30 hover:border-white/20 hover:border-l-primary/50',
-                  isSelected && 'ring-2 ring-primary/50 border-primary/30',
+                  'group relative overflow-hidden cursor-pointer transition-all duration-200 border border-white/10 border-l-4 border-l-primary/30 hover:border-white/20 hover:border-l-primary/50 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+                  isSelected &&
+                    'bg-cyan-500/15 border-cyan-400/40 border-l-cyan-400/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]',
                 )}
                 onClick={() => onExerciseSelect(exercise)}
               >

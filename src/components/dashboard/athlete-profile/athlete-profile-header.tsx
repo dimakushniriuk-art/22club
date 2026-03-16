@@ -78,7 +78,7 @@ export function AthleteProfileHeader({
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/dashboard/atleti/${athleteId}/chat`}>
+          <Link href={`/dashboard/chat?with=${athleteId}`}>
             <Button
               variant="outline"
               size="sm"

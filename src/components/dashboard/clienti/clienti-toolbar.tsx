@@ -102,15 +102,15 @@ export function ClientiToolbar({
       </div>
 
       <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
           <Button
-            variant={viewMode === 'grid' ? 'primary' : 'outline'}
+            variant={viewMode === 'grid' ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => onViewModeChange('grid')}
             aria-label="Vista griglia"
             className={cn(
-              'rounded-lg',
-              viewMode !== 'grid' && 'border-white/20 hover:bg-white/5',
+              'rounded-md',
+              viewMode !== 'grid' && 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent',
               btnClass,
             )}
           >
@@ -119,13 +119,13 @@ export function ClientiToolbar({
           </Button>
           {!isMobile && (
             <Button
-              variant={viewMode === 'table' ? 'primary' : 'outline'}
+              variant={viewMode === 'table' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => onViewModeChange('table')}
               aria-label="Vista tabella"
               className={cn(
-                'rounded-lg',
-                viewMode !== 'table' && 'border-white/20 hover:bg-white/5',
+                'rounded-md',
+                viewMode !== 'table' && 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent',
                 btnClass,
               )}
             >

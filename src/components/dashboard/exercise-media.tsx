@@ -24,10 +24,10 @@ export const ExerciseMedia = memo(({ exercise }: ExerciseMediaProps) => {
     !videoError
 
   return (
-    <div className="relative h-40 w-full overflow-hidden rounded-xl bg-gradient-to-br from-black/25 via-primary/5 to-transparent">
+    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-gradient-to-br from-black/25 via-primary/5 to-transparent">
       {isValidVideoUrl ? (
         <video
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
           src={exercise.video_url!}
           poster={exercise.thumb_url || undefined}
           muted
@@ -65,7 +65,7 @@ export const ExerciseMedia = memo(({ exercise }: ExerciseMediaProps) => {
           src={exercise.thumb_url}
           alt={exercise.name}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-contain transition-transform duration-300 group-hover:scale-105"
           unoptimized={exercise.thumb_url?.startsWith('http')}
           priority={false}
           onError={(errorEvent) => {

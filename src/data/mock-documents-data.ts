@@ -93,18 +93,26 @@ export const mockDocuments: Document[] = [
   },
 ]
 
-export const DOCUMENT_CATEGORIES = [
+const _DOCUMENT_CATEGORIES_BASE = [
   { value: '', label: 'Tutte le categorie' },
   { value: 'certificato', label: 'Certificato' },
   { value: 'liberatoria', label: 'Liberatoria' },
   { value: 'contratto', label: 'Contratto' },
   { value: 'altro', label: 'Altro' },
 ]
+export const DOCUMENT_CATEGORIES = [
+  _DOCUMENT_CATEGORIES_BASE[0],
+  ..._DOCUMENT_CATEGORIES_BASE.slice(1).sort((a, b) => a.label.localeCompare(b.label, 'it')),
+]
 
-export const DOCUMENT_STATUSES = [
+const _DOCUMENT_STATUSES_BASE = [
   { value: '', label: 'Tutti gli stati' },
   { value: 'valido', label: 'Valido' },
   { value: 'in_scadenza', label: 'In scadenza' },
   { value: 'scaduto', label: 'Scaduto' },
   { value: 'non_valido', label: 'Non valido' },
+]
+export const DOCUMENT_STATUSES = [
+  _DOCUMENT_STATUSES_BASE[0],
+  ..._DOCUMENT_STATUSES_BASE.slice(1).sort((a, b) => a.label.localeCompare(b.label, 'it')),
 ]

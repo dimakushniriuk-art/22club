@@ -216,10 +216,10 @@ export default function EserciziPage() {
 
   // Filtri a pill
   const [difficultyFilter, setDifficultyFilter] = useState<Exercise['difficulty'] | ''>('')
-  const [groupFilter, setGroupFilter] = useState<string>('')
+  const [groupFilter, setGroupFilter] = useState<string>('multipli')
   const [equipmentFilter, setEquipmentFilter] = useState<string>('')
-  const [muscleGroupFilter, setMuscleGroupFilter] = useState<MuscleGroupFilterType | null>(null)
-  const [showFilters, setShowFilters] = useState(true) // Filtri visibili di default
+  const [muscleGroupFilter, setMuscleGroupFilter] = useState<MuscleGroupFilterType | null>('multipli')
+  const [showFilters, setShowFilters] = useState(false)
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const [tableScrollTop, setTableScrollTop] = useState(0)
   const [tableContainerHeight, setTableContainerHeight] = useState(400)
@@ -534,129 +534,136 @@ export default function EserciziPage() {
           </Card>
         )}
 
-        {/* Ricerca e Filtri */}
+        {/* Ricerca e Filtri - stessa card compatta del wizard Catalogo Esercizi */}
         <div className="relative p-4">
-          {/* Header filtri con toggle e vista */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                variant="outline"
-                size="sm"
-                className="border-white/10 hover:border-primary/20"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filtri
-              </Button>
-              {hasActiveFilters && (
-                <Button
-                  onClick={handleResetFilters}
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400 hover:bg-red-500/10"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Reset filtri
-                </Button>
-              )}
-            </div>
+          <Card
+            variant="default"
+            className="rounded-lg p-4 text-text-primary transition-all duration-200 border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none"
+          >
+            <CardContent className="p-0 space-y-3">
+              {/* Riga 1: Titolo + Filtri + Griglia/Tabella */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <h3 className="text-text-primary text-lg font-bold">Libreria</h3>
+                  <p className="text-text-secondary text-sm">
+                    Filtra gli esercizi per gruppo muscolare, difficoltà e attrezzo
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant="outline"
+                    size="sm"
+                    className="border-white/10 text-primary hover:bg-primary/10 hover:border-primary/25"
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filtri
+                  </Button>
+                  <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
+                    <button
+                      type="button"
+                      onClick={() => setView('grid')}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                        view === 'grid'
+                          ? 'bg-cyan-500 text-white border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:bg-cyan-400 active:bg-cyan-600'
+                          : 'bg-transparent text-cyan-300/80 hover:bg-cyan-500/10 border border-transparent'
+                      }`}
+                    >
+                      <Grid3x3 className="h-4 w-4" />
+                      Griglia
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setView('table')}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                        view === 'table'
+                          ? 'bg-cyan-500 text-white border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:bg-cyan-400 active:bg-cyan-600'
+                          : 'bg-transparent text-cyan-300/80 hover:bg-cyan-500/10 border border-transparent'
+                      }`}
+                    >
+                      <TableIcon className="h-4 w-4" />
+                      Tabella
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-            {/* Toggle Griglia / Tabella */}
-            <div className="flex items-center gap-0 rounded-full p-1 border border-white/10 bg-white/[0.04]">
-              <button
-                type="button"
-                onClick={() => setView('grid')}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  view === 'grid'
-                    ? 'bg-primary/10 text-primary border border-primary/30'
-                    : 'text-text-tertiary hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
-                }`}
-              >
-                <Grid3x3 className="h-4 w-4" />
-                Griglia
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('table')}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  view === 'table'
-                    ? 'bg-primary/10 text-primary border border-primary/30'
-                    : 'text-text-tertiary hover:text-text-primary hover:bg-white/[0.04] border border-transparent'
-                }`}
-              >
-                <TableIcon className="h-4 w-4" />
-                Tabella
-              </button>
-            </div>
-          </div>
-
-          {/* Filtri collapsibili */}
-          {showFilters && (
-            <Card variant="default" className="mb-4">
-              <CardContent className="p-4 space-y-4">
-                {/* Filtro visuale gruppi muscolari */}
-                <div>
-                  <label className="text-text-secondary text-sm font-medium mb-2 block">
-                    Gruppi muscolari
-                  </label>
+              {/* Riga 2: Gruppi muscolari sempre visibili (una riga, responsive) */}
+              <div className="min-w-0">
+                <label className="text-text-secondary text-xs font-medium mb-1.5 block">
+                  Gruppi muscolari
+                </label>
+                <div className="overflow-x-auto pb-1 scrollbar-thin -mx-0.5">
                   <MuscleGroupFilter
                     selectedGroup={
                       muscleGroupFilter ? muscleGroupFilterToDbValue(muscleGroupFilter) : ''
                     }
                     onSelect={(filterId) => {
                       setMuscleGroupFilter(filterId)
-                      // Sincronizza con il filtro dropdown esistente
                       if (filterId) {
                         setGroupFilter(muscleGroupFilterToDbValue(filterId))
                       } else {
                         setGroupFilter('')
                       }
                     }}
+                    responsive
                   />
                 </div>
+              </div>
 
-                {/* Toolbar con altri filtri */}
-                <div className="flex flex-col gap-4 md:flex-row md:items-center pt-4 border-t border-white/10">
-                  <div className="flex flex-wrap gap-3 flex-1">
-                    <div className="w-full sm:w-auto min-w-[240px] flex-1">
-                      <Input
-                        placeholder="Cerca per nome, gruppo muscolare o attrezzo"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        leftIcon={<Search className="h-4 w-4" />}
-                        className="bg-white/[0.04] border-white/10 placeholder:text-white/35 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-0 transition-colors"
-                      />
-                    </div>
-                    <div className="w-full sm:w-auto min-w-[160px] flex-1">
-                      <SimpleSelect
-                        value={difficultyFilter || 'all'}
-                        onValueChange={(value) =>
-                          setDifficultyFilter(
-                            value === 'all' ? '' : (value as Exercise['difficulty']),
-                          )
-                        }
-                        placeholder="Tutte le difficoltà"
-                        options={DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-                        className="w-full [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
-                      />
-                    </div>
-                    <div className="w-full sm:w-auto min-w-[160px] flex-1">
-                      <SimpleSelect
-                        value={equipmentFilter || 'all'}
-                        onValueChange={(value) => setEquipmentFilter(value === 'all' ? '' : value)}
-                        placeholder="Tutti gli attrezzi"
-                        options={[
-                          { value: 'all', label: 'Tutti gli attrezzi' },
-                          ...equipments.map((eq) => ({ value: eq, label: eq })),
-                        ]}
-                        className="w-full [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
-                      />
-                    </div>
+              {/* Riga 3: Ricerca + Difficoltà + Attrezzi + Reset (quando "Filtri" aperto) */}
+              {showFilters && (
+                <div className="flex flex-row items-center gap-3 pt-3 border-t border-white/10 w-full flex-nowrap min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <Input
+                      placeholder="Cerca per nome, gruppo muscolare o attrezzo"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      leftIcon={<Search className="h-4 w-4" />}
+                      className="w-full bg-white/[0.04] border-white/10 placeholder:text-white/35 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-0 transition-colors"
+                    />
                   </div>
+                  <SimpleSelect
+                    value={difficultyFilter || 'all'}
+                    onValueChange={(value) =>
+                      setDifficultyFilter(
+                        value === 'all' ? '' : (value as Exercise['difficulty']),
+                      )
+                    }
+                    placeholder="Tutte le difficoltà"
+                    options={[
+                      DIFFICULTY_OPTIONS[0],
+                      ...DIFFICULTY_OPTIONS.slice(1)
+                        .map((o) => ({ value: o.value, label: o.label }))
+                        .sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                    ]}
+                    className="w-[180px] shrink-0 [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
+                  />
+                  <SimpleSelect
+                    value={equipmentFilter || 'all'}
+                    onValueChange={(value) => setEquipmentFilter(value === 'all' ? '' : value)}
+                    placeholder="Tutti gli attrezzi"
+                    options={[
+                      { value: 'all', label: 'Tutti gli attrezzi' },
+                      ...equipments.map((eq) => ({ value: eq, label: eq })).sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                    ]}
+                    className="w-[180px] shrink-0 [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
+                  />
+                  {hasActiveFilters && (
+                    <Button
+                      onClick={handleResetFilters}
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 text-red-400 hover:bg-red-500/10"
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Reset filtri
+                    </Button>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Loading State */}

@@ -47,13 +47,13 @@ export function SchedeHeaderActions({
         <Filter className="mr-2 h-4 w-4" />
         Filtri
       </Button>
-      <div className="flex items-center rounded-lg border border-white/10 bg-black/20 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+      <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
         <Button
           variant={viewMode === 'grid' ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => onViewModeChange('grid')}
           aria-label="Vista griglia"
-          className="rounded-md h-8 px-2"
+          className={`rounded-md h-8 px-2 ${viewMode !== 'grid' ? 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent' : ''}`}
         >
           <Grid3x3 className="h-4 w-4" />
         </Button>
@@ -62,7 +62,7 @@ export function SchedeHeaderActions({
           size="sm"
           onClick={() => onViewModeChange('list')}
           aria-label="Vista lista"
-          className="rounded-md h-8 px-2"
+          className={`rounded-md h-8 px-2 ${viewMode !== 'list' ? 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent' : ''}`}
         >
           <ListIcon className="h-4 w-4" />
         </Button>

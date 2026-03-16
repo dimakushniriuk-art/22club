@@ -9,7 +9,6 @@ export const MUSCLE_GROUPS = [
   'Bicipiti',
   'Braccia',
   'Cardio',
-  'Core',
   'Deltoidi',
   'Dorsali',
   'Femorali',
