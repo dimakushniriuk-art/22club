@@ -104,7 +104,7 @@ export function buildDossierPdf(
 
   doc.setFontSize(FONT_SIZE_TITLE)
   doc.setFont('helvetica', 'bold')
-  doc.text('DOSSIER ATLETA 22CLUB', MARGIN, y)
+  doc.text('DOCUMENTO DI RIEPILOGO DEI DATI INSERITI', MARGIN, y)
   y += LINE_HEIGHT * 2
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(FONT_SIZE_NORMAL)
@@ -134,12 +134,58 @@ export function buildDossierPdf(
   y = labelVal(doc, 'Note / motivazione', profile.note, MARGIN, y, maxW)
   y += LINE_HEIGHT
 
-  y = addPageIfNeeded(doc, y, 30)
-  y = sectionTitle(doc, '3. Anamnesi', y)
+  y = addPageIfNeeded(doc, y, 80)
+  y = sectionTitle(doc, '3. Anamnesi e consensi', y)
   const anam = questionnaire.anamnesi as Record<string, unknown>
-  Object.entries(anam).forEach(([k, v]) => {
+
+  const consensoLabels: Record<string, string> = {
+    consenso_termini_condizioni: 'Accettazione termini e condizioni',
+    consenso_privacy: 'Informativa privacy (GDPR)',
+    consenso_idoneita_fisica: 'Idoneità fisica / responsabilità',
+    consenso_dati_sanitari: 'Consenso trattamento dati sanitari',
+    consenso_liberatoria_attivita_fisica: 'Liberatoria attività fisica',
+    consenso_marketing: 'Marketing (comunicazioni promozionali)',
+    consenso_comunicazioni: 'Comunicazioni via WhatsApp / email',
+    dichiarazione_veridicita: 'Dichiarazione veridicità informazioni',
+  }
+  const consensoKeys = Object.keys(consensoLabels)
+  const otherAnamKeys = Object.keys(anam).filter((k) => !consensoKeys.includes(k))
+
+  doc.setFontSize(FONT_SIZE_SMALL)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Consensi e dichiarazioni', MARGIN, y)
+  y += LINE_HEIGHT
+  doc.setFont('helvetica', 'normal')
+  consensoKeys.forEach((k) => {
+    if (!(k in anam)) return
     y = addPageIfNeeded(doc, y, LINE_HEIGHT * 2)
-    y = labelVal(doc, k.replace(/_/g, ' '), v, MARGIN, y, maxW)
+    const label = consensoLabels[k]
+    const val = anam[k]
+    const display = val === true ? 'Sì' : val === false ? 'No' : (val != null ? String(val) : '-')
+    y = labelVal(doc, label, display, MARGIN, y, maxW)
+  })
+  y += LINE_HEIGHT * 0.5
+
+  doc.setFont('helvetica', 'bold')
+  doc.text('Firma e altri dati anamnesi', MARGIN, y)
+  y += LINE_HEIGHT
+  doc.setFont('helvetica', 'normal')
+  const anamnesiFieldLabels: Record<string, string> = {
+    firma_nome_cognome: 'Firma (nome e cognome)',
+    sonno: 'Sonno',
+    fumatore: 'Fumatore',
+    stile_vita: 'Stile di vita',
+    infortuni_descrizione: 'Descrizione infortuni',
+    operazioni: 'Operazioni chirurgiche',
+    operazioni_descrizione: 'Descrizione operazioni',
+    gravidanza: 'Gravidanza',
+  }
+  otherAnamKeys.forEach((k) => {
+    y = addPageIfNeeded(doc, y, LINE_HEIGHT * 2)
+    const label = anamnesiFieldLabels[k] ?? k.replace(/_/g, ' ')
+    const v = anam[k]
+    const display = v === true ? 'Sì' : v === false ? 'No' : (v != null && v !== '' ? String(v) : null)
+    if (display != null) y = labelVal(doc, label, display, MARGIN, y, maxW)
   })
   y += LINE_HEIGHT
 
@@ -152,13 +198,37 @@ export function buildDossierPdf(
   })
   y += LINE_HEIGHT
 
-  y = addPageIfNeeded(doc, y, 30)
+  y = addPageIfNeeded(doc, y, 50)
   y = sectionTitle(doc, '5. Liberatoria foto/video', y)
   const lib = questionnaire.liberatoria_media as Record<string, unknown>
-  Object.entries(lib).forEach(([k, v]) => {
+  const authorized = lib.authorized === true ? 'Sì' : lib.authorized === false ? 'No' : null
+  if (authorized != null) y = labelVal(doc, 'Autorizzazione', authorized, MARGIN, y, maxW)
+  const channels = lib.channels
+  if (Array.isArray(channels) && channels.length > 0) {
     y = addPageIfNeeded(doc, y, LINE_HEIGHT * 2)
-    y = labelVal(doc, k.replace(/_/g, ' '), v, MARGIN, y, maxW)
-  })
+    doc.setFontSize(FONT_SIZE_SMALL)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Canali consentiti:', MARGIN, y)
+    y += LINE_HEIGHT
+    doc.setFont('helvetica', 'normal')
+    const channelList = channels.map((c) => String(c)).join(', ')
+    const lines = doc.splitTextToSize(channelList, maxW)
+    doc.text(lines, MARGIN, y)
+    y += lines.length * (FONT_SIZE_SMALL * 0.4 + 1) + LINE_HEIGHT * 0.5
+  }
+  const revocaText =
+    'La presente autorizzazione potrà essere revocata in qualsiasi momento mediante comunicazione scritta inviata via e-mail all\'indirizzo info@22club.it.'
+  y = addPageIfNeeded(doc, y, LINE_HEIGHT * 4)
+  const revocaLines = doc.splitTextToSize(revocaText, maxW)
+  doc.setFontSize(FONT_SIZE_SMALL)
+  doc.text(revocaLines, MARGIN, y)
+  y += revocaLines.length * (FONT_SIZE_SMALL * 0.4 + 1) + LINE_HEIGHT
+  if (lib.place != null && lib.place !== '') {
+    y = labelVal(doc, 'Luogo', lib.place, MARGIN, y, maxW)
+  }
+  if (lib.firma_nome_cognome != null && lib.firma_nome_cognome !== '') {
+    y = labelVal(doc, 'Firma (nome e cognome)', lib.firma_nome_cognome, MARGIN, y, maxW)
+  }
   y += LINE_HEIGHT
 
   doc.setFontSize(FONT_SIZE_SMALL)

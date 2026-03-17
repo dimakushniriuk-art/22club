@@ -37,6 +37,7 @@ import {
   FileText,
   Upload,
   ChevronDown,
+  Circle,
 } from 'lucide-react'
 
 const logger = createLogger('app:welcome:page')
@@ -106,6 +107,15 @@ export interface AnamnesiState {
   proporzione_note: string
   dichiarazione_veridicita: boolean
   firma_nome_cognome: string
+  // Consensi obbligatori
+  consenso_termini_condizioni: boolean
+  consenso_privacy: boolean
+  consenso_idoneita_fisica: boolean
+  consenso_dati_sanitari: boolean
+  consenso_liberatoria_attivita_fisica: boolean
+  // Consensi facoltativi
+  consenso_marketing: boolean
+  consenso_comunicazioni: boolean
 }
 
 export interface ManlevaState {
@@ -203,13 +213,15 @@ const ALLERGIE_ALIMENTARI_PRESET = [
 
 const STEPS = [
   {
-    title: 'Benvenuto',
-    description: 'Completa il tuo profilo per iniziare.',
+    title: 'Welcome in 22 Club!',
+    description: 'È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!',
     icon: Sparkles,
     skippable: false,
     emoji: '👋',
-    accent: 'from-amber-500/20 to-orange-500/10',
-    borderLeft: 'border-l-amber-500/60',
+    accent: 'from-[#02B3BF] to-[#02B3BF]',
+    borderLeft: 'border-l-[#02B3BF]',
+    progressRing: 'ring-[#02B3BF]/50',
+    progressBg: 'bg-[#02B3BF]',
   },
   {
     title: 'Identità',
@@ -217,26 +229,32 @@ const STEPS = [
     icon: User,
     skippable: false,
     emoji: '🪪',
-    accent: 'from-primary/20 to-primary/10',
-    borderLeft: 'border-l-primary/60',
+    accent: 'from-amber-500/20 to-orange-500/10',
+    borderLeft: 'border-l-amber-500/60',
+    progressRing: 'ring-amber-500/50',
+    progressBg: 'bg-amber-500',
   },
   {
-    title: 'Contatti & emergenza',
+    title: 'Contatto di emergenza',
     description: 'Come contattarti e chi avvisare.',
     icon: Phone,
     skippable: false,
     emoji: '📱',
     accent: 'from-emerald-500/20 to-green-500/10',
     borderLeft: 'border-l-emerald-500/60',
+    progressRing: 'ring-emerald-500/50',
+    progressBg: 'bg-emerald-500',
   },
   {
-    title: 'Residenza & dati fiscali',
+    title: 'Residenza e dati fiscali',
     description: "Ci servono per i documenti e l'identificazione.",
     icon: User,
     skippable: false,
     emoji: '🏠',
     accent: 'from-slate-500/20 to-zinc-500/10',
     borderLeft: 'border-l-slate-500/60',
+    progressRing: 'ring-slate-500/50',
+    progressBg: 'bg-slate-500',
   },
   {
     title: 'Dati fisici',
@@ -246,15 +264,19 @@ const STEPS = [
     emoji: '📏',
     accent: 'from-violet-500/20 to-purple-500/10',
     borderLeft: 'border-l-violet-500/60',
+    progressRing: 'ring-violet-500/50',
+    progressBg: 'bg-violet-500',
   },
   {
-    title: 'Obiettivi & livello',
+    title: 'Obiettivi e livello',
     description: 'Così il trainer può personalizzare il tuo percorso.',
     icon: Target,
     skippable: false,
     emoji: '🎯',
     accent: 'from-rose-500/20 to-pink-500/10',
     borderLeft: 'border-l-rose-500/60',
+    progressRing: 'ring-rose-500/50',
+    progressBg: 'bg-rose-500',
   },
   {
     title: 'Motivazione',
@@ -264,6 +286,8 @@ const STEPS = [
     emoji: '🔥',
     accent: 'from-red-500/20 to-orange-500/10',
     borderLeft: 'border-l-red-500/60',
+    progressRing: 'ring-red-500/50',
+    progressBg: 'bg-red-500',
   },
   {
     title: 'Salute',
@@ -273,6 +297,8 @@ const STEPS = [
     emoji: '🩺',
     accent: 'from-red-500/15 to-pink-500/10',
     borderLeft: 'border-l-red-500/50',
+    progressRing: 'ring-red-500/50',
+    progressBg: 'bg-red-500',
   },
   {
     title: 'Nutrizione',
@@ -282,15 +308,19 @@ const STEPS = [
     emoji: '🍽️',
     accent: 'from-lime-500/20 to-green-500/10',
     borderLeft: 'border-l-lime-500/60',
+    progressRing: 'ring-lime-500/50',
+    progressBg: 'bg-lime-500',
   },
   {
     title: 'Anamnesi',
-    description: 'Questionario ufficiale (documento clinico).',
+    description: '',
     icon: FileText,
     skippable: false,
     emoji: '📋',
     accent: 'from-indigo-500/20 to-violet-500/10',
     borderLeft: 'border-l-indigo-500/60',
+    progressRing: 'ring-indigo-500/50',
+    progressBg: 'bg-indigo-500',
   },
   {
     title: 'Manleva',
@@ -300,6 +330,8 @@ const STEPS = [
     emoji: '🛡️',
     accent: 'from-amber-600/20 to-orange-600/10',
     borderLeft: 'border-l-amber-600/60',
+    progressRing: 'ring-amber-600/50',
+    progressBg: 'bg-amber-600',
   },
   {
     title: 'Liberatoria foto e video',
@@ -309,6 +341,8 @@ const STEPS = [
     emoji: '📸',
     accent: 'from-teal-600/20 to-cyan-600/10',
     borderLeft: 'border-l-teal-600/60',
+    progressRing: 'ring-teal-600/50',
+    progressBg: 'bg-teal-600',
   },
   {
     title: 'Riepilogo',
@@ -318,24 +352,30 @@ const STEPS = [
     emoji: '✅',
     accent: 'from-sky-500/20 to-cyan-500/10',
     borderLeft: 'border-l-sky-500/60',
+    progressRing: 'ring-sky-500/50',
+    progressBg: 'bg-sky-500',
   },
   {
     title: 'Conferma finale',
-    description: 'Prima di generare il dossier, verifica e conferma.',
+    description: 'Prima di generare il documento, verifica e conferma.',
     icon: CheckCircle,
     skippable: false,
     emoji: '✅',
     accent: 'from-green-500/20 to-emerald-500/10',
     borderLeft: 'border-l-green-500/60',
+    progressRing: 'ring-green-500/50',
+    progressBg: 'bg-green-500',
   },
   {
-    title: 'Genera dossier',
-    description: 'Stiamo creando il tuo documento ufficiale.',
+    title: 'Genera documento',
+    description: 'Stiamo creando il tuo documento di riepilogo.',
     icon: FileText,
     skippable: false,
     emoji: '📄',
     accent: 'from-green-600/20 to-emerald-600/10',
     borderLeft: 'border-l-green-600/60',
+    progressRing: 'ring-green-600/50',
+    progressBg: 'bg-green-600',
   },
 ] as const
 
@@ -546,6 +586,13 @@ function WelcomePageContent() {
     proporzione_note: '',
     dichiarazione_veridicita: false,
     firma_nome_cognome: '',
+    consenso_termini_condizioni: false,
+    consenso_privacy: false,
+    consenso_idoneita_fisica: false,
+    consenso_dati_sanitari: false,
+    consenso_liberatoria_attivita_fisica: false,
+    consenso_marketing: false,
+    consenso_comunicazioni: false,
   })
   const emptyManleva = (): ManlevaState => ({
     nome_cognome: '',
@@ -779,6 +826,15 @@ function WelcomePageContent() {
         if (!form.livello_esperienza.trim()) return 'Seleziona il livello di esperienza.'
       }
       if (step === 9) {
+        if (!anamnesi.consenso_termini_condizioni)
+          return 'Devi accettare i Termini e Condizioni.'
+        if (!anamnesi.consenso_privacy) return "Devi accettare l'Informativa Privacy."
+        if (!anamnesi.consenso_idoneita_fisica)
+          return 'Devi accettare la dichiarazione di idoneità fisica.'
+        if (!anamnesi.consenso_dati_sanitari)
+          return 'Devi accettare il consenso al trattamento dei dati sanitari.'
+        if (!anamnesi.consenso_liberatoria_attivita_fisica)
+          return 'Devi accettare la liberatoria attività fisica.'
         if (!anamnesi.dichiarazione_veridicita)
           return 'Devi dichiarare la veridicità dei dati (Anamnesi).'
         if (!anamnesi.firma_nome_cognome.trim()) return 'Inserisci nome e cognome come firma.'
@@ -990,7 +1046,7 @@ function WelcomePageContent() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setCompleteError((data.error as string) || 'Impossibile generare il dossier. Riprova.')
+        setCompleteError((data.error as string) || 'Impossibile generare il documento. Riprova.')
         setCompleting(false)
         return
       }
@@ -1075,21 +1131,18 @@ function WelcomePageContent() {
       <main className="relative z-10 flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mx-auto max-w-2xl">
           <div className="mb-8">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-center">
               <span className="text-text-secondary text-sm font-medium">
                 Passo {step + 1} di {TOTAL_STEPS}
               </span>
-              <span className="text-text-secondary text-sm tabular-nums">
-                {Math.round(((step + 1) / TOTAL_STEPS) * 100)}%
-              </span>
             </div>
-            <div className="flex gap-1.5 mb-2">
+            <div className="flex gap-1.5 mb-2 min-w-0 overflow-visible">
               {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
                 <div
                   key={i}
-                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                  className={`h-2 min-w-2 flex-1 rounded-full transition-all duration-300 ring-offset-2 ring-offset-background ${
                     i <= step ? 'opacity-100' : 'opacity-25'
-                  } ${i < step ? 'bg-brand' : i === step ? 'bg-brand ring-2 ring-brand/50 ring-offset-2 ring-offset-background' : 'bg-background-tertiary'}`}
+                  } ${i < step ? STEPS[i].progressBg : i === step ? `${STEPS[step].progressBg} ring-2 ${STEPS[step].progressRing}` : 'bg-background-tertiary'}`}
                 />
               ))}
             </div>
@@ -1099,14 +1152,11 @@ function WelcomePageContent() {
             className={`mb-6 border-0 border-l-4 ${STEPS[step].borderLeft} bg-background-secondary/95 backdrop-blur-xl rounded-xl min-[834px]:rounded-2xl bg-gradient-to-br ${STEPS[step].accent}`}
           >
             <CardContent className="p-5 sm:p-6 min-[834px]:p-8">
-              <div className="mb-4 flex items-center gap-4">
-                <span className="text-4xl" aria-hidden>
-                  {STEPS[step].emoji}
-                </span>
-                <div>
-                  <h1 className="text-text-primary text-2xl font-bold">{STEPS[step].title}</h1>
+              <div className="mb-4 text-center">
+                <h1 className="text-text-primary text-2xl font-bold">{STEPS[step].title}</h1>
+                {STEPS[step].description ? (
                   <p className="text-text-secondary text-sm mt-0.5">{STEPS[step].description}</p>
-                </div>
+                ) : null}
               </div>
 
               {/* Step 0: Intro + PT card */}
@@ -1115,7 +1165,7 @@ function WelcomePageContent() {
                   {ptInfo && (ptInfo.pt_nome || ptInfo.pt_cognome) && (
                     <Card className="mb-6 border border-primary/40 bg-gradient-to-br from-primary/25 to-primary/15 rounded-xl overflow-hidden">
                       <CardContent className="p-6">
-                        <p className="text-primary text-xs font-medium uppercase tracking-wider mb-3">
+                        <p className="text-primary text-xs font-medium uppercase tracking-wider mb-3 text-center">
                           Sono il tuo Personal Trainer
                         </p>
                         <div className="mb-4 flex items-center gap-4">
@@ -1138,13 +1188,11 @@ function WelcomePageContent() {
                             <h3 className="text-text-primary font-semibold text-lg">
                               {ptInfo.pt_nome} {ptInfo.pt_cognome}
                             </h3>
-                            <p className="text-primary text-sm">Personal Trainer</p>
                           </div>
                         </div>
-                        {(ptInfo.pt_email || ptInfo.pt_telefono) && (
+                        {ptInfo.pt_telefono && (
                           <div className="space-y-1 text-sm text-text-secondary">
-                            {ptInfo.pt_email && <p>{ptInfo.pt_email}</p>}
-                            {ptInfo.pt_telefono && <p>{ptInfo.pt_telefono}</p>}
+                            <p>{ptInfo.pt_telefono}</p>
                           </div>
                         )}
                       </CardContent>
@@ -1306,6 +1354,13 @@ function WelcomePageContent() {
                     placeholder="Inserisci il tuo cognome"
                   />
                   <Input
+                    label="Telefono"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => updateForm({ phone: e.target.value })}
+                    placeholder="es. 3511234567"
+                  />
+                  <Input
                     label="Codice fiscale"
                     value={form.codice_fiscale}
                     onChange={(e) =>
@@ -1342,15 +1397,8 @@ function WelcomePageContent() {
               {step === 2 && (
                 <div className="space-y-4 text-left">
                   <p className="text-text-tertiary text-sm mb-2">
-                    Questi dati ci aiutano a contattarti e a gestire eventuali emergenze.
+                    Questi dati ci aiutano a gestire eventuali emergenze.
                   </p>
-                  <Input
-                    label="Telefono"
-                    type="tel"
-                    value={form.phone}
-                    onChange={(e) => updateForm({ phone: e.target.value })}
-                    placeholder="es. 3511234567"
-                  />
                   <Input
                     label="Contatto emergenza — Nome"
                     value={form.contatto_emergenza_nome}
@@ -1373,7 +1421,7 @@ function WelcomePageContent() {
                 </div>
               )}
 
-              {/* Step 3: Residenza & dati fiscali */}
+              {/* Step 3: Residenza e dati fiscali */}
               {step === 3 && (
                 <div className="space-y-4 text-left">
                   <p className="text-text-tertiary text-sm mb-2">
@@ -1456,19 +1504,6 @@ function WelcomePageContent() {
                     placeholder="70"
                   />
                   <Input
-                    label="Peso iniziale (kg)"
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={form.peso_iniziale_kg === '' ? '' : form.peso_iniziale_kg}
-                    onChange={(e) =>
-                      updateForm({
-                        peso_iniziale_kg: e.target.value === '' ? '' : Number(e.target.value),
-                      })
-                    }
-                    placeholder="Opzionale"
-                  />
-                  <Input
                     label="Obiettivo peso (kg)"
                     type="number"
                     min={0}
@@ -1489,15 +1524,12 @@ function WelcomePageContent() {
                 </div>
               )}
 
-              {/* Step 5: Obiettivi & livello */}
+              {/* Step 5: Obiettivi e livello */}
               {step === 5 && (
-                <div className="space-y-4 text-left">
-                  <p className="text-text-tertiary text-sm mb-2">
-                    Seleziona almeno il tuo livello di esperienza.
-                  </p>
-                  <div role="radiogroup" aria-label="Livello di esperienza">
-                    <Label className="block mb-2">Livello di esperienza *</Label>
-                    <div className="flex flex-wrap gap-2">
+                <div className="space-y-6 text-left">
+                  <div role="radiogroup" aria-label="Seleziona il tuo livello di esperienza" className="space-y-3">
+                    <Label className="block">Seleziona il tuo livello di esperienza</Label>
+                    <div className="flex flex-wrap gap-3">
                       {(['Principiante', 'Intermedio', 'Avanzato'] as const).map((liv) => (
                         <button
                           key={liv}
@@ -1521,9 +1553,12 @@ function WelcomePageContent() {
                       <p className="text-state-error text-xs mt-1">{stepError}</p>
                     )}
                   </div>
-                  <div>
-                    <Label className="block mb-2">Obiettivi fitness</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <Label className="block">Obiettivi fitness</Label>
+                      <span className="text-text-tertiary text-xs">&quot;È possibile selezionare più di un&apos;opzione&quot;</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
                       {OBIETTIVI_FITNESS_OPZIONI.map((opt) => {
                         const selected = form.obiettivi_fitness.includes(opt)
                         return (
@@ -1571,21 +1606,23 @@ function WelcomePageContent() {
                           </button>
                         </span>
                       ))}
-                    <Input
-                      placeholder="Altro (scrivi e premi Invio)"
-                      value={obiettivoAltro}
-                      onChange={(e) => setObiettivoAltro(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          const v = obiettivoAltro.trim()
-                          if (v && !form.obiettivi_fitness.includes(v)) {
-                            updateForm({ obiettivi_fitness: [...form.obiettivi_fitness, v] })
-                            setObiettivoAltro('')
+                    <div className="pt-2">
+                      <Input
+                        placeholder="Altro (scrivi e premi Invio)"
+                        value={obiettivoAltro}
+                        onChange={(e) => setObiettivoAltro(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            const v = obiettivoAltro.trim()
+                            if (v && !form.obiettivi_fitness.includes(v)) {
+                              updateForm({ obiettivi_fitness: [...form.obiettivi_fitness, v] })
+                              setObiettivoAltro('')
+                            }
                           }
-                        }
-                      }}
-                    />
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -1645,8 +1682,7 @@ function WelcomePageContent() {
               {step === 7 && (
                 <div className="space-y-5 text-left">
                   <p className="text-text-tertiary text-sm mb-2">
-                    Puoi inserire solo il necessario. L&apos;anamnesi completa verrà compilata più
-                    avanti.
+                    Se ne sei già in possesso, carica la tua documentazione medica adesso, altrimenti ti chiederemo di completare il tuo profilo in un secondo momento.
                   </p>
 
                   <div className="space-y-4">
@@ -2026,13 +2062,6 @@ function WelcomePageContent() {
                       onChange={(e) => setAnamnesi((p) => ({ ...p, sonno: e.target.value }))}
                       placeholder="es. regolare / irregolare"
                     />
-                    <Input
-                      label="BPM a riposo"
-                      type="number"
-                      value={anamnesi.bpm_riposo}
-                      onChange={(e) => setAnamnesi((p) => ({ ...p, bpm_riposo: e.target.value }))}
-                      placeholder="es. 65"
-                    />
                     <div>
                       <Label className="block mb-2">Fumatore</Label>
                       <Select
@@ -2050,17 +2079,6 @@ function WelcomePageContent() {
                       onChange={(e) => setAnamnesi((p) => ({ ...p, stile_vita: e.target.value }))}
                       placeholder="es. sportivo / sedentario"
                     />
-                    <div>
-                      <Label className="block mb-2">Infortuni passati</Label>
-                      <Select
-                        value={anamnesi.infortuni}
-                        onValueChange={(v) => setAnamnesi((p) => ({ ...p, infortuni: v }))}
-                      >
-                        <option value="">Seleziona</option>
-                        <option value="sì">Sì</option>
-                        <option value="no">No</option>
-                      </Select>
-                    </div>
                     <Input
                       label="Descrizione infortuni"
                       value={anamnesi.infortuni_descrizione}
@@ -2094,46 +2112,105 @@ function WelcomePageContent() {
                       onChange={(e) => setAnamnesi((p) => ({ ...p, gravidanza: e.target.value }))}
                       placeholder="es. no / in corso / passata"
                     />
-                    <Input
-                      label="Proporzione / armonia corporea"
-                      value={anamnesi.proporzione_armonia}
-                      onChange={(e) =>
-                        setAnamnesi((p) => ({ ...p, proporzione_armonia: e.target.value }))
-                      }
-                      placeholder="note opzionali"
-                    />
-                    <Textarea
-                      label="Note proporzione / armonia"
-                      value={anamnesi.proporzione_note}
-                      onChange={(e) =>
-                        setAnamnesi((p) => ({ ...p, proporzione_note: e.target.value }))
-                      }
-                      placeholder="eventuali note"
-                      rows={2}
-                    />
                   </div>
 
-                  {/* Dichiarazione e firma (obbligatori) */}
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                  {/* Dichiarazione e firma (obbligatori + facoltativi) */}
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-5">
                     <p className="text-text-primary text-sm font-medium">Dichiarazione e firma</p>
-                    <Checkbox
-                      label="Dichiaro che le informazioni fornite sono veritiere *"
-                      checked={anamnesi.dichiarazione_veridicita}
-                      onChange={(e) =>
-                        setAnamnesi((p) => ({ ...p, dichiarazione_veridicita: e.target.checked }))
-                      }
-                    />
-                    <Input
-                      label="Firma (nome e cognome) *"
-                      value={anamnesi.firma_nome_cognome}
-                      onChange={(e) =>
-                        setAnamnesi((p) => ({ ...p, firma_nome_cognome: e.target.value }))
-                      }
-                      placeholder="Nome Cognome"
-                      errorMessage={
-                        stepError && !anamnesi.firma_nome_cognome.trim() ? stepError : undefined
-                      }
-                    />
+                    <p className="text-text-tertiary text-xs">
+                      Ogni consenso ha una checkbox separata. Alcune sono obbligatorie, altre facoltative.
+                    </p>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-emerald-400">
+                        <CheckCircle className="h-4 w-4 shrink-0" />
+                        <span className="text-sm font-medium text-text-primary">Obbligatori</span>
+                      </div>
+                      <p className="text-text-tertiary text-xs -mt-2">
+                        Questi devono essere accettati per poter usare il servizio.
+                      </p>
+                      <div className="space-y-3">
+                        <Checkbox
+                          label="Dichiaro di aver letto e accettato i Termini e Condizioni del servizio."
+                          checked={anamnesi.consenso_termini_condizioni}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_termini_condizioni: e.target.checked }))
+                          }
+                        />
+                        <Checkbox
+                          label="Dichiaro di aver letto l'Informativa Privacy sul trattamento dei dati personali."
+                          checked={anamnesi.consenso_privacy}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_privacy: e.target.checked }))
+                          }
+                        />
+                        <Checkbox
+                          label="Dichiaro di essere in condizioni fisiche idonee alla pratica di attività fisica e mi assumo la responsabilità di eventuali controindicazioni non comunicate. Mi impegno a informare lo staff di eventuali patologie, infortuni o condizioni mediche rilevanti."
+                          checked={anamnesi.consenso_idoneita_fisica}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_idoneita_fisica: e.target.checked }))
+                          }
+                        />
+                        <Checkbox
+                          label="Acconsento al trattamento dei dati relativi alla mia salute per la personalizzazione del programma di allenamento."
+                          checked={anamnesi.consenso_dati_sanitari}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_dati_sanitari: e.target.checked }))
+                          }
+                        />
+                        <Checkbox
+                          label="Sono consapevole che l'attività fisica comporta rischi e sollevo lo studio e i trainer da responsabilità derivanti da dichiarazioni non veritiere sul mio stato di salute."
+                          checked={anamnesi.consenso_liberatoria_attivita_fisica}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_liberatoria_attivita_fisica: e.target.checked }))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-violet-400">
+                        <Circle className="h-4 w-4 shrink-0" />
+                        <span className="text-sm font-medium text-text-primary">Facoltativi</span>
+                      </div>
+                      <div className="space-y-3">
+                        <Checkbox
+                          label="Acconsento a ricevere comunicazioni informative, promozionali o newsletter."
+                          checked={anamnesi.consenso_marketing}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_marketing: e.target.checked }))
+                          }
+                        />
+                        <Checkbox
+                          label="Acconsento a essere contattato tramite email o messaggistica."
+                          checked={anamnesi.consenso_comunicazioni}
+                          onChange={(e) =>
+                            setAnamnesi((p) => ({ ...p, consenso_comunicazioni: e.target.checked }))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pt-2 border-t border-amber-500/20">
+                      <Checkbox
+                        label="Dichiaro che le informazioni fornite sono veritiere *"
+                        checked={anamnesi.dichiarazione_veridicita}
+                        onChange={(e) =>
+                          setAnamnesi((p) => ({ ...p, dichiarazione_veridicita: e.target.checked }))
+                        }
+                      />
+                      <Input
+                        label="Firma (nome e cognome) *"
+                        value={anamnesi.firma_nome_cognome}
+                        onChange={(e) =>
+                          setAnamnesi((p) => ({ ...p, firma_nome_cognome: e.target.value }))
+                        }
+                        placeholder="Nome Cognome"
+                        errorMessage={
+                          stepError && !anamnesi.firma_nome_cognome.trim() ? stepError : undefined
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -2376,7 +2453,14 @@ function WelcomePageContent() {
                           type="radio"
                           name="liberatoria-auth"
                           checked={liberatoria.authorized === true}
-                          onChange={() => setLiberatoria((p) => ({ ...p, authorized: true }))}
+                          onChange={() =>
+                            setLiberatoria((p) => ({
+                              ...p,
+                              authorized: true,
+                              channels: [...(LIBERATORIA_CHANNELS as readonly string[])],
+                              duration: 'fino_a_revoca',
+                            }))
+                          }
                           className="rounded-full border-primary/50 text-primary"
                         />
                         <span className="text-text-primary text-sm">Autorizzo</span>
@@ -2394,64 +2478,21 @@ function WelcomePageContent() {
                     </div>
                   </div>
 
-                  {/* Canali, durata, luogo (solo se autorizzo) */}
+                  {/* Testo canali, revoca, luogo (solo se autorizzo) */}
                   {liberatoria.authorized === true && (
                     <>
-                      <div>
-                        <Label className="block mb-2">Canali consentiti</Label>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="space-y-2">
+                        <p className="text-text-secondary text-sm">
+                          I canali per i quali si intende concedere l&apos;autorizzazione sono:
+                        </p>
+                        <ul className="list-disc list-inside text-text-primary text-sm space-y-1 pl-1">
                           {(LIBERATORIA_CHANNELS as readonly string[]).map((ch) => (
-                            <button
-                              key={ch}
-                              type="button"
-                              onClick={() =>
-                                setLiberatoria((p) => ({
-                                  ...p,
-                                  channels: p.channels.includes(ch)
-                                    ? p.channels.filter((c) => c !== ch)
-                                    : [...p.channels, ch],
-                                }))
-                              }
-                              className={`rounded-full px-3 py-1.5 text-sm border transition-colors ${liberatoria.channels.includes(ch) ? 'border-primary bg-primary/20 text-primary-foreground' : 'border-border bg-background/50 text-text-secondary hover:border-primary/50'}`}
-                            >
-                              {ch}
-                            </button>
+                            <li key={ch}>{ch}</li>
                           ))}
-                        </div>
-                        {liberatoria.channels.length === 0 && (
-                          <p className="text-amber-400/90 text-xs mt-1.5">
-                            Consigliato selezionare almeno un canale.
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <Label className="block mb-2">Durata</Label>
-                        <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="liberatoria-durata"
-                              checked={liberatoria.duration === 'fino_a_revoca'}
-                              onChange={() =>
-                                setLiberatoria((p) => ({ ...p, duration: 'fino_a_revoca' }))
-                              }
-                              className="rounded-full border-primary/50 text-primary"
-                            />
-                            <span className="text-text-primary text-sm">Fino a revoca</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="liberatoria-durata"
-                              checked={liberatoria.duration === 'illimitata'}
-                              onChange={() =>
-                                setLiberatoria((p) => ({ ...p, duration: 'illimitata' }))
-                              }
-                              className="rounded-full border-primary/50 text-primary"
-                            />
-                            <span className="text-text-primary text-sm">Illimitata</span>
-                          </label>
-                        </div>
+                        </ul>
+                        <p className="text-text-secondary text-sm mt-3">
+                          La presente autorizzazione potrà essere revocata in qualsiasi momento mediante comunicazione scritta inviata via e-mail all&apos;indirizzo info@22club.it.
+                        </p>
                       </div>
                       <Input
                         label="Luogo (opzionale)"
@@ -2487,7 +2528,12 @@ function WelcomePageContent() {
               {step === 12 && (
                 <div className="space-y-5 text-left">
                   {/* Banner warning se documenti incompleti (non blocca) */}
-                  {!anamnesi.dichiarazione_veridicita ||
+                  {!anamnesi.consenso_termini_condizioni ||
+                  !anamnesi.consenso_privacy ||
+                  !anamnesi.consenso_idoneita_fisica ||
+                  !anamnesi.consenso_dati_sanitari ||
+                  !anamnesi.consenso_liberatoria_attivita_fisica ||
+                  !anamnesi.dichiarazione_veridicita ||
                   !anamnesi.firma_nome_cognome.trim() ||
                   !manleva.dichiarazione_accettazione ||
                   manleva.firma_nome_cognome.trim().length < 3 ||
@@ -2596,11 +2642,11 @@ function WelcomePageContent() {
                     )}
                   </div>
 
-                  {/* 3) Residenza & dati fiscali */}
+                  {/* 3) Residenza e dati fiscali */}
                   <div className="rounded-xl border border-border bg-background/30 p-4">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <h4 className="text-text-primary font-medium text-sm">
-                        Residenza & dati fiscali
+                        Residenza e dati fiscali
                       </h4>
                       <Button
                         type="button"
@@ -2708,10 +2754,10 @@ function WelcomePageContent() {
                       )}
                   </div>
 
-                  {/* 5) Obiettivi & livello */}
+                  {/* 5) Obiettivi e livello */}
                   <div className="rounded-xl border border-border bg-background/30 p-4">
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <h4 className="text-text-primary font-medium text-sm">Obiettivi & livello</h4>
+                      <h4 className="text-text-primary font-medium text-sm">Obiettivi e livello</h4>
                       <Button
                         type="button"
                         variant="secondary"
@@ -2969,15 +3015,9 @@ function WelcomePageContent() {
                             liberatoria.authorized === undefined) && (
                             <span className="ml-2 text-amber-400 text-xs">Da scegliere</span>
                           )}
-                          {liberatoria.authorized === true &&
-                            (liberatoria.channels.length > 0 || liberatoria.duration) && (
+                          {liberatoria.authorized === true && (
                               <p className="text-text-tertiary text-xs mt-0.5">
-                                Canali: {liberatoria.channels.join(', ') || '—'} · Durata:{' '}
-                                {liberatoria.duration === 'illimitata'
-                                  ? 'Illimitata'
-                                  : liberatoria.duration === 'fino_a_revoca'
-                                    ? 'Fino a revoca'
-                                    : '—'}
+                                Canali: {liberatoria.channels.join(', ') || '—'}. La presente autorizzazione potrà essere revocata in qualsiasi momento via e-mail a info@22club.it.
                               </p>
                             )}
                         </div>
@@ -3004,11 +3044,10 @@ function WelcomePageContent() {
                 <div className="space-y-5 text-left">
                   <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
                     <p className="text-text-primary text-sm">
-                      Conferma che i dati inseriti sono corretti. Genereremo il tuo Dossier Atleta
-                      22Club e lo salveremo nei Documenti.
+                      Conferma che i dati inseriti sono corretti. Genereremo il Documento di riepilogo dei dati inseriti e lo salveremo nei Documenti.
                     </p>
                     <Checkbox
-                      label="Confermo che tutti i dati inseriti sono corretti e autorizzo la generazione del Dossier Atleta 22Club. *"
+                      label="Confermo che tutti i dati inseriti sono corretti e autorizzo la generazione del Documento di riepilogo dei dati inseriti. *"
                       checked={finalConfirmation}
                       onChange={(e) => {
                         setFinalConfirmation(e.target.checked)
@@ -3020,13 +3059,13 @@ function WelcomePageContent() {
                     )}
                     <div className="text-text-tertiary text-xs space-y-1 pt-2 border-t border-border">
                       <p>Potrai modificare i dati anche in seguito dal tuo profilo.</p>
-                      <p>Il dossier verrà salvato automaticamente nella sezione Documenti.</p>
+                      <p>Il documento verrà salvato automaticamente nella sezione Documenti.</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 14: Genera Dossier & Completa */}
+              {/* Step 14: Genera documento & Completa */}
               {step === 14 && (
                 <div className="space-y-5 text-left">
                   {/* Stato 1: Ready */}
@@ -3034,12 +3073,8 @@ function WelcomePageContent() {
                     <div className="space-y-4">
                       <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
                         <p className="text-text-primary text-sm">
-                          Genereremo il Dossier Atleta 22Club e lo salveremo automaticamente nei
-                          tuoi Documenti.
+                          Genereremo il Documento di riepilogo dei dati inseriti e lo salveremo automaticamente nei tuoi Documenti.
                         </p>
-                        <Button onClick={handleComplete} className="w-full sm:w-auto">
-                          Genera dossier
-                        </Button>
                       </div>
                       <Link
                         href="#"
@@ -3067,7 +3102,7 @@ function WelcomePageContent() {
                   {!completing && downloadUrl && (
                     <div className="rounded-xl border-2 border-green-500/30 bg-green-500/10 p-5 space-y-4">
                       <p className="text-green-400/95 font-medium">
-                        Dossier generato e salvato nei Documenti.
+                        Documento generato e salvato nei Documenti.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
                         <Button asChild>
@@ -3077,7 +3112,7 @@ function WelcomePageContent() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center gap-2"
                           >
-                            Scarica dossier
+                            Scarica documento
                           </a>
                         </Button>
                         <Button variant="secondary" onClick={handleGoHome}>
@@ -3095,7 +3130,7 @@ function WelcomePageContent() {
                     <div className="space-y-4">
                       <div className="rounded-xl border border-state-error/40 bg-state-error/10 p-4">
                         <p className="text-state-error text-sm">
-                          Non siamo riusciti a generare il dossier. Riprova.
+                          Non siamo riusciti a generare il documento. Riprova.
                         </p>
                         <p className="text-text-tertiary text-xs mt-1">{completeError}</p>
                       </div>
@@ -3163,7 +3198,7 @@ function WelcomePageContent() {
                 ) : step === 14 && downloadUrl ? (
                   <>Vai alla home</>
                 ) : step === 14 && !downloadUrl ? (
-                  <>Genera dossier</>
+                  <>Genera documento</>
                 ) : step < TOTAL_STEPS - 1 ? (
                   <>
                     Avanti <ArrowRight className="h-4 w-4" />

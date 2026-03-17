@@ -626,12 +626,20 @@ function AllenamentiHomePageContent() {
                 </div>
               )}
               <div className="min-w-0 text-left">
-                <h3 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">Ottimo lavoro questa settimana!</h3>
-                <p className="mt-0.5 text-sm leading-snug text-text-secondary sm:text-base">
-                  Hai completato{' '}
-                  <span className="font-bold tabular-nums text-cyan-400">{stats.settimana}</span>{' '}
-                  {stats.settimana === 1 ? 'allenamento' : 'allenamenti'}. Continua così!
-                </p>
+                {stats.settimana > 0 ? (
+                  <>
+                    <h3 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">Ottimo lavoro questa settimana!</h3>
+                    <p className="mt-0.5 text-sm leading-snug text-text-secondary sm:text-base">
+                      Hai completato{' '}
+                      <span className="font-bold tabular-nums text-cyan-400">{stats.settimana}</span>{' '}
+                      {stats.settimana === 1 ? 'allenamento' : 'allenamenti'}. Continua così!
+                    </p>
+                  </>
+                ) : (
+                  <h3 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">
+                    Oh no! Questa settimana non hai mai fatto nessun allenamento! Torna in 22 Club per riprendere con gli allenamenti!
+                  </h3>
+                )}
               </div>
             </div>
             <Link href="/home/progressi" prefetch={true} className="w-full sm:max-w-xs">
