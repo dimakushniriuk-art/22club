@@ -22,7 +22,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const body = await request.json().catch(() => ({})) as { step?: number; payload?: Record<string, unknown> }
+    const body = (await request.json().catch(() => ({}))) as {
+      step?: number
+      payload?: Record<string, unknown>
+    }
     const step = typeof body.step === 'number' ? body.step : null
     const payload = body.payload && typeof body.payload === 'object' ? body.payload : null
 
@@ -32,14 +35,43 @@ export async function POST(request: NextRequest) {
 
     // Rimuovi chiavi non aggiornabili o pericolose
     const allowedKeys = new Set([
-      'nome', 'cognome', 'codice_fiscale', 'sesso', 'data_nascita',
-      'phone', 'telefono', 'contatto_emergenza_nome', 'contatto_emergenza_relazione', 'contatto_emergenza_telefono',
-      'indirizzo_residenza', 'provincia', 'cap', 'citta', 'nazione', 'professione',
-      'altezza_cm', 'peso_corrente_kg', 'peso_iniziale_kg', 'obiettivo_peso', 'bmi',
-      'livello_esperienza', 'tipo_atleta', 'obiettivi_fitness', 'livello_motivazione', 'note',
-      'certificato_medico_tipo', 'certificato_medico_data_rilascio', 'certificato_medico_scadenza',
-      'limitazioni', 'infortuni_recenti', 'operazioni_passate', 'allergie',
-      'obiettivo_nutrizionale', 'intolleranze', 'allergie_alimentari', 'abitudini_alimentari',
+      'nome',
+      'cognome',
+      'codice_fiscale',
+      'sesso',
+      'data_nascita',
+      'phone',
+      'telefono',
+      'contatto_emergenza_nome',
+      'contatto_emergenza_relazione',
+      'contatto_emergenza_telefono',
+      'indirizzo_residenza',
+      'provincia',
+      'cap',
+      'citta',
+      'nazione',
+      'professione',
+      'altezza_cm',
+      'peso_corrente_kg',
+      'peso_iniziale_kg',
+      'obiettivo_peso',
+      'bmi',
+      'livello_esperienza',
+      'tipo_atleta',
+      'obiettivi_fitness',
+      'livello_motivazione',
+      'note',
+      'certificato_medico_tipo',
+      'certificato_medico_data_rilascio',
+      'certificato_medico_scadenza',
+      'limitazioni',
+      'infortuni_recenti',
+      'operazioni_passate',
+      'allergie',
+      'obiettivo_nutrizionale',
+      'intolleranze',
+      'allergie_alimentari',
+      'abitudini_alimentari',
     ])
     const safePayload: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(payload)) {
@@ -58,10 +90,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       logger.error('Save step failed', error, { step, userId: session.user.id })
-      return NextResponse.json(
-        { error: error.message || 'Errore salvataggio' },
-        { status: 502 },
-      )
+      return NextResponse.json({ error: error.message || 'Errore salvataggio' }, { status: 502 })
     }
 
     return NextResponse.json({ success: true })

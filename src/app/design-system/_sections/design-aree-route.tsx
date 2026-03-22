@@ -377,7 +377,9 @@ function PubblicheAuthDesignElements() {
               <CheckCircle2 className="h-7 w-7 text-primary" />
             </div>
           </div>
-          <p className={cn(DS_LABEL_CLASS, 'mt-3')}>registrati conferma, forgot-password/reset-password success</p>
+          <p className={cn(DS_LABEL_CLASS, 'mt-3')}>
+            registrati conferma, forgot-password/reset-password success
+          </p>
         </div>
 
         {/* 7. Stato errore link: cerchio AlertCircle */}

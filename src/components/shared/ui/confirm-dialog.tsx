@@ -118,9 +118,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
-      <DialogContent
-        className="relative max-w-md overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-border shadow-lg backdrop-blur-xl"
-      >
+      <DialogContent className="relative max-w-md overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-border shadow-lg backdrop-blur-xl">
         <div ref={dialogContentRef}>
           <DialogHeader className="relative z-10">
             <div className="flex items-center gap-3 mb-2">
@@ -133,48 +131,46 @@ export function ConfirmDialog({
               >
                 <AlertTriangle className="h-5 w-5" aria-hidden="true" />
               </div>
-              <DialogTitle className="text-text-primary text-xl font-bold">
-                {title}
-              </DialogTitle>
+              <DialogTitle className="text-text-primary text-xl font-bold">{title}</DialogTitle>
             </div>
             <DialogDescription className="text-text-secondary text-sm mt-2">
               {description}
             </DialogDescription>
           </DialogHeader>
 
-        <DialogFooter className="relative z-10 mt-6 flex justify-end gap-3">
-          <Button
-            ref={cancelButtonRef}
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isDisabled}
-            className="border-border/30 text-text-secondary hover:bg-background-tertiary/50 hover:border-border/50 hover:text-text-primary transition-all duration-200"
-            aria-label={cancelText}
-          >
-            {cancelText}
-          </Button>
-          <Button
-            ref={confirmButtonRef}
-            variant={variant === 'destructive' ? 'destructive' : 'default'}
-            onClick={handleConfirm}
-            disabled={isDisabled}
-            className={
-              variant === 'destructive'
-                ? 'bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg shadow-red-500/30 hover:shadow-red-500/40 transition-all duration-200'
-                : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200'
-            }
-            aria-label={confirmText}
-          >
-            {isSubmitting || loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                <span>Elaborazione...</span>
-              </>
-            ) : (
-              confirmText
-            )}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="relative z-10 mt-6 flex justify-end gap-3">
+            <Button
+              ref={cancelButtonRef}
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isDisabled}
+              className="border-border/30 text-text-secondary hover:bg-background-tertiary/50 hover:border-border/50 hover:text-text-primary transition-all duration-200"
+              aria-label={cancelText}
+            >
+              {cancelText}
+            </Button>
+            <Button
+              ref={confirmButtonRef}
+              variant={variant === 'destructive' ? 'destructive' : 'default'}
+              onClick={handleConfirm}
+              disabled={isDisabled}
+              className={
+                variant === 'destructive'
+                  ? 'bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg shadow-red-500/30 hover:shadow-red-500/40 transition-all duration-200'
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200'
+              }
+              aria-label={confirmText}
+            >
+              {isSubmitting || loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                  <span>Elaborazione...</span>
+                </>
+              ) : (
+                confirmText
+              )}
+            </Button>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

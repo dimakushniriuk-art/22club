@@ -7,16 +7,17 @@
 ## 📊 PANORAMICA TEST
 
 ### Configurazione Playwright
+
 ```typescript
 // playwright.config.ts
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 20 * 1000,        // 20s per test
+  timeout: 20 * 1000, // 20s per test
   expect: { timeout: 3000 }, // 3s per assertion
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 2,
-  
+
   projects: [
     { name: 'chromium', use: devices['Desktop Chrome'] },
     { name: 'firefox', use: devices['Desktop Firefox'] },
@@ -24,11 +25,11 @@ export default defineConfig({
     { name: 'Mobile Chrome', use: devices['Pixel 5'] },
     { name: 'Mobile Safari', use: devices['iPhone 12'] },
   ],
-  
+
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3001',
-    timeout: 180 * 1000,  // 3 minuti startup
+    timeout: 180 * 1000, // 3 minuti startup
   },
 })
 ```
@@ -94,36 +95,40 @@ tests/
 ## 🎯 STATO TEST PER SUITE
 
 ### Login Suite (login.spec.ts)
-| Test | Chromium | Firefox | WebKit | Mobile Chr | Mobile Saf |
-|------|----------|---------|--------|------------|------------|
-| Display form | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Login PT | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Login athlete | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Invalid creds | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Validation | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+| Test          | Chromium | Firefox | WebKit | Mobile Chr | Mobile Saf |
+| ------------- | -------- | ------- | ------ | ---------- | ---------- |
+| Display form  | ✅       | ✅      | ✅     | ✅         | ✅         |
+| Login PT      | ✅       | ✅      | ❌     | ✅         | ❌         |
+| Login athlete | ✅       | ✅      | ❌     | ✅         | ❌         |
+| Invalid creds | ✅       | ✅      | ❌     | ✅         | ❌         |
+| Validation    | ✅       | ✅      | ✅     | ✅         | ✅         |
 
 **Problema WebKit/Safari**: Cookie secure su HTTP blocca sessione
 
 ### Login Roles Suite (login-roles.spec.ts)
-| Test | Chromium | Firefox | WebKit | Mobile Chr | Mobile Saf |
-|------|----------|---------|--------|------------|------------|
-| Admin redirect | ✅ | ✅ | ❌ | ✅ | ❌ |
-| PT redirect | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Athlete redirect | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Test role | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+| Test             | Chromium | Firefox | WebKit | Mobile Chr | Mobile Saf |
+| ---------------- | -------- | ------- | ------ | ---------- | ---------- |
+| Admin redirect   | ✅       | ✅      | ❌     | ✅         | ❌         |
+| PT redirect      | ✅       | ✅      | ❌     | ✅         | ❌         |
+| Athlete redirect | ✅       | ✅      | ❌     | ✅         | ❌         |
+| Test role        | ✅       | ✅      | ✅     | ✅         | ✅         |
 
 ### Dashboard Suite (dashboard.spec.ts)
-| Test | Tutti Browser |
-|------|---------------|
-| Load dashboard | ✅ |
-| Navigate stats | ✅ |
-| Sidebar exists | ✅ |
+
+| Test           | Tutti Browser |
+| -------------- | ------------- |
+| Load dashboard | ✅            |
+| Navigate stats | ✅            |
+| Sidebar exists | ✅            |
 
 ---
 
 ## ⚠️ PROBLEMI NOTI
 
 ### 1. WebKit/Safari Cookie Issue - ✅ DECISIONE DEFINITIVA
+
 ```
 Problema: Safari blocca cookie Secure su HTTP (localhost)
 Impatto: Login via form non funziona in dev
@@ -140,6 +145,7 @@ Status: ✅ RISOLTO - Skip documentato e applicato
 ```
 
 ### 2. Timeout su Redirect
+
 ```
 Problema: waitForURL timeout dopo login
 Browser: Principalmente WebKit/Mobile Safari
@@ -149,6 +155,7 @@ Status: ✅ Mitigato
 ```
 
 ### 3. Debug Logging ERR_CONNECTION_REFUSED - ✅ RISOLTO
+
 ```
 Problema: fetch a localhost:7242 fallisce
 Impatto: Log rumorosi, non bloccante
@@ -161,6 +168,7 @@ Status: ✅ RISOLTO - Nessun fetch a localhost:7242 nel codice
 ## 📋 BEST PRACTICES IMPLEMENTATE
 
 ### Context Pulito per Test
+
 ```typescript
 // Ogni test crea contesto anonimo
 const context = await browser.newContext({
@@ -173,66 +181,67 @@ await context.addInitScript(() => {
 ```
 
 ### Attesa Robusta
+
 ```typescript
 // Invece di waitForURL semplice
-await expect
-  .poll(async () => page.url(), { timeout: 40000 })
-  .toContain('/dashboard')
+await expect.poll(async () => page.url(), { timeout: 40000 }).toContain('/dashboard')
 ```
 
 ### Skip Browser Problematici
+
 ```typescript
-test.skip(
-  isSafariProject(browserName), 
-  'Safari/WebKit su HTTP blocca cookie Secure'
-)
+test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP blocca cookie Secure')
 ```
 
 ---
 
 ## 📊 METRICHE AFFIDABILITÀ
 
-| Browser | Pass Rate | Note |
-|---------|-----------|------|
-| Chromium | ~95% | Affidabile |
-| Firefox | ~95% | Affidabile |
-| WebKit | ~60% | Cookie issues |
-| Mobile Chrome | ~90% | Buono |
-| Mobile Safari | ~60% | Cookie issues |
+| Browser       | Pass Rate | Note          |
+| ------------- | --------- | ------------- |
+| Chromium      | ~95%      | Affidabile    |
+| Firefox       | ~95%      | Affidabile    |
+| WebKit        | ~60%      | Cookie issues |
+| Mobile Chrome | ~90%      | Buono         |
+| Mobile Safari | ~60%      | Cookie issues |
 
 ### Test Flaky Identificati
-| Test | Causa | Mitigazione |
-|------|-------|-------------|
-| Login PT/athlete su Safari | Cookie Secure | Skip |
-| Dashboard load | Timeout variabile | Timeout aumentato |
-| Invalid credentials | Messaggio non visibile | Timeout aumentato |
+
+| Test                       | Causa                  | Mitigazione       |
+| -------------------------- | ---------------------- | ----------------- |
+| Login PT/athlete su Safari | Cookie Secure          | Skip              |
+| Dashboard load             | Timeout variabile      | Timeout aumentato |
+| Invalid credentials        | Messaggio non visibile | Timeout aumentato |
 
 ---
 
 ## 📊 VALUTAZIONE
 
-| Aspetto | Rating | Note |
-|---------|--------|------|
-| Chiarezza logica | ★★★★☆ | Struttura organizzata |
-| Robustezza | ★★★☆☆ | Browser issues |
-| Debito tecnico | **MEDIO** | Skip Safari necessari |
-| Rischio regressioni | **MEDIO** | Alcuni test flaky |
+| Aspetto             | Rating    | Note                  |
+| ------------------- | --------- | --------------------- |
+| Chiarezza logica    | ★★★★☆     | Struttura organizzata |
+| Robustezza          | ★★★☆☆     | Browser issues        |
+| Debito tecnico      | **MEDIO** | Skip Safari necessari |
+| Rischio regressioni | **MEDIO** | Alcuni test flaky     |
 
 ---
 
 ## 🎯 RACCOMANDAZIONI
 
 ### Priorità Alta
+
 1. ✅ WebKit/Safari: Skip permanente documentato (2026-01-13)
 2. Ridurre dipendenza da timeout lunghi
 3. Centralizzare utilities test
 
 ### Priorità Media
+
 1. Aggiungere test per aree non coperte
 2. Implementare visual regression test
 3. Migliorare coverage report
 
 ### Priorità Bassa
+
 1. Test performance più robusti
 2. Test accessibilità estesi
 3. Test multi-lingua

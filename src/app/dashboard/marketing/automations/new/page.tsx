@@ -37,13 +37,19 @@ export default function NewAutomationPage() {
   useEffect(() => {
     if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) return
     let cancelled = false
-    supabase.from('marketing_segments').select('id, name').order('name').then(({ data }) => {
-      if (!cancelled && data?.length) {
-        setSegments(data as SegmentRow[])
-        if (!segmentId) setSegmentId(data[0].id)
-      }
-    })
-    return () => { cancelled = true }
+    supabase
+      .from('marketing_segments')
+      .select('id, name')
+      .order('name')
+      .then(({ data }) => {
+        if (!cancelled && data?.length) {
+          setSegments(data as SegmentRow[])
+          if (!segmentId) setSegmentId(data[0].id)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
   }, [role, authLoading, supabase, segmentId])
 
   const allowed = role != null && ['admin', 'marketing'].includes(role as string)
@@ -148,7 +154,9 @@ export default function NewAutomationPage() {
               >
                 <option value="">–</option>
                 {segments.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -160,7 +168,9 @@ export default function NewAutomationPage() {
                 className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-text-primary"
               >
                 {ACTION_TYPES.map((a) => (
-                  <option key={a.value} value={a.value}>{a.label}</option>
+                  <option key={a.value} value={a.value}>
+                    {a.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -201,7 +211,14 @@ export default function NewAutomationPage() {
             )}
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={saving}>
-                {saving ? 'Salvataggio...' : <><Save className="mr-2 h-4 w-4" />Salva</>}
+                {saving ? (
+                  'Salvataggio...'
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Salva
+                  </>
+                )}
               </Button>
               <Button type="button" variant="outline" asChild>
                 <Link href="/dashboard/marketing/automations">Annulla</Link>

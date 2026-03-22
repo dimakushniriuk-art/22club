@@ -9,18 +9,21 @@
 ## 🔴 Problemi Identificati
 
 ### 1. Policy DELETE Problematica
+
 - **Policy**: "Only admins can delete profiles"
 - **Espressione**: `is_admin()`
 - **Problema**: `is_admin()` usa `auth.uid()` che è NULL con service role key
 - **Risultato**: Policy blocca sempre l'eliminazione anche con service role key
 
 ### 2. Constraint FOREIGN KEY su role
+
 - **Constraint**: `profiles_role_fkey` (role -> roles.name)
 - **Regola**: `ON DELETE RESTRICT`
 - **Problema**: Può bloccare eliminazione se ruolo è referenziato
 - **Soluzione**: Rimuovere constraint (role è solo testo, non serve FK)
 
 ### 3. Dipendenze Multiple
+
 - **29+ tabelle** che referenziano `profiles` o `auth.users`
 - Alcune hanno `ON DELETE RESTRICT` (es. `payments.created_by_staff_id`)
 - Deve essere eliminato manualmente PRIMA di eliminare l'utente
@@ -30,6 +33,7 @@
 ## ✅ Soluzioni Implementate
 
 ### 1. Funzione SQL per Bypass RLS
+
 **File**: `supabase/migrations/20260109_fix_delete_profile_bypass_rls.sql`
 
 ```sql
@@ -40,15 +44,18 @@ SECURITY DEFINER
 ```
 
 ### 2. Rimozione Constraint FOREIGN KEY
+
 **File**: `supabase/migrations/20260109_fix_delete_policy_service_role.sql`
 
 - Rimuove `profiles_role_fkey` se esiste
 - Verifica policy DELETE dopo fix
 
 ### 3. Eliminazione Manuale Dipendenze
+
 **File**: `src/app/api/admin/users/route.ts` (DELETE handler)
 
 Elimina manualmente (in ordine):
+
 1. `pt_atleti` (relazioni trainer-atleti)
 2. Tabelle `athlete_*` (8 tabelle dati atleta)
 3. `payments` (CRITICO - ha RESTRICT)
@@ -56,6 +63,7 @@ Elimina manualmente (in ordine):
 5. `documents`, `inviti_atleti`, `lesson_counters`, `profiles_tags`, `progress_photos`, `chat_messages`
 
 ### 4. Query di Verifica
+
 - `docs/VERIFICA_TABELLE_DIPENDENTI.sql` - Verifica foreign key
 - `docs/VERIFICA_TUTTE_POLICY_RLS.sql` - Verifica policy RLS
 - `docs/VERIFICA_DIPENDENZE_AUTH_USERS.sql` - Verifica dipendenze auth.users
@@ -81,7 +89,7 @@ docs/FIX_COMPLETO_ELIMINAZIONE_UTENTE.sql
 
 ```sql
 -- Esegui questo per vedere tutte le policy DELETE
-SELECT 
+SELECT
     policyname,
     permissive,
     roles,
@@ -112,7 +120,7 @@ SELECT EXISTS (
 
 ```sql
 -- Verifica che il constraint sia stato rimosso
-SELECT 
+SELECT
     constraint_name,
     constraint_type,
     delete_rule
@@ -147,18 +155,22 @@ WHERE tc.table_name = 'profiles'
 ## 📋 File Creati/Modificati
 
 ### Migrazioni SQL:
+
 - ✅ `supabase/migrations/20260109_fix_delete_profile_bypass_rls.sql` (NUOVO)
 - ✅ `supabase/migrations/20260109_fix_delete_policy_service_role.sql` (NUOVO)
 
 ### Query di Verifica:
+
 - ✅ `docs/VERIFICA_TABELLE_DIPENDENTI.sql`
 - ✅ `docs/VERIFICA_TUTTE_POLICY_RLS.sql`
 - ✅ `docs/VERIFICA_DIPENDENZE_AUTH_USERS.sql`
 
 ### Script Completo:
+
 - ✅ `docs/FIX_COMPLETO_ELIMINAZIONE_UTENTE.sql` (include tutto)
 
 ### Codice:
+
 - ✅ `src/app/api/admin/users/route.ts` (DELETE handler - MODIFICATO)
 
 ---

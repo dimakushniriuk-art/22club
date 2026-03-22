@@ -10,7 +10,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
-import { User, Dumbbell, Edit, Trash2, CheckCircle2, XCircle, Mail, MessageCircle } from 'lucide-react'
+import {
+  User,
+  Dumbbell,
+  Edit,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Mail,
+  MessageCircle,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AppointmentTable } from '@/types/appointment'
 import { EmailToAthleteModal } from './email-to-athlete-modal'
@@ -84,9 +93,7 @@ export function AppointmentItem({
               className={cn(
                 'text-2xl font-bold tabular-nums',
                 lessonsRemaining >= 6 && 'text-[#00C781]',
-                lessonsRemaining >= 2 &&
-                  lessonsRemaining <= 4 &&
-                  'text-[#FFC107]',
+                lessonsRemaining >= 2 && lessonsRemaining <= 4 && 'text-[#FFC107]',
                 lessonsRemaining <= 1 && 'text-[#FF3B30]',
               )}
             >
@@ -145,7 +152,11 @@ export function AppointmentItem({
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation()
-              if (confirm('Segnare questo appuntamento come completato? Verrà scalato un allenamento all\'atleta.')) {
+              if (
+                confirm(
+                  "Segnare questo appuntamento come completato? Verrà scalato un allenamento all'atleta.",
+                )
+              ) {
                 onComplete(appointment)
               }
             }}
@@ -173,7 +184,12 @@ export function AppointmentItem({
         </div>
 
         {/* Action Buttons - bloccati se completato/annullato */}
-        <div className={cn('relative z-10 flex shrink-0 items-center gap-1.5', isLocked && 'pointer-events-none opacity-60')}>
+        <div
+          className={cn(
+            'relative z-10 flex shrink-0 items-center gap-1.5',
+            isLocked && 'pointer-events-none opacity-60',
+          )}
+        >
           <Button
             variant="ghost"
             onClick={(e) => {

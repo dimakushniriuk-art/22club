@@ -86,7 +86,9 @@ export function AppointmentModal({ open, onOpenChange, onSuccess }: AppointmentM
       }
 
       // Ottieni staff_id dal profilo usando funzione helper (evita problemi RLS)
-      const { data: profileId, error: profileError } = await supabase.rpc('get_current_staff_profile_id')
+      const { data: profileId, error: profileError } = await supabase.rpc(
+        'get_current_staff_profile_id',
+      )
 
       if (profileError || !profileId) {
         logger.error('Errore ottenimento profilo staff', profileError, { userId: user.id })

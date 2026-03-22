@@ -23,6 +23,7 @@
 ```
 
 **Cosa Fa**:
+
 - Push automatico in batch da 10 commit alla volta
 - Evita timeout su repository grandi
 - Mostra progresso in tempo reale
@@ -101,16 +102,19 @@ git remote -v
 ### Step 2: Esegui Push
 
 **Opzione A - Script Automatico** (Raccomandato):
+
 ```powershell
 .\scripts\push-incremental.ps1
 ```
 
 **Opzione B - Push Diretto** (Se repository piccolo o connessione veloce):
+
 ```bash
 git push origin main
 ```
 
 **Opzione C - SSH** (Se disponibile):
+
 ```bash
 git remote set-url origin git@github.com:dimakushniriuk-art/club_1225.git
 git push origin main

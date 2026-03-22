@@ -38,13 +38,23 @@ async function loginWithRetry(page: Page, email: string, password: string, targe
 test.describe('Flusso Registrazione Nuovo Atleta', () => {
   test('PT: accesso al dashboard', async ({ page, browserName }) => {
     test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP non affidabile per login')
-    await loginWithRetry(page, TEST_CREDENTIALS.pt.email, TEST_CREDENTIALS.pt.password, '/dashboard')
+    await loginWithRetry(
+      page,
+      TEST_CREDENTIALS.pt.email,
+      TEST_CREDENTIALS.pt.password,
+      '/dashboard',
+    )
     await expect(page.locator('body')).toBeVisible()
   })
 
   test('Atleta: accesso a home', async ({ page, browserName }) => {
     test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP non affidabile per login')
-    await loginWithRetry(page, TEST_CREDENTIALS.athlete.email, TEST_CREDENTIALS.athlete.password, '/home')
+    await loginWithRetry(
+      page,
+      TEST_CREDENTIALS.athlete.email,
+      TEST_CREDENTIALS.athlete.password,
+      '/home',
+    )
     await expect(page.locator('body')).toBeVisible()
   })
 })

@@ -10,6 +10,7 @@
 ### 1. Esportazione Schema Completo (Senza Dati)
 
 **Comando:**
+
 ```bash
 pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.pooler.supabase.com:5432/postgres" \
   --schema=public \
@@ -20,6 +21,7 @@ pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.
 ```
 
 **Oppure esegui lo script:**
+
 ```bash
 bash supabase-config-export/pg-dump-completo.sh
 ```
@@ -29,6 +31,7 @@ bash supabase-config-export/pg-dump-completo.sh
 ### 2. Esportazione Schema (File Alternativo)
 
 **Comando:**
+
 ```bash
 pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.pooler.supabase.com:5432/postgres" \
   --schema=public \
@@ -39,6 +42,7 @@ pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.
 ```
 
 **Oppure esegui lo script:**
+
 ```bash
 bash supabase-config-export/pg-dump-con-dati.sh
 ```
@@ -56,6 +60,7 @@ bash supabase-config-export/pg-dump-con-dati.sh
 ## 🔧 Script Disponibili
 
 ### Script 1: `pg-dump-completo.sh`
+
 Esporta solo schema (senza dati) in `schema-complete.sql`
 
 ```bash
@@ -63,6 +68,7 @@ bash supabase-config-export/pg-dump-completo.sh
 ```
 
 ### Script 2: `pg-dump-con-dati.sh`
+
 Esporta solo schema (senza dati) in `schema-with-data.sql`
 
 ```bash
@@ -78,6 +84,7 @@ bash supabase-config-export/pg-dump-con-dati.sh
 5. Sostituisci `[YOUR-PASSWORD]` con la password del database
 
 **Formato atteso:**
+
 ```
 postgresql://postgres.icibqnmtacibgnhaidlz:[PASSWORD]@aws-1-eu-north-1.pooler.supabase.com:5432/postgres
 ```
@@ -93,6 +100,7 @@ postgresql://postgres.icibqnmtacibgnhaidlz:[PASSWORD]@aws-1-eu-north-1.pooler.su
 ## 📦 Cosa Contiene il File SQL
 
 Il file `schema-complete.sql` contiene:
+
 - ✅ CREATE TABLE statements (tutte le tabelle)
 - ✅ CREATE INDEX statements (tutti gli indici)
 - ✅ CREATE FUNCTION statements (tutte le funzioni)
@@ -106,18 +114,22 @@ Il file `schema-complete.sql` contiene:
 ## 🔄 Come Usare il File in Futuro
 
 ### Per Importare in un Nuovo Database
+
 ```bash
 psql "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.pooler.supabase.com:5432/postgres" \
   -f supabase-config-export/schema-complete.sql
 ```
 
 ### Per Applicare Modifiche
+
 1. Modifica il file `schema-complete.sql`
 2. Esegui le modifiche nel SQL Editor di Supabase
 3. Oppure usa migrazioni Supabase
 
 ### Per Backup Periodico
+
 Esegui periodicamente:
+
 ```bash
 bash supabase-config-export/pg-dump-completo.sh
 ```
@@ -148,6 +160,7 @@ Poi committa il file in Git (senza password!) per versioning.
 ## 📞 Supporto
 
 Se i comandi non funzionano in futuro:
+
 1. Verifica che la password sia ancora corretta
 2. Verifica che la regione sia ancora `eu-north-1`
 3. Controlla che il progetto sia ancora attivo

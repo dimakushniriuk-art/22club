@@ -53,7 +53,11 @@ export function AllenamentoOggiCard({
             </span>
             <span className="truncate">Allenamento di Oggi</span>
           </CardTitle>
-          <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] border-white/10 text-text-secondary sm:text-xs">
+          <Badge
+            variant="secondary"
+            size="sm"
+            className="shrink-0 text-[10px] border-white/10 text-text-secondary sm:text-xs"
+          >
             {oggi.orario}
           </Badge>
         </div>
@@ -93,30 +97,43 @@ export function AllenamentoOggiCard({
 
           <div className="min-w-0 flex-1 space-y-2.5">
             <div>
-              <h3 className="mb-1 truncate text-sm font-semibold text-text-primary">{oggi.titolo}</h3>
+              <h3 className="mb-1 truncate text-sm font-semibold text-text-primary">
+                {oggi.titolo}
+              </h3>
               <p className="line-clamp-2 text-xs text-text-secondary">{oggi.descrizione}</p>
             </div>
             <div className="grid grid-cols-3 gap-1.5 rounded-lg border border-white/10 bg-white/5 p-2 text-center sm:gap-2 sm:p-2.5">
               <div>
-                <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">Durata</div>
+                <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">
+                  Durata
+                </div>
                 <div className="flex items-center justify-center gap-1 text-xs font-medium text-text-primary sm:text-sm">
                   <Clock className="h-3 w-3 text-cyan-400 sm:h-4 sm:w-4" />
                   {oggi.durata} min
                 </div>
               </div>
               <div>
-                <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">Esercizi</div>
+                <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">
+                  Esercizi
+                </div>
                 <div className="flex items-center justify-center gap-1 text-xs font-medium text-text-primary sm:text-sm">
                   <Target className="h-3 w-3 text-cyan-400 sm:h-4 sm:w-4" />
                   {oggi.esercizi_totali}
                 </div>
               </div>
               <div>
-                <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">PT</div>
-                <div className="truncate text-xs font-medium text-text-primary sm:text-sm">{oggi.pt}</div>
+                <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">
+                  PT
+                </div>
+                <div className="truncate text-xs font-medium text-text-primary sm:text-sm">
+                  {oggi.pt}
+                </div>
               </div>
             </div>
-            <Button onClick={onStart} className="h-9 min-h-[44px] w-full rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90 sm:h-10 sm:text-sm">
+            <Button
+              onClick={onStart}
+              className="h-9 min-h-[44px] w-full rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90 sm:h-10 sm:text-sm"
+            >
               <Play className="mr-1.5 h-3.5 w-3.5" />
               Inizia Allenamento
             </Button>

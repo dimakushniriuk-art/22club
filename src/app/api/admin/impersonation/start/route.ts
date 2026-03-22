@@ -55,7 +55,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!adminPassword || typeof adminPassword !== 'string' || !adminPassword.trim()) {
-      return NextResponse.json({ error: 'Password admin obbligatoria per confermare impersonation' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Password admin obbligatoria per confermare impersonation' },
+        { status: 400 },
+      )
     }
 
     if (!actor.email) {
@@ -81,7 +84,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (rpcError) {
-      logger.error('RPC start_impersonation errore', rpcError, { targetProfileId, actorId: actor.id })
+      logger.error('RPC start_impersonation errore', rpcError, {
+        targetProfileId,
+        actorId: actor.id,
+      })
       return NextResponse.json(
         { error: rpcError.message || 'Errore avvio impersonation' },
         { status: 500 },
@@ -90,7 +96,8 @@ export async function POST(request: NextRequest) {
 
     const result = rpcResult as { ok?: boolean; error?: string; error_code?: string }
     if (!result?.ok) {
-      const code = result?.error_code === 'FORBIDDEN' ? 403 : result?.error_code === 'NOT_FOUND' ? 404 : 400
+      const code =
+        result?.error_code === 'FORBIDDEN' ? 403 : result?.error_code === 'NOT_FOUND' ? 404 : 400
       return NextResponse.json(
         { error: result?.error || 'Impersonation non avviata' },
         { status: code },

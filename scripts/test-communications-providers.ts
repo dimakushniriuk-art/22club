@@ -20,9 +20,8 @@ async function testResendEmail() {
   logger.info('🧪 Test invio email tramite Resend...')
 
   try {
-    const { isResendConfigured, sendEmailViaResend } = await import(
-      '../src/lib/communications/email-resend-client'
-    )
+    const { isResendConfigured, sendEmailViaResend } =
+      await import('../src/lib/communications/email-resend-client')
 
     if (!isResendConfigured()) {
       logger.error('❌ Resend non configurato')

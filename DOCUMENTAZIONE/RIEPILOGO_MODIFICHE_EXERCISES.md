@@ -11,10 +11,12 @@
 
 **Prima**: Un solo dropdown con tutti gli attrezzi  
 **Dopo**: Due dropdown separati:
+
 - **Categoria**: Seleziona la categoria (Pesi liberi, Panche e supporti, ecc.)
 - **Attrezzo**: Filtra gli attrezzi in base alla categoria selezionata
 
 **File Modificati**:
+
 - `src/lib/exercises-data.ts` - Aggiunta struttura `EQUIPMENT_BY_CATEGORY`
 - `src/components/dashboard/exercise-form-modal.tsx` - Modificato form con due dropdown
 
@@ -24,12 +26,14 @@
 **Dopo**: Più attrezzi per esercizio
 
 **Funzionalità**:
+
 - Aggiungi attrezzi dalla categoria selezionata
 - Visualizza attrezzi selezionati come tag/chip
 - Rimuovi attrezzi con pulsante X
 - Salvataggio come stringa separata da virgole (es: "Manubri, Bilanciere, Panca piana")
 
 **File Modificati**:
+
 - `src/components/dashboard/exercise-form-modal.tsx` - Aggiunto stato `selectedEquipment` e UI per gestione multipla
 - `src/app/api/exercises/route.ts` - Aumentato limite max da 60 a 500 caratteri per `equipment`
 
@@ -39,6 +43,7 @@
 **Dopo**: Campo rimosso dal form (rimane nel database per compatibilità)
 
 **File Modificati**:
+
 - `src/components/dashboard/exercise-form-modal.tsx` - Rimosso campo durata dalla UI
 
 ---
@@ -50,6 +55,7 @@
 **Script Creato**: `supabase/migrations/20250202_verify_exercises_structure.sql`
 
 **Risultato Atteso**:
+
 - ✅ `equipment` è `TEXT` - Supporta stringhe lunghe (perfetto per più attrezzi)
 - ✅ `duration_seconds` esiste come `INTEGER` - Mantenuto per compatibilità
 - ✅ Nessuna modifica strutturale necessaria
@@ -65,22 +71,26 @@
 ## 📊 Struttura Dati
 
 ### Equipment (Prima)
+
 ```typescript
-equipment: "Manubri"  // Singolo attrezzo
+equipment: 'Manubri' // Singolo attrezzo
 ```
 
 ### Equipment (Dopo)
+
 ```typescript
-equipment: "Manubri, Bilanciere, Panca piana"  // Più attrezzi separati da virgole
+equipment: 'Manubri, Bilanciere, Panca piana' // Più attrezzi separati da virgole
 ```
 
 ### Parsing nel Codice
+
 ```typescript
 // Quando si carica un esercizio esistente
-const equipmentList = editing.equipment
-  ?.split(',')
-  .map(e => e.trim())
-  .filter(Boolean) || []
+const equipmentList =
+  editing.equipment
+    ?.split(',')
+    .map((e) => e.trim())
+    .filter(Boolean) || []
 
 // Quando si salva
 equipment: selectedEquipment.join(', ')
@@ -104,6 +114,7 @@ equipment: selectedEquipment.join(', ')
 ## 🧪 Test da Eseguire
 
 ### Test 1: Selezione Categoria e Attrezzo
+
 1. Aprire form creazione esercizio
 2. Selezionare categoria "Pesi liberi"
 3. Verificare che il dropdown attrezzi mostri solo attrezzi di quella categoria
@@ -111,6 +122,7 @@ equipment: selectedEquipment.join(', ')
 5. Verificare che appaia come tag
 
 ### Test 2: Selezione Multipla Attrezzi
+
 1. Selezionare categoria "Pesi liberi"
 2. Aggiungere "Manubri"
 3. Cambiare categoria a "Panche e supporti"
@@ -120,6 +132,7 @@ equipment: selectedEquipment.join(', ')
 7. Salvare e verificare che nel database sia salvato come "Manubri, Panca piana"
 
 ### Test 3: Modifica Esercizio Esistente
+
 1. Aprire form modifica esercizio con attrezzi esistenti
 2. Verificare che gli attrezzi vengano parsati correttamente
 3. Verificare che la categoria venga determinata automaticamente

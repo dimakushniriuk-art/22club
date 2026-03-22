@@ -20,9 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     const cronSecret = request.headers.get('x-cron-secret')
-    const secret = authHeader?.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : cronSecret
+    const secret = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : cronSecret
 
     if (!CRON_SECRET || secret !== CRON_SECRET) {
       logger.warn('Cron refresh-marketing-kpis: secret mancante o non valido')
@@ -54,9 +52,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch (err) {
     logger.error('Cron refresh-marketing-kpis error', err)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -4,34 +4,19 @@
 // Gestisce l'invio automatico di comunicazioni programmate
 // ============================================================
 
-import { createClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import { sendCommunicationEmail } from './email'
 
 const logger = createLogger('lib:communications:scheduler')
 
-let serviceClient: ReturnType<typeof createClient<Database>> | null = null
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`)
-  }
-  return value
-}
+let serviceClient: SupabaseClient<Database> | null = null
 
 function getSupabaseClient() {
   if (!serviceClient) {
-    serviceClient = createClient<Database>(
-      requiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-      requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
+    serviceClient = createAdminClient() as unknown as SupabaseClient<Database>
   }
   return serviceClient
 }
@@ -105,7 +90,8 @@ export async function processScheduledCommunications(): Promise<ProcessScheduled
         await ensureRecipientsCreated(communication.id, {
           type: communication.type as string,
           recipient_filter: communication.recipient_filter as unknown,
-          created_by_profile_id: (communication as { created_by_profile_id?: string }).created_by_profile_id,
+          created_by_profile_id: (communication as { created_by_profile_id?: string })
+            .created_by_profile_id,
         })
 
         // Poi, invia in base al tipo (solo email)
@@ -127,7 +113,13 @@ export async function processScheduledCommunications(): Promise<ProcessScheduled
               id: communication.id,
               type: communication.type,
             })
-            result = { success: false, sent: 0, failed: 0, total: 0, errors: ['Canale non supportato'] }
+            result = {
+              success: false,
+              sent: 0,
+              failed: 0,
+              total: 0,
+              errors: ['Canale non supportato'],
+            }
             break
 
           default:

@@ -38,7 +38,12 @@ function playTimerTone(
 ): void {
   try {
     if (typeof window === 'undefined') return
-    const ctx = audioContextRef.current ?? new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    const ctx =
+      audioContextRef.current ??
+      new (
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      )()
     if (!audioContextRef.current) audioContextRef.current = ctx
     if (ctx.state === 'suspended') ctx.resume()
     const osc = ctx.createOscillator()
@@ -82,11 +87,13 @@ function ExerciseMediaDisplay({
   const tryPlay = React.useCallback(() => {
     const el = videoRef.current
     if (!el) return
-    el.play().then(() => {
-      setAutoplayBlocked(false)
-    }).catch(() => {
-      setAutoplayBlocked(true)
-    })
+    el.play()
+      .then(() => {
+        setAutoplayBlocked(false)
+      })
+      .catch(() => {
+        setAutoplayBlocked(true)
+      })
   }, [])
 
   useEffect(() => {
@@ -143,88 +150,91 @@ function ExerciseMediaDisplay({
             crossOrigin="anonymous"
             autoPlay
             onError={(ev) => {
-            const videoElement = ev.currentTarget as HTMLVideoElement
-            const error = videoElement.error
+              const videoElement = ev.currentTarget as HTMLVideoElement
+              const error = videoElement.error
 
-            // Costruisci errorDetails con valori sicuri e serializzabili
-            // Usa JSON.stringify per assicurare serializzazione corretta
-            const errorDetails: Record<string, string | number | null> = {
-              exerciseId: String(exercise?.id ?? 'unknown'),
-              exerciseName: String((exercise?.name as string) ?? 'unknown'),
-              videoUrl: String(videoUrl ?? 'unknown'),
-              networkState: videoElement.networkState ?? -1,
-              readyState: videoElement.readyState ?? -1,
-            }
-
-            // Aggiungi informazioni sull'errore se disponibili
-            if (error) {
-              errorDetails.errorCode = error.code ?? null
-              errorDetails.errorMessage = String(error.message ?? 'Errore sconosciuto')
-
-              // Codici errore HTMLMediaElement
-              const errorCodeMap: Record<number, string> = {
-                1: 'MEDIA_ERR_ABORTED - Caricamento interrotto',
-                2: 'MEDIA_ERR_NETWORK - Errore di rete',
-                3: 'MEDIA_ERR_DECODE - Errore di decodifica',
-                4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Formato non supportato',
+              // Costruisci errorDetails con valori sicuri e serializzabili
+              // Usa JSON.stringify per assicurare serializzazione corretta
+              const errorDetails: Record<string, string | number | null> = {
+                exerciseId: String(exercise?.id ?? 'unknown'),
+                exerciseName: String((exercise?.name as string) ?? 'unknown'),
+                videoUrl: String(videoUrl ?? 'unknown'),
+                networkState: videoElement.networkState ?? -1,
+                readyState: videoElement.readyState ?? -1,
               }
-              errorDetails.errorCodeDescription =
-                errorCodeMap[error.code] ?? `Codice sconosciuto: ${error.code}`
-            } else {
-              errorDetails.errorMessage = 'Errore video senza dettagli disponibili'
-              errorDetails.errorCode = null
-              errorDetails.errorCodeDescription = 'Nessun codice errore disponibile'
-            }
 
-            // Aggiungi informazioni aggiuntive per debug
-            errorDetails.videoSrc = String(videoElement.src ?? 'N/A')
-            errorDetails.videoCurrentSrc = String(videoElement.currentSrc ?? 'N/A')
-            errorDetails.videoNetworkState = videoElement.networkState ?? -1
-            errorDetails.videoReadyState = videoElement.readyState ?? -1
+              // Aggiungi informazioni sull'errore se disponibili
+              if (error) {
+                errorDetails.errorCode = error.code ?? null
+                errorDetails.errorMessage = String(error.message ?? 'Errore sconosciuto')
 
-            // Log solo in sviluppo per evitare spam in produzione
-            if (process.env.NODE_ENV === 'development') {
-              // Usa JSON.stringify per assicurare che l'oggetto sia serializzato correttamente
-              console.error('❌ Errore caricamento video:', JSON.stringify(errorDetails, null, 2))
-              console.error('Video element state:', {
-                src: videoElement.src,
-                currentSrc: videoElement.currentSrc,
-                networkState: videoElement.networkState,
-                readyState: videoElement.readyState,
-                error: error
-                  ? {
-                      code: error.code,
-                      message: error.message,
-                    }
-                  : null,
-              })
-            }
+                // Codici errore HTMLMediaElement
+                const errorCodeMap: Record<number, string> = {
+                  1: 'MEDIA_ERR_ABORTED - Caricamento interrotto',
+                  2: 'MEDIA_ERR_NETWORK - Errore di rete',
+                  3: 'MEDIA_ERR_DECODE - Errore di decodifica',
+                  4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Formato non supportato',
+                }
+                errorDetails.errorCodeDescription =
+                  errorCodeMap[error.code] ?? `Codice sconosciuto: ${error.code}`
+              } else {
+                errorDetails.errorMessage = 'Errore video senza dettagli disponibili'
+                errorDetails.errorCode = null
+                errorDetails.errorCodeDescription = 'Nessun codice errore disponibile'
+              }
 
-            logger.warn('Errore caricamento video esercizio', undefined, errorDetails)
-            setVideoError(true)
-          }}
-          onLoadedMetadata={(ev) => {
-            const videoElement = ev.currentTarget as HTMLVideoElement
-            videoElement.playbackRate = 1.1 // Velocizza del 10%
-            if (process.env.NODE_ENV === 'development') {
-              console.log('✅ Video metadata caricato correttamente:', { exerciseId: exercise.id, videoUrl })
-            }
-            logger.debug('Video metadata caricato', { exerciseId: exercise.id, videoUrl })
-          }}
-          onLoadedData={() => {
-            tryPlay()
-          }}
-          onCanPlay={(ev) => {
-            const videoElement = ev.currentTarget as HTMLVideoElement
-            videoElement.playbackRate = 1.1 // Velocizza del 10%
-            tryPlay()
-            if (process.env.NODE_ENV === 'development') {
-              console.log('▶️ Video pronto per la riproduzione:', {
-                exerciseId: exercise.id,
-                videoUrl: videoUrl,
-              })
-            }
-          }}
+              // Aggiungi informazioni aggiuntive per debug
+              errorDetails.videoSrc = String(videoElement.src ?? 'N/A')
+              errorDetails.videoCurrentSrc = String(videoElement.currentSrc ?? 'N/A')
+              errorDetails.videoNetworkState = videoElement.networkState ?? -1
+              errorDetails.videoReadyState = videoElement.readyState ?? -1
+
+              // Log solo in sviluppo per evitare spam in produzione
+              if (process.env.NODE_ENV === 'development') {
+                // Usa JSON.stringify per assicurare che l'oggetto sia serializzato correttamente
+                console.error('❌ Errore caricamento video:', JSON.stringify(errorDetails, null, 2))
+                console.error('Video element state:', {
+                  src: videoElement.src,
+                  currentSrc: videoElement.currentSrc,
+                  networkState: videoElement.networkState,
+                  readyState: videoElement.readyState,
+                  error: error
+                    ? {
+                        code: error.code,
+                        message: error.message,
+                      }
+                    : null,
+                })
+              }
+
+              logger.warn('Errore caricamento video esercizio', undefined, errorDetails)
+              setVideoError(true)
+            }}
+            onLoadedMetadata={(ev) => {
+              const videoElement = ev.currentTarget as HTMLVideoElement
+              videoElement.playbackRate = 1.1 // Velocizza del 10%
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ Video metadata caricato correttamente:', {
+                  exerciseId: exercise.id,
+                  videoUrl,
+                })
+              }
+              logger.debug('Video metadata caricato', { exerciseId: exercise.id, videoUrl })
+            }}
+            onLoadedData={() => {
+              tryPlay()
+            }}
+            onCanPlay={(ev) => {
+              const videoElement = ev.currentTarget as HTMLVideoElement
+              videoElement.playbackRate = 1.1 // Velocizza del 10%
+              tryPlay()
+              if (process.env.NODE_ENV === 'development') {
+                console.log('▶️ Video pronto per la riproduzione:', {
+                  exerciseId: exercise.id,
+                  videoUrl: videoUrl,
+                })
+              }
+            }}
           />
           {autoplayBlocked && (
             <button
@@ -237,7 +247,9 @@ function ExerciseMediaDisplay({
               className="absolute inset-0 flex items-center justify-center transition-opacity hover:bg-black/30 active:scale-95"
               style={
                 isValidThumbUrl && thumbUrl
-                  ? { background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${thumbUrl}) center/cover` }
+                  ? {
+                      background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${thumbUrl}) center/cover`,
+                    }
                   : undefined
               }
               aria-label="Riproduci video"
@@ -1385,7 +1397,10 @@ function AllenamentiOggiPageContent() {
                       className="relative z-10 border-b border-white/10 px-3 py-1.5"
                       padding="sm"
                     >
-                      <CardTitle size="md" className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary">
+                      <CardTitle
+                        size="md"
+                        className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary"
+                      >
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                           <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
                         </span>
@@ -1562,7 +1577,10 @@ function AllenamentiOggiPageContent() {
                                         className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 cursor-pointer hover:border-white/20 hover:bg-white/10 ${
                                           set.completed
                                             ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
-                                            : isSetEditing(item.id as string, set.set_number as number)
+                                            : isSetEditing(
+                                                  item.id as string,
+                                                  set.set_number as number,
+                                                )
                                               ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                                               : 'border-white/10 bg-white/5'
                                         }`}
@@ -1592,7 +1610,9 @@ function AllenamentiOggiPageContent() {
                                                   : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
                                             }`}
                                             title={
-                                              set.completed ? 'Set completato' : 'Clicca per modificare'
+                                              set.completed
+                                                ? 'Set completato'
+                                                : 'Clicca per modificare'
                                             }
                                           >
                                             {!set.completed && (
@@ -1629,8 +1649,10 @@ function AllenamentiOggiPageContent() {
                                                       ? (((set[col.field] ??
                                                           item.target_weight ??
                                                           null) as number | null | undefined) ?? 0)
-                                                      : ((set[col.field] as number | null | undefined) ??
-                                                          0)
+                                                      : ((set[col.field] as
+                                                          | number
+                                                          | null
+                                                          | undefined) ?? 0)
                                               return (
                                                 <div
                                                   key={col.key}
@@ -1646,9 +1668,13 @@ function AllenamentiOggiPageContent() {
                                                       type="number"
                                                       value={value || ''}
                                                       onChange={(e) => {
-                                                        updateSet(item.id as string, (set.set_number as number) || 1, {
-                                                          weight_kg: Number(e.target.value) || 0,
-                                                        })
+                                                        updateSet(
+                                                          item.id as string,
+                                                          (set.set_number as number) || 1,
+                                                          {
+                                                            weight_kg: Number(e.target.value) || 0,
+                                                          },
+                                                        )
                                                       }}
                                                       className="text-xl font-bold text-orange-400 bg-transparent border-0 p-0 h-auto focus:ring-0 focus:outline-none focus-visible:ring-0 text-center w-full opacity-100"
                                                       min="0"
@@ -1672,18 +1698,22 @@ function AllenamentiOggiPageContent() {
                                                               | null
                                                               | undefined) ?? 0)
                                                           : col.field === 'reps'
-                                                            ? ((set.reps as number | null | undefined) ??
-                                                                (item.target_reps as
-                                                                  | number
-                                                                  | null
-                                                                  | undefined) ??
-                                                                0)
+                                                            ? ((set.reps as
+                                                                | number
+                                                                | null
+                                                                | undefined) ??
+                                                              (item.target_reps as
+                                                                | number
+                                                                | null
+                                                                | undefined) ??
+                                                              0)
                                                             : col.field === 'weight_kg'
                                                               ? (() => {
-                                                                  const setWeight = set.weight_kg as
-                                                                    | number
-                                                                    | null
-                                                                    | undefined
+                                                                  const setWeight =
+                                                                    set.weight_kg as
+                                                                      | number
+                                                                      | null
+                                                                      | undefined
                                                                   const exerciseWeight =
                                                                     item.target_weight as
                                                                       | number
@@ -1701,10 +1731,10 @@ function AllenamentiOggiPageContent() {
                                                                     return exerciseWeight
                                                                   return '-'
                                                                 })()
-                                                              : ((set[(col as { field: string }).field] as
-                                                                  | number
-                                                                  | null
-                                                                  | undefined) ?? '-')}
+                                                              : ((set[
+                                                                  (col as { field: string }).field
+                                                                ] as number | null | undefined) ??
+                                                                '-')}
                                                     </div>
                                                   )}
                                                 </div>
@@ -1734,7 +1764,10 @@ function AllenamentiOggiPageContent() {
                             blockExercises.length > 0 &&
                             blockExercises.every((ex) => {
                               const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
-                              return sets.length === 0 || sets.every((s: Record<string, unknown>) => s.completed === true)
+                              return (
+                                sets.length === 0 ||
+                                sets.every((s: Record<string, unknown>) => s.completed === true)
+                              )
                             })
                           const isBlockCompleted = block
                             ? blockExercises.every(
@@ -1777,7 +1810,10 @@ function AllenamentiOggiPageContent() {
                     className="relative z-10 border-b border-white/10 px-3 py-1.5"
                     padding="sm"
                   >
-                    <CardTitle size="md" className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary">
+                    <CardTitle
+                      size="md"
+                      className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary"
+                    >
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                         <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
                       </span>
@@ -1929,21 +1965,34 @@ function AllenamentiOggiPageContent() {
                                   onClick={() => {
                                     if (circuitGroup.length !== 0) return
                                     if (set.completed as boolean) {
-                                      updateSet(currentExercise.id as string, set.set_number as number, { completed: false })
+                                      updateSet(
+                                        currentExercise.id as string,
+                                        set.set_number as number,
+                                        { completed: false },
+                                      )
                                       setInlineTimerSeconds(null)
                                       setInlineTimerRunning(false)
                                       return
                                     }
-                                    updateSet(currentExercise.id as string, set.set_number as number, { completed: true })
+                                    updateSet(
+                                      currentExercise.id as string,
+                                      set.set_number as number,
+                                      { completed: true },
+                                    )
                                     const restSec =
-                                      ((set.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as number | null) ?? 0
+                                      ((set.rest_timer_sec ??
+                                        currentExercise.rest_timer_sec ??
+                                        null) as number | null) ?? 0
                                     const finalRest = restSec > 0 ? restSec : 60
                                     playTimerTone(timerAudioContextRef, 700, 0.5)
                                     setInlineTimerSeconds(finalRest)
                                     setInlineTimerRunning(true)
                                   }}
                                   onKeyDown={(e) => {
-                                    if (circuitGroup.length === 0 && (e.key === 'Enter' || e.key === ' ')) {
+                                    if (
+                                      circuitGroup.length === 0 &&
+                                      (e.key === 'Enter' || e.key === ' ')
+                                    ) {
                                       e.preventDefault()
                                       ;(e.currentTarget as HTMLElement).click()
                                     }
@@ -1999,9 +2048,7 @@ function AllenamentiOggiPageContent() {
                                           }`}
                                         />
                                       )}
-                                      <span>
-                                        {set.set_number as number}
-                                      </span>
+                                      <span>{set.set_number as number}</span>
                                     </div>
 
                                     <div
@@ -2116,10 +2163,9 @@ function AllenamentiOggiPageContent() {
                                                             // Se non c'è nessun peso, mostra '-'
                                                             return '-'
                                                           })()
-                                                        : ((set[(col as { field: string }).field] as
-                                                            | number
-                                                            | null
-                                                            | undefined) ?? '-')}
+                                                        : ((set[
+                                                            (col as { field: string }).field
+                                                          ] as number | null | undefined) ?? '-')}
                                               </div>
                                             )}
                                           </div>
@@ -2149,7 +2195,10 @@ function AllenamentiOggiPageContent() {
                           blockExercises.length > 0 &&
                           blockExercises.every((ex) => {
                             const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
-                            return sets.length === 0 || sets.every((s: Record<string, unknown>) => s.completed === true)
+                            return (
+                              sets.length === 0 ||
+                              sets.every((s: Record<string, unknown>) => s.completed === true)
+                            )
                           })
                         const isBlockCompleted = block
                           ? blockExercises.every(

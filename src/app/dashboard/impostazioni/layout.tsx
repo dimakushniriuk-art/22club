@@ -6,10 +6,6 @@ export const metadata: Metadata = {
     'Gestisci le tue preferenze, profilo e configurazioni account dalla dashboard 22Club.',
 }
 
-export default function ImpostazioniLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function ImpostazioniLayout({ children }: { children: React.ReactNode }) {
   return children
 }

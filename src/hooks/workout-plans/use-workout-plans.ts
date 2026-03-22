@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type {
   Workout,
@@ -67,8 +67,7 @@ function getDayItems(day: WorkoutDayData): DayItem[] {
   return (day.exercises || []).map((e) => ({ type: 'exercise' as const, exercise: e }))
 }
 
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 /** Restituisce la lista piatta di esercizi da inserire per un giorno, con circuit_block_id quando è un circuito. */
 function getExercisesWithCircuitBlock(
@@ -245,7 +244,9 @@ export function useWorkoutPlans() {
 
         const transformedData: Workout[] = workoutRows.map((workout) => {
           const athlete = athletesMap.get(workout.athlete_id)
-          const staff = workout.created_by_profile_id ? staffMap.get(workout.created_by_profile_id) : null
+          const staff = workout.created_by_profile_id
+            ? staffMap.get(workout.created_by_profile_id)
+            : null
 
           const workoutObjective =
             'objective' in workout ? (workout as { objective?: string | null }).objective : null
@@ -377,253 +378,260 @@ export function useWorkoutPlans() {
       workoutData: WorkoutWizardData,
       circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
     ) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('Utente non autenticato')
-      }
-
-      if (!workoutData.athlete_id) {
-        throw new Error('Seleziona un atleta per creare la scheda')
-      }
-
-      if (!workoutData.objective) {
-        throw new Error('Seleziona un obiettivo per la scheda')
-      }
-
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-
-      type ProfileIdRow = Pick<ProfileRow, 'id'>
-      const typedCurrentProfile = currentProfile as ProfileIdRow | null
-
-      if (!typedCurrentProfile?.id) {
-        throw new Error('Profilo staff non trovato')
-      }
-
-      const insertData: Record<string, unknown> = {
-        athlete_id: workoutData.athlete_id,
-        name: workoutData.title,
-        description: workoutData.notes || null,
-        is_active: true,
-        created_by_profile_id: typedCurrentProfile.id,
-      }
-
-      // Aggiungi objective se presente (anche se il tipo TypeScript non lo riconosce ancora)
-      if (workoutData.objective) {
-        insertData.objective = workoutData.objective
-      } else {
-        insertData.objective = null
-      }
-
-      const { data: newWorkoutData, error: createError } =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from('workout_plans') as any)
-          .insert(insertData as WorkoutInsert)
-          .select(
-            'id, athlete_id, name, description, objective, is_active, created_by_profile_id, created_at, updated_at',
-          )
-          .single()
-
-      const newWorkout = newWorkoutData as (WorkoutRow & { created_by_profile_id?: string | null }) | null
-
-      if (createError || !newWorkout) {
-        const errMsg =
-          createError?.message ?? 'Creazione scheda fallita'
-        logger.error('Error creating workout', createError ?? undefined, {
-          code: (createError as { code?: string } | null)?.code,
-          details: (createError as { details?: string } | null)?.details,
-        })
-        throw new Error(errMsg)
-      }
-
-      // Inserisci giorni ed esercizi
-      for (let dayIndex = 0; dayIndex < workoutData.days.length; dayIndex++) {
-        const day = workoutData.days[dayIndex]
-
-        const { data: newDay, error: dayError } =
-          await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (supabase.from('workout_days') as any)
-            .insert({
-              workout_plan_id: newWorkout.id,
-              day_number: dayIndex + 1,
-              order_num: dayIndex + 1,
-              title: day.title || day.name || `Giorno ${dayIndex + 1}`,
-              day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
-            })
-            .select('id')
-            .single()
-
-        type WorkoutDayIdRow = Pick<Tables<'workout_days'>, 'id'>
-        const typedNewDay = newDay as WorkoutDayIdRow | null
-
-        if (dayError || !typedNewDay) {
-          const msg = dayError?.message ?? 'Giorno non creato'
-          logger.error('Error creating workout day', dayError ?? undefined, {
-            dayIndex: dayIndex + 1,
-            code: (dayError as { code?: string } | null)?.code,
-          })
-          throw new Error(`Errore creazione giorno ${dayIndex + 1}: ${msg}`)
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) {
+          throw new Error('Utente non autenticato')
         }
 
-        // Inserisci esercizi per questo giorno (con circuit_block_id se circuitList fornita)
-        const exercisesToInsert =
-          circuitList && circuitList.length > 0
-            ? getExercisesWithCircuitBlock(day, circuitList)
-            : (day.exercises || []).map((ex) => ({ exercise: ex, circuit_block_id: null as string | null }))
+        if (!workoutData.athlete_id) {
+          throw new Error('Seleziona un atleta per creare la scheda')
+        }
 
-        for (let exIndex = 0; exIndex < exercisesToInsert.length; exIndex++) {
-          const { exercise, circuit_block_id } = exercisesToInsert[exIndex]
+        if (!workoutData.objective) {
+          throw new Error('Seleziona un obiettivo per la scheda')
+        }
 
-          const targetSets = exercise.target_sets || exercise.sets || 3
-          const targetReps = exercise.target_reps || exercise.reps_min || 10
-          const executionTimeSec = exercise.execution_time_sec || null
-          const restTimerSec = exercise.rest_timer_sec ?? exercise.rest_seconds ?? 60
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
 
-          const insertPayload: Record<string, unknown> = {
-            workout_day_id: typedNewDay.id,
-            exercise_id: exercise.exercise_id,
-            sets: targetSets,
-            reps: targetReps,
-            rest_seconds: restTimerSec,
-            order_num: exIndex,
-            target_sets: targetSets,
-            target_reps: targetReps,
-            target_weight: exercise.target_weight ?? exercise.weight_kg ?? null,
-            execution_time_sec: executionTimeSec,
-            rest_timer_sec: restTimerSec,
-            order_index: exIndex,
-            note: exercise.note ?? null,
-          }
-          if (circuit_block_id != null) insertPayload.circuit_block_id = circuit_block_id
+        type ProfileIdRow = Pick<ProfileRow, 'id'>
+        const typedCurrentProfile = currentProfile as ProfileIdRow | null
 
-          const { data: newExercise, error: exError } =
+        if (!typedCurrentProfile?.id) {
+          throw new Error('Profilo staff non trovato')
+        }
+
+        const insertData: Record<string, unknown> = {
+          athlete_id: workoutData.athlete_id,
+          name: workoutData.title,
+          description: workoutData.notes || null,
+          is_active: true,
+          created_by_profile_id: typedCurrentProfile.id,
+        }
+
+        // Aggiungi objective se presente (anche se il tipo TypeScript non lo riconosce ancora)
+        if (workoutData.objective) {
+          insertData.objective = workoutData.objective
+        } else {
+          insertData.objective = null
+        }
+
+        const { data: newWorkoutData, error: createError } =
+          await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase.from('workout_plans') as any)
+            .insert(insertData as WorkoutInsert)
+            .select(
+              'id, athlete_id, name, description, objective, is_active, created_by_profile_id, created_at, updated_at',
+            )
+            .single()
+
+        const newWorkout = newWorkoutData as
+          | (WorkoutRow & { created_by_profile_id?: string | null })
+          | null
+
+        if (createError || !newWorkout) {
+          const errMsg = createError?.message ?? 'Creazione scheda fallita'
+          logger.error('Error creating workout', createError ?? undefined, {
+            code: (createError as { code?: string } | null)?.code,
+            details: (createError as { details?: string } | null)?.details,
+          })
+          throw new Error(errMsg)
+        }
+
+        // Inserisci giorni ed esercizi
+        for (let dayIndex = 0; dayIndex < workoutData.days.length; dayIndex++) {
+          const day = workoutData.days[dayIndex]
+
+          const { data: newDay, error: dayError } =
             await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_day_exercises') as any)
-              .insert(insertPayload)
+            (supabase.from('workout_days') as any)
+              .insert({
+                workout_plan_id: newWorkout.id,
+                day_number: dayIndex + 1,
+                order_num: dayIndex + 1,
+                title: day.title || day.name || `Giorno ${dayIndex + 1}`,
+                day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
+              })
               .select('id')
               .single()
 
-          type WorkoutDayExerciseIdRow = Pick<Tables<'workout_day_exercises'>, 'id'>
-          const typedNewExercise = newExercise as WorkoutDayExerciseIdRow | null
+          type WorkoutDayIdRow = Pick<Tables<'workout_days'>, 'id'>
+          const typedNewDay = newDay as WorkoutDayIdRow | null
 
-          if (exError || !typedNewExercise) {
-            const msg = exError?.message ?? 'Esercizio non inserito'
-            logger.error('Error creating workout_day_exercise', exError ?? undefined, {
+          if (dayError || !typedNewDay) {
+            const msg = dayError?.message ?? 'Giorno non creato'
+            logger.error('Error creating workout day', dayError ?? undefined, {
               dayIndex: dayIndex + 1,
-              code: (exError as { code?: string } | null)?.code,
+              code: (dayError as { code?: string } | null)?.code,
             })
-            throw new Error(`Errore aggiunta esercizio al giorno ${dayIndex + 1}: ${msg}`)
+            throw new Error(`Errore creazione giorno ${dayIndex + 1}: ${msg}`)
           }
 
-          // Salva i set in workout_sets
-          // Inserisci tutti i set da 1 a target_sets
-          const setsToInsert: Array<{
-            workout_day_exercise_id: string
-            set_number: number
-            reps: number | null
-            weight_kg: number | null
-            execution_time_sec: number | null
-            rest_timer_sec: number | null
-          }> = []
+          // Inserisci esercizi per questo giorno (con circuit_block_id se circuitList fornita)
+          const exercisesToInsert =
+            circuitList && circuitList.length > 0
+              ? getExercisesWithCircuitBlock(day, circuitList)
+              : (day.exercises || []).map((ex) => ({
+                  exercise: ex,
+                  circuit_block_id: null as string | null,
+                }))
 
-          // Crea tutti i set da 1 a target_sets
-          if (targetSets > 0) {
-            for (let setNum = 1; setNum <= targetSets; setNum++) {
-              // Cerca se esiste un set con questo numero in sets_detail
-              const setDetail = exercise.sets_detail?.find((s) => s.set_number === setNum)
+          for (let exIndex = 0; exIndex < exercisesToInsert.length; exIndex++) {
+            const { exercise, circuit_block_id } = exercisesToInsert[exIndex]
 
-              setsToInsert.push({
-                workout_day_exercise_id: typedNewExercise.id,
-                set_number: setNum,
-                reps: setDetail?.reps ?? exercise.target_reps ?? null,
-                weight_kg: setDetail?.weight_kg ?? exercise.target_weight ?? null,
-                execution_time_sec:
-                  setDetail?.execution_time_sec ?? exercise.execution_time_sec ?? null,
-                rest_timer_sec: setDetail?.rest_timer_sec ?? exercise.rest_timer_sec ?? null,
-              })
+            const targetSets = exercise.target_sets || exercise.sets || 3
+            const targetReps = exercise.target_reps || exercise.reps_min || 10
+            const executionTimeSec = exercise.execution_time_sec || null
+            const restTimerSec = exercise.rest_timer_sec ?? exercise.rest_seconds ?? 60
+
+            const insertPayload: Record<string, unknown> = {
+              workout_day_id: typedNewDay.id,
+              exercise_id: exercise.exercise_id,
+              sets: targetSets,
+              reps: targetReps,
+              rest_seconds: restTimerSec,
+              order_num: exIndex,
+              target_sets: targetSets,
+              target_reps: targetReps,
+              target_weight: exercise.target_weight ?? exercise.weight_kg ?? null,
+              execution_time_sec: executionTimeSec,
+              rest_timer_sec: restTimerSec,
+              order_index: exIndex,
+              note: exercise.note ?? null,
             }
-          }
+            if (circuit_block_id != null) insertPayload.circuit_block_id = circuit_block_id
 
-          // Inserisci tutti i set se ce ne sono
-          if (setsToInsert.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
-              setsToInsert,
-            )
+            const { data: newExercise, error: exError } =
+              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (supabase.from('workout_day_exercises') as any)
+                .insert(insertPayload)
+                .select('id')
+                .single()
 
-            if (setsError) {
-              logger.error('Error creating workout_sets', setsError, {
+            type WorkoutDayExerciseIdRow = Pick<Tables<'workout_day_exercises'>, 'id'>
+            const typedNewExercise = newExercise as WorkoutDayExerciseIdRow | null
+
+            if (exError || !typedNewExercise) {
+              const msg = exError?.message ?? 'Esercizio non inserito'
+              logger.error('Error creating workout_day_exercise', exError ?? undefined, {
                 dayIndex: dayIndex + 1,
-                code: (setsError as { code?: string })?.code,
+                code: (exError as { code?: string } | null)?.code,
               })
-              throw new Error(
-                `Errore aggiunta set per esercizio al giorno ${dayIndex + 1}: ${setsError.message}`,
+              throw new Error(`Errore aggiunta esercizio al giorno ${dayIndex + 1}: ${msg}`)
+            }
+
+            // Salva i set in workout_sets
+            // Inserisci tutti i set da 1 a target_sets
+            const setsToInsert: Array<{
+              workout_day_exercise_id: string
+              set_number: number
+              reps: number | null
+              weight_kg: number | null
+              execution_time_sec: number | null
+              rest_timer_sec: number | null
+            }> = []
+
+            // Crea tutti i set da 1 a target_sets
+            if (targetSets > 0) {
+              for (let setNum = 1; setNum <= targetSets; setNum++) {
+                // Cerca se esiste un set con questo numero in sets_detail
+                const setDetail = exercise.sets_detail?.find((s) => s.set_number === setNum)
+
+                setsToInsert.push({
+                  workout_day_exercise_id: typedNewExercise.id,
+                  set_number: setNum,
+                  reps: setDetail?.reps ?? exercise.target_reps ?? null,
+                  weight_kg: setDetail?.weight_kg ?? exercise.target_weight ?? null,
+                  execution_time_sec:
+                    setDetail?.execution_time_sec ?? exercise.execution_time_sec ?? null,
+                  rest_timer_sec: setDetail?.rest_timer_sec ?? exercise.rest_timer_sec ?? null,
+                })
+              }
+            }
+
+            // Inserisci tutti i set se ce ne sono
+            if (setsToInsert.length > 0) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
+                setsToInsert,
               )
+
+              if (setsError) {
+                logger.error('Error creating workout_sets', setsError, {
+                  dayIndex: dayIndex + 1,
+                  code: (setsError as { code?: string })?.code,
+                })
+                throw new Error(
+                  `Errore aggiunta set per esercizio al giorno ${dayIndex + 1}: ${setsError.message}`,
+                )
+              }
             }
           }
         }
-      }
 
-      if (newWorkout) {
-        const { data: athleteProfile } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome')
-          .eq('id', newWorkout.athlete_id)
-          .single()
+        if (newWorkout) {
+          const { data: athleteProfile } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome')
+            .eq('id', newWorkout.athlete_id)
+            .single()
 
-        type AthleteProfileRow = Pick<ProfileRow, 'id' | 'nome' | 'cognome'>
-        const typedAthleteProfile = athleteProfile as AthleteProfileRow | null
+          type AthleteProfileRow = Pick<ProfileRow, 'id' | 'nome' | 'cognome'>
+          const typedAthleteProfile = athleteProfile as AthleteProfileRow | null
 
-        const { data: staffProfile } = newWorkout.created_by_profile_id
-          ? await supabase
-              .from('profiles')
-              .select('id, nome, cognome')
-              .eq('id', newWorkout.created_by_profile_id)
-              .single()
-          : { data: null }
+          const { data: staffProfile } = newWorkout.created_by_profile_id
+            ? await supabase
+                .from('profiles')
+                .select('id, nome, cognome')
+                .eq('id', newWorkout.created_by_profile_id)
+                .single()
+            : { data: null }
 
-        type StaffProfileRow = Pick<ProfileRow, 'id' | 'nome' | 'cognome'>
-        const typedStaffProfile = staffProfile as StaffProfileRow | null
+          type StaffProfileRow = Pick<ProfileRow, 'id' | 'nome' | 'cognome'>
+          const typedStaffProfile = staffProfile as StaffProfileRow | null
 
-        const transformedWorkout: Workout = {
-          id: newWorkout.id,
-          org_id: 'default-org',
-          athlete_id: newWorkout.athlete_id,
-          name: newWorkout.name,
-          description: newWorkout.description,
-          status: newWorkout.is_active ? 'attivo' : 'completato',
-          difficulty: difficultyDbToUi(null),
-          created_at: newWorkout.created_at ?? new Date().toISOString(),
-          updated_at: newWorkout.updated_at ?? newWorkout.created_at ?? new Date().toISOString(),
-          created_by_staff_id: newWorkout.created_by_profile_id ?? undefined,
-          athlete_name: typedAthleteProfile
-            ? `${typedAthleteProfile.nome || ''} ${typedAthleteProfile.cognome || ''}`.trim() ||
-              'Sconosciuto'
-            : 'Sconosciuto',
-          staff_name: typedStaffProfile
-            ? `${typedStaffProfile.nome || ''} ${typedStaffProfile.cognome || ''}`.trim() ||
-              'Sconosciuto'
-            : 'Sconosciuto',
+          const transformedWorkout: Workout = {
+            id: newWorkout.id,
+            org_id: 'default-org',
+            athlete_id: newWorkout.athlete_id,
+            name: newWorkout.name,
+            description: newWorkout.description,
+            status: newWorkout.is_active ? 'attivo' : 'completato',
+            difficulty: difficultyDbToUi(null),
+            created_at: newWorkout.created_at ?? new Date().toISOString(),
+            updated_at: newWorkout.updated_at ?? newWorkout.created_at ?? new Date().toISOString(),
+            created_by_staff_id: newWorkout.created_by_profile_id ?? undefined,
+            athlete_name: typedAthleteProfile
+              ? `${typedAthleteProfile.nome || ''} ${typedAthleteProfile.cognome || ''}`.trim() ||
+                'Sconosciuto'
+              : 'Sconosciuto',
+            staff_name: typedStaffProfile
+              ? `${typedStaffProfile.nome || ''} ${typedStaffProfile.cognome || ''}`.trim() ||
+                'Sconosciuto'
+              : 'Sconosciuto',
+          }
+
+          setWorkouts((prev) => [transformedWorkout, ...prev])
         }
-
-        setWorkouts((prev) => [transformedWorkout, ...prev])
+      } catch (error) {
+        const errMsg =
+          error instanceof Error ? error.message : 'Errore nella creazione della scheda'
+        logger.error('Error creating workout', error, {
+          message: errMsg,
+          name: error instanceof Error ? error.name : undefined,
+        })
+        setError(errMsg)
+        throw error
       }
-    } catch (error) {
-      const errMsg = error instanceof Error ? error.message : 'Errore nella creazione della scheda'
-      logger.error('Error creating workout', error, {
-        message: errMsg,
-        name: error instanceof Error ? error.name : undefined,
-      })
-      setError(errMsg)
-      throw error
-    }
-  }, [])
+    },
+    [],
+  )
 
   const handleUpdateWorkout = useCallback(
     async (
@@ -659,9 +667,7 @@ export function useWorkoutPlans() {
 
         const { error: updateError } =
           await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (supabase.from('workout_plans') as any)
-            .update(updateData)
-            .eq('id', workoutId)
+          (supabase.from('workout_plans') as any).update(updateData).eq('id', workoutId)
 
         if (updateError) {
           throw updateError

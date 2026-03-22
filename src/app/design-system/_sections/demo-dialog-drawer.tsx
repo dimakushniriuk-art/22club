@@ -30,8 +30,12 @@ export function DesignSystemDialogDemo() {
             <DialogDescription>Descrizione o messaggio.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Annulla</Button>
-            <Button variant="primary" onClick={() => setOpen(false)}>Conferma</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Annulla
+            </Button>
+            <Button variant="primary" onClick={() => setOpen(false)}>
+              Conferma
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -53,7 +57,9 @@ export function DesignSystemDrawerDemo() {
             <p className="text-sm text-text-secondary">Contenuto esempio.</p>
           </DrawerBody>
           <DrawerFooter>
-            <Button variant="secondary" onClick={() => setOpen(false)}>Chiudi</Button>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Chiudi
+            </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

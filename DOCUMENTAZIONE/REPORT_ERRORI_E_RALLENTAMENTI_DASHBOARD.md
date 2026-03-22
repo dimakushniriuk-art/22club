@@ -52,6 +52,7 @@ const { data: appointmentsData } = await supabase.from('appointments').select(..
 **Problema**: Dipendenze mancanti causano re-render infiniti o dati stantii
 
 #### `/dashboard/clienti` (righe 69-75, 85-91)
+
 ```typescript
 // ❌ ERRORE: searchParams.get() in dependency array
 useEffect(() => {
@@ -61,6 +62,7 @@ useEffect(() => {
 ```
 
 #### `/dashboard/abbonamenti` (righe 500-502)
+
 ```typescript
 // ❌ ERRORE: loadAbbonamenti in deps senza useCallback stabile
 useEffect(() => {
@@ -69,6 +71,7 @@ useEffect(() => {
 ```
 
 #### `/dashboard/esercizi` (righe 313-316)
+
 ```typescript
 // ❌ ERRORE: load non in deps
 useEffect(() => {
@@ -85,6 +88,7 @@ useEffect(() => {
 ### 4. Modali Non Lazy Loaded
 
 **Pagine affette**:
+
 - `/dashboard/esercizi`: `ExerciseFormModal` (riga 899)
 - `/dashboard/allenamenti`: `AllenamentoDettaglioModal`, `AllenamentiFiltriAvanzati` (righe 383-398)
 - `/dashboard/abbonamenti`: `InvoiceViewModal` (righe 35-149), `NuovoPagamentoModal`
@@ -202,10 +206,15 @@ useEffect(() => {
 **Problema**: Funzioni helper ricreate ogni render
 
 #### `/dashboard/allenamenti` (righe 57-118)
+
 ```typescript
 // ❌ ERRORE: Funzioni ricreate ogni render
-const getStatoBadge = (stato: string) => { /* ... */ }
-const formatData = (dataString: string) => { /* ... */ }
+const getStatoBadge = (stato: string) => {
+  /* ... */
+}
+const formatData = (dataString: string) => {
+  /* ... */
+}
 ```
 
 **Impatto**: Rallentamenti rendering  
@@ -240,15 +249,15 @@ const performance = await getPerformanceDataFromDB(supabase)
 
 ## 📊 RIEPILOGO IMPATTO
 
-| Categoria | Pagine Affette | Impatto Stimato | Priorità |
-|-----------|----------------|-----------------|----------|
-| Query Waterfall | 2 | +500ms | Alta |
-| useEffect Errati | 3 | Re-render infiniti | Alta |
-| Modali Non Lazy | 6 | +200KB bundle | Alta |
-| Filtri Client-Side | 1 | +300ms (100+ items) | Media |
-| Componenti Ricreati | 1 | Rallentamenti UI | Media |
-| Query Senza Cache | 1 | Query ripetute | Media |
-| Mock Data | 1 | Funzionalità mancante | Media |
+| Categoria           | Pagine Affette | Impatto Stimato       | Priorità |
+| ------------------- | -------------- | --------------------- | -------- |
+| Query Waterfall     | 2              | +500ms                | Alta     |
+| useEffect Errati    | 3              | Re-render infiniti    | Alta     |
+| Modali Non Lazy     | 6              | +200KB bundle         | Alta     |
+| Filtri Client-Side  | 1              | +300ms (100+ items)   | Media    |
+| Componenti Ricreati | 1              | Rallentamenti UI      | Media    |
+| Query Senza Cache   | 1              | Query ripetute        | Media    |
+| Mock Data           | 1              | Funzionalità mancante | Media    |
 
 ---
 
@@ -265,21 +274,25 @@ const performance = await getPerformanceDataFromDB(supabase)
 ## 🎯 PRIORITÀ IMPLEMENTAZIONE
 
 ### Sprint 1 (Critico - 2h)
+
 1. Fix useEffect dipendenze (`/dashboard/clienti`, `/dashboard/abbonamenti`, `/dashboard/esercizi`)
 2. Promise.all query waterfall (`/dashboard/abbonamenti`)
 3. Estrarre ExerciseMedia componente
 
 ### Sprint 2 (Alto - 4h)
+
 1. Lazy load modali (6 pagine)
 2. Cache analytics (`/dashboard/statistiche`)
 3. Query parallele impostazioni
 
 ### Sprint 3 (Medio - 3h)
+
 1. Ottimizzare filtri client-side
 2. Memoizzare funzioni helper
 3. Fix InvoiceViewModal useEffect
 
 ### Sprint 4 (Basso - 2h)
+
 1. Implementare query reale documenti
 2. Lazy load tabs impostazioni
 3. Refactor query multiple

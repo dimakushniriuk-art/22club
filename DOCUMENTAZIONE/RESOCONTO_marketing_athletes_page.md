@@ -7,13 +7,13 @@
 
 ## 1) File creati/modificati
 
-| File | Modifica |
-|------|----------|
-| `src/app/dashboard/marketing/athletes/page.tsx` | **Nuovo.** Pagina client: fetch da `marketing_athletes`, KPI cards, tabella, search client-side, loading/empty. |
-| `src/lib/supabase/types.ts` | Aggiunta view `marketing_athletes` in `Views` con Row: athlete_id, first_name, last_name, email, workouts_7d_coached, workouts_7d_solo, workouts_30d_coached, workouts_30d_solo, last_workout_at. |
-| `src/middleware.ts` | Aggiunto path `/dashboard/marketing/athletes` alla allowlist per ruolo marketing/admin. |
-| `src/components/shared/dashboard/sidebar.tsx` | Voce "Atleti" con icona Users, href `/dashboard/marketing/athletes`. |
-| `src/components/shared/dashboard/dashboard-mobile-nav.tsx` | Voce "Atleti" con icona Users, href `/dashboard/marketing/athletes`. |
+| File                                                       | Modifica                                                                                                                                                                                          |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/dashboard/marketing/athletes/page.tsx`            | **Nuovo.** Pagina client: fetch da `marketing_athletes`, KPI cards, tabella, search client-side, loading/empty.                                                                                   |
+| `src/lib/supabase/types.ts`                                | Aggiunta view `marketing_athletes` in `Views` con Row: athlete_id, first_name, last_name, email, workouts_7d_coached, workouts_7d_solo, workouts_30d_coached, workouts_30d_solo, last_workout_at. |
+| `src/middleware.ts`                                        | Aggiunto path `/dashboard/marketing/athletes` alla allowlist per ruolo marketing/admin.                                                                                                           |
+| `src/components/shared/dashboard/sidebar.tsx`              | Voce "Atleti" con icona Users, href `/dashboard/marketing/athletes`.                                                                                                                              |
+| `src/components/shared/dashboard/dashboard-mobile-nav.tsx` | Voce "Atleti" con icona Users, href `/dashboard/marketing/athletes`.                                                                                                                              |
 
 ---
 

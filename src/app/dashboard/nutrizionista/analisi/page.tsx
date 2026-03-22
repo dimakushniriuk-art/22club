@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-  useMemo,
-} from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   BarChart2,
@@ -22,13 +17,7 @@ import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
-import {
-  Button,
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerBody,
-} from '@/components/ui'
+import { Button, Drawer, DrawerContent, DrawerHeader, DrawerBody } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
 import {
   NUTRITION_TABLES,
@@ -144,7 +133,9 @@ export default function NutrizionistaAnalisiPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [rows, setRows] = useState<WeeklyRow[]>([])
-  const [assignedAthletes, setAssignedAthletes] = useState<{ id: string; name: string; email: string | null }[]>([])
+  const [assignedAthletes, setAssignedAthletes] = useState<
+    { id: string; name: string; email: string | null }[]
+  >([])
   const [periodMode, setPeriodMode] = useState<'last4' | 'single' | 'custom'>('last4')
   const [rangeStart, setRangeStart] = useState(() => {
     const d = new Date()
@@ -154,7 +145,9 @@ export default function NutrizionistaAnalisiPage() {
   const [rangeEnd, setRangeEnd] = useState(() => new Date().toISOString().slice(0, 10))
   const [filterAthlete, setFilterAthlete] = useState<string>('all')
   const [soloAlert, setSoloAlert] = useState(false)
-  const [kpiFilter, setKpiFilter] = useState<'all' | 'inline' | 'fuori' | 'adjusted' | 'opposto' | null>(null)
+  const [kpiFilter, setKpiFilter] = useState<
+    'all' | 'inline' | 'fuori' | 'adjusted' | 'opposto' | null
+  >(null)
   const [sortBy, setSortBy] = useState<'week' | 'scostamento'>('week')
   const [drawerRow, setDrawerRow] = useState<WeeklyRow | null>(null)
   const [drawerProgress, setDrawerProgress] = useState<ProgressEntry[]>([])
@@ -178,7 +171,9 @@ export default function NutrizionistaAnalisiPage() {
         .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
         .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
       if (staffErr) throw staffErr
-      const athleteIds = (staffData ?? []).map((r) => (r as { atleta_id: string }).atleta_id).filter(Boolean)
+      const athleteIds = (staffData ?? [])
+        .map((r) => (r as { atleta_id: string }).atleta_id)
+        .filter(Boolean)
       if (athleteIds.length === 0) {
         setRows([])
         setAssignedAthletes([])
@@ -191,13 +186,20 @@ export default function NutrizionistaAnalisiPage() {
         .select('id, nome, cognome, email')
         .in('id', athleteIds)
       const profilesMap = new Map(
-        (profilesData ?? []).map((p: { id: string; nome: string | null; cognome: string | null; email: string | null }) => [
-          p.id,
-          {
-            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-            email: p.email ?? null,
-          },
-        ]),
+        (profilesData ?? []).map(
+          (p: {
+            id: string
+            nome: string | null
+            cognome: string | null
+            email: string | null
+          }) => [
+            p.id,
+            {
+              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+              email: p.email ?? null,
+            },
+          ],
+        ),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({
@@ -221,7 +223,20 @@ export default function NutrizionistaAnalisiPage() {
           .in('athlete_id', athleteIds)
           .order('week_start', { ascending: false })
           .limit(500)
-        const raw = (rawRes.data ?? []) as Array<Record<string, unknown> & { id: string; athlete_id: string; version_id?: string | null; week_start?: string | null; week_end?: string | null; avg_weight?: number | null; delta_weight?: number | null; target_delta?: number | null; adjustment_applied?: boolean | null; created_at?: string | null }>
+        const raw = (rawRes.data ?? []) as Array<
+          Record<string, unknown> & {
+            id: string
+            athlete_id: string
+            version_id?: string | null
+            week_start?: string | null
+            week_end?: string | null
+            avg_weight?: number | null
+            delta_weight?: number | null
+            target_delta?: number | null
+            adjustment_applied?: boolean | null
+            created_at?: string | null
+          }
+        >
         const list: WeeklyRow[] = raw.map((r) => {
           const delta = (r.delta_weight as number | null) ?? 0
           const target = (r.target_delta as number | null) ?? 0
@@ -275,8 +290,10 @@ export default function NutrizionistaAnalisiPage() {
     })
     if (filterAthlete !== 'all') list = list.filter((r) => r.athlete_id === filterAthlete)
     if (soloAlert) list = list.filter((r) => (r.abs_delta_vs_target ?? 0) > THRESHOLD_KG)
-    if (kpiFilter === 'inline') list = list.filter((r) => (r.abs_delta_vs_target ?? 999) <= THRESHOLD_KG)
-    else if (kpiFilter === 'fuori') list = list.filter((r) => (r.abs_delta_vs_target ?? 0) > THRESHOLD_KG)
+    if (kpiFilter === 'inline')
+      list = list.filter((r) => (r.abs_delta_vs_target ?? 999) <= THRESHOLD_KG)
+    else if (kpiFilter === 'fuori')
+      list = list.filter((r) => (r.abs_delta_vs_target ?? 0) > THRESHOLD_KG)
     else if (kpiFilter === 'adjusted') list = list.filter((r) => r.adjustment_applied === true)
     else if (kpiFilter === 'opposto') {
       list = list.filter((r) => {
@@ -328,17 +345,21 @@ export default function NutrizionistaAnalisiPage() {
         const weekEnd = row.week_end ? new Date(row.week_end) : new Date()
         weekEnd.setDate(weekEnd.getDate() + 1)
         const weekEndNext = weekEnd.toISOString()
-        const weekStart = (row.week_start ?? row.week_end) ?? new Date().toISOString()
+        const weekStart = row.week_start ?? row.week_end ?? new Date().toISOString()
         const [progRes, verRes] = await Promise.all([
           nutritionFrom(supabase, NUTRITION_TABLES.progress)
-            .select('id, created_at, weight, body_fat, waist, hip, created_by_role, source, weight_kg')
+            .select(
+              'id, created_at, weight, body_fat, waist, hip, created_by_role, source, weight_kg',
+            )
             .eq('athlete_id', row.athlete_id)
             .gte('created_at', weekStart)
             .lt('created_at', weekEndNext)
             .order('created_at', { ascending: true }),
           row.version_id
             ? nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-                .select('id, version_number, status, start_date, end_date, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason')
+                .select(
+                  'id, version_number, status, start_date, end_date, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
+                )
                 .eq('id', row.version_id)
                 .single()
             : Promise.resolve({ data: null }),
@@ -399,10 +420,16 @@ export default function NutrizionistaAnalisiPage() {
                 type="button"
                 onClick={() => setPeriodMode(mode)}
                 className={`px-3 py-2 text-sm ${
-                  periodMode === mode ? 'bg-teal-500/20 text-teal-400' : 'bg-background-secondary text-text-muted'
+                  periodMode === mode
+                    ? 'bg-teal-500/20 text-teal-400'
+                    : 'bg-background-secondary text-text-muted'
                 }`}
               >
-                {mode === 'last4' ? 'Ultime 4 settimane' : mode === 'single' ? 'Settimana' : 'Range'}
+                {mode === 'last4'
+                  ? 'Ultime 4 settimane'
+                  : mode === 'single'
+                    ? 'Settimana'
+                    : 'Range'}
               </button>
             ))}
           </div>
@@ -458,7 +485,11 @@ export default function NutrizionistaAnalisiPage() {
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
-          <button type="button" onClick={() => void loadData()} className="underline shrink-0 min-h-[44px] touch-manipulation flex items-center">
+          <button
+            type="button"
+            onClick={() => void loadData()}
+            className="underline shrink-0 min-h-[44px] touch-manipulation flex items-center"
+          >
             Riprova
           </button>
         </div>
@@ -508,7 +539,9 @@ export default function NutrizionistaAnalisiPage() {
         </div>
       ) : filteredRows.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
-          {rows.length === 0 ? 'Nessuna analisi settimanale. I dati vengono popolati dal sistema.' : 'Nessun risultato per i filtri selezionati.'}
+          {rows.length === 0
+            ? 'Nessuna analisi settimanale. I dati vengono popolati dal sistema.'
+            : 'Nessun risultato per i filtri selezionati.'}
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -537,7 +570,9 @@ export default function NutrizionistaAnalisiPage() {
                     >
                       <td className="p-3">
                         <div className="font-medium text-text-primary">{r.athlete_name ?? '—'}</div>
-                        {r.athlete_email && <div className="text-xs text-text-muted">{r.athlete_email}</div>}
+                        {r.athlete_email && (
+                          <div className="text-xs text-text-muted">{r.athlete_email}</div>
+                        )}
                       </td>
                       <td className="p-3 text-text-secondary">
                         {r.week_start && r.week_end
@@ -545,13 +580,23 @@ export default function NutrizionistaAnalisiPage() {
                           : '—'}
                       </td>
                       <td className="p-3">{r.avg_weight != null ? `${r.avg_weight} kg` : '—'}</td>
-                      <td className="p-3">{r.delta_weight != null ? `${r.delta_weight >= 0 ? '+' : ''}${r.delta_weight} kg` : '—'}</td>
-                      <td className="p-3">{r.target_delta != null ? `${r.target_delta >= 0 ? '+' : ''}${r.target_delta} kg` : '—'}</td>
+                      <td className="p-3">
+                        {r.delta_weight != null
+                          ? `${r.delta_weight >= 0 ? '+' : ''}${r.delta_weight} kg`
+                          : '—'}
+                      </td>
+                      <td className="p-3">
+                        {r.target_delta != null
+                          ? `${r.target_delta >= 0 ? '+' : ''}${r.target_delta} kg`
+                          : '—'}
+                      </td>
                       <td className="p-3">
                         {r.delta_vs_target != null ? (
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                              (r.abs_delta_vs_target ?? 0) > THRESHOLD_KG ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'
+                              (r.abs_delta_vs_target ?? 0) > THRESHOLD_KG
+                                ? 'bg-amber-500/20 text-amber-400'
+                                : 'bg-emerald-500/20 text-emerald-400'
                             }`}
                           >
                             {r.delta_vs_target >= 0 ? '+' : ''}
@@ -561,22 +606,30 @@ export default function NutrizionistaAnalisiPage() {
                           '—'
                         )}
                         {status === 'OPPOSTO' && (
-                          <span className="ml-1 rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-xs">OPPOSTO</span>
+                          <span className="ml-1 rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-xs">
+                            OPPOSTO
+                          </span>
                         )}
                         {status === 'ADJ' && (
-                          <span className="ml-1 rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">ADJ</span>
+                          <span className="ml-1 rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">
+                            ADJ
+                          </span>
                         )}
                       </td>
                       <td className="p-3">
                         {r.adjustment_applied ? (
-                          <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">Sì</span>
+                          <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">
+                            Sì
+                          </span>
                         ) : (
                           '—'
                         )}
                       </td>
                       <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/dashboard/nutrizionista/atleti/${r.athlete_id}?tab=analisi`}>
+                          <Link
+                            href={`/dashboard/nutrizionista/atleti/${r.athlete_id}?tab=analisi`}
+                          >
                             Atleta <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
                           </Link>
                         </Button>
@@ -595,7 +648,12 @@ export default function NutrizionistaAnalisiPage() {
           <DrawerHeader>
             <div className="flex items-center justify-between">
               <span>Dettaglio analisi</span>
-              <Button variant="ghost" size="icon" onClick={() => setDrawerRow(null)} aria-label="Chiudi">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDrawerRow(null)}
+                aria-label="Chiudi"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -604,8 +662,12 @@ export default function NutrizionistaAnalisiPage() {
             {drawerRow && (
               <>
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-text-primary">{drawerRow.athlete_name ?? '—'}</h3>
-                  {drawerRow.athlete_email && <p className="text-sm text-text-muted">{drawerRow.athlete_email}</p>}
+                  <h3 className="font-semibold text-text-primary">
+                    {drawerRow.athlete_name ?? '—'}
+                  </h3>
+                  {drawerRow.athlete_email && (
+                    <p className="text-sm text-text-muted">{drawerRow.athlete_email}</p>
+                  )}
                   <p className="text-sm text-text-secondary">
                     {drawerRow.week_start && drawerRow.week_end
                       ? `${new Date(drawerRow.week_start).toLocaleDateString('it-IT')} → ${new Date(drawerRow.week_end).toLocaleDateString('it-IT')}`
@@ -613,16 +675,24 @@ export default function NutrizionistaAnalisiPage() {
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {badgeStatus(drawerRow) === 'OPPOSTO' && (
-                      <span className="rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-xs">OPPOSTO</span>
+                      <span className="rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-xs">
+                        OPPOSTO
+                      </span>
                     )}
                     {badgeStatus(drawerRow) === 'WARN' && (
-                      <span className="rounded-full bg-amber-500/20 text-amber-400 px-2 py-0.5 text-xs">WARN</span>
+                      <span className="rounded-full bg-amber-500/20 text-amber-400 px-2 py-0.5 text-xs">
+                        WARN
+                      </span>
                     )}
                     {badgeStatus(drawerRow) === 'OK' && (
-                      <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">OK</span>
+                      <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">
+                        OK
+                      </span>
                     )}
                     {drawerRow.adjustment_applied && (
-                      <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">ADJ</span>
+                      <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">
+                        ADJ
+                      </span>
                     )}
                   </div>
                 </div>
@@ -630,24 +700,36 @@ export default function NutrizionistaAnalisiPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-xs text-text-muted">Peso medio</p>
-                    <p className="text-lg font-semibold">{drawerRow.avg_weight != null ? `${drawerRow.avg_weight} kg` : '—'}</p>
+                    <p className="text-lg font-semibold">
+                      {drawerRow.avg_weight != null ? `${drawerRow.avg_weight} kg` : '—'}
+                    </p>
                   </div>
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-xs text-text-muted">Δ Peso</p>
-                    <p className="text-lg font-semibold">{drawerRow.delta_weight != null ? `${drawerRow.delta_weight} kg` : '—'}</p>
+                    <p className="text-lg font-semibold">
+                      {drawerRow.delta_weight != null ? `${drawerRow.delta_weight} kg` : '—'}
+                    </p>
                   </div>
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-xs text-text-muted">Target Δ</p>
-                    <p className="text-lg font-semibold">{drawerRow.target_delta != null ? `${drawerRow.target_delta} kg` : '—'}</p>
+                    <p className="text-lg font-semibold">
+                      {drawerRow.target_delta != null ? `${drawerRow.target_delta} kg` : '—'}
+                    </p>
                   </div>
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-xs text-text-muted">Scostamento</p>
-                    <p className="text-lg font-semibold">{drawerRow.delta_vs_target != null ? `${drawerRow.delta_vs_target.toFixed(2)} kg` : '—'}</p>
+                    <p className="text-lg font-semibold">
+                      {drawerRow.delta_vs_target != null
+                        ? `${drawerRow.delta_vs_target.toFixed(2)} kg`
+                        : '—'}
+                    </p>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-text-secondary mb-2">Progressi in settimana</h4>
+                  <h4 className="text-sm font-medium text-text-secondary mb-2">
+                    Progressi in settimana
+                  </h4>
                   {drawerLoading ? (
                     <div className="animate-pulse h-16 rounded-lg bg-background-tertiary" />
                   ) : drawerProgress.length === 0 ? (
@@ -655,10 +737,18 @@ export default function NutrizionistaAnalisiPage() {
                   ) : (
                     <ul className="rounded-lg border border-border divide-y divide-border/50 overflow-hidden">
                       {drawerProgress.map((p) => (
-                        <li key={p.id} className="px-3 py-2 flex items-center justify-between text-sm">
+                        <li
+                          key={p.id}
+                          className="px-3 py-2 flex items-center justify-between text-sm"
+                        >
                           <span className="text-text-secondary">
                             {p.created_at
-                              ? new Date(p.created_at).toLocaleString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                              ? new Date(p.created_at).toLocaleString('it-IT', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
                               : '—'}
                           </span>
                           <span className="text-text-primary">
@@ -666,10 +756,17 @@ export default function NutrizionistaAnalisiPage() {
                             {p.body_fat != null && ` · BF ${p.body_fat}%`}
                             {p.waist != null && ` · Vita ${p.waist}`}
                             {p.hip != null && ` · Fianchi ${p.hip}`}
-                            {p.weight == null && p.body_fat == null && p.waist == null && p.hip == null && '—'}
+                            {p.weight == null &&
+                              p.body_fat == null &&
+                              p.waist == null &&
+                              p.hip == null &&
+                              '—'}
                           </span>
-                          {(p.created_by_role === 'athlete' || (p.source ?? '').toLowerCase().includes('athlete')) && (
-                            <span className="rounded bg-blue-500/20 text-blue-300 text-xs px-1.5">ATLETA</span>
+                          {(p.created_by_role === 'athlete' ||
+                            (p.source ?? '').toLowerCase().includes('athlete')) && (
+                            <span className="rounded bg-blue-500/20 text-blue-300 text-xs px-1.5">
+                              ATLETA
+                            </span>
                           )}
                         </li>
                       ))}
@@ -679,21 +776,32 @@ export default function NutrizionistaAnalisiPage() {
 
                 {drawerVersion && (
                   <div>
-                    <h4 className="text-sm font-medium text-text-secondary mb-2">Piano collegato</h4>
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Piano collegato
+                    </h4>
                     <div className="rounded-lg border border-border p-3 space-y-1 text-sm">
-                      <p>Versione {drawerVersion.version_number ?? '—'} · {drawerVersion.status ?? '—'}</p>
+                      <p>
+                        Versione {drawerVersion.version_number ?? '—'} ·{' '}
+                        {drawerVersion.status ?? '—'}
+                      </p>
                       {drawerVersion.start_date && drawerVersion.end_date && (
                         <p className="text-text-muted">
-                          {new Date(drawerVersion.start_date).toLocaleDateString('it-IT')} → {new Date(drawerVersion.end_date).toLocaleDateString('it-IT')}
+                          {new Date(drawerVersion.start_date).toLocaleDateString('it-IT')} →{' '}
+                          {new Date(drawerVersion.end_date).toLocaleDateString('it-IT')}
                         </p>
                       )}
-                      {(drawerVersion.calories_target != null || drawerVersion.protein_target != null) && (
+                      {(drawerVersion.calories_target != null ||
+                        drawerVersion.protein_target != null) && (
                         <p>
-                          Kcal {drawerVersion.calories_target ?? '—'} · P {drawerVersion.protein_target ?? '—'} · C {drawerVersion.carb_target ?? '—'} · F {drawerVersion.fat_target ?? '—'}
+                          Kcal {drawerVersion.calories_target ?? '—'} · P{' '}
+                          {drawerVersion.protein_target ?? '—'} · C{' '}
+                          {drawerVersion.carb_target ?? '—'} · F {drawerVersion.fat_target ?? '—'}
                         </p>
                       )}
                       {drawerVersion.auto_generated && (
-                        <p className="text-amber-400 text-xs">Auto: {drawerVersion.auto_adjustment_reason ?? '—'}</p>
+                        <p className="text-amber-400 text-xs">
+                          Auto: {drawerVersion.auto_adjustment_reason ?? '—'}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -701,20 +809,22 @@ export default function NutrizionistaAnalisiPage() {
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/nutrizionista/atleti/${drawerRow.athlete_id}?tab=piani`}>
+                    <Link
+                      href={`/dashboard/nutrizionista/atleti/${drawerRow.athlete_id}?tab=piani`}
+                    >
                       <FileText className="h-4 w-4 mr-1" />
                       Apri piano
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/nutrizionista/atleti/${drawerRow.athlete_id}?tab=piani`}>
+                    <Link
+                      href={`/dashboard/nutrizionista/atleti/${drawerRow.athlete_id}?tab=piani`}
+                    >
                       Crea nuova versione
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/nutrizionista/progressi`}>
-                      Vai ai progressi
-                    </Link>
+                    <Link href={`/dashboard/nutrizionista/progressi`}>Vai ai progressi</Link>
                   </Button>
                 </div>
               </>

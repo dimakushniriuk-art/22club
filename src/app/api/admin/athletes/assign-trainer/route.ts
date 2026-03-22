@@ -49,7 +49,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const parsed = bodySchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Dati non validi', details: parsed.error.issues }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Dati non validi', details: parsed.error.issues },
+        { status: 400 },
+      )
     }
     const { athleteId, trainerId } = parsed.data
 
@@ -84,7 +87,10 @@ export async function POST(request: NextRequest) {
     const aOrg = (athlete as { org_id: string | null }).org_id
     const tOrg = (trainer as { org_id: string | null }).org_id
     if (aOrg != null && tOrg != null && aOrg !== tOrg) {
-      return NextResponse.json({ error: 'Athlete e trainer devono appartenere allo stesso org' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Athlete e trainer devono appartenere allo stesso org' },
+        { status: 400 },
+      )
     }
     const orgId = aOrg ?? tOrg ?? 'default-org'
 
@@ -125,7 +131,10 @@ export async function POST(request: NextRequest) {
 
     if (insertErr) {
       logger.error('Errore inserimento assegnazione', insertErr)
-      return NextResponse.json({ error: 'Errore durante l\'assegnazione del trainer' }, { status: 500 })
+      return NextResponse.json(
+        { error: "Errore durante l'assegnazione del trainer" },
+        { status: 500 },
+      )
     }
 
     return NextResponse.json({ ok: true })

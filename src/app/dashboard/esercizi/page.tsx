@@ -218,7 +218,9 @@ export default function EserciziPage() {
   const [difficultyFilter, setDifficultyFilter] = useState<Exercise['difficulty'] | ''>('')
   const [groupFilter, setGroupFilter] = useState<string>('multipli')
   const [equipmentFilter, setEquipmentFilter] = useState<string>('')
-  const [muscleGroupFilter, setMuscleGroupFilter] = useState<MuscleGroupFilterType | null>('multipli')
+  const [muscleGroupFilter, setMuscleGroupFilter] = useState<MuscleGroupFilterType | null>(
+    'multipli',
+  )
   const [showFilters, setShowFilters] = useState(false)
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const [tableScrollTop, setTableScrollTop] = useState(0)
@@ -250,9 +252,7 @@ export default function EserciziPage() {
       const equipmentLower = (e.equipment || '').toLowerCase()
       return words.every(
         (word) =>
-          nameLower.includes(word) ||
-          muscleLower.includes(word) ||
-          equipmentLower.includes(word),
+          nameLower.includes(word) || muscleLower.includes(word) || equipmentLower.includes(word),
       )
     })
 
@@ -292,15 +292,7 @@ export default function EserciziPage() {
     })
 
     return sorted
-  }, [
-    items,
-    query,
-    difficultyFilter,
-    equipmentFilter,
-    muscleGroupFilter,
-    sortField,
-    sortDirection,
-  ])
+  }, [items, query, difficultyFilter, equipmentFilter, muscleGroupFilter, sortField, sortDirection])
 
   // Usa la lista completa degli attrezzi e aggiungi quelli già presenti nel DB
   const equipments = useMemo(() => {
@@ -401,25 +393,31 @@ export default function EserciziPage() {
     }
   }, [exerciseToDelete, addToast, load])
 
-  const handleSort = useCallback((field: typeof sortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
-    }
-  }, [sortField, sortDirection])
+  const handleSort = useCallback(
+    (field: typeof sortField) => {
+      if (sortField === field) {
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      } else {
+        setSortField(field)
+        setSortDirection('asc')
+      }
+    },
+    [sortField, sortDirection],
+  )
 
-  const getSortIcon = useCallback((field: typeof sortField) => {
-    if (sortField !== field) {
-      return <ArrowUpDown className="ml-1 h-4 w-4 opacity-30" />
-    }
-    return sortDirection === 'asc' ? (
-      <ArrowUp className="ml-1 h-4 w-4" />
-    ) : (
-      <ArrowDown className="ml-1 h-4 w-4" />
-    )
-  }, [sortField, sortDirection])
+  const getSortIcon = useCallback(
+    (field: typeof sortField) => {
+      if (sortField !== field) {
+        return <ArrowUpDown className="ml-1 h-4 w-4 opacity-30" />
+      }
+      return sortDirection === 'asc' ? (
+        <ArrowUp className="ml-1 h-4 w-4" />
+      ) : (
+        <ArrowDown className="ml-1 h-4 w-4" />
+      )
+    },
+    [sortField, sortDirection],
+  )
 
   // Verifica se ci sono filtri attivi
   const hasActiveFilters = useMemo(() => {
@@ -513,10 +511,7 @@ export default function EserciziPage() {
       <div className="space-y-4 sm:space-y-6">
         {/* Banner errore caricamento con retry */}
         {loadError && (
-          <Card
-            variant="trainer"
-            className="border-red-500/30 bg-red-500/10"
-          >
+          <Card variant="trainer" className="border-red-500/30 bg-red-500/10">
             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-red-200">
                 Errore durante il caricamento: {loadError.message}
@@ -626,9 +621,7 @@ export default function EserciziPage() {
                   <SimpleSelect
                     value={difficultyFilter || 'all'}
                     onValueChange={(value) =>
-                      setDifficultyFilter(
-                        value === 'all' ? '' : (value as Exercise['difficulty']),
-                      )
+                      setDifficultyFilter(value === 'all' ? '' : (value as Exercise['difficulty']))
                     }
                     placeholder="Tutte le difficoltà"
                     options={[
@@ -645,7 +638,9 @@ export default function EserciziPage() {
                     placeholder="Tutti gli attrezzi"
                     options={[
                       { value: 'all', label: 'Tutti gli attrezzi' },
-                      ...equipments.map((eq) => ({ value: eq, label: eq })).sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                      ...equipments
+                        .map((eq) => ({ value: eq, label: eq }))
+                        .sort((a, b) => a.label.localeCompare(b.label, 'it')),
                     ]}
                     className="w-[180px] shrink-0 [&_button]:bg-white/[0.04] [&_button]:border-white/10 [&_button]:hover:bg-white/[0.06] [&_button]:focus:ring-primary [&_button]:focus:border-primary"
                   />
@@ -710,19 +705,25 @@ export default function EserciziPage() {
                               </h3>
                               <div className="flex flex-wrap items-center gap-2">
                                 {e.muscle_group && (
-                                  <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${designColorato.palette.teal.border} ${designColorato.palette.teal.bg} ${designColorato.palette.teal.text}`}>
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${designColorato.palette.teal.border} ${designColorato.palette.teal.bg} ${designColorato.palette.teal.text}`}
+                                  >
                                     <Dumbbell className="h-3 w-3" />
                                     {e.muscle_group}
                                   </span>
                                 )}
                                 {e.equipment && (
-                                  <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${designColorato.palette.blue.border} ${designColorato.palette.blue.bg} ${designColorato.palette.blue.text}`}>
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${designColorato.palette.blue.border} ${designColorato.palette.blue.bg} ${designColorato.palette.blue.text}`}
+                                  >
                                     <Dumbbell className="h-3 w-3" />
                                     {e.equipment}
                                   </span>
                                 )}
                                 {e.duration_seconds && (
-                                  <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${designColorato.palette.green.border} ${designColorato.palette.green.bg} ${designColorato.palette.green.text}`}>
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${designColorato.palette.green.border} ${designColorato.palette.green.bg} ${designColorato.palette.green.text}`}
+                                  >
                                     <Clock className="h-3 w-3" />
                                     {e.duration_seconds}s
                                   </span>
@@ -744,7 +745,11 @@ export default function EserciziPage() {
                                       : `${designColorato.palette.yellow.border} ${designColorato.palette.yellow.bg} ${designColorato.palette.yellow.text}`
                                 }`}
                               >
-                                {e.difficulty === 'bassa' ? 'Principiante' : e.difficulty === 'alta' ? 'Avanzato' : 'Intermedio'}
+                                {e.difficulty === 'bassa'
+                                  ? 'Principiante'
+                                  : e.difficulty === 'alta'
+                                    ? 'Avanzato'
+                                    : 'Intermedio'}
                               </span>
                               <div className="flex items-center gap-2">
                                 <Button
@@ -805,7 +810,11 @@ export default function EserciziPage() {
                         ? (e) => setTableScrollTop(e.currentTarget.scrollTop)
                         : undefined
                     }
-                    className={useVirtualTable ? 'max-h-[60vh] overflow-y-auto rounded-lg border border-white/5' : undefined}
+                    className={
+                      useVirtualTable
+                        ? 'max-h-[60vh] overflow-y-auto rounded-lg border border-white/5'
+                        : undefined
+                    }
                   >
                     <div
                       style={
@@ -873,81 +882,81 @@ export default function EserciziPage() {
                             </TableRow>
                           )}
                           {virtualSlice.map((e) => (
-                        <TableRow
-                          key={e.id}
-                          style={useVirtualTable ? { height: TABLE_ROW_HEIGHT } : undefined}
-                        >
-                          <TableCell>
-                            {e.thumb_url ? (
-                              <Image
-                                src={e.thumb_url}
-                                alt={e.name}
-                                width={80}
-                                height={48}
-                                className="h-12 w-20 rounded object-cover"
-                                unoptimized={e.thumb_url.startsWith('http')}
-                              />
-                            ) : e.video_url ? (
-                              <div className="relative h-12 w-20 rounded overflow-hidden bg-background-tertiary">
-                                <video
-                                  src={e.video_url}
-                                  className="h-full w-full object-cover rounded"
-                                  preload="metadata"
-                                  muted
-                                  playsInline
-                                  style={{ display: 'block' }}
-                                  onMouseEnter={(e) => {
-                                    const video = e.currentTarget
-                                    video.play().catch(() => {
-                                      // Ignora errori di autoplay
-                                    })
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    const video = e.currentTarget
-                                    video.pause()
-                                    video.currentTime = 0
-                                  }}
-                                  onError={() => {
-                                    // In caso di errore, mostra un placeholder
-                                  }}
-                                />
-                              </div>
-                            ) : (
-                              <div className="bg-background-tertiary h-12 w-20 rounded" />
-                            )}
-                          </TableCell>
-                          <TableCell>{e.name}</TableCell>
-                          <TableCell>{e.muscle_group || '-'}</TableCell>
-                          <TableCell>{e.equipment || '-'}</TableCell>
-                          <TableCell>{getDifficultyLabel(e.difficulty)}</TableCell>
-                          <TableCell>
-                            {e.updated_at ? new Date(e.updated_at).toLocaleDateString() : '-'}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="bg-background-secondary/30 border border-white/5 text-text-primary hover:bg-primary/10 hover:border-primary/20 transition-all duration-200"
-                                onClick={() => {
-                                  setEditing(e)
-                                  setShowForm(true)
-                                }}
-                              >
-                                Modifica
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/40 transition-all duration-200"
-                                onClick={() => handleDelete(e)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            <TableRow
+                              key={e.id}
+                              style={useVirtualTable ? { height: TABLE_ROW_HEIGHT } : undefined}
+                            >
+                              <TableCell>
+                                {e.thumb_url ? (
+                                  <Image
+                                    src={e.thumb_url}
+                                    alt={e.name}
+                                    width={80}
+                                    height={48}
+                                    className="h-12 w-20 rounded object-cover"
+                                    unoptimized={e.thumb_url.startsWith('http')}
+                                  />
+                                ) : e.video_url ? (
+                                  <div className="relative h-12 w-20 rounded overflow-hidden bg-background-tertiary">
+                                    <video
+                                      src={e.video_url}
+                                      className="h-full w-full object-cover rounded"
+                                      preload="metadata"
+                                      muted
+                                      playsInline
+                                      style={{ display: 'block' }}
+                                      onMouseEnter={(e) => {
+                                        const video = e.currentTarget
+                                        video.play().catch(() => {
+                                          // Ignora errori di autoplay
+                                        })
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        const video = e.currentTarget
+                                        video.pause()
+                                        video.currentTime = 0
+                                      }}
+                                      onError={() => {
+                                        // In caso di errore, mostra un placeholder
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="bg-background-tertiary h-12 w-20 rounded" />
+                                )}
+                              </TableCell>
+                              <TableCell>{e.name}</TableCell>
+                              <TableCell>{e.muscle_group || '-'}</TableCell>
+                              <TableCell>{e.equipment || '-'}</TableCell>
+                              <TableCell>{getDifficultyLabel(e.difficulty)}</TableCell>
+                              <TableCell>
+                                {e.updated_at ? new Date(e.updated_at).toLocaleDateString() : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-background-secondary/30 border border-white/5 text-text-primary hover:bg-primary/10 hover:border-primary/20 transition-all duration-200"
+                                    onClick={() => {
+                                      setEditing(e)
+                                      setShowForm(true)
+                                    }}
+                                  >
+                                    Modifica
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/40 transition-all duration-200"
+                                    onClick={() => handleDelete(e)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                           {useVirtualTable && virtualEnd < filtered.length && (
                             <TableRow
                               style={{

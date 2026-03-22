@@ -9,21 +9,25 @@ Questo documento descrive la configurazione completa del sistema di reset passwo
 ### 1. **Supabase Config (`supabase/config.toml`)**
 
 #### URL e Redirect
+
 - **site_url**: `http://localhost:3001` (porta principale)
 - **additional_redirect_urls**: Include sia porta 3000 che 3001 per compatibilità
 
 #### Durata Token
+
 - **jwt_expiry**: `3600` secondi (1 ora)
   - Questo controlla anche la durata del token di recovery per reset password
   - Massimo consentito: 604800 secondi (1 settimana)
 
 #### Email Template
+
 - **Template personalizzato**: `supabase/templates/recovery.html`
 - **Subject**: "Reimposta la tua password - 22 PERSONAL TRAINING Club"
 
 ### 2. **Template Email (`supabase/templates/recovery.html`)**
 
 Template HTML personalizzato con:
+
 - Design allineato al brand 22Club
 - Colori e stile coerenti con l'applicazione
 - Link di reset password funzionante
@@ -33,6 +37,7 @@ Template HTML personalizzato con:
 ### 3. **Frontend (`src/app/reset-password/page.tsx`)**
 
 #### Funzionalità
+
 - ✅ Verifica automatica della sessione al caricamento
 - ✅ Gestione errori URL (link scaduti/non validi)
 - ✅ Form per inserire nuova password con validazione
@@ -42,6 +47,7 @@ Template HTML personalizzato con:
 - ✅ Listener per eventi di autenticazione Supabase
 
 #### Stati della Pagina
+
 1. **Loading**: Durante verifica sessione
 2. **Errore**: Link scaduto/non valido
 3. **Form**: Input nuova password
@@ -50,6 +56,7 @@ Template HTML personalizzato con:
 ### 4. **Database (`supabase/migrations/20260109_verify_password_reset_config.sql`)**
 
 #### Verifiche
+
 - ✅ Indici per performance
 - ✅ RLS policies (non interferiscono con reset password)
 - ✅ Funzione utility `check_user_exists()` per debug
@@ -57,26 +64,31 @@ Template HTML personalizzato con:
 ## 🔄 Flusso Completo
 
 ### 1. Richiesta Reset Password
+
 ```
 Utente → /forgot-password → Inserisce email → Clicca "Invia istruzioni"
 ```
 
 ### 2. Invio Email
+
 ```
 Supabase → Genera token → Invia email con template personalizzato
 ```
 
 ### 3. Click Link Email
+
 ```
 Utente → Clicca link email → Supabase verifica token → Crea sessione temporanea
 ```
 
 ### 4. Reset Password
+
 ```
 Utente → /reset-password → Verifica sessione → Inserisce nuova password → Aggiorna password
 ```
 
 ### 5. Successo
+
 ```
 Password aggiornata → Messaggio successo → Reindirizzamento a /login (3 secondi)
 ```
@@ -86,6 +98,7 @@ Password aggiornata → Messaggio successo → Reindirizzamento a /login (3 seco
 ### Ambiente Locale
 
 1. **Avvia Supabase**:
+
    ```bash
    supabase start
    ```
@@ -121,6 +134,7 @@ Password aggiornata → Messaggio successo → Reindirizzamento a /login (3 seco
 ### URL Redirect
 
 Nel file `supabase/config.toml`:
+
 ```toml
 site_url = "http://localhost:3001"
 additional_redirect_urls = [
@@ -132,6 +146,7 @@ additional_redirect_urls = [
 ```
 
 **Per produzione**, aggiungi l'URL di produzione:
+
 ```toml
 additional_redirect_urls = [
   "https://your-production-domain.com",
@@ -144,6 +159,7 @@ additional_redirect_urls = [
 Il token di reset password scade dopo **1 ora** (3600 secondi).
 
 Per modificare:
+
 ```toml
 jwt_expiry = 3600  # 1 ora
 # Massimo: 604800 (1 settimana)
@@ -154,6 +170,7 @@ jwt_expiry = 3600  # 1 ora
 Il template è in `supabase/templates/recovery.html`.
 
 Variabili disponibili:
+
 - `{{ .ConfirmationURL }}`: Link di reset password
 - `{{ .Email }}`: Email dell'utente (se disponibile)
 
@@ -165,13 +182,15 @@ Variabili disponibili:
 
 ### Problema: Email non arriva (locale)
 
-**Soluzione**: 
+**Soluzione**:
+
 1. Verifica che Inbucket sia avviato: `http://localhost:54324`
 2. Controlla i log di Supabase: `supabase logs`
 
 ### Problema: Email non arriva (produzione)
 
 **Soluzione**:
+
 1. Verifica configurazione SMTP in Supabase Dashboard
 2. Controlla cartella spam
 3. Verifica rate limits del provider SMTP
@@ -179,6 +198,7 @@ Variabili disponibili:
 ### Problema: Link non funziona
 
 **Soluzione**:
+
 1. Verifica che l'URL sia in `additional_redirect_urls`
 2. Controlla che il token non sia scaduto
 3. Verifica che l'utente esista nel database
@@ -186,13 +206,14 @@ Variabili disponibili:
 ### Problema: Sessione non valida
 
 **Soluzione**:
+
 1. Verifica che il link sia stato cliccato entro 1 ora
 2. Controlla i log del browser per errori
 3. Richiedi un nuovo link di reset
 
 ## 📝 Note Importanti
 
-1. **Sicurezza**: 
+1. **Sicurezza**:
    - I token scadono dopo 1 ora
    - Ogni token può essere usato una sola volta
    - Il link contiene un hash sicuro generato da Supabase

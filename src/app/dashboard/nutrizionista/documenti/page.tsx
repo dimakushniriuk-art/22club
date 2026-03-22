@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-  useMemo,
-} from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   FileText,
@@ -43,7 +38,11 @@ import {
 } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { createLogger } from '@/lib/logger'
-import { NUTRITION_TABLES, STAFF_ASSIGNMENT_STATUS_ACTIVE, STAFF_TYPE_NUTRIZIONISTA } from '@/lib/nutrition-tables'
+import {
+  NUTRITION_TABLES,
+  STAFF_ASSIGNMENT_STATUS_ACTIVE,
+  STAFF_TYPE_NUTRIZIONISTA,
+} from '@/lib/nutrition-tables'
 import { extractFileName } from '@/lib/documents'
 import { exportToCSV } from '@/lib/export-utils'
 
@@ -56,7 +55,11 @@ const TAB_CATEGORIES: { id: string; label: string; categories: string[] }[] = [
   { id: 'dossier', label: 'Dossier', categories: ['dossier_onboarding', 'onboarding'] },
   { id: 'referti', label: 'Referti', categories: ['referto', 'referti', 'analisi', 'bloodwork'] },
   { id: 'certificati', label: 'Certificati', categories: ['certificato', 'certificates'] },
-  { id: 'piani', label: 'Piani / Nutrizione', categories: ['nutrition_plan', 'piano_nutrizionale', 'diet_plan'] },
+  {
+    id: 'piani',
+    label: 'Piani / Nutrizione',
+    categories: ['nutrition_plan', 'piano_nutrizionale', 'diet_plan'],
+  },
   { id: 'altro', label: 'Altro', categories: ['altro', 'liberatoria', 'contratto'] },
 ]
 
@@ -129,7 +132,9 @@ export default function NutrizionistaDocumentiPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [rows, setRows] = useState<DocRow[]>([])
-  const [assignedAthletes, setAssignedAthletes] = useState<{ id: string; name: string; email: string | null }[]>([])
+  const [assignedAthletes, setAssignedAthletes] = useState<
+    { id: string; name: string; email: string | null }[]
+  >([])
   const [tab, setTab] = useState('all')
   const [searchInput, setSearchInput] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -180,7 +185,9 @@ export default function NutrizionistaDocumentiPage() {
         .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
         .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
       if (staffErr) throw staffErr
-      const athleteIds = (staffData ?? []).map((r) => (r as { atleta_id: string }).atleta_id).filter(Boolean)
+      const athleteIds = (staffData ?? [])
+        .map((r) => (r as { atleta_id: string }).atleta_id)
+        .filter(Boolean)
       if (athleteIds.length === 0) {
         setRows([])
         setAssignedAthletes([])
@@ -193,10 +200,20 @@ export default function NutrizionistaDocumentiPage() {
         .select('id, nome, cognome, email')
         .in('id', athleteIds)
       const profilesMap = new Map(
-        (profilesData ?? []).map((p: { id: string; nome: string | null; cognome: string | null; email: string | null }) => [
-          p.id,
-          { name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8), email: p.email ?? null },
-        ]),
+        (profilesData ?? []).map(
+          (p: {
+            id: string
+            nome: string | null
+            cognome: string | null
+            email: string | null
+          }) => [
+            p.id,
+            {
+              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+              email: p.email ?? null,
+            },
+          ],
+        ),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({
@@ -256,10 +273,14 @@ export default function NutrizionistaDocumentiPage() {
     }
     if (filterAthlete !== 'all') list = list.filter((r) => r.athlete_id === filterAthlete)
     if (filterStatus !== 'all') list = list.filter((r) => r.status === filterStatus)
-    if (filterUploadedBy === 'atleta') list = list.filter((r) => r.uploaded_by_profile_id === r.athlete_id)
-    else if (filterUploadedBy === 'staff') list = list.filter((r) => r.uploaded_by_profile_id !== r.athlete_id)
-    else if (filterUploadedBy === 'io') list = list.filter((r) => r.uploaded_by_profile_id === profileId)
-    if (filterExpired === 'scaduti') list = list.filter((r) => r.expires_at && new Date(r.expires_at) < now)
+    if (filterUploadedBy === 'atleta')
+      list = list.filter((r) => r.uploaded_by_profile_id === r.athlete_id)
+    else if (filterUploadedBy === 'staff')
+      list = list.filter((r) => r.uploaded_by_profile_id !== r.athlete_id)
+    else if (filterUploadedBy === 'io')
+      list = list.filter((r) => r.uploaded_by_profile_id === profileId)
+    if (filterExpired === 'scaduti')
+      list = list.filter((r) => r.expires_at && new Date(r.expires_at) < now)
     else if (filterExpired === 'con_scadenza') list = list.filter((r) => r.expires_at != null)
     const sorted = [...list].sort((a, b) => {
       if (sortBy === 'atleta') return (a.athlete_name ?? '').localeCompare(b.athlete_name ?? '')
@@ -274,15 +295,32 @@ export default function NutrizionistaDocumentiPage() {
       return cb.localeCompare(ca)
     })
     return sorted
-  }, [rows, tab, debouncedSearch, filterAthlete, filterStatus, filterUploadedBy, filterExpired, sortBy, profileId, now])
+  }, [
+    rows,
+    tab,
+    debouncedSearch,
+    filterAthlete,
+    filterStatus,
+    filterUploadedBy,
+    filterExpired,
+    sortBy,
+    profileId,
+    now,
+  ])
 
   const kpiCounts = useMemo(() => {
     const total = rows.length
     const last7 = rows.filter((r) => r.created_at && r.created_at >= sevenDaysAgo).length
-    const onboarding = rows.filter((r) => ['dossier_onboarding', 'onboarding'].includes(r.category ?? '')).length
-    const referti = rows.filter((r) => ['referto', 'referti', 'analisi', 'bloodwork'].includes(r.category ?? '')).length
+    const onboarding = rows.filter((r) =>
+      ['dossier_onboarding', 'onboarding'].includes(r.category ?? ''),
+    ).length
+    const referti = rows.filter((r) =>
+      ['referto', 'referti', 'analisi', 'bloodwork'].includes(r.category ?? ''),
+    ).length
     const scaduti = rows.filter((r) => r.expires_at && new Date(r.expires_at) < now).length
-    const daRivedere = rows.filter((r) => r.status === 'da_validare' || r.status === 'in-revisione').length
+    const daRivedere = rows.filter(
+      (r) => r.status === 'da_validare' || r.status === 'in-revisione',
+    ).length
     return { total, last7, onboarding, referti, scaduti, daRivedere }
   }, [rows, sevenDaysAgo, now])
 
@@ -298,7 +336,9 @@ export default function NutrizionistaDocumentiPage() {
       const fileExt = uploadFile.name.split('.').pop() || 'bin'
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
       const filePath = `documents/${uploadAthleteId}/${fileName}`
-      const { error: uploadErr } = await supabase.storage.from('documents').upload(filePath, uploadFile, { cacheControl: '3600', upsert: false })
+      const { error: uploadErr } = await supabase.storage
+        .from('documents')
+        .upload(filePath, uploadFile, { cacheControl: '3600', upsert: false })
       if (uploadErr) throw uploadErr
       const { data: urlData } = supabase.storage.from('documents').getPublicUrl(filePath)
       type DocInsert = Database['public']['Tables']['documents']['Insert']
@@ -328,13 +368,27 @@ export default function NutrizionistaDocumentiPage() {
     } finally {
       setUploading(false)
     }
-  }, [uploadFile, uploadAthleteId, profileId, myOrgId, myOrgIdText, uploadCategory, uploadNotes, uploadExpires, supabase, loadData])
+  }, [
+    uploadFile,
+    uploadAthleteId,
+    profileId,
+    myOrgId,
+    myOrgIdText,
+    uploadCategory,
+    uploadNotes,
+    uploadExpires,
+    supabase,
+    loadData,
+  ])
 
   const handleSaveNote = useCallback(
     async (documentId: string) => {
       setSavingNote(true)
       try {
-        const { error: err } = await supabase.from('documents').update({ notes: editNoteValue }).eq('id', documentId)
+        const { error: err } = await supabase
+          .from('documents')
+          .update({ notes: editNoteValue })
+          .eq('id', documentId)
         if (err) throw err
         setEditNoteDocId(null)
         setEditNoteValue('')
@@ -387,11 +441,18 @@ export default function NutrizionistaDocumentiPage() {
       theme="teal"
       actions={
         <>
-          <Button onClick={() => setUploadOpen(true)} className="gap-2 bg-teal-600 hover:bg-teal-500 text-white">
+          <Button
+            onClick={() => setUploadOpen(true)}
+            className="gap-2 bg-teal-600 hover:bg-teal-500 text-white"
+          >
             <Upload className="h-4 w-4" />
             Carica documento
           </Button>
-          <Button variant="outline" onClick={() => setFiltersOpen(true)} className="lg:hidden gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setFiltersOpen(true)}
+            className="lg:hidden gap-2"
+          >
             <Filter className="h-4 w-4" />
             Filtri
           </Button>
@@ -405,7 +466,13 @@ export default function NutrizionistaDocumentiPage() {
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} className="underline shrink-0 min-h-[44px] touch-manipulation flex items-center">Chiudi</button>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="underline shrink-0 min-h-[44px] touch-manipulation flex items-center"
+          >
+            Chiudi
+          </button>
         </div>
       )}
 
@@ -416,7 +483,9 @@ export default function NutrizionistaDocumentiPage() {
             type="button"
             onClick={() => setTab(t.id)}
             className={`rounded-full px-3 py-1.5 min-h-[44px] touch-manipulation text-sm font-medium ${
-              tab === t.id ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30' : 'bg-background-secondary text-text-muted border border-border'
+              tab === t.id
+                ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                : 'bg-background-secondary text-text-muted border border-border'
             }`}
           >
             {t.label}
@@ -455,20 +524,32 @@ export default function NutrizionistaDocumentiPage() {
 
       <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
         <DrawerContent onClose={() => setFiltersOpen(false)}>
-          <DrawerHeader><span>Filtri</span></DrawerHeader>
+          <DrawerHeader>
+            <span>Filtri</span>
+          </DrawerHeader>
           <DrawerBody className="space-y-4">
             <div>
               <Label>Atleta</Label>
-              <select value={filterAthlete} onChange={(e) => setFilterAthlete(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm">
+              <select
+                value={filterAthlete}
+                onChange={(e) => setFilterAthlete(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+              >
                 <option value="all">Tutti</option>
                 {assignedAthletes.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
               <Label>Status</Label>
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+              >
                 <option value="all">Tutti</option>
                 <option value="valido">Valido</option>
                 <option value="scaduto">Scaduto</option>
@@ -478,7 +559,11 @@ export default function NutrizionistaDocumentiPage() {
             </div>
             <div>
               <Label>Caricato da</Label>
-              <select value={filterUploadedBy} onChange={(e) => setFilterUploadedBy(e.target.value as typeof filterUploadedBy)} className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm">
+              <select
+                value={filterUploadedBy}
+                onChange={(e) => setFilterUploadedBy(e.target.value as typeof filterUploadedBy)}
+                className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+              >
                 <option value="all">Tutti</option>
                 <option value="atleta">Atleta</option>
                 <option value="staff">Staff</option>
@@ -487,7 +572,11 @@ export default function NutrizionistaDocumentiPage() {
             </div>
             <div>
               <Label>Scadenza</Label>
-              <select value={filterExpired} onChange={(e) => setFilterExpired(e.target.value as typeof filterExpired)} className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm">
+              <select
+                value={filterExpired}
+                onChange={(e) => setFilterExpired(e.target.value as typeof filterExpired)}
+                className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+              >
                 <option value="all">Tutti</option>
                 <option value="con_scadenza">Con scadenza</option>
                 <option value="scaduti">Scaduti</option>
@@ -498,10 +587,14 @@ export default function NutrizionistaDocumentiPage() {
       </Drawer>
 
       {loading ? (
-        <div className={LOADING_CLASS}><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
+        <div className={LOADING_CLASS}>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
       ) : filteredRows.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
-          {rows.length === 0 ? 'Nessun documento. Carica un file per iniziare.' : 'Nessun risultato per i filtri selezionati.'}
+          {rows.length === 0
+            ? 'Nessun documento. Carica un file per iniziare.'
+            : 'Nessun risultato per i filtri selezionati.'}
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -520,43 +613,108 @@ export default function NutrizionistaDocumentiPage() {
               </thead>
               <tbody>
                 {filteredRows.map((r) => (
-                  <tr key={r.document_id} className="border-b border-border/50 hover:bg-background-tertiary/30">
+                  <tr
+                    key={r.document_id}
+                    className="border-b border-border/50 hover:bg-background-tertiary/30"
+                  >
                     <td className="p-3">
                       <div className="font-medium text-text-primary">{r.athlete_name ?? '—'}</div>
-                      {r.athlete_email && <div className="text-xs text-text-muted">{r.athlete_email}</div>}
+                      {r.athlete_email && (
+                        <div className="text-xs text-text-muted">{r.athlete_email}</div>
+                      )}
                     </td>
                     <td className="p-3">
-                      <span className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">{r.category ?? '—'}</span>
-                      <div className="mt-0.5 text-text-secondary">{r.file_url ? extractFileName(r.file_url) : '—'}</div>
-                      {r.notes && <div className="text-xs text-text-muted truncate max-w-[180px]" title={r.notes}>{r.notes}</div>}
+                      <span className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">
+                        {r.category ?? '—'}
+                      </span>
+                      <div className="mt-0.5 text-text-secondary">
+                        {r.file_url ? extractFileName(r.file_url) : '—'}
+                      </div>
+                      {r.notes && (
+                        <div
+                          className="text-xs text-text-muted truncate max-w-[180px]"
+                          title={r.notes}
+                        >
+                          {r.notes}
+                        </div>
+                      )}
                     </td>
                     <td className="p-3">
-                      {r.status === 'valido' && <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">Valido</span>}
-                      {r.status === 'scaduto' && <span className="rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-xs">Scaduto</span>}
-                      {(r.status === 'da_validare' || r.status === 'in-revisione') && <span className="rounded-full bg-amber-500/20 text-amber-400 px-2 py-0.5 text-xs">{r.status}</span>}
-                      {r.status && !['valido', 'scaduto', 'da_validare', 'in-revisione'].includes(r.status) && <span className="rounded-full bg-background-tertiary px-2 py-0.5 text-xs">{r.status}</span>}
+                      {r.status === 'valido' && (
+                        <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">
+                          Valido
+                        </span>
+                      )}
+                      {r.status === 'scaduto' && (
+                        <span className="rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-xs">
+                          Scaduto
+                        </span>
+                      )}
+                      {(r.status === 'da_validare' || r.status === 'in-revisione') && (
+                        <span className="rounded-full bg-amber-500/20 text-amber-400 px-2 py-0.5 text-xs">
+                          {r.status}
+                        </span>
+                      )}
+                      {r.status &&
+                        !['valido', 'scaduto', 'da_validare', 'in-revisione'].includes(
+                          r.status,
+                        ) && (
+                          <span className="rounded-full bg-background-tertiary px-2 py-0.5 text-xs">
+                            {r.status}
+                          </span>
+                        )}
                       {!r.status && '—'}
                     </td>
-                    <td className="p-3 text-text-secondary">{r.expires_at ? new Date(r.expires_at).toLocaleDateString('it-IT') : '—'}</td>
+                    <td className="p-3 text-text-secondary">
+                      {r.expires_at ? new Date(r.expires_at).toLocaleDateString('it-IT') : '—'}
+                    </td>
                     <td className="p-3 text-text-secondary">{uploadedByLabel(r)}</td>
-                    <td className="p-3 text-text-muted">{r.created_at ? new Date(r.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                    <td className="p-3 text-text-muted">
+                      {r.created_at
+                        ? new Date(r.created_at).toLocaleDateString('it-IT', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : '—'}
+                    </td>
                     <td className="p-3 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Azioni"><MoreVertical className="h-4 w-4" /></Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9"
+                            aria-label="Azioni"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {r.file_url && (
                             <>
                               <DropdownMenuItem asChild>
-                                <a href={r.file_url} target="_blank" rel="noopener noreferrer">Apri / Preview</a>
+                                <a href={r.file_url} target="_blank" rel="noopener noreferrer">
+                                  Apri / Preview
+                                </a>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => copyLink(r.file_url!)}>Copia link</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => copyLink(r.file_url!)}>
+                                Copia link
+                              </DropdownMenuItem>
                             </>
                           )}
-                          <DropdownMenuItem onClick={() => { setEditNoteDocId(r.document_id); setEditNoteValue(r.notes ?? ''); }}>Modifica note</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setEditNoteDocId(r.document_id)
+                              setEditNoteValue(r.notes ?? '')
+                            }}
+                          >
+                            Modifica note
+                          </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/nutrizionista/atleti/${r.athlete_id}`}>Atleta <ArrowRight className="h-3.5 w-3.5 ml-1 inline" /></Link>
+                            <Link href={`/dashboard/nutrizionista/atleti/${r.athlete_id}`}>
+                              Atleta <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
+                            </Link>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -571,41 +729,83 @@ export default function NutrizionistaDocumentiPage() {
 
       <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Carica documento</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Carica documento</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label>Atleta *</Label>
-              <select value={uploadAthleteId} onChange={(e) => setUploadAthleteId(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm" required>
+              <select
+                value={uploadAthleteId}
+                onChange={(e) => setUploadAthleteId(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+                required
+              >
                 <option value="">—</option>
                 {assignedAthletes.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
               <Label>Categoria</Label>
-              <select value={uploadCategory} onChange={(e) => setUploadCategory(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm">
-                {['certificato', 'liberatoria', 'contratto', 'dossier_onboarding', 'referto', 'piano_nutrizionale', 'altro'].map((c) => (
-                  <option key={c} value={c}>{c}</option>
+              <select
+                value={uploadCategory}
+                onChange={(e) => setUploadCategory(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+              >
+                {[
+                  'certificato',
+                  'liberatoria',
+                  'contratto',
+                  'dossier_onboarding',
+                  'referto',
+                  'piano_nutrizionale',
+                  'altro',
+                ].map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
               <Label>File *</Label>
-              <Input type="file" className="mt-1" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)} />
+              <Input
+                type="file"
+                className="mt-1"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+              />
             </div>
             <div>
               <Label>Note</Label>
-              <Input value={uploadNotes} onChange={(e) => setUploadNotes(e.target.value)} placeholder="Opzionale" className="mt-1" />
+              <Input
+                value={uploadNotes}
+                onChange={(e) => setUploadNotes(e.target.value)}
+                placeholder="Opzionale"
+                className="mt-1"
+              />
             </div>
             <div>
               <Label>Scadenza</Label>
-              <Input type="date" value={uploadExpires} onChange={(e) => setUploadExpires(e.target.value)} className="mt-1" />
+              <Input
+                type="date"
+                value={uploadExpires}
+                onChange={(e) => setUploadExpires(e.target.value)}
+                className="mt-1"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadOpen(false)}>Annulla</Button>
-            <Button onClick={handleUpload} disabled={!uploadFile || !uploadAthleteId || uploading}>{uploading ? 'Caricamento…' : 'Carica'}</Button>
+            <Button variant="outline" onClick={() => setUploadOpen(false)}>
+              Annulla
+            </Button>
+            <Button onClick={handleUpload} disabled={!uploadFile || !uploadAthleteId || uploading}>
+              {uploading ? 'Caricamento…' : 'Carica'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -613,11 +813,25 @@ export default function NutrizionistaDocumentiPage() {
       {editNoteDocId && (
         <Dialog open={!!editNoteDocId} onOpenChange={(open) => !open && setEditNoteDocId(null)}>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Modifica note</DialogTitle></DialogHeader>
-            <textarea value={editNoteValue} onChange={(e) => setEditNoteValue(e.target.value)} className="w-full min-h-[80px] rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm" placeholder="Note…" />
+            <DialogHeader>
+              <DialogTitle>Modifica note</DialogTitle>
+            </DialogHeader>
+            <textarea
+              value={editNoteValue}
+              onChange={(e) => setEditNoteValue(e.target.value)}
+              className="w-full min-h-[80px] rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm"
+              placeholder="Note…"
+            />
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditNoteDocId(null)}>Annulla</Button>
-              <Button onClick={() => editNoteDocId && handleSaveNote(editNoteDocId)} disabled={savingNote}>{savingNote ? 'Salvataggio…' : 'Salva'}</Button>
+              <Button variant="outline" onClick={() => setEditNoteDocId(null)}>
+                Annulla
+              </Button>
+              <Button
+                onClick={() => editNoteDocId && handleSaveNote(editNoteDocId)}
+                disabled={savingNote}
+              >
+                {savingNote ? 'Salvataggio…' : 'Salva'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

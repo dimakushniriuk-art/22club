@@ -70,9 +70,11 @@ export function generateEmailHTML(
   }
 
   const athleteName = typeof metadata?.athlete_name === 'string' ? metadata.athlete_name.trim() : ''
-  const orgName = typeof metadata?.org_name === 'string' ? metadata.org_name.trim() : EMAIL_DESIGN.defaultOrgName
+  const orgName =
+    typeof metadata?.org_name === 'string' ? metadata.org_name.trim() : EMAIL_DESIGN.defaultOrgName
   const explicitLogo =
-    typeof process.env.NEXT_PUBLIC_EMAIL_LOGO_URL === 'string' && process.env.NEXT_PUBLIC_EMAIL_LOGO_URL.trim()
+    typeof process.env.NEXT_PUBLIC_EMAIL_LOGO_URL === 'string' &&
+    process.env.NEXT_PUBLIC_EMAIL_LOGO_URL.trim()
       ? process.env.NEXT_PUBLIC_EMAIL_LOGO_URL.trim()
       : ''
   const baseUrl =
@@ -82,10 +84,11 @@ export function generateEmailHTML(
   const isPublicUrl = (url: string) =>
     url.length > 0 && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(url)
   const defaultLogoUrl =
-    explicitLogo ||
-    (baseUrl && isPublicUrl(baseUrl) ? `${baseUrl}/logo.png` : '')
+    explicitLogo || (baseUrl && isPublicUrl(baseUrl) ? `${baseUrl}/logo.png` : '')
   const logoUrl =
-    (typeof metadata?.logo_url === 'string' ? metadata.logo_url.trim() : '') || defaultLogoUrl || undefined
+    (typeof metadata?.logo_url === 'string' ? metadata.logo_url.trim() : '') ||
+    defaultLogoUrl ||
+    undefined
   const isDataUri = (url: string) => url.startsWith('data:')
   const logoUrlForEmail =
     logoUrl && (isPublicUrl(logoUrl) || isDataUri(logoUrl)) ? logoUrl : undefined
@@ -118,7 +121,8 @@ export function generateEmailHTML(
     headerTitle: orgName,
     bodyHtml,
     footerBrand: orgName,
-    footerDisclaimer: 'Questa email è stata inviata automaticamente dal sistema.\nNon rispondere a questo messaggio.',
+    footerDisclaimer:
+      'Questa email è stata inviata automaticamente dal sistema.\nNon rispondere a questo messaggio.',
     pageTitle: title,
     logoUrl: logoUrlForEmail,
   })

@@ -128,9 +128,9 @@ export function CalendarView({
     const min = settings?.slot_duration_minutes ?? 15
     const clamped = VALID_SLOT_MINUTES.includes(min)
       ? min
-      : VALID_SLOT_MINUTES.reduce((best, curr) =>
-          Math.abs(curr - min) < Math.abs(best - min) ? curr : best,
-        15,
+      : VALID_SLOT_MINUTES.reduce(
+          (best, curr) => (Math.abs(curr - min) < Math.abs(best - min) ? curr : best),
+          15,
         )
     const hours = Math.floor(clamped / 60)
     const mins = clamped % 60
@@ -275,7 +275,8 @@ export function CalendarView({
       })
       if (hasInRange) return
       const now = new Date()
-      const firstUpcoming = appointments.find((a) => new Date(a.starts_at) >= now) ?? appointments[0]
+      const firstUpcoming =
+        appointments.find((a) => new Date(a.starts_at) >= now) ?? appointments[0]
       api.gotoDate(firstUpcoming.starts_at)
       setCurrentTitle(api.view.title)
     }, 100)
@@ -351,7 +352,9 @@ export function CalendarView({
       if (isOpenSlot) {
         classNames.push('fc-event-open-booking')
       }
-      const cellWidth = compactToolbar ? 'full' : (settings?.type_cell_width?.[appointment.type] ?? 'half')
+      const cellWidth = compactToolbar
+        ? 'full'
+        : (settings?.type_cell_width?.[appointment.type] ?? 'half')
       classNames.push(cellWidth === 'half' ? 'fc-event-half-cell' : 'fc-event-full-cell')
       const typeLabel =
         typeLabelMap[appointment.type] || appointment.type?.replace(/_/g, ' ') || 'Appuntamento'
@@ -699,7 +702,10 @@ export function CalendarView({
           {!compactToolbar && (
             <>
               {/* Step griglia (slot duration) */}
-              <div className="flex items-center gap-1 rounded-lg p-1 bg-background-secondary/40 border border-white/5" title="Step griglia">
+              <div
+                className="flex items-center gap-1 rounded-lg p-1 bg-background-secondary/40 border border-white/5"
+                title="Step griglia"
+              >
                 {SLOT_DURATION_OPTIONS.map(({ value, label }) => {
                   const active = (settings?.slot_duration_minutes ?? 15) === value
                   return (
@@ -720,7 +726,10 @@ export function CalendarView({
                 })}
               </div>
               {/* Zoom */}
-              <div className="flex items-center gap-0.5 rounded-lg p-1 bg-background-secondary/40 border border-white/5" title="Ingrandisci / riduci griglia">
+              <div
+                className="flex items-center gap-0.5 rounded-lg p-1 bg-background-secondary/40 border border-white/5"
+                title="Ingrandisci / riduci griglia"
+              >
                 <button
                   type="button"
                   onClick={() => setZoomPercent((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
@@ -746,21 +755,21 @@ export function CalendarView({
             </>
           )}
           <div className="flex items-center gap-1 rounded-lg p-1 bg-background-secondary/40 border border-white/5">
-          {(Object.keys(VIEW_LABELS) as ViewType[]).map((viewKey) => (
-            <button
-              key={viewKey}
-              data-view={viewKey}
-              onClick={() => changeView(viewKey)}
-              className={cn(
-                'min-h-[40px] px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 sm:px-3',
-                view === viewKey
-                  ? 'bg-primary/15 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,255,200,0.15)]'
-                  : 'text-text-secondary border border-transparent hover:bg-background-tertiary/50 hover:text-text-primary',
-              )}
-            >
-              {VIEW_LABELS[viewKey]}
-            </button>
-          ))}
+            {(Object.keys(VIEW_LABELS) as ViewType[]).map((viewKey) => (
+              <button
+                key={viewKey}
+                data-view={viewKey}
+                onClick={() => changeView(viewKey)}
+                className={cn(
+                  'min-h-[40px] px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 sm:px-3',
+                  view === viewKey
+                    ? 'bg-primary/15 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,255,200,0.15)]'
+                    : 'text-text-secondary border border-transparent hover:bg-background-tertiary/50 hover:text-text-primary',
+                )}
+              >
+                {VIEW_LABELS[viewKey]}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -768,200 +777,206 @@ export function CalendarView({
       {/* Calendar Content: wrapper scrollabile + zoom sulla griglia */}
       <div className="flex-1 min-h-0 min-w-0 overflow-auto relative">
         <div
-          className={cn('relative origin-top-left', densityClass, compactToolbar && 'fc-athlete-full-cell')}
+          className={cn(
+            'relative origin-top-left',
+            densityClass,
+            compactToolbar && 'fc-athlete-full-cell',
+          )}
           style={{ zoom: zoomPercent / 100 } as React.CSSProperties}
         >
-        <FullCalendar
-          ref={(el) => {
-            calendarRef.current = el
-            apiRef.current = el?.getApi?.() ?? null
-          }}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-          initialView={view}
-          headerToolbar={false}
-          events={events}
-          eventClick={handleEventClick}
-          dateClick={handleDateClick}
-          editable={true}
-          eventDrop={handleEventDrop}
-          eventResize={handleEventResize}
-          eventDurationEditable={
-            (isEventEditable
-              ? (arg: { id?: string }) => {
-                  const apt = appointments.find((a) => a.id === arg.id)
-                  return apt ? isEventEditable(apt) : false
+          <FullCalendar
+            ref={(el) => {
+              calendarRef.current = el
+              apiRef.current = el?.getApi?.() ?? null
+            }}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+            initialView={view}
+            headerToolbar={false}
+            events={events}
+            eventClick={handleEventClick}
+            dateClick={handleDateClick}
+            editable={true}
+            eventDrop={handleEventDrop}
+            eventResize={handleEventResize}
+            eventDurationEditable={
+              (isEventEditable
+                ? (arg: { id?: string }) => {
+                    const apt = appointments.find((a) => a.id === arg.id)
+                    return apt ? isEventEditable(apt) : false
+                  }
+                : true) as boolean
+            }
+            eventStartEditable={
+              (isEventEditable
+                ? (arg: { id?: string }) => {
+                    const apt = appointments.find((a) => a.id === arg.id)
+                    return apt ? isEventEditable(apt) : false
+                  }
+                : true) as boolean
+            }
+            select={handleSelect}
+            selectable={true}
+            selectMirror={true}
+            selectMinDistance={5}
+            unselectAuto={true}
+            height="auto"
+            locale="it"
+            buttonText={{
+              today: 'Oggi',
+              month: 'Mese',
+              week: 'Settimana',
+              day: 'Giorno',
+            }}
+            dayHeaderFormat={{ weekday: 'short' }}
+            dayHeaderContent={(arg) => {
+              const dayName = arg.date
+                .toLocaleDateString('it-IT', { weekday: 'short' })
+                .toUpperCase()
+              const dayNum = arg.date.getDate()
+              return {
+                html: `<span class="fc-col-header-day">${dayName}</span><span class="fc-col-header-date">${dayNum}</span>`,
+              }
+            }}
+            slotMinTime={slotMinTime}
+            slotMaxTime={slotMaxTime}
+            allDaySlot={false}
+            slotEventOverlap={false}
+            nowIndicator={true}
+            dayMaxEvents={5}
+            moreLinkText="altri"
+            weekends={true}
+            eventDisplay="block"
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            }}
+            firstDay={initialWeekStart}
+            weekNumbers={false}
+            noEventsContent="Nessun appuntamento in questo periodo. Prova il filtro «Tutti» o apri il pannello filtri."
+            eventTextColor="#ffffff"
+            slotDuration={slotDurationStr}
+            snapDuration={slotDurationStr}
+            eventMouseEnter={handleEventMouseEnter}
+            eventMouseLeave={handleEventMouseLeave}
+            eventContent={(arg) => {
+              const isOpenSlot = arg.event.extendedProps?.is_open_booking_day === true
+              const title = arg.event.title
+              if (isOpenSlot && title && openBookingAsBackground) {
+                return {
+                  html: `<div class="fc-open-booking-slot-label">${title}</div>`,
                 }
-              : true) as boolean
-          }
-          eventStartEditable={
-            (isEventEditable
-              ? (arg: { id?: string }) => {
-                  const apt = appointments.find((a) => a.id === arg.id)
-                  return apt ? isEventEditable(apt) : false
+              }
+              const esc = (s: string) =>
+                s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              const escAttr = (s: string) => esc(s).replace(/"/g, '&quot;')
+              // Vista Mese (day grid): avatar atleta + titolo compatto + badge lezioni
+              if (arg.view.type === 'dayGridMonth') {
+                const p = arg.event.extendedProps as
+                  | {
+                      type?: string
+                      athlete?: string
+                      athlete_avatar_url?: string | null
+                      lessons_remaining?: number
+                    }
+                  | undefined
+                const title = arg.event.title || ''
+                const avatarUrl = p?.athlete_avatar_url?.trim()
+                const athlete = p?.athlete?.trim() || ''
+                const initial = athlete ? athlete.charAt(0).toUpperCase() : '?'
+                const avatarHtml = avatarUrl
+                  ? `<img src="${escAttr(avatarUrl)}" alt="" class="w-4 h-4 min-w-[16px] min-h-[16px] rounded-full object-cover shrink-0" />`
+                  : `<span class="w-4 h-4 min-w-[16px] min-h-[16px] rounded-full bg-white/20 flex items-center justify-center shrink-0 text-white text-[10px] font-semibold leading-none">${esc(initial)}</span>`
+                const lessonsRem = p?.lessons_remaining
+                const lessonsBadge =
+                  lessonsRem !== undefined
+                    ? `<span class="fc-event-lessons shrink-0 text-[9px] ${lessonsRem <= 0 ? 'text-white font-semibold' : 'text-white/90'}">${lessonsRem} lez.</span>`
+                    : ''
+                return {
+                  html: `<div class="fc-daygrid-event-content flex items-center gap-1.5 min-h-0 overflow-hidden w-full"><div class="shrink-0 flex items-center justify-center">${avatarHtml}</div><span class="text-white text-[10px] leading-tight truncate min-w-0 flex-1">${esc(title)}</span>${lessonsBadge}</div>`,
                 }
-              : true) as boolean
-          }
-          select={handleSelect}
-          selectable={true}
-          selectMirror={true}
-          selectMinDistance={5}
-          unselectAuto={true}
-          height="auto"
-          locale="it"
-          buttonText={{
-            today: 'Oggi',
-            month: 'Mese',
-            week: 'Settimana',
-            day: 'Giorno',
-          }}
-          dayHeaderFormat={{ weekday: 'short' }}
-          dayHeaderContent={(arg) => {
-            const dayName = arg.date.toLocaleDateString('it-IT', { weekday: 'short' }).toUpperCase()
-            const dayNum = arg.date.getDate()
-            return {
-              html: `<span class="fc-col-header-day">${dayName}</span><span class="fc-col-header-date">${dayNum}</span>`,
-            }
-          }}
-          slotMinTime={slotMinTime}
-          slotMaxTime={slotMaxTime}
-          allDaySlot={false}
-          slotEventOverlap={false}
-          nowIndicator={true}
-          dayMaxEvents={5}
-          moreLinkText="altri"
-          weekends={true}
-          eventDisplay="block"
-          eventTimeFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          }}
-          firstDay={initialWeekStart}
-          weekNumbers={false}
-          noEventsContent="Nessun appuntamento in questo periodo. Prova il filtro «Tutti» o apri il pannello filtri."
-          eventTextColor="#ffffff"
-          slotDuration={slotDurationStr}
-          snapDuration={slotDurationStr}
-          eventMouseEnter={handleEventMouseEnter}
-          eventMouseLeave={handleEventMouseLeave}
-          eventContent={(arg) => {
-            const isOpenSlot = arg.event.extendedProps?.is_open_booking_day === true
-            const title = arg.event.title
-            if (isOpenSlot && title && openBookingAsBackground) {
-              return {
-                html: `<div class="fc-open-booking-slot-label">${title}</div>`,
               }
-            }
-            const esc = (s: string) =>
-              s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            const escAttr = (s: string) => esc(s).replace(/"/g, '&quot;')
-            // Vista Mese (day grid): avatar atleta + titolo compatto + badge lezioni
-            if (arg.view.type === 'dayGridMonth') {
-              const p = arg.event.extendedProps as
-                | {
-                    type?: string
-                    athlete?: string
-                    athlete_avatar_url?: string | null
-                    lessons_remaining?: number
-                  }
-                | undefined
-              const title = arg.event.title || ''
-              const avatarUrl = p?.athlete_avatar_url?.trim()
-              const athlete = p?.athlete?.trim() || ''
-              const initial = athlete ? athlete.charAt(0).toUpperCase() : '?'
-              const avatarHtml = avatarUrl
-                ? `<img src="${escAttr(avatarUrl)}" alt="" class="w-4 h-4 min-w-[16px] min-h-[16px] rounded-full object-cover shrink-0" />`
-                : `<span class="w-4 h-4 min-w-[16px] min-h-[16px] rounded-full bg-white/20 flex items-center justify-center shrink-0 text-white text-[10px] font-semibold leading-none">${esc(initial)}</span>`
-              const lessonsRem = p?.lessons_remaining
-              const lessonsBadge =
-                lessonsRem !== undefined
-                  ? `<span class="fc-event-lessons shrink-0 text-[9px] ${lessonsRem <= 0 ? 'text-white font-semibold' : 'text-white/90'}">${lessonsRem} lez.</span>`
-                  : ''
-              return {
-                html: `<div class="fc-daygrid-event-content flex items-center gap-1.5 min-h-0 overflow-hidden w-full"><div class="shrink-0 flex items-center justify-center">${avatarHtml}</div><span class="text-white text-[10px] leading-tight truncate min-w-0 flex-1">${esc(title)}</span>${lessonsBadge}</div>`,
+              // Vista Giorno / Settimana (time grid): avatar atleta, tipo, atleta, orario, lezioni
+              if (arg.view.type === 'timeGridDay' || arg.view.type === 'timeGridWeek') {
+                const p = arg.event.extendedProps as
+                  | {
+                      type?: string
+                      athlete?: string
+                      athlete_avatar_url?: string | null
+                      lessons_remaining?: number
+                    }
+                  | undefined
+                const typeLabel =
+                  (p?.type && typeLabelMap[p.type]) ||
+                  (p?.type ? p.type.replace(/_/g, ' ') : '') ||
+                  'Appuntamento'
+                const athlete = p?.athlete?.trim() || ''
+                const avatarUrl = p?.athlete_avatar_url?.trim()
+                const start = arg.event.start
+                const end = arg.event.end
+                const timeStr =
+                  start && end
+                    ? `${start.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })} – ${end.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })}`
+                    : ''
+                const initial = athlete ? athlete.charAt(0).toUpperCase() : '?'
+                const avatarHtml = avatarUrl
+                  ? `<img src="${escAttr(avatarUrl)}" alt="" class="w-8 h-8 rounded-full object-cover shrink-0" />`
+                  : `<span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-white text-xs font-semibold">${esc(initial)}</span>`
+                const lessonsRem = p?.lessons_remaining
+                const lessonsLine =
+                  lessonsRem !== undefined
+                    ? `<span class="text-white/80 text-[10px] leading-tight">${lessonsRem} lezioni</span>`
+                    : ''
+                const lines = [esc(typeLabel), athlete ? esc(athlete) : '', timeStr].filter(Boolean)
+                return {
+                  html: `<div class="fc-timegrid-event-detail flex items-start gap-2 text-left p-1.5 overflow-hidden"><div class="shrink-0">${avatarHtml}</div><div class="flex flex-col gap-0.5 min-w-0 flex-1"><span class="font-semibold text-white text-xs leading-tight">${lines[0]}</span>${lines[1] ? `<span class="text-white/95 text-[10px] leading-tight truncate">${lines[1]}</span>` : ''}${lines[2] ? `<span class="text-white/80 text-[10px] leading-tight">${lines[2]}</span>` : ''}${lessonsLine}</div></div>`,
+                }
               }
-            }
-            // Vista Giorno / Settimana (time grid): avatar atleta, tipo, atleta, orario, lezioni
-            if (arg.view.type === 'timeGridDay' || arg.view.type === 'timeGridWeek') {
-              const p = arg.event.extendedProps as
-                | {
-                    type?: string
-                    athlete?: string
-                    athlete_avatar_url?: string | null
-                    lessons_remaining?: number
-                  }
-                | undefined
-              const typeLabel =
-                (p?.type && typeLabelMap[p.type]) ||
-                (p?.type ? p.type.replace(/_/g, ' ') : '') ||
-                'Appuntamento'
-              const athlete = p?.athlete?.trim() || ''
-              const avatarUrl = p?.athlete_avatar_url?.trim()
-              const start = arg.event.start
-              const end = arg.event.end
-              const timeStr =
-                start && end
-                  ? `${start.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })} – ${end.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })}`
-                  : ''
-              const initial = athlete ? athlete.charAt(0).toUpperCase() : '?'
-              const avatarHtml = avatarUrl
-                ? `<img src="${escAttr(avatarUrl)}" alt="" class="w-8 h-8 rounded-full object-cover shrink-0" />`
-                : `<span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-white text-xs font-semibold">${esc(initial)}</span>`
-              const lessonsRem = p?.lessons_remaining
-              const lessonsLine =
-                lessonsRem !== undefined
-                  ? `<span class="text-white/80 text-[10px] leading-tight">${lessonsRem} lezioni</span>`
-                  : ''
-              const lines = [esc(typeLabel), athlete ? esc(athlete) : '', timeStr].filter(Boolean)
-              return {
-                html: `<div class="fc-timegrid-event-detail flex items-start gap-2 text-left p-1.5 overflow-hidden"><div class="shrink-0">${avatarHtml}</div><div class="flex flex-col gap-0.5 min-w-0 flex-1"><span class="font-semibold text-white text-xs leading-tight">${lines[0]}</span>${lines[1] ? `<span class="text-white/95 text-[10px] leading-tight truncate">${lines[1]}</span>` : ''}${lines[2] ? `<span class="text-white/80 text-[10px] leading-tight">${lines[2]}</span>` : ''}${lessonsLine}</div></div>`,
+              // Vista Agenda: tipo, atleta, sede, lezioni
+              if (arg.view.type === 'listWeek') {
+                const p = arg.event.extendedProps as
+                  | {
+                      type?: string
+                      athlete?: string
+                      location?: string
+                      lessons_remaining?: number
+                    }
+                  | undefined
+                const typeLabel =
+                  (p?.type && typeLabelMap[p.type]) ||
+                  (p?.type ? p.type.replace(/_/g, ' ') : '') ||
+                  'Appuntamento'
+                const main = p?.athlete ? `${typeLabel} – ${p.athlete}` : typeLabel
+                const location = p?.location?.trim()
+                const lessonsRem = p?.lessons_remaining
+                const lessonsSpan =
+                  lessonsRem !== undefined
+                    ? `<span class="text-xs opacity-80">${lessonsRem} lezioni</span>`
+                    : ''
+                return {
+                  html: `<div class="fc-list-event-detail flex flex-col gap-0.5"><span class="font-medium">${esc(main)}</span>${location ? `<span class="text-xs opacity-80">${esc(location)}</span>` : ''}${lessonsSpan}</div>`,
+                }
               }
-            }
-            // Vista Agenda: tipo, atleta, sede, lezioni
-            if (arg.view.type === 'listWeek') {
-              const p = arg.event.extendedProps as
-                | {
-                    type?: string
-                    athlete?: string
-                    location?: string
-                    lessons_remaining?: number
-                  }
-                | undefined
-              const typeLabel =
-                (p?.type && typeLabelMap[p.type]) ||
-                (p?.type ? p.type.replace(/_/g, ' ') : '') ||
-                'Appuntamento'
-              const main = p?.athlete ? `${typeLabel} – ${p.athlete}` : typeLabel
-              const location = p?.location?.trim()
-              const lessonsRem = p?.lessons_remaining
-              const lessonsSpan =
-                lessonsRem !== undefined
-                  ? `<span class="text-xs opacity-80">${lessonsRem} lezioni</span>`
-                  : ''
-              return {
-                html: `<div class="fc-list-event-detail flex flex-col gap-0.5"><span class="font-medium">${esc(main)}</span>${location ? `<span class="text-xs opacity-80">${esc(location)}</span>` : ''}${lessonsSpan}</div>`,
-              }
-            }
-            return undefined
-          }}
-        />
+              return undefined
+            }}
+          />
         </div>
       </div>
 
-        {/* Tooltip */}
-        {tooltip && tooltip.visible && (
-          <div
-            className="fixed z-[200] px-3 py-2 rounded-lg bg-background-secondary/90 border border-white/5 shadow-lg backdrop-blur-sm pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100"
-            style={{
-              left: tooltip.x,
-              top: tooltip.y,
-              transform: 'translate(-50%, -100%)',
-            }}
-          >
-            <div className="text-sm font-medium text-text-primary">{tooltip.content.title}</div>
-            <div className="text-xs text-text-secondary mt-0.5">{tooltip.content.time}</div>
-          </div>
-        )}
+      {/* Tooltip */}
+      {tooltip && tooltip.visible && (
+        <div
+          className="fixed z-[200] px-3 py-2 rounded-lg bg-background-secondary/90 border border-white/5 shadow-lg backdrop-blur-sm pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <div className="text-sm font-medium text-text-primary">{tooltip.content.title}</div>
+          <div className="text-xs text-text-secondary mt-0.5">{tooltip.content.time}</div>
+        </div>
+      )}
 
       {/* FAB - solo se onNewAppointment fornito (es. nascosto se atleta senza trainer) */}
       {onNewAppointment && (

@@ -594,8 +594,13 @@ export function ExerciseFormModal({
           async () => {
             const profileId = user?.id ?? ''
             const orgId = (user as { org_id?: string } | null)?.org_id ?? ''
-            type ExercisesInsert = import('@/lib/supabase/types').Database['public']['Tables']['exercises']['Insert']
-            const insertPayload: ExercisesInsert = { ...requestBody, created_by_profile_id: profileId, org_id: orgId } as ExercisesInsert
+            type ExercisesInsert =
+              import('@/lib/supabase/types').Database['public']['Tables']['exercises']['Insert']
+            const insertPayload: ExercisesInsert = {
+              ...requestBody,
+              created_by_profile_id: profileId,
+              org_id: orgId,
+            } as ExercisesInsert
             const { data, error } = await supabaseClient
               .from('exercises')
               .insert(insertPayload)
@@ -634,7 +639,11 @@ export function ExerciseFormModal({
       onSuccess?.()
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : typeof e === 'object' && e !== null && 'message' in e ? String((e as { message: unknown }).message) : 'Salvataggio fallito. Riprova.'
+        e instanceof Error
+          ? e.message
+          : typeof e === 'object' && e !== null && 'message' in e
+            ? String((e as { message: unknown }).message)
+            : 'Salvataggio fallito. Riprova.'
       logger.error('Errore salvataggio esercizio', e, { editing: !!editing })
       addToast({
         title: 'Errore',
@@ -648,155 +657,83 @@ export function ExerciseFormModal({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0 flex flex-col">
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-black/20" />
-        <div className="relative z-10 p-6 overflow-y-auto flex-1">
-          {/* Header con icona */}
-          <DialogHeader className="pb-4 border-b border-white/10 mb-0">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/10 text-cyan-400 rounded-lg p-2">
-                <Dumbbell className="h-5 w-5" />
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0 flex flex-col">
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-black/20" />
+          <div className="relative z-10 p-6 overflow-y-auto flex-1">
+            {/* Header con icona */}
+            <DialogHeader className="pb-4 border-b border-white/10 mb-0">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/10 text-cyan-400 rounded-lg p-2">
+                  <Dumbbell className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl">
+                    {editing ? 'Modifica esercizio' : 'Nuovo esercizio'}
+                  </DialogTitle>
+                  <DialogDescription className="mt-1">
+                    Completa i campi richiesti e salva
+                  </DialogDescription>
+                </div>
               </div>
-              <div>
-                <DialogTitle className="text-xl">
-                  {editing ? 'Modifica esercizio' : 'Nuovo esercizio'}
-                </DialogTitle>
-                <DialogDescription className="mt-1">
-                  Completa i campi richiesti e salva
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
+            </DialogHeader>
 
-          <div className="space-y-6 py-6 relative z-10">
-            {/* Informazioni Base */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                <Target className="h-4 w-4 text-cyan-400" />
-                Informazioni Base
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Input
-                  label="Nome esercizio *"
-                  value={form.name || ''}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Es: Squat con Bilanciere"
-                  leftIcon={<Dumbbell className="h-4 w-4" />}
-                />
-                <div>
-                  <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
-                    <Target className="h-4 w-4 text-purple-400" />
-                    Aggiungi Gruppo Muscolare *
-                  </label>
-                  <SimpleSelect
-                    value=""
-                    onValueChange={(value) => {
-                      if (value && !selectedMuscleGroups.includes(value)) {
-                        setSelectedMuscleGroups([...selectedMuscleGroups, value])
-                      }
-                    }}
-                    placeholder="Seleziona gruppo muscolare"
-                    options={MUSCLE_GROUPS.filter((g) => !selectedMuscleGroups.includes(g))
-                      .slice()
-                      .sort((a, b) => a.localeCompare(b, 'it'))
-                      .map((g) => ({ value: g, label: g }))}
-                  />
-                </div>
-              </div>
-              {selectedMuscleGroups.length > 0 && (
-                <div>
-                  <label className="text-text-primary mb-2 block text-sm font-medium">
-                    Gruppi Muscolari Selezionati ({selectedMuscleGroups.length})
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMuscleGroups.map((muscle, index) => (
-                      <div
-                        key={index}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 text-sm"
-                      >
-                        <span>{muscle}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedMuscleGroups(
-                              selectedMuscleGroups.filter((_, i) => i !== index),
-                            )
-                          }}
-                          className="hover:text-red-400 transition-colors"
-                          aria-label={`Rimuovi ${muscle}`}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="space-y-6 py-6 relative z-10">
+              {/* Informazioni Base */}
               <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
+                  <Target className="h-4 w-4 text-cyan-400" />
+                  Informazioni Base
+                </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <Input
+                    label="Nome esercizio *"
+                    value={form.name || ''}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Es: Squat con Bilanciere"
+                    leftIcon={<Dumbbell className="h-4 w-4" />}
+                  />
                   <div>
                     <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
-                      <Dumbbell className="h-4 w-4 text-cyan-400" />
-                      Categoria
-                    </label>
-                    <SimpleSelect
-                      value={equipmentCategory}
-                      onValueChange={(value) => {
-                        setEquipmentCategory(value)
-                        // Non resettare gli attrezzi già selezionati quando cambia categoria
-                      }}
-                      placeholder="Seleziona categoria"
-                      options={[...EQUIPMENT_CATEGORIES]
-                        .sort((a, b) => a.localeCompare(b, 'it'))
-                        .map((cat) => ({ value: cat, label: cat }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
-                      <Dumbbell className="h-4 w-4 text-cyan-400" />
-                      Aggiungi Attrezzo
+                      <Target className="h-4 w-4 text-purple-400" />
+                      Aggiungi Gruppo Muscolare *
                     </label>
                     <SimpleSelect
                       value=""
                       onValueChange={(value) => {
-                        if (value && !selectedEquipment.includes(value)) {
-                          setSelectedEquipment([...selectedEquipment, value])
+                        if (value && !selectedMuscleGroups.includes(value)) {
+                          setSelectedMuscleGroups([...selectedMuscleGroups, value])
                         }
                       }}
-                      placeholder={
-                        equipmentCategory
-                          ? 'Seleziona attrezzo da aggiungere'
-                          : 'Seleziona prima una categoria'
-                      }
-                      disabled={!equipmentCategory}
-                      options={getFilteredEquipment()
-                        .filter((e) => !selectedEquipment.includes(e))
+                      placeholder="Seleziona gruppo muscolare"
+                      options={MUSCLE_GROUPS.filter((g) => !selectedMuscleGroups.includes(g))
                         .slice()
                         .sort((a, b) => a.localeCompare(b, 'it'))
-                        .map((e) => ({ value: e, label: e }))}
+                        .map((g) => ({ value: g, label: g }))}
                     />
                   </div>
                 </div>
-                {selectedEquipment.length > 0 && (
+                {selectedMuscleGroups.length > 0 && (
                   <div>
                     <label className="text-text-primary mb-2 block text-sm font-medium">
-                      Attrezzi Selezionati ({selectedEquipment.length})
+                      Gruppi Muscolari Selezionati ({selectedMuscleGroups.length})
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {selectedEquipment.map((equipment, index) => (
+                      {selectedMuscleGroups.map((muscle, index) => (
                         <div
                           key={index}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-sm"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 text-sm"
                         >
-                          <span>{equipment}</span>
+                          <span>{muscle}</span>
                           <button
                             type="button"
                             onClick={() => {
-                              setSelectedEquipment(selectedEquipment.filter((_, i) => i !== index))
+                              setSelectedMuscleGroups(
+                                selectedMuscleGroups.filter((_, i) => i !== index),
+                              )
                             }}
                             className="hover:text-red-400 transition-colors"
-                            aria-label={`Rimuovi ${equipment}`}
+                            aria-label={`Rimuovi ${muscle}`}
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -805,354 +742,432 @@ export function ExerciseFormModal({
                     </div>
                   </div>
                 )}
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
-                    <Target className="h-4 w-4 text-orange-400" />
-                    Difficoltà
-                  </label>
-                  <SimpleSelect
-                    value={form.difficulty || 'media'}
-                    onValueChange={(value) =>
-                      setForm({ ...form, difficulty: value as Exercise['difficulty'] })
-                    }
-                    placeholder="Seleziona difficoltà"
-                    options={[
-                      { value: 'alta', label: 'Avanzato' },
-                      { value: 'media', label: 'Intermedio' },
-                      { value: 'bassa', label: 'Principiante' },
-                    ].sort((a, b) => a.label.localeCompare(b.label, 'it'))}
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
+                        <Dumbbell className="h-4 w-4 text-cyan-400" />
+                        Categoria
+                      </label>
+                      <SimpleSelect
+                        value={equipmentCategory}
+                        onValueChange={(value) => {
+                          setEquipmentCategory(value)
+                          // Non resettare gli attrezzi già selezionati quando cambia categoria
+                        }}
+                        placeholder="Seleziona categoria"
+                        options={[...EQUIPMENT_CATEGORIES]
+                          .sort((a, b) => a.localeCompare(b, 'it'))
+                          .map((cat) => ({ value: cat, label: cat }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
+                        <Dumbbell className="h-4 w-4 text-cyan-400" />
+                        Aggiungi Attrezzo
+                      </label>
+                      <SimpleSelect
+                        value=""
+                        onValueChange={(value) => {
+                          if (value && !selectedEquipment.includes(value)) {
+                            setSelectedEquipment([...selectedEquipment, value])
+                          }
+                        }}
+                        placeholder={
+                          equipmentCategory
+                            ? 'Seleziona attrezzo da aggiungere'
+                            : 'Seleziona prima una categoria'
+                        }
+                        disabled={!equipmentCategory}
+                        options={getFilteredEquipment()
+                          .filter((e) => !selectedEquipment.includes(e))
+                          .slice()
+                          .sort((a, b) => a.localeCompare(b, 'it'))
+                          .map((e) => ({ value: e, label: e }))}
+                      />
+                    </div>
+                  </div>
+                  {selectedEquipment.length > 0 && (
+                    <div>
+                      <label className="text-text-primary mb-2 block text-sm font-medium">
+                        Attrezzi Selezionati ({selectedEquipment.length})
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedEquipment.map((equipment, index) => (
+                          <div
+                            key={index}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-sm"
+                          >
+                            <span>{equipment}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedEquipment(
+                                  selectedEquipment.filter((_, i) => i !== index),
+                                )
+                              }}
+                              className="hover:text-red-400 transition-colors"
+                              aria-label={`Rimuovi ${equipment}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div />
-              </div>
-            </div>
-
-            {/* Media Upload Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                <Video className="h-4 w-4 text-cyan-400" />
-                Media (Video e Immagine)
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* Video Upload */}
-                <div className="space-y-2">
-                  <label className="text-text-primary mb-2 block text-sm font-medium">
-                    Video MP4 *
-                  </label>
-                  <div
-                    className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
-                      dragVideo
-                        ? 'border-cyan-500 bg-cyan-500/20'
-                        : form.video_url
-                          ? 'border-green-500 bg-green-900'
-                          : 'border-white/10 bg-background-tertiary hover:border-cyan-500/50'
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault()
-                      setDragVideo(true)
-                    }}
-                    onDragLeave={() => setDragVideo(false)}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      setDragVideo(false)
-                      const file = e.dataTransfer.files?.[0]
-                      if (file) {
-                        handleVideoUpload(file)
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
+                      <Target className="h-4 w-4 text-orange-400" />
+                      Difficoltà
+                    </label>
+                    <SimpleSelect
+                      value={form.difficulty || 'media'}
+                      onValueChange={(value) =>
+                        setForm({ ...form, difficulty: value as Exercise['difficulty'] })
                       }
-                    }}
-                  >
-                    <input
-                      type="file"
-                      accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleVideoUpload(file)
-                      }}
-                      className="hidden"
-                      id="video-upload"
-                      disabled={uploadingVideo}
+                      placeholder="Seleziona difficoltà"
+                      options={[
+                        { value: 'alta', label: 'Avanzato' },
+                        { value: 'media', label: 'Intermedio' },
+                        { value: 'bassa', label: 'Principiante' },
+                      ].sort((a, b) => a.label.localeCompare(b.label, 'it'))}
                     />
-                    {form.video_url ? (
-                      <div className="p-4 space-y-3">
-                        <div className="flex items-center gap-2 text-green-400">
-                          <CheckCircle2 className="h-5 w-5" />
-                          <span className="text-sm font-medium">Video caricato</span>
+                  </div>
+                  <div />
+                </div>
+              </div>
+
+              {/* Media Upload Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
+                  <Video className="h-4 w-4 text-cyan-400" />
+                  Media (Video e Immagine)
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Video Upload */}
+                  <div className="space-y-2">
+                    <label className="text-text-primary mb-2 block text-sm font-medium">
+                      Video MP4 *
+                    </label>
+                    <div
+                      className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
+                        dragVideo
+                          ? 'border-cyan-500 bg-cyan-500/20'
+                          : form.video_url
+                            ? 'border-green-500 bg-green-900'
+                            : 'border-white/10 bg-background-tertiary hover:border-cyan-500/50'
+                      }`}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        setDragVideo(true)
+                      }}
+                      onDragLeave={() => setDragVideo(false)}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        setDragVideo(false)
+                        const file = e.dataTransfer.files?.[0]
+                        if (file) {
+                          handleVideoUpload(file)
+                        }
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleVideoUpload(file)
+                        }}
+                        className="hidden"
+                        id="video-upload"
+                        disabled={uploadingVideo}
+                      />
+                      {form.video_url ? (
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 text-green-400">
+                            <CheckCircle2 className="h-5 w-5" />
+                            <span className="text-sm font-medium">Video caricato</span>
+                          </div>
+                          {videoError && form.thumb_url ? (
+                            <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary">
+                              <Image
+                                src={form.thumb_url}
+                                alt="Video preview"
+                                fill
+                                className="object-cover"
+                                unoptimized={form.thumb_url.startsWith('http')}
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <p className="text-white text-sm">Video non disponibile</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary">
+                              {videoLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-background-secondary/80 z-10">
+                                  <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+                                </div>
+                              )}
+                              <video
+                                src={form.video_url}
+                                className="w-full h-full object-contain rounded-lg"
+                                controls
+                                muted
+                                playsInline
+                                preload="metadata"
+                                onLoadStart={() => {
+                                  setVideoLoading(true)
+                                  setVideoError(false)
+                                }}
+                                onCanPlay={() => {
+                                  setVideoLoading(false)
+                                }}
+                                onError={(e) => {
+                                  const video = e.currentTarget
+                                  const error = video.error
+                                  setVideoLoading(false)
+                                  // Non loggare errori comuni (formato non supportato, source non accessibile)
+                                  if (
+                                    error &&
+                                    error.code !== 9 &&
+                                    error.code !== 4 &&
+                                    error.code !== 1
+                                  ) {
+                                    console.warn('Errore caricamento video:', {
+                                      code: error.code,
+                                      message: error.message,
+                                      src: video.src,
+                                    })
+                                  }
+                                  setVideoError(true)
+                                }}
+                                onLoadedMetadata={() => {
+                                  setVideoError(false)
+                                  setVideoLoading(false)
+                                }}
+                              />
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between text-xs text-text-secondary">
+                            <span className="truncate flex-1">
+                              {form.video_url.split('/').pop()}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setForm({ ...form, video_url: undefined, thumb_url: undefined })
+                              }}
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
-                        {videoError && form.thumb_url ? (
+                      ) : (
+                        <label
+                          htmlFor="video-upload"
+                          className="flex flex-col items-center justify-center p-6 cursor-pointer"
+                        >
+                          <div className="mb-3 bg-cyan-500/20 text-cyan-400 rounded-full p-3">
+                            {uploadingVideo ? (
+                              <Loader2 className="h-6 w-6 animate-spin" />
+                            ) : (
+                              <Video className="h-6 w-6" />
+                            )}
+                          </div>
+                          <p className="text-text-primary text-sm font-medium mb-1">
+                            {uploadingVideo
+                              ? 'Caricamento in corso...'
+                              : 'Trascina video o clicca per selezionare'}
+                          </p>
+                          <p className="text-text-tertiary text-xs">
+                            MP4, WebM, OGG, MOV, AVI • Max 50MB
+                          </p>
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Thumbnail Upload */}
+                  <div className="space-y-2">
+                    <label className="text-text-primary mb-2 block text-sm font-medium">
+                      Thumbnail (opzionale)
+                    </label>
+                    <div
+                      className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
+                        dragThumb
+                          ? 'border-purple-500 bg-purple-900'
+                          : form.thumb_url
+                            ? 'border-green-500 bg-green-900'
+                            : 'border-purple-500 bg-background-tertiary hover:border-purple-400'
+                      }`}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        setDragThumb(true)
+                      }}
+                      onDragLeave={() => setDragThumb(false)}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        setDragThumb(false)
+                        const file = e.dataTransfer.files?.[0]
+                        if (file) {
+                          handleThumbnailUpload(file)
+                        }
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleThumbnailUpload(file)
+                        }}
+                        className="hidden"
+                        id="thumb-upload"
+                      />
+                      {form.thumb_url ? (
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 text-green-400">
+                            <CheckCircle2 className="h-5 w-5" />
+                            <span className="text-sm font-medium">Thumbnail caricata</span>
+                          </div>
                           <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary">
                             <Image
                               src={form.thumb_url}
-                              alt="Video preview"
+                              alt="Thumbnail"
                               fill
                               className="object-cover"
-                              unoptimized={form.thumb_url.startsWith('http')}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                              <p className="text-white text-sm">Video non disponibile</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary">
-                            {videoLoading && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-background-secondary/80 z-10">
-                                <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-                              </div>
-                            )}
-                            <video
-                              src={form.video_url}
-                              className="w-full h-full object-contain rounded-lg"
-                              controls
-                              muted
-                              playsInline
-                              preload="metadata"
-                              onLoadStart={() => {
-                                setVideoLoading(true)
-                                setVideoError(false)
-                              }}
-                              onCanPlay={() => {
-                                setVideoLoading(false)
-                              }}
-                              onError={(e) => {
-                                const video = e.currentTarget
-                                const error = video.error
-                                setVideoLoading(false)
-                                // Non loggare errori comuni (formato non supportato, source non accessibile)
-                                if (
-                                  error &&
-                                  error.code !== 9 &&
-                                  error.code !== 4 &&
-                                  error.code !== 1
-                                ) {
-                                  console.warn('Errore caricamento video:', {
-                                    code: error.code,
-                                    message: error.message,
-                                    src: video.src,
-                                  })
-                                }
-                                setVideoError(true)
-                              }}
-                              onLoadedMetadata={() => {
-                                setVideoError(false)
-                                setVideoLoading(false)
-                              }}
+                              unoptimized
                             />
                           </div>
-                        )}
-                        <div className="flex items-center justify-between text-xs text-text-secondary">
-                          <span className="truncate flex-1">{form.video_url.split('/').pop()}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setForm({ ...form, video_url: undefined, thumb_url: undefined })
-                            }}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center justify-between text-xs text-text-secondary">
+                            <span className="truncate flex-1">
+                              {form.thumb_url.split('/').pop()}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setForm({ ...form, thumb_url: undefined })}
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="video-upload"
-                        className="flex flex-col items-center justify-center p-6 cursor-pointer"
-                      >
-                        <div className="mb-3 bg-cyan-500/20 text-cyan-400 rounded-full p-3">
-                          {uploadingVideo ? (
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                          ) : (
-                            <Video className="h-6 w-6" />
-                          )}
-                        </div>
-                        <p className="text-text-primary text-sm font-medium mb-1">
-                          {uploadingVideo
-                            ? 'Caricamento in corso...'
-                            : 'Trascina video o clicca per selezionare'}
-                        </p>
-                        <p className="text-text-tertiary text-xs">
-                          MP4, WebM, OGG, MOV, AVI • Max 50MB
-                        </p>
-                      </label>
-                    )}
-                  </div>
-                </div>
-
-                {/* Thumbnail Upload */}
-                <div className="space-y-2">
-                  <label className="text-text-primary mb-2 block text-sm font-medium">
-                    Thumbnail (opzionale)
-                  </label>
-                  <div
-                    className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
-                      dragThumb
-                        ? 'border-purple-500 bg-purple-900'
-                        : form.thumb_url
-                          ? 'border-green-500 bg-green-900'
-                          : 'border-purple-500 bg-background-tertiary hover:border-purple-400'
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault()
-                      setDragThumb(true)
-                    }}
-                    onDragLeave={() => setDragThumb(false)}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      setDragThumb(false)
-                      const file = e.dataTransfer.files?.[0]
-                      if (file) {
-                        handleThumbnailUpload(file)
-                      }
-                    }}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleThumbnailUpload(file)
-                      }}
-                      className="hidden"
-                      id="thumb-upload"
-                    />
-                    {form.thumb_url ? (
-                      <div className="p-4 space-y-3">
-                        <div className="flex items-center gap-2 text-green-400">
-                          <CheckCircle2 className="h-5 w-5" />
-                          <span className="text-sm font-medium">Thumbnail caricata</span>
-                        </div>
-                        <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary">
-                          <Image
-                            src={form.thumb_url}
-                            alt="Thumbnail"
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-text-secondary">
-                          <span className="truncate flex-1">{form.thumb_url.split('/').pop()}</span>
-                          <button
-                            type="button"
-                            onClick={() => setForm({ ...form, thumb_url: undefined })}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ) : form.video_url ? (
-                      <div className="p-4 space-y-3">
-                        <label htmlFor="thumb-upload" className="block cursor-pointer">
-                          <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary group">
-                            <video
-                              src={form.video_url}
-                              className="w-full h-full object-contain rounded-lg"
-                              preload="metadata"
-                              muted
-                              playsInline
-                            />
-                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-200 flex items-center justify-center">
-                              <div className="flex flex-col items-center gap-2 text-white">
-                                <div className="bg-purple-500/80 group-hover:bg-purple-500 rounded-full p-2">
-                                  <ImageIcon className="h-5 w-5" />
+                      ) : form.video_url ? (
+                        <div className="p-4 space-y-3">
+                          <label htmlFor="thumb-upload" className="block cursor-pointer">
+                            <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary group">
+                              <video
+                                src={form.video_url}
+                                className="w-full h-full object-contain rounded-lg"
+                                preload="metadata"
+                                muted
+                                playsInline
+                              />
+                              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-200 flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-2 text-white">
+                                  <div className="bg-purple-500/80 group-hover:bg-purple-500 rounded-full p-2">
+                                    <ImageIcon className="h-5 w-5" />
+                                  </div>
+                                  <p className="text-xs font-medium">
+                                    Clicca per aggiungere thumbnail
+                                  </p>
                                 </div>
-                                <p className="text-xs font-medium">
-                                  Clicca per aggiungere thumbnail
-                                </p>
                               </div>
                             </div>
-                          </div>
-                        </label>
-                        <p className="text-text-tertiary text-xs text-center">
-                          JPG, PNG, WEBP • Max 5MB
-                        </p>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="thumb-upload"
-                        className="flex flex-col items-center justify-center p-6 cursor-pointer"
-                      >
-                        <div className="mb-3 bg-purple-900 text-purple-400 rounded-full p-3">
-                          {uploadingThumb ? (
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                          ) : (
-                            <ImageIcon className="h-6 w-6" />
-                          )}
+                          </label>
+                          <p className="text-text-tertiary text-xs text-center">
+                            JPG, PNG, WEBP • Max 5MB
+                          </p>
                         </div>
-                        <p className="text-text-primary text-sm font-medium mb-1">
-                          {uploadingThumb
-                            ? 'Caricamento in corso...'
-                            : 'Trascina immagine o clicca per selezionare'}
-                        </p>
-                        <p className="text-text-tertiary text-xs">JPG, PNG, WEBP • Max 5MB</p>
-                      </label>
-                    )}
+                      ) : (
+                        <label
+                          htmlFor="thumb-upload"
+                          className="flex flex-col items-center justify-center p-6 cursor-pointer"
+                        >
+                          <div className="mb-3 bg-purple-900 text-purple-400 rounded-full p-3">
+                            {uploadingThumb ? (
+                              <Loader2 className="h-6 w-6 animate-spin" />
+                            ) : (
+                              <ImageIcon className="h-6 w-6" />
+                            )}
+                          </div>
+                          <p className="text-text-primary text-sm font-medium mb-1">
+                            {uploadingThumb
+                              ? 'Caricamento in corso...'
+                              : 'Trascina immagine o clicca per selezionare'}
+                          </p>
+                          <p className="text-text-tertiary text-xs">JPG, PNG, WEBP • Max 5MB</p>
+                        </label>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Altri campi */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                <Clock className="h-4 w-4 text-cyan-400" />
-                Dettagli aggiuntivi
+              {/* Altri campi */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
+                  <Clock className="h-4 w-4 text-cyan-400" />
+                  Dettagli aggiuntivi
+                </div>
+                <Textarea
+                  label="Descrizione"
+                  value={form.description || ''}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Istruzioni di esecuzione, note e suggerimenti..."
+                  rows={4}
+                />
               </div>
-              <Textarea
-                label="Descrizione"
-                value={form.description || ''}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Istruzioni di esecuzione, note e suggerimenti..."
-                rows={4}
-              />
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-white/10 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+                disabled={loading || uploadingVideo || uploadingThumb}
+                className="border-white/10 text-text-primary hover:bg-white/5 hover:border-white/20 transition-all duration-200"
+              >
+                <X className="mr-2 h-4 w-4" />
+                Annulla
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={loading || uploadingVideo || uploadingThumb}
+                className="border border-cyan-400/80 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvataggio...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Salva esercizio
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-
-          {/* Footer Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10 mt-6">
-            <Button
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={loading || uploadingVideo || uploadingThumb}
-              className="border-white/10 text-text-primary hover:bg-white/5 hover:border-white/20 transition-all duration-200"
-            >
-              <X className="mr-2 h-4 w-4" />
-              Annulla
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={loading || uploadingVideo || uploadingThumb}
-              className="border border-cyan-400/80 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvataggio...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Salva esercizio
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-    {showCloseConfirm && (
-      <ConfirmDialog
-        open={showCloseConfirm}
-        onOpenChange={setShowCloseConfirm}
-        title="Modifiche non salvate"
-        description="Hai modifiche non salvate. Uscire le annullerà. Continuare?"
-        confirmText="Esci"
-        cancelText="Resta"
-        variant="destructive"
-        onConfirm={handleConfirmClose}
-      />
-    )}
+        </DialogContent>
+      </Dialog>
+      {showCloseConfirm && (
+        <ConfirmDialog
+          open={showCloseConfirm}
+          onOpenChange={setShowCloseConfirm}
+          title="Modifiche non salvate"
+          description="Hai modifiche non salvate. Uscire le annullerà. Continuare?"
+          confirmText="Esci"
+          cancelText="Resta"
+          variant="destructive"
+          onConfirm={handleConfirmClose}
+        />
+      )}
     </>
   )
 }

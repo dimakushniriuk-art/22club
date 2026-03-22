@@ -100,7 +100,9 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         ref={ref}
         className={cn(
           variants[variant],
-          isActive && variant === 'pills' && 'bg-primary text-primary-foreground shadow-md shadow-primary/25 ring-2 ring-primary/40',
+          isActive &&
+            variant === 'pills' &&
+            'bg-primary text-primary-foreground shadow-md shadow-primary/25 ring-2 ring-primary/40',
           className,
         )}
         onClick={() => onValueChange?.(value)}

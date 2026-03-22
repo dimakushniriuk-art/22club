@@ -20,6 +20,7 @@ Documentazione estratta dalle pagine dell’app (scope: file `page.tsx` elencati
 - **Barrel:** `src/lib/supabase.ts` re-esporta da `./supabase/client` (deprecato: usare `@/lib/supabase/client` o `server`).
 
 Nelle pagine **client** si usa quasi sempre:
+
 - `createClient()` da `@/lib/supabase/client`, oppure
 - `useSupabaseClient()` da `@/hooks/use-supabase-client` (ritorna il singleton `supabase` da client.ts).
 
@@ -41,18 +42,21 @@ Nelle pagine **client** si usa quasi sempre:
 ## 2) Mappa per pagina
 
 ### `/` — `src/app/page.tsx`
+
 - **Tipo uso Supabase:** nessuno.
 - **Note:** Solo `router.replace('/login')` in useEffect. Nessuna chiamata Supabase.
 
 ---
 
 ### `/design-system` — `src/app/design-system/page.tsx`
+
 - **Tipo uso Supabase:** nessuno.
 - **Note:** Solo export design system (CSS/React/PDF). Nessuna logica Supabase.
 
 ---
 
 ### `/forgot-password` — `src/app/forgot-password/page.tsx`
+
 - **Tipo uso Supabase:** nessuno (auth delegata a API).
 - **Chiamate:** Nessuna diretta. Richiesta reset password via `fetch('/api/auth/forgot-password')`.
 - **Trigger UX:** loading, success, error in stato locale; messaggio success con link a login.
@@ -60,6 +64,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home` — `src/app/home/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta nel file. Usa `useInvitiCliente(isAtleta ? profileId : null)` che internamente usa Supabase (inviti/client).
 - **Tabelle (da hook):** inviti/collezioni legate a inviti clienti.
@@ -68,6 +73,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/allenamenti` — `src/app/home/allenamenti/page.tsx`
+
 - **Tipo uso Supabase:** DB, RPC.
 - **Client:** `useSupabaseClient()`.
 - **Chiamate:**
@@ -83,6 +89,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/allenamenti/oggi` — `src/app/home/allenamenti/oggi/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()` in componente.
 - **Chiamate:**
@@ -99,6 +106,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/allenamenti/riepilogo` — `src/app/home/allenamenti/riepilogo/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()`.
 - **Chiamate:**
@@ -112,6 +120,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/allenamenti/[id]` — `src/app/home/allenamenti/[id]/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()` dentro `fetchPlanAndDays`.
 - **Chiamate:**
@@ -126,6 +135,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/allenamenti/esercizio/[exerciseId]` — `src/app/home/allenamenti/esercizio/[exerciseId]/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()` in useEffect.
 - **Chiamate:** `supabase.from('exercises').select('id, name, description, video_url, thumb_url, image_url, difficulty, equipment, muscle_group').eq('id', exerciseId).single()`.
@@ -136,6 +146,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/appuntamenti` — `src/app/home/appuntamenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa `useAppointments`, `useAthleteCalendarPage` (hook che usano Supabase).
 - **Tabelle (da hook):** appointments e relazioni.
@@ -144,6 +155,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/chat` — `src/app/home/chat/page.tsx`
+
 - **Tipo uso Supabase:** DB, RPC.
 - **Client:** `useSupabaseClient()`.
 - **Chiamate:**
@@ -159,6 +171,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/documenti` — `src/app/home/documenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (lib).
 - **Chiamate:** Nessuna diretta nel file. Usa `getAllAthleteDocuments(profileId, userId)` da `@/lib/all-athlete-documents` e `uploadDocument` / `validateDocumentFile` da `@/lib/documents` (che usano Supabase e storage).
 - **Tabelle/Storage:** documents, athlete_medical_data, athlete_administrative_data, payments (invoice_url); bucket `documents`.
@@ -167,6 +180,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/foto-risultati` — `src/app/home/foto-risultati/page.tsx`
+
 - **Tipo uso Supabase:** DB, Storage.
 - **Client:** `createClient()` in handleDelete.
 - **Chiamate:**
@@ -181,6 +195,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/foto-risultati/aggiungi` — `src/app/home/foto-risultati/aggiungi/page.tsx`
+
 - **Tipo uso Supabase:** DB, Storage.
 - **Client:** `useSupabaseClient()`.
 - **Chiamate:**
@@ -196,6 +211,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/massaggiatore` — `src/app/home/massaggiatore/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa `useAthleteMassageStats` (hook).
 - **Trigger UX:** LoadingState, ErrorState, guard su user/profile.
@@ -203,6 +219,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/nutrizionista` — `src/app/home/nutrizionista/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta nel file. Contenuto dinamico da componenti/hook (non Supabase in pagina).
 - **Trigger UX:** LoadingState, ErrorState, guard.
@@ -210,6 +227,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/pagamenti` — `src/app/home/pagamenti/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()`.
 - **Chiamate:**
@@ -223,6 +241,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/profilo` — `src/app/home/profilo/page.tsx`
+
 - **Tipo uso Supabase:** Auth.
 - **Client:** `useSupabaseClient()`.
 - **Chiamate:** `supabase.auth.signOut()` in handler; poi `router.push('/login')`.
@@ -232,12 +251,14 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/progressi` — `src/app/home/progressi/page.tsx`
+
 - **Tipo uso Supabase:** nessuno.
 - **Note:** Solo link alle sotto-pagine (misurazioni, allenamenti, storico, foto). Nessuna chiamata Supabase.
 
 ---
 
 ### `/home/progressi/allenamenti` — `src/app/home/progressi/allenamenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa `useWorkoutExerciseStats(athleteUserId)`.
 - **Trigger UX:** loading, redirect se non autenticato; grafici da componente dinamico.
@@ -245,6 +266,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/progressi/foto` — `src/app/home/progressi/foto/page.tsx`
+
 - **Tipo uso Supabase:** Storage (signed URL).
 - **Client:** `useSupabaseClient()`.
 - **Chiamate:** `supabase.storage.from('progress-photos').createSignedUrl(path, 3600)` per visualizzare foto.
@@ -255,6 +277,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/progressi/misurazioni` — `src/app/home/progressi/misurazioni/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa `useProgressAnalytics` (hook).
 - **Trigger UX:** redirect se non autenticato; RangeStatusMeter e KPI da hook.
@@ -262,6 +285,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/progressi/nuovo` — `src/app/home/progressi/nuovo/page.tsx`
+
 - **Tipo uso Supabase:** Auth, DB.
 - **Client:** `createClient()`.
 - **Chiamate:**
@@ -276,6 +300,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/progressi/storico` — `src/app/home/progressi/storico/page.tsx`
+
 - **Tipo uso Supabase:** Auth, DB.
 - **Client:** `createClient()` in useEffect.
 - **Chiamate:**
@@ -289,6 +314,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/home/trainer` — `src/app/home/trainer/page.tsx`
+
 - **Tipo uso Supabase:** RPC.
 - **Client:** `useSupabaseClient()`.
 - **Chiamate:**
@@ -301,6 +327,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/login` — `src/app/login/page.tsx`
+
 - **Tipo uso Supabase:** Auth, DB.
 - **Client:** `useMemo(() => createClient(), [])`.
 - **Chiamate:**
@@ -313,18 +340,21 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/post-login` — `src/app/post-login/page.tsx`
+
 - **Tipo uso Supabase:** nessuno diretto.
 - **Note:** Usa solo `useAuth()` (AuthProvider); redirect in base a role. Nessuna chiamata Supabase nel file.
 
 ---
 
 ### `/privacy` — `src/app/privacy/page.tsx`
+
 - **Tipo uso Supabase:** nessuno.
 - **Note:** Pagina statica (metadata, link, accordion). Server component, nessun client Supabase.
 
 ---
 
 ### `/registrati` — `src/app/registrati/page.tsx`
+
 - **Tipo uso Supabase:** Auth, DB.
 - **Client:** `createClient()`.
 - **Chiamate:**
@@ -338,6 +368,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/reset` — `src/app/reset/page.tsx`
+
 - **Tipo uso Supabase:** nessuno.
 - **Chiamate:** `fetch('/api/auth/forgot-password', ...)` (come forgot-password).
 - **Trigger UX:** loading, success, error.
@@ -345,6 +376,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/reset-password` — `src/app/reset-password/page.tsx`
+
 - **Tipo uso Supabase:** Auth.
 - **Client:** `createClient()`.
 - **Chiamate:**
@@ -358,12 +390,14 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/termini` — `src/app/termini/page.tsx`
+
 - **Tipo uso Supabase:** nessuno.
 - **Note:** Pagina statica (metadata, accordion). Server component.
 
 ---
 
 ### `/welcome` — `src/app/welcome/page.tsx`
+
 - **Tipo uso Supabase:** DB, RPC.
 - **Client:** `createClient()` a livello modulo; cast a `supabaseExt` per `.from()`/`.rpc()` tipizzati.
 - **Chiamate:**
@@ -381,6 +415,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard` — `src/app/dashboard/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `useMemo(() => createClient(), [])`; `fetchTodayAgenda(supabase)` riceve il client.
 - **Chiamate:** `supabaseClient.from('appointments').select(...)` (in fetchTodayAgenda: appuntamenti oggi).
@@ -391,6 +426,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/abbonamenti` — `src/app/dashboard/abbonamenti/page.tsx`
+
 - **Tipo uso Supabase:** DB, Storage, RPC (custom).
 - **Client:** `createClient()`; anche `supabaseRef = useRef(createClient())` per stabilità in loadAbbonamenti.
 - **Chiamate:**
@@ -409,6 +445,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/allenamenti` — `src/app/dashboard/allenamenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta nel file. Lista/gestione allenamenti tramite hook (useAppointments / useWorkouts o simili).
 - **Trigger UX:** LoadingState, eventuali modali.
@@ -416,6 +453,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/appuntamenti` — `src/app/dashboard/appuntamenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa `useAppointments` (e simile) con `org_id` da useAuth.
 - **Tabelle (da hook):** appointments.
@@ -424,6 +462,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/atleti/[id]` — `src/app/dashboard/atleti/[id]/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa `useAthleteProfileData(id)` per atleta e statistiche.
 - **Trigger UX:** LoadingState, ErrorState, tab profilo; modale modifica.
@@ -431,6 +470,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/calendario` — `src/app/dashboard/calendario/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/componenti).
 - **Chiamate:** Nessuna diretta nel file (solo Array.from per UI). Dati calendario da hook/context.
 - **Trigger UX:** vista calendario, eventuali modali.
@@ -438,6 +478,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/chat` — `src/app/dashboard/chat/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `supabase` da `@/lib/supabase` (singleton).
 - **Chiamate:** `supabase.from('profiles').select('id, nome, cognome, role, avatar').eq('id', withParam).maybeSingle()` per partecipante da query `?with=`.
@@ -448,6 +489,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/clienti` — `src/app/dashboard/clienti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna diretta. Usa useClienti, useClientiPermissions, useLessonCounters, useInvitiClientePendentiStaff, deleteCliente (da hook/lib).
 - **Trigger UX:** KPI, tabella, filtri, bulk delete, modali crea/invita/modifica.
@@ -455,6 +497,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/comunicazioni` — `src/app/dashboard/comunicazioni/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/API).
 - **Chiamate:** Nessuna diretta nel file (da verificare in componenti/hook).
 - **Trigger UX:** loading, invio comunicazioni.
@@ -462,6 +505,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/documenti` — `src/app/dashboard/documenti/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()` dentro useEffect loadDocuments.
 - **Chiamate:** `supabase.from('documents').select('*').order('created_at', { ascending: false })`.
@@ -472,6 +516,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/esercizi` — `src/app/dashboard/esercizi/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `supabase` da `@/lib/supabase/client` (singleton).
 - **Chiamate:**
@@ -484,6 +529,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/impostazioni` — `src/app/dashboard/impostazioni/page.tsx`
+
 - **Tipo uso Supabase:** DB, Auth.
 - **Client:** `useMemo(() => createClient(), [])`.
 - **Chiamate:**
@@ -496,6 +542,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/invita-atleta` — `src/app/dashboard/invita-atleta/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (bulk delete).
 - **Chiamate:** Nessuna diretta. `bulkDeleteInvitations(Array.from(selectedIds))` (funzione/hook che usa Supabase).
 - **Trigger UX:** lista inviti, selezione, bulk delete, skeleton.
@@ -503,6 +550,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/massaggiatore` — `src/app/dashboard/massaggiatore/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/componenti).
 - **Chiamate:** Nessuna diretta nel file.
 - **Trigger UX:** layout staff massaggiatore.
@@ -510,6 +558,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/nutrizionista` — `src/app/dashboard/nutrizionista/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/componenti).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** layout staff nutrizionista.
@@ -517,6 +566,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/pagamenti` — `src/app/dashboard/pagamenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna dirette nel file. Gestione pagamenti tramite hook/componenti.
 - **Trigger UX:** loading, tabella pagamenti.
@@ -524,6 +574,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/profilo` — `src/app/dashboard/profilo/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/componenti).
 - **Chiamate:** Nessuna dirette nel file. useSettingsProfile o simile per dati profilo.
 - **Trigger UX:** form profilo staff.
@@ -531,6 +582,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/schede` — `src/app/dashboard/schede/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** lista schede, link a nuova/modifica.
@@ -538,6 +590,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/schede/nuova` — `src/app/dashboard/schede/nuova/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/componenti).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** form creazione scheda.
@@ -545,6 +598,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/schede/[id]/modifica` — `src/app/dashboard/schede/[id]/modifica/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (hook/componenti).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** form modifica scheda.
@@ -552,6 +606,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/statistiche` — `src/app/dashboard/statistiche/page.tsx`
+
 - **Tipo uso Supabase:** DB.
 - **Client:** `createClient()`; funzione `getAnalyticsDataClient(supabase, org_id)` con query interne.
 - **Chiamate (in getAnalyticsDataClient):**
@@ -565,6 +620,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/admin` — `src/app/dashboard/admin/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (componenti).
 - **Chiamate:** Nessuna dirette nel file. Contenuto da admin-dashboard-content (che può usare createClient).
 - **Trigger UX:** overview admin.
@@ -572,6 +628,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/admin/organizzazioni` — `src/app/dashboard/admin/organizzazioni/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (componenti).
 - **Chiamate:** Nessuna dirette nel file (admin-organizations-content usa createClient).
 - **Trigger UX:** gestione organizzazioni.
@@ -579,6 +636,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/admin/ruoli` — `src/app/dashboard/admin/ruoli/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (API/hook).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** gestione ruoli.
@@ -586,6 +644,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/admin/statistiche` — `src/app/dashboard/admin/statistiche/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (API/hook).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** statistiche admin.
@@ -593,6 +652,7 @@ Nelle pagine **client** si usa quasi sempre:
 ---
 
 ### `/dashboard/admin/utenti` — `src/app/dashboard/admin/utenti/page.tsx`
+
 - **Tipo uso Supabase:** indiretto (API/hook).
 - **Chiamate:** Nessuna dirette nel file.
 - **Trigger UX:** gestione utenti.
@@ -693,4 +753,4 @@ Nelle pagine **client** si usa quasi sempre:
 
 ---
 
-*Documento generato per scope: solo file `page.tsx` elencati nella richiesta. Nessuna modifica applicata al codice.*
+_Documento generato per scope: solo file `page.tsx` elencati nella richiesta. Nessuna modifica applicata al codice._

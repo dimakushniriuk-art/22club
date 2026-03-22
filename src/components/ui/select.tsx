@@ -64,7 +64,8 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               'border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
               'focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25',
               'disabled:cursor-not-allowed disabled:opacity-60 disabled:from-zinc-900/80 disabled:to-zinc-900/80 disabled:shadow-none',
-              errorMessage && 'border-red-500/60 bg-gradient-to-b from-red-950/30 to-red-950/50 focus-visible:border-red-500 focus-visible:ring-red-500/25',
+              errorMessage &&
+                'border-red-500/60 bg-gradient-to-b from-red-950/30 to-red-950/50 focus-visible:border-red-500 focus-visible:ring-red-500/25',
               sizes[size],
               className,
             )}

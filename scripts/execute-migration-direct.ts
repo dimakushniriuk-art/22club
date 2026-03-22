@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Script per eseguire la migration SQL direttamente usando pg
- * 
+ *
  * Questo script usa la libreria 'pg' per connettersi direttamente al database
  * e eseguire la migration SQL.
  */
@@ -37,12 +37,12 @@ async function executeMigration() {
     console.log('📄 Leggo il file di migration...')
     const migrationPath = join(
       process.cwd(),
-      'supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql'
+      'supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql',
     )
     const sql = readFileSync(migrationPath, 'utf-8')
 
     console.log('🔧 Eseguo la migration SQL...')
-    
+
     // Esegui l'intero script SQL
     await client.query(sql)
 
@@ -66,13 +66,13 @@ async function executeMigration() {
       console.log('✅ Policy verificata:')
       console.log(JSON.stringify(result.rows[0], null, 2))
     } else {
-      console.log('⚠️  Policy non trovata dopo l\'esecuzione')
+      console.log("⚠️  Policy non trovata dopo l'esecuzione")
     }
 
     console.log('')
     console.log('🎉 Migration completata con successo!')
   } catch (error) {
-    console.error('❌ Errore durante l\'esecuzione:', error)
+    console.error("❌ Errore durante l'esecuzione:", error)
     if (error instanceof Error) {
       console.error('Messaggio:', error.message)
     }

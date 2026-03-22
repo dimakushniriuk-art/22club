@@ -37,7 +37,13 @@ import {
 } from '@/components/ui'
 import { DesignSystemDialogDemo, DesignSystemDrawerDemo } from './demo-dialog-drawer'
 import { cn } from '@/lib/utils'
-import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_LABEL_CLASS } from './helpers'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+  DS_LABEL_CLASS,
+} from './helpers'
 
 export function SectionComponenti() {
   return (
@@ -47,8 +53,8 @@ export function SectionComponenti() {
         Componenti
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Set da <code className={DS_CODE_CLASS}>@/components/ui</code>
-        . Regole comuni: <strong>riempimento unico</strong> (no gradienti),{' '}
+        Set da <code className={DS_CODE_CLASS}>@/components/ui</code>. Regole comuni:{' '}
+        <strong>riempimento unico</strong> (no gradienti),{' '}
         <strong>bordo con sfumatura leggera</strong> sempre visibile,{' '}
         <strong>forme coerenti</strong> (rounded-xl / rounded-lg). Varianti e dimensioni in uso nel
         progetto.
@@ -58,11 +64,12 @@ export function SectionComponenti() {
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Button</h3>
           <p className={cn(DS_LABEL_CLASS, 'mb-2')}>
             Primary per CTA principale (Salva, Accedi). Outline/Secondary per azioni secondarie.
-            Ghost per toolbar e chiudi. Destructive per eliminazioni, Success per conferme,
-            Warning per attenzione, Trainer in contesti PT, Link per link stilizzati.
+            Ghost per toolbar e chiudi. Destructive per eliminazioni, Success per conferme, Warning
+            per attenzione, Trainer in contesti PT, Link per link stilizzati.
           </p>
           <p className="mb-4 text-[11px] text-text-muted italic">
-            Quando usare: un solo Primary per schermata; Outline per Annulla/Indietro; Ghost in header e card.
+            Quando usare: un solo Primary per schermata; Outline per Annulla/Indietro; Ghost in
+            header e card.
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">Principali</p>
           <div className="mb-4 flex flex-wrap items-end gap-4">
@@ -205,7 +212,8 @@ export function SectionComponenti() {
             informativi.
           </p>
           <p className="mb-4 text-[11px] text-text-muted italic">
-            Casi d&apos;uso: lista appuntamenti (Confermato, In attesa), card atleta (ruolo), notifiche (conteggio).
+            Casi d&apos;uso: lista appuntamenti (Confermato, In attesa), card atleta (ruolo),
+            notifiche (conteggio).
           </p>
           <p className="mb-2 text-xs font-medium text-text-tertiary">In contesto</p>
           <div className="mb-4 flex flex-wrap gap-4">
@@ -269,8 +277,8 @@ export function SectionComponenti() {
         <Card variant="default" className={DS_CARD_FRAME_CLASS}>
           <h3 className="mb-1 text-sm font-medium text-text-secondary">Avatar</h3>
           <p className={cn(DS_LABEL_CLASS, 'mb-2')}>
-            Icona utente con fallback su iniziale (es. Mario Rossi → MR). Dimensioni sm (liste),
-            md (card/righe), lg (header), xl (profilo).
+            Icona utente con fallback su iniziale (es. Mario Rossi → MR). Dimensioni sm (liste), md
+            (card/righe), lg (header), xl (profilo).
           </p>
           <p className="mb-4 text-[11px] text-text-muted italic">
             Se manca l&apos;immagine viene mostrata l&apos;iniziale da nome/cognome o fallbackText.
@@ -294,7 +302,9 @@ export function SectionComponenti() {
               <span className="text-xs text-text-muted">xl</span>
             </div>
           </div>
-          <p className="mb-2 text-xs font-medium text-text-tertiary">In contesto (lista / header)</p>
+          <p className="mb-2 text-xs font-medium text-text-tertiary">
+            In contesto (lista / header)
+          </p>
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2">
               <Avatar fallbackText="MR" size="md" />

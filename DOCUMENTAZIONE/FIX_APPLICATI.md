@@ -3,6 +3,7 @@
 ## Riepilogo Fix
 
 ### ✅ Fase 1: Attributi form login (COMPLETATO)
+
 - **File modificato**: `src/app/login/page.tsx`
 - **Modifiche**:
   - Aggiunto `name="email"` all'input email (linea ~201)
@@ -11,6 +12,7 @@
 - **Status**: ✅ Completato
 
 ### ✅ Fase 2: Allineamento credenziali (COMPLETATO)
+
 - **File modificati**:
   - `tests/e2e/smoke.spec.ts` - Aggiornato con credenziali corrette
   - `tests/e2e/login.spec.ts` - Aggiornato con credenziali corrette
@@ -24,17 +26,20 @@
 - **Status**: ✅ Completato
 
 ### ✅ Fase 3: Pagina 404 (COMPLETATO)
+
 - **File creato**: `src/app/not-found.tsx`
 - **Contenuto**: Pagina 404 custom con testo "404" visibile e link per tornare alla home
 - **Test target**: `smoke.spec.ts:88`
 - **Status**: ✅ Completato
 
 ### ✅ Fase 4: Protected routes timeout (COMPLETATO)
+
 - **File modificato**: `tests/e2e/smoke.spec.ts:93`
 - **Modifica**: Cambiato `waitForURL('**/login')` in `waitForURL('**/login*')` per gestire query params
 - **Status**: ✅ Completato
 
 ### ✅ Fase 5: Validazione form errori (COMPLETATO)
+
 - **File modificato**: `src/app/login/page.tsx`
 - **Modifiche**:
   - Aggiunto stato `validationErrors` per gestire errori client-side
@@ -44,6 +49,7 @@
 - **Status**: ✅ Completato
 
 ### ✅ Fase 6: ERR_CONNECTION_REFUSED (COMPLETATO)
+
 - **File modificato**: `src/app/login/page.tsx`
 - **Modifiche**:
   - Aggiunto check `isTestEnv` per disabilitare agent logging durante test E2E

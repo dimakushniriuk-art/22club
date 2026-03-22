@@ -49,7 +49,7 @@ JOIN profiles p ON p.id = sa.atleta_id WHERE p.org_id IS NULL;
 
 ---
 
-## 4) audit_logs con STAFF_REQUEST_* e org_id corretto
+## 4) audit*logs con STAFF_REQUEST*\* e org_id corretto
 
 ```sql
 SELECT id, action, table_name, record_id, org_id, actor_profile_id, new_data, created_at
@@ -61,6 +61,7 @@ LIMIT 20;
 ```
 
 Verificare che:
+
 - `org_id` sia valorizzato e uguale a `staff_requests.org_id` della richiesta.
 - `actor_profile_id` corrisponda al profilo che ha eseguito la transizione (athlete per accept/reject, staff/admin per confirm/cancel).
 
@@ -68,10 +69,10 @@ Verificare che:
 
 ## Riepilogo hardening
 
-| Controllo | Cosa verifica |
-|-----------|----------------|
-| org_id    | staff_atleti.org_id = profiles.org_id dell’atleta; nessun fallback “org esistente” |
-| RPC       | Transizioni solo via `staff_requests_apply_transition(p_request_id, p_new_status)`; actor da auth.uid() |
-| UPDATE    | UPDATE diretto su `staff_requests` non consentito a athlete/staff (solo admin o RPC) |
+| Controllo | Cosa verifica                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------------ |
+| org_id    | staff_atleti.org_id = profiles.org_id dell’atleta; nessun fallback “org esistente”                           |
+| RPC       | Transizioni solo via `staff_requests_apply_transition(p_request_id, p_new_status)`; actor da auth.uid()      |
+| UPDATE    | UPDATE diretto su `staff_requests` non consentito a athlete/staff (solo admin o RPC)                         |
 | Invited   | Accesso a dati atleta (profiles, workout_logs, appointments) solo tramite staff_atleti con status = 'active' |
-| Audit     | audit_logs con action STAFF_REQUEST_* e org_id/actor corretti |
+| Audit     | audit*logs con action STAFF_REQUEST*\* e org_id/actor corretti                                               |

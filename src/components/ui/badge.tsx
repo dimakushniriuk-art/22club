@@ -23,46 +23,19 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant = 'primary', size = 'md', rounded = false, ...props }, ref) => {
     // Riempimento unico (no gradienti), bordo con sfumatura visibile
     const variants = {
-      primary: cn(
-        'bg-cyan-500 text-white border border-cyan-400/80',
-        borderHighlight,
-      ),
-      success: cn(
-        'bg-emerald-500 text-white border border-emerald-400/80',
-        borderHighlight,
-      ),
-      warning: cn(
-        'bg-amber-500 text-amber-950 border border-amber-400/80',
-        borderHighlight,
-      ),
-      error: cn(
-        'bg-red-500 text-white border border-red-400/80',
-        borderHighlight,
-      ),
-      destructive: cn(
-        'bg-red-500 text-white border border-red-400/80',
-        borderHighlight,
-      ),
-      info: cn(
-        'bg-indigo-500 text-white border border-indigo-400/80',
-        borderHighlight,
-      ),
-      neutral: cn(
-        'bg-slate-600 text-white border border-slate-400/60',
-        borderHighlight,
-      ),
+      primary: cn('bg-cyan-500 text-white border border-cyan-400/80', borderHighlight),
+      success: cn('bg-emerald-500 text-white border border-emerald-400/80', borderHighlight),
+      warning: cn('bg-amber-500 text-amber-950 border border-amber-400/80', borderHighlight),
+      error: cn('bg-red-500 text-white border border-red-400/80', borderHighlight),
+      destructive: cn('bg-red-500 text-white border border-red-400/80', borderHighlight),
+      info: cn('bg-indigo-500 text-white border border-indigo-400/80', borderHighlight),
+      neutral: cn('bg-slate-600 text-white border border-slate-400/60', borderHighlight),
       outline: cn(
         'bg-transparent text-cyan-300 border-2 border-cyan-400/70',
         'hover:bg-cyan-500/10',
       ),
-      secondary: cn(
-        'bg-slate-600 text-white border border-slate-400/60',
-        borderHighlight,
-      ),
-      default: cn(
-        'bg-cyan-500 text-white border border-cyan-400/80',
-        borderHighlight,
-      ),
+      secondary: cn('bg-slate-600 text-white border border-slate-400/60', borderHighlight),
+      default: cn('bg-cyan-500 text-white border border-cyan-400/80', borderHighlight),
     }
 
     const sizes = {

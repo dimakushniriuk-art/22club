@@ -88,9 +88,13 @@ export function CommunicationCard({
       : 0
 
   const recipientLabel = (() => {
-    const meta = communication.metadata as { to_email?: string; athlete_name?: string } | null | undefined
+    const meta = communication.metadata as
+      | { to_email?: string; athlete_name?: string }
+      | null
+      | undefined
     const email = meta?.to_email && typeof meta.to_email === 'string' ? meta.to_email.trim() : null
-    const name = meta?.athlete_name && typeof meta.athlete_name === 'string' ? meta.athlete_name.trim() : null
+    const name =
+      meta?.athlete_name && typeof meta.athlete_name === 'string' ? meta.athlete_name.trim() : null
     if (name && email) return `${name} (${email})`
     if (email) return email
     if (name) return name
@@ -175,150 +179,154 @@ export function CommunicationCard({
           <div className="flex shrink-0 flex-col items-end justify-between gap-2 self-stretch">
             {/* Pulsanti in alto */}
             <div className="flex items-center gap-2">
-            {/* Pulsante Dettagli (mostra sempre se ci sono recipients) */}
-            {onViewDetails &&
-              (communication.total_recipients ?? 0) > 0 &&
-              communication.status !== 'draft' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onViewDetails(communication.id)}
-                  className="border-white/10 hover:border-primary/20 text-text-secondary"
-                  title="Visualizza dettaglio destinatari"
-                >
-                  <Eye className="mr-1 h-4 w-4" />
-                  Dettagli
-                </Button>
-              )}
-            {communication.status === 'draft' && (
-              <>
-                {onEdit && (
+              {/* Pulsante Dettagli (mostra sempre se ci sono recipients) */}
+              {onViewDetails &&
+                (communication.total_recipients ?? 0) > 0 &&
+                communication.status !== 'draft' && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onEdit(communication.id)}
+                    onClick={() => onViewDetails(communication.id)}
                     className="border-white/10 hover:border-primary/20 text-text-secondary"
+                    title="Visualizza dettaglio destinatari"
                   >
-                    Modifica
+                    <Eye className="mr-1 h-4 w-4" />
+                    Dettagli
                   </Button>
                 )}
-                <Button variant="primary" size="sm" onClick={() => onSend(communication.id)}>
-                  <Send className="mr-1 h-4 w-4" />
-                  Invia
-                </Button>
-              </>
-            )}
-            {communication.status === 'sending' && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    // Prima verifica se la comunicazione è bloccata (sending da > 10 min)
-                    try {
-                      const checkResponse = await fetch('/api/communications/check-stuck', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ communicationId: communication.id }),
-                      })
-
-                      if (checkResponse.ok) {
-                        const checkResult = await checkResponse.json()
-                        if (checkResult.reset > 0) {
-                          addToast({
-                            variant: 'warning',
-                            title: 'Comunicazione resettata',
-                            message:
-                              "La comunicazione era bloccata e è stata resettata. Riprova l'invio.",
-                          })
-                          // Il controllo automatico periodico aggiornerà la lista
-                          return
-                        }
-                      }
-                    } catch (error) {
-                      logger.error('Error checking stuck communication', error, {
-                        communicationId: communication.id,
-                      })
-                    }
-
-                    // Se non è bloccata, prova a riprovare l'invio
-                    onSend(communication.id)
-                  }}
-                  className="border-white/10 hover:border-primary/20 text-text-secondary"
-                >
-                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                  Riprova invio
-                </Button>
-                {onReset && (
+              {communication.status === 'draft' && (
+                <>
+                  {onEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(communication.id)}
+                      className="border-white/10 hover:border-primary/20 text-text-secondary"
+                    >
+                      Modifica
+                    </Button>
+                  )}
+                  <Button variant="primary" size="sm" onClick={() => onSend(communication.id)}>
+                    <Send className="mr-1 h-4 w-4" />
+                    Invia
+                  </Button>
+                </>
+              )}
+              {communication.status === 'sending' && (
+                <>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          "Vuoi resettare lo stato della comunicazione? Questo permetterà di riprovare l'invio.",
-                        )
-                      ) {
-                        onReset(communication.id)
+                    onClick={async () => {
+                      // Prima verifica se la comunicazione è bloccata (sending da > 10 min)
+                      try {
+                        const checkResponse = await fetch('/api/communications/check-stuck', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ communicationId: communication.id }),
+                        })
+
+                        if (checkResponse.ok) {
+                          const checkResult = await checkResponse.json()
+                          if (checkResult.reset > 0) {
+                            addToast({
+                              variant: 'warning',
+                              title: 'Comunicazione resettata',
+                              message:
+                                "La comunicazione era bloccata e è stata resettata. Riprova l'invio.",
+                            })
+                            // Il controllo automatico periodico aggiornerà la lista
+                            return
+                          }
+                        }
+                      } catch (error) {
+                        logger.error('Error checking stuck communication', error, {
+                          communicationId: communication.id,
+                        })
                       }
+
+                      // Se non è bloccata, prova a riprovare l'invio
+                      onSend(communication.id)
                     }}
                     className="border-white/10 hover:border-primary/20 text-text-secondary"
                   >
-                    Reset
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                    Riprova invio
                   </Button>
-                )}
-              </>
-            )}
-            {communication.status === 'failed' && (
-              <>
-                {onEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(communication.id)}
-                    className="border-white/10 hover:border-primary/20 text-text-secondary"
-                  >
-                    Modifica
+                  {onReset && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (
+                          confirm(
+                            "Vuoi resettare lo stato della comunicazione? Questo permetterà di riprovare l'invio.",
+                          )
+                        ) {
+                          onReset(communication.id)
+                        }
+                      }}
+                      className="border-white/10 hover:border-primary/20 text-text-secondary"
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </>
+              )}
+              {communication.status === 'failed' && (
+                <>
+                  {onEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(communication.id)}
+                      className="border-white/10 hover:border-primary/20 text-text-secondary"
+                    >
+                      Modifica
+                    </Button>
+                  )}
+                  <Button variant="primary" size="sm" onClick={() => onSend(communication.id)}>
+                    <Send className="mr-1 h-4 w-4" />
+                    Riprova invio
                   </Button>
-                )}
-                <Button variant="primary" size="sm" onClick={() => onSend(communication.id)}>
-                  <Send className="mr-1 h-4 w-4" />
-                  Riprova invio
+                </>
+              )}
+              {/* Pulsante Elimina - visibile per tutti gli status */}
+              {onDelete && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Sei sicuro di voler eliminare la comunicazione "${communication.title}"? Questa azione non può essere annullata.`,
+                      )
+                    ) {
+                      onDelete(communication.id)
+                    }
+                  }}
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500/60"
+                  title="Elimina comunicazione"
+                >
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Elimina
                 </Button>
-              </>
-            )}
-            {/* Pulsante Elimina - visibile per tutti gli status */}
-            {onDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (
-                    confirm(
-                      `Sei sicuro di voler eliminare la comunicazione "${communication.title}"? Questa azione non può essere annullata.`,
-                    )
-                  ) {
-                    onDelete(communication.id)
-                  }
-                }}
-                className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500/60"
-                title="Elimina comunicazione"
-              >
-                <Trash2 className="mr-1 h-4 w-4" />
-                Elimina
-              </Button>
-            )}
+              )}
             </div>
             {/* Consegnati + Aperti in mezzo (solo se inviato), allineati a destra */}
             {communication.status === 'sent' && (
               <div className="flex items-center gap-4 text-sm text-text-secondary">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="text-state-valid h-4 w-4 shrink-0" />
-                  <span>{communication.total_delivered || 0} consegnati ({deliveryRate}%)</span>
+                  <span>
+                    {communication.total_delivered || 0} consegnati ({deliveryRate}%)
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="text-state-info h-4 w-4 shrink-0" />
-                  <span>{communication.total_opened || 0} aperti ({openRate}%)</span>
+                  <span>
+                    {communication.total_opened || 0} aperti ({openRate}%)
+                  </span>
                 </div>
               </div>
             )}

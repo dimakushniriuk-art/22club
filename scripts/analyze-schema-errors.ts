@@ -35,14 +35,14 @@ if (fkToAuthUsers) {
     type: 'foreign_key_auth_schema',
     severity: 'warning',
     message: `Trovate ${fkToAuthUsers.length} foreign keys che puntano a auth.users`,
-    context: 'Le FK a auth.users sono corrette, ma assicurati che lo schema auth esista'
+    context: 'Le FK a auth.users sono corrette, ma assicurati che lo schema auth esista',
   })
 }
 
 // 3. Verifica foreign keys duplicate
 const fkPattern = /ADD CONSTRAINT (\w+)_fkey FOREIGN KEY/g
 const fkMatches = [...content.matchAll(fkPattern)]
-const fkNames = fkMatches.map(m => m[1])
+const fkNames = fkMatches.map((m) => m[1])
 const duplicateFKs = fkNames.filter((name, index) => fkNames.indexOf(name) !== index)
 if (duplicateFKs.length > 0) {
   errors.push({
@@ -55,29 +55,69 @@ if (duplicateFKs.length > 0) {
 // 4. Verifica riferimenti a funzioni non definite
 const functionCalls = content.match(/public\.(\w+)\(/g)
 const functionDefs = content.match(/CREATE FUNCTION public\.(\w+)\(/g)
-const definedFunctions = functionDefs ? functionDefs.map(f => f.match(/public\.(\w+)\(/)?.[1]).filter(Boolean) : []
-const calledFunctions = functionCalls ? functionCalls.map(f => f.match(/public\.(\w+)\(/)?.[1]).filter(Boolean) : []
-const undefinedFunctions = calledFunctions.filter(f => !definedFunctions.includes(f) && !['uuid', 'now', 'jsonb', 'text', 'boolean'].includes(f))
+const definedFunctions = functionDefs
+  ? functionDefs.map((f) => f.match(/public\.(\w+)\(/)?.[1]).filter(Boolean)
+  : []
+const calledFunctions = functionCalls
+  ? functionCalls.map((f) => f.match(/public\.(\w+)\(/)?.[1]).filter(Boolean)
+  : []
+const undefinedFunctions = calledFunctions.filter(
+  (f) => !definedFunctions.includes(f) && !['uuid', 'now', 'jsonb', 'text', 'boolean'].includes(f),
+)
 
 // Filtra funzioni di sistema PostgreSQL
-const systemFunctions = ['uuid_generate_v4', 'now', 'current_timestamp', 'coalesce', 'nullif', 'row_to_json', 'jsonb_build_object', 'string_agg', 'array_agg', 'extract', 'date_trunc', 'to_timestamp', 'to_char', 'upper', 'lower', 'trim', 'length', 'substring', 'replace', 'regexp_replace', 'cast', '::', 'pg_get_functiondef', 'pg_get_function_result', 'pg_get_function_arguments', 'obj_description', 'col_description']
-const realUndefined = undefinedFunctions.filter(f => !systemFunctions.some(sf => f.includes(sf)))
+const systemFunctions = [
+  'uuid_generate_v4',
+  'now',
+  'current_timestamp',
+  'coalesce',
+  'nullif',
+  'row_to_json',
+  'jsonb_build_object',
+  'string_agg',
+  'array_agg',
+  'extract',
+  'date_trunc',
+  'to_timestamp',
+  'to_char',
+  'upper',
+  'lower',
+  'trim',
+  'length',
+  'substring',
+  'replace',
+  'regexp_replace',
+  'cast',
+  '::',
+  'pg_get_functiondef',
+  'pg_get_function_result',
+  'pg_get_function_arguments',
+  'obj_description',
+  'col_description',
+]
+const realUndefined = undefinedFunctions.filter(
+  (f) => !systemFunctions.some((sf) => f.includes(sf)),
+)
 
 if (realUndefined.length > 0) {
   errors.push({
     type: 'undefined_function',
     severity: 'warning',
     message: `Possibili funzioni non definite: ${[...new Set(realUndefined)].slice(0, 10).join(', ')}`,
-    context: 'Verifica che queste funzioni siano definite o siano funzioni di sistema'
+    context: 'Verifica che queste funzioni siano definite o siano funzioni di sistema',
   })
 }
 
 // 5. Verifica riferimenti a tabelle in foreign keys
 const tableRefs = content.match(/REFERENCES public\.(\w+)\(/g)
 const tableDefs = content.match(/CREATE TABLE public\.(\w+)/g)
-const definedTables = tableDefs ? tableDefs.map(t => t.match(/public\.(\w+)/)?.[1]).filter(Boolean) : []
-const referencedTables = tableRefs ? tableRefs.map(t => t.match(/public\.(\w+)/)?.[1]).filter(Boolean) : []
-const undefinedTables = referencedTables.filter(t => !definedTables.includes(t) && t !== 'users') // users è in auth schema
+const definedTables = tableDefs
+  ? tableDefs.map((t) => t.match(/public\.(\w+)/)?.[1]).filter(Boolean)
+  : []
+const referencedTables = tableRefs
+  ? tableRefs.map((t) => t.match(/public\.(\w+)/)?.[1]).filter(Boolean)
+  : []
+const undefinedTables = referencedTables.filter((t) => !definedTables.includes(t) && t !== 'users') // users è in auth schema
 
 if (undefinedTables.length > 0) {
   errors.push({
@@ -90,12 +130,14 @@ if (undefinedTables.length > 0) {
 // 6. Verifica trigger che referenziano funzioni
 const triggerDefs = content.match(/CREATE TRIGGER (\w+) .* EXECUTE FUNCTION public\.(\w+)\(/g)
 if (triggerDefs) {
-  const triggerFunctions = triggerDefs.map(t => {
-    const match = t.match(/EXECUTE FUNCTION public\.(\w+)\(/)
-    return match ? match[1] : null
-  }).filter(Boolean)
-  
-  const undefinedTriggerFunctions = triggerFunctions.filter(f => !definedFunctions.includes(f))
+  const triggerFunctions = triggerDefs
+    .map((t) => {
+      const match = t.match(/EXECUTE FUNCTION public\.(\w+)\(/)
+      return match ? match[1] : null
+    })
+    .filter(Boolean)
+
+  const undefinedTriggerFunctions = triggerFunctions.filter((f) => !definedFunctions.includes(f))
   if (undefinedTriggerFunctions.length > 0) {
     errors.push({
       type: 'undefined_trigger_function',
@@ -128,23 +170,25 @@ syntaxErrors.forEach(({ pattern, message }) => {
 const policyDefs = content.match(/CREATE POLICY (\w+) ON public\.(\w+) .* USING \((.*?)\)/gs)
 if (policyDefs) {
   const policyFunctions: string[] = []
-  policyDefs.forEach(policy => {
+  policyDefs.forEach((policy) => {
     const functionMatches = policy.match(/public\.(\w+)\(/g)
     if (functionMatches) {
-      functionMatches.forEach(fm => {
+      functionMatches.forEach((fm) => {
         const funcName = fm.match(/public\.(\w+)\(/)?.[1]
         if (funcName) policyFunctions.push(funcName)
       })
     }
   })
-  
-  const undefinedPolicyFunctions = [...new Set(policyFunctions)].filter(f => !definedFunctions.includes(f) && !systemFunctions.some(sf => f.includes(sf)))
+
+  const undefinedPolicyFunctions = [...new Set(policyFunctions)].filter(
+    (f) => !definedFunctions.includes(f) && !systemFunctions.some((sf) => f.includes(sf)),
+  )
   if (undefinedPolicyFunctions.length > 0) {
     errors.push({
       type: 'undefined_policy_function',
       severity: 'warning',
       message: `Policies che referenziano possibili funzioni non definite: ${undefinedPolicyFunctions.slice(0, 10).join(', ')}`,
-      context: 'Alcune potrebbero essere funzioni di sistema o essere definite altrove'
+      context: 'Alcune potrebbero essere funzioni di sistema o essere definite altrove',
     })
   }
 }
@@ -159,15 +203,15 @@ if (errors.length === 0) {
   console.log('✅ Nessun errore trovato! Il file SQL sembra corretto.\n')
 } else {
   console.log('⚠️  Problemi trovati:\n')
-  
-  const errorCount = errors.filter(e => e.severity === 'error').length
-  const warningCount = errors.filter(e => e.severity === 'warning').length
-  const infoCount = errors.filter(e => e.severity === 'info').length
-  
+
+  const errorCount = errors.filter((e) => e.severity === 'error').length
+  const warningCount = errors.filter((e) => e.severity === 'warning').length
+  const infoCount = errors.filter((e) => e.severity === 'info').length
+
   console.log(`   🔴 Errori: ${errorCount}`)
   console.log(`   🟡 Warning: ${warningCount}`)
   console.log(`   🔵 Info: ${infoCount}\n`)
-  
+
   errors.forEach((error) => {
     const icon = error.severity === 'error' ? '🔴' : error.severity === 'warning' ? '🟡' : '🔵'
     console.log(`${icon} [${error.type}] ${error.message}`)
@@ -186,21 +230,21 @@ const report = {
   analyzed_at: new Date().toISOString(),
   file: 'schema-with-data.sql',
   total_lines: content.split('\n').length,
-  errors: errors.filter(e => e.severity === 'error'),
-  warnings: errors.filter(e => e.severity === 'warning'),
-  info: errors.filter(e => e.severity === 'info'),
+  errors: errors.filter((e) => e.severity === 'error'),
+  warnings: errors.filter((e) => e.severity === 'warning'),
+  info: errors.filter((e) => e.severity === 'info'),
   summary: {
-    total_errors: errors.filter(e => e.severity === 'error').length,
-    total_warnings: errors.filter(e => e.severity === 'warning').length,
-    total_info: errors.filter(e => e.severity === 'info').length,
+    total_errors: errors.filter((e) => e.severity === 'error').length,
+    total_warnings: errors.filter((e) => e.severity === 'warning').length,
+    total_info: errors.filter((e) => e.severity === 'info').length,
   },
-  details: errors
+  details: errors,
 }
 
 writeFileSync(
   join(projectRoot, 'supabase-config-export/schema-analysis-report.json'),
   JSON.stringify(report, null, 2),
-  'utf-8'
+  'utf-8',
 )
 
 console.log('📄 Report salvato in: supabase-config-export/schema-analysis-report.json\n')
@@ -219,9 +263,9 @@ if (errors.length === 0) {
   markdown += `- 🔴 **Errori**: ${errorCount}\n`
   markdown += `- 🟡 **Warning**: ${warningCount}\n`
   markdown += `- 🔵 **Info**: ${infoCount}\n\n`
-  
+
   markdown += `## 🔴 Errori Critici\n\n`
-  const criticalErrors = errors.filter(e => e.severity === 'error')
+  const criticalErrors = errors.filter((e) => e.severity === 'error')
   if (criticalErrors.length > 0) {
     criticalErrors.forEach((error, index) => {
       markdown += `### ${index + 1}. ${error.type}\n\n`
@@ -236,9 +280,9 @@ if (errors.length === 0) {
   } else {
     markdown += `Nessun errore critico trovato.\n\n`
   }
-  
+
   markdown += `## 🟡 Warning\n\n`
-  const warnings = errors.filter(e => e.severity === 'warning')
+  const warnings = errors.filter((e) => e.severity === 'warning')
   if (warnings.length > 0) {
     warnings.forEach((error, index) => {
       markdown += `### ${index + 1}. ${error.type}\n\n`
@@ -260,11 +304,11 @@ markdown += `- pg_dump genera generalmente file SQL corretti e ben ordinati\n\n`
 writeFileSync(
   join(projectRoot, 'supabase-config-export/schema-analysis-report.md'),
   markdown,
-  'utf-8'
+  'utf-8',
 )
 
 console.log('📄 Report markdown salvato in: supabase-config-export/schema-analysis-report.md\n')
 
-if (errors.filter(e => e.severity === 'error').length > 0) {
+if (errors.filter((e) => e.severity === 'error').length > 0) {
   process.exit(1)
 }

@@ -40,7 +40,12 @@ export function ClientiEmptyState({
       <p className="text-sm text-text-secondary max-w-md">{getEmptyMessage()}</p>
       <div className="flex flex-wrap justify-center gap-2 pt-2">
         {(totali > 0 || hasActiveFilters) && (
-          <Button variant="outline" size="sm" onClick={onResetFilters} className="border-white/20 hover:bg-white/5 hover:border-white/30">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onResetFilters}
+            className="border-white/20 hover:bg-white/5 hover:border-white/30"
+          >
             {totali > 0 ? 'Rimuovi tutti i filtri' : 'Rimuovi filtri'}
           </Button>
         )}

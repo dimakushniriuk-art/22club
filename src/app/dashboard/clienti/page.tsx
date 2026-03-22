@@ -103,11 +103,7 @@ const ClientiStatsCards = memo(function ClientiStatsCards({
       {STATS_CARDS.map(({ key, title, icon: Icon, iconBoxClass }) => {
         const value = key === 'pendenti' ? pendentiCount : displayStats[key]
         return (
-          <div
-            key={key}
-            className={STATS_CARD_CLASS}
-            aria-label={`${title}: ${value}`}
-          >
+          <div key={key} className={STATS_CARD_CLASS} aria-label={`${title}: ${value}`}>
             <div
               className={cn(
                 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
@@ -116,9 +112,7 @@ const ClientiStatsCards = memo(function ClientiStatsCards({
             >
               <Icon className="h-4 w-4" />
             </div>
-            <span className="mt-2 block text-sm font-semibold text-text-primary">
-              {value}
-            </span>
+            <span className="mt-2 block text-sm font-semibold text-text-primary">{value}</span>
             <span className="text-[9px] text-text-secondary">{title}</span>
           </div>
         )
@@ -176,17 +170,19 @@ export default function ClientiPage() {
       if (!open) {
         const params = new URLSearchParams(searchParamsRef.current.toString())
         params.delete('new')
-        const newUrl = params.toString() ? `/dashboard/clienti?${params.toString()}` : '/dashboard/clienti'
+        const newUrl = params.toString()
+          ? `/dashboard/clienti?${params.toString()}`
+          : '/dashboard/clienti'
         router.replace(newUrl, { scroll: false })
         setTimeout(() => creaAtletaButtonRef.current?.focus(), 100)
       }
     },
-    [router]
+    [router],
   )
 
   const handleStartChat = useCallback(
     (cliente: Cliente) => router.push(`/dashboard/chat?with=${cliente.id}`),
-    [router]
+    [router],
   )
 
   // Hook per gestione filtri
@@ -205,17 +201,18 @@ export default function ClientiPage() {
   } = useClientiFilters()
 
   // Hook per fetch clienti (pageSize 250 per visualizzare più atleti per pagina)
-  const { clienti, total, totalPages, loading, error, refetch, updateCliente, deleteCliente } = useClienti({
-    filters,
-    sort,
-    page,
-    pageSize: 250,
-    realtime: false,
-  })
+  const { clienti, total, totalPages, loading, error, refetch, updateCliente, deleteCliente } =
+    useClienti({
+      filters,
+      sort,
+      page,
+      pageSize: 250,
+      realtime: false,
+    })
 
   // Inviti in attesa per nutrizionista/massaggiatore (solo quando filtro Inattivi)
   const { pendenti, refetch: refetchPendenti } = useInvitiClientePendentiStaff(
-    canInvitaCliente ? user?.id ?? null : null,
+    canInvitaCliente ? (user?.id ?? null) : null,
   )
 
   // Sincronizza pt_atleti da athlete_trainer_assignments (atleti registrati via invito prima del fix)
@@ -332,7 +329,11 @@ export default function ClientiPage() {
       refetch()
     } catch (err) {
       logger.error('Errore eliminazione bulk', err, { count: selectedIds.size })
-      notify('Si è verificato un errore durante l\'eliminazione dei clienti selezionati. Riprova.', 'error', 'Errore eliminazione')
+      notify(
+        "Si è verificato un errore durante l'eliminazione dei clienti selezionati. Riprova.",
+        'error',
+        'Errore eliminazione',
+      )
     }
   }, [selectedIds, deleteCliente, clearSelection, refetch, notify])
 
@@ -357,12 +358,12 @@ export default function ClientiPage() {
 
   const handleViewHistory = useCallback(
     (cliente: Cliente) => router.push(`/dashboard/atleti/${cliente.id}/storico`),
-    [router]
+    [router],
   )
 
   const handleViewDocuments = useCallback(
     (cliente: Cliente) => router.push(`/dashboard/documenti?atleta=${cliente.id}`),
-    [router]
+    [router],
   )
 
   const handleSendEmail = useCallback((cliente: Cliente) => {
@@ -371,7 +372,12 @@ export default function ClientiPage() {
 
   const handleDisable = useCallback(
     async (cliente: Cliente) => {
-      if (!confirm(`Disabilitare ${cliente.nome} ${cliente.cognome}? L\'atleta passerà in stato inattivo.`)) return
+      if (
+        !confirm(
+          `Disabilitare ${cliente.nome} ${cliente.cognome}? L\'atleta passerà in stato inattivo.`,
+        )
+      )
+        return
       try {
         await updateCliente(cliente.id, { stato: 'inattivo' })
         notify(`${cliente.nome} ${cliente.cognome} disabilitato`, 'success')
@@ -380,7 +386,7 @@ export default function ClientiPage() {
         notify('Errore durante la disabilitazione. Riprova.', 'error', 'Errore')
       }
     },
-    [updateCliente, notify]
+    [updateCliente, notify],
   )
 
   const handleEnable = useCallback(
@@ -393,7 +399,7 @@ export default function ClientiPage() {
         notify('Errore durante la riattivazione. Riprova.', 'error', 'Errore')
       }
     },
-    [updateCliente, notify]
+    [updateCliente, notify],
   )
 
   const handleDelete = useCallback(
@@ -404,10 +410,14 @@ export default function ClientiPage() {
         refetch()
       } catch (err) {
         logger.error('Errore eliminazione cliente', err, { clienteId: cliente.id })
-        notify('Si è verificato un errore durante l\'eliminazione del cliente. Riprova.', 'error', 'Errore eliminazione')
+        notify(
+          "Si è verificato un errore durante l'eliminazione del cliente. Riprova.",
+          'error',
+          'Errore eliminazione',
+        )
       }
     },
-    [deleteCliente, refetch, notify]
+    [deleteCliente, refetch, notify],
   )
 
   const handleResetFilters = useCallback(() => {
@@ -429,7 +439,11 @@ export default function ClientiPage() {
 
   if (showGuardLoader) {
     return (
-      <StaffContentLayout title="Clienti" description="Gestisci i tuoi atleti e monitora i progressi" theme="teal">
+      <StaffContentLayout
+        title="Clienti"
+        description="Gestisci i tuoi atleti e monitora i progressi"
+        theme="teal"
+      >
         <div className="flex min-h-[50vh] items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
@@ -439,7 +453,11 @@ export default function ClientiPage() {
 
   if (loading && displayClienti.length === 0) {
     return (
-      <StaffContentLayout title="Clienti" description="Gestisci i tuoi atleti e monitora i progressi" theme="teal">
+      <StaffContentLayout
+        title="Clienti"
+        description="Gestisci i tuoi atleti e monitora i progressi"
+        theme="teal"
+      >
         <SkeletonClientiList cards={8} className="py-4" />
       </StaffContentLayout>
     )
@@ -447,7 +465,11 @@ export default function ClientiPage() {
 
   if (error) {
     return (
-      <StaffContentLayout title="Clienti" description="Gestisci i tuoi atleti e monitora i progressi" theme="teal">
+      <StaffContentLayout
+        title="Clienti"
+        description="Gestisci i tuoi atleti e monitora i progressi"
+        theme="teal"
+      >
         <ErrorState
           title="Impossibile caricare l'elenco clienti"
           message={error}
@@ -474,76 +496,77 @@ export default function ClientiPage() {
     >
       {/* Toolbar con filtri e ricerca */}
       <ClientiToolbar
+        searchTerm={searchTerm}
+        statoFilter={statoFilter}
+        viewMode={viewMode}
+        onSearchChange={updateSearchTerm}
+        onStatoFilterChange={updateStatoFilter}
+        onViewModeChange={setViewMode}
+        onShowFiltriAvanzati={openFiltriAvanzati}
+        onExportCSV={handleExportCSV}
+        onExportPDF={handleExportPDF}
+        hasClienti={displayClienti.length > 0}
+        isMobile={isMobile}
+        isExporting={isExporting}
+      />
+
+      {/* Announce per screen reader */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {displayClienti.length}{' '}
+        {displayClienti.length === 1 ? 'cliente trovato' : 'clienti trovati'}
+      </div>
+
+      {/* Lista Clienti */}
+      {loading && clienti.length === 0 ? (
+        <div className="relative py-4">
+          <SkeletonClientiList cards={8} />
+        </div>
+      ) : displayClienti.length === 0 && !loading ? (
+        // FIX: Usa total (totale filtrato) invece di stats.totali (totale globale) per riflettere i filtri attivi
+        <ClientiEmptyState
           searchTerm={searchTerm}
           statoFilter={statoFilter}
-          viewMode={viewMode}
-          onSearchChange={updateSearchTerm}
-          onStatoFilterChange={updateStatoFilter}
-          onViewModeChange={setViewMode}
-          onShowFiltriAvanzati={openFiltriAvanzati}
-          onExportCSV={handleExportCSV}
-          onExportPDF={handleExportPDF}
-          hasClienti={displayClienti.length > 0}
-          isMobile={isMobile}
-          isExporting={isExporting}
+          totali={total}
+          onResetFilters={handleResetFilters}
         />
-
-        {/* Announce per screen reader */}
-        <div role="status" aria-live="polite" className="sr-only">
-          {displayClienti.length} {displayClienti.length === 1 ? 'cliente trovato' : 'clienti trovati'}
-        </div>
-
-        {/* Lista Clienti */}
-        {loading && clienti.length === 0 ? (
-          <div className="relative py-4">
-            <SkeletonClientiList cards={8} />
-          </div>
-        ) : displayClienti.length === 0 && !loading ? (
-          // FIX: Usa total (totale filtrato) invece di stats.totali (totale globale) per riflettere i filtri attivi
-          <ClientiEmptyState
-            searchTerm={searchTerm}
-            statoFilter={statoFilter}
-            totali={total}
-            onResetFilters={handleResetFilters}
-          />
-        ) : viewMode === 'table' ? (
-          <ClientiTableView
-            clienti={displayClienti}
-            selectedIds={selectedIds}
-            sort={sort}
-            total={total}
-            page={page}
-            totalPages={totalPages}
-            onSelectAll={handleSelectAll}
-            onSelectOne={handleSelectOne}
-            onSort={handleSort}
-            onPageChange={updatePage}
-            onEdit={canManageClienti ? handleEdit : undefined}
-            onViewHistory={canManageClienti ? handleViewHistory : undefined}
-            onViewDocuments={canManageClienti ? handleViewDocuments : undefined}
-            onSendEmail={handleSendEmail}
-            onStartChat={canShowStartChat ? handleStartChat : undefined}
-            onDelete={canManageClienti ? handleDelete : undefined}
-            onDisable={canManageClienti ? handleDisable : undefined}
-            onEnable={canManageClienti ? handleEnable : undefined}
-          />
-        ) : (
-          <ClientiGridView
-            clienti={clientiForGrid}
-            total={total}
-            page={page}
-            totalPages={totalPages}
-            onPageChange={updatePage}
-            onEdit={canManageClienti ? handleEdit : undefined}
-            onViewHistory={canManageClienti ? handleViewHistory : undefined}
-            onViewDocuments={canManageClienti ? handleViewDocuments : undefined}
-            onSendEmail={handleSendEmail}
-            onStartChat={canShowStartChat ? handleStartChat : undefined}
-            onDelete={canManageClienti ? handleDelete : undefined}
-            onDisable={canManageClienti ? handleDisable : undefined}
-            onEnable={canManageClienti ? handleEnable : undefined}
-          />
-        )}
+      ) : viewMode === 'table' ? (
+        <ClientiTableView
+          clienti={displayClienti}
+          selectedIds={selectedIds}
+          sort={sort}
+          total={total}
+          page={page}
+          totalPages={totalPages}
+          onSelectAll={handleSelectAll}
+          onSelectOne={handleSelectOne}
+          onSort={handleSort}
+          onPageChange={updatePage}
+          onEdit={canManageClienti ? handleEdit : undefined}
+          onViewHistory={canManageClienti ? handleViewHistory : undefined}
+          onViewDocuments={canManageClienti ? handleViewDocuments : undefined}
+          onSendEmail={handleSendEmail}
+          onStartChat={canShowStartChat ? handleStartChat : undefined}
+          onDelete={canManageClienti ? handleDelete : undefined}
+          onDisable={canManageClienti ? handleDisable : undefined}
+          onEnable={canManageClienti ? handleEnable : undefined}
+        />
+      ) : (
+        <ClientiGridView
+          clienti={clientiForGrid}
+          total={total}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={updatePage}
+          onEdit={canManageClienti ? handleEdit : undefined}
+          onViewHistory={canManageClienti ? handleViewHistory : undefined}
+          onViewDocuments={canManageClienti ? handleViewDocuments : undefined}
+          onSendEmail={handleSendEmail}
+          onStartChat={canShowStartChat ? handleStartChat : undefined}
+          onDelete={canManageClienti ? handleDelete : undefined}
+          onDisable={canManageClienti ? handleDisable : undefined}
+          onEnable={canManageClienti ? handleEnable : undefined}
+        />
+      )}
 
       {/* Stats: dati filtrati — spacing DS */}
       <section className="shrink-0" aria-label="Statistiche clienti">
@@ -551,54 +574,54 @@ export default function ClientiPage() {
       </section>
 
       {/* Modali e Azioni Bulk - Lazy loaded */}
-        <Suspense fallback={null}>
-          <ClientiFiltriAvanzati
-            open={showFiltriAvanzati}
-            onOpenChange={setShowFiltriAvanzati}
-            filters={filters as ClienteFilters}
-            onApply={(newFilters) => setAdvancedFilters(newFilters)}
+      <Suspense fallback={null}>
+        <ClientiFiltriAvanzati
+          open={showFiltriAvanzati}
+          onOpenChange={setShowFiltriAvanzati}
+          filters={filters as ClienteFilters}
+          onApply={(newFilters) => setAdvancedFilters(newFilters)}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ClientiBulkActions
+          selectedCount={selectedIds.size}
+          onSendEmail={handleBulkEmail}
+          onDelete={canManageClienti ? handleBulkDelete : undefined}
+          onClear={clearSelection}
+        />
+      </Suspense>
+
+      {showCreaAtleta && (
+        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+          <CreaAtletaModal
+            open={showCreaAtleta}
+            onOpenChange={handleCloseCreaAtleta}
+            onSuccess={handleCreaAtletaSuccess}
           />
         </Suspense>
+      )}
 
-        <Suspense fallback={null}>
-          <ClientiBulkActions
-            selectedCount={selectedIds.size}
-            onSendEmail={handleBulkEmail}
-            onDelete={canManageClienti ? handleBulkDelete : undefined}
-            onClear={clearSelection}
+      {showModificaAtleta && atletaToEdit && (
+        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+          <ModificaAtletaModal
+            open={showModificaAtleta}
+            onOpenChange={setShowModificaAtleta}
+            athlete={atletaToEdit}
+            onSuccess={handleModificaAtletaSuccess}
           />
         </Suspense>
+      )}
 
-        {showCreaAtleta && (
-          <Suspense fallback={<LoadingState message="Caricamento..." />}>
-            <CreaAtletaModal
-              open={showCreaAtleta}
-              onOpenChange={handleCloseCreaAtleta}
-              onSuccess={handleCreaAtletaSuccess}
-            />
-          </Suspense>
-        )}
-
-        {showModificaAtleta && atletaToEdit && (
-          <Suspense fallback={<LoadingState message="Caricamento..." />}>
-            <ModificaAtletaModal
-              open={showModificaAtleta}
-              onOpenChange={setShowModificaAtleta}
-              athlete={atletaToEdit}
-              onSuccess={handleModificaAtletaSuccess}
-            />
-          </Suspense>
-        )}
-
-        {showInvitaCliente && (
-          <Suspense fallback={<LoadingState message="Caricamento..." />}>
-            <InvitaClienteModal
-              open={showInvitaCliente}
-              onOpenChange={setShowInvitaCliente}
-              onSuccess={handleInvitaClienteSuccess}
-            />
-          </Suspense>
-        )}
+      {showInvitaCliente && (
+        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+          <InvitaClienteModal
+            open={showInvitaCliente}
+            onOpenChange={setShowInvitaCliente}
+            onSuccess={handleInvitaClienteSuccess}
+          />
+        </Suspense>
+      )}
     </StaffContentLayout>
   )
 }

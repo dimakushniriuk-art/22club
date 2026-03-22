@@ -76,7 +76,9 @@ function LoginContent() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({})
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  )
   const [lockUntil, setLockUntil] = useState<number | null>(null)
   const failedAttemptsRef = useRef(0)
 
@@ -140,9 +142,7 @@ function LoginContent() {
           failedAttemptsRef.current += 1
           if (failedAttemptsRef.current >= RATE_LIMIT_ATTEMPTS) {
             setLockUntil(Date.now() + RATE_LIMIT_MS)
-            setError(
-              `Troppi tentativi errati. Riprova tra ${RATE_LIMIT_MS / 1000} secondi.`,
-            )
+            setError(`Troppi tentativi errati. Riprova tra ${RATE_LIMIT_MS / 1000} secondi.`)
           } else {
             const isNetworkError =
               signInError.message?.includes('Failed to fetch') ||
@@ -197,8 +197,12 @@ function LoginContent() {
             const code = err?.code
             if (code === 'PGRST116' || isLockOrAbort) {
               const codice =
-                typeof window !== 'undefined' ? sessionStorage.getItem('pending_invite_codice')?.trim() : null
-              const welcomePath = codice ? `/welcome?codice=${encodeURIComponent(codice)}` : '/welcome'
+                typeof window !== 'undefined'
+                  ? sessionStorage.getItem('pending_invite_codice')?.trim()
+                  : null
+              const welcomePath = codice
+                ? `/welcome?codice=${encodeURIComponent(codice)}`
+                : '/welcome'
               router.replace(welcomePath)
               return
             }
@@ -215,12 +219,7 @@ function LoginContent() {
             return
           }
 
-          performPostLoginRedirect(
-            profileData as ProfileRow,
-            router,
-            setError,
-            setLoading,
-          )
+          performPostLoginRedirect(profileData as ProfileRow, router, setError, setLoading)
         } catch {
           logger.error('Errore durante il caricamento del profilo')
           router.replace('/post-login')

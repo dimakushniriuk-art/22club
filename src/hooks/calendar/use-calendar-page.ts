@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/types'
 // Validazione sovrapposizione rimossa per permettere più atleti nello stesso orario
 // import { checkAppointmentOverlap } from '@/lib/appointment-utils'
@@ -180,7 +180,13 @@ export function useCalendarPage() {
           .single()
 
         if (profile) {
-          const p = profile as { id: string; nome?: string | null; cognome?: string | null; org_id?: string | null; role?: string | null }
+          const p = profile as {
+            id: string
+            nome?: string | null
+            cognome?: string | null
+            org_id?: string | null
+            role?: string | null
+          }
           setStaffProfileId(p.id)
           if (p.org_id) setStaffOrgId(p.org_id)
           if (p.role) setStaffRole(p.role)
@@ -268,7 +274,9 @@ export function useCalendarPage() {
             .select('id')
             .eq('org_id', staffOrgId)
             .in('role', ['nutrizionista', 'massaggiatore'])
-          const collIds = (collaboratorProfiles ?? []).map((p: { id: string }) => p.id).filter((id: string) => id !== staffProfileId)
+          const collIds = (collaboratorProfiles ?? [])
+            .map((p: { id: string }) => p.id)
+            .filter((id: string) => id !== staffProfileId)
           if (collIds.length > 0) {
             const { data: collData } = await supabase
               .from('appointments')
@@ -292,7 +300,9 @@ export function useCalendarPage() {
       const appointmentRows = allRows.filter(
         (apt) => !(apt.type === 'privato' && apt.staff_id !== staffProfileId),
       )
-      const athleteIds = [...new Set(appointmentRows.map((apt) => apt.athlete_id).filter(Boolean))] as string[]
+      const athleteIds = [
+        ...new Set(appointmentRows.map((apt) => apt.athlete_id).filter(Boolean)),
+      ] as string[]
 
       // Carica nomi atleti e lezioni rimanenti
       const athleteNamesMap = new Map<string, string>()
@@ -306,11 +316,13 @@ export function useCalendarPage() {
         if (profilesError) {
           logger.error('Errore caricamento nomi atleti per calendario (ignorato)', profilesError)
         }
-        ;(profilesRes.data ?? []).forEach((profile: { id: string; nome?: string | null; cognome?: string | null }) => {
-          const p = profile
-          const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
-          athleteNamesMap.set(p.id, fullName || 'Atleta')
-        })
+        ;(profilesRes.data ?? []).forEach(
+          (profile: { id: string; nome?: string | null; cognome?: string | null }) => {
+            const p = profile
+            const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
+            athleteNamesMap.set(p.id, fullName || 'Atleta')
+          },
+        )
         ;(countersRes.data ?? []).forEach((r: { athlete_id: string; count: number | null }) => {
           lessonsRemainingMap.set(r.athlete_id, r.count ?? 0)
         })
@@ -321,7 +333,7 @@ export function useCalendarPage() {
           const isOpenSlot = apt.is_open_booking_day === true
           const athleteName = isOpenSlot
             ? 'Libera prenotazione'
-            : (athleteNamesMap.get(apt.athlete_id!) || 'Atleta')
+            : athleteNamesMap.get(apt.athlete_id!) || 'Atleta'
 
           const allowedTypes = [
             'allenamento',
@@ -346,7 +358,11 @@ export function useCalendarPage() {
 
           const serviceType =
             (apt as AppointmentRowWithColor).service_type ??
-            (appointmentType === 'nutrizionista' ? 'nutrition' : appointmentType === 'massaggio' ? 'massage' : 'training')
+            (appointmentType === 'nutrizionista'
+              ? 'nutrition'
+              : appointmentType === 'massaggio'
+                ? 'massage'
+                : 'training')
 
           return {
             id: apt.id,
@@ -377,12 +393,24 @@ export function useCalendarPage() {
       )
       setAppointments(mappedAppointments)
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : typeof err === 'object' && err != null && 'message' in err ? String((err as { message: unknown }).message) : String(err)
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err != null && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : String(err)
       logger.error(`Errore caricamento appuntamenti: ${errMsg}`, err)
     } finally {
       setAppointmentsLoading(false)
     }
-  }, [staffProfileId, staffOrgId, staffDisplayName, staffRole, calendarSettings?.show_free_pass_calendar, calendarSettings?.show_collaborators_calendars])
+  }, [
+    staffProfileId,
+    staffOrgId,
+    staffDisplayName,
+    staffRole,
+    calendarSettings?.show_free_pass_calendar,
+    calendarSettings?.show_collaborators_calendars,
+  ])
 
   useEffect(() => {
     void fetchAppointments()
@@ -496,18 +524,30 @@ export function useCalendarPage() {
       }
       const orgId = staffOrgId ?? data.org_id ?? null
       if (!orgId && !editingAppointment) {
-        notify('Organizzazione non disponibile. Riprova dopo il login.', 'error', 'Errore creazione appuntamento')
+        notify(
+          'Organizzazione non disponibile. Riprova dopo il login.',
+          'error',
+          'Errore creazione appuntamento',
+        )
         setLoading(false)
         return
       }
 
       if (!data.is_open_booking_day && !data.athlete_id) {
-        notify('Seleziona un atleta dalla lista prima di creare l\'appuntamento.', 'warning', 'Atleta richiesto')
+        notify(
+          "Seleziona un atleta dalla lista prima di creare l'appuntamento.",
+          'warning',
+          'Atleta richiesto',
+        )
         return
       }
 
       if (!data.starts_at || !data.ends_at) {
-        notify('Inserisci data e ora di inizio e fine per l\'appuntamento.', 'warning', 'Data e ora richieste')
+        notify(
+          "Inserisci data e ora di inizio e fine per l'appuntamento.",
+          'warning',
+          'Data e ora richieste',
+        )
         return
       }
 
@@ -517,7 +557,7 @@ export function useCalendarPage() {
         const isOpenBooking = data.is_open_booking_day === true
         const isCollaborator = staffRole === 'nutrizionista' || staffRole === 'massaggiatore'
         const athleteName = data.athlete_id
-          ? (athletes.find((a) => a.id === data.athlete_id)?.name || 'Atleta')
+          ? athletes.find((a) => a.id === data.athlete_id)?.name || 'Atleta'
           : 'Libera prenotazione'
         const startsAt = new Date(data.starts_at).toISOString()
         const endsAt = new Date(data.ends_at).toISOString()
@@ -528,7 +568,11 @@ export function useCalendarPage() {
 
         if (editingAppointment && editingAppointment.id) {
           if (isOpenBooking) {
-            notify('Gli slot Libera prenotazione vanno modificati dal calendario (trascinamento).', 'info', 'Info')
+            notify(
+              'Gli slot Libera prenotazione vanno modificati dal calendario (trascinamento).',
+              'info',
+              'Info',
+            )
             setLoading(false)
             return
           }
@@ -537,16 +581,26 @@ export function useCalendarPage() {
               (b) => new Date(s) < new Date(b.ends_at) && new Date(e) > new Date(b.starts_at),
             )
           if (overlapsBlock(startsAt, endsAt)) {
-            notify('Questo orario cade in un blocco calendario (ferie/chiusura). Scegli un altro slot.', 'error', 'Blocco calendario')
+            notify(
+              'Questo orario cade in un blocco calendario (ferie/chiusura). Scegli un altro slot.',
+              'error',
+              'Blocco calendario',
+            )
             setLoading(false)
             return
           }
           if (!options?.forceOverwrite) {
-            const hasOverlap = await checkAppointmentOverlap(supabase, staffProfileId, startsAt, endsAt, {
-              excludeAppointmentId: editingAppointment.id,
-              appointmentType: data.type,
-              isCollaborator,
-            })
+            const hasOverlap = await checkAppointmentOverlap(
+              supabase,
+              staffProfileId,
+              startsAt,
+              endsAt,
+              {
+                excludeAppointmentId: editingAppointment.id,
+                appointmentType: data.type,
+                isCollaborator,
+              },
+            )
             if (hasOverlap) {
               const msg = isCollaborator
                 ? 'Questo slot è già occupato.'
@@ -556,10 +610,17 @@ export function useCalendarPage() {
               return { overlapDetected: true }
             }
           }
-          const allowedStatuses = ['attivo', 'completato', 'annullato', 'in_corso', 'cancelled'] as const
-          const updateStatus = data.status && allowedStatuses.includes(data.status as (typeof allowedStatuses)[number])
-            ? data.status
-            : 'attivo'
+          const allowedStatuses = [
+            'attivo',
+            'completato',
+            'annullato',
+            'in_corso',
+            'cancelled',
+          ] as const
+          const updateStatus =
+            data.status && allowedStatuses.includes(data.status as (typeof allowedStatuses)[number])
+              ? data.status
+              : 'attivo'
           const updatePayload = {
             athlete_id: data.athlete_id!,
             starts_at: startsAt,
@@ -620,7 +681,11 @@ export function useCalendarPage() {
               .eq('ends_at', slot.ends_at)
               .maybeSingle()
             if (existing) {
-              notify('Esiste già uno slot Free Pass per questo orario. Un solo slot per orario per organizzazione.', 'error', 'Slot Free Pass')
+              notify(
+                'Esiste già uno slot Free Pass per questo orario. Un solo slot per orario per organizzazione.',
+                'error',
+                'Slot Free Pass',
+              )
               setLoading(false)
               return
             }
@@ -640,8 +705,11 @@ export function useCalendarPage() {
             is_open_booking_day: true,
             created_by_role: 'trainer',
           }))
-          type AppointmentInsert = import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Insert']
-          const { error: insertError } = await supabase.from('appointments').insert(rows as AppointmentInsert[])
+          type AppointmentInsert =
+            import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Insert']
+          const { error: insertError } = await supabase
+            .from('appointments')
+            .insert(rows as AppointmentInsert[])
           if (insertError) {
             if (insertError.code === '23505') {
               notify('Esiste già uno slot Free Pass per questo orario.', 'error', 'Slot Free Pass')
@@ -662,13 +730,26 @@ export function useCalendarPage() {
 
           let slots: { starts_at: string; ends_at: string }[]
           if (data.recurrence === 'until_lessons' && data.athlete_id) {
-            slots = await getRecurrenceSlotsUntilLessons(supabase, data.athlete_id, startsAt, endsAt)
+            slots = await getRecurrenceSlotsUntilLessons(
+              supabase,
+              data.athlete_id,
+              startsAt,
+              endsAt,
+            )
             if (slots.length === 0) {
-              notify('L\'atleta non ha lezioni disponibili o il conteggio è zero.', 'error', 'Ripetizione')
+              notify(
+                "L'atleta non ha lezioni disponibili o il conteggio è zero.",
+                'error',
+                'Ripetizione',
+              )
               setLoading(false)
               return
             }
-          } else if (data.recurrence && data.recurrence !== 'none' && data.recurrence !== 'until_lessons') {
+          } else if (
+            data.recurrence &&
+            data.recurrence !== 'none' &&
+            data.recurrence !== 'until_lessons'
+          ) {
             slots = getRecurrenceSlots(startsAt, endsAt, data.recurrence)
           } else {
             slots = [{ starts_at: startsAt, ends_at: endsAt }]
@@ -679,17 +760,27 @@ export function useCalendarPage() {
             )
           for (const slot of slots) {
             if (overlapsBlock(slot.starts_at, slot.ends_at)) {
-              notify('Questo orario cade in un blocco calendario (ferie/chiusura). Scegli un altro slot.', 'error', 'Blocco calendario')
+              notify(
+                'Questo orario cade in un blocco calendario (ferie/chiusura). Scegli un altro slot.',
+                'error',
+                'Blocco calendario',
+              )
               setLoading(false)
               return
             }
           }
           if (!options?.forceOverwrite) {
             for (const slot of slots) {
-              const hasOverlap = await checkAppointmentOverlap(supabase, staffProfileId, slot.starts_at, slot.ends_at, {
-                appointmentType: data.type,
-                isCollaborator,
-              })
+              const hasOverlap = await checkAppointmentOverlap(
+                supabase,
+                staffProfileId,
+                slot.starts_at,
+                slot.ends_at,
+                {
+                  appointmentType: data.type,
+                  isCollaborator,
+                },
+              )
               if (hasOverlap) {
                 const msg =
                   data.type === 'allenamento_doppio'
@@ -717,7 +808,8 @@ export function useCalendarPage() {
             location: data.location || null,
             created_by_role: 'trainer',
           }))
-          type AppointmentInsert = import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Insert']
+          type AppointmentInsert =
+            import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Insert']
           const { data: insertedRows, error: insertError } = await supabase
             .from('appointments')
             .insert(rows as AppointmentInsert[])
@@ -801,7 +893,12 @@ export function useCalendarPage() {
           cancellationType = 'tardiva'
           if (athleteId) {
             await addDebitFromAppointment(
-              { id: appointmentId, athlete_id: athleteId, service_type: (apt as { service_type?: 'training' | 'nutrition' | 'massage' })?.service_type },
+              {
+                id: appointmentId,
+                athlete_id: athleteId,
+                service_type: (apt as { service_type?: 'training' | 'nutrition' | 'massage' })
+                  ?.service_type,
+              },
               staffProfileId,
             )
           }
@@ -830,9 +927,8 @@ export function useCalendarPage() {
         }
       } catch (err) {
         logger.error('Errore cancellazione appuntamento', err, { appointmentId })
-        const msg =
-          err instanceof Error ? err.message : (err as { message?: string })?.message
-        notify(msg || 'Impossibile annullare l\'appuntamento', 'error', 'Errore annullamento')
+        const msg = err instanceof Error ? err.message : (err as { message?: string })?.message
+        notify(msg || "Impossibile annullare l'appuntamento", 'error', 'Errore annullamento')
       } finally {
         setLoading(false)
       }
@@ -870,12 +966,20 @@ export function useCalendarPage() {
           .from('notifications')
           .delete()
           .eq('appointment_id', appointmentId)
-        if (notifErr) logger.warn('Pulizia notifications (best-effort)', undefined, { appointmentId, err: notifErr.message })
+        if (notifErr)
+          logger.warn('Pulizia notifications (best-effort)', undefined, {
+            appointmentId,
+            err: notifErr.message,
+          })
         const { error: ledgerErr } = await supabase
           .from('credit_ledger')
           .update({ appointment_id: null })
           .eq('appointment_id', appointmentId)
-        if (ledgerErr) logger.warn('Pulizia credit_ledger (best-effort)', undefined, { appointmentId, err: ledgerErr.message })
+        if (ledgerErr)
+          logger.warn('Pulizia credit_ledger (best-effort)', undefined, {
+            appointmentId,
+            err: ledgerErr.message,
+          })
         const { error } = await supabase.from('appointments').delete().eq('id', appointmentId)
         if (error) throw error
         await fetchAppointments()
@@ -888,9 +992,8 @@ export function useCalendarPage() {
         }
       } catch (err) {
         logger.error('Errore eliminazione appuntamento', err, { appointmentId })
-        const msg =
-          err instanceof Error ? err.message : (err as { message?: string })?.message
-        notify(msg || 'Impossibile eliminare l\'appuntamento', 'error', 'Errore eliminazione')
+        const msg = err instanceof Error ? err.message : (err as { message?: string })?.message
+        notify(msg || "Impossibile eliminare l'appuntamento", 'error', 'Errore eliminazione')
       } finally {
         setLoading(false)
       }
@@ -985,8 +1088,7 @@ export function useCalendarPage() {
         notify('Seduta completata. È stato scalato 1 credito.', 'success', 'Completato')
       } catch (err) {
         logger.error('Errore completamento seduta', err, { appointmentId })
-        const msg =
-          err instanceof Error ? err.message : (err as { message?: string })?.message
+        const msg = err instanceof Error ? err.message : (err as { message?: string })?.message
         notify(msg || 'Impossibile completare la seduta', 'error', 'Errore')
       } finally {
         setLoading(false)
@@ -1020,7 +1122,8 @@ export function useCalendarPage() {
             {
               id: appointmentId,
               athlete_id: athleteId,
-              service_type: (apt as { service_type?: 'training' | 'nutrition' | 'massage' })?.service_type,
+              service_type: (apt as { service_type?: 'training' | 'nutrition' | 'massage' })
+                ?.service_type,
             },
             staffProfileId,
           )
@@ -1037,8 +1140,7 @@ export function useCalendarPage() {
         notify('No-show registrato. È stato scalato 1 credito.', 'success', 'No-show')
       } catch (err) {
         logger.error('Errore no-show', err, { appointmentId })
-        const msg =
-          err instanceof Error ? err.message : (err as { message?: string })?.message
+        const msg = err instanceof Error ? err.message : (err as { message?: string })?.message
         notify(msg || 'Impossibile registrare il no-show', 'error', 'Errore')
       } finally {
         setLoading(false)

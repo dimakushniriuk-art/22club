@@ -16,13 +16,16 @@ test.describe('Workout complete modal', () => {
     // Vai a "Oggi" o alla scheda di oggi se presente
     const oggiLink = page.getByRole('link', { name: /Oggi/i })
     if (await oggiLink.count()) {
-      await oggiLink.first().click().catch(() => {})
+      await oggiLink
+        .first()
+        .click()
+        .catch(() => {})
       await page.waitForTimeout(1500)
     }
 
     // Se c’è il pulsante "Completa allenamento" (sessione in corso con tutti esercizi completati), cliccalo
     const completaBtn = page.getByRole('button', { name: /Completa allenamento/i })
-    const hasButton = await completaBtn.count() > 0
+    const hasButton = (await completaBtn.count()) > 0
     if (!hasButton) {
       test.skip()
       return
@@ -30,14 +33,14 @@ test.describe('Workout complete modal', () => {
     await completaBtn.first().click()
 
     // Modal obbligatoria: deve mostrare le due opzioni
-    await expect(
-      page.getByRole('heading', { name: /Completamento Allenamento/i }),
-    ).toBeVisible({ timeout: 5000 })
-    await expect(
-      page.getByRole('button', { name: /Eseguito con Trainer/i }),
-    ).toBeVisible({ timeout: 3000 })
-    await expect(
-      page.getByRole('button', { name: /Eseguito da Solo/i }),
-    ).toBeVisible({ timeout: 3000 })
+    await expect(page.getByRole('heading', { name: /Completamento Allenamento/i })).toBeVisible({
+      timeout: 5000,
+    })
+    await expect(page.getByRole('button', { name: /Eseguito con Trainer/i })).toBeVisible({
+      timeout: 3000,
+    })
+    await expect(page.getByRole('button', { name: /Eseguito da Solo/i })).toBeVisible({
+      timeout: 3000,
+    })
   })
 })

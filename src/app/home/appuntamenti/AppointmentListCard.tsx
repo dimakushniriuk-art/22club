@@ -8,7 +8,15 @@ import { getStatusColor, getStatusText, isValidAppointmentDate } from './utils'
 import type { AppointmentStatus } from './utils'
 import { Calendar, Clock, MapPin, User, MessageSquare } from 'lucide-react'
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'outline' | 'secondary' | 'primary'
+type BadgeVariant =
+  | 'default'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'outline'
+  | 'secondary'
+  | 'primary'
 
 interface AppointmentListCardProps {
   appointment: AppointmentUI
@@ -17,7 +25,12 @@ interface AppointmentListCardProps {
   onKeyDown: (appointment: AppointmentUI, event: React.KeyboardEvent<HTMLDivElement>) => void
 }
 
-function AppointmentListCardComponent({ appointment, variant, onClick, onKeyDown }: AppointmentListCardProps) {
+function AppointmentListCardComponent({
+  appointment,
+  variant,
+  onClick,
+  onKeyDown,
+}: AppointmentListCardProps) {
   const status = (appointment.status || 'attivo') as AppointmentStatus
   const statusColor = getStatusColor(status) as BadgeVariant
   const statusText = getStatusText(status)
@@ -35,7 +48,9 @@ function AppointmentListCardComponent({ appointment, variant, onClick, onKeyDown
     >
       <div className="flex items-center justify-between gap-2">
         {variant === 'future' ? (
-          <h3 className="text-text-primary text-sm font-semibold truncate flex-1 min-w-0">{appointment.type}</h3>
+          <h3 className="text-text-primary text-sm font-semibold truncate flex-1 min-w-0">
+            {appointment.type}
+          </h3>
         ) : (
           <h4 className="text-text-primary text-sm font-semibold truncate flex-1 min-w-0">
             {appointment.type || 'Allenamento'}
@@ -50,7 +65,9 @@ function AppointmentListCardComponent({ appointment, variant, onClick, onKeyDown
           <>
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3 w-3 text-cyan-400 shrink-0" />
-              <p className="font-medium text-text-primary truncate">{formatDateLong(appointment.starts_at)}</p>
+              <p className="font-medium text-text-primary truncate">
+                {formatDateLong(appointment.starts_at)}
+              </p>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="h-3 w-3 text-cyan-400 shrink-0" />

@@ -46,23 +46,63 @@ async function fetchTrainerProfileFull(profileId: string): Promise<TrainerProfil
     transformationsRes,
   ] = await Promise.all([
     supabase.from('trainer_profiles').select('*').eq('profile_id', profileId).maybeSingle(),
-    supabase.from('trainer_education').select('*').eq('profile_id', profileId).order('anno', { ascending: false }),
-    supabase.from('trainer_certifications').select('*').eq('profile_id', profileId).order('anno', { ascending: false }),
-    supabase.from('trainer_courses').select('*').eq('profile_id', profileId).order('anno', { ascending: false }),
+    supabase
+      .from('trainer_education')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('anno', { ascending: false }),
+    supabase
+      .from('trainer_certifications')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('anno', { ascending: false }),
+    supabase
+      .from('trainer_courses')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('anno', { ascending: false }),
     supabase.from('trainer_specializations').select('*').eq('profile_id', profileId),
-    supabase.from('trainer_experience').select('*').eq('profile_id', profileId).order('data_inizio', { ascending: false }),
-    supabase.from('trainer_testimonials').select('*').eq('profile_id', profileId).order('created_at', { ascending: false }),
-    supabase.from('trainer_transformations').select('*').eq('profile_id', profileId).order('created_at', { ascending: false }),
+    supabase
+      .from('trainer_experience')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('data_inizio', { ascending: false }),
+    supabase
+      .from('trainer_testimonials')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('trainer_transformations')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: false }),
   ])
 
-  if (profileRes.error) logger.warn('trainer_profiles fetch error', undefined, { error: profileRes.error.message })
-  if (educationRes.error) logger.warn('trainer_education fetch error', undefined, { error: educationRes.error.message })
-  if (certificationsRes.error) logger.warn('trainer_certifications fetch error', undefined, { error: certificationsRes.error.message })
-  if (coursesRes.error) logger.warn('trainer_courses fetch error', undefined, { error: coursesRes.error.message })
-  if (specializationsRes.error) logger.warn('trainer_specializations fetch error', undefined, { error: specializationsRes.error.message })
-  if (experienceRes.error) logger.warn('trainer_experience fetch error', undefined, { error: experienceRes.error.message })
-  if (testimonialsRes.error) logger.warn('trainer_testimonials fetch error', undefined, { error: testimonialsRes.error.message })
-  if (transformationsRes.error) logger.warn('trainer_transformations fetch error', undefined, { error: transformationsRes.error.message })
+  if (profileRes.error)
+    logger.warn('trainer_profiles fetch error', undefined, { error: profileRes.error.message })
+  if (educationRes.error)
+    logger.warn('trainer_education fetch error', undefined, { error: educationRes.error.message })
+  if (certificationsRes.error)
+    logger.warn('trainer_certifications fetch error', undefined, {
+      error: certificationsRes.error.message,
+    })
+  if (coursesRes.error)
+    logger.warn('trainer_courses fetch error', undefined, { error: coursesRes.error.message })
+  if (specializationsRes.error)
+    logger.warn('trainer_specializations fetch error', undefined, {
+      error: specializationsRes.error.message,
+    })
+  if (experienceRes.error)
+    logger.warn('trainer_experience fetch error', undefined, { error: experienceRes.error.message })
+  if (testimonialsRes.error)
+    logger.warn('trainer_testimonials fetch error', undefined, {
+      error: testimonialsRes.error.message,
+    })
+  if (transformationsRes.error)
+    logger.warn('trainer_transformations fetch error', undefined, {
+      error: transformationsRes.error.message,
+    })
 
   return {
     profile: (profileRes.data as TrainerProfileRow | null) ?? null,

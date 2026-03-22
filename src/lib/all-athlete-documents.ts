@@ -3,7 +3,7 @@
  * per la pagina /home/documenti.
  */
 
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import { getDocuments } from '@/lib/documents'
 
 export type UnifiedDocumentSource =
@@ -22,9 +22,7 @@ export interface UnifiedDocumentItem {
   expires_at?: string | null
   status?: 'valido' | 'in_scadenza' | 'scaduto' | 'non_valido' | 'in-revisione' | null
   notes?: string | null
-  open:
-    | { type: 'public'; url: string }
-    | { type: 'signed'; bucket: string; path: string }
+  open: { type: 'public'; url: string } | { type: 'signed'; bucket: string; path: string }
   source: UnifiedDocumentSource
   canReplace?: boolean
   /** Se presente, usato come fallback se la signed URL fallisce (es. bucket pubblico) */
@@ -108,19 +106,26 @@ export async function getAllAthleteDocuments(
       notes: d.notes,
       open: { type: 'signed', bucket: 'documents', path: storagePath },
       source: 'documents',
-      canReplace:
-        d.status === 'scaduto' || d.status === 'in_scadenza' || d.status === 'non_valido',
+      canReplace: d.status === 'scaduto' || d.status === 'in_scadenza' || d.status === 'non_valido',
       publicUrlFallback: d.file_url,
     })
   }
 
   // 2. Dati medici: certificato + referti (athlete_id = profiles.user_id)
-  type MedicalRow = { certificato_medico_url?: string | null; certificato_medico_scadenza?: string | null; certificato_medico_tipo?: string | null; referti_medici?: unknown; updated_at?: string | null } | null
+  type MedicalRow = {
+    certificato_medico_url?: string | null
+    certificato_medico_scadenza?: string | null
+    certificato_medico_tipo?: string | null
+    referti_medici?: unknown
+    updated_at?: string | null
+  } | null
   let medical: MedicalRow = null
   if (userId) {
     const res = await supabase
       .from('athlete_medical_data')
-      .select('certificato_medico_url, certificato_medico_scadenza, certificato_medico_tipo, referti_medici, updated_at')
+      .select(
+        'certificato_medico_url, certificato_medico_scadenza, certificato_medico_tipo, referti_medici, updated_at',
+      )
       .eq('athlete_id', userId)
       .maybeSingle()
     medical = res.data as MedicalRow
@@ -152,7 +157,13 @@ export async function getAllAthleteDocuments(
     })
   }
 
-  const referti = (medical?.referti_medici as Array<{ url: string; data: string; tipo: string; note?: string }>) || []
+  const referti =
+    (medical?.referti_medici as Array<{
+      url: string
+      data: string
+      tipo: string
+      note?: string
+    }>) || []
   referti.forEach((r, i) => {
     const path = toStoragePath(r.url)
     items.push({
@@ -178,17 +189,17 @@ export async function getAllAthleteDocuments(
     administrative = res.data
   }
 
-  const documentiContrattuali = (administrative?.documenti_contrattuali as Array<{
-    url: string
-    nome: string
-    tipo: string
-    data_upload: string
-    note?: string
-  }>) || []
+  const documentiContrattuali =
+    (administrative?.documenti_contrattuali as Array<{
+      url: string
+      nome: string
+      tipo: string
+      data_upload: string
+      note?: string
+    }>) || []
   documentiContrattuali.forEach((doc, i) => {
     const parsed = doc.url.startsWith('http') ? parseStorageUrl(doc.url) : null
-    const useSigned =
-      parsed && ['athlete-documents', 'documents'].includes(parsed.bucket)
+    const useSigned = parsed && ['athlete-documents', 'documents'].includes(parsed.bucket)
     items.push({
       id: `contract-${userId}-${i}-${doc.url}`,
       category: doc.tipo || 'Documento contrattuale',
@@ -196,12 +207,11 @@ export async function getAllAthleteDocuments(
       label: doc.nome || doc.tipo || 'Documento',
       date: doc.data_upload,
       notes: doc.note ?? null,
-      open:
-        useSigned
-          ? { type: 'signed', bucket: parsed!.bucket, path: parsed!.path }
-          : doc.url.startsWith('http')
-            ? { type: 'public', url: doc.url }
-            : { type: 'signed', bucket: 'athlete-documents', path: toStoragePath(doc.url) },
+      open: useSigned
+        ? { type: 'signed', bucket: parsed!.bucket, path: parsed!.path }
+        : doc.url.startsWith('http')
+          ? { type: 'public', url: doc.url }
+          : { type: 'signed', bucket: 'athlete-documents', path: toStoragePath(doc.url) },
       source: 'contract',
     })
   })
@@ -214,11 +224,17 @@ export async function getAllAthleteDocuments(
     .eq('status', 'completed')
     .not('invoice_url', 'is', null)
 
-  const paymentsList = (payments || []) as Array<{ id: string; payment_date?: string | null; amount?: number | null; invoice_url?: string | null }>
+  const paymentsList = (payments || []) as Array<{
+    id: string
+    payment_date?: string | null
+    amount?: number | null
+    invoice_url?: string | null
+  }>
   paymentsList.forEach((p) => {
     const url = p.invoice_url as string
     const isPublic = url.startsWith('http')
-    const date = p.payment_date ?? (p as { created_at?: string }).created_at ?? new Date().toISOString()
+    const date =
+      p.payment_date ?? (p as { created_at?: string }).created_at ?? new Date().toISOString()
     items.push({
       id: `invoice-${p.id}`,
       category: 'Fattura',

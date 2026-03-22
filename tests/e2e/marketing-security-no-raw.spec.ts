@@ -15,7 +15,10 @@ test.describe('Marketing security: no raw data access', () => {
 
   test.beforeEach(() => {
     if (!MARKETING_CREDENTIALS) {
-      test.skip(true, 'Missing marketing test account: set MARKETING_TEST_EMAIL and MARKETING_TEST_PASSWORD (or PLAYWRIGHT_MARKETING_EMAIL / PLAYWRIGHT_MARKETING_PASSWORD) in .env.local. Create a user with role=marketing and org_id set in Supabase profiles.')
+      test.skip(
+        true,
+        'Missing marketing test account: set MARKETING_TEST_EMAIL and MARKETING_TEST_PASSWORD (or PLAYWRIGHT_MARKETING_EMAIL / PLAYWRIGHT_MARKETING_PASSWORD) in .env.local. Create a user with role=marketing and org_id set in Supabase profiles.',
+      )
     }
   })
 
@@ -29,7 +32,10 @@ test.describe('Marketing security: no raw data access', () => {
       password: MARKETING_CREDENTIALS!.password,
     })
     if (signInError || !sessionData.session) {
-      test.skip(true, `Marketing login failed: ${signInError?.message ?? 'no session'}. Check MARKETING_TEST_EMAIL / MARKETING_TEST_PASSWORD and that the user exists with role=marketing.`)
+      test.skip(
+        true,
+        `Marketing login failed: ${signInError?.message ?? 'no session'}. Check MARKETING_TEST_EMAIL / MARKETING_TEST_PASSWORD and that the user exists with role=marketing.`,
+      )
     }
 
     const { data, error } = await supabase.from('profiles').select('*').limit(1)
@@ -50,7 +56,10 @@ test.describe('Marketing security: no raw data access', () => {
       password: MARKETING_CREDENTIALS!.password,
     })
     if (signInError || !sessionData.session) {
-      test.skip(true, `Marketing login failed: ${signInError?.message ?? 'no session'}. Check MARKETING_TEST_EMAIL / MARKETING_TEST_PASSWORD.`)
+      test.skip(
+        true,
+        `Marketing login failed: ${signInError?.message ?? 'no session'}. Check MARKETING_TEST_EMAIL / MARKETING_TEST_PASSWORD.`,
+      )
     }
 
     const { data, error } = await supabase.from('workout_logs').select('*').limit(1)
@@ -71,13 +80,21 @@ test.describe('Marketing security: safe API and UI', () => {
     expect([401, 403]).toContain(res.status())
   })
 
-  test('GET /api/marketing/athletes with marketing session returns 200 and safe data', async ({ browser }) => {
+  test('GET /api/marketing/athletes with marketing session returns 200 and safe data', async ({
+    browser,
+  }) => {
     if (!MARKETING_CREDENTIALS) {
-      test.skip(true, 'Missing marketing test account: set MARKETING_TEST_EMAIL and MARKETING_TEST_PASSWORD.')
+      test.skip(
+        true,
+        'Missing marketing test account: set MARKETING_TEST_EMAIL and MARKETING_TEST_PASSWORD.',
+      )
     }
     const { existsSync } = await import('node:fs')
     if (!existsSync('tests/e2e/.auth/marketing-auth.json')) {
-      test.skip(true, 'Missing marketing-auth.json: run global setup with MARKETING_TEST_EMAIL and MARKETING_TEST_PASSWORD set.')
+      test.skip(
+        true,
+        'Missing marketing-auth.json: run global setup with MARKETING_TEST_EMAIL and MARKETING_TEST_PASSWORD set.',
+      )
     }
     const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3001'
     const context = await browser.newContext({
@@ -86,7 +103,10 @@ test.describe('Marketing security: safe API and UI', () => {
     const res = await context.request.get(`${baseURL}/api/marketing/athletes`)
     await context.close()
     if (res.status() === 401 || res.status() === 403) {
-      test.skip(true, 'Marketing session not valid or API rejected (ensure user has role=marketing and org_id).')
+      test.skip(
+        true,
+        'Marketing session not valid or API rejected (ensure user has role=marketing and org_id).',
+      )
     }
     expect(res.status()).toBe(200)
     const body = await res.json()
@@ -107,6 +127,8 @@ test.describe('Admin can read marketing athletes UI', () => {
   test('admin opens /dashboard/marketing/athletes and sees page', async ({ page }) => {
     await page.goto('/dashboard/marketing/athletes')
     await expect(page).toHaveURL(/\/dashboard\/marketing\/athletes/)
-    await expect(page.getByRole('heading', { level: 1, name: /Atleti/i })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { level: 1, name: /Atleti/i })).toBeVisible({
+      timeout: 10000,
+    })
   })
 })

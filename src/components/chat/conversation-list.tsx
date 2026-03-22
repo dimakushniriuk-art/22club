@@ -54,12 +54,8 @@ export function ConversationList({
     ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing', 'staff'].includes(
       (role ?? '').toLowerCase(),
     )
-  const staffConversations = filteredConversations.filter((c) =>
-    isStaffRole(c.other_user_role),
-  )
-  const athleteConversations = filteredConversations.filter(
-    (c) => !isStaffRole(c.other_user_role),
-  )
+  const staffConversations = filteredConversations.filter((c) => isStaffRole(c.other_user_role))
+  const athleteConversations = filteredConversations.filter((c) => !isStaffRole(c.other_user_role))
 
   const formatLastMessageTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -117,7 +113,12 @@ export function ConversationList({
         {filteredConversations.length === 0 ? (
           <div className="p-6 text-center">
             <div className="mb-3 flex justify-center">
-              <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl border', t.emptyIconBox)}>
+              <div
+                className={cn(
+                  'flex h-12 w-12 items-center justify-center rounded-2xl border',
+                  t.emptyIconBox,
+                )}
+              >
                 <MessageCircle className="h-6 w-6" />
               </div>
             </div>

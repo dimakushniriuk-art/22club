@@ -56,7 +56,9 @@ export async function POST(request: Request) {
 
     const { data: appointments, error: aptError } = await supabase
       .from('appointments')
-      .select('id, athlete_id, staff_id, starts_at, ends_at, type, location, notes, is_open_booking_day')
+      .select(
+        'id, athlete_id, staff_id, starts_at, ends_at, type, location, notes, is_open_booking_day',
+      )
       .in('id', ids)
 
     if (aptError) {
@@ -65,9 +67,7 @@ export async function POST(request: Request) {
     }
 
     const list = (appointments ?? []) as AppointmentRow[]
-    const toProcess = list.filter(
-      (a) => a.athlete_id && !a.is_open_booking_day,
-    )
+    const toProcess = list.filter((a) => a.athlete_id && !a.is_open_booking_day)
     if (toProcess.length === 0) {
       return NextResponse.json({ sent: 0, skipped: ids.length })
     }
@@ -76,10 +76,23 @@ export async function POST(request: Request) {
     const athleteIds = [...new Set(toProcess.map((a) => a.athlete_id!).filter(Boolean))]
 
     const [profilesRes, settingsRes, countersRes, completedRes] = await Promise.all([
-      supabase.from('profiles').select('id, email, nome, cognome').in('id', [...staffIds, ...athleteIds]),
-      supabase.from('staff_calendar_settings').select('staff_id, custom_appointment_types').in('staff_id', staffIds),
-      supabase.from('lesson_counters').select('athlete_id, count, lesson_type').in('athlete_id', athleteIds),
-      supabase.from('appointments').select('athlete_id').in('athlete_id', athleteIds).eq('status', 'completato'),
+      supabase
+        .from('profiles')
+        .select('id, email, nome, cognome')
+        .in('id', [...staffIds, ...athleteIds]),
+      supabase
+        .from('staff_calendar_settings')
+        .select('staff_id, custom_appointment_types')
+        .in('staff_id', staffIds),
+      supabase
+        .from('lesson_counters')
+        .select('athlete_id, count, lesson_type')
+        .in('athlete_id', athleteIds),
+      supabase
+        .from('appointments')
+        .select('athlete_id')
+        .in('athlete_id', athleteIds)
+        .eq('status', 'completato'),
     ])
 
     const profiles = (profilesRes.data ?? []) as (ProfileRow & { id: string })[]
@@ -115,10 +128,12 @@ export async function POST(request: Request) {
         .in('athlete_id', missingAthletes)
         .eq('status', 'completed')
       const purchasedByAthlete = new Map<string, number>()
-      ;(payRes.data ?? []).forEach((r: { athlete_id: string; lessons_purchased?: number | null }) => {
-        const cur = purchasedByAthlete.get(r.athlete_id) ?? 0
-        purchasedByAthlete.set(r.athlete_id, cur + (r.lessons_purchased ?? 0))
-      })
+      ;(payRes.data ?? []).forEach(
+        (r: { athlete_id: string; lessons_purchased?: number | null }) => {
+          const cur = purchasedByAthlete.get(r.athlete_id) ?? 0
+          purchasedByAthlete.set(r.athlete_id, cur + (r.lessons_purchased ?? 0))
+        },
+      )
       missingAthletes.forEach((aid) => {
         const used = lessonsCompletedByAthlete.get(aid) ?? 0
         const purchased = purchasedByAthlete.get(aid) ?? 0
@@ -127,12 +142,17 @@ export async function POST(request: Request) {
     }
 
     const profileMap = new Map(profiles.map((p) => [p.id, p]))
-    const settingsList = (settingsRes.data ?? []) as { staff_id: string; custom_appointment_types: unknown }[]
+    const settingsList = (settingsRes.data ?? []) as {
+      staff_id: string
+      custom_appointment_types: unknown
+    }[]
     const settingsByStaff = new Map<string, CustomType[]>(
       settingsList.map((s) => [
         s.staff_id,
         Array.isArray(s.custom_appointment_types)
-          ? (s.custom_appointment_types as CustomType[]).filter((c) => c && typeof c.key === 'string' && typeof c.label === 'string')
+          ? (s.custom_appointment_types as CustomType[]).filter(
+              (c) => c && typeof c.key === 'string' && typeof c.label === 'string',
+            )
           : [],
       ]),
     )
@@ -143,16 +163,25 @@ export async function POST(request: Request) {
       const staff = profileMap.get(apt.staff_id)
       const email = athlete?.email?.trim()
       if (!email) {
-        logger.debug('Atleta senza email, skip', undefined, { appointmentId: apt.id, athleteId: apt.athlete_id })
+        logger.debug('Atleta senza email, skip', undefined, {
+          appointmentId: apt.id,
+          athleteId: apt.athlete_id,
+        })
         continue
       }
-      const staffName = staff ? [staff.nome, staff.cognome].filter(Boolean).join(' ') || 'Staff' : 'Staff'
-      const athleteName = athlete ? [athlete.nome, athlete.cognome].filter(Boolean).join(' ') || 'Atleta' : 'Atleta'
+      const staffName = staff
+        ? [staff.nome, staff.cognome].filter(Boolean).join(' ') || 'Staff'
+        : 'Staff'
+      const athleteName = athlete
+        ? [athlete.nome, athlete.cognome].filter(Boolean).join(' ') || 'Atleta'
+        : 'Atleta'
       const customTypes = settingsByStaff.get(apt.staff_id) ?? []
       const typeLabel = getTypeLabel(apt.type, customTypes)
 
       const lessonsRemaining = apt.athlete_id ? lessonCountMap.get(apt.athlete_id) : undefined
-      const lessonsCompleted = apt.athlete_id ? (lessonsCompletedByAthlete.get(apt.athlete_id) ?? 0) : 0
+      const lessonsCompleted = apt.athlete_id
+        ? (lessonsCompletedByAthlete.get(apt.athlete_id) ?? 0)
+        : 0
       const result = await sendAppointmentReminderEmail({
         appointmentId: apt.id,
         athleteEmail: email,

@@ -8,10 +8,12 @@
 ## ✅ MODIFICHE APPLICATE
 
 ### 1. Cache Disabilitata Temporaneamente
+
 - ✅ Rimossa `unstable_cache` per vedere risultati in tempo reale
 - ✅ Chiamata diretta a `getTodayAppointments()` senza cache
 
 ### 2. Logging Dettagliato Aggiunto
+
 - ✅ Log calcolo date (`todayStart`, `todayEnd`)
 - ✅ Log risultati query con dettagli errori (`errorCode`, `errorDetails`)
 - ✅ Log appuntamenti con tutti i campi (`starts_at`, `ends_at`, `status`, `type`, `staff_id`, `athlete_id`)
@@ -21,6 +23,7 @@
 ## 🔍 PUNTI DA VERIFICARE
 
 ### 1. Console Browser
+
 Apri la console del browser (F12) e cerca questi log:
 
 ```
@@ -41,10 +44,11 @@ Apri la console del browser (F12) e cerca questi log:
 ```
 
 ### 2. Verifica Database
+
 Esegui questa query SQL per verificare se ci sono appuntamenti per oggi:
 
 ```sql
-SELECT 
+SELECT
   id,
   staff_id,
   athlete_id,
@@ -64,10 +68,12 @@ ORDER BY starts_at;
 ### 3. Possibili Cause
 
 #### A. profileId Non Corrisponde
+
 - **Sintomo**: Log mostra "❌ No Match"
 - **Fix**: Verifica quale `profileId` viene trovato e perché non corrisponde
 
 #### B. Query Non Trova Appuntamenti
+
 - **Sintomo**: `count = 0` o `appointmentsLength = 0`
 - **Fix**: Verifica:
   - `staff_id` nell'appuntamento corrisponde a `profileId`
@@ -75,10 +81,12 @@ ORDER BY starts_at;
   - `cancelled_at IS NULL`
 
 #### C. Appuntamenti Filtrati
+
 - **Sintomo**: `count > 0` ma `appointmentsLength = 0` dopo filtri
 - **Fix**: Verifica filtri client-side (status completato/cancellato)
 
 #### D. Data Range Errato
+
 - **Sintomo**: `todayStart` o `todayEnd` non corretti
 - **Fix**: Verifica calcolo date (timezone, ore 0:00:00)
 

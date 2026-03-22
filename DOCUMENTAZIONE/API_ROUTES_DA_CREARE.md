@@ -10,22 +10,27 @@ Questo documento elenca tutte le API routes necessarie per il progetto 22Club e 
 ## ✅ Route Completate
 
 ### Autenticazione
+
 - ✅ `/api/auth/context` - GET, POST
 - ✅ `/api/health` - GET
 
 ### Push Notifications
+
 - ✅ `/api/push/vapid-key` - GET
 - ✅ `/api/push/subscribe` - POST
 - ✅ `/api/push/unsubscribe` - POST
 
 ### Dashboard
+
 - ✅ `/api/dashboard/appointments` - GET (2025-01-17)
 
 ### Athletes
+
 - ✅ `/api/athletes/create` - POST (2025-01-17)
 - ✅ `/api/athletes/[id]` - GET, PUT, DELETE (2025-01-17)
 
 ### Exercises
+
 - ✅ `/api/exercises` - GET, POST, PUT, DELETE (2025-01-17)
 
 ---
@@ -35,33 +40,39 @@ Questo documento elenca tutte le API routes necessarie per il progetto 22Club e 
 ### Communications (Priorità Alta)
 
 #### `/api/communications/list` - GET
+
 **Uso**: Lista comunicazioni con filtri e paginazione  
 **Parametri query**: `status`, `type`, `limit`, `offset`  
 **Risposta**: `{ communications: [], total: number }`  
 **File riferimento**: `src/hooks/use-communications.ts:59`
 
 #### `/api/communications/send` - POST
+
 **Uso**: Invia una nuova comunicazione  
 **Body**: `{ type, subject, content, recipients, scheduled_at? }`  
 **File riferimento**: `src/hooks/use-communications.ts:300`
 
 #### `/api/communications/list-athletes` - GET
+
 **Uso**: Lista atleti per selezione destinatari  
 **Risposta**: `{ athletes: [] }`  
 **File riferimento**: `src/components/communications/new-communication-modal.tsx:262`
 
 #### `/api/communications/count-recipients` - POST
+
 **Uso**: Conta destinatari in base ai filtri  
 **Body**: `{ filter: { all_users?, athlete_ids?, trainer_ids? } }`  
 **Risposta**: `{ count: number }`  
 **File riferimento**: `src/hooks/communications/use-communications-page.tsx:198`
 
 #### `/api/communications/check-stuck` - POST
+
 **Uso**: Verifica comunicazioni bloccate  
 **Body**: `{ communication_id }`  
 **File riferimento**: `src/hooks/communications/use-communications-page.tsx:129`
 
 #### `/api/communications/recipients` - GET
+
 **Uso**: Lista destinatari di una comunicazione  
 **Parametri query**: `communication_id`  
 **Risposta**: `{ recipients: [] }`  
@@ -72,38 +83,44 @@ Questo documento elenca tutte le API routes necessarie per il progetto 22Club e 
 ### Athletes (Priorità Alta) ✅ COMPLETATO
 
 #### `/api/athletes/create` - POST ✅
+
 **Uso**: Crea un nuovo atleta  
 **Body**: `{ nome, cognome, email, phone?, password, stato, data_iscrizione?, note? }`  
 **File riferimento**: `src/components/dashboard/crea-atleta-modal.tsx:114`  
 **Stato**: ✅ Implementato e integrato con fallback Supabase
 
 #### `/api/athletes/[id]` - GET, PUT, DELETE ✅
+
 **Uso**: Ottieni, aggiorna o elimina un atleta  
 **Parametri**: `id` (path parameter)  
-**File riferimento**: 
+**File riferimento**:
+
 - GET: `src/hooks/use-clienti.ts:844`
 - PUT: `src/components/dashboard/modifica-atleta-modal.tsx:133` ✅ Aggiornato
 - DELETE: Disponibile  
-**Stato**: ✅ Implementato e integrato con fallback Supabase
+  **Stato**: ✅ Implementato e integrato con fallback Supabase
 
 ---
 
 ### Exercises (Priorità Alta) ✅ COMPLETATO
 
 #### `/api/exercises` - GET, POST, PUT, DELETE ✅
+
 **Uso**: CRUD completo per esercizi  
-**File riferimento**: 
+**File riferimento**:
+
 - GET: `src/app/dashboard/esercizi/page.tsx:195` ✅ Aggiornato
 - POST: `src/components/dashboard/exercise-form-modal.tsx:543` ✅ Aggiornato
 - PUT: `src/components/dashboard/exercise-form-modal.tsx:543` ✅ Aggiornato
 - DELETE: `src/app/dashboard/esercizi/page.tsx:244` ✅ Aggiornato  
-**Stato**: ✅ Implementato e integrato con fallback Supabase
+  **Stato**: ✅ Implementato e integrato con fallback Supabase
 
 ---
 
 ### Dashboard (Priorità Media) ✅ COMPLETATO
 
 #### `/api/dashboard/appointments` - GET ✅
+
 **Uso**: Lista appuntamenti per dashboard  
 **Risposta**: `{ appointments: [] }`  
 **File riferimento**: `src/app/dashboard/_components/upcoming-appointments-client.tsx:30` ✅ Aggiornato  
@@ -114,34 +131,41 @@ Questo documento elenca tutte le API routes necessarie per il progetto 22Club e 
 ### Admin (Priorità Media)
 
 #### `/api/admin/users` - GET, POST, PUT, DELETE
+
 **Uso**: Gestione utenti admin  
 **File riferimento**: `src/components/dashboard/admin/admin-users-content.tsx`
 
 #### `/api/admin/users/verify-login` - POST
+
 **Uso**: Verifica credenziali utente  
 **Body**: `{ userId, email, password }`  
 **File riferimento**: `src/components/dashboard/admin/admin-users-content.tsx:280`
 
 #### `/api/admin/users/reset-password` - POST
+
 **Uso**: Reset password utente  
 **Body**: `{ userId, newPassword }`  
 **File riferimento**: `src/components/dashboard/admin/admin-users-content.tsx:345`
 
 #### `/api/admin/users/import` - POST
+
 **Uso**: Importa utenti da CSV/Excel  
 **Body**: `{ file, options }`  
 **File riferimento**: `src/components/dashboard/admin/user-import-modal.tsx:325`
 
 #### `/api/admin/users/trainer` - GET
+
 **Uso**: Ottieni trainer per atleta  
 **Parametri query**: `athleteId`  
 **File riferimento**: `src/components/dashboard/admin/user-form-modal.tsx:121`
 
 #### `/api/admin/roles` - GET, POST
+
 **Uso**: Gestione ruoli  
 **File riferimento**: `src/components/dashboard/admin/admin-roles-content.tsx`
 
 #### `/api/admin/statistics` - GET
+
 **Uso**: Statistiche admin  
 **Risposta**: `{ stats: {} }`  
 **File riferimento**: `src/components/dashboard/admin/admin-statistics-content.tsx:78`
@@ -151,6 +175,7 @@ Questo documento elenca tutte le API routes necessarie per il progetto 22Club e 
 ### Webhooks (Priorità Bassa)
 
 #### `/api/webhooks/sms` - POST
+
 **Uso**: Webhook per SMS (callback da provider SMS)  
 **Parametri query**: `recipient_id`  
 **File riferimento**: `src/lib/communications/sms.ts:112`
@@ -160,6 +185,7 @@ Questo documento elenca tutte le API routes necessarie per il progetto 22Club e 
 ### Tracking (Priorità Bassa)
 
 #### `/api/track/email-open/[id]` - GET
+
 **Uso**: Tracking apertura email (pixel tracking)  
 **Parametri**: `id` (tracking pixel ID)  
 **File riferimento**: `src/lib/communications/email-resend-client.ts:94`
@@ -229,6 +255,7 @@ export async function GET(request: NextRequest) {
 ## 📝 Note Integrazione
 
 Tutte le route create sono integrate con:
+
 - ✅ Helper `api-client.ts` per fallback automatico
 - ✅ Supporto web (API routes) e mobile (Supabase client)
 - ✅ Gestione errori e logging

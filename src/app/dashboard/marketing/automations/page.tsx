@@ -21,7 +21,13 @@ const ACTION_LABELS: Record<string, string> = {
 
 function formatDate(s: string | null): string {
   if (!s) return '–'
-  return new Date(s).toLocaleString('it-IT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(s).toLocaleString('it-IT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export default function MarketingAutomationsPage() {
@@ -47,7 +53,10 @@ export default function MarketingAutomationsPage() {
       setError(null)
       try {
         const [autoRes, segRes] = await Promise.all([
-          supabase.from('marketing_automations').select('*').order('updated_at', { ascending: false }),
+          supabase
+            .from('marketing_automations')
+            .select('*')
+            .order('updated_at', { ascending: false }),
           supabase.from('marketing_segments').select('id, name'),
         ])
         if (cancelled) return
@@ -64,7 +73,9 @@ export default function MarketingAutomationsPage() {
       }
     }
     fetchAll()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [role, authLoading, router, supabase])
 
   const handleToggleActive = async (row: AutomationRow) => {
@@ -80,7 +91,8 @@ export default function MarketingAutomationsPage() {
     )
   }
 
-  const segmentName = (segmentId: string) => segments.find((s) => s.id === segmentId)?.name ?? segmentId
+  const segmentName = (segmentId: string) =>
+    segments.find((s) => s.id === segmentId)?.name ?? segmentId
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
     return (
@@ -121,13 +133,17 @@ export default function MarketingAutomationsPage() {
       ) : (
         <Card className="border-border bg-background-secondary/80">
           <CardHeader>
-            <CardTitle className="text-base text-text-primary">Elenco ({automations.length})</CardTitle>
+            <CardTitle className="text-base text-text-primary">
+              Elenco ({automations.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {automations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Zap className="mb-3 h-12 w-12 text-text-muted" />
-                <p className="text-center text-sm text-text-secondary">Nessuna automazione. Creane una.</p>
+                <p className="text-center text-sm text-text-secondary">
+                  Nessuna automazione. Creane una.
+                </p>
                 <Button asChild className="mt-4">
                   <Link href="/dashboard/marketing/automations/new">Nuova automazione</Link>
                 </Button>
@@ -142,9 +158,12 @@ export default function MarketingAutomationsPage() {
                     <div>
                       <p className="font-medium">{row.name}</p>
                       <p className="text-sm text-text-muted">
-                        Segmento: {segmentName(row.segment_id)} · {ACTION_LABELS[row.action_type] ?? row.action_type}
+                        Segmento: {segmentName(row.segment_id)} ·{' '}
+                        {ACTION_LABELS[row.action_type] ?? row.action_type}
                       </p>
-                      <p className="text-xs text-text-muted">Ultima esecuzione: {formatDate(row.last_run_at)}</p>
+                      <p className="text-xs text-text-muted">
+                        Ultima esecuzione: {formatDate(row.last_run_at)}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -153,7 +172,11 @@ export default function MarketingAutomationsPage() {
                         onClick={() => handleToggleActive(row)}
                         disabled={togglingId === row.id}
                       >
-                        {row.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                        {row.is_active ? (
+                          <ToggleRight className="h-4 w-4" />
+                        ) : (
+                          <ToggleLeft className="h-4 w-4" />
+                        )}
                         {row.is_active ? 'Attiva' : 'Disattiva'}
                       </Button>
                       <Button variant="outline" size="sm" asChild>

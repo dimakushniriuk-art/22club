@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { TablesInsert, TablesUpdate } from '@/types/supabase'
 
@@ -35,7 +35,8 @@ export function useWorkoutMutations() {
       setData: TablesInsert<'workout_sets'> | TablesUpdate<'workout_sets'>,
     ) => {
       try {
-        type WorkoutSetInsert = import('@/lib/supabase/types').Database['public']['Tables']['workout_sets']['Insert']
+        type WorkoutSetInsert =
+          import('@/lib/supabase/types').Database['public']['Tables']['workout_sets']['Insert']
         const { data, error } = await supabase
           .from('workout_sets')
           .upsert(setData as WorkoutSetInsert)

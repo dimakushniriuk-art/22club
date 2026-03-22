@@ -52,15 +52,15 @@ Riferimento unico per la **pagina chat atleta** (home) e per la **configurazione
 
 ### 1.7 File coinvolti (app)
 
-| File | Ruolo |
-|------|--------|
-| `src/app/home/chat/page.tsx` | Pagina chat atleta (PT, effectiveConversation, header, invio, stati) |
-| `src/hooks/use-chat.ts` | useChat: conversazioni, corrente, sendMessage, deleteMessage, uploadFile, … |
-| `src/hooks/chat/use-chat-messages.ts` | Fetch messaggi, sendMessage, markAsRead, **deleteMessage** (DELETE diretto, senza fetch prima) |
-| `src/hooks/chat/use-chat-conversations.ts` | Lista conversazioni (RPC get_conversation_participants) |
-| `src/components/chat/message-list.tsx` | Lista messaggi, delete con conferma |
-| `src/components/chat/message-input.tsx` | Input testo/file, invio |
-| `src/components/chat/conversation-list.tsx` | Lista conversazioni (icona pt/trainer) |
+| File                                        | Ruolo                                                                                          |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/app/home/chat/page.tsx`                | Pagina chat atleta (PT, effectiveConversation, header, invio, stati)                           |
+| `src/hooks/use-chat.ts`                     | useChat: conversazioni, corrente, sendMessage, deleteMessage, uploadFile, …                    |
+| `src/hooks/chat/use-chat-messages.ts`       | Fetch messaggi, sendMessage, markAsRead, **deleteMessage** (DELETE diretto, senza fetch prima) |
+| `src/hooks/chat/use-chat-conversations.ts`  | Lista conversazioni (RPC get_conversation_participants)                                        |
+| `src/components/chat/message-list.tsx`      | Lista messaggi, delete con conferma                                                            |
+| `src/components/chat/message-input.tsx`     | Input testo/file, invio                                                                        |
+| `src/components/chat/conversation-list.tsx` | Lista conversazioni (icona pt/trainer)                                                         |
 
 ---
 
@@ -68,11 +68,11 @@ Riferimento unico per la **pagina chat atleta** (home) e per la **configurazione
 
 ### 2.1 Tabelle principali
 
-| Tabella | Ruolo |
-|---------|--------|
-| **profiles** | id, user_id, nome, cognome, role, avatar_url, org_id (usati da chat e RPC) |
+| Tabella           | Ruolo                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **profiles**      | id, user_id, nome, cognome, role, avatar_url, org_id (usati da chat e RPC)                                                |
 | **chat_messages** | id, sender_id, receiver_id → profiles(id), message, type, file_url, file_name, file_size, read_at, created_at, updated_at |
-| **pt_atleti** | pt_id, atleta_id → profiles(id); relazione PT–atleta (lista chat, PT assegnato, policy INSERT) |
+| **pt_atleti**     | pt_id, atleta_id → profiles(id); relazione PT–atleta (lista chat, PT assegnato, policy INSERT)                            |
 
 ### 2.2 chat_messages – Colonne e indici
 
@@ -81,13 +81,13 @@ Riferimento unico per la **pagina chat atleta** (home) e per la **configurazione
 
 ### 2.3 RLS chat_messages (stato attuale)
 
-| Policy | Operazione | Comportamento |
-|--------|------------|----------------|
-| **chat_messages_select_conversation** | SELECT | Utente è sender o receiver; può essere richiesto stesso org (subquery su profiles). Nota: se la policy usa lettura profilo dell’altro utente, l’atleta senza permesso di leggere il PT può non vedere righe; con RLS disabilitato o policy rilassate la SELECT funziona. |
-| **chat_messages_insert_same_org** | INSERT | Utente è sender **e** (stesso org **oppure** receiver è il PT assegnato). Vedi funzioni sotto. |
-| **chat_messages_receiver_mark_read** | UPDATE | Destinatario può aggiornare (es. read_at). |
-| **chat_messages_update_own** | UPDATE | Mittente può aggiornare. |
-| **chat_messages_delete_own** | DELETE | Solo mittente (sender_id = profilo corrente). |
+| Policy                                | Operazione | Comportamento                                                                                                                                                                                                                                                            |
+| ------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **chat_messages_select_conversation** | SELECT     | Utente è sender o receiver; può essere richiesto stesso org (subquery su profiles). Nota: se la policy usa lettura profilo dell’altro utente, l’atleta senza permesso di leggere il PT può non vedere righe; con RLS disabilitato o policy rilassate la SELECT funziona. |
+| **chat_messages_insert_same_org**     | INSERT     | Utente è sender **e** (stesso org **oppure** receiver è il PT assegnato). Vedi funzioni sotto.                                                                                                                                                                           |
+| **chat_messages_receiver_mark_read**  | UPDATE     | Destinatario può aggiornare (es. read_at).                                                                                                                                                                                                                               |
+| **chat_messages_update_own**          | UPDATE     | Mittente può aggiornare.                                                                                                                                                                                                                                                 |
+| **chat_messages_delete_own**          | DELETE     | Solo mittente (sender_id = profilo corrente).                                                                                                                                                                                                                            |
 
 ### 2.4 Funzioni helper per RLS chat (INSERT)
 
@@ -125,36 +125,36 @@ WITH CHECK (
 
 ## 3. Fix applicati (riepilogo)
 
-1. **INSERT atleta → PT bloccato (42501)**  
-   - Causa: policy INSERT verificava “stesso org” leggendo da `profiles` il receiver; l’atleta non può leggere il profilo del PT.  
+1. **INSERT atleta → PT bloccato (42501)**
+   - Causa: policy INSERT verificava “stesso org” leggendo da `profiles` il receiver; l’atleta non può leggere il profilo del PT.
    - Soluzione: funzioni SECURITY DEFINER `chat_profiles_same_org` e `chat_receiver_is_assigned_pt`; policy INSERT riscritta per usare quelle funzioni (stesso org **oppure** receiver = PT assegnato). Migration: `20260223_chat_messages_insert_same_org_rpc.sql`, `20260223_chat_messages_insert_allow_pt_athlete.sql`.
 
-2. **Delete messaggio: “Error fetching message before delete” / “Messaggio non trovato”**  
-   - Causa: il codice faceva una SELECT sul messaggio prima del DELETE; la SELECT era bloccata dalla policy (stesso org / lettura profilo PT).  
+2. **Delete messaggio: “Error fetching message before delete” / “Messaggio non trovato”**
+   - Causa: il codice faceva una SELECT sul messaggio prima del DELETE; la SELECT era bloccata dalla policy (stesso org / lettura profilo PT).
    - Soluzione: eliminato il fetch preliminare; si esegue solo **DELETE** con `.eq('id', messageId).eq('sender_id', profileId).select('id')`. La policy DELETE (solo mittente) è l’unica verifica. File: `src/hooks/chat/use-chat-messages.ts`.
 
-3. **Profilo PT non leggibile dall’atleta**  
+3. **Profilo PT non leggibile dall’atleta**
    - La policy “Athletes can view assigned trainer profile” su `profiles` è stata rimossa (rollback) perché causava “Profilo non trovato” al login. La chat non legge più il profilo del PT da `profiles`; usa `get_my_trainer_profile()` e, per l’header, i dati della conversazione o del PT caricato da pt_atleti + RPC.
 
-4. **Test RLS disabilitato**  
+4. **Test RLS disabilitato**
    - Migration `20260223_chat_messages_disable_rls_test.sql`: disabilita RLS su `chat_messages` per test. Rollback: `20260223_chat_messages_enable_rls_rollback.sql`. In produzione si può lasciare RLS attivo e usare le policy con le due funzioni sopra.
 
 ---
 
 ## 4. Migration e script (riferimento)
 
-| File | Descrizione |
-|------|-------------|
-| `20260208_chat_messages_rls_receiver_mark_read.sql` | Policy UPDATE receiver (segna come letto). |
-| `20260208_rpc_chat_conversations_same_org.sql` | RPC get_conversation_participants filtrata per org_id. |
-| `20260213_fix_profiles_recursion_use_rpc.sql` | Rimozione policy atleta-view-trainer su profiles; creazione get_my_trainer_profile(). |
-| `20260222_rollback_athlete_view_trainer_policy.sql` | DROP policy “Athletes can view assigned trainer profile” (se ancora presente). |
-| `20260223_chat_messages_insert_same_org_rpc.sql` | Funzione chat_profiles_same_org; policy INSERT con stessa funzione. |
+| File                                                 | Descrizione                                                                               |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `20260208_chat_messages_rls_receiver_mark_read.sql`  | Policy UPDATE receiver (segna come letto).                                                |
+| `20260208_rpc_chat_conversations_same_org.sql`       | RPC get_conversation_participants filtrata per org_id.                                    |
+| `20260213_fix_profiles_recursion_use_rpc.sql`        | Rimozione policy atleta-view-trainer su profiles; creazione get_my_trainer_profile().     |
+| `20260222_rollback_athlete_view_trainer_policy.sql`  | DROP policy “Athletes can view assigned trainer profile” (se ancora presente).            |
+| `20260223_chat_messages_insert_same_org_rpc.sql`     | Funzione chat_profiles_same_org; policy INSERT con stessa funzione.                       |
 | `20260223_chat_messages_insert_allow_pt_athlete.sql` | Funzione chat_receiver_is_assigned_pt; policy INSERT estesa (stesso org OR PT assegnato). |
-| `20260223_chat_messages_disable_rls_test.sql` | Disabilita RLS su chat_messages (solo test). |
-| `20260223_chat_messages_enable_rls_rollback.sql` | Riabilita RLS su chat_messages. |
-| `verify_chat_supabase.sql` | Verifica struttura chat_messages, policy, RPC, pt_atleti (eseguire in SQL Editor). |
-| `verify_chat_dima.sql` | Verifica profilo atleta, pt_atleti, messaggi, org_id (esempio email). |
+| `20260223_chat_messages_disable_rls_test.sql`        | Disabilita RLS su chat_messages (solo test).                                              |
+| `20260223_chat_messages_enable_rls_rollback.sql`     | Riabilita RLS su chat_messages.                                                           |
+| `verify_chat_supabase.sql`                           | Verifica struttura chat_messages, policy, RPC, pt_atleti (eseguire in SQL Editor).        |
+| `verify_chat_dima.sql`                               | Verifica profilo atleta, pt_atleti, messaggi, org_id (esempio email).                     |
 
 ---
 

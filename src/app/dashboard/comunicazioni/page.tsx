@@ -179,58 +179,58 @@ export default function ComunicazioniPage(props: PageProps) {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList variant="pills">
-            <TabsTrigger value="tutte" variant="pills">
-              Tutti
-            </TabsTrigger>
-            <TabsTrigger value="sent" variant="pills">
-              Inviati
-            </TabsTrigger>
-            <TabsTrigger value="delivered" variant="pills">
-              Consegnati
-            </TabsTrigger>
-            <TabsTrigger value="pending" variant="pills">
-              In attesa
-            </TabsTrigger>
-            <TabsTrigger value="failed" variant="pills">
-              Falliti
-            </TabsTrigger>
-          </TabsList>
+          <TabsTrigger value="tutte" variant="pills">
+            Tutti
+          </TabsTrigger>
+          <TabsTrigger value="sent" variant="pills">
+            Inviati
+          </TabsTrigger>
+          <TabsTrigger value="delivered" variant="pills">
+            Consegnati
+          </TabsTrigger>
+          <TabsTrigger value="pending" variant="pills">
+            In attesa
+          </TabsTrigger>
+          <TabsTrigger value="failed" variant="pills">
+            Falliti
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value={activeTab}>
-            <CommunicationsList
-              activeTab={activeTab}
-              communications={communications}
-              totalCount={totalCount}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              itemsPerPage={itemsPerPage}
-              hasNextPage={hasNextPage}
-              hasPrevPage={hasPrevPage}
-              loading={loading}
-              onNewCommunication={openNewModal}
-              onSend={handleSendCommunication}
-              onEdit={handleEditAndOpenModal}
-              onReset={handleResetCommunication}
-              onDelete={handleDeleteCommunication}
-              onNextPage={handleNextPage}
-              onPrevPage={handlePrevPage}
-              onPageChange={handlePageChange}
-              onViewDetails={handleViewDetails}
-              getTipoIcon={getTipoIcon}
-              getStatoBadge={getStatoBadge}
-              formatData={formatData}
-            />
-          </TabsContent>
+        <TabsContent value={activeTab}>
+          <CommunicationsList
+            activeTab={activeTab}
+            communications={communications}
+            totalCount={totalCount}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            loading={loading}
+            onNewCommunication={openNewModal}
+            onSend={handleSendCommunication}
+            onEdit={handleEditAndOpenModal}
+            onReset={handleResetCommunication}
+            onDelete={handleDeleteCommunication}
+            onNextPage={handleNextPage}
+            onPrevPage={handlePrevPage}
+            onPageChange={handlePageChange}
+            onViewDetails={handleViewDetails}
+            getTipoIcon={getTipoIcon}
+            getStatoBadge={getStatoBadge}
+            formatData={formatData}
+          />
+        </TabsContent>
       </Tabs>
 
       {/* Modal Dettaglio Recipients - Lazy loaded solo quando aperto */}
       {selectedCommunicationId && (
         <Suspense fallback={<LoadingState message="Caricamento dettagli destinatari..." />}>
           <RecipientsDetailModal
-              isOpen={showRecipientsModal}
-              onClose={closeRecipientsModal}
-              communicationId={selectedCommunicationId}
-              communicationTitle={selectedCommunicationTitle}
+            isOpen={showRecipientsModal}
+            onClose={closeRecipientsModal}
+            communicationId={selectedCommunicationId}
+            communicationTitle={selectedCommunicationTitle}
           />
         </Suspense>
       )}
@@ -238,28 +238,28 @@ export default function ComunicazioniPage(props: PageProps) {
       {/* Modal Nuova/Modifica Comunicazione - Lazy loaded solo quando aperto */}
       {showNewModal && (
         <Suspense fallback={<LoadingState message="Caricamento form comunicazione..." />}>
-            <NewCommunicationModal
-              isOpen={showNewModal}
-              isEditing={!!editingCommunicationId}
-              onClose={closeNewModal}
-              formType={formType}
-              formTitle={formTitle}
-              formMessage={formMessage}
-              formRecipientFilter={formRecipientFilter}
-              formSelectedAthletes={formSelectedAthletes}
-              formScheduled={formScheduled}
-              formScheduledDate={formScheduledDate}
-              formLoading={formLoading}
-              recipientCount={recipientCount}
-              onFormTypeChange={setFormType}
-              onFormTitleChange={setFormTitle}
-              onFormMessageChange={setFormMessage}
-              onFormRecipientFilterChange={setFormRecipientFilter}
-              onFormSelectedAthletesChange={setFormSelectedAthletes}
-              onFormScheduledChange={setFormScheduled}
-              onFormScheduledDateChange={setFormScheduledDate}
-              onCreateDraft={handleCreateDraft}
-              onCreateAndSend={handleCreateAndSend}
+          <NewCommunicationModal
+            isOpen={showNewModal}
+            isEditing={!!editingCommunicationId}
+            onClose={closeNewModal}
+            formType={formType}
+            formTitle={formTitle}
+            formMessage={formMessage}
+            formRecipientFilter={formRecipientFilter}
+            formSelectedAthletes={formSelectedAthletes}
+            formScheduled={formScheduled}
+            formScheduledDate={formScheduledDate}
+            formLoading={formLoading}
+            recipientCount={recipientCount}
+            onFormTypeChange={setFormType}
+            onFormTitleChange={setFormTitle}
+            onFormMessageChange={setFormMessage}
+            onFormRecipientFilterChange={setFormRecipientFilter}
+            onFormSelectedAthletesChange={setFormSelectedAthletes}
+            onFormScheduledChange={setFormScheduled}
+            onFormScheduledDateChange={setFormScheduledDate}
+            onCreateDraft={handleCreateDraft}
+            onCreateAndSend={handleCreateAndSend}
           />
         </Suspense>
       )}

@@ -73,10 +73,7 @@ const PROGRESSI_CARDS: Array<{
 export default function ProgressiPage() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div
-        className={SCROLL_CONTAINER_CLASS}
-        style={SCROLL_CONTAINER_STYLE}
-      >
+      <div className={SCROLL_CONTAINER_CLASS} style={SCROLL_CONTAINER_STYLE}>
         <PageHeaderGlass
           title="Progressi"
           subtitle="Monitora i tuoi progressi e le tue statistiche"

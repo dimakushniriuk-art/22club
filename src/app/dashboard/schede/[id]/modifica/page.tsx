@@ -11,11 +11,7 @@ import { WorkoutWizardContent } from '@/components/workout/workout-wizard-conten
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useToast } from '@/components/ui/toast'
-import type {
-  WorkoutWizardData,
-  WorkoutDayExerciseData,
-  DayItem,
-} from '@/types/workout'
+import type { WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
 
 function workoutDetailToWizardData(detail: {
   name: string
@@ -86,13 +82,14 @@ function workoutDetailToWizardData(detail: {
     objective: detail.objective ?? undefined,
     days: detail.days.map((day) => {
       const items = (day as { items?: DayItem[] }).items
-      const circuitListDetail = (detail as { circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }> })
-        .circuitList
+      const circuitListDetail = (
+        detail as { circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }> }
+      ).circuitList
       if (items && items.length > 0) {
         const exercises = items.flatMap((i) =>
           i.type === 'exercise'
             ? [i.exercise]
-            : circuitListDetail?.find((c) => c.id === i.circuitId)?.params ?? [],
+            : (circuitListDetail?.find((c) => c.id === i.circuitId)?.params ?? []),
         )
         return {
           name: day.title,
@@ -119,10 +116,7 @@ function ModificaSchedaContent() {
   const params = useParams()
   const workoutId = typeof params?.id === 'string' ? params.id : null
 
-  const { workout, loading: detailLoading, error: detailError } = useWorkoutDetail(
-    workoutId,
-    true,
-  )
+  const { workout, loading: detailLoading, error: detailError } = useWorkoutDetail(workoutId, true)
   const { athletes, exercises, loading: plansLoading, handleUpdateWorkout } = useWorkoutPlans()
   const { addToast } = useToast()
 
@@ -148,8 +142,7 @@ function ModificaSchedaContent() {
       logger.error('Errore aggiornamento scheda', error)
       addToast({
         title: 'Errore',
-        message:
-          error instanceof Error ? error.message : "Errore nell'aggiornamento della scheda",
+        message: error instanceof Error ? error.message : "Errore nell'aggiornamento della scheda",
         variant: 'error',
       })
       throw error
@@ -163,7 +156,10 @@ function ModificaSchedaContent() {
   if (!workoutId) {
     return (
       <div className="relative min-h-screen flex flex-col">
-        <ErrorState message="ID scheda non valido" onRetry={() => router.push('/dashboard/schede')} />
+        <ErrorState
+          message="ID scheda non valido"
+          onRetry={() => router.push('/dashboard/schede')}
+        />
       </div>
     )
   }
@@ -179,10 +175,7 @@ function ModificaSchedaContent() {
   if (detailError) {
     return (
       <div className="relative min-h-screen flex flex-col">
-        <ErrorState
-          message={detailError.message}
-          onRetry={() => router.refresh()}
-        />
+        <ErrorState message={detailError.message} onRetry={() => router.refresh()} />
       </div>
     )
   }

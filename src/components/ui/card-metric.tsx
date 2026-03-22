@@ -49,13 +49,8 @@ export function CardMetric({
           </div>
         )}
         <div>
-          <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-            {label}
-          </div>
-          <div
-            className="text-xl font-bold"
-            style={{ color: accentData.bar }}
-          >
+          <div className="text-[10px] uppercase tracking-wide text-text-tertiary">{label}</div>
+          <div className="text-xl font-bold" style={{ color: accentData.bar }}>
             {value}
           </div>
         </div>

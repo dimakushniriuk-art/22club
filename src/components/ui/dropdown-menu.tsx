@@ -87,10 +87,10 @@ export function DropdownMenuTrigger({
   }
 
   return (
-    <button 
+    <button
       ref={triggerRef as React.RefObject<HTMLButtonElement>}
-      onClick={() => setOpen(!open)} 
-      aria-expanded={open} 
+      onClick={() => setOpen(!open)}
+      aria-expanded={open}
       aria-haspopup="menu"
     >
       {children}
@@ -105,10 +105,14 @@ export function DropdownMenuContent({
 }: DropdownMenuContentProps) {
   const { open, setOpen, triggerRef } = React.useContext(DropdownContext)
   const ref = React.useRef<HTMLDivElement>(null)
-  const [position, setPosition] = React.useState<{ top: number; left?: number; right?: number | string }>({ 
-    top: 0, 
-    left: 0, 
-    right: 'auto' 
+  const [position, setPosition] = React.useState<{
+    top: number
+    left?: number
+    right?: number | string
+  }>({
+    top: 0,
+    left: 0,
+    right: 'auto',
   })
   const [mounted, setMounted] = React.useState(false)
 
@@ -238,7 +242,9 @@ export function DropdownMenuItem({
   }
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<React.HTMLAttributes<HTMLElement> & { href?: string }>
+    const child = children as React.ReactElement<
+      React.HTMLAttributes<HTMLElement> & { href?: string }
+    >
     return React.cloneElement(child, {
       ...child.props,
       className: cn(

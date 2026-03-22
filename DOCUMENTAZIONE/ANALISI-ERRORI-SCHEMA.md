@@ -25,10 +25,11 @@ Il file SQL è sintatticamente corretto e ben strutturato.
 La tabella `workout_logs` ha **tre colonne** che sembrano riferirsi allo stesso concetto:
 
 - `atleta_id` (uuid NOT NULL) - Vecchia colonna
-- `athlete_id` (uuid) - Nuova colonna  
+- `athlete_id` (uuid) - Nuova colonna
 - `user_id` (uuid) - Altra colonna
 
 **Foreign Keys associate:**
+
 - `workout_logs_atleta_id_fkey` → `profiles(id)`
 - `workout_logs_athlete_id_fkey` → `profiles(id)`
 - `workout_logs_user_id_fkey` → `auth.users(id)`
@@ -57,6 +58,7 @@ Ci sono **8 foreign keys** che puntano a `auth.users` (schema di sistema):
 Alcune tabelle usano `profiles(id)`, altre `profiles(user_id)`:
 
 **Usano `profiles(id)`:**
+
 - `appointments.athlete_id`
 - `appointments.staff_id`
 - `athlete_administrative_data.athlete_id`
@@ -74,6 +76,7 @@ Alcune tabelle usano `profiles(id)`, altre `profiles(user_id)`:
 - `workouts.athlete_id`
 
 **Usano `profiles(user_id)`:**
+
 - `athlete_fitness_data.athlete_id`
 - `athlete_massage_data.athlete_id`
 - `athlete_medical_data.athlete_id`
@@ -124,10 +127,12 @@ Se l'importazione va a buon fine senza errori, il file è corretto.
 **Il file SQL è corretto e pronto per l'uso!**
 
 Non ci sono errori sintattici o strutturali. Le uniche note sono:
+
 - Colonne duplicate potenziali (da verificare)
 - Inconsistenza nell'uso di `profiles(id)` vs `profiles(user_id)` (potrebbe essere intenzionale)
 
 Il file può essere usato come base per:
+
 - ✅ Importare modifiche
 - ✅ Ricreare il database
 - ✅ Versioning dello schema

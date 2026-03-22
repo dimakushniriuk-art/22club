@@ -27,11 +27,13 @@ function calculateGrowthMetrics(trend: TrendData[]) {
 
   const firstWorkouts = firstHalf.reduce((sum, d) => sum + d.allenamenti, 0)
   const secondWorkouts = secondHalf.reduce((sum, d) => sum + d.allenamenti, 0)
-  const workouts_growth = firstWorkouts > 0 ? ((secondWorkouts - firstWorkouts) / firstWorkouts) * 100 : 0
+  const workouts_growth =
+    firstWorkouts > 0 ? ((secondWorkouts - firstWorkouts) / firstWorkouts) * 100 : 0
 
   const firstDocuments = firstHalf.reduce((sum, d) => sum + d.documenti, 0)
   const secondDocuments = secondHalf.reduce((sum, d) => sum + d.documenti, 0)
-  const documents_growth = firstDocuments > 0 ? ((secondDocuments - firstDocuments) / firstDocuments) * 100 : 0
+  const documents_growth =
+    firstDocuments > 0 ? ((secondDocuments - firstDocuments) / firstDocuments) * 100 : 0
 
   const firstHours = firstHalf.reduce((sum, d) => sum + d.ore_totali, 0)
   const secondHours = secondHalf.reduce((sum, d) => sum + d.ore_totali, 0)
@@ -86,22 +88,24 @@ async function getAnalyticsDataClient(
 
     // Popola allenamenti
     if (workoutLogs) {
-      workoutLogs.forEach((log: { data: string | null; durata_minuti: number | null; stato: string | null }) => {
-        const logData = log.data as string | Date | unknown
-        let dayKey: string
-        if (typeof logData === 'string') {
-          dayKey = logData.split('T')[0]
-        } else if (logData instanceof Date) {
-          dayKey = logData.toISOString().split('T')[0]
-        } else {
-          dayKey = String(logData).split('T')[0]
-        }
+      workoutLogs.forEach(
+        (log: { data: string | null; durata_minuti: number | null; stato: string | null }) => {
+          const logData = log.data as string | Date | unknown
+          let dayKey: string
+          if (typeof logData === 'string') {
+            dayKey = logData.split('T')[0]
+          } else if (logData instanceof Date) {
+            dayKey = logData.toISOString().split('T')[0]
+          } else {
+            dayKey = String(logData).split('T')[0]
+          }
 
-        const existing = trendMap.get(dayKey) || { allenamenti: 0, documenti: 0, ore_totali: 0 }
-        existing.allenamenti += 1
-        existing.ore_totali += (log.durata_minuti || 0) / 60
-        trendMap.set(dayKey, existing)
-      })
+          const existing = trendMap.get(dayKey) || { allenamenti: 0, documenti: 0, ore_totali: 0 }
+          existing.allenamenti += 1
+          existing.ore_totali += (log.durata_minuti || 0) / 60
+          trendMap.set(dayKey, existing)
+        },
+      )
     }
 
     // Popola documenti
@@ -168,20 +172,22 @@ async function getAnalyticsDataClient(
         { workouts: number; totalDuration: number; completed: number }
       >()
 
-      performanceData.forEach((w: { athlete_id: string | null; durata_minuti: number | null; stato: string | null }) => {
-        const athleteId = (w.athlete_id as string) || 'unknown'
-        const existing = athleteMap.get(athleteId) || {
-          workouts: 0,
-          totalDuration: 0,
-          completed: 0,
-        }
-        existing.workouts += 1
-        existing.totalDuration += w.durata_minuti || 0
-        if (w.stato === 'completato' || w.stato === 'completed') {
-          existing.completed += 1
-        }
-        athleteMap.set(athleteId, existing)
-      })
+      performanceData.forEach(
+        (w: { athlete_id: string | null; durata_minuti: number | null; stato: string | null }) => {
+          const athleteId = (w.athlete_id as string) || 'unknown'
+          const existing = athleteMap.get(athleteId) || {
+            workouts: 0,
+            totalDuration: 0,
+            completed: 0,
+          }
+          existing.workouts += 1
+          existing.totalDuration += w.durata_minuti || 0
+          if (w.stato === 'completato' || w.stato === 'completed') {
+            existing.completed += 1
+          }
+          athleteMap.set(athleteId, existing)
+        },
+      )
 
       // Converti in array (semplificato, senza nome atleta)
       athleteMap.forEach((data, athleteId) => {
@@ -190,7 +196,8 @@ async function getAnalyticsDataClient(
           athlete_name: `Atleta ${athleteId.slice(0, 8)}`,
           total_workouts: data.workouts,
           avg_duration: data.workouts > 0 ? Math.round(data.totalDuration / data.workouts) : 0,
-          completion_rate: data.workouts > 0 ? Math.round((data.completed / data.workouts) * 100) : 0,
+          completion_rate:
+            data.workouts > 0 ? Math.round((data.completed / data.workouts) * 100) : 0,
         })
       })
     }

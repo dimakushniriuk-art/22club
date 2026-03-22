@@ -2,24 +2,25 @@
 
 ## File modificati/creati
 
-| File | Azione |
-|------|--------|
-| `supabase/migrations/20260228235000_marketing_automations.sql` | Creato: tabella marketing_automations, RLS, trigger org_id + updated_at |
-| `src/app/api/marketing/automations/[id]/route.ts` | Creato: GET dettaglio automation + segment |
-| `src/app/api/marketing/automations/[id]/run/route.ts` | Creato: POST run manuale (applySegmentRules, action create_campaign_suggestion / log_event, last_run_at) |
-| `src/lib/supabase/types.ts` | Aggiunta tabella marketing_automations (Row/Insert/Update) |
-| `src/app/dashboard/marketing/automations/page.tsx` | Creato: lista, toggle attivo, link Nuova e Dettaglio |
-| `src/app/dashboard/marketing/automations/new/page.tsx` | Creato: form name, segment, action_type, action_payload (suggested_name/budget, event_type) |
-| `src/app/dashboard/marketing/automations/[id]/page.tsx` | Creato: dettaglio + bottone "Esegui ora" → POST run |
-| `src/components/shared/dashboard/sidebar.tsx` | Aggiunta voce Automazioni (Zap) → /dashboard/marketing/automations |
-| `src/components/shared/dashboard/dashboard-mobile-nav.tsx` | Aggiunta voce Automazioni (Zap) |
-| `src/middleware.ts` | Allowlist /dashboard/marketing/automations |
+| File                                                           | Azione                                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260228235000_marketing_automations.sql` | Creato: tabella marketing_automations, RLS, trigger org_id + updated_at                                  |
+| `src/app/api/marketing/automations/[id]/route.ts`              | Creato: GET dettaglio automation + segment                                                               |
+| `src/app/api/marketing/automations/[id]/run/route.ts`          | Creato: POST run manuale (applySegmentRules, action create_campaign_suggestion / log_event, last_run_at) |
+| `src/lib/supabase/types.ts`                                    | Aggiunta tabella marketing_automations (Row/Insert/Update)                                               |
+| `src/app/dashboard/marketing/automations/page.tsx`             | Creato: lista, toggle attivo, link Nuova e Dettaglio                                                     |
+| `src/app/dashboard/marketing/automations/new/page.tsx`         | Creato: form name, segment, action_type, action_payload (suggested_name/budget, event_type)              |
+| `src/app/dashboard/marketing/automations/[id]/page.tsx`        | Creato: dettaglio + bottone "Esegui ora" → POST run                                                      |
+| `src/components/shared/dashboard/sidebar.tsx`                  | Aggiunta voce Automazioni (Zap) → /dashboard/marketing/automations                                       |
+| `src/components/shared/dashboard/dashboard-mobile-nav.tsx`     | Aggiunta voce Automazioni (Zap)                                                                          |
+| `src/middleware.ts`                                            | Allowlist /dashboard/marketing/automations                                                               |
 
 ---
 
 ## Migration (20260228235000_marketing_automations.sql)
 
 **Tabella marketing_automations**
+
 - id, org_id, name, segment_id (FK marketing_segments ON DELETE CASCADE), action_type ('create_campaign_suggestion' | 'log_event' | 'tag_leads'), action_payload jsonb DEFAULT '{}', is_active DEFAULT true, last_run_at, created_at, updated_at
 - Indici: org_id, segment_id, is_active
 

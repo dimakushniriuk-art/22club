@@ -8,6 +8,7 @@
 ## 🔍 Analisi Problema
 
 ### Errore
+
 ```
 error: RPC failed; HTTP 408 curl 22 The requested URL returned error: 408
 send-pack: unexpected disconnect while reading sideband packet
@@ -103,12 +104,15 @@ find . -type f -size +50M -not -path "./.git/*" -not -path "./node_modules/*"
 ## 🎯 Prossimi Passi
 
 1. **Usa Script Push Incrementale** (Raccomandato)
+
    ```powershell
    .\scripts\push-incremental.ps1
    ```
+
    Vedi `SOLUZIONE_PUSH_GRANDE_REPOSITORY.md` per dettagli
 
 2. **Se Script Non Disponibile**: Push Manuale Incrementale
+
    ```bash
    # Push 10 commit alla volta
    git push origin HEAD~50:main
@@ -120,6 +124,7 @@ find . -type f -size +50M -not -path "./.git/*" -not -path "./node_modules/*"
    ```
 
 3. **Alternativa SSH**:
+
    ```bash
    git remote set-url origin git@github.com:dimakushniriuk-art/club_1225.git
    git push origin main

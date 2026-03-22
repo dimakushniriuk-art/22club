@@ -27,10 +27,7 @@ export function NutritionNotesSection({
   onFormDataChange,
 }: NutritionNotesSectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-text-primary">Note Nutrizionali</CardTitle>
       </CardHeader>

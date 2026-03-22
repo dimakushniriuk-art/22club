@@ -32,7 +32,12 @@ interface AgendaClientProps {
   loadError?: string | null
 }
 
-export function AgendaClient({ initialEvents, hasMoreAppointments = false, appointmentsTotalCount = 0, loadError = null }: AgendaClientProps) {
+export function AgendaClient({
+  initialEvents,
+  hasMoreAppointments = false,
+  appointmentsTotalCount = 0,
+  loadError = null,
+}: AgendaClientProps) {
   const [events, setEvents] = useState<AgendaEvent[]>(initialEvents)
   const router = useRouter()
   const supabase = createClient()
@@ -133,10 +138,7 @@ export function AgendaClient({ initialEvents, hasMoreAppointments = false, appoi
         .single()
       if (apt?.athlete_id) {
         try {
-          await addDebitFromAppointment(
-            { id: eventId, athlete_id: apt.athlete_id },
-            null,
-          )
+          await addDebitFromAppointment({ id: eventId, athlete_id: apt.athlete_id }, null)
         } catch (ledgerErr) {
           logger.warn('Errore insert credit_ledger DEBIT', ledgerErr, { eventId })
           // Non bloccare: appuntamento già completato

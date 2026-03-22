@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 
 interface Settings {
   profile: {
@@ -102,8 +102,12 @@ export function usePTSettings(authUserId: string) {
           avatar: settings.profile.avatar,
           email: settings.profile.email,
         }
-        type ProfilesUpdate = import('@/lib/supabase/types').Database['public']['Tables']['profiles']['Update']
-        const { error } = await supabase.from('profiles').update(updatePayload as ProfilesUpdate).eq('user_id', authUserId)
+        type ProfilesUpdate =
+          import('@/lib/supabase/types').Database['public']['Tables']['profiles']['Update']
+        const { error } = await supabase
+          .from('profiles')
+          .update(updatePayload as ProfilesUpdate)
+          .eq('user_id', authUserId)
         if (error) throw error
       }
       await new Promise((resolve) => setTimeout(resolve, 300))

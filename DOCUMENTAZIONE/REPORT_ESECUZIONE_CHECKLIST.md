@@ -11,9 +11,11 @@
 ### 1. ✅ Verifica Build
 
 #### Build Standard
+
 ```bash
 npm run build
 ```
+
 - ✅ **STATO**: SUCCESSO
 - ⚠️ **Warning**: 2 warning per moduli opzionali (accettabili)
   - `twilio` - Modulo opzionale, gestito con try-catch e fallback
@@ -22,9 +24,11 @@ npm run build
 - ✅ **Errore Compilazione**: Nessuno
 
 #### Build Produzione
+
 ```bash
 npm run build:prod
 ```
+
 - ✅ **STATO**: SUCCESSO
 - ⚠️ **Warning**: Stessi warning accettabili (twilio/web-push)
 - ✅ **Bundle Size**: Ottimizzato
@@ -42,6 +46,7 @@ npm run build:prod
 ```bash
 npm run lint
 ```
+
 - ✅ **STATO**: SUCCESSO
 - ✅ **Errori**: Nessuno
 - ✅ **Warning Critici**: Nessuno
@@ -56,6 +61,7 @@ npm run lint
 ```bash
 npm run typecheck
 ```
+
 - ✅ **STATO**: SUCCESSO
 - ✅ **Errori TypeScript**: Nessuno
 - ✅ **Tipi**: Tutti corretti
@@ -70,11 +76,13 @@ npm run typecheck
 ```bash
 npm run test:run
 ```
+
 - ⚠️ **STATO**: NON ESEGUITO (opzionale)
 - ℹ️ **Nota**: Test disponibili ma non eseguiti automaticamente
 - 📝 **Raccomandazione**: Eseguire manualmente prima del deploy in produzione
 
 **Comandi disponibili**:
+
 - `npm run test:run` - Test unitari
 - `npm run test:e2e:ci` - Test end-to-end
 
@@ -85,12 +93,15 @@ npm run test:run
 ### 5. ✅ Verifica Git Status
 
 #### File Modificati
+
 - ✅ **File tracciati**: Molti file modificati (normale durante sviluppo)
 - ⚠️ **File non tracciati**: Molti file nuovi (review necessario)
 - ✅ **`.env.local`**: Non tracciato (corretto - è in .gitignore)
 
 #### File da Review
+
 **File di documentazione** (da decidere se committare):
+
 - `CHECKLIST_PRE_COMMIT_DEPLOY.md` ✅ (nuovo, utile)
 - `REPORT_ESECUZIONE_CHECKLIST.md` ✅ (nuovo, utile)
 - `PAGE_AUDIT_*.md` (molti file di audit)
@@ -98,10 +109,12 @@ npm run test:run
 - `REPORT_ERRORI_E_RALLENTAMENTI_DASHBOARD.md`
 
 **File di test** (da decidere se committare):
+
 - `test-results/` - File eliminati (corretto)
 - `tests/e2e/.auth/*.json` - File di autenticazione (da verificare se sensibili)
 
 **File di codice** (da committare):
+
 - Tutti i file in `src/` modificati
 - File di configurazione (`next.config.ts`, `package.json`)
 
@@ -112,16 +125,19 @@ npm run test:run
 ### 6. ✅ Verifica File Sensibili
 
 #### Ricerca Secrets Hardcoded
+
 - ✅ **Pattern ricerca**: Nessun secret hardcoded trovato
 - ✅ **Variabili d'ambiente**: Tutte usate correttamente (`process.env.*`)
 - ✅ **`.env.local`**: Esiste ma è correttamente ignorato da `.gitignore`
 - ✅ **`.gitignore`**: Configurato correttamente (`.env*` ignorato)
 
 #### Verifica .gitignore
+
 ```gitignore
 .env*
 .env.*.local
 ```
+
 - ✅ **Configurazione**: Corretta
 - ✅ **Protezione**: Adeguata
 
@@ -136,6 +152,7 @@ npm audit --production
 ```
 
 #### Vulnerabilità Trovate
+
 - ⚠️ **3 vulnerabilità moderate** in `@sentry/nextjs`
   - Severity: **moderate**
   - Package: `@sentry/nextjs` (10.11.0 - 10.26.0)
@@ -143,6 +160,7 @@ npm audit --production
   - Fix: Disponibile via `npm audit fix`
 
 #### Raccomandazioni
+
 1. **Non critico**: Le vulnerabilità sono moderate e non bloccano il deploy
 2. **Fix disponibile**: Eseguire `npm audit fix` per aggiornare Sentry
 3. **Verifica**: Controllare che `sendDefaultPii` non sia impostato a `true` in produzione
@@ -156,9 +174,11 @@ npm audit --production
 ### 1. ⚠️ Variabili d'Ambiente Produzione
 
 #### Verifica Manuale Necessaria
+
 Le seguenti variabili devono essere verificate manualmente nella piattaforma di deploy:
 
 #### OBBLIGATORIE
+
 - [ ] `NEXT_PUBLIC_SUPABASE_URL` - URL progetto Supabase
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Chiave anonima Supabase
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` - Chiave servizio Supabase (server-side only)
@@ -166,11 +186,13 @@ Le seguenti variabili devono essere verificate manualmente nella piattaforma di 
 - [ ] `NODE_ENV=production` - Ambiente produzione
 
 #### OBBLIGATORIE per Comunicazioni
+
 - [ ] `RESEND_API_KEY` - API key Resend per email
 - [ ] `RESEND_FROM_EMAIL` - Email mittente verificata
 - [ ] `RESEND_FROM_NAME` - Nome mittente
 
 #### OPZIONALI
+
 - [ ] `NEXT_PUBLIC_VAPID_KEY` - VAPID public key (push notifications)
 - [ ] `VAPID_PRIVATE_KEY` - VAPID private key (push notifications)
 - [ ] `TWILIO_ACCOUNT_SID` - Account SID Twilio (SMS)
@@ -200,18 +222,22 @@ Le seguenti variabili devono essere verificate manualmente nella piattaforma di 
 ### 3. ⚠️ Verifica Database Supabase
 
 #### Migrazioni
+
 - ⚠️ **Status**: Verifica manuale necessaria
 - 📝 **Raccomandazione**: Eseguire `npm run db:verify` per verificare migrazioni
 
 #### RLS Policies
+
 - ⚠️ **Status**: Verifica manuale necessaria
 - 📝 **Raccomandazione**: Eseguire `npm run db:analyze-rls` per verificare policies
 
 #### Trigger e Funzioni
+
 - ⚠️ **Status**: Verifica manuale necessaria
 - 📝 **Raccomandazione**: Controllare log Supabase per errori
 
 **Comandi utili**:
+
 ```bash
 npm run db:verify              # Verifica setup Supabase
 npm run db:analyze-rls         # Analizza RLS policies
@@ -228,6 +254,7 @@ npm run db:verify-data-deep     # Verifica dati profondi
 - 📝 **Raccomandazione**: Eseguire manualmente prima del deploy
 
 **Comandi disponibili**:
+
 ```bash
 npm run test:e2e:ci            # Test E2E per CI
 npm run test:e2e               # Test E2E standard
@@ -240,6 +267,7 @@ npm run test:e2e               # Test E2E standard
 ### 5. ✅ Verifica Configurazione
 
 #### Next.js Config
+
 - ✅ **Configurazione**: Corretta
 - ✅ **Ottimizzazioni**: Attive
 - ✅ **Moduli opzionali**: Configurati come esterni (`twilio`, `web-push`, `resend`)
@@ -247,6 +275,7 @@ npm run test:e2e               # Test E2E standard
 - ✅ **Image Optimization**: Configurata
 
 #### Docker (se usato)
+
 - ✅ **Dockerfile.production**: Presente
 - ✅ **docker-compose.production.yml**: Presente
 - ✅ **Health Checks**: Configurati
@@ -278,12 +307,14 @@ npm run test:e2e               # Test E2E standard
 ### 🚨 Azioni Immediate
 
 #### Prima del Commit
+
 1. [ ] Review file modificati e non tracciati
 2. [ ] Decidere quali file committare
 3. [ ] Eseguire `npm audit fix` per fixare vulnerabilità Sentry (opzionale)
 4. [ ] Verificare che `.env.local` non sia tracciato
 
 #### Prima del Deploy
+
 1. [ ] Verificare tutte le variabili d'ambiente in produzione
 2. [ ] Eseguire `npm run db:verify` per verificare database
 3. [ ] Eseguire `npm run db:analyze-rls` per verificare RLS
@@ -296,10 +327,13 @@ npm run test:e2e               # Test E2E standard
 ## 🎯 STATO FINALE
 
 ### ✅ Pronto per Commit
+
 **SÌ** - Con review file necessario
 
 ### ✅ Pronto per Deploy
+
 **QUASI** - Verifiche manuali necessarie:
+
 - Variabili d'ambiente
 - Database migrazioni
 - Test (opzionale)

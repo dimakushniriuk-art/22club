@@ -17,16 +17,19 @@ Fare push completo di tutti i 54 commit sul repository GitHub, risolvendo il pro
 ### Opzione 1: Script Push Incrementale (Raccomandato) ⭐
 
 **Vantaggi**:
+
 - ✅ Sicuro (non sovrascrive storia remota)
 - ✅ Gestisce timeout automaticamente
 - ✅ Mostra progresso in tempo reale
 
 **Esegui**:
+
 ```powershell
 .\scripts\push-incremental.ps1
 ```
 
 **Cosa Fa**:
+
 - Push in batch da 10 commit alla volta
 - Evita timeout su repository grandi
 - Gestisce errori automaticamente
@@ -36,13 +39,16 @@ Fare push completo di tutti i 54 commit sul repository GitHub, risolvendo il pro
 ### Opzione 2: Push con SSH (Alternativa)
 
 **Vantaggi**:
+
 - ✅ Più stabile per repository grandi
 - ✅ Nessun timeout HTTP
 
 **Prerequisiti**:
+
 - SSH key configurata su GitHub
 
 **Esegui**:
+
 ```bash
 # Cambia remote a SSH
 git remote set-url origin git@github.com:dimakushniriuk-art/club_1225.git
@@ -56,11 +62,13 @@ git push origin main
 ### Opzione 3: Force Push (⚠️ Solo se Repository Remoto è Vuoto/Nuovo)
 
 **ATTENZIONE**: Questo sovrascrive completamente il remoto. Usare SOLO se:
+
 - Il repository remoto è nuovo/vuoto
 - Non ci sono altri collaboratori
 - Sei sicuro di voler sostituire tutto
 
 **Esegui**:
+
 ```bash
 git push origin main --force
 ```
@@ -139,6 +147,7 @@ git log --oneline origin/main -10
 **Causa**: Credenziali GitHub non configurate
 
 **Soluzione**:
+
 ```bash
 # Configura credenziali
 git config --global user.name "dimakushniriuk-art"
@@ -152,12 +161,14 @@ git config --global user.email "your-email@example.com"
 **Causa**: Repository non esiste o non hai permessi
 
 **Soluzione**:
+
 - Verifica URL repository: https://github.com/dimakushniriuk-art/club_1225
 - Verifica di avere accesso al repository
 
 ### Errore: Timeout Persistente
 
 **Soluzione**:
+
 1. Verifica connessione internet
 2. Prova da rete diversa
 3. Usa SSH invece di HTTPS

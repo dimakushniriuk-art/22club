@@ -8,11 +8,13 @@
 ## 🎯 Strategia
 
 ### Web (Next.js)
+
 - ✅ **Usa API Routes** quando disponibili
 - ✅ **Vantaggi**: Validazione server-side, sicurezza, logica centralizzata
 - ✅ **Fallback**: Supabase client diretto se API fallisce
 
 ### Mobile (Capacitor)
+
 - ✅ **Usa Supabase Client** direttamente
 - ✅ **Motivo**: API routes non disponibili con export statico
 - ✅ **Vantaggi**: Nessuna dipendenza da server, funziona offline
@@ -62,7 +64,7 @@ const data = await apiGet(
       .eq('status', 'sent')
       .limit(10)
     return { data: data || [], count: null }
-  }
+  },
 )
 ```
 
@@ -73,6 +75,7 @@ const data = await apiGet(
 ### `use-communications.ts`
 
 **Prima**:
+
 ```typescript
 // Fetch manuale con try/catch complesso
 const response = await fetch('/api/communications/list')
@@ -81,6 +84,7 @@ const response = await fetch('/api/communications/list')
 ```
 
 **Dopo**:
+
 ```typescript
 import { apiGet } from '@/lib/api-client'
 
@@ -90,7 +94,7 @@ const result = await apiGet(
   // Fallback automatico
   async () => {
     // Query Supabase
-  }
+  },
 )
 ```
 
@@ -101,6 +105,7 @@ const result = await apiGet(
 ### 1. Identifica Hook/Componenti che Usano Supabase Direttamente
 
 Cerca pattern come:
+
 ```typescript
 const { data } = await supabase.from('table').select('*')
 ```
@@ -116,14 +121,10 @@ Vedi `docs/API_ROUTES_DA_CREARE.md` per elenco completo.
 const { data } = await supabase.from('table').select('*')
 
 // Dopo
-const data = await apiGet(
-  '/api/table/list',
-  {},
-  async () => {
-    const { data } = await supabase.from('table').select('*')
-    return data
-  }
-)
+const data = await apiGet('/api/table/list', {}, async () => {
+  const { data } = await supabase.from('table').select('*')
+  return data
+})
 ```
 
 ---

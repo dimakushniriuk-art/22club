@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Script per eseguire la migration SQL per fix workout_logs RLS policy
- * 
+ *
  * Questo script esegue direttamente la migration SQL usando il client Supabase
  * con la service role key per bypassare RLS.
  */
@@ -15,7 +15,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Errore: Variabili d\'ambiente mancanti')
+  console.error("❌ Errore: Variabili d'ambiente mancanti")
   console.error('Assicurati di avere:')
   console.error('  - NEXT_PUBLIC_SUPABASE_URL')
   console.error('  - SUPABASE_SERVICE_ROLE_KEY')
@@ -38,7 +38,7 @@ async function executeMigration() {
     // Leggi il file SQL
     const migrationPath = join(
       process.cwd(),
-      'supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql'
+      'supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql',
     )
     const sql = readFileSync(migrationPath, 'utf-8')
 
@@ -164,7 +164,7 @@ async function executeMigration() {
     console.log('✅ Script completato')
     console.log('📝 Ricorda: Esegui la migration SQL manualmente nel dashboard Supabase')
   } catch (error) {
-    console.error('❌ Errore durante l\'esecuzione:', error)
+    console.error("❌ Errore durante l'esecuzione:", error)
     process.exit(1)
   }
 }

@@ -27,10 +27,7 @@ export function MotivationalNotesSection({
   onFormDataChange,
 }: MotivationalNotesSectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg">Note Motivazionali</CardTitle>
       </CardHeader>

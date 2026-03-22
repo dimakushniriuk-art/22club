@@ -6,9 +6,20 @@ import { describe, it, expect, vi, beforeAll } from 'vitest'
 vi.mock('framer-motion', async () => {
   const React = await import('react')
   const framerProps = new Set([
-    'whileHover', 'whileTap', 'whileFocus', 'whileDrag', 'whileInView',
-    'initial', 'animate', 'exit', 'transition', 'variants',
-    'onAnimationStart', 'onAnimationComplete', 'layout', 'layoutId',
+    'whileHover',
+    'whileTap',
+    'whileFocus',
+    'whileDrag',
+    'whileInView',
+    'initial',
+    'animate',
+    'exit',
+    'transition',
+    'variants',
+    'onAnimationStart',
+    'onAnimationComplete',
+    'layout',
+    'layoutId',
   ])
   const createMotion = (tag: string) => {
     const Motion = (props: Record<string, unknown>) => {
@@ -24,7 +35,11 @@ vi.mock('framer-motion', async () => {
   return {
     motion: new Proxy(
       { div: createMotion('div'), span: createMotion('span') },
-      { get(_, prop) { return createMotion(prop as string) } },
+      {
+        get(_, prop) {
+          return createMotion(prop as string)
+        },
+      },
     ),
     AnimatePresence: ({ children }: { children: unknown }) => children,
   }

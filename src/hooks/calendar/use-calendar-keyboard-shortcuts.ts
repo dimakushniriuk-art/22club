@@ -70,7 +70,7 @@ export function useCalendarKeyboardShortcuts({
           break
       }
     },
-    [showForm, showPopover, setShowForm, setShowPopover, setShowKeyboardHelp]
+    [showForm, showPopover, setShowForm, setShowPopover, setShowKeyboardHelp],
   )
 
   useEffect(() => {

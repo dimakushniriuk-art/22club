@@ -78,7 +78,7 @@ function mapWorkoutLogToAllenamento(item: WorkoutLogWithRelations): Allenamento 
     created_at: item.created_at ?? '',
     updated_at: item.updated_at ?? item.created_at ?? '',
     trainer_name: trainerName || null,
-    is_coached: item.is_coached ?? (item.execution_mode === 'coached'),
+    is_coached: item.is_coached ?? item.execution_mode === 'coached',
   }
 }
 

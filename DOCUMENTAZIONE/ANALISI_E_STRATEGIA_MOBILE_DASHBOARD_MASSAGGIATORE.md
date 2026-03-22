@@ -11,13 +11,13 @@
 
 ### 1.1 `/dashboard/massaggiatore` (Home ruolo)
 
-| Area | Situazione attuale | Problemi rilevati |
-|------|--------------------|-------------------|
-| **Layout** | Container `min-h-screen w-full min-w-0`; contenuto `max-w-4xl mx-auto`; griglia `grid-cols-1 md:grid-cols-2`. | Su 393px una colonna ok. Padding `p-4 sm:p-6` accettabile; verificare che non ci sia spazio morto laterale residuo. |
-| **Header sezione** | Blocco con titolo (Hand + "Massaggiatore"), sottotitolo, barra decorativa. | Titolo `text-2xl sm:text-3xl`: su 393px può essere dominante; gerarchia da mantenere senza compressione. |
+| Area                 | Situazione attuale                                                                                                                              | Problemi rilevati                                                                                                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout**           | Container `min-h-screen w-full min-w-0`; contenuto `max-w-4xl mx-auto`; griglia `grid-cols-1 md:grid-cols-2`.                                   | Su 393px una colonna ok. Padding `p-4 sm:p-6` accettabile; verificare che non ci sia spazio morto laterale residuo.                                                                   |
+| **Header sezione**   | Blocco con titolo (Hand + "Massaggiatore"), sottotitolo, barra decorativa.                                                                      | Titolo `text-2xl sm:text-3xl`: su 393px può essere dominante; gerarchia da mantenere senza compressione.                                                                              |
 | **Card navigazione** | 4 card (Clienti, Chat, Calendario, Profilo); Link con `min-h-[120px]`, `p-5 sm:p-6`, icone 12×12 sm 14×14, label `text-sm`, sublabel `text-xs`. | Sublabel `text-xs` (12px): al limite; evitare ulteriori riduzioni. Hover `-translate-y-1` su mobile inutile: preferire solo feedback tap. Tap area della card è l’intera card: buono. |
-| **Spaziature** | `space-y-6 sm:space-y-8`, `gap-4 sm:gap-5`. | Coerenti; su 393px aumentare leggermente gap verticale tra card se la densità risulta alta. |
-| **CTA** | Ogni card è un CTA full-width. | Altezza min 120px rispetta buone pratiche; nessun CTA secondario da raggiungere. |
+| **Spaziature**       | `space-y-6 sm:space-y-8`, `gap-4 sm:gap-5`.                                                                                                     | Coerenti; su 393px aumentare leggermente gap verticale tra card se la densità risulta alta.                                                                                           |
+| **CTA**              | Ogni card è un CTA full-width.                                                                                                                  | Altezza min 120px rispetta buone pratiche; nessun CTA secondario da raggiungere.                                                                                                      |
 
 **Riepilogo problemi:** Nessun overflow orizzontale evidente. Possibili migliorie: vista default “giorno” o “agenda” su mobile per il calendario (se linkato); rimozione hover-translate su touch; eventuale scala tipografica mobile dedicata per sublabel.
 
@@ -25,14 +25,14 @@
 
 ### 1.2 `/dashboard/calendario`
 
-| Area | Situazione attuale | Problemi rilevati |
-|------|--------------------|-------------------|
-| **Layout** | Altezza `h-[calc(100vh-3.5rem)]`; sotto `lg` sidebar nascosta; FAB in basso a destra apre Drawer “Filtri e prossimi”; main = CalendarView full width. | Layout a colonna singola su mobile ok. Drawer overlay già previsto. |
-| **CalendarView** | FullCalendar; vista iniziale `dayGridMonth`; plugin dayGrid, timeGrid, list. Viste: Mese, Settimana, Giorno, Agenda. | **Critico:** su 393px la vista **Mese** ha celle molto piccole; testi eventi illeggibili o troncati; tap su celle/eventi difficili. Vista **Settimana** e **Giorno** altrettanto dense. **Agenda** (listWeek) più adatta al mobile ma non è default. |
-| **Drawer filtri** | Drawer sinistro 280px max 90vw con ricerca, filtro atleta, MiniCalendar, lista “Prossimi appuntamenti”. | Input e select con `min-h-[44px]`: ok. Lista prossimi: voci con tap area adeguata. Chiusura drawer su selezione appuntamento: ok. |
-| **Modal form** | Form nuovo/modifica appuntamento in modal; su mobile `items-end`, full width, `max-h-[90dvh]`, `rounded-t-2xl`, padding `p-4`. | Rischio: form lungo (atleta, data, ora, tipo, colore, luogo, note) con scroll; CTA “Crea appuntamento” devono restare raggiungibili con tastiera aperta. Label/input da verificare full-width e label sopra. |
-| **Popover dettaglio** | AppointmentPopover con posizione a coordinate. | Su viewport stretti il popover può uscire dallo schermo; preferibile sotto 852px sostituire con modal/drawer full-width. |
-| **FAB** | Pulsante 56×56 fixed bottom-right per aprire drawer. | Tap target ok; z-index da coordinare con altri overlay. |
+| Area                  | Situazione attuale                                                                                                                                    | Problemi rilevati                                                                                                                                                                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout**            | Altezza `h-[calc(100vh-3.5rem)]`; sotto `lg` sidebar nascosta; FAB in basso a destra apre Drawer “Filtri e prossimi”; main = CalendarView full width. | Layout a colonna singola su mobile ok. Drawer overlay già previsto.                                                                                                                                                                                  |
+| **CalendarView**      | FullCalendar; vista iniziale `dayGridMonth`; plugin dayGrid, timeGrid, list. Viste: Mese, Settimana, Giorno, Agenda.                                  | **Critico:** su 393px la vista **Mese** ha celle molto piccole; testi eventi illeggibili o troncati; tap su celle/eventi difficili. Vista **Settimana** e **Giorno** altrettanto dense. **Agenda** (listWeek) più adatta al mobile ma non è default. |
+| **Drawer filtri**     | Drawer sinistro 280px max 90vw con ricerca, filtro atleta, MiniCalendar, lista “Prossimi appuntamenti”.                                               | Input e select con `min-h-[44px]`: ok. Lista prossimi: voci con tap area adeguata. Chiusura drawer su selezione appuntamento: ok.                                                                                                                    |
+| **Modal form**        | Form nuovo/modifica appuntamento in modal; su mobile `items-end`, full width, `max-h-[90dvh]`, `rounded-t-2xl`, padding `p-4`.                        | Rischio: form lungo (atleta, data, ora, tipo, colore, luogo, note) con scroll; CTA “Crea appuntamento” devono restare raggiungibili con tastiera aperta. Label/input da verificare full-width e label sopra.                                         |
+| **Popover dettaglio** | AppointmentPopover con posizione a coordinate.                                                                                                        | Su viewport stretti il popover può uscire dallo schermo; preferibile sotto 852px sostituire con modal/drawer full-width.                                                                                                                             |
+| **FAB**               | Pulsante 56×56 fixed bottom-right per aprire drawer.                                                                                                  | Tap target ok; z-index da coordinare con altri overlay.                                                                                                                                                                                              |
 
 **Riepilogo problemi:** Vista calendario troppo densa su 393px (celle e testi piccoli); nessuna vista “agenda/giorno” come default mobile; popover dettaglio a rischio overflow; form lungo con CTA da tenere visibili sopra la tastiera.
 
@@ -40,15 +40,15 @@
 
 ### 1.3 `/dashboard/clienti`
 
-| Area | Situazione attuale | Problemi rilevati |
-|------|--------------------|-------------------|
-| **Layout** | Container `max-w-[1800px] mx-auto`, `space-y-10`, `px-4 sm:px-6`. Header + Toolbar + contenuto (tabella o griglia) + KPI in basso. | Su mobile colonna singola; effetto “vista forzata a griglia” sotto 768px già previsto: riduce rischio scroll orizzontale. |
-| **Header** | Titolo “Clienti”, sottotitolo, CTA (Invita cliente / Aggiungi atleta in base al ruolo). `flex-col sm:flex-row`, `flex-wrap gap-2`. | Su 393px i pulsanti vanno in stack; “Invita cliente” ha `min-h-[44px]`: ok. Verificare ordine e che il CTA principale resti in evidenza. |
-| **Toolbar** | ClientiToolbar: Input ricerca (h-12), filtri Tutti/Attivi/Inattivi, Filtri avanzati, toggle Griglia/Tabella, Export. Due righe: prima ricerca + filtri, seconda toggle vista + export. | Densità alta; pulsanti `size="sm"` potrebbero avere tap target sotto 44px. Rischio overflow se tutto resta su una riga sotto 393px. |
-| **Vista tabella** | ClientiTableView: tabella con checkbox, nome, email, stato, data, azioni (dropdown). Molte colonne. | **Critico:** sotto 768px la vista è forzata a griglia, ma se l’utente avesse ancora tabella (es. resize da desktop) si avrebbe **scroll orizzontale** e celle illeggibili. |
-| **Vista griglia** | ClientiGridView: card per cliente. | Più adatta al mobile; verificare altezza card, font, e che azioni (Chat, Email, ecc.) abbiano min 44px. |
-| **KPI** | 4 ModernKPICard in griglia `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`. | Su 393px una colonna; valori numerici e label devono restare leggibili (no micro-font); proporzioni “più alte che larghe” da confermare. |
-| **Modali** | CreaAtleta, ModificaAtleta, InvitaCliente, FiltriAvanzati, BulkActions (lazy). | Verificare su 393px: max-width, padding, assenza overflow orizzontale, CTA sempre visibili e min 44px. |
+| Area              | Situazione attuale                                                                                                                                                                     | Problemi rilevati                                                                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout**        | Container `max-w-[1800px] mx-auto`, `space-y-10`, `px-4 sm:px-6`. Header + Toolbar + contenuto (tabella o griglia) + KPI in basso.                                                     | Su mobile colonna singola; effetto “vista forzata a griglia” sotto 768px già previsto: riduce rischio scroll orizzontale.                                                  |
+| **Header**        | Titolo “Clienti”, sottotitolo, CTA (Invita cliente / Aggiungi atleta in base al ruolo). `flex-col sm:flex-row`, `flex-wrap gap-2`.                                                     | Su 393px i pulsanti vanno in stack; “Invita cliente” ha `min-h-[44px]`: ok. Verificare ordine e che il CTA principale resti in evidenza.                                   |
+| **Toolbar**       | ClientiToolbar: Input ricerca (h-12), filtri Tutti/Attivi/Inattivi, Filtri avanzati, toggle Griglia/Tabella, Export. Due righe: prima ricerca + filtri, seconda toggle vista + export. | Densità alta; pulsanti `size="sm"` potrebbero avere tap target sotto 44px. Rischio overflow se tutto resta su una riga sotto 393px.                                        |
+| **Vista tabella** | ClientiTableView: tabella con checkbox, nome, email, stato, data, azioni (dropdown). Molte colonne.                                                                                    | **Critico:** sotto 768px la vista è forzata a griglia, ma se l’utente avesse ancora tabella (es. resize da desktop) si avrebbe **scroll orizzontale** e celle illeggibili. |
+| **Vista griglia** | ClientiGridView: card per cliente.                                                                                                                                                     | Più adatta al mobile; verificare altezza card, font, e che azioni (Chat, Email, ecc.) abbiano min 44px.                                                                    |
+| **KPI**           | 4 ModernKPICard in griglia `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`.                                                                                                                | Su 393px una colonna; valori numerici e label devono restare leggibili (no micro-font); proporzioni “più alte che larghe” da confermare.                                   |
+| **Modali**        | CreaAtleta, ModificaAtleta, InvitaCliente, FiltriAvanzati, BulkActions (lazy).                                                                                                         | Verificare su 393px: max-width, padding, assenza overflow orizzontale, CTA sempre visibili e min 44px.                                                                     |
 
 **Riepilogo problemi:** Toolbar con molti controlli e possibile overflow o tap target piccoli; tabella da evitare del tutto sotto 852px (solo griglia/card); modali da validare su 393px.
 
@@ -56,13 +56,13 @@
 
 ### 1.4 `/dashboard/chat`
 
-| Area | Situazione attuale | Problemi rilevati |
-|------|--------------------|-------------------|
-| **Layout** | Due colonne: lista conversazioni `w-full lg:w-[320px]` + area messaggi `flex-1`; stesso livello in `flex gap-4 sm:gap-6`. | **Critico:** sotto `lg` (1280px) le due colonne restano **affiancate** (w-full + flex-1); su 393px lista e area chat sono **entrambe visibili ma strettissime** o una domina. Non c’è pattern “lista full width → tap → conversazione full width” con back. |
-| **Lista conversazioni** | ConversationList in pannello 320px su lg; su mobile con w-full condivide lo spazio con l’area messaggi. | Su 393px occorre **una sola vista** (lista **oppure** conversazione) con navigazione esplicita (es. back dalla chat alla lista). |
-| **Area messaggi** | MessageList + MessageInput in basso (`shrink-0`, `border-t`, `px-4 py-3 sm:p-4`). | Input sempre in fondo: buono. Con tastiera virtuale aperta l’input può essere coperto; area scrittura e CTA invio devono restare accessibili (scroll o posizionamento). |
-| **Stato vuoto** | “Seleziona una conversazione” con icona e testo. | Centrato; su mobile ok se la vista è lista-first. |
-| **Header** | Titolo Chat, pulsante Indietro, badge non letti. | Pulsante back utile per tornare alla lista da conversazione; verificare min 44px. |
+| Area                    | Situazione attuale                                                                                                        | Problemi rilevati                                                                                                                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout**              | Due colonne: lista conversazioni `w-full lg:w-[320px]` + area messaggi `flex-1`; stesso livello in `flex gap-4 sm:gap-6`. | **Critico:** sotto `lg` (1280px) le due colonne restano **affiancate** (w-full + flex-1); su 393px lista e area chat sono **entrambe visibili ma strettissime** o una domina. Non c’è pattern “lista full width → tap → conversazione full width” con back. |
+| **Lista conversazioni** | ConversationList in pannello 320px su lg; su mobile con w-full condivide lo spazio con l’area messaggi.                   | Su 393px occorre **una sola vista** (lista **oppure** conversazione) con navigazione esplicita (es. back dalla chat alla lista).                                                                                                                            |
+| **Area messaggi**       | MessageList + MessageInput in basso (`shrink-0`, `border-t`, `px-4 py-3 sm:p-4`).                                         | Input sempre in fondo: buono. Con tastiera virtuale aperta l’input può essere coperto; area scrittura e CTA invio devono restare accessibili (scroll o posizionamento).                                                                                     |
+| **Stato vuoto**         | “Seleziona una conversazione” con icona e testo.                                                                          | Centrato; su mobile ok se la vista è lista-first.                                                                                                                                                                                                           |
+| **Header**              | Titolo Chat, pulsante Indietro, badge non letti.                                                                          | Pulsante back utile per tornare alla lista da conversazione; verificare min 44px.                                                                                                                                                                           |
 
 **Riepilogo problemi:** Layout a due colonne non adattato a 393px (manca vista singola con switch lista/chat); input e CTA invio da tenere sopra la tastiera; pattern “lista → tap → chat → back” da definire e applicare sotto 852px.
 
@@ -70,13 +70,13 @@
 
 ### 1.5 `/dashboard/profilo`
 
-| Area | Situazione attuale | Problemi rilevati |
-|------|--------------------|-------------------|
-| **Layout** | Container `max-w-[1800px] mx-auto`, `space-y-4 sm:space-y-6`, `px-4 sm:px-6`. Header + eventuale messaggio success + Tabs (Profilo, Notifiche, Impostazioni) + TabContent. | Struttura verticale adatta al mobile. |
-| **Tabs** | TabsList variant pills; TabsTrigger con icona + testo (Profilo, Notifiche, Impostazioni). | Su 393px i tab possono andare in wrap o diventare troppo piccoli; verificare tap 44px e leggibilità. |
-| **Tab Profilo** | PTProfileTab (lazy): form profilo (nome, cognome, email, phone, specializzazione, certificazioni, Modifica/Salva/Annulla). | Input e label: verificare label sopra input, input full width, pulsanti full width e min 44px su mobile. |
-| **Tab Notifiche / Impostazioni** | Contenuti lazy; impostazioni con toggle e sezioni. | Stesse regole: input full width, toggle grandi, sezioni separabili (es. collapsible). |
-| **Avatar** | Se presente in PTProfileTab. | Centrato e proporzionato; nessun elemento troppo piccolo. |
+| Area                             | Situazione attuale                                                                                                                                                         | Problemi rilevati                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Layout**                       | Container `max-w-[1800px] mx-auto`, `space-y-4 sm:space-y-6`, `px-4 sm:px-6`. Header + eventuale messaggio success + Tabs (Profilo, Notifiche, Impostazioni) + TabContent. | Struttura verticale adatta al mobile.                                                                    |
+| **Tabs**                         | TabsList variant pills; TabsTrigger con icona + testo (Profilo, Notifiche, Impostazioni).                                                                                  | Su 393px i tab possono andare in wrap o diventare troppo piccoli; verificare tap 44px e leggibilità.     |
+| **Tab Profilo**                  | PTProfileTab (lazy): form profilo (nome, cognome, email, phone, specializzazione, certificazioni, Modifica/Salva/Annulla).                                                 | Input e label: verificare label sopra input, input full width, pulsanti full width e min 44px su mobile. |
+| **Tab Notifiche / Impostazioni** | Contenuti lazy; impostazioni con toggle e sezioni.                                                                                                                         | Stesse regole: input full width, toggle grandi, sezioni separabili (es. collapsible).                    |
+| **Avatar**                       | Se presente in PTProfileTab.                                                                                                                                               | Centrato e proporzionato; nessun elemento troppo piccolo.                                                |
 
 **Riepilogo problemi:** Verificare che tutti i form (profilo, notifiche, impostazioni) abbiano label sopra, full width, CTA 44px e spaziatura adeguata; tab non devono essere troppo compressi su 393px.
 
@@ -84,12 +84,12 @@
 
 ### 1.6 `/dashboard/impostazioni`
 
-| Area | Situazione attuale | Problemi rilevati |
-|------|--------------------|-------------------|
-| **Layout** | Tabs (Profilo, Notifiche, Privacy, Account, Trainer profile); contenuti lazy per tab. | Lista sezioni e tab: su mobile layout a colonna singola; verificare che i tab non creino overflow orizzontale. |
+| Area              | Situazione attuale                                                                                                             | Problemi rilevati                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout**        | Tabs (Profilo, Notifiche, Privacy, Account, Trainer profile); contenuti lazy per tab.                                          | Lista sezioni e tab: su mobile layout a colonna singola; verificare che i tab non creino overflow orizzontale.                         |
 | **Form e toggle** | SettingsProfileTab, SettingsNotificationsTab (toggle notifiche), SettingsPrivacyTab, SettingsAccountTab, change password, 2FA. | Toggle devono essere grandi (min 44px area tap); label e testo secondario leggibili (no micro-font); feedback visivo chiaro al cambio. |
-| **Sezioni** | Più card/sezioni per categoria. | Separazione visiva chiara; eventuale pattern collapsible per ridurre densità su mobile. |
-| **Modali** | Change password, 2FA setup, ecc. | Full width su mobile, CTA sempre visibili, nessun overflow. |
+| **Sezioni**       | Più card/sezioni per categoria.                                                                                                | Separazione visiva chiara; eventuale pattern collapsible per ridurre densità su mobile.                                                |
+| **Modali**        | Change password, 2FA setup, ecc.                                                                                               | Full width su mobile, CTA sempre visibili, nessun overflow.                                                                            |
 
 **Riepilogo problemi:** Toggle e controlli form devono rispettare 44px; testi secondari non troppo lunghi o piccoli; sezioni eventualmente collapsible; modali adattate a 393px.
 
@@ -97,14 +97,14 @@
 
 ### 1.7 Componenti condivisi (modali, drawer, form)
 
-| Componente | Uso | Problemi rilevati |
-|------------|-----|-------------------|
-| **Drawer (UI)** | Navigazione mobile, Filtri calendario. | z-[100]; overlay ok. Larghezza 280px max 85–90vw; contenuti con min-h-[44px] dove serve. |
-| **AppointmentForm** | Modal nuovo/modifica appuntamento. | Molti campi (atleta, data, ora, tipo, colore, luogo, note); su 393px il wrapper è full width con max-h 90dvh e padding; CTA in basso: assicurare che restino visibili con tastiera aperta (scroll o sticky footer). |
-| **InvitaClienteModal / CreaAtletaModal / ModificaAtletaModal** | Clienti. | Stesse regole: full width sotto 852px, label sopra, CTA 44px, nessun overflow. |
-| **AppointmentPopover** | Dettaglio evento calendario. | Posizione a coordinate: su 393px sostituire con modal/drawer full width per evitare fuori viewport. |
-| **ClientiFiltriAvanzati** | Drawer/modal filtri. | Se drawer: full height e scroll interno; se modal: full width mobile. |
-| **ModernKPICard** | Clienti (e altre dashboard). | Su mobile: card più alte che larghe, numero leggibile, label ≥ 12px; tap target se cliccabili. |
+| Componente                                                     | Uso                                    | Problemi rilevati                                                                                                                                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Drawer (UI)**                                                | Navigazione mobile, Filtri calendario. | z-[100]; overlay ok. Larghezza 280px max 85–90vw; contenuti con min-h-[44px] dove serve.                                                                                                                            |
+| **AppointmentForm**                                            | Modal nuovo/modifica appuntamento.     | Molti campi (atleta, data, ora, tipo, colore, luogo, note); su 393px il wrapper è full width con max-h 90dvh e padding; CTA in basso: assicurare che restino visibili con tastiera aperta (scroll o sticky footer). |
+| **InvitaClienteModal / CreaAtletaModal / ModificaAtletaModal** | Clienti.                               | Stesse regole: full width sotto 852px, label sopra, CTA 44px, nessun overflow.                                                                                                                                      |
+| **AppointmentPopover**                                         | Dettaglio evento calendario.           | Posizione a coordinate: su 393px sostituire con modal/drawer full width per evitare fuori viewport.                                                                                                                 |
+| **ClientiFiltriAvanzati**                                      | Drawer/modal filtri.                   | Se drawer: full height e scroll interno; se modal: full width mobile.                                                                                                                                               |
+| **ModernKPICard**                                              | Clienti (e altre dashboard).           | Su mobile: card più alte che larghe, numero leggibile, label ≥ 12px; tap target se cliccabili.                                                                                                                      |
 
 ---
 

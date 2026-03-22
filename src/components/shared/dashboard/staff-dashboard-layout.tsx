@@ -26,19 +26,15 @@ const THEME_CLASSES: Record<
 > = {
   amber: {
     headerBorder: 'border-amber-500/20',
-    headerGradient:
-      'bg-gradient-to-r from-amber-500/10 via-transparent to-amber-500/5',
+    headerGradient: 'bg-gradient-to-r from-amber-500/10 via-transparent to-amber-500/5',
     iconColor: 'text-amber-400',
-    lineGradient:
-      'bg-gradient-to-r from-amber-500/70 via-amber-500/40 to-transparent',
+    lineGradient: 'bg-gradient-to-r from-amber-500/70 via-amber-500/40 to-transparent',
   },
   emerald: {
     headerBorder: 'border-emerald-500/20',
-    headerGradient:
-      'bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-500/5',
+    headerGradient: 'bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-500/5',
     iconColor: 'text-emerald-400',
-    lineGradient:
-      'bg-gradient-to-r from-emerald-500/70 via-emerald-500/40 to-transparent',
+    lineGradient: 'bg-gradient-to-r from-emerald-500/70 via-emerald-500/40 to-transparent',
   },
 }
 
@@ -54,12 +50,7 @@ const StaffDashboardCardItem = memo(function StaffDashboardCardItem({
   return (
     <Link href={item.href} className={CARD_LINK_CLASS}>
       <div className="pointer-events-none absolute inset-0">
-        <div
-          className={cn(
-            'absolute inset-0 bg-gradient-to-br opacity-80',
-            item.accentClass
-          )}
-        />
+        <div className={cn('absolute inset-0 bg-gradient-to-br opacity-80', item.accentClass)} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-white/5" />
         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-primary/60 via-primary/40 to-transparent opacity-70" />
       </div>
@@ -103,27 +94,15 @@ export function StaffDashboardLayout({
           className={cn(
             'space-y-2 rounded-2xl border p-4 sm:p-5',
             classes.headerBorder,
-            classes.headerGradient
+            classes.headerGradient,
           )}
         >
           <h1 className="text-text-primary text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <Icon
-              className={cn(
-                'h-7 w-7 sm:h-8 sm:w-8 shrink-0',
-                classes.iconColor
-              )}
-            />
+            <Icon className={cn('h-7 w-7 sm:h-8 sm:w-8 shrink-0', classes.iconColor)} />
             {title}
           </h1>
-          <p className="text-text-secondary text-sm sm:text-base">
-            {description}
-          </p>
-          <div
-            className={cn(
-              'mt-2 h-[3px] w-28 rounded-full',
-              classes.lineGradient
-            )}
-          />
+          <p className="text-text-secondary text-sm sm:text-base">{description}</p>
+          <div className={cn('mt-2 h-[3px] w-28 rounded-full', classes.lineGradient)} />
         </div>
 
         <div

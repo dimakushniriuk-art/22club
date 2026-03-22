@@ -38,7 +38,10 @@ const eslintConfig = [
     rules: {
       // Disabilita errori che bloccano il build per il deploy
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-empty-object-type': 'warn',
       'react-hooks/exhaustive-deps': 'warn',
       '@next/next/no-img-element': 'warn',

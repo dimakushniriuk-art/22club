@@ -17,7 +17,8 @@ export const AUTH_INPUT_CLASS =
 export const AUTH_INPUT_WITH_LEFT_ICON_CLASS = `${AUTH_INPUT_CLASS} pl-9`
 export const AUTH_INPUT_PASSWORD_CLASS = `${AUTH_INPUT_CLASS} pl-9 pr-10`
 
-export const AUTH_LOGO_CLASS = 'w-auto h-24 sm:h-28 min-[834px]:h-32 object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]'
+export const AUTH_LOGO_CLASS =
+  'w-auto h-24 sm:h-28 min-[834px]:h-32 object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]'
 
 export const AUTH_BUTTON_PRIMARY_CLASS =
   'w-full min-h-[44px] py-3 rounded-lg bg-gradient-to-br from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 active:from-teal-700 active:to-cyan-700 text-white font-semibold shadow-md shadow-primary/30 border border-teal-500/50 disabled:opacity-60 disabled:from-teal-800 disabled:to-cyan-800'

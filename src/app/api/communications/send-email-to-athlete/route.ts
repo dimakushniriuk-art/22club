@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     const profileRow = profile as { id?: string; role?: string } | null
     const role = profileRow?.role
     const createdByProfileId = profileRow?.id
-    const canSend = role && ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing'].includes(role)
+    const canSend =
+      role && ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing'].includes(role)
     if (!canSend || !createdByProfileId) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
     }
@@ -64,7 +65,11 @@ export async function POST(request: NextRequest) {
       .map((line: string) => `<p>${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`)
       .join('')
 
-    const result = await sendEmailViaResend(email.trim(), subject.trim(), `<!DOCTYPE html><html><body>${html}</body></html>`)
+    const result = await sendEmailViaResend(
+      email.trim(),
+      subject.trim(),
+      `<!DOCTYPE html><html><body>${html}</body></html>`,
+    )
 
     if (!result.success) {
       logger.warn('Invio email ad atleta fallito', undefined, { to: email, error: result.error })
@@ -79,7 +84,9 @@ export async function POST(request: NextRequest) {
 
     // Cataloga in communications e communication_recipients per la pagina Comunicazioni
     const { data: newComm, error: insertCommError } = await (
-      supabase as import('@supabase/supabase-js').SupabaseClient<import('@/lib/supabase/types').Database>
+      supabase as import('@supabase/supabase-js').SupabaseClient<
+        import('@/lib/supabase/types').Database
+      >
     )
       .from('communications')
       .insert({
@@ -117,24 +124,23 @@ export async function POST(request: NextRequest) {
     const communicationId = (newComm as { id: string } | null)?.id
     if (communicationId) {
       await (
-        supabase as import('@supabase/supabase-js').SupabaseClient<import('@/lib/supabase/types').Database>
+        supabase as import('@supabase/supabase-js').SupabaseClient<
+          import('@/lib/supabase/types').Database
+        >
       )
         .from('communication_recipients')
         .insert({
-        communication_id: communicationId,
-        recipient_profile_id: athleteId,
-        recipient_type: 'email',
-        status: 'sent',
-        sent_at: now,
-      })
+          communication_id: communicationId,
+          recipient_profile_id: athleteId,
+          recipient_type: 'email',
+          status: 'sent',
+          sent_at: now,
+        })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
     logger.error('Errore API send-email-to-athlete', error)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

@@ -13,7 +13,7 @@
 - [x] Linting verificato
 - [x] Build produzione verificato (78 pagine generate)
 - [x] Vulnerabilità analizzate (0 in produzione)
-- [x] File sensibili esclusi (.auth/*.json)
+- [x] File sensibili esclusi (.auth/\*.json)
 
 ---
 
@@ -25,6 +25,7 @@
 - [x] Analisi RLS completata
 
 **Risultati Analisi RLS**:
+
 - ✅ 12/12 tabelle esistenti
 - ✅ 11/12 tabelle con RLS attivo
 - ⚠️ **ATTENZIONE**: Tabella `appointments` senza RLS (da verificare)
@@ -36,12 +37,14 @@
 ### 3.1 Variabili d'Ambiente Vercel
 
 **Azioni Richieste**:
+
 1. Accedere a Vercel Dashboard: https://vercel.com/dashboard
 2. Selezionare progetto 22Club
 3. Settings → Environment Variables
 4. Configurare tutte le variabili da `env.example`
 
 **Variabili OBBLIGATORIE**:
+
 - `NEXT_PUBLIC_SUPABASE_URL` ✅ (già verificato)
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` ✅ (già verificato)
 - `SUPABASE_SERVICE_ROLE_KEY` ⚠️ (da configurare)
@@ -53,11 +56,13 @@
 ### 3.2 GitHub Secrets
 
 **Azioni Richieste**:
+
 1. Accedere a GitHub Repository
 2. Settings → Secrets and variables → Actions
 3. Verificare/aggiungere secrets necessari
 
 **Secrets Necessari**:
+
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
@@ -71,11 +76,13 @@
 ### Opzione A: Deploy Automatico (GitHub Actions)
 
 **Comando**:
+
 ```bash
 git push origin main
 ```
 
 **Cosa Succede**:
+
 1. GitHub Actions esegue workflow `.github/workflows/deploy.yml`
 2. Build e test automatici
 3. Deploy su Vercel
@@ -84,6 +91,7 @@ git push origin main
 ### Opzione B: Deploy Manuale (Vercel CLI)
 
 **Comandi**:
+
 ```bash
 # Installare Vercel CLI
 npm i -g vercel

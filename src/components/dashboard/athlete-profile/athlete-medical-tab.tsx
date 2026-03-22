@@ -13,7 +13,7 @@ import { Label } from '@/components/ui'
 import { Textarea } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import type { BadgeProps } from '@/components/ui/badge'
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import { useAthleteMedical } from '@/hooks/athlete-profile/use-athlete-medical'
 import { useAthleteMedicalForm } from '@/hooks/athlete-profile/use-athlete-medical-form'
 import { LoadingState } from '@/components/dashboard/loading-state'
@@ -405,9 +405,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
               <div className="h-7 w-7 rounded-lg flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
                 <FileText className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-text-primary">
-                Referti Medici
-              </span>
+              <span className="text-text-primary">Referti Medici</span>
             </CardTitle>
             {isEditing && (
               <Button
@@ -444,8 +442,8 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => openPrivateStorageFile('athlete-referti', referto.url)}
-className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
-                    >
+                    className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+                  >
                     <ExternalLink className="h-3.5 w-3.5 mr-2" />
                     Apri
                   </Button>
@@ -627,9 +625,7 @@ className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0
         {/* Allergie */}
         <Card variant="default" className={DS_CARD_CLASS}>
           <CardHeader className="pb-2 border-b border-white/10">
-            <CardTitle className="text-sm font-bold text-text-primary">
-              Allergie
-            </CardTitle>
+            <CardTitle className="text-sm font-bold text-text-primary">Allergie</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 pt-3">
             {isEditing && (
@@ -689,9 +685,7 @@ className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0
         {/* Patologie */}
         <Card variant="default" className={DS_CARD_CLASS}>
           <CardHeader className="pb-2 border-b border-white/10">
-            <CardTitle className="text-sm font-bold text-text-primary">
-              Patologie
-            </CardTitle>
+            <CardTitle className="text-sm font-bold text-text-primary">Patologie</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 pt-3">
             {isEditing && (
@@ -751,9 +745,7 @@ className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0
       {/* Note Mediche */}
       <Card variant="default" className={DS_CARD_CLASS}>
         <CardHeader className="pb-2 border-b border-white/10">
-          <CardTitle className="text-sm font-bold text-text-primary">
-            Note Mediche
-          </CardTitle>
+          <CardTitle className="text-sm font-bold text-text-primary">Note Mediche</CardTitle>
         </CardHeader>
         <CardContent className="pt-3">
           {isEditing ? (

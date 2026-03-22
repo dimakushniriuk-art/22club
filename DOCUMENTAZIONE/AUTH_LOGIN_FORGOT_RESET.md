@@ -6,11 +6,11 @@ Documentazione completa del flusso di accesso e recupero password: pagine, API, 
 
 ## Panoramica
 
-| Fase | URL | Descrizione |
-|------|-----|-------------|
-| Login | `/login` | Accesso con email/password, redirect per ruolo |
-| Forgot password | `/forgot-password` | Richiesta email con link di reset (invio via Resend) |
-| Reset password | `/reset-password` | Pagina raggiunta dopo il click sul link; impostazione nuova password |
+| Fase            | URL                | Descrizione                                                          |
+| --------------- | ------------------ | -------------------------------------------------------------------- |
+| Login           | `/login`           | Accesso con email/password, redirect per ruolo                       |
+| Forgot password | `/forgot-password` | Richiesta email con link di reset (invio via Resend)                 |
+| Reset password  | `/reset-password`  | Pagina raggiunta dopo il click sul link; impostazione nuova password |
 
 Flusso recupero password: utente su `/forgot-password` → inserisce email → backend genera link Supabase e invia email con template Resend → utente clicca link → Supabase verifica token e reindirizza a `/reset-password` → utente imposta nuova password → redirect a `/login`.
 
@@ -26,16 +26,16 @@ Flusso recupero password: utente su `/forgot-password` → inserisce email → b
 
 ## Riepilogo file e ruoli
 
-| Ruolo | File |
-|-------|------|
-| Pagina Login | `src/app/login/page.tsx` |
-| Pagina Forgot Password | `src/app/forgot-password/page.tsx` |
-| Pagina Reset Password | `src/app/reset-password/page.tsx` |
-| API Forgot Password | `src/app/api/auth/forgot-password/route.ts` |
-| Logica email reset + template | `src/lib/communications/send-reset-password-email.ts` |
-| Client Resend (invio + template) | `src/lib/communications/email-resend-client.ts` |
-| Client Supabase server (admin) | `src/lib/supabase/server.ts` (`createAdminClient`) |
-| Sfondo condiviso | `src/components/athlete/athlete-background.tsx` |
+| Ruolo                            | File                                                  |
+| -------------------------------- | ----------------------------------------------------- |
+| Pagina Login                     | `src/app/login/page.tsx`                              |
+| Pagina Forgot Password           | `src/app/forgot-password/page.tsx`                    |
+| Pagina Reset Password            | `src/app/reset-password/page.tsx`                     |
+| API Forgot Password              | `src/app/api/auth/forgot-password/route.ts`           |
+| Logica email reset + template    | `src/lib/communications/send-reset-password-email.ts` |
+| Client Resend (invio + template) | `src/lib/communications/email-resend-client.ts`       |
+| Client Supabase server (admin)   | `src/lib/supabase/server.ts` (`createAdminClient`)    |
+| Sfondo condiviso                 | `src/components/athlete/athlete-background.tsx`       |
 
 ---
 
@@ -63,14 +63,14 @@ Se Resend non è configurato (env mancanti), l’invio è simulato (nessuna emai
 
 ### Variabili d’ambiente
 
-| Variabile | Dove | Uso |
-|-----------|------|-----|
-| `NEXT_PUBLIC_SUPABASE_URL` | Client + Server | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client | Auth e API pubbliche |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server (API forgot-password) | `generateLink` per recovery |
-| `RESEND_API_KEY` | Server | Invio email Resend |
-| `RESEND_FROM_EMAIL` | Server | Mittente (es. noreply@22club.it) |
-| `RESEND_FROM_NAME` | Server | Nome mittente (es. 22Club) |
+| Variabile                       | Dove                         | Uso                              |
+| ------------------------------- | ---------------------------- | -------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Client + Server              | Supabase project URL             |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client                       | Auth e API pubbliche             |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Server (API forgot-password) | `generateLink` per recovery      |
+| `RESEND_API_KEY`                | Server                       | Invio email Resend               |
+| `RESEND_FROM_EMAIL`             | Server                       | Mittente (es. noreply@22club.it) |
+| `RESEND_FROM_NAME`              | Server                       | Nome mittente (es. 22Club)       |
 
 ### Supabase Dashboard
 
@@ -90,12 +90,12 @@ Se l’URL non è in elenco, dopo il click sul link nell’email il flusso si in
 
 ## Troubleshooting
 
-| Problema | Controllo |
-|----------|-----------|
+| Problema                      | Controllo                                                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Link nel bottone non funziona | Campo Link in Resend solo `{{22club_reset_password_url}}`; Redirect URLs in Supabase con l’URL della tua app `/reset-password`. |
-| Email non arriva | Verificare `RESEND_*` e dominio Resend; in sviluppo senza Resend l’invio è simulato. |
-| “Link non valido o scaduto” | Token scaduto o già usato; Supabase redirect URL non in allowlist; riprovare da `/forgot-password`. |
-| Profilo non trovato al login | Middleware può reindirizzare a `/login?error=profilo`; completare registrazione profilo per quell’utente. |
+| Email non arriva              | Verificare `RESEND_*` e dominio Resend; in sviluppo senza Resend l’invio è simulato.                                            |
+| “Link non valido o scaduto”   | Token scaduto o già usato; Supabase redirect URL non in allowlist; riprovare da `/forgot-password`.                             |
+| Profilo non trovato al login  | Middleware può reindirizzare a `/login?error=profilo`; completare registrazione profilo per quell’utente.                       |
 
 ---
 

@@ -74,7 +74,14 @@ function sectionTitle(doc: jsPDF, title: string, y: number): number {
   return y + LINE_HEIGHT * 1.5
 }
 
-function labelVal(doc: jsPDF, label: string, value: unknown, x: number, y: number, maxW: number): number {
+function labelVal(
+  doc: jsPDF,
+  label: string,
+  value: unknown,
+  x: number,
+  y: number,
+  maxW: number,
+): number {
   const v = value === null || value === undefined ? '-' : String(value)
   doc.setFontSize(FONT_SIZE_SMALL)
   doc.setFont('helvetica', 'bold')
@@ -114,11 +121,27 @@ export function buildDossierPdf(
   y = sectionTitle(doc, '1. Dati anagrafici e contatti', y)
   y = addPageIfNeeded(doc, y, 60)
   const maxW = PAGE_WIDTH - MARGIN * 2
-  y = labelVal(doc, 'Nome e cognome', `${profile.nome ?? ''} ${profile.cognome ?? ''}`.trim() || '-', MARGIN, y, maxW)
+  y = labelVal(
+    doc,
+    'Nome e cognome',
+    `${profile.nome ?? ''} ${profile.cognome ?? ''}`.trim() || '-',
+    MARGIN,
+    y,
+    maxW,
+  )
   y = labelVal(doc, 'Email', profile.email, MARGIN, y, maxW)
   y = labelVal(doc, 'Telefono', profile.phone, MARGIN, y, maxW)
   y = labelVal(doc, 'Data di nascita', profile.data_nascita, MARGIN, y, maxW)
-  y = labelVal(doc, 'Residenza', [profile.indirizzo_residenza, profile.cap, profile.citta, profile.provincia].filter(Boolean).join(', ') || '-', MARGIN, y, maxW)
+  y = labelVal(
+    doc,
+    'Residenza',
+    [profile.indirizzo_residenza, profile.cap, profile.citta, profile.provincia]
+      .filter(Boolean)
+      .join(', ') || '-',
+    MARGIN,
+    y,
+    maxW,
+  )
   y = labelVal(doc, 'Codice fiscale', profile.codice_fiscale, MARGIN, y, maxW)
   y = labelVal(doc, 'Professione', profile.professione, MARGIN, y, maxW)
   y += LINE_HEIGHT
@@ -130,7 +153,14 @@ export function buildDossierPdf(
   y = labelVal(doc, 'BMI', profile.bmi, MARGIN, y, maxW)
   y = labelVal(doc, 'Livello esperienza', profile.livello_esperienza, MARGIN, y, maxW)
   y = labelVal(doc, 'Tipo atleta', profile.tipo_atleta, MARGIN, y, maxW)
-  y = labelVal(doc, 'Obiettivi fitness', Array.isArray(profile.obiettivi_fitness) ? profile.obiettivi_fitness.join(', ') : null, MARGIN, y, maxW)
+  y = labelVal(
+    doc,
+    'Obiettivi fitness',
+    Array.isArray(profile.obiettivi_fitness) ? profile.obiettivi_fitness.join(', ') : null,
+    MARGIN,
+    y,
+    maxW,
+  )
   y = labelVal(doc, 'Note / motivazione', profile.note, MARGIN, y, maxW)
   y += LINE_HEIGHT
 
@@ -161,7 +191,7 @@ export function buildDossierPdf(
     y = addPageIfNeeded(doc, y, LINE_HEIGHT * 2)
     const label = consensoLabels[k]
     const val = anam[k]
-    const display = val === true ? 'Sì' : val === false ? 'No' : (val != null ? String(val) : '-')
+    const display = val === true ? 'Sì' : val === false ? 'No' : val != null ? String(val) : '-'
     y = labelVal(doc, label, display, MARGIN, y, maxW)
   })
   y += LINE_HEIGHT * 0.5
@@ -184,7 +214,8 @@ export function buildDossierPdf(
     y = addPageIfNeeded(doc, y, LINE_HEIGHT * 2)
     const label = anamnesiFieldLabels[k] ?? k.replace(/_/g, ' ')
     const v = anam[k]
-    const display = v === true ? 'Sì' : v === false ? 'No' : (v != null && v !== '' ? String(v) : null)
+    const display =
+      v === true ? 'Sì' : v === false ? 'No' : v != null && v !== '' ? String(v) : null
     if (display != null) y = labelVal(doc, label, display, MARGIN, y, maxW)
   })
   y += LINE_HEIGHT
@@ -217,7 +248,7 @@ export function buildDossierPdf(
     y += lines.length * (FONT_SIZE_SMALL * 0.4 + 1) + LINE_HEIGHT * 0.5
   }
   const revocaText =
-    'La presente autorizzazione potrà essere revocata in qualsiasi momento mediante comunicazione scritta inviata via e-mail all\'indirizzo info@22club.it.'
+    "La presente autorizzazione potrà essere revocata in qualsiasi momento mediante comunicazione scritta inviata via e-mail all'indirizzo info@22club.it."
   y = addPageIfNeeded(doc, y, LINE_HEIGHT * 4)
   const revocaLines = doc.splitTextToSize(revocaText, maxW)
   doc.setFontSize(FONT_SIZE_SMALL)

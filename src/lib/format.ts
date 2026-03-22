@@ -110,9 +110,6 @@ export function formatTime(dateString: string | null | undefined): string {
 /**
  * Numero generico (es. passi, kcal) — locale it-IT.
  */
-export function formatNumber(
-  value: number,
-  options?: Intl.NumberFormatOptions
-): string {
+export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
   return new Intl.NumberFormat(LOCALE, options).format(value)
 }

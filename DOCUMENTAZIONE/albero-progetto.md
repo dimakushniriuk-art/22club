@@ -225,15 +225,15 @@ types/               # Tipi TypeScript globali (se fuori da src)
 
 ## Pagine (route) per ruolo
 
-| Ruolo        | Prefisso route   | Note                                      |
-|-------------|------------------|-------------------------------------------|
-| Pubbliche   | `/login`, `/registrati`, `/forgot-password`, `/reset-password`, `/reset`, `/privacy`, `/termini` | Senza auth |
-| Atleta      | `/home`, `/home/*`, `/welcome`             | Solo `role = atleta`                      |
-| Trainer/PT  | `/dashboard`, `/dashboard/*` (eccetto admin/nutrizionista/massaggiatore come home) | Clienti, Schede, Appuntamenti, Calendario, Esercizi, Abbonamenti, Chat, Comunicazioni, Invita atleta, Impostazioni, Profilo, Statistiche, Allenamenti, Documenti, Pagamenti |
-| Nutrizionista | `/dashboard/nutrizionista`, `/dashboard/calendario`, `/dashboard/clienti`, `/dashboard/atleti`, `/dashboard/chat`, `/dashboard/profilo`, `/dashboard/impostazioni` | Accesso limitato middleware |
-| Massaggiatore | `/dashboard/massaggiatore` + stessi path del nutrizionista | Accesso limitato middleware |
-| Admin       | `/dashboard/admin`, `/dashboard/admin/utenti`, `/dashboard/admin/ruoli`, `/dashboard/admin/organizzazioni`, `/dashboard/admin/statistiche` | Solo `role = admin` |
+| Ruolo         | Prefisso route                                                                                                                                                     | Note                                                                                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pubbliche     | `/login`, `/registrati`, `/forgot-password`, `/reset-password`, `/reset`, `/privacy`, `/termini`                                                                   | Senza auth                                                                                                                                                                  |
+| Atleta        | `/home`, `/home/*`, `/welcome`                                                                                                                                     | Solo `role = atleta`                                                                                                                                                        |
+| Trainer/PT    | `/dashboard`, `/dashboard/*` (eccetto admin/nutrizionista/massaggiatore come home)                                                                                 | Clienti, Schede, Appuntamenti, Calendario, Esercizi, Abbonamenti, Chat, Comunicazioni, Invita atleta, Impostazioni, Profilo, Statistiche, Allenamenti, Documenti, Pagamenti |
+| Nutrizionista | `/dashboard/nutrizionista`, `/dashboard/calendario`, `/dashboard/clienti`, `/dashboard/atleti`, `/dashboard/chat`, `/dashboard/profilo`, `/dashboard/impostazioni` | Accesso limitato middleware                                                                                                                                                 |
+| Massaggiatore | `/dashboard/massaggiatore` + stessi path del nutrizionista                                                                                                         | Accesso limitato middleware                                                                                                                                                 |
+| Admin         | `/dashboard/admin`, `/dashboard/admin/utenti`, `/dashboard/admin/ruoli`, `/dashboard/admin/organizzazioni`, `/dashboard/admin/statistiche`                         | Solo `role = admin`                                                                                                                                                         |
 
 ---
 
-*Ultimo aggiornamento: struttura coerente con codebase 22Club (Next.js App Router, Supabase, TypeScript).*
+_Ultimo aggiornamento: struttura coerente con codebase 22Club (Next.js App Router, Supabase, TypeScript)._

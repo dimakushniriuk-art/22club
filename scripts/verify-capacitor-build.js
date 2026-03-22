@@ -18,7 +18,11 @@ const outDir = path.join(process.cwd(), 'out')
 if (fs.existsSync(outDir)) {
   const files = fs.readdirSync(outDir)
   if (files.length > 0) {
-    checks.push({ name: 'Cartella out/ creata', status: '✅', details: `${files.length} file/cartelle` })
+    checks.push({
+      name: 'Cartella out/ creata',
+      status: '✅',
+      details: `${files.length} file/cartelle`,
+    })
   } else {
     checks.push({ name: 'Cartella out/ creata', status: '⚠️', details: 'Cartella vuota' })
     hasErrors = true
@@ -45,12 +49,16 @@ if (fs.existsSync(indexHtml)) {
 
 // 3. Verifica cartelle statiche
 const staticDirs = ['_next', 'dashboard', 'home', 'login']
-staticDirs.forEach(dir => {
+staticDirs.forEach((dir) => {
   const dirPath = path.join(outDir, dir)
   if (fs.existsSync(dirPath)) {
     checks.push({ name: `Cartella ${dir}/ presente`, status: '✅', details: 'OK' })
   } else {
-    checks.push({ name: `Cartella ${dir}/ presente`, status: '⚠️', details: 'Non trovata (potrebbe essere normale)' })
+    checks.push({
+      name: `Cartella ${dir}/ presente`,
+      status: '⚠️',
+      details: 'Non trovata (potrebbe essere normale)',
+    })
   }
 })
 
@@ -58,12 +66,24 @@ staticDirs.forEach(dir => {
 const apiDir = path.join(process.cwd(), 'src/app/api')
 const apiBackupDir = path.join(process.cwd(), '.api-backup')
 if (fs.existsSync(apiDir)) {
-  checks.push({ name: 'API routes ripristinate', status: '✅', details: 'Cartella src/app/api presente' })
+  checks.push({
+    name: 'API routes ripristinate',
+    status: '✅',
+    details: 'Cartella src/app/api presente',
+  })
 } else if (fs.existsSync(apiBackupDir)) {
-  checks.push({ name: 'API routes ripristinate', status: '❌', details: 'API routes ancora in backup!' })
+  checks.push({
+    name: 'API routes ripristinate',
+    status: '❌',
+    details: 'API routes ancora in backup!',
+  })
   hasErrors = true
 } else {
-  checks.push({ name: 'API routes ripristinate', status: '⚠️', details: 'Nessuna API route trovata' })
+  checks.push({
+    name: 'API routes ripristinate',
+    status: '⚠️',
+    details: 'Nessuna API route trovata',
+  })
 }
 
 // 5. Verifica capacitor.config.ts
@@ -73,10 +93,18 @@ if (fs.existsSync(capacitorConfig)) {
   if (content.includes('webDir') && content.includes('out')) {
     checks.push({ name: 'capacitor.config.ts configurato', status: '✅', details: 'webDir: out' })
   } else {
-    checks.push({ name: 'capacitor.config.ts configurato', status: '⚠️', details: 'webDir potrebbe non essere "out"' })
+    checks.push({
+      name: 'capacitor.config.ts configurato',
+      status: '⚠️',
+      details: 'webDir potrebbe non essere "out"',
+    })
   }
 } else {
-  checks.push({ name: 'capacitor.config.ts configurato', status: '❌', details: 'File non trovato' })
+  checks.push({
+    name: 'capacitor.config.ts configurato',
+    status: '❌',
+    details: 'File non trovato',
+  })
   hasErrors = true
 }
 
@@ -86,13 +114,25 @@ const androidDir = path.join(process.cwd(), 'android')
 if (fs.existsSync(iosDir)) {
   checks.push({ name: 'Piattaforma iOS aggiunta', status: '✅', details: 'Cartella ios/ presente' })
 } else {
-  checks.push({ name: 'Piattaforma iOS aggiunta', status: 'ℹ️', details: 'Non aggiunta (normale se non su macOS)' })
+  checks.push({
+    name: 'Piattaforma iOS aggiunta',
+    status: 'ℹ️',
+    details: 'Non aggiunta (normale se non su macOS)',
+  })
 }
 
 if (fs.existsSync(androidDir)) {
-  checks.push({ name: 'Piattaforma Android aggiunta', status: '✅', details: 'Cartella android/ presente' })
+  checks.push({
+    name: 'Piattaforma Android aggiunta',
+    status: '✅',
+    details: 'Cartella android/ presente',
+  })
 } else {
-  checks.push({ name: 'Piattaforma Android aggiunta', status: 'ℹ️', details: 'Non aggiunta (normale se non configurato)' })
+  checks.push({
+    name: 'Piattaforma Android aggiunta',
+    status: 'ℹ️',
+    details: 'Non aggiunta (normale se non configurato)',
+  })
 }
 
 // 7. Verifica dimensione bundle (se _next esiste)
@@ -101,7 +141,7 @@ if (fs.existsSync(nextDir)) {
   const getDirSize = (dirPath) => {
     let totalSize = 0
     const files = fs.readdirSync(dirPath)
-    files.forEach(file => {
+    files.forEach((file) => {
       const filePath = path.join(dirPath, file)
       const stats = fs.statSync(filePath)
       if (stats.isDirectory()) {
@@ -119,7 +159,7 @@ if (fs.existsSync(nextDir)) {
 
 // Stampa risultati
 console.log('Risultati verifica:\n')
-checks.forEach(check => {
+checks.forEach((check) => {
   console.log(`${check.status} ${check.name}: ${check.details}`)
 })
 

@@ -12,6 +12,7 @@ L'errore `errorCode: 4` con messaggio `"MEDIA_ELEMENT_ERROR: Media load rejected
 3. **URL valido ma bloccato**: L'URL è corretto ma il CSP non lo permette
 
 **Dettagli errore**:
+
 - `errorCode`: 4 = `MEDIA_ERR_SRC_NOT_SUPPORTED`
 - `networkState`: 3 = `NETWORK_NO_SOURCE` (nessuna fonte valida)
 - `readyState`: 0 = `HAVE_NOTHING` (nessun dato caricato)
@@ -24,6 +25,7 @@ L'errore `errorCode: 4` con messaggio `"MEDIA_ELEMENT_ERROR: Media load rejected
 **File**: `next.config.ts` (riga 19-30)
 
 **Prima**:
+
 ```typescript
 const cspHeader = `
   default-src 'self';
@@ -34,6 +36,7 @@ const cspHeader = `
 ```
 
 **Dopo**:
+
 ```typescript
 const cspHeader = `
   default-src 'self';
@@ -44,6 +47,7 @@ const cspHeader = `
 ```
 
 **Spiegazione**:
+
 - `media-src` controlla da dove possono essere caricati video e audio
 - Permette video da Supabase Storage (`https://*.supabase.co`)
 - Permette anche `blob:` e `data:` per video generati dinamicamente
@@ -53,29 +57,24 @@ const cspHeader = `
 **File**: `src/app/home/allenamenti/oggi/page.tsx` (riga 76-85)
 
 **Modifiche**:
+
 - Aggiunto `crossOrigin="anonymous"` per CORS corretto
 - Cambiato `preload="auto"` → `preload="metadata"` (più efficiente)
 
 **Prima**:
+
 ```tsx
-<video
-  src={videoUrl}
-  preload="auto"
-  autoPlay
-/>
+<video src={videoUrl} preload="auto" autoPlay />
 ```
 
 **Dopo**:
+
 ```tsx
-<video
-  src={videoUrl}
-  preload="metadata"
-  crossOrigin="anonymous"
-  autoPlay
-/>
+<video src={videoUrl} preload="metadata" crossOrigin="anonymous" autoPlay />
 ```
 
 **Spiegazione**:
+
 - `crossOrigin="anonymous"` permette CORS senza credenziali
 - `preload="metadata"` carica solo metadata invece dell'intero video (più veloce)
 
@@ -95,6 +94,7 @@ const cspHeader = `
 ## 🧪 Come Testare
 
 1. **Riavvia il server** (necessario per applicare il nuovo CSP):
+
    ```bash
    # Ferma il server (Ctrl+C)
    npm run dev
@@ -135,6 +135,7 @@ Dopo il riavvio, verifica che il CSP includa `media-src`:
 Se dopo il riavvio il problema persiste:
 
 1. **Verifica che il file esista**:
+
    ```bash
    # Prova ad aprire l'URL direttamente nel browser
    https://icibqnmtacibgnhaidlz.supabase.co/storage/v1/object/public/exercise-videos/be43f62f-b94a-4e4d-85d0-aed6fe4e595a/1767982246444-lngkemk.mp4

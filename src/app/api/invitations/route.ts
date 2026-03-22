@@ -67,7 +67,10 @@ export async function GET(request: NextRequest) {
 
     const rows = data ?? []
     const registratiEmails = rows
-      .filter((r) => r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato'))
+      .filter(
+        (r) =>
+          r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato'),
+      )
       .map((r) => r.email)
       .filter(Boolean) as string[]
 
@@ -78,24 +81,27 @@ export async function GET(request: NextRequest) {
         .select('email')
         .in('email', registratiEmails)
         .or('is_deleted.eq.false,is_deleted.is.null')
-      const existingEmails = new Set((existingProfiles ?? []).map((p) => (p as { email: string }).email))
+      const existingEmails = new Set(
+        (existingProfiles ?? []).map((p) => (p as { email: string }).email),
+      )
       filtered = rows.filter((r) => {
-        const isRegistrato = r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato')
+        const isRegistrato =
+          r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato')
         if (!isRegistrato) return true
         return existingEmails.has(r.email)
       })
     }
 
-    const finalCount = !enablePagination && registratiEmails.length > 0 ? filtered.length : (count ?? filtered.length)
+    const finalCount =
+      !enablePagination && registratiEmails.length > 0
+        ? filtered.length
+        : (count ?? filtered.length)
     return NextResponse.json({
       data: filtered,
       count: finalCount,
     })
   } catch (error) {
     logger.error('Errore API list invitations', error)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui'
+import { Card } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { SimpleSelect } from '@/components/ui'
@@ -28,10 +28,10 @@ export function DocumentsFilters({
 }: DocumentsFiltersProps) {
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
+      variant="default"
+      className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
     >
-      <CardContent className="p-4 relative">
+      <div className="relative">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Input
             placeholder="Cerca per atleta, file o categoria..."
@@ -54,14 +54,14 @@ export function DocumentsFilters({
 
           <Button
             variant="outline"
-            className="border-blue-500/30 text-white hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200"
+            className="rounded-lg border-white/20 text-text-secondary hover:bg-white/5 hover:border-white/30 transition-all duration-200"
             onClick={onReset}
           >
             <X className="h-4 w-4" />
             Reset
           </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
   )
 }

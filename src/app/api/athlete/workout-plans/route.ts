@@ -67,9 +67,7 @@ export async function GET() {
     }
 
     const createdByProfileIds =
-      data
-        ?.map((w) => w.created_by_profile_id)
-        .filter((id): id is string => !!id) || []
+      data?.map((w) => w.created_by_profile_id).filter((id): id is string => !!id) || []
     const createdByProfiles: Record<string, { nome?: string | null; cognome?: string | null }> = {}
 
     if (createdByProfileIds.length > 0) {

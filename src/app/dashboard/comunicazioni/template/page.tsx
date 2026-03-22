@@ -2,7 +2,18 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Button, Card, CardContent, Input, Label, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Label,
+  Textarea,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@/components/ui'
 import { ArrowLeft, Code2 } from 'lucide-react'
 import { generateEmailHTML } from '@/lib/communications/email-template'
 
@@ -99,7 +110,11 @@ export default function ComunicazioniTemplatePage() {
           </Button>
         </div>
 
-        <Tabs value={editorTab} onValueChange={(v) => setEditorTab(v as 'campi' | 'html')} className="w-full">
+        <Tabs
+          value={editorTab}
+          onValueChange={(v) => setEditorTab(v as 'campi' | 'html')}
+          className="w-full"
+        >
           <TabsList className="inline-flex h-10 rounded-full bg-background-secondary p-1 text-text-tertiary">
             <TabsTrigger value="campi">Campi contenuto</TabsTrigger>
             <TabsTrigger value="html">
@@ -200,7 +215,12 @@ export default function ComunicazioniTemplatePage() {
           <TabsContent value="html" className="mt-4">
             <Card variant="outlined" className="border-border">
               <CardContent className="p-4 sm:p-6">
-                <Label htmlFor="template-html">HTML template (placeholders: &#123;&#123;title&#125;&#125;, &#123;&#123;message&#125;&#125;, &#123;&#123;athlete_name&#125;&#125;, &#123;&#123;info_block&#125;&#125;, &#123;&#123;cta_link&#125;&#125;, &#123;&#123;cta_text&#125;&#125;, LOGO_URL_QUI)</Label>
+                <Label htmlFor="template-html">
+                  HTML template (placeholders: &#123;&#123;title&#125;&#125;,
+                  &#123;&#123;message&#125;&#125;, &#123;&#123;athlete_name&#125;&#125;,
+                  &#123;&#123;info_block&#125;&#125;, &#123;&#123;cta_link&#125;&#125;,
+                  &#123;&#123;cta_text&#125;&#125;, LOGO_URL_QUI)
+                </Label>
                 <Textarea
                   id="template-html"
                   value={customHtml || DEFAULT_HTML_TEMPLATE}
@@ -210,7 +230,8 @@ export default function ComunicazioniTemplatePage() {
                   className="mt-2 bg-background font-mono text-sm resize-y min-h-[320px]"
                 />
                 <p className="mt-2 text-text-tertiary text-xs">
-                  Se compili questo campo viene usato al posto del layout di default. I campi sopra (titolo, messaggio, ecc.) sostituiscono i placeholder nell&apos;anteprima.
+                  Se compili questo campo viene usato al posto del layout di default. I campi sopra
+                  (titolo, messaggio, ecc.) sostituiscono i placeholder nell&apos;anteprima.
                 </p>
               </CardContent>
             </Card>

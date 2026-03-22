@@ -45,7 +45,15 @@ import {
 } from '@/components/ui'
 import { HOME_BLOCCHI_DATA, HOME_ICONS_DATA, RUOLI_CARD } from '@/lib/design-system-data'
 import { cn } from '@/lib/utils'
-import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_BLOCK_TITLE_CLASS, DS_LABEL_CLASS, ColorSwatch } from './helpers'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+  DS_BLOCK_TITLE_CLASS,
+  DS_LABEL_CLASS,
+  ColorSwatch,
+} from './helpers'
 
 export interface HomePageDesignItem {
   path: string
@@ -102,7 +110,11 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
 
   const baseTokenRows = homeMeta?.tokenTable ?? []
   const variantRows: Array<{ token: string; value: string }> = [
-    { token: 'Header pagina', value: 'Glass (primary), Compatto (primary) o Fisso nero + linea cyan (Allenamenti, Appuntamenti, Foto)' },
+    {
+      token: 'Header pagina',
+      value:
+        'Glass (primary), Compatto (primary) o Fisso nero + linea cyan (Allenamenti, Appuntamenti, Foto)',
+    },
     { token: 'Accenti', value: 'teal, cyan, green, emerald, amber (barra sinistra e bordo card)' },
     { token: 'Tabs', value: 'Anagrafica, Medico, Fitness, Nutrizione, Massaggi (Profilo)' },
     {
@@ -132,16 +144,15 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
         Design Home
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Token ed elementi per <code className={DS_CODE_CLASS}>/home/*</code>: header, accenti, blocchi griglia, tab profilo, card KPI, dialog, empty state.
+        Token ed elementi per <code className={DS_CODE_CLASS}>/home/*</code>: header, accenti,
+        blocchi griglia, tab profilo, card KPI, dialog, empty state.
       </p>
 
       <div className="space-y-6 sm:space-y-8">
         {/* Token — Base Design System (elementi grafici) */}
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>Token area atleta</h3>
-          <p className={DS_LABEL_CLASS}>
-            Layout, header, accenti, tabs, card.
-          </p>
+          <p className={DS_LABEL_CLASS}>Layout, header, accenti, tabs, card.</p>
           <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {allTokenRows.map((row, i) => {
               const Icon = TOKEN_ICONS[row.token] ?? Box
@@ -166,9 +177,7 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
         {/* Header Benvenuto */}
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>Header Benvenuto</h3>
-          <p className={DS_LABEL_CLASS}>
-            Glass primary, solo su /home. Accento teal discreto.
-          </p>
+          <p className={DS_LABEL_CLASS}>Glass primary, solo su /home. Accento teal discreto.</p>
           <div className={cn('relative overflow-hidden p-4', DS_CARD_FRAME_CLASS)}>
             <div
               className="absolute inset-0 rounded-lg opacity-60"
@@ -179,7 +188,9 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
               aria-hidden
             />
             <div className="relative z-10">
-              <h1 className="mb-1 text-lg font-bold tracking-tight text-text-primary">Benvenuto 👋</h1>
+              <h1 className="mb-1 text-lg font-bold tracking-tight text-text-primary">
+                Benvenuto 👋
+              </h1>
               <p className="text-xs text-text-secondary">
                 Gestisci i tuoi allenamenti, progressi e molto altro
               </p>
@@ -263,9 +274,7 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
             )}
           </div>
           <div>
-            <h3 className={DS_BLOCK_TITLE_CLASS}>
-              Header pagina — Compatto
-            </h3>
+            <h3 className={DS_BLOCK_TITLE_CLASS}>Header pagina — Compatto</h3>
             <p className={DS_LABEL_CLASS}>
               Variante per contesti secondari. Vedi Patterns Headers.
             </p>
@@ -294,9 +303,7 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
             )}
           </div>
           <div>
-            <h3 className={DS_BLOCK_TITLE_CLASS}>
-              Header pagina — Fisso (nero + linea cyan)
-            </h3>
+            <h3 className={DS_BLOCK_TITLE_CLASS}>Header pagina — Fisso (nero + linea cyan)</h3>
             <p className={DS_LABEL_CLASS}>
               Allenamenti, Appuntamenti, Foto. PageHeaderFixed. Vedi Patterns Headers.
             </p>
@@ -313,9 +320,7 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
         {/* Card con accento (icon + valore) */}
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>Card con accento</h3>
-          <p className={DS_LABEL_CLASS}>
-            Card default, accento su icon box e valore.
-          </p>
+          <p className={DS_LABEL_CLASS}>Card default, accento su icon box e valore.</p>
           {tealAccent && (
             <div className={cn('relative overflow-hidden p-4', DS_CARD_FRAME_CLASS)}>
               <div className="relative z-10 flex items-center gap-3">
@@ -343,7 +348,12 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
             Es. Profilo: TabsList con bordo e inset DS. Tab attivo: bg-primary text-white.
           </p>
           <Tabs defaultValue="anagrafica" className="w-full">
-            <TabsList className={cn(DS_CARD_FRAME_CLASS, 'h-auto grid w-full grid-cols-2 min-[500px]:grid-cols-3 lg:grid-cols-5 gap-2 p-2 min-h-[44px]')}>
+            <TabsList
+              className={cn(
+                DS_CARD_FRAME_CLASS,
+                'h-auto grid w-full grid-cols-2 min-[500px]:grid-cols-3 lg:grid-cols-5 gap-2 p-2 min-h-[44px]',
+              )}
+            >
               {tabsItems.map(({ value, label, Icon }) => (
                 <TabsTrigger
                   key={value}
@@ -415,7 +425,9 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
                 <Skeleton className="h-4 w-28" />
                 <Skeleton className="h-24 w-full" />
               </div>
-              <span className={cn(DS_LABEL_CLASS, 'mt-1 block')}>Progressi/allenamenti (loading)</span>
+              <span className={cn(DS_LABEL_CLASS, 'mt-1 block')}>
+                Progressi/allenamenti (loading)
+              </span>
             </div>
             <div>
               <p className={DS_LABEL_CLASS}>Empty state</p>
@@ -481,16 +493,13 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
             <p className={cn(DS_LABEL_CLASS, 'mb-4')}>
               Le pagine <code className={DS_CODE_CLASS}>/home/*</code> usano gli stessi token delle
               sezioni dedicate. Colori, Tipografia, Icone, Radius & Spacing, Componenti e Moduli.
-              Card trainer/admin: <code className={DS_CODE_CLASS}>@/lib/design-tokens (roleThemes)</code>.
+              Card trainer/admin:{' '}
+              <code className={DS_CODE_CLASS}>@/lib/design-tokens (roleThemes)</code>.
             </p>
             <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
               <div>
-                <p className={DS_BLOCK_TITLE_CLASS}>
-                  Card Trainer / Admin (ruoli)
-                </p>
-                <p className={DS_LABEL_CLASS}>
-                  Token: roleThemes.trainer / roleThemes.admin.
-                </p>
+                <p className={DS_BLOCK_TITLE_CLASS}>Card Trainer / Admin (ruoli)</p>
+                <p className={DS_LABEL_CLASS}>Token: roleThemes.trainer / roleThemes.admin.</p>
                 <div className="flex flex-wrap gap-3">
                   {(
                     Object.entries(RUOLI_CARD) as Array<
@@ -505,7 +514,11 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
                       )}
                     >
                       <div
-                        className={cn('h-10 w-10 rounded-lg border shadow-sm', role.gradientPrimary, role.borderPrimary)}
+                        className={cn(
+                          'h-10 w-10 rounded-lg border shadow-sm',
+                          role.gradientPrimary,
+                          role.borderPrimary,
+                        )}
                         title={role.primary}
                       />
                       <span className="text-sm font-medium text-text-primary">{role.label}</span>
@@ -515,20 +528,12 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
                 </div>
               </div>
               <div>
-                <p className={DS_BLOCK_TITLE_CLASS}>
-                  Accenti atleta (blocchi / card)
-                </p>
+                <p className={DS_BLOCK_TITLE_CLASS}>Accenti atleta (blocchi / card)</p>
                 <div className="flex flex-wrap gap-3">
                   {(Object.keys(accentiAtleta) as Array<keyof typeof accentiAtleta>).map((key) => {
                     const accent = accentiAtleta[key]
                     if (!accent) return null
-                    return (
-                      <ColorSwatch
-                        key={key}
-                        label={key}
-                        color={accent.bar}
-                      />
-                    )
+                    return <ColorSwatch key={key} label={key} color={accent.bar} />
                   })}
                 </div>
               </div>

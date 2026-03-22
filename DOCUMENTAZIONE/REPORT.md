@@ -8,18 +8,18 @@
 
 ## 📦 Storage Buckets
 
-| Nome | Pubblico | File Size Limit | Allowed MIME Types |
-|------|----------|-----------------|-------------------|
-| general-files | ❌ | N/A | */* |
-| athlete-certificates | ❌ | 10485760 | application/pdf, image/jpeg, image/png, image/jpg |
-| athlete-referti | ❌ | 10485760 | application/pdf, image/jpeg, image/png, image/jpg |
-| athlete-progress-photos | ❌ | 5242880 | image/jpeg, image/png, image/jpg, image/webp |
-| athlete-documents | ❌ | 10485760 | application/pdf, image/jpeg, image/png, image/jpg, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document |
-| exercise-thumbs | ✅ | N/A | Tutti |
-| documents | ❌ | 10485760 | application/pdf, image/*, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document |
-| progress-photos | ❌ | 5242880 | image/* |
-| avatars | ✅ | 2097152 | image/* |
-| exercise-videos | ✅ | 52428800 | video/* |
+| Nome                    | Pubblico | File Size Limit | Allowed MIME Types                                                                                                                             |
+| ----------------------- | -------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| general-files           | ❌       | N/A             | _/_                                                                                                                                            |
+| athlete-certificates    | ❌       | 10485760        | application/pdf, image/jpeg, image/png, image/jpg                                                                                              |
+| athlete-referti         | ❌       | 10485760        | application/pdf, image/jpeg, image/png, image/jpg                                                                                              |
+| athlete-progress-photos | ❌       | 5242880         | image/jpeg, image/png, image/jpg, image/webp                                                                                                   |
+| athlete-documents       | ❌       | 10485760        | application/pdf, image/jpeg, image/png, image/jpg, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document |
+| exercise-thumbs         | ✅       | N/A             | Tutti                                                                                                                                          |
+| documents               | ❌       | 10485760        | application/pdf, image/\*, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document                         |
+| progress-photos         | ❌       | 5242880         | image/\*                                                                                                                                       |
+| avatars                 | ✅       | 2097152         | image/\*                                                                                                                                       |
+| exercise-videos         | ✅       | 52428800        | video/\*                                                                                                                                       |
 
 ## 🗃️ Database Schema
 
@@ -50,4 +50,3 @@ supabase db dump --schema public > schema-dump.sql
 1. Esegui `export-database-schema.sql` nel SQL Editor di Supabase
 2. Esporta i risultati di ogni query in file JSON separati
 3. Usa i file generati come documentazione della configurazione
-

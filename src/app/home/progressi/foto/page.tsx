@@ -43,7 +43,9 @@ function CompareDatesCard({
   return (
     <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
       <CardHeader>
-        <CardTitle size="md" className="text-text-primary">Seleziona Date da Confrontare</CardTitle>
+        <CardTitle size="md" className="text-text-primary">
+          Seleziona Date da Confrontare
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
@@ -118,8 +120,7 @@ function PhotoCompareView({
   selectedAngle: string
   onPhotoClick: (photo: ProgressPhoto) => void
 }) {
-  const photosForAngle = (list: ProgressPhoto[]) =>
-    list.filter((p) => p.angle === selectedAngle)
+  const photosForAngle = (list: ProgressPhoto[]) => list.filter((p) => p.angle === selectedAngle)
   const renderColumn = (dateLabel: string, list: ProgressPhoto[]) => (
     <div>
       <div className="text-text-secondary mb-2 text-sm">{dateLabel}</div>
@@ -138,9 +139,7 @@ function PhotoCompareView({
               <ZoomIn className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
             </div>
           </div>
-          {photo.note && (
-            <p className="text-text-secondary text-xs italic">{photo.note}</p>
-          )}
+          {photo.note && <p className="text-text-secondary text-xs italic">{photo.note}</p>}
         </div>
       ))}
     </div>
@@ -186,10 +185,20 @@ function PhotoListItemCard({
               </Badge>
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" className="text-text-secondary hover:bg-white/5" onClick={() => onDownload(photo)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-text-secondary hover:bg-white/5"
+                onClick={() => onDownload(photo)}
+              >
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-text-secondary hover:bg-white/5" onClick={() => onShare(photo)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-text-secondary hover:bg-white/5"
+                onClick={() => onShare(photo)}
+              >
                 <Share2 className="h-4 w-4" />
               </Button>
             </div>
@@ -311,7 +320,8 @@ export default function FotoProgressiPage() {
       try {
         const path = getStoragePathFromProgressPhotoUrl(photo.image_url)
         const urlToFetch = path
-          ? (await supabase.storage.from('progress-photos').createSignedUrl(path, 3600)).data?.signedUrl
+          ? (await supabase.storage.from('progress-photos').createSignedUrl(path, 3600)).data
+              ?.signedUrl
           : photo.image_url
         if (!urlToFetch) throw new Error('URL non disponibile')
         const response = await fetch(urlToFetch)
@@ -327,7 +337,11 @@ export default function FotoProgressiPage() {
         window.URL.revokeObjectURL(url)
       } catch (err) {
         logger.error('Errore nel download', err, { photoId: photo.id })
-        notify('Si è verificato un errore durante il download della foto. Riprova.', 'error', 'Errore download')
+        notify(
+          'Si è verificato un errore durante il download della foto. Riprova.',
+          'error',
+          'Errore download',
+        )
       }
     },
     [supabase, notify],
@@ -337,7 +351,8 @@ export default function FotoProgressiPage() {
     async (photo: ProgressPhoto) => {
       const path = getStoragePathFromProgressPhotoUrl(photo.image_url)
       const urlToShare = path
-        ? (await supabase.storage.from('progress-photos').createSignedUrl(path, 3600)).data?.signedUrl
+        ? (await supabase.storage.from('progress-photos').createSignedUrl(path, 3600)).data
+            ?.signedUrl
         : photo.image_url
       if (!urlToShare) {
         notify('Impossibile condividere la foto.', 'error', 'Errore')
@@ -422,9 +437,7 @@ export default function FotoProgressiPage() {
               <RotateCcw className="mr-2 h-4 w-4" />
               {compareMode ? 'Esci Confronto' : 'Confronta Date'}
             </Button>
-            {compareMode && (
-              <span className="text-text-tertiary text-xs">Seleziona 2 date</span>
-            )}
+            {compareMode && <span className="text-text-tertiary text-xs">Seleziona 2 date</span>}
           </div>
         </div>
 
@@ -495,7 +508,12 @@ export default function FotoProgressiPage() {
           <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="py-4 text-center">
               <p className="text-state-error text-sm">{error}</p>
-              <Button variant="outline" size="sm" onClick={refresh} className="mt-2 rounded-lg border border-white/10 hover:bg-white/5 text-text-primary">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refresh}
+                className="mt-2 rounded-lg border border-white/10 hover:bg-white/5 text-text-primary"
+              >
                 Riprova
               </Button>
             </CardContent>

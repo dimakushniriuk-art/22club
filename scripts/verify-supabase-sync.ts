@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Script per verificare che il progetto corrisponda alla configurazione Supabase
- * 
+ *
  * Analizza:
  * 1. Tabelle usate nel codice vs tabelle nel database
  * 2. Colonne referenziate vs colonne esistenti
@@ -52,11 +52,11 @@ console.log(`✅ Trovate ${dbTables.size} tabelle nel database\n`)
 const tableColumns: Record<string, Set<string>> = {}
 for (const table of dbTables) {
   tableColumns[table] = new Set()
-  
+
   // Cerca CREATE TABLE per questa tabella
   const tableRegex = new RegExp(`CREATE TABLE public\\.${table}[\\s\\S]*?\\);`, 'm')
   const tableMatch = schemaContent.match(tableRegex)
-  
+
   if (tableMatch) {
     // Estrai nomi colonne
     const columnMatches = tableMatch[0].matchAll(/(\w+)\s+[^,\n]+(?:,|$)/g)
@@ -97,11 +97,11 @@ console.log('📂 Analizzando codice del progetto...\n')
 
 function getAllFiles(dir: string, fileList: string[] = []): string[] {
   const files = readdirSync(dir)
-  
+
   for (const file of files) {
     const filePath = join(dir, file)
     const stat = statSync(filePath)
-    
+
     if (stat.isDirectory()) {
       // Skip node_modules, .next, etc.
       if (!['node_modules', '.next', '.git', 'dist', 'build', 'coverage'].includes(file)) {
@@ -111,13 +111,13 @@ function getAllFiles(dir: string, fileList: string[] = []): string[] {
       fileList.push(filePath)
     }
   }
-  
+
   return fileList
 }
 
 const codeFiles = getAllFiles(join(projectRoot, 'src'))
-const codeFilesRoot = getAllFiles(projectRoot).filter(f => 
-  f.includes('scripts') && ['.ts', '.js'].includes(extname(f))
+const codeFilesRoot = getAllFiles(projectRoot).filter(
+  (f) => f.includes('scripts') && ['.ts', '.js'].includes(extname(f)),
 )
 
 const allCodeFiles = [...codeFiles, ...codeFilesRoot]
@@ -132,42 +132,42 @@ const codeFunctions = new Set<string>()
 for (const filePath of allCodeFiles) {
   try {
     const content = readFileSync(filePath, 'utf-8')
-    
+
     // Trova .from('table_name')
     const fromMatches = content.matchAll(/\.from\(['"]([^'"]+)['"]\)/g)
     for (const match of fromMatches) {
       const table = match[1]
       codeTables.add(table)
-      
+
       if (!codeTableColumns[table]) {
         codeTableColumns[table] = new Set()
       }
     }
-    
+
     // Trova .select('col1, col2') o .select(`col1, col2`)
     const selectMatches = content.matchAll(/\.select\(['"`]([^'"`]+)['"`]\)/g)
     for (const match of selectMatches) {
       const selectClause = match[1]
       // Estrai nomi colonne (semplificato)
-      const cols = selectClause.split(',').map(c => c.trim().split(' ')[0].split('.')[0])
+      const cols = selectClause.split(',').map((c) => c.trim().split(' ')[0].split('.')[0])
       for (const table of codeTables) {
         if (!codeTableColumns[table]) {
           codeTableColumns[table] = new Set()
         }
-        cols.forEach(col => {
+        cols.forEach((col) => {
           if (col && !col.includes('(') && !col.includes('*')) {
             codeTableColumns[table].add(col)
           }
         })
       }
     }
-    
+
     // Trova chiamate a funzioni RPC
     const rpcMatches = content.matchAll(/\.rpc\(['"]([^'"]+)['"]/g)
     for (const match of rpcMatches) {
       codeFunctions.add(match[1])
     }
-    
+
     // Trova chiamate a funzioni con .select() che includono funzioni
     const functionCallMatches = content.matchAll(/public\.(\w+)\(/g)
     for (const match of functionCallMatches) {
@@ -194,7 +194,7 @@ for (const table of codeTables) {
       type: 'error',
       category: 'Tabella mancante',
       message: `Tabella "${table}" usata nel codice ma non esiste nel database`,
-      suggestion: `Crea la tabella "${table}" nel database o rimuovi il riferimento nel codice`
+      suggestion: `Crea la tabella "${table}" nel database o rimuovi il riferimento nel codice`,
     })
   }
 }
@@ -209,7 +209,7 @@ for (const [table, columns] of Object.entries(codeTableColumns)) {
           type: 'error',
           category: 'Colonna mancante',
           message: `Colonna "${col}" usata nella tabella "${table}" ma non esiste nel database`,
-          suggestion: `Aggiungi la colonna "${col}" alla tabella "${table}" o correggi il riferimento nel codice`
+          suggestion: `Aggiungi la colonna "${col}" alla tabella "${table}" o correggi il riferimento nel codice`,
         })
       }
     }
@@ -223,19 +223,19 @@ for (const func of codeFunctions) {
       type: 'warning',
       category: 'Funzione mancante',
       message: `Funzione "${func}" chiamata nel codice ma non definita nel database`,
-      suggestion: `Crea la funzione "${func}" nel database o rimuovi la chiamata nel codice`
+      suggestion: `Crea la funzione "${func}" nel database o rimuovi la chiamata nel codice`,
     })
   }
 }
 
 // Tabelle nel database ma non usate (info)
-const unusedTables = Array.from(dbTables).filter(t => !codeTables.has(t))
+const unusedTables = Array.from(dbTables).filter((t) => !codeTables.has(t))
 if (unusedTables.length > 0) {
   issues.push({
     type: 'info',
     category: 'Tabelle non usate',
     message: `${unusedTables.length} tabelle nel database non sono usate nel codice: ${unusedTables.slice(0, 10).join(', ')}${unusedTables.length > 10 ? '...' : ''}`,
-    suggestion: 'Considera se queste tabelle sono necessarie o se possono essere rimosse'
+    suggestion: 'Considera se queste tabelle sono necessarie o se possono essere rimosse',
   })
 }
 
@@ -246,7 +246,7 @@ for (const table of codeTables) {
       type: 'warning',
       category: 'RLS Policy mancante',
       message: `Tabella "${table}" non ha policies RLS definite`,
-      suggestion: `Considera di aggiungere policies RLS per la tabella "${table}" per sicurezza`
+      suggestion: `Considera di aggiungere policies RLS per la tabella "${table}" per sicurezza`,
     })
   }
 }
@@ -254,9 +254,9 @@ for (const table of codeTables) {
 // Genera report
 console.log(`📊 Trovati ${issues.length} punti da rivedere\n`)
 
-const errors = issues.filter(i => i.type === 'error')
-const warnings = issues.filter(i => i.type === 'warning')
-const infos = issues.filter(i => i.type === 'info')
+const errors = issues.filter((i) => i.type === 'error')
+const warnings = issues.filter((i) => i.type === 'warning')
+const infos = issues.filter((i) => i.type === 'info')
 
 console.log(`   🔴 Errori: ${errors.length}`)
 console.log(`   🟡 Warning: ${warnings.length}`)

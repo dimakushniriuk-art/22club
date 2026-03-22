@@ -7,7 +7,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { handleApiError } from '@/lib/error-handler'
 import { createLogger } from '@/lib/logger'
 import {
@@ -445,7 +445,8 @@ export function useUploadRefertoMedico(athleteId: string | null) {
           .eq('athlete_id', athleteId)
           .single()
 
-        const refertiEsistenti: RefertoMedico[] = (existing?.referti_medici ?? []) as unknown as RefertoMedico[]
+        const refertiEsistenti: RefertoMedico[] = (existing?.referti_medici ??
+          []) as unknown as RefertoMedico[]
 
         // 5. Aggiungi nuovo referto all'array
         const refertiAggiornati = [...refertiEsistenti, nuovoReferto]
@@ -454,7 +455,9 @@ export function useUploadRefertoMedico(athleteId: string | null) {
         if (existing) {
           const { error: updateError } = await supabase
             .from('athlete_medical_data')
-            .update({ referti_medici: refertiAggiornati as unknown as import('@/lib/supabase/types').Json })
+            .update({
+              referti_medici: refertiAggiornati as unknown as import('@/lib/supabase/types').Json,
+            })
             .eq('athlete_id', athleteId)
 
           if (updateError) {

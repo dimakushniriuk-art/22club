@@ -42,6 +42,7 @@ git push origin main
 **Problema**: "refusing to merge unrelated histories"
 
 **Soluzione**:
+
 ```bash
 # 1. Stash cambiamenti non committati
 git stash
@@ -145,6 +146,7 @@ git push origin main
 **Causa**: Repository grande, molti file da pushare
 
 **Soluzione**:
+
 1. Riprova il push (potrebbe essere un problema temporaneo di rete)
 2. Se persiste, verifica connessione internet
 3. Push in batch più piccoli (non consigliato, meglio riprovare)

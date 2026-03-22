@@ -251,7 +251,12 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node) && buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+      if (
+        pickerRef.current &&
+        !pickerRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -324,7 +329,10 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
         variant="ghost"
         size="icon-sm"
         onClick={() => setIsOpen(!isOpen)}
-        className={cn('text-text-secondary hover:text-primary hover:bg-white/[0.06] min-h-[44px] min-w-[44px] touch-manipulation', className)}
+        className={cn(
+          'text-text-secondary hover:text-primary hover:bg-white/[0.06] min-h-[44px] min-w-[44px] touch-manipulation',
+          className,
+        )}
         aria-label="Emoji"
       >
         <Smile className="h-4 w-4" />

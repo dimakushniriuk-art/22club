@@ -47,10 +47,7 @@ export function MotivationalMotivationsObstaclesSection({
   if (isEditing) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg">Motivazioni Secondarie</CardTitle>
           </CardHeader>
@@ -84,10 +81,7 @@ export function MotivationalMotivationsObstaclesSection({
           </CardContent>
         </Card>
 
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg">Ostacoli Percepiti</CardTitle>
           </CardHeader>
@@ -123,10 +117,7 @@ export function MotivationalMotivationsObstaclesSection({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Motivazioni Secondarie</CardTitle>
         </CardHeader>
@@ -146,10 +137,7 @@ export function MotivationalMotivationsObstaclesSection({
         </CardContent>
       </Card>
 
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Ostacoli Percepiti</CardTitle>
         </CardHeader>

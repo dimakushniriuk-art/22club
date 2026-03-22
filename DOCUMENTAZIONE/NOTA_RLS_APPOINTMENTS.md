@@ -10,6 +10,7 @@
 Durante l'analisi RLS policies, è stato rilevato che la tabella `appointments` **non ha RLS attivo**.
 
 **Risultato Analisi**:
+
 ```
 ⚠️  appointments: Esiste ma RLS non attivo
 ```
@@ -19,10 +20,12 @@ Durante l'analisi RLS policies, è stato rilevato che la tabella `appointments` 
 ## 🎯 Impatto
 
 ### Sicurezza
+
 - ⚠️ **Rischio**: Accesso non controllato ai dati degli appuntamenti
 - ⚠️ **Severità**: Media-Alta (dati sensibili)
 
 ### Funzionalità
+
 - ✅ Appuntamenti funzionano correttamente
 - ⚠️ Possibile accesso non autorizzato ai dati
 
@@ -83,6 +86,7 @@ npm run db:analyze-rls
 ```
 
 Dovrebbe mostrare:
+
 ```
 ✅ appointments: RLS attivo, accessibile
 ```

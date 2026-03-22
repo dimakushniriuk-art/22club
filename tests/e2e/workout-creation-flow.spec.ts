@@ -33,7 +33,10 @@ const safeClickNext = async (page: Page, timeout = 5000) => {
   const nextButton = getNextButton(page)
   if ((await nextButton.count()) === 0) return false
   await nextButton.waitFor({ state: 'visible', timeout }).catch(() => {})
-  await expect.soft(nextButton).toBeEnabled({ timeout }).catch(() => {})
+  await expect
+    .soft(nextButton)
+    .toBeEnabled({ timeout })
+    .catch(() => {})
   const enabled = await nextButton.isEnabled().catch(() => false)
   if (!enabled) return false
   await nextButton.click().catch(() => {})
@@ -220,7 +223,7 @@ test.describe('Flusso Creazione Scheda Allenamento', () => {
     let advanced = await safeClickNext(page, 12000)
     if (!advanced) {
       const extraNumericInputs = page.locator(
-        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]'
+        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]',
       )
       const count = await extraNumericInputs.count()
       for (let i = 0; i < count; i++) {
@@ -298,7 +301,7 @@ test.describe('Flusso Creazione Scheda Allenamento', () => {
     if (!advanced) {
       // Riempi eventuali altri campi numerici richiesti (tempo/peso/rest) se vuoti
       const extraNumericInputs = page.locator(
-        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]'
+        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]',
       )
       const count = await extraNumericInputs.count()
       for (let i = 0; i < count; i++) {
@@ -335,13 +338,17 @@ test.describe('Flusso Creazione Scheda Allenamento', () => {
     }
 
     // Step 1: obbligatori nome, obiettivo, atleta
-    const objectiveSelect = page.getByRole('button', { name: /obiettivo|seleziona un obiettivo/i }).first()
+    const objectiveSelect = page
+      .getByRole('button', { name: /obiettivo|seleziona un obiettivo/i })
+      .first()
     if ((await objectiveSelect.count()) > 0) {
       await objectiveSelect.click()
       const firstObjective = page.getByRole('button').filter({ hasText: /.*/ }).nth(1)
       await firstObjective.click().catch(() => {})
     }
-    const athleteSelectBtn = page.getByRole('button', { name: /atleta|seleziona un atleta/i }).first()
+    const athleteSelectBtn = page
+      .getByRole('button', { name: /atleta|seleziona un atleta/i })
+      .first()
     if ((await athleteSelectBtn.count()) > 0) {
       await athleteSelectBtn.click()
       const firstAthlete = page.getByRole('button').filter({ hasText: /@| / }).nth(1)
@@ -411,7 +418,7 @@ test.describe('Flusso Creazione Scheda Allenamento', () => {
     let advanced = await safeClickNext(page, 15000)
     if (!advanced) {
       const extraNumericInputs = page.locator(
-        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]'
+        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]',
       )
       const count = await extraNumericInputs.count()
       for (let i = 0; i < count; i++) {
@@ -435,7 +442,9 @@ test.describe('Flusso Creazione Scheda Allenamento', () => {
       await step4Reps.fill('12').catch(() => {})
     }
     const step4Time = page
-      .locator('input[name*="time"], input[placeholder*="tempo"], input[name*="rest"], input[placeholder*="riposo"]')
+      .locator(
+        'input[name*="time"], input[placeholder*="tempo"], input[name*="rest"], input[placeholder*="riposo"]',
+      )
       .first()
     if ((await step4Time.count()) > 0 && (await step4Time.inputValue()) === '') {
       await step4Time.fill('60').catch(() => {})
@@ -447,7 +456,7 @@ test.describe('Flusso Creazione Scheda Allenamento', () => {
     advanced = await safeClickNext(page, 15000)
     if (!advanced) {
       const extraNumericInputs = page.locator(
-        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]'
+        'input[type="number"], input[name*="time"], input[placeholder*="tempo"], input[name*="weight"], input[placeholder*="peso"], input[name*="rest"], input[placeholder*="riposo"]',
       )
       const count = await extraNumericInputs.count()
       for (let i = 0; i < count; i++) {

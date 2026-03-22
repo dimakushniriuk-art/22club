@@ -1,8 +1,8 @@
 /**
  * Script per Analisi RLS Policies Supabase
- * 
+ *
  * Verifica lo stato delle RLS policies per tutte le tabelle principali
- * 
+ *
  * Uso:
  *   npm run db:analyze-rls
  *   oppure
@@ -44,7 +44,9 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseKey) {
   console.error("❌ Variabili d'ambiente mancanti!")
-  console.error('   Configura NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local')
+  console.error(
+    '   Configura NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local',
+  )
   process.exit(1)
 }
 
@@ -208,7 +210,9 @@ async function main() {
 
   const notAccessible = existing.filter((r) => r.rlsEnabled && !r.accessible)
   if (notAccessible.length > 0 && !supabaseServiceKey) {
-    console.log(`\n💡 NOTA: ${notAccessible.length} tabelle con accesso negato (normale se non autenticato)`)
+    console.log(
+      `\n💡 NOTA: ${notAccessible.length} tabelle con accesso negato (normale se non autenticato)`,
+    )
     console.log(`   Per verifica completa, configura SUPABASE_SERVICE_ROLE_KEY`)
   }
 

@@ -32,10 +32,7 @@ export function AIDataScoresSection({
 }: AIDataScoresSectionProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -96,10 +93,7 @@ export function AIDataScoresSection({
         </CardContent>
       </Card>
 
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />

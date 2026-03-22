@@ -51,7 +51,9 @@ async function loginAndAssert(
 
   if (!reached && (page.url().includes('/login') || page.url().includes('/post-login'))) {
     await page.goto(`${BASE_URL}${expectedPathStartsWith}`)
-    await expect(page).toHaveURL(new RegExp(expectedPathStartsWith.replace('/', '\\/')), { timeout: 20000 })
+    await expect(page).toHaveURL(new RegExp(expectedPathStartsWith.replace('/', '\\/')), {
+      timeout: 20000,
+    })
   }
 
   return page
@@ -59,15 +61,26 @@ async function loginAndAssert(
 
 test.describe('Login e redirect per ruoli', () => {
   test('ADMIN → /dashboard', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP: cookie Secure non affidabili, skip')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP: cookie Secure non affidabili, skip',
+    )
     test.setTimeout(LOGIN_TIMEOUT)
     const context = await newCleanContext(browser)
-    await loginAndAssert(context, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password, '/dashboard')
+    await loginAndAssert(
+      context,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password,
+      '/dashboard',
+    )
     await context.close()
   })
 
   test('PT → /dashboard', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP: cookie Secure non affidabili, skip')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP: cookie Secure non affidabili, skip',
+    )
     test.setTimeout(LOGIN_TIMEOUT)
     const context = await newCleanContext(browser)
     await loginAndAssert(
@@ -80,48 +93,72 @@ test.describe('Login e redirect per ruoli', () => {
   })
 
   test('ATLETA → /home', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP: cookie Secure non affidabili, skip')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP: cookie Secure non affidabili, skip',
+    )
     test.setTimeout(LOGIN_TIMEOUT)
     const context = await newCleanContext(browser)
-    await loginAndAssert(context, TEST_CREDENTIALS.athlete.email, TEST_CREDENTIALS.athlete.password, '/home')
+    await loginAndAssert(
+      context,
+      TEST_CREDENTIALS.athlete.email,
+      TEST_CREDENTIALS.athlete.password,
+      '/home',
+    )
     await context.close()
   })
 
   test('NUTRIZIONISTA → /dashboard/nutrizionista', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP: cookie Secure non affidabili, skip')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP: cookie Secure non affidabili, skip',
+    )
     test.setTimeout(LOGIN_TIMEOUT)
     const context = await newCleanContext(browser)
-    const page = await loginAndAssert(context, 'lara.brignoli@tepm.com', 'lara123!', '/dashboard/nutrizionista')
-    
+    const page = await loginAndAssert(
+      context,
+      'lara.brignoli@tepm.com',
+      'lara123!',
+      '/dashboard/nutrizionista',
+    )
+
     // Verifica access denied a /dashboard/calendario
     await page.goto(`${BASE_URL}/dashboard/calendario`)
     await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }).catch(() => {})
     await expect(page).toHaveURL(/\/dashboard\/nutrizionista/, { timeout: 10000 })
-    
+
     // Verifica access OK a /dashboard/clienti
     await page.goto(`${BASE_URL}/dashboard/clienti`)
     await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }).catch(() => {})
     await expect(page).toHaveURL(/\/dashboard\/clienti/, { timeout: 10000 })
-    
+
     await context.close()
   })
 
   test('MASSAGGIATORE → /dashboard/massaggiatore', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP: cookie Secure non affidabili, skip')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP: cookie Secure non affidabili, skip',
+    )
     test.setTimeout(LOGIN_TIMEOUT)
     const context = await newCleanContext(browser)
-    const page = await loginAndAssert(context, 'nadir.volpi@tepm.com', 'nadir123!', '/dashboard/massaggiatore')
-    
+    const page = await loginAndAssert(
+      context,
+      'nadir.volpi@tepm.com',
+      'nadir123!',
+      '/dashboard/massaggiatore',
+    )
+
     // Verifica access denied a /dashboard/calendario
     await page.goto(`${BASE_URL}/dashboard/calendario`)
     await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }).catch(() => {})
     await expect(page).toHaveURL(/\/dashboard\/massaggiatore/, { timeout: 10000 })
-    
+
     // Verifica access OK a /dashboard/clienti
     await page.goto(`${BASE_URL}/dashboard/clienti`)
     await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }).catch(() => {})
     await expect(page).toHaveURL(/\/dashboard\/clienti/, { timeout: 10000 })
-    
+
     await context.close()
   })
 

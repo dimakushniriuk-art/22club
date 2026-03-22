@@ -43,7 +43,12 @@ function mapRole(rawRole: string | null | undefined): UserRole | null {
   }
   const trimmedRole = rawRole.trim()
   // Guardrail: ruoli legacy non devono più esistere dopo migration; log se arrivano
-  if (trimmedRole === 'pt' || trimmedRole === 'atleta' || trimmedRole === 'owner' || trimmedRole === 'staff') {
+  if (
+    trimmedRole === 'pt' ||
+    trimmedRole === 'atleta' ||
+    trimmedRole === 'owner' ||
+    trimmedRole === 'staff'
+  ) {
     if (typeof console !== 'undefined' && console.warn) {
       console.warn('[auth] Ruolo legacy ricevuto, normalizzazione runtime:', trimmedRole)
     }
@@ -56,11 +61,11 @@ function mapRole(rawRole: string | null | undefined): UserRole | null {
         : trimmedRole === 'owner'
           ? 'admin'
           : trimmedRole === 'trainer' ||
-            trimmedRole === 'admin' ||
-            trimmedRole === 'athlete' ||
-            trimmedRole === 'marketing' ||
-            trimmedRole === 'nutrizionista' ||
-            trimmedRole === 'massaggiatore'
+              trimmedRole === 'admin' ||
+              trimmedRole === 'athlete' ||
+              trimmedRole === 'marketing' ||
+              trimmedRole === 'nutrizionista' ||
+              trimmedRole === 'massaggiatore'
             ? (trimmedRole as UserRole)
             : null
   return canonical
@@ -125,8 +130,26 @@ interface AuthContextResponse {
   org_id: string | null
   full_name?: string | null
   email?: string | null
-  actorProfile?: { id: string; user_id?: string; org_id: string | null; first_name: string; last_name: string; full_name?: string; email: string; role: UserRole } | null
-  effectiveProfile?: { id: string; user_id?: string; org_id: string | null; first_name: string; last_name: string; full_name?: string; email: string; role: UserRole } | null
+  actorProfile?: {
+    id: string
+    user_id?: string
+    org_id: string | null
+    first_name: string
+    last_name: string
+    full_name?: string
+    email: string
+    role: UserRole
+  } | null
+  effectiveProfile?: {
+    id: string
+    user_id?: string
+    org_id: string | null
+    first_name: string
+    last_name: string
+    full_name?: string
+    email: string
+    role: UserRole
+  } | null
   isImpersonating?: boolean
 }
 
@@ -188,7 +211,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!res.ok) return false
       const data = (await res.json()) as AuthContextResponse
       if (data.isImpersonating && data.effectiveProfile && data.actorProfile) {
-        const effective = contextProfileToUserProfile(data.effectiveProfile as AuthContextResponse['actorProfile'])
+        const effective = contextProfileToUserProfile(
+          data.effectiveProfile as AuthContextResponse['actorProfile'],
+        )
         const actor = contextProfileToUserProfile(data.actorProfile)
         if (effective && actor) {
           setUser(effective)
@@ -259,7 +284,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             msg.includes('lock broken')
           if (isAbort) {
             if (process.env.NODE_ENV !== 'production') {
-              logger.debug('[profiles] fetchProfile → richiesta abortita/lock (ignorato)', { userId })
+              logger.debug('[profiles] fetchProfile → richiesta abortita/lock (ignorato)', {
+                userId,
+              })
             }
             return { profile: null }
           }
@@ -446,98 +473,100 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isMounted = true
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event: string, session: unknown) => {
-      const sess = session as { user?: unknown } | null
-      if (!isMounted) return
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event: string, session: unknown) => {
+        const sess = session as { user?: unknown } | null
+        if (!isMounted) return
 
-      // Debug solo in sviluppo
-      if (process.env.NODE_ENV !== 'production') {
-        logger.debug('Auth state change', {
-          event,
-          hasSession: !!session,
-          hasUser: !!sess?.user,
-        })
-      }
+        // Debug solo in sviluppo
+        if (process.env.NODE_ENV !== 'production') {
+          logger.debug('Auth state change', {
+            event,
+            hasSession: !!session,
+            hasUser: !!sess?.user,
+          })
+        }
 
-      // Gestione eventi specifici
-      if (event === 'SIGNED_OUT' || !sess || !sess.user) {
-        profileCacheRef.current.clear()
-        inFlightRef.current.clear()
-        setUser(null)
-        setRole(null)
-        setOrgId(null)
-        setActorProfile(null)
-        setIsImpersonating(false)
-        setLoading(false)
-        initialSessionHandledRef.current = false
-        return
-      }
+        // Gestione eventi specifici
+        if (event === 'SIGNED_OUT' || !sess || !sess.user) {
+          profileCacheRef.current.clear()
+          inFlightRef.current.clear()
+          setUser(null)
+          setRole(null)
+          setOrgId(null)
+          setActorProfile(null)
+          setIsImpersonating(false)
+          setLoading(false)
+          initialSessionHandledRef.current = false
+          return
+        }
 
-      // INITIAL_SESSION: carica profilo UNA SOLA VOLTA (o contesto impersonation)
-      if (event === 'INITIAL_SESSION') {
-        if (initialSessionHandledRef.current) {
+        // INITIAL_SESSION: carica profilo UNA SOLA VOLTA (o contesto impersonation)
+        if (event === 'INITIAL_SESSION') {
+          if (initialSessionHandledRef.current) {
+            if (process.env.NODE_ENV !== 'production') {
+              logger.debug('[profiles] INITIAL_SESSION → ignorato (già gestito)', {
+                userId: (sess.user as { id: string }).id,
+                source: 'auth-provider',
+                reason: 'bootstrap già eseguito',
+              })
+            }
+            return
+          }
+          initialSessionHandledRef.current = true
+          const applied = await applyAuthContext()
+          if (isMounted && applied) return
           if (process.env.NODE_ENV !== 'production') {
-            logger.debug('[profiles] INITIAL_SESSION → ignorato (già gestito)', {
+            logger.debug('[profiles] INITIAL_SESSION → chiama fetchProfile', {
               userId: (sess.user as { id: string }).id,
               source: 'auth-provider',
-              reason: 'bootstrap già eseguito',
+              reason: 'INITIAL_SESSION event',
             })
+          }
+          const result = await fetchProfile((sess.user as { id: string }).id)
+          if (isMounted) {
+            updateUserFromProfile(result.profile)
           }
           return
         }
-        initialSessionHandledRef.current = true
-        const applied = await applyAuthContext()
-        if (isMounted && applied) return
-        if (process.env.NODE_ENV !== 'production') {
-          logger.debug('[profiles] INITIAL_SESSION → chiama fetchProfile', {
-            userId: (sess.user as { id: string }).id,
-            source: 'auth-provider',
-            reason: 'INITIAL_SESSION event',
-          })
-        }
-        const result = await fetchProfile((sess.user as { id: string }).id)
-        if (isMounted) {
-          updateUserFromProfile(result.profile)
-        }
-        return
-      }
 
-      // SIGNED_IN: carica contesto (impersonation) o profilo
-      if (event === 'SIGNED_IN') {
-        const applied = await applyAuthContext()
-        if (isMounted && applied) return
-        const result = await fetchProfile((sess.user as { id: string }).id)
-        if (isMounted) {
-          updateUserFromProfile(result.profile)
+        // SIGNED_IN: carica contesto (impersonation) o profilo
+        if (event === 'SIGNED_IN') {
+          const applied = await applyAuthContext()
+          if (isMounted && applied) return
+          const result = await fetchProfile((sess.user as { id: string }).id)
+          if (isMounted) {
+            updateUserFromProfile(result.profile)
+          }
+          return
         }
-        return
-      }
 
-      // TOKEN_REFRESHED: NO-OP - il profilo è già caricato da INITIAL_SESSION/SIGNED_IN
-      // Non usare stato `user` (stale closure in useEffect([]))
-      // Il profilo viene gestito da INITIAL_SESSION / SIGNED_IN / USER_UPDATED
-      if (event === 'TOKEN_REFRESHED') {
-        // Non fare nulla, il profilo è già in cache/stato
-        return
-      }
-
-      // USER_UPDATED: ricarica profilo (invalida cache per forzare reload)
-      if (event === 'USER_UPDATED') {
-        profileCacheRef.current.delete((sess.user as { id: string }).id)
-        const result = await fetchProfile((sess.user as { id: string }).id)
-        if (isMounted) {
-          updateUserFromProfile(result.profile)
+        // TOKEN_REFRESHED: NO-OP - il profilo è già caricato da INITIAL_SESSION/SIGNED_IN
+        // Non usare stato `user` (stale closure in useEffect([]))
+        // Il profilo viene gestito da INITIAL_SESSION / SIGNED_IN / USER_UPDATED
+        if (event === 'TOKEN_REFRESHED') {
+          // Non fare nulla, il profilo è già in cache/stato
+          return
         }
-        return
-      }
 
-      if (sess.user) {
-        const result = await fetchProfile((sess.user as { id: string }).id)
-        if (isMounted) {
-          updateUserFromProfile(result.profile)
+        // USER_UPDATED: ricarica profilo (invalida cache per forzare reload)
+        if (event === 'USER_UPDATED') {
+          profileCacheRef.current.delete((sess.user as { id: string }).id)
+          const result = await fetchProfile((sess.user as { id: string }).id)
+          if (isMounted) {
+            updateUserFromProfile(result.profile)
+          }
+          return
         }
-      }
-    })
+
+        if (sess.user) {
+          const result = await fetchProfile((sess.user as { id: string }).id)
+          if (isMounted) {
+            updateUserFromProfile(result.profile)
+          }
+        }
+      },
+    )
 
     return () => {
       isMounted = false

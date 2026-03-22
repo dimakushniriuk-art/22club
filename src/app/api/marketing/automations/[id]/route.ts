@@ -8,10 +8,7 @@ const logger = createLogger('api:marketing:automations:[id]')
  * GET /api/marketing/automations/:id
  * Dettaglio automazione + segmento. Solo admin/marketing (RLS).
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     if (!id) {
@@ -46,7 +43,10 @@ export async function GET(
       .single()
 
     if (autoErr || !automation) {
-      return NextResponse.json({ error: autoErr?.message ?? 'Automazione non trovata' }, { status: 404 })
+      return NextResponse.json(
+        { error: autoErr?.message ?? 'Automazione non trovata' },
+        { status: 404 },
+      )
     }
 
     const segmentId = (automation as { segment_id: string }).segment_id

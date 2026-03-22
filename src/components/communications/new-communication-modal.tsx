@@ -160,113 +160,115 @@ export function NewCommunicationModal({
           if (!open) handleCloseRequest()
         }}
       >
-      <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Modifica Comunicazione' : 'Nuova Comunicazione'}</DialogTitle>
-          <DialogDescription>Invia un&apos;email ai tuoi atleti</DialogDescription>
-        </DialogHeader>
+        <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {isEditing ? 'Modifica Comunicazione' : 'Nuova Comunicazione'}
+            </DialogTitle>
+            <DialogDescription>Invia un&apos;email ai tuoi atleti</DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4 sm:space-y-6">
-          {/* Destinatari */}
-          <div className="space-y-3">
-            <label className="text-text-primary block text-sm font-medium">Destinatari</label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={formRecipientFilter === 'atleti' ? 'default' : 'outline'}
-                className="flex-1 min-w-[140px]"
-                onClick={() => onFormRecipientFilterChange('atleti')}
-              >
-                Tutti atleti
-                {recipientCount !== null && formRecipientFilter === 'atleti'
-                  ? ` (${recipientCount})`
-                  : ''}
-              </Button>
-              <Button
-                variant={formRecipientFilter === 'custom' ? 'default' : 'outline'}
-                className="flex-1 min-w-[140px]"
-                onClick={() => onFormRecipientFilterChange('custom')}
-              >
-                <UserCheck className="mr-2 h-4 w-4 shrink-0" />
-                Atleta specifico
-                {formRecipientFilter === 'custom' && formSelectedAthletes.length > 0
-                  ? ` (${formSelectedAthletes.length})`
-                  : ''}
-              </Button>
+          <div className="space-y-4 sm:space-y-6">
+            {/* Destinatari */}
+            <div className="space-y-3">
+              <label className="text-text-primary block text-sm font-medium">Destinatari</label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={formRecipientFilter === 'atleti' ? 'default' : 'outline'}
+                  className="flex-1 min-w-[140px]"
+                  onClick={() => onFormRecipientFilterChange('atleti')}
+                >
+                  Tutti atleti
+                  {recipientCount !== null && formRecipientFilter === 'atleti'
+                    ? ` (${recipientCount})`
+                    : ''}
+                </Button>
+                <Button
+                  variant={formRecipientFilter === 'custom' ? 'default' : 'outline'}
+                  className="flex-1 min-w-[140px]"
+                  onClick={() => onFormRecipientFilterChange('custom')}
+                >
+                  <UserCheck className="mr-2 h-4 w-4 shrink-0" />
+                  Atleta specifico
+                  {formRecipientFilter === 'custom' && formSelectedAthletes.length > 0
+                    ? ` (${formSelectedAthletes.length})`
+                    : ''}
+                </Button>
+              </div>
+
+              {/* Selezione atleti specifici */}
+              {formRecipientFilter === 'custom' && (
+                <AthleteSelector
+                  selectedAthletes={formSelectedAthletes}
+                  onSelectionChange={onFormSelectedAthletesChange}
+                />
+              )}
             </div>
 
-            {/* Selezione atleti specifici */}
-            {formRecipientFilter === 'custom' && (
-              <AthleteSelector
-                selectedAthletes={formSelectedAthletes}
-                onSelectionChange={onFormSelectedAthletesChange}
-              />
-            )}
-          </div>
-
-          {/* Titolo e messaggio */}
-          <div className="space-y-4">
-            <Input
-            label="Titolo"
-            placeholder="Es: Nuova scheda disponibile"
-            value={formTitle}
-            onChange={(e) => onFormTitleChange(e.target.value)}
-            />
-            <Textarea
-              label="Messaggio"
-              placeholder="Scrivi il contenuto della comunicazione..."
-              value={formMessage}
-              onChange={(e) => onFormMessageChange(e.target.value)}
-            />
-          </div>
-
-          {/* Programmazione */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <div className="shrink-0">
-              <Checkbox
-                id="schedule"
-                checked={formScheduled}
-                onChange={(e) => onFormScheduledChange(e.target.checked)}
-                label="Programma invio"
-              />
-            </div>
-            {formScheduled && (
+            {/* Titolo e messaggio */}
+            <div className="space-y-4">
               <Input
-                type="datetime-local"
-                className="min-w-0 flex-1 sm:max-w-xs"
-                value={formScheduledDate}
-                onChange={(e) => onFormScheduledDateChange(e.target.value)}
+                label="Titolo"
+                placeholder="Es: Nuova scheda disponibile"
+                value={formTitle}
+                onChange={(e) => onFormTitleChange(e.target.value)}
               />
-            )}
-          </div>
-        </div>
+              <Textarea
+                label="Messaggio"
+                placeholder="Scrivi il contenuto della comunicazione..."
+                value={formMessage}
+                onChange={(e) => onFormMessageChange(e.target.value)}
+              />
+            </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handleCloseRequest} disabled={formLoading}>
-            Annulla
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={onCreateDraft}
-            disabled={formLoading || !formTitle.trim() || !formMessage.trim()}
-          >
-            {formLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" /> : null}
-            Salva bozza
-          </Button>
-          <Button
-            onClick={onCreateAndSend}
-            disabled={formLoading || !formTitle.trim() || !formMessage.trim()}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {formLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" />
-            ) : (
-              <Send className="mr-2 h-4 w-4 shrink-0" />
-            )}
-            Invia ora
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            {/* Programmazione */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div className="shrink-0">
+                <Checkbox
+                  id="schedule"
+                  checked={formScheduled}
+                  onChange={(e) => onFormScheduledChange(e.target.checked)}
+                  label="Programma invio"
+                />
+              </div>
+              {formScheduled && (
+                <Input
+                  type="datetime-local"
+                  className="min-w-0 flex-1 sm:max-w-xs"
+                  value={formScheduledDate}
+                  onChange={(e) => onFormScheduledDateChange(e.target.value)}
+                />
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={handleCloseRequest} disabled={formLoading}>
+              Annulla
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={onCreateDraft}
+              disabled={formLoading || !formTitle.trim() || !formMessage.trim()}
+            >
+              {formLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" /> : null}
+              Salva bozza
+            </Button>
+            <Button
+              onClick={onCreateAndSend}
+              disabled={formLoading || !formTitle.trim() || !formMessage.trim()}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {formLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" />
+              ) : (
+                <Send className="mr-2 h-4 w-4 shrink-0" />
+              )}
+              Invia ora
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={showConfirmExit} onOpenChange={setShowConfirmExit}>
         <AlertDialogContent>
@@ -278,9 +280,7 @@ export function NewCommunicationModal({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmExit}>
-              Esci
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmExit}>Esci</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

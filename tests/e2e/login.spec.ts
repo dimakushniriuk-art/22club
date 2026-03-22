@@ -18,7 +18,11 @@ async function openLogin(browser: Browser) {
 }
 
 function loadStoredState(role: 'trainer' | 'athlete') {
-  const file = join(process.cwd(), 'tests/e2e/.auth', role === 'trainer' ? 'pt-auth.json' : 'athlete-auth.json')
+  const file = join(
+    process.cwd(),
+    'tests/e2e/.auth',
+    role === 'trainer' ? 'pt-auth.json' : 'athlete-auth.json',
+  )
   if (!existsSync(file)) return null
   try {
     return JSON.parse(readFileSync(file, 'utf-8'))
@@ -51,7 +55,8 @@ async function applyStorageState(page: Page, role: 'trainer' | 'athlete') {
   return true
 }
 
-const isSafariProject = (name: string) => name?.toLowerCase().includes('webkit') || name?.toLowerCase().includes('safari')
+const isSafariProject = (name: string) =>
+  name?.toLowerCase().includes('webkit') || name?.toLowerCase().includes('safari')
 
 async function waitForLoginForm(page: Page) {
   const emailInput = page.getByPlaceholder('Email')
@@ -71,7 +76,7 @@ async function dismissCookieBanner(page: Page) {
   } catch {
     // Bottone non trovato, continua
   }
-  
+
   // Rimuovi sempre il banner dal DOM se presente (fallback robusto per Mobile Safari)
   try {
     await page.evaluate(() => {
@@ -101,7 +106,13 @@ async function dismissCookieBanner(page: Page) {
   }
 }
 
-async function loginAndReach(page: Page, email: string, password: string, target: string, role: 'trainer' | 'athlete') {
+async function loginAndReach(
+  page: Page,
+  email: string,
+  password: string,
+  target: string,
+  role: 'trainer' | 'athlete',
+) {
   await waitForLoginForm(page)
   const emailInput = page.getByPlaceholder('Email')
   const passwordInput = page.getByPlaceholder('Password')
@@ -111,11 +122,17 @@ async function loginAndReach(page: Page, email: string, password: string, target
   // Chiudi il cookie banner se presente (importante per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
 
-  const nav = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 40000 }).catch(() => {})
+  const nav = page
+    .waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 40000 })
+    .catch(() => {})
   await Promise.all([nav, page.click('button[type="submit"]')])
 
   const reached = await expect
-    .poll(async () => page.url(), { timeout: 40000, intervals: [500], message: `URL non è ${target}` })
+    .poll(async () => page.url(), {
+      timeout: 40000,
+      intervals: [500],
+      message: `URL non è ${target}`,
+    })
     .toContain(target)
     .then(
       () => true,
@@ -147,7 +164,6 @@ async function ensureLogged(
 }
 
 test.describe('Login Flow', () => {
-
   test('should display login form', async ({ browser }) => {
     const { context, page } = await openLogin(browser)
     await expect(page.getByText('Accedi')).toBeVisible()
@@ -158,7 +174,10 @@ test.describe('Login Flow', () => {
   })
 
   test('should login as personal trainer', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP blocca cookie Secure: login via form non affidabile in dev')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP blocca cookie Secure: login via form non affidabile in dev',
+    )
     test.setTimeout(45000)
     const { context } = await ensureLogged(
       browser,
@@ -172,7 +191,10 @@ test.describe('Login Flow', () => {
   })
 
   test('should login as athlete', async ({ browser, browserName }) => {
-    test.skip(isSafariProject(browserName), 'Safari/WebKit su HTTP blocca cookie Secure: login via form non affidabile in dev')
+    test.skip(
+      isSafariProject(browserName),
+      'Safari/WebKit su HTTP blocca cookie Secure: login via form non affidabile in dev',
+    )
     test.setTimeout(45000)
     const { context } = await ensureLogged(
       browser,
@@ -190,10 +212,10 @@ test.describe('Login Flow', () => {
     await waitForLoginForm(page)
     await page.fill('input[name="email"]', 'invalid@example.com')
     await page.fill('input[name="password"]', 'wrongpassword')
-    
+
     // Chiudi il cookie banner se presente (importante per Mobile Chrome/Safari)
     await dismissCookieBanner(page)
-    
+
     await page.click('button[type="submit"]')
 
     const primaryError = page.getByText('Credenziali non valide')
@@ -207,12 +229,15 @@ test.describe('Login Flow', () => {
   test('should validate required fields', async ({ browser, browserName }) => {
     const { context, page } = await openLogin(browser)
     await waitForLoginForm(page)
-    
+
     // Chiudi il cookie banner se presente (importante per Mobile Chrome/Safari)
     await dismissCookieBanner(page)
-    
+
     // Su Mobile Chrome/Safari, usa force: true per bypassare il banner se persiste
-    const isMobile = browserName?.toLowerCase().includes('mobile') || browserName?.toLowerCase().includes('webkit') || browserName?.toLowerCase().includes('safari')
+    const isMobile =
+      browserName?.toLowerCase().includes('mobile') ||
+      browserName?.toLowerCase().includes('webkit') ||
+      browserName?.toLowerCase().includes('safari')
     if (isMobile) {
       await page.click('button[type="submit"]', { force: true })
       // Attendi che la validazione si attivi (con force: true potrebbe essere più lenta)
@@ -227,11 +252,25 @@ test.describe('Login Flow', () => {
 
     // Su mobile, verifica almeno che uno dei due metodi di validazione funzioni
     if (isMobile) {
-      const hasEmailError = await page.getByText('Email è richiesta').isVisible({ timeout: 3000 }).catch(() => false)
-      const hasPasswordError = await page.getByText('Password è richiesta').isVisible({ timeout: 3000 }).catch(() => false)
-      const hasHtml5Email = await page.locator('input[name="email"]:invalid').count().then(c => c > 0).catch(() => false)
-      const hasHtml5Password = await page.locator('input[name="password"]:invalid').count().then(c => c > 0).catch(() => false)
-      
+      const hasEmailError = await page
+        .getByText('Email è richiesta')
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
+      const hasPasswordError = await page
+        .getByText('Password è richiesta')
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
+      const hasHtml5Email = await page
+        .locator('input[name="email"]:invalid')
+        .count()
+        .then((c) => c > 0)
+        .catch(() => false)
+      const hasHtml5Password = await page
+        .locator('input[name="password"]:invalid')
+        .count()
+        .then((c) => c > 0)
+        .catch(() => false)
+
       // Almeno una validazione deve essere presente
       expect(hasEmailError || hasHtml5Email).toBeTruthy()
       expect(hasPasswordError || hasHtml5Password).toBeTruthy()

@@ -1,4 +1,5 @@
 # ✅ STEP 3 — RIEPILOGO ESECUZIONE FIX
+
 **Data**: 2025-01-27  
 **File**: `PAGE_AUDIT_STEP3_SQL_FIX_V2.sql`
 
@@ -7,6 +8,7 @@
 ## ✅ RISULTATI ESECUZIONE
 
 ### 1. Permessi `anon` ✅
+
 **Stato**: ✅ **RIMOSSI CORRETTAMENTE**
 
 ```
@@ -21,6 +23,7 @@ Risultati:
 ---
 
 ### 2. Funzioni Helper ✅
+
 **Stato**: ✅ **TUTTE CREATE CORRETTAMENTE**
 
 ```
@@ -36,6 +39,7 @@ Risultati:
 ---
 
 ### 3. CHECK Constraint `type` ⚠️
+
 **Stato**: ⚠️ **PARZIALE** (da allineare se necessario)
 
 ```
@@ -51,11 +55,13 @@ type IN ('allenamento', 'prova', 'valutazione', 'cardio', 'check', 'consulenza',
 ---
 
 ### 4. Policies RLS ⏳
+
 **Stato**: ⏳ **DA VERIFICARE** (necessaria query finale)
 
 **Query di verifica**: Eseguire `PAGE_AUDIT_STEP3_VERIFICA_POLICIES.sql`
 
 **Da verificare**:
+
 - ✅ Policies NON hanno subquery `SELECT profiles` dirette
 - ✅ Policies usano funzioni helper (`get_current_staff_profile_id`, `is_admin`, ecc.)
 - ✅ Policies per SELECT, INSERT, UPDATE, DELETE esistono
@@ -65,11 +71,13 @@ type IN ('allenamento', 'prova', 'valutazione', 'cardio', 'check', 'consulenza',
 ## 🔍 VERIFICA FINALE NECESSARIA
 
 ### Query da Eseguire:
+
 ```sql
 -- Eseguire: PAGE_AUDIT_STEP3_VERIFICA_POLICIES.sql
 ```
 
 ### Cosa Verificare:
+
 1. ✅ **RLS attivo**: `appointments` deve avere `rls_enabled = true`
 2. ✅ **Policies corrette**: NON devono avere subquery `SELECT profiles` o `FROM profiles`
 3. ✅ **Policies usano helper**: Devono usare `get_current_staff_profile_id()`, `is_admin()`, ecc.
@@ -81,16 +89,20 @@ type IN ('allenamento', 'prova', 'valutazione', 'cardio', 'check', 'consulenza',
 ## 📋 PROSSIMI STEP
 
 ### STEP 3b: Verifica Finale Policies (Opzionale ma Consigliato)
+
 1. ⏳ Eseguire `PAGE_AUDIT_STEP3_VERIFICA_POLICIES.sql`
 2. ⏳ Incollare risultati qui per analisi finale
 
 ### STEP 4: Piano Risoluzione ✅
+
 **Stato**: ✅ **COMPLETATO**
 
 ### STEP 5: Rianalisi Profonda (Dopo Fix)
+
 **Stato**: ⏳ **DA FARE**
 
 ### STEP 6: Implementazione FE/BE + Report Finale
+
 **Stato**: ⏳ **DA FARE**
 
 ---
@@ -98,6 +110,7 @@ type IN ('allenamento', 'prova', 'valutazione', 'cardio', 'check', 'consulenza',
 ## ✅ CRITERI DI ACCETTAZIONE STEP 3
 
 ### Fix Completato con Successo se:
+
 - ✅ Ruolo `anon` **NON** ha permessi su `appointments` ✅ **CONFERMATO**
 - ✅ Funzioni helper esistono ✅ **CONFERMATO**
 - ⏳ Policies NON hanno subquery ricorsive ⏳ **DA VERIFICARE**
@@ -109,11 +122,13 @@ type IN ('allenamento', 'prova', 'valutazione', 'cardio', 'check', 'consulenza',
 ## 🚀 PROSSIMO PASSO RACCOMANDATO
 
 **ESEGUIRE** query di verifica finale:
+
 ```sql
 -- File: PAGE_AUDIT_STEP3_VERIFICA_POLICIES.sql
 ```
 
 Poi procedere con:
+
 - **STEP 5**: Rianalisi profonda dopo fix
 - **STEP 6**: Implementazione FE/BE rimanenti + Report finale
 

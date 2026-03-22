@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('hooks:home-profile:use-athlete-stats')

@@ -20,24 +20,69 @@ import { iconMap } from '@/components/ui/professional-icons'
 import { getBloccoAccentColors, type BloccoAccentColors } from '@/lib/design-system-data'
 
 /** Blocchi che usano icona Lucide invece di emoji (single source of truth). */
-const LUCIDE_BLOCCO_IDS = new Set([
-  'schede',
-  'progressi',
-  'foto-risultati',
-])
+const LUCIDE_BLOCCO_IDS = new Set(['schede', 'progressi', 'foto-risultati'])
 
 function isLucideBlocco(bloccoId: string): boolean {
   return LUCIDE_BLOCCO_IDS.has(bloccoId)
 }
 
 const blocchiItems = [
-  { id: 'schede', label: 'SCHEDE', href: '/home/allenamenti', icon: '💪', lucideIcon: Dumbbell, description: 'Il tuo programma di allenamento' },
-  { id: 'appuntamenti', label: 'CALENDARIO', href: '/home/appuntamenti', icon: '📅', lucideIcon: Calendar, description: 'Sessioni con il tuo Trainer' },
-  { id: 'progressi', label: 'PROGRESSI', href: '/home/progressi', icon: '📊', lucideIcon: BarChart3, description: 'Misure, foto e risultati' },
-  { id: 'chat', label: 'CHAT', href: '/home/chat', icon: '💬', lucideIcon: MessageSquare, description: 'Scrivi al tuo trainer' },
-  { id: 'documenti', label: 'DOCUMENTI', href: '/home/documenti', icon: '📄', lucideIcon: FileText, description: 'Referti, piani e file' },
-  { id: 'foto-risultati', label: 'FOTO / RISULTATI', href: '/home/foto-risultati', icon: '📷', lucideIcon: Image, description: 'Foto e risultati del tuo percorso' },
-  { id: 'profilo', label: 'PROFILO', href: '/home/profilo', icon: '👤', lucideIcon: User, description: 'Dati personali e obiettivi' },
+  {
+    id: 'schede',
+    label: 'SCHEDE',
+    href: '/home/allenamenti',
+    icon: '💪',
+    lucideIcon: Dumbbell,
+    description: 'Il tuo programma di allenamento',
+  },
+  {
+    id: 'appuntamenti',
+    label: 'CALENDARIO',
+    href: '/home/appuntamenti',
+    icon: '📅',
+    lucideIcon: Calendar,
+    description: 'Sessioni con il tuo Trainer',
+  },
+  {
+    id: 'progressi',
+    label: 'PROGRESSI',
+    href: '/home/progressi',
+    icon: '📊',
+    lucideIcon: BarChart3,
+    description: 'Misure, foto e risultati',
+  },
+  {
+    id: 'chat',
+    label: 'CHAT',
+    href: '/home/chat',
+    icon: '💬',
+    lucideIcon: MessageSquare,
+    description: 'Scrivi al tuo trainer',
+  },
+  {
+    id: 'documenti',
+    label: 'DOCUMENTI',
+    href: '/home/documenti',
+    icon: '📄',
+    lucideIcon: FileText,
+    description: 'Referti, piani e file',
+  },
+  {
+    id: 'foto-risultati',
+    label: 'FOTO / RISULTATI',
+    href: '/home/foto-risultati',
+    icon: '📷',
+    lucideIcon: Image,
+    description: 'Foto e risultati del tuo percorso',
+  },
+  {
+    id: 'profilo',
+    label: 'PROFILO',
+    href: '/home/profilo',
+    icon: '👤',
+    lucideIcon: User,
+    description: 'Dati personali e obiettivi',
+  },
 ] as const
 
 type BloccoItem = (typeof blocchiItems)[number]
@@ -55,7 +100,13 @@ interface WelcomeHeaderProps {
   onOpenWizard: () => void
 }
 
-function WelcomeHeader({ nome, cognome: _cognome, isAtleta, invitiCount, onOpenWizard }: WelcomeHeaderProps) {
+function WelcomeHeader({
+  nome,
+  cognome: _cognome,
+  isAtleta,
+  invitiCount,
+  onOpenWizard,
+}: WelcomeHeaderProps) {
   return (
     <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 min-[834px]:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] animate-fade-in">
       <div className="flex items-start justify-between gap-3">
@@ -87,10 +138,19 @@ interface HomeBloccoCardProps {
   blocco: BloccoItem
   accent: BloccoAccentColors
   useLucide: boolean
-  EmojiIconComponent: React.ComponentType<{ size?: number; color?: string; className?: string }> | null
+  EmojiIconComponent: React.ComponentType<{
+    size?: number
+    color?: string
+    className?: string
+  }> | null
 }
 
-function HomeBloccoCard({ blocco, accent: _accent, useLucide, EmojiIconComponent }: HomeBloccoCardProps) {
+function HomeBloccoCard({
+  blocco,
+  accent: _accent,
+  useLucide,
+  EmojiIconComponent,
+}: HomeBloccoCardProps) {
   const IconComponent = blocco.lucideIcon
   const isProfilo = blocco.id === 'profilo'
 
@@ -104,11 +164,18 @@ function HomeBloccoCard({ blocco, accent: _accent, useLucide, EmojiIconComponent
       <div className="relative z-10 flex items-center justify-center">
         {useLucide && IconComponent ? (
           <div className="rounded-lg border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3">
-            <IconComponent className="h-6 w-6 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" strokeWidth={2.25} />
+            <IconComponent
+              className="h-6 w-6 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8"
+              strokeWidth={2.25}
+            />
           </div>
         ) : EmojiIconComponent ? (
           <div className="rounded-lg border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3">
-            <EmojiIconComponent size={24} color="#22d3ee" className="h-6 w-6 min-[834px]:h-8 min-[834px]:w-8" />
+            <EmojiIconComponent
+              size={24}
+              color="#22d3ee"
+              className="h-6 w-6 min-[834px]:h-8 min-[834px]:w-8"
+            />
           </div>
         ) : null}
       </div>
@@ -118,7 +185,10 @@ function HomeBloccoCard({ blocco, accent: _accent, useLucide, EmojiIconComponent
       <span className="relative z-10 line-clamp-2 px-1 text-center text-[10px] leading-snug text-white/65 transition-colors duration-200 group-hover:text-white/90 min-[834px]:text-xs">
         {blocco.description}
       </span>
-      <div className="absolute bottom-2 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full bg-white/30 transition-all duration-200 ease-out group-hover:w-12" aria-hidden />
+      <div
+        className="absolute bottom-2 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full bg-white/30 transition-all duration-200 ease-out group-hover:w-12"
+        aria-hidden
+      />
     </Link>
   )
 }
@@ -144,7 +214,10 @@ export default function HomePage() {
   const isValidUser = user && isValidProfile(user)
 
   const emojiIconComponents = useMemo(() => {
-    const iconComponents: Record<string, React.ComponentType<{ size?: number; color?: string; className?: string }>> = {}
+    const iconComponents: Record<
+      string,
+      React.ComponentType<{ size?: number; color?: string; className?: string }>
+    > = {}
     for (const blocco of blocchiItems) {
       if (!isLucideBlocco(blocco.id)) {
         const IconComponent = iconMap[blocco.icon as keyof typeof iconMap]
@@ -155,7 +228,9 @@ export default function HomePage() {
   }, [])
 
   const accentMap = useMemo(() => {
-    return Object.fromEntries(blocchiItems.map((b) => [b.id, getBloccoAccentColors(b.id)])) as Record<string, BloccoAccentColors>
+    return Object.fromEntries(
+      blocchiItems.map((b) => [b.id, getBloccoAccentColors(b.id)]),
+    ) as Record<string, BloccoAccentColors>
   }, [])
 
   const mainContainerStyle = useMemo(
@@ -163,7 +238,7 @@ export default function HomePage() {
       overflow: 'auto' as const,
       minHeight: 'calc(100dvh - 56px)',
     }),
-    []
+    [],
   )
 
   if (!user || !isValidUser) {
@@ -210,7 +285,9 @@ export default function HomePage() {
             blocco={blocco}
             accent={accentMap[blocco.id] ?? getBloccoAccentColors(blocco.id)}
             useLucide={isLucideBlocco(blocco.id)}
-            EmojiIconComponent={isLucideBlocco(blocco.id) ? null : emojiIconComponents[blocco.id] ?? null}
+            EmojiIconComponent={
+              isLucideBlocco(blocco.id) ? null : (emojiIconComponents[blocco.id] ?? null)
+            }
           />
         ))}
       </div>

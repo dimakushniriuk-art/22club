@@ -72,7 +72,8 @@ function generateInvitationEmailHTML(params: SendInvitationEmailParams): string 
     headerTitle: EMAIL_DESIGN.defaultOrgName,
     bodyHtml,
     footerBrand: `${EMAIL_DESIGN.defaultOrgName} – Il tuo centro fitness`,
-    footerDisclaimer: 'Questa email è stata inviata automaticamente. Se non hai richiesto questo invito, puoi ignorarla. Per supporto contatta il tuo trainer.',
+    footerDisclaimer:
+      'Questa email è stata inviata automaticamente. Se non hai richiesto questo invito, puoi ignorarla. Per supporto contatta il tuo trainer.',
     pageTitle: 'Invito a 22Club',
   })
 }

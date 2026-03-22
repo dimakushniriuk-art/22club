@@ -14,11 +14,7 @@ interface CircuitConfigStepProps {
   onUpdate: (index: number, data: Partial<WorkoutDayExerciseData>) => void
 }
 
-export function CircuitConfigStep({
-  exercises,
-  params,
-  onUpdate,
-}: CircuitConfigStepProps) {
+export function CircuitConfigStep({ exercises, params, onUpdate }: CircuitConfigStepProps) {
   return (
     <div className="space-y-6">
       <p className="text-text-secondary text-sm">
@@ -153,9 +149,7 @@ export function CircuitConfigStep({
                   <Textarea
                     id={`circuit-note-${exerciseIndex}`}
                     value={exercise.note ?? ''}
-                    onChange={(e) =>
-                      onUpdate(exerciseIndex, { note: e.target.value || undefined })
-                    }
+                    onChange={(e) => onUpdate(exerciseIndex, { note: e.target.value || undefined })}
                     placeholder="Note specifiche per questo esercizio nel circuito"
                     className="w-full min-h-[80px] resize-y bg-background-secondary/50 border-surface-300/30 text-text-primary"
                     rows={3}
@@ -190,7 +184,9 @@ export function CircuitConfigStep({
                   {exercise.sets_detail && exercise.sets_detail.length > 0 && (
                     <span className="text-text-tertiary text-xs">
                       {exercise.sets_detail.length}{' '}
-                      {exercise.sets_detail.length === 1 ? 'serie configurata' : 'serie configurate'}
+                      {exercise.sets_detail.length === 1
+                        ? 'serie configurata'
+                        : 'serie configurate'}
                     </span>
                   )}
                 </div>
@@ -223,7 +219,10 @@ export function CircuitConfigStep({
                               value={set.reps ?? ''}
                               onChange={(e) => {
                                 const updated = [...exercise.sets_detail!]
-                                updated[setIndex] = { ...updated[setIndex], reps: Number(e.target.value) }
+                                updated[setIndex] = {
+                                  ...updated[setIndex],
+                                  reps: Number(e.target.value),
+                                }
                                 onUpdate(exerciseIndex, { sets_detail: updated })
                               }}
                               min="1"

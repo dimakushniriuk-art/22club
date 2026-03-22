@@ -7,6 +7,7 @@
 ## 🎯 FLUSSO 1: Primo Accesso Utente
 
 ### Sequenza
+
 ```
 1. Utente naviga a / (root)
 2. Middleware intercetta
@@ -21,16 +22,18 @@
 ```
 
 ### File Coinvolti
-| Step | File | Funzione |
-|------|------|----------|
-| 2-3 | `src/middleware.ts:234-238` | Redirect root to login |
-| 4 | `src/app/login/page.tsx` | Form rendering |
-| 6 | `src/app/login/page.tsx:74-77` | signInWithPassword |
-| 7 | `src/app/login/page.tsx:129` | router.replace |
-| 8-9 | `src/providers/auth-provider.tsx:264-721` | loadUser |
-| 10 | `src/app/post-login/page.tsx:12-33` | useEffect redirect |
+
+| Step | File                                      | Funzione               |
+| ---- | ----------------------------------------- | ---------------------- |
+| 2-3  | `src/middleware.ts:234-238`               | Redirect root to login |
+| 4    | `src/app/login/page.tsx`                  | Form rendering         |
+| 6    | `src/app/login/page.tsx:74-77`            | signInWithPassword     |
+| 7    | `src/app/login/page.tsx:129`              | router.replace         |
+| 8-9  | `src/providers/auth-provider.tsx:264-721` | loadUser               |
+| 10   | `src/app/post-login/page.tsx:12-33`       | useEffect redirect     |
 
 ### Punti di Errore
+
 - ❌ Supabase non configurato → Mock client
 - ❌ Credenziali errate → "Credenziali non valide"
 - ❌ Profilo mancante → PGRST116 error
@@ -41,6 +44,7 @@
 ## 🎯 FLUSSO 2: Navigazione Autenticata
 
 ### Sequenza (Trainer)
+
 ```
 1. Utente su /dashboard naviga a /dashboard/clienti
 2. Next.js Link component (prefetch)
@@ -54,6 +58,7 @@
 ```
 
 ### Sequenza (Atleta)
+
 ```
 1. Utente su /home naviga a /home/allenamenti
 2. Next.js Link component (prefetch)
@@ -67,17 +72,19 @@
 ```
 
 ### File Coinvolti
-| Step | File |
-|------|------|
-| 3-5 | `src/middleware.ts:143-221` |
-| 7 | `src/hooks/use-clienti.ts` o `use-workouts.ts` |
-| 8 | Supabase RLS policies |
+
+| Step | File                                           |
+| ---- | ---------------------------------------------- |
+| 3-5  | `src/middleware.ts:143-221`                    |
+| 7    | `src/hooks/use-clienti.ts` o `use-workouts.ts` |
+| 8    | Supabase RLS policies                          |
 
 ---
 
 ## 🎯 FLUSSO 3: Creazione Appuntamento
 
 ### Sequenza
+
 ```
 1. Trainer clicca "Nuovo Appuntamento"
 2. Modal/Drawer apre form
@@ -91,14 +98,16 @@
 ```
 
 ### File Coinvolti
-| Step | File | Funzione |
-|------|------|----------|
-| 2 | `src/components/dashboard/modals-wrapper.tsx` | Modal container |
-| 4-5 | `src/hooks/use-appointments.ts:229-256` | createMutation |
-| 5 | `src/hooks/use-appointments.ts:336-365` | checkOverlap |
-| 7-8 | `src/hooks/use-appointments.ts:218-226` | useRealtimeChannel |
+
+| Step | File                                          | Funzione           |
+| ---- | --------------------------------------------- | ------------------ |
+| 2    | `src/components/dashboard/modals-wrapper.tsx` | Modal container    |
+| 4-5  | `src/hooks/use-appointments.ts:229-256`       | createMutation     |
+| 5    | `src/hooks/use-appointments.ts:336-365`       | checkOverlap       |
+| 7-8  | `src/hooks/use-appointments.ts:218-226`       | useRealtimeChannel |
 
 ### Validazione
+
 ```javascript
 // Dati richiesti
 {
@@ -116,6 +125,7 @@
 ## 🎯 FLUSSO 4: Caricamento Dashboard
 
 ### Sequenza (Server + Client)
+
 ```
 1. Request a /dashboard
 2. Middleware verifica (cache hit o query)
@@ -132,14 +142,16 @@
 ```
 
 ### File Coinvolti
-| Step | File |
-|------|------|
-| 3-8 | `src/app/dashboard/page.tsx:55-271` |
-| 9 | `src/app/dashboard/page.tsx:373` |
-| 11 | `src/app/dashboard/layout.tsx` |
-| 12 | `src/app/dashboard/layout.tsx:54-70` |
+
+| Step | File                                 |
+| ---- | ------------------------------------ |
+| 3-8  | `src/app/dashboard/page.tsx:55-271`  |
+| 9    | `src/app/dashboard/page.tsx:373`     |
+| 11   | `src/app/dashboard/layout.tsx`       |
+| 12   | `src/app/dashboard/layout.tsx:54-70` |
 
 ### Dipendenze Dati
+
 ```
 Dashboard dipende da:
 ├── profiles (profilo staff)
@@ -152,6 +164,7 @@ Dashboard dipende da:
 ## 🎯 FLUSSO 5: Logout
 
 ### Sequenza
+
 ```
 1. Utente clicca Logout
 2. supabase.auth.signOut()
@@ -163,16 +176,18 @@ Dashboard dipende da:
 ```
 
 ### File Coinvolti
-| Step | File |
-|------|------|
-| 2 | Component che chiama signOut |
-| 3-5 | `src/providers/auth-provider.tsx:725-801` |
+
+| Step | File                                      |
+| ---- | ----------------------------------------- |
+| 2    | Component che chiama signOut              |
+| 3-5  | `src/providers/auth-provider.tsx:725-801` |
 
 ---
 
 ## 🎯 FLUSSO 6: Refresh Token Fallito
 
 ### Sequenza (Automatica)
+
 ```
 1. Token scaduto
 2. Supabase tenta refresh
@@ -186,10 +201,11 @@ Dashboard dipende da:
 ```
 
 ### Gestione Errore
+
 ```javascript
 // Middleware (src/middleware.ts:88-107)
 if (isRefreshTokenError) {
-  session = null  // Silenzia errore, flusso normale gestisce
+  session = null // Silenzia errore, flusso normale gestisce
 }
 
 // AuthProvider (src/providers/auth-provider.tsx:333-356)
@@ -203,14 +219,14 @@ if (isRefreshTokenError) {
 
 ## 📊 VALUTAZIONE FLUSSI
 
-| Flusso | Chiarezza | Robustezza | Note |
-|--------|-----------|------------|------|
-| Login | ★★★★☆ | ★★★☆☆ | Debug code eccessivo |
-| Navigazione | ★★★★★ | ★★★★☆ | Middleware solido |
-| Appuntamenti | ★★★★☆ | ★★★★☆ | React Query ben usato |
-| Dashboard | ★★★☆☆ | ★★★☆☆ | Server/Client handoff complesso |
-| Logout | ★★★★★ | ★★★★★ | Semplice e funzionante |
-| Token Refresh | ★★★☆☆ | ★★★★☆ | Gestione silenziosa ok |
+| Flusso        | Chiarezza | Robustezza | Note                            |
+| ------------- | --------- | ---------- | ------------------------------- |
+| Login         | ★★★★☆     | ★★★☆☆      | Debug code eccessivo            |
+| Navigazione   | ★★★★★     | ★★★★☆      | Middleware solido               |
+| Appuntamenti  | ★★★★☆     | ★★★★☆      | React Query ben usato           |
+| Dashboard     | ★★★☆☆     | ★★★☆☆      | Server/Client handoff complesso |
+| Logout        | ★★★★★     | ★★★★★      | Semplice e funzionante          |
+| Token Refresh | ★★★☆☆     | ★★★★☆      | Gestione silenziosa ok          |
 
 ---
 

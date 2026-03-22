@@ -3,15 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
-import {
-  Users,
-  UserCheck,
-  User,
-  AlertCircle,
-  Search,
-  Dumbbell,
-  Calendar,
-} from 'lucide-react'
+import { Users, UserCheck, User, AlertCircle, Search, Dumbbell, Calendar } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -120,7 +112,8 @@ export default function MarketingAthletesPage() {
           Atleti
         </h1>
         <p className="mt-1 text-sm text-text-secondary">
-          Elenco atleti e KPI da vista marketing. Dati solo da <code className="rounded bg-background-tertiary px-1 text-xs">marketing_athletes</code>.
+          Elenco atleti e KPI da vista marketing. Dati solo da{' '}
+          <code className="rounded bg-background-tertiary px-1 text-xs">marketing_athletes</code>.
         </p>
       </header>
 
@@ -242,11 +235,18 @@ export default function MarketingAthletesPage() {
                         const coached30 = Number(row.workouts_coached_30d ?? 0)
                         const solo30 = Number(row.workouts_solo_30d ?? 0)
                         const inactive = isInactive(row.last_workout_at)
-                        const name = [row.first_name, row.last_name].filter(Boolean).join(' ') || '–'
+                        const name =
+                          [row.first_name, row.last_name].filter(Boolean).join(' ') || '–'
                         return (
-                          <TableRow key={row.athlete_id} className="border-border/50 hover:bg-background-tertiary/30">
+                          <TableRow
+                            key={row.athlete_id}
+                            className="border-border/50 hover:bg-background-tertiary/30"
+                          >
                             <TableCell className="font-medium">{name}</TableCell>
-                            <TableCell className="max-w-[200px] truncate text-text-muted" title={row.email ?? undefined}>
+                            <TableCell
+                              className="max-w-[200px] truncate text-text-muted"
+                              title={row.email ?? undefined}
+                            >
                               {row.email ?? '–'}
                             </TableCell>
                             <TableCell className="tabular-nums">

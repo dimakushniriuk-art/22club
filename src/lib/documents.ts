@@ -2,7 +2,7 @@
 // DOCUMENT MANAGEMENT FUNCTIONS
 // =====================================================
 
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Tables, TablesUpdate } from '@/types/supabase'
 import type { Document as DocumentDTO } from '@/types/document'
@@ -118,7 +118,11 @@ export async function uploadDocument(
     // org_id: da parametro o da profilo atleta
     let org_id = orgId
     if (org_id == null) {
-      const { data: athleteProfile } = await supabase.from('profiles').select('org_id').eq('id', athleteId).single()
+      const { data: athleteProfile } = await supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('id', athleteId)
+        .single()
       org_id = (athleteProfile as { org_id?: string | null } | null)?.org_id ?? ''
     }
 
@@ -407,19 +411,23 @@ export async function getDocumentStats(athleteId?: string): Promise<{
       throw new Error(`Error fetching document stats: ${error.message}`)
     }
 
-    type DocStatsAcc = { total: number; valid: number; expiring: number; expired: number; invalid: number }
+    type DocStatsAcc = {
+      total: number
+      valid: number
+      expiring: number
+      expired: number
+      invalid: number
+    }
     const initial: DocStatsAcc = { total: 0, valid: 0, expiring: 0, expired: 0, invalid: 0 }
-    const stats: DocStatsAcc = data?.reduce(
-      (acc: DocStatsAcc, doc: { status: string | null }) => {
+    const stats: DocStatsAcc =
+      data?.reduce((acc: DocStatsAcc, doc: { status: string | null }) => {
         acc.total++
         if (doc.status === 'valido') acc.valid++
         if (doc.status === 'in_scadenza') acc.expiring++
         if (doc.status === 'scaduto') acc.expired++
         if (doc.status === 'non_valido') acc.invalid++
         return acc
-      },
-      initial,
-    ) ?? initial
+      }, initial) ?? initial
 
     return {
       total: stats.total,

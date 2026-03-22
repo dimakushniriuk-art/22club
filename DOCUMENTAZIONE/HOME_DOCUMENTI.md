@@ -49,10 +49,10 @@ La pagina **I miei Documenti** consente all’atleta di vedere in un’unica lis
 
 ### Route e componenti
 
-| Percorso | Descrizione |
-|----------|-------------|
+| Percorso                          | Descrizione                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `src/app/home/documenti/page.tsx` | Pagina Next.js (App Router). Export default wrappa il contenuto in `<Suspense>` con fallback skeleton. |
-| `DocumentiPageContent` | Componente principale: header, statistiche, lista card, card info, dialog categoria. |
+| `DocumentiPageContent`            | Componente principale: header, statistiche, lista card, card info, dialog categoria.                   |
 
 ### Dati e tipi
 
@@ -66,10 +66,10 @@ La pagina **I miei Documenti** consente all’atleta di vedere in un’unica lis
 
 ### Lib e API
 
-| Modulo / API | Ruolo |
-|--------------|--------|
-| `@/lib/all-athlete-documents` | `getAllAthleteDocuments(profileId, userId)` aggrega tutte le fonti e restituisce `UnifiedDocumentItem[]`. Normalizza i path Storage (es. dossier: `profile_id/dossier/...` → `dossier/profile_id/...`). |
-| `@/lib/documents` | `getDocuments(profileId)`, `uploadDocument(file, category, athleteId, uploadedByProfileId)`, `validateDocumentFile(file)`. |
+| Modulo / API                              | Ruolo                                                                                                                                                                                                                                                                       |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@/lib/all-athlete-documents`             | `getAllAthleteDocuments(profileId, userId)` aggrega tutte le fonti e restituisce `UnifiedDocumentItem[]`. Normalizza i path Storage (es. dossier: `profile_id/dossier/...` → `dossier/profile_id/...`).                                                                     |
+| `@/lib/documents`                         | `getDocuments(profileId)`, `uploadDocument(file, category, athleteId, uploadedByProfileId)`, `validateDocumentFile(file)`.                                                                                                                                                  |
 | `GET /api/document-preview?bucket=&path=` | Route API che crea una signed URL server-side (Supabase client con cookie), scarica il file da Storage e lo restituisce in streaming con `Content-Type` e `X-Frame-Options: SAMEORIGIN`. Usata per aprire documenti in nuova scheda senza problemi di CORS/X-Frame-Options. |
 
 ### Storage Supabase

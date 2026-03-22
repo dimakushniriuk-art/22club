@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 
 export function useChatProfile() {
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null)

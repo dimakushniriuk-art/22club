@@ -8,9 +8,11 @@
 ## 🔐 FLUSSO: LOGIN
 
 ### Entry Point
+
 `/login` → `src/app/login/page.tsx`
 
 ### Componenti Coinvolti
+
 ```
 LoginPage (Client Component)
 ├── createClient() → Supabase browser client
@@ -20,10 +22,12 @@ LoginPage (Client Component)
 ```
 
 ### Backend/API
+
 - **Supabase Auth API**: `signInWithPassword(email, password)`
 - **Nessuna API route custom** per login base
 
 ### Middleware
+
 ```
 middleware.ts
 ├── Skip static files (.svg, .png, etc.)
@@ -34,20 +38,24 @@ middleware.ts
 ```
 
 ### Cookie/Session
-| Cookie | Tipo | Scopo |
-|--------|------|-------|
-| `sb-*-auth-token` | HttpOnly | Access token Supabase |
-| `sb-*-auth-token-code-verifier` | HttpOnly | PKCE verifier |
+
+| Cookie                          | Tipo     | Scopo                 |
+| ------------------------------- | -------- | --------------------- |
+| `sb-*-auth-token`               | HttpOnly | Access token Supabase |
+| `sb-*-auth-token-code-verifier` | HttpOnly | PKCE verifier         |
 
 ### Cache
+
 - **Nessuna cache** per operazioni auth
 - Session gestita interamente da Supabase
 
 ### Test Collegati
+
 - `tests/e2e/login.spec.ts` - 5 test
 - `tests/e2e/login-roles.spec.ts` - 4 test
 
 ### Punti Critici
+
 1. ⚠️ Debug logging a localhost:7242 (performance)
 2. ⚠️ `isTestEnvironment()` check inline
 3. ⚠️ Validazione client-side duplica quella HTML5
@@ -57,9 +65,11 @@ middleware.ts
 ## 🔀 FLUSSO: POST-LOGIN REDIRECT
 
 ### Entry Point
+
 `/post-login` → `src/app/post-login/page.tsx`
 
 ### Componenti Coinvolti
+
 ```
 PostLoginPage (Client Component)
 ├── useAuth() → { loading, user, role }
@@ -68,6 +78,7 @@ PostLoginPage (Client Component)
 ```
 
 ### Logica Redirect
+
 ```javascript
 if (!user || !role) → /login
 if (role === 'admin') → /dashboard/admin
@@ -77,13 +88,16 @@ else → /login
 ```
 
 ### Backend
+
 - **Nessun backend** - logica client-side
 - Dipende da `AuthProvider` per stato
 
 ### Test Collegati
+
 - Parte di `login.spec.ts` (verifica redirect finale)
 
 ### Punti Critici
+
 1. ⚠️ Race condition potenziale se AuthProvider lento
 2. ⚠️ Pagina bianca durante loading (spinner visibile)
 
@@ -92,9 +106,11 @@ else → /login
 ## 📊 FLUSSO: DASHBOARD TRAINER
 
 ### Entry Point
+
 `/dashboard` → `src/app/dashboard/page.tsx` (Server Component)
 
 ### Componenti Coinvolti
+
 ```
 DashboardPage (Server Component)
 ├── createClient() → Supabase server
@@ -116,6 +132,7 @@ DashboardLayout (Client Component)
 ```
 
 ### Backend/API
+
 ```
 Supabase Direct Queries:
 ├── profiles.select().eq('user_id', user.id)
@@ -124,6 +141,7 @@ Supabase Direct Queries:
 ```
 
 ### Middleware
+
 ```
 middleware.ts
 ├── Verifica sessione
@@ -133,16 +151,19 @@ middleware.ts
 ```
 
 ### Cache
-| Livello | TTL | Scopo |
-|---------|-----|-------|
-| Middleware roleCache | 1 min | Evita query DB ripetute |
-| React Query | Configurabile | Cache client-side |
-| Realtime | N/A | Aggiornamenti live |
+
+| Livello              | TTL           | Scopo                   |
+| -------------------- | ------------- | ----------------------- |
+| Middleware roleCache | 1 min         | Evita query DB ripetute |
+| React Query          | Configurabile | Cache client-side       |
+| Realtime             | N/A           | Aggiornamenti live      |
 
 ### Test Collegati
+
 - `tests/e2e/dashboard.spec.ts` - 3 test ✅
 
 ### Punti Critici
+
 1. ⚠️ Server Component con fetch a localhost:7242
 2. ⚠️ Query N+1 potenziale per athlete profiles
 3. ⚠️ Serializzazione agendaData per client component
@@ -152,10 +173,12 @@ middleware.ts
 ## 🏠 FLUSSO: HOME ATLETA
 
 ### Entry Point
+
 `/home` → `src/app/home/_components/home-layout-auth.tsx` (Layout)
 `/home` → `src/app/home/page.tsx` (Content)
 
 ### Componenti Coinvolti
+
 ```
 HomeLayoutAuth (Client Component)
 ├── useAuth() → { user, role, loading }
@@ -170,10 +193,12 @@ HomePage (Client Component)
 ```
 
 ### Backend
+
 - **Nessuna query diretta** nella home page
 - Dati utente da `AuthProvider` (già caricati)
 
 ### Middleware
+
 ```
 middleware.ts
 ├── Verifica sessione
@@ -182,10 +207,12 @@ middleware.ts
 ```
 
 ### Test Collegati
+
 - `tests/e2e/athlete-home.spec.ts`
 - Parte di `login-roles.spec.ts`
 
 ### Punti Critici
+
 1. ⚠️ Double-check ruolo (middleware + layout)
 2. ⚠️ Skeleton durante loading può essere lungo
 
@@ -194,9 +221,11 @@ middleware.ts
 ## 📈 FLUSSO: STATISTICHE
 
 ### Entry Point
+
 `/dashboard/statistiche` → `src/app/dashboard/statistiche/page.tsx`
 
 ### Componenti Coinvolti
+
 ```
 StatistichePage (presumibilmente Server Component)
 ├── getAnalyticsData(orgId)
@@ -207,6 +236,7 @@ StatistichePage (presumibilmente Server Component)
 ```
 
 ### Backend
+
 ```
 src/lib/analytics.ts
 ├── getTrendDataFromDB() → workout_logs + documents
@@ -216,11 +246,13 @@ src/lib/analytics.ts
 ```
 
 ### Cache
-| Livello | TTL | Tag |
-|---------|-----|-----|
+
+| Livello        | TTL          | Tag         |
+| -------------- | ------------ | ----------- |
 | unstable_cache | 300s (5 min) | 'analytics' |
 
 ### Punti Critici
+
 1. ⚠️ RPC functions potrebbero non esistere → fallback mock
 2. ⚠️ `cookies()` chiamata fuori da cache (fix applicato)
 3. ⚠️ Vista `workout_completion_rate_view` richiesta
@@ -230,9 +262,11 @@ src/lib/analytics.ts
 ## 👥 FLUSSO: LISTA CLIENTI
 
 ### Entry Point
+
 `/dashboard/clienti` → usa `useClienti()` hook
 
 ### Componenti Coinvolti
+
 ```
 ClientiPage (presumibilmente Client Component)
 ├── useClienti(options)
@@ -244,6 +278,7 @@ ClientiPage (presumibilmente Client Component)
 ```
 
 ### Backend
+
 ```
 src/hooks/use-clienti.ts
 ├── Query profiles WHERE role IN ('atleta', 'athlete')
@@ -254,13 +289,15 @@ src/hooks/use-clienti.ts
 ```
 
 ### Cache
-| Livello | TTL | Scopo |
-|---------|-----|-------|
-| statsCache | 2 min | Statistiche |
+
+| Livello            | TTL           | Scopo         |
+| ------------------ | ------------- | ------------- |
+| statsCache         | 2 min         | Statistiche   |
 | frequentQueryCache | Configurabile | Lista clienti |
-| localStorage | 2 min | Persistenza |
+| localStorage       | 2 min         | Persistenza   |
 
 ### Punti Critici
+
 1. ⚠️ File 1405 righe - troppo complesso
 2. ⚠️ Timeout 30s su query → UX degradata
 3. ⚠️ Molti ref per prevenire chiamate multiple
@@ -271,9 +308,11 @@ src/hooks/use-clienti.ts
 ## 📅 FLUSSO: APPUNTAMENTI
 
 ### Entry Point
+
 `/dashboard/appuntamenti` (o calendario) → `useAppointments()` hook
 
 ### Componenti Coinvolti
+
 ```
 CalendarPage / AppointmentsPage
 ├── useAppointments({ userId, role })
@@ -284,6 +323,7 @@ CalendarPage / AppointmentsPage
 ```
 
 ### Backend
+
 ```
 src/hooks/use-appointments.ts
 ├── Query appointments con JOIN profiles
@@ -293,13 +333,15 @@ src/hooks/use-appointments.ts
 ```
 
 ### Cache
-| Livello | Scopo |
-|---------|-------|
-| profileIdCache (Map) | Evita lookup multipli |
-| React Query | Cache client |
-| Realtime | Invalidazione automatica |
+
+| Livello              | Scopo                    |
+| -------------------- | ------------------------ |
+| profileIdCache (Map) | Evita lookup multipli    |
+| React Query          | Cache client             |
+| Realtime             | Invalidazione automatica |
 
 ### Punti Critici
+
 1. ⚠️ Cache profileId non ha TTL
 2. ⚠️ JOIN multipli per nomi atleta/trainer
 
@@ -307,9 +349,9 @@ src/hooks/use-appointments.ts
 
 ## 🔑 LEGENDA
 
-| Simbolo | Significato |
-|---------|-------------|
-| ⚠️ | Punto critico da monitorare |
-| ✅ | Funzionante correttamente |
-| 🔄 | Aggiornamento in tempo reale |
-| 💾 | Cache attiva |
+| Simbolo | Significato                  |
+| ------- | ---------------------------- |
+| ⚠️      | Punto critico da monitorare  |
+| ✅      | Funzionante correttamente    |
+| 🔄      | Aggiornamento in tempo reale |
+| 💾      | Cache attiva                 |

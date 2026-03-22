@@ -42,10 +42,7 @@ export function DeviceInfoSection({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Data Rilevazione */}
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -88,10 +85,7 @@ export function DeviceInfoSection({
       </Card>
 
       {/* Dispositivo */}
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Watch className="h-5 w-5 text-primary" />

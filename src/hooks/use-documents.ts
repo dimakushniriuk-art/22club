@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { extractFileName } from '@/lib/documents'
 import { queryKeys } from '@/lib/query-keys'
@@ -30,7 +30,7 @@ type DocumentWithRelations = Tables<'documents'> & {
 export function useDocuments({ athleteId, filters }: UseDocumentsProps = {}) {
   const queryClient = useQueryClient()
   // Create Supabase client once to avoid recreating it on every render
-  // The `supabase` client is already imported from '@/lib/supabase'
+  // The `supabase` client is already imported from '@/lib/supabase/client'
 
   // Query key basata su athleteId e filtri per cache separata
   const queryKey = useMemo(() => {

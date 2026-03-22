@@ -142,7 +142,10 @@ const DrawerFooter = React.forwardRef<HTMLDivElement, DrawerFooterProps>(
     return (
       <div
         ref={ref}
-        className={cn('p-6 border-t border-white/10 flex items-center justify-end gap-3', className)}
+        className={cn(
+          'p-6 border-t border-white/10 flex items-center justify-end gap-3',
+          className,
+        )}
         {...props}
       />
     )

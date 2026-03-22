@@ -85,7 +85,9 @@ export function AppointmentPopover({
     }
   }, [onClose])
 
-  const popoverWidth = asModal ? Math.min(400, typeof window !== 'undefined' ? window.innerWidth - 32 : 400) : Math.min(300, typeof window !== 'undefined' ? window.innerWidth - 32 : 300)
+  const popoverWidth = asModal
+    ? Math.min(400, typeof window !== 'undefined' ? window.innerWidth - 32 : 400)
+    : Math.min(300, typeof window !== 'undefined' ? window.innerWidth - 32 : 300)
   const popoverMaxHeight = typeof window !== 'undefined' ? window.innerHeight - 32 : 400
   const { settings } = useStaffCalendarSettings()
   const typeLabelMap = useMemo(() => {
@@ -127,16 +129,24 @@ export function AppointmentPopover({
       ref={popoverRef}
       className={cn(
         'z-[100] max-w-[calc(100vw-2rem)] bg-[#202124] rounded-lg shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150',
-        asModal ? 'w-full max-h-[90dvh] overflow-y-auto' : 'w-[var(--popover-w)] max-h-[var(--popover-max-h)] overflow-y-auto',
+        asModal
+          ? 'w-full max-h-[90dvh] overflow-y-auto'
+          : 'w-[var(--popover-w)] max-h-[var(--popover-max-h)] overflow-y-auto',
       )}
       style={
         asModal
           ? undefined
-          : { '--popover-w': `${popoverWidth}px`, '--popover-max-h': `${popoverMaxHeight}px` } as React.CSSProperties
+          : ({
+              '--popover-w': `${popoverWidth}px`,
+              '--popover-max-h': `${popoverMaxHeight}px`,
+            } as React.CSSProperties)
       }
     >
       {/* Header colorato - touch target min 44px su mobile */}
-      <div className="h-12 min-h-[48px] relative flex items-center justify-end px-2" style={{ backgroundColor }}>
+      <div
+        className="h-12 min-h-[48px] relative flex items-center justify-end px-2"
+        style={{ backgroundColor }}
+      >
         {showEditDelete && (
           <div className="flex items-center gap-1">
             {canEdit && (
@@ -239,7 +249,7 @@ export function AppointmentPopover({
         )}
 
         {/* Azioni: Segna completato, Segna no-show, Annulla, Elimina */}
-        {(showCompleteButton || showNoShowButton) ? (
+        {showCompleteButton || showNoShowButton ? (
           <div className="pt-2 border-t border-[#5F6368]/30 space-y-2">
             {showCompleteButton && (
               <Button
@@ -301,16 +311,15 @@ export function AppointmentPopover({
         onClick={(e) => e.target === e.currentTarget && restoreFocusAndClose(onClose)}
         aria-modal="true"
       >
-        <div className="w-full max-w-lg max-h-[90dvh] overflow-y-auto mx-4 mb-4 sm:my-4 rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="w-full max-w-lg max-h-[90dvh] overflow-y-auto mx-4 mb-4 sm:my-4 rounded-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
           {content}
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      {content}
-    </div>
-  )
+  return <div className="fixed inset-0 z-[100] flex items-center justify-center">{content}</div>
 }

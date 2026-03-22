@@ -16,7 +16,7 @@ import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { Input } from '@/components/ui'
 import { SimpleSelect } from '@/components/ui/simple-select'
 import { useToast } from '@/components/ui/toast'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { addCreditFromPayment } from '@/lib/credits/ledger'
 import type { ServiceType } from '@/lib/abbonamenti-service-type'
@@ -42,7 +42,12 @@ interface FormData {
   invoice_file: File | null
 }
 
-export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType }: NuovoPagamentoModalProps) {
+export function NuovoPagamentoModal({
+  open,
+  onOpenChange,
+  onSuccess,
+  serviceType,
+}: NuovoPagamentoModalProps) {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
   type ProfileRow = Tables<'profiles'>
@@ -386,7 +391,10 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
           if (uploadError) throw uploadError
           await supabase.from('payments').update({ invoice_url: storagePath }).eq('id', paymentId)
         } catch (uploadErr) {
-          logger.error('Errore upload fattura', uploadErr, { paymentId, athleteId: formData.athlete_id })
+          logger.error('Errore upload fattura', uploadErr, {
+            paymentId,
+            athleteId: formData.athlete_id,
+          })
           setError(
             'Errore nel caricamento della fattura: ' +
               (uploadErr instanceof Error ? uploadErr.message : 'Errore sconosciuto'),
@@ -462,200 +470,204 @@ export function NuovoPagamentoModal({ open, onOpenChange, onSuccess, serviceType
 
   return (
     <>
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0 flex flex-col">
-        <div className="relative z-10 p-6 overflow-y-auto flex-1">
-          <DialogHeader className="pb-4 border-b border-white/10 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary rounded-full p-2 border border-primary/20">
-                <Euro className="h-5 w-5" />
-              </div>
-              <div>
-                <DialogTitle className="text-xl font-bold text-text-primary">
-                  Nuovo Pagamento
-                </DialogTitle>
-                <DialogDescription className="mt-1 text-text-secondary text-sm">
-                  Registra un nuovo abbonamento per un atleta
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 text-white p-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Seleziona Atleta */}
-            <div className="space-y-2">
-              <label className="text-text-primary text-sm font-medium flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Seleziona Atleta *
-              </label>
-              <SimpleSelect
-                value={formData.athlete_id}
-                onValueChange={(value) => {
-                  setFormData((prev) => ({ ...prev, athlete_id: value || '' }))
-                }}
-                placeholder="Seleziona atleta..."
-                options={athletes
-                  .map((athlete) => ({
-                    value: athlete.id,
-                    label: `${athlete.nome} ${athlete.cognome}`,
-                  }))
-                  .sort((a, b) => a.label.localeCompare(b.label, 'it'))}
-              />
-            </div>
-
-            {/* Data */}
-            <div className="space-y-2">
-              <label className="text-text-primary text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Data *
-              </label>
-              <Input
-                type="date"
-                value={formData.payment_date}
-                onChange={(e) => setFormData((prev) => ({ ...prev, payment_date: e.target.value }))}
-                required
-              />
-            </div>
-
-            {/* Allenamenti */}
-            <div className="space-y-2">
-              <label className="text-text-primary text-sm font-medium">Allenamenti *</label>
-              <SimpleSelect
-                value={formData.lessons_purchased.toString()}
-                onValueChange={(value) => {
-                  const numValue = parseInt(value) || 1
-                  logger.debug('Allenamenti selezionati', undefined, { lessonsPurchased: numValue })
-                  setFormData((prev) => ({ ...prev, lessons_purchased: numValue }))
-                }}
-                placeholder="Seleziona numero allenamenti..."
-                options={Array.from({ length: 600 }, (_, i) => ({
-                  value: (i + 1).toString(),
-                  label: (i + 1).toString(),
-                }))}
-              />
-            </div>
-
-            {/* Pagato */}
-            <div className="space-y-2">
-              <label className="text-text-primary text-sm font-medium flex items-center gap-2">
-                <Euro className="h-4 w-4" />
-                Pagato (€) *
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={formData.amount || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  setFormData((prev) => ({ ...prev, amount: isNaN(value) ? 0 : value }))
-                }}
-                placeholder="0.00"
-                required
-              />
-            </div>
-
-            {/* Fattura PDF */}
-            <div className="space-y-2">
-              <label className="text-text-primary text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Fattura (PDF){' '}
-                <span className="text-text-tertiary text-xs font-normal">(opzionale)</span>
-              </label>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl p-0 flex flex-col">
+          <div className="relative z-10 p-6 overflow-y-auto flex-1">
+            <DialogHeader className="pb-4 border-b border-white/10 mb-6">
               <div className="flex items-center gap-3">
-                <label className="flex-1 cursor-pointer">
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    disabled={loading || uploading}
-                  />
-                  <div className="flex items-center gap-2 px-4 py-2 bg-background-secondary/50 border border-teal-500/30 rounded-lg hover:border-teal-500/50 transition-colors">
-                    <Upload className="h-4 w-4 text-teal-400" />
-                    <span className="text-text-primary text-sm">
-                      {formData.invoice_file ? formData.invoice_file.name : 'Carica PDF'}
-                    </span>
-                  </div>
-                </label>
-                {formData.invoice_file && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setFormData((prev) => ({ ...prev, invoice_file: null }))
-                      setInvoicePreview(null)
-                    }}
-                    className="border-red-500/30 text-white hover:bg-red-500/10"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+                <div className="bg-primary/10 text-primary rounded-full p-2 border border-primary/20">
+                  <Euro className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold text-text-primary">
+                    Nuovo Pagamento
+                  </DialogTitle>
+                  <DialogDescription className="mt-1 text-text-secondary text-sm">
+                    Registra un nuovo abbonamento per un atleta
+                  </DialogDescription>
+                </div>
               </div>
-              {invoicePreview && (
-                <div className="mt-2 p-3 bg-background-tertiary/50 rounded-lg border border-white/10">
-                  <p className="text-text-secondary text-xs mb-2">Anteprima fattura:</p>
-                  <iframe
-                    src={invoicePreview}
-                    className="w-full h-64 rounded border border-white/10"
-                    title="Anteprima fattura"
-                  />
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 text-white p-3 rounded-lg text-sm">
+                  {error}
                 </div>
               )}
-            </div>
 
-            <DialogFooter className="w-full pt-6 border-t border-teal-500/30 relative z-10">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading || uploading}
-                className="border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Annulla
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || uploading}
-                className="bg-cyan-500 text-white hover:bg-cyan-400 font-semibold border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200"
-              >
-                {loading || uploading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {uploading ? 'Caricamento...' : 'Salvataggio...'}
-                  </>
-                ) : (
-                  <>
-                    <Euro className="h-4 w-4 mr-2" />
-                    Salva
-                  </>
+              {/* Seleziona Atleta */}
+              <div className="space-y-2">
+                <label className="text-text-primary text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Seleziona Atleta *
+                </label>
+                <SimpleSelect
+                  value={formData.athlete_id}
+                  onValueChange={(value) => {
+                    setFormData((prev) => ({ ...prev, athlete_id: value || '' }))
+                  }}
+                  placeholder="Seleziona atleta..."
+                  options={athletes
+                    .map((athlete) => ({
+                      value: athlete.id,
+                      label: `${athlete.nome} ${athlete.cognome}`,
+                    }))
+                    .sort((a, b) => a.label.localeCompare(b.label, 'it'))}
+                />
+              </div>
+
+              {/* Data */}
+              <div className="space-y-2">
+                <label className="text-text-primary text-sm font-medium flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Data *
+                </label>
+                <Input
+                  type="date"
+                  value={formData.payment_date}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, payment_date: e.target.value }))
+                  }
+                  required
+                />
+              </div>
+
+              {/* Allenamenti */}
+              <div className="space-y-2">
+                <label className="text-text-primary text-sm font-medium">Allenamenti *</label>
+                <SimpleSelect
+                  value={formData.lessons_purchased.toString()}
+                  onValueChange={(value) => {
+                    const numValue = parseInt(value) || 1
+                    logger.debug('Allenamenti selezionati', undefined, {
+                      lessonsPurchased: numValue,
+                    })
+                    setFormData((prev) => ({ ...prev, lessons_purchased: numValue }))
+                  }}
+                  placeholder="Seleziona numero allenamenti..."
+                  options={Array.from({ length: 600 }, (_, i) => ({
+                    value: (i + 1).toString(),
+                    label: (i + 1).toString(),
+                  }))}
+                />
+              </div>
+
+              {/* Pagato */}
+              <div className="space-y-2">
+                <label className="text-text-primary text-sm font-medium flex items-center gap-2">
+                  <Euro className="h-4 w-4" />
+                  Pagato (€) *
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={formData.amount || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value)
+                    setFormData((prev) => ({ ...prev, amount: isNaN(value) ? 0 : value }))
+                  }}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              {/* Fattura PDF */}
+              <div className="space-y-2">
+                <label className="text-text-primary text-sm font-medium flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Fattura (PDF){' '}
+                  <span className="text-text-tertiary text-xs font-normal">(opzionale)</span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="flex-1 cursor-pointer">
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      disabled={loading || uploading}
+                    />
+                    <div className="flex items-center gap-2 px-4 py-2 bg-background-secondary/50 border border-teal-500/30 rounded-lg hover:border-teal-500/50 transition-colors">
+                      <Upload className="h-4 w-4 text-teal-400" />
+                      <span className="text-text-primary text-sm">
+                        {formData.invoice_file ? formData.invoice_file.name : 'Carica PDF'}
+                      </span>
+                    </div>
+                  </label>
+                  {formData.invoice_file && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, invoice_file: null }))
+                        setInvoicePreview(null)
+                      }}
+                      className="border-red-500/30 text-white hover:bg-red-500/10"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {invoicePreview && (
+                  <div className="mt-2 p-3 bg-background-tertiary/50 rounded-lg border border-white/10">
+                    <p className="text-text-secondary text-xs mb-2">Anteprima fattura:</p>
+                    <iframe
+                      src={invoicePreview}
+                      className="w-full h-64 rounded border border-white/10"
+                      title="Anteprima fattura"
+                    />
+                  </div>
                 )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
-    {showCloseConfirm && (
-      <ConfirmDialog
-        open={showCloseConfirm}
-        onOpenChange={setShowCloseConfirm}
-        title="Modifiche non salvate"
-        description="Hai modifiche non salvate. Uscire le annullerà. Continuare?"
-        confirmText="Esci"
-        cancelText="Resta"
-        variant="destructive"
-        onConfirm={handleConfirmClose}
-      />
-    )}
+              </div>
+
+              <DialogFooter className="w-full pt-6 border-t border-teal-500/30 relative z-10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={loading || uploading}
+                  className="border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Annulla
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || uploading}
+                  className="bg-cyan-500 text-white hover:bg-cyan-400 font-semibold border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all duration-200"
+                >
+                  {loading || uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {uploading ? 'Caricamento...' : 'Salvataggio...'}
+                    </>
+                  ) : (
+                    <>
+                      <Euro className="h-4 w-4 mr-2" />
+                      Salva
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {showCloseConfirm && (
+        <ConfirmDialog
+          open={showCloseConfirm}
+          onOpenChange={setShowCloseConfirm}
+          title="Modifiche non salvate"
+          description="Hai modifiche non salvate. Uscire le annullerà. Continuare?"
+          confirmText="Esci"
+          cancelText="Resta"
+          variant="destructive"
+          onConfirm={handleConfirmClose}
+        />
+      )}
     </>
   )
 }

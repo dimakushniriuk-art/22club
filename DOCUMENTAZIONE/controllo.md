@@ -12,6 +12,7 @@ Esegui un controllo strutturato.
 8. Full test solo a fine ciclo.
 
 Vincoli:
+
 - Un file alla volta.
 - Nessuna modifica non richiesta.
 - Tutto in italiano.

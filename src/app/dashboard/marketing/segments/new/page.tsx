@@ -63,7 +63,8 @@ export default function NewSegmentPage() {
   const setRule = <K extends keyof SegmentRules>(key: K, value: SegmentRules[K]) => {
     setRules((prev) => {
       const next = { ...prev }
-      const empty = value === undefined || value === null || (typeof value === 'string' && value === '')
+      const empty =
+        value === undefined || value === null || (typeof value === 'string' && value === '')
       if (empty) {
         delete next[key]
       } else {
@@ -140,7 +141,10 @@ export default function NewSegmentPage() {
                   min={0}
                   value={rules.inactivity_days ?? ''}
                   onChange={(e) =>
-                    setRule('inactivity_days', e.target.value === '' ? undefined : Number(e.target.value))
+                    setRule(
+                      'inactivity_days',
+                      e.target.value === '' ? undefined : Number(e.target.value),
+                    )
                   }
                   className="border-border bg-background"
                   placeholder="es. 30"
@@ -153,7 +157,12 @@ export default function NewSegmentPage() {
                     type="button"
                     variant={rules.last_workout_exists === true ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setRule('last_workout_exists', rules.last_workout_exists === true ? undefined : true)}
+                    onClick={() =>
+                      setRule(
+                        'last_workout_exists',
+                        rules.last_workout_exists === true ? undefined : true,
+                      )
+                    }
                   >
                     Deve esistere
                   </Button>
@@ -161,7 +170,12 @@ export default function NewSegmentPage() {
                     type="button"
                     variant={rules.last_workout_exists === false ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setRule('last_workout_exists', rules.last_workout_exists === false ? undefined : false)}
+                    onClick={() =>
+                      setRule(
+                        'last_workout_exists',
+                        rules.last_workout_exists === false ? undefined : false,
+                      )
+                    }
                   >
                     Non deve esistere
                   </Button>

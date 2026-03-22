@@ -92,16 +92,12 @@ const sections = [
   {
     id: '8',
     title: '8. Sospensione e cessazione',
-    content: (
-      <p>22Club può sospendere o chiudere account che violano i presenti Termini.</p>
-    ),
+    content: <p>22Club può sospendere o chiudere account che violano i presenti Termini.</p>,
   },
   {
     id: '9',
     title: '9. Legge applicabile e foro competente',
-    content: (
-      <p>I presenti Termini sono regolati dalla legge italiana. Foro competente: [●].</p>
-    ),
+    content: <p>I presenti Termini sono regolati dalla legge italiana. Foro competente: [●].</p>,
   },
 ]
 

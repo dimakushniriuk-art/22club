@@ -7,15 +7,15 @@
 
 ## 1) File modificati
 
-| File | Modifica |
-|------|----------|
-| `supabase/migrations/20260228220000_workout_logs_completion_coached.sql` | **Nuovo.** Colonne `is_coached`, `coached_by_profile_id`, `completed_at`; backfill; indici; trigger UPDATE atleta. |
-| `src/app/home/allenamenti/oggi/page.tsx` | Chiamata `get_my_trainer_profile` se "Con trainer"; payload insert con `is_coached`, `coached_by_profile_id`, `completed_at`. |
-| `src/components/workout/trainer-session-modal.tsx` | Nessuna modifica (già modal obbligatoria "Con trainer" / "Eseguito da solo"). |
-| `src/app/home/progressi/storico/page.tsx` | Select `is_coached`, `completed_at`; interfaccia `WorkoutLog`; badge "Con trainer" / "Da solo". |
-| `src/hooks/use-allenamenti.ts` | Select `is_coached`; mapping `is_coached` (con fallback `execution_mode === 'coached'`) in `Allenamento`. |
-| `src/types/allenamento.ts` | Campo opzionale `is_coached?: boolean` in `Allenamento`. |
-| `src/lib/supabase/types.ts` | `workout_logs`: Row/Insert/Update con `is_coached`, `coached_by_profile_id`, `completed_at`; relazione FK `coached_by_profile_id`. |
+| File                                                                     | Modifica                                                                                                                           |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260228220000_workout_logs_completion_coached.sql` | **Nuovo.** Colonne `is_coached`, `coached_by_profile_id`, `completed_at`; backfill; indici; trigger UPDATE atleta.                 |
+| `src/app/home/allenamenti/oggi/page.tsx`                                 | Chiamata `get_my_trainer_profile` se "Con trainer"; payload insert con `is_coached`, `coached_by_profile_id`, `completed_at`.      |
+| `src/components/workout/trainer-session-modal.tsx`                       | Nessuna modifica (già modal obbligatoria "Con trainer" / "Eseguito da solo").                                                      |
+| `src/app/home/progressi/storico/page.tsx`                                | Select `is_coached`, `completed_at`; interfaccia `WorkoutLog`; badge "Con trainer" / "Da solo".                                    |
+| `src/hooks/use-allenamenti.ts`                                           | Select `is_coached`; mapping `is_coached` (con fallback `execution_mode === 'coached'`) in `Allenamento`.                          |
+| `src/types/allenamento.ts`                                               | Campo opzionale `is_coached?: boolean` in `Allenamento`.                                                                           |
+| `src/lib/supabase/types.ts`                                              | `workout_logs`: Row/Insert/Update con `is_coached`, `coached_by_profile_id`, `completed_at`; relazione FK `coached_by_profile_id`. |
 
 ---
 
@@ -23,27 +23,27 @@
 
 **File:** `supabase/migrations/20260228220000_workout_logs_completion_coached.sql`
 
-- **Colonne:**  
-  - `is_coached` boolean NOT NULL DEFAULT false  
-  - `coached_by_profile_id` uuid NULL REFERENCES profiles(id) ON DELETE RESTRICT  
-  - `completed_at` timestamptz NULL  
-- **Backfill:**  
-  - `is_coached` da `execution_mode = 'coached'`  
-  - `completed_at` da `updated_at`/`created_at` per log completati  
-- **Indici:**  
-  - `(atleta_id, completed_at)` WHERE completed_at IS NOT NULL  
-  - `(coached_by_profile_id, completed_at)` WHERE coached_by_profile_id IS NOT NULL AND completed_at IS NOT NULL  
-- **Trigger:**  
+- **Colonne:**
+  - `is_coached` boolean NOT NULL DEFAULT false
+  - `coached_by_profile_id` uuid NULL REFERENCES profiles(id) ON DELETE RESTRICT
+  - `completed_at` timestamptz NULL
+- **Backfill:**
+  - `is_coached` da `execution_mode = 'coached'`
+  - `completed_at` da `updated_at`/`created_at` per log completati
+- **Indici:**
+  - `(atleta_id, completed_at)` WHERE completed_at IS NOT NULL
+  - `(coached_by_profile_id, completed_at)` WHERE coached_by_profile_id IS NOT NULL AND completed_at IS NOT NULL
+- **Trigger:**
   - `workout_logs_athlete_update_guard`: BEFORE UPDATE; se l’utente è l’atleta del log, vengono ripristinati da OLD i campi non consentiti (`atleta_id`, `athlete_id`, `scheda_id`, `data`, `stato`, `esercizi_totali`, `created_at`). Restano modificabili: `is_coached`, `coached_by_profile_id`, `completed_at`, `note`, `durata_minuti`, `esercizi_completati`, `volume_totale`, `execution_mode`, `updated_at`.
 
 ---
 
 ## 3) Strategia RLS/trigger e motivazione
 
-- **Problema:** In Postgres le policy RLS non possono limitare *quali colonne* sono aggiornabili, solo quali righe.
+- **Problema:** In Postgres le policy RLS non possono limitare _quali colonne_ sono aggiornabili, solo quali righe.
 - **Scelta:** **Trigger BEFORE UPDATE** (e non RPC/view) perché:
   - Un’unica funzione gestisce la restrizione: per le righe il cui atleta è l’utente corrente si sovrascrivono su NEW i campi non consentiti con i valori OLD.
-  - Le policy UPDATE esistenti (atleta solo propri log; staff/admin pieni permessi) restano invariate; il trigger non cambia chi può fare UPDATE, solo *cosa* può essere modificato quando è l’atleta.
+  - Le policy UPDATE esistenti (atleta solo propri log; staff/admin pieni permessi) restano invariate; il trigger non cambia chi può fare UPDATE, solo _cosa_ può essere modificato quando è l’atleta.
   - Nessuna view aggiuntiva e nessun cambio di API: il client continua a usare `.update()` su `workout_logs`; la sicurezza è garantita lato DB.
 
 ---

@@ -23,10 +23,7 @@ interface WorkoutExerciseChartsProps {
 export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
   const exerciseCharts = useMemo(() => {
     return data.exercises.map((exercise) => {
-      const dateMap = new Map<
-        string,
-        { weights: number[]; reps: number[]; seconds: number[] }
-      >()
+      const dateMap = new Map<string, { weights: number[]; reps: number[]; seconds: number[] }>()
 
       for (const point of exercise.dataPoints) {
         if (!dateMap.has(point.date)) {
@@ -48,10 +45,8 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
             dayData.weights.length > 0
               ? dayData.weights.reduce((a, b) => a + b, 0) / dayData.weights.length
               : null
-          const pesoMax =
-            dayData.weights.length > 0 ? Math.max(...dayData.weights) : null
-          const pesoMin =
-            dayData.weights.length > 0 ? Math.min(...dayData.weights) : null
+          const pesoMax = dayData.weights.length > 0 ? Math.max(...dayData.weights) : null
+          const pesoMin = dayData.weights.length > 0 ? Math.min(...dayData.weights) : null
           const repsMedia =
             dayData.reps.length > 0
               ? dayData.reps.reduce((a, b) => a + b, 0) / dayData.reps.length
@@ -96,8 +91,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
           chartData.length > 1 && hasWeight
             ? chartData[chartData.length - 1].peso_medio - chartData[0].peso_medio
             : chartData.length > 1 && hasReps
-              ? (chartData[chartData.length - 1].reps_media ?? 0) -
-                (chartData[0].reps_media ?? 0)
+              ? (chartData[chartData.length - 1].reps_media ?? 0) - (chartData[0].reps_media ?? 0)
               : 0
         const trendLabel = hasWeight ? ' kg' : hasReps ? ' reps' : ''
 
@@ -112,10 +106,7 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
             <CardHeader className="relative z-10 pb-2.5 border-b border-white/10">
               <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <CardTitle
-                    size="sm"
-                    className="text-sm font-bold text-text-primary"
-                  >
+                  <CardTitle size="sm" className="text-sm font-bold text-text-primary">
                     {exercise.exercise_name}
                   </CardTitle>
                   {exercise.exercise_category && (
@@ -174,7 +165,9 @@ export function WorkoutExerciseCharts({ data }: WorkoutExerciseChartsProps) {
                       <div className="text-text-tertiary text-[10px] uppercase tracking-wide">
                         Sessioni
                       </div>
-                      <div className="text-text-primary text-xs font-bold">{exercise.total_sessions}</div>
+                      <div className="text-text-primary text-xs font-bold">
+                        {exercise.total_sessions}
+                      </div>
                     </div>
                     {chartData.length > 1 && (hasWeight || hasReps) && (
                       <div className="flex items-center gap-1">

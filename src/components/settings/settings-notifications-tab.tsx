@@ -286,11 +286,7 @@ export function SettingsNotificationsTab({
 
         {/* Salva */}
         <div className="flex justify-end pt-4 border-t border-white/10">
-          <Button
-            onClick={onSave}
-            disabled={loading}
-            className="min-w-[180px]"
-          >
+          <Button onClick={onSave} disabled={loading} className="min-w-[180px]">
             {loading ? (
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />

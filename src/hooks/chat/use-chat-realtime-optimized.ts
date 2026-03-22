@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
 import { useChatProfile } from './use-chat-profile'

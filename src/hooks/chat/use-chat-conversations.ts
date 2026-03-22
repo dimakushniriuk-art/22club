@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import { createLogger } from '@/lib/logger'
 import type { ConversationParticipant } from '@/types/chat'
@@ -404,22 +404,38 @@ export function useChatConversations(
             .eq('status', 'active')
 
           if (!staffErr && staffLinks && staffLinks.length > 0) {
-            const staffIds = [...new Set((staffLinks as { staff_id: string }[]).map((r) => r.staff_id))]
+            const staffIds = [
+              ...new Set((staffLinks as { staff_id: string }[]).map((r) => r.staff_id)),
+            ]
             const { data: staffProfiles, error: profErr } = await supabase
               .from('profiles')
               .select('id, nome, cognome, role, avatar')
               .in('id', staffIds)
 
             if (!profErr && staffProfiles) {
-              for (const p of staffProfiles as { id: string; nome?: string | null; cognome?: string | null; role?: string | null; avatar?: string | null }[]) {
+              for (const p of staffProfiles as {
+                id: string
+                nome?: string | null
+                cognome?: string | null
+                role?: string | null
+                avatar?: string | null
+              }[]) {
                 const staffProfileId = p.id
-                const displayName = [p.nome, p.cognome].filter(Boolean).join(' ').trim() || (p.role === 'nutrizionista' ? 'Nutrizionista' : p.role === 'massaggiatore' ? 'Massaggiatore' : 'Staff')
+                const displayName =
+                  [p.nome, p.cognome].filter(Boolean).join(' ').trim() ||
+                  (p.role === 'nutrizionista'
+                    ? 'Nutrizionista'
+                    : p.role === 'massaggiatore'
+                      ? 'Massaggiatore'
+                      : 'Staff')
                 const role = p.role ?? 'staff'
                 const existing = conversationsMap.get(staffProfileId)
                 if (existing) {
                   conversationsMap.set(staffProfileId, {
                     ...existing,
-                    other_user_name: existing.other_user_name?.trim() ? existing.other_user_name : displayName,
+                    other_user_name: existing.other_user_name?.trim()
+                      ? existing.other_user_name
+                      : displayName,
                     other_user_role: existing.other_user_role ?? role,
                     avatar: existing.avatar ?? p.avatar ?? null,
                   })

@@ -87,17 +87,17 @@ Stile UI: tutte le card di sezione usano `border-teal-500/30`, `shadow-lg shadow
 
 ## 6. File e migration toccati
 
-| Area              | File |
-|-------------------|------|
-| Helper upload     | `src/lib/trainer-storage.ts` |
-| Tab profilo       | `src/components/settings/settings-trainer-profile-tab.tsx` |
-| Vista atleta      | `src/app/home/trainer/page.tsx` |
-| Card overview     | `src/components/home-profile/athlete-overview-tab.tsx` |
-| Tipi              | `src/types/trainer-profile.ts` (TrainerProfileFull già presente) |
-| Migration RPC     | `supabase/migrations/20260233_get_trainer_profile_full.sql` |
-| Migration pt_id   | `supabase/migrations/20260234_get_my_trainer_profile_pt_id.sql` |
-| Migration fallback| `supabase/migrations/20260235_get_my_trainer_profile_profile_id_fallback.sql` |
-| Migration storage | `supabase/migrations/20260236_trainer_storage_policies_user_id.sql` |
+| Area               | File                                                                          |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Helper upload      | `src/lib/trainer-storage.ts`                                                  |
+| Tab profilo        | `src/components/settings/settings-trainer-profile-tab.tsx`                    |
+| Vista atleta       | `src/app/home/trainer/page.tsx`                                               |
+| Card overview      | `src/components/home-profile/athlete-overview-tab.tsx`                        |
+| Tipi               | `src/types/trainer-profile.ts` (TrainerProfileFull già presente)              |
+| Migration RPC      | `supabase/migrations/20260233_get_trainer_profile_full.sql`                   |
+| Migration pt_id    | `supabase/migrations/20260234_get_my_trainer_profile_pt_id.sql`               |
+| Migration fallback | `supabase/migrations/20260235_get_my_trainer_profile_profile_id_fallback.sql` |
+| Migration storage  | `supabase/migrations/20260236_trainer_storage_policies_user_id.sql`           |
 
 ---
 

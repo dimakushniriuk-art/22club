@@ -2,7 +2,7 @@
  * @fileoverview Cache in-memory per server-side utilities
  * @description
  * ⚠️ IMPORTANTE: Questo modulo è principalmente per server-side utilities.
- * Per client-side, usa React Query hooks (useAppointments, useDocuments, useClienti).
+ * Per client-side, usa React Query hooks (useAthleteAppointments, useDocuments, useClienti).
  *
  * fetchWithCache è mantenuto per:
  * - Server-side API routes
@@ -94,7 +94,7 @@ type DocumentRow = Tables<'documents'>
 // ============================================================================
 // Le seguenti funzioni sono deprecate per uso client-side.
 // Per client-side, usa React Query hooks:
-// - useAppointments() invece di getAppointmentsCached()
+// - useAthleteAppointments() invece di getAppointmentsCached()
 // - useDocuments() invece di getDocumentsCached()
 // - useClienti() invece di getClientiStatsCached()
 // ============================================================================
@@ -103,7 +103,7 @@ type DocumentRow = Tables<'documents'>
 const APPOINTMENTS_TTL_MS = 30_000 // 30 secondi
 
 /**
- * @deprecated Per client-side, usa useAppointments() hook con React Query
+ * @deprecated Per client-side, usa useAthleteAppointments() hook con React Query
  * Questa funzione è mantenuta solo per compatibilità server-side
  */
 export async function getAppointmentsCached(ttlMs?: number) {

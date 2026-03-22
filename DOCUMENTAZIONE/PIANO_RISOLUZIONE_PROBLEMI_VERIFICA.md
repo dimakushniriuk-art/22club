@@ -31,6 +31,7 @@ Risolvere il problema di visualizzazione video nel form di modifica esercizio re
 **File**: `docs/FIX_BUCKET_EXERCISE_VIDEOS_PUBLIC.sql`
 
 **Istruzioni**:
+
 1. Aprire Supabase Dashboard
 2. Andare su **SQL Editor**
 3. Copiare e incollare tutto il contenuto del file `FIX_BUCKET_EXERCISE_VIDEOS_PUBLIC.sql`
@@ -40,6 +41,7 @@ Risolvere il problema di visualizzazione video nel form di modifica esercizio re
 **Tempo Stimato**: 1 minuto
 
 **Risultato Atteso**:
+
 ```
 Bucket: exercise-videos
 Stato: ✅ PUBBLICO - Video accessibili direttamente
@@ -52,6 +54,7 @@ Stato: ✅ PUBBLICO - Video accessibili direttamente
 **File**: `docs/VERIFICA_FIX_RLS_EXERCISE_THUMBS.sql`
 
 **Istruzioni**:
+
 1. Aprire Supabase Dashboard
 2. Andare su **SQL Editor**
 3. Copiare e incollare tutto il contenuto del file `VERIFICA_FIX_RLS_EXERCISE_THUMBS.sql`
@@ -61,6 +64,7 @@ Stato: ✅ PUBBLICO - Video accessibili direttamente
 **Tempo Stimato**: 1 minuto
 
 **Risultato Atteso**:
+
 - ✅ Policy SELECT per accesso pubblico
 - ✅ Policy INSERT per trainer/admin
 - ✅ Policy UPDATE per trainer/admin
@@ -73,6 +77,7 @@ Stato: ✅ PUBBLICO - Video accessibili direttamente
 **File**: `docs/VERIFICA_BUCKET_PUBLIC_PRIVATE.sql`
 
 **Istruzioni**:
+
 1. Eseguire lo script di verifica
 2. Verificare che entrambi i bucket siano pubblici
 3. Verificare che le raccomandazioni siano soddisfatte
@@ -80,6 +85,7 @@ Stato: ✅ PUBBLICO - Video accessibili direttamente
 **Tempo Stimato**: 30 secondi
 
 **Risultato Atteso**:
+
 ```
 exercise-videos: ✅ PUBBLICO - Video accessibili direttamente via URL pubblico
 exercise-thumbs: ✅ PUBBLICO - Thumbnail accessibili direttamente via URL pubblico
@@ -127,11 +133,13 @@ Dopo aver eseguito tutti gli step, verificare:
 ### Perché il bucket deve essere pubblico?
 
 **Bucket Privato**:
+
 - Richiede signed URLs per l'accesso
 - I video non possono essere visualizzati direttamente nel tag `<video>`
 - Serve chiamare `getSignedUrl()` con scadenza
 
 **Bucket Pubblico**:
+
 - I file sono accessibili direttamente via URL pubblico
 - I video possono essere visualizzati nel tag `<video>` senza problemi
 - `getPublicUrl()` funziona correttamente
@@ -140,12 +148,14 @@ Dopo aver eseguito tutti gli step, verificare:
 ### Configurazione Finale Attesa
 
 **exercise-videos**:
+
 - ✅ Pubblico: `true`
 - ✅ Limite: 50MB
 - ✅ MIME types: `video/*`
 - ✅ RLS: SELECT pubblico, INSERT/UPDATE/DELETE solo trainer/admin
 
 **exercise-thumbs**:
+
 - ✅ Pubblico: `true`
 - ✅ Limite: Illimitato (da limitare a 5MB in futuro)
 - ✅ MIME types: Tutti (da limitare a `image/*` in futuro)
@@ -167,6 +177,7 @@ Dopo aver eseguito tutti gli step, verificare:
 Se qualcosa va storto, è possibile:
 
 1. **Rendere bucket privato di nuovo**:
+
 ```sql
 UPDATE storage.buckets SET public = false WHERE id = 'exercise-videos';
 ```

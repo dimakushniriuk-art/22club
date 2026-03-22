@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type { DayItem, WorkoutDayExerciseData } from '@/types/workout'
@@ -475,7 +475,11 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
         }
         ;(transformedWorkout.days[d] as { items?: DayItem[] }).items = items
       }
-      ;(transformedWorkout as { circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }> }).circuitList = circuitListBuilt
+      ;(
+        transformedWorkout as {
+          circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>
+        }
+      ).circuitList = circuitListBuilt
 
       setWorkout(transformedWorkout)
     } catch (err) {

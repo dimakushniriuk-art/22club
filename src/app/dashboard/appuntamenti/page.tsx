@@ -7,7 +7,7 @@ import type {
   CreateAppointmentData,
   EditAppointmentData,
 } from '@/types/appointment'
-import { useAppointments } from '@/hooks/appointments/use-appointments'
+import { useStaffAppointmentsTable } from '@/hooks/appointments/useStaffAppointmentsTable'
 import { useLessonCounters } from '@/hooks/use-lesson-counters'
 import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
@@ -93,7 +93,7 @@ export default function AppuntamentiPage() {
     handleDelete: handleDeleteHook,
     handleComplete: handleCompleteHook,
     handleCancel: handleCancelHook,
-  } = useAppointments() // Hook non accetta parametri - usa userId e role internamente
+  } = useStaffAppointmentsTable()
 
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentTable | null>(null)
   const [editingAppointment, setEditingAppointment] = useState<EditAppointmentData | null>(null)
@@ -115,8 +115,7 @@ export default function AppuntamentiPage() {
   const [lessonRefetchKey, setLessonRefetchKey] = useState(0)
 
   const athleteIds = useMemo(
-    () =>
-      [...new Set(appointments.map((a) => a.athlete_id).filter(Boolean))] as string[],
+    () => [...new Set(appointments.map((a) => a.athlete_id).filter(Boolean))] as string[],
     [appointments],
   )
   const rimastiMap = useLessonCounters(athleteIds, lessonRefetchKey)
@@ -133,10 +132,7 @@ export default function AppuntamentiPage() {
     return m
   }, [athleteIds, rimastiMap, lessonStatsMap])
 
-  const athleteEmailMap = useMemo(
-    () => new Map(athletes.map((a) => [a.id, a.email])),
-    [athletes],
-  )
+  const athleteEmailMap = useMemo(() => new Map(athletes.map((a) => [a.id, a.email])), [athletes])
 
   // Limiti data per filtro periodo (start of day in locale)
   const dateRangeBounds = useMemo(() => {
@@ -354,23 +350,23 @@ export default function AppuntamentiPage() {
         </div>
 
         <AppointmentsList
-            appointments={filteredAppointments}
-            appointmentsLoading={appointmentsLoading}
-            searchTerm={searchTerm}
-            statusFilter={statusFilter}
-            onNewAppointment={handleNewAppointment}
-            onSearchClear={handleSearchClear}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onComplete={handleComplete}
-            onCancel={handleCancel}
-            formatDateTime={formatDateTime}
-            getStatusColorClasses={getStatusColorClasses}
-            getAppointmentType={getAppointmentType}
-            lessonsRemainingMap={lessonsRemainingMap}
-            athleteEmailMap={athleteEmailMap}
-          />
+          appointments={filteredAppointments}
+          appointmentsLoading={appointmentsLoading}
+          searchTerm={searchTerm}
+          statusFilter={statusFilter}
+          onNewAppointment={handleNewAppointment}
+          onSearchClear={handleSearchClear}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onComplete={handleComplete}
+          onCancel={handleCancel}
+          formatDateTime={formatDateTime}
+          getStatusColorClasses={getStatusColorClasses}
+          getAppointmentType={getAppointmentType}
+          lessonsRemainingMap={lessonsRemainingMap}
+          athleteEmailMap={athleteEmailMap}
+        />
       </div>
 
       {/* Modals/Drawers - Lazy loaded solo quando aperti */}

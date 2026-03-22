@@ -123,12 +123,20 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
       // Carica anche le fatture (invoice_url) dai pagamenti
       const invoicesList = (payments || [])
         .filter((p: { invoice_url?: string | null }) => p.invoice_url)
-        .map((p: { id: string; invoice_url?: string | null; payment_date?: string | null; created_at?: string | null; amount?: number | null }) => ({
-          id: p.id,
-          url: p.invoice_url!,
-          payment_date: p.payment_date ?? p.created_at ?? new Date().toISOString(),
-          amount: p.amount || 0,
-        }))
+        .map(
+          (p: {
+            id: string
+            invoice_url?: string | null
+            payment_date?: string | null
+            created_at?: string | null
+            amount?: number | null
+          }) => ({
+            id: p.id,
+            url: p.invoice_url!,
+            payment_date: p.payment_date ?? p.created_at ?? new Date().toISOString(),
+            amount: p.amount || 0,
+          }),
+        )
 
       setInvoices(invoicesList)
     } catch (err) {
@@ -279,10 +287,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
       </div>
 
       {/* Abbonamento */}
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -507,10 +512,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
       </Card>
 
       {/* Documenti Contrattuali */}
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -650,10 +652,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
       </Card>
 
       {/* Note Contrattuali */}
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Note Contrattuali</CardTitle>
         </CardHeader>

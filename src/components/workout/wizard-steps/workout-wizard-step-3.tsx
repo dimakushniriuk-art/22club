@@ -17,7 +17,11 @@ interface WorkoutWizardStep3Props {
   exercises: Exercise[]
   onExerciseSelect: (dayIndex: number, exercise: Exercise) => void
   circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>
-  getDayItems?: (day: { items?: DayItem[]; exercises?: WorkoutDayExerciseData[]; name?: string }) => DayItem[]
+  getDayItems?: (day: {
+    items?: DayItem[]
+    exercises?: WorkoutDayExerciseData[]
+    name?: string
+  }) => DayItem[]
   /** Indice del giorno da mostrare (una pagina per giorno) */
   selectedDayIndex?: number
   /** Sezione Circuito da mostrare subito sotto l'header del giorno */
@@ -66,11 +70,7 @@ export function WorkoutWizardStep3({
       <CardHeader className="border-b border-white/10">
         <div className="flex items-center justify-between">
           <CardTitle size="sm" className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              size="sm"
-              className="border-0 bg-primary/10 text-primary"
-            >
+            <Badge variant="outline" size="sm" className="border-0 bg-primary/10 text-primary">
               Giorno {day.day_number}
             </Badge>
             <span className="font-semibold">{day.title || `Giorno ${day.day_number}`}</span>
@@ -81,9 +81,7 @@ export function WorkoutWizardStep3({
         </div>
       </CardHeader>
       {circuitSection != null ? (
-        <div className="border-b border-white/10 px-4 sm:px-6 py-4">
-          {circuitSection}
-        </div>
+        <div className="border-b border-white/10 px-4 sm:px-6 py-4">{circuitSection}</div>
       ) : null}
       <CardContent className="pt-6">
         <ExerciseCatalog

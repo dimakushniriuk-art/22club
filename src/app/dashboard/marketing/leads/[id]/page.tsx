@@ -36,11 +36,22 @@ type LeadRow = {
 }
 
 type NoteRow = { id: string; note: string; author_id: string | null; created_at: string }
-type AthleteOption = { id: string; email: string | null; first_name: string | null; last_name: string | null }
+type AthleteOption = {
+  id: string
+  email: string | null
+  first_name: string | null
+  last_name: string | null
+}
 
 function formatDate(s: string | null): string {
   if (!s) return '–'
-  return new Date(s).toLocaleString('it-IT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(s).toLocaleString('it-IT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export default function LeadDetailPage() {
@@ -98,7 +109,9 @@ export default function LeadDetailPage() {
       }
     }
     fetchLead()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [id, role, authLoading, router])
 
   const searchAthletes = async () => {
@@ -208,7 +221,9 @@ export default function LeadDetailPage() {
     return (
       <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/marketing/leads"><ArrowLeft className="h-4 w-4" /></Link>
+          <Link href="/dashboard/marketing/leads">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
         </Button>
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           {error ?? 'Lead non trovato'}
@@ -240,17 +255,34 @@ export default function LeadDetailPage() {
           <CardTitle className="text-base text-text-primary">Lead</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <div><span className="text-text-muted">Stato:</span> <span className="rounded-full px-2 py-0.5 bg-primary/20 text-primary">{STATUS_LABELS[lead.status] ?? lead.status}</span></div>
-          <div><span className="text-text-muted">Fonte:</span> {lead.source ?? '–'}</div>
-          <div><span className="text-text-muted">Telefono:</span> {lead.phone ?? '–'}</div>
-          <div><span className="text-text-muted">Creato:</span> {formatDate(lead.created_at)}</div>
+          <div>
+            <span className="text-text-muted">Stato:</span>{' '}
+            <span className="rounded-full px-2 py-0.5 bg-primary/20 text-primary">
+              {STATUS_LABELS[lead.status] ?? lead.status}
+            </span>
+          </div>
+          <div>
+            <span className="text-text-muted">Fonte:</span> {lead.source ?? '–'}
+          </div>
+          <div>
+            <span className="text-text-muted">Telefono:</span> {lead.phone ?? '–'}
+          </div>
+          <div>
+            <span className="text-text-muted">Creato:</span> {formatDate(lead.created_at)}
+          </div>
           {isConverted && (
             <>
-              <div><span className="text-text-muted">Convertito il:</span> {formatDate(lead.converted_at)}</div>
+              <div>
+                <span className="text-text-muted">Convertito il:</span>{' '}
+                {formatDate(lead.converted_at)}
+              </div>
               {lead.converted_athlete_profile_id && (
                 <div className="pt-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/atleti/${lead.converted_athlete_profile_id}`} className="inline-flex items-center gap-2">
+                    <Link
+                      href={`/dashboard/atleti/${lead.converted_athlete_profile_id}`}
+                      className="inline-flex items-center gap-2"
+                    >
                       <ExternalLink className="h-4 w-4" />
                       Vai al profilo atleta
                     </Link>
@@ -270,7 +302,10 @@ export default function LeadDetailPage() {
           <CardContent>
             <ul className="space-y-2">
               {notes.map((n) => (
-                <li key={n.id} className="rounded border border-border/50 bg-background px-3 py-2 text-sm">
+                <li
+                  key={n.id}
+                  className="rounded border border-border/50 bg-background px-3 py-2 text-sm"
+                >
                   <p className="text-text-primary">{n.note}</p>
                   <p className="text-text-muted text-xs mt-1">{formatDate(n.created_at)}</p>
                 </li>
@@ -288,15 +323,22 @@ export default function LeadDetailPage() {
               Converti in atleta
             </CardTitle>
             <p className="text-sm text-text-secondary">
-              Crea un nuovo atleta in periodo di prova (invio email di invito) oppure collega a un profilo esistente.
+              Crea un nuovo atleta in periodo di prova (invio email di invito) oppure collega a un
+              profilo esistente.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             {convertError && (
-              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{convertError}</div>
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                {convertError}
+              </div>
             )}
             <div className="flex flex-wrap gap-2">
-              <Button onClick={handleConvertTrial} disabled={convertingTrial} className="inline-flex items-center gap-2">
+              <Button
+                onClick={handleConvertTrial}
+                disabled={convertingTrial}
+                className="inline-flex items-center gap-2"
+              >
                 {convertingTrial ? (
                   <>
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -311,7 +353,9 @@ export default function LeadDetailPage() {
               </Button>
             </div>
             <hr className="border-border" />
-            <p className="text-sm text-text-muted">Oppure collega a un profilo atleta già esistente (cerca per email):</p>
+            <p className="text-sm text-text-muted">
+              Oppure collega a un profilo atleta già esistente (cerca per email):
+            </p>
             <div className="flex flex-wrap gap-2">
               <div className="flex-1 min-w-[200px] flex gap-2">
                 <div className="relative flex-1">
@@ -325,7 +369,9 @@ export default function LeadDetailPage() {
                     className="pl-9 border-border bg-background"
                   />
                 </div>
-                <Button type="button" variant="outline" onClick={searchAthletes}>Cerca</Button>
+                <Button type="button" variant="outline" onClick={searchAthletes}>
+                  Cerca
+                </Button>
               </div>
             </div>
             {athletes.length > 0 && (

@@ -69,16 +69,30 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
           <Card variant="default" className={AUTH_CARD_CLASS}>
             <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
-              <div className="mb-6 min-[834px]:mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <div
+                className="mb-6 min-[834px]:mb-8 animate-fade-in"
+                style={{ animationDelay: '100ms' }}
+              >
                 <div className="mb-4 min-[834px]:mb-6 flex justify-center">
-                  <Image src="/logo.svg" alt="22 PERSONAL TRAINING Club" width={180} height={180} className={AUTH_LOGO_CLASS} priority />
+                  <Image
+                    src="/logo.svg"
+                    alt="22 PERSONAL TRAINING Club"
+                    width={180}
+                    height={180}
+                    className={AUTH_LOGO_CLASS}
+                    priority
+                  />
                 </div>
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in bg-white/[0.06] border border-white/10">
                   <CheckCircle2 className="w-10 h-10 text-text-primary" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">Email inviata!</h2>
+                <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">
+                  Email inviata!
+                </h2>
                 <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
-                  Controlla la tua casella <span className="font-semibold text-text-primary">{email}</span> e segui le istruzioni per reimpostare la password.
+                  Controlla la tua casella{' '}
+                  <span className="font-semibold text-text-primary">{email}</span> e segui le
+                  istruzioni per reimpostare la password.
                 </p>
               </div>
               <div className="space-y-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
@@ -90,7 +104,8 @@ export default function ForgotPasswordPage() {
                   {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
                     <div className="mt-3 pt-3 border-t border-white/10">
                       <p className="text-xs mb-2 text-text-tertiary">
-                        <strong className="text-text-secondary">Sviluppo locale:</strong> Le email vengono inviate a Inbucket.
+                        <strong className="text-text-secondary">Sviluppo locale:</strong> Le email
+                        vengono inviate a Inbucket.
                       </p>
                       <a
                         href="http://localhost:54324"
@@ -99,8 +114,18 @@ export default function ForgotPasswordPage() {
                         className="text-xs font-medium inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
                       >
                         Apri Inbucket per vedere le email
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
                         </svg>
                       </a>
                     </div>
@@ -131,11 +156,23 @@ export default function ForgotPasswordPage() {
                 Torna al Login
               </Link>
             </div>
-            <div className="text-center mb-6 min-[834px]:mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <div
+              className="text-center mb-6 min-[834px]:mb-8 animate-fade-in"
+              style={{ animationDelay: '100ms' }}
+            >
               <div className="mb-4 min-[834px]:mb-6 flex justify-center">
-                <Image src="/logo.svg" alt="22 PERSONAL TRAINING Club" width={200} height={200} className={AUTH_LOGO_CLASS} priority />
+                <Image
+                  src="/logo.svg"
+                  alt="22 PERSONAL TRAINING Club"
+                  width={200}
+                  height={200}
+                  className={AUTH_LOGO_CLASS}
+                  priority
+                />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2 min-[834px]:mb-3 text-text-primary mt-4 min-[834px]:mt-6">Password dimenticata?</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 min-[834px]:mb-3 text-text-primary mt-4 min-[834px]:mt-6">
+                Password dimenticata?
+              </h2>
               <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
                 Inserisci la tua email e ti invieremo le istruzioni per reimpostare la password.
               </p>
@@ -143,7 +180,9 @@ export default function ForgotPasswordPage() {
             <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
               <form onSubmit={handleResetPassword} className="space-y-5 min-[834px]:space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-text-primary">Email</Label>
+                  <Label htmlFor="email" className="text-sm font-medium text-text-primary">
+                    Email
+                  </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-text-muted" />
                     <Input
@@ -168,10 +207,18 @@ export default function ForgotPasswordPage() {
                     </div>
                   </div>
                 )}
-                <Button type="submit" disabled={loading || !email.trim()} variant="primary" className={AUTH_BUTTON_PRIMARY_CLASS}>
+                <Button
+                  type="submit"
+                  disabled={loading || !email.trim()}
+                  variant="primary"
+                  className={AUTH_BUTTON_PRIMARY_CLASS}
+                >
                   {loading ? (
                     <>
-                      <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" aria-hidden />
+                      <span
+                        className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"
+                        aria-hidden
+                      />
                       Invio in corso...
                     </>
                   ) : (
@@ -183,7 +230,10 @@ export default function ForgotPasswordPage() {
                 </Button>
                 <p className="text-center text-sm text-text-secondary pt-1">
                   Ricordi la password?{' '}
-                  <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                  <Link
+                    href="/login"
+                    className="font-medium text-primary hover:text-primary/80 transition-colors"
+                  >
                     Accedi
                   </Link>
                 </p>

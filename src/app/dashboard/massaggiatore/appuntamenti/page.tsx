@@ -8,7 +8,7 @@ import type {
   CreateAppointmentData,
   EditAppointmentData,
 } from '@/types/appointment'
-import { useAppointments } from '@/hooks/appointments/use-appointments'
+import { useStaffAppointmentsTable } from '@/hooks/appointments/useStaffAppointmentsTable'
 import { useLessonCounters } from '@/hooks/use-lesson-counters'
 import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
@@ -87,15 +87,14 @@ export default function MassaggiatoreAppuntamentiPage() {
     handleDelete: handleDeleteHook,
     handleComplete: handleCompleteHook,
     handleCancel: handleCancelHook,
-  } = useAppointments()
+  } = useStaffAppointmentsTable()
 
   const massaggiOnly = useMemo(
     () => appointments.filter((a) => a.type === 'massaggio'),
     [appointments],
   )
   const athleteIds = useMemo(
-    () =>
-      [...new Set(massaggiOnly.map((a) => a.athlete_id).filter(Boolean))] as string[],
+    () => [...new Set(massaggiOnly.map((a) => a.athlete_id).filter(Boolean))] as string[],
     [massaggiOnly],
   )
   const rimastiMap = useLessonCounters(athleteIds)
@@ -112,10 +111,7 @@ export default function MassaggiatoreAppuntamentiPage() {
     return m
   }, [athleteIds, rimastiMap, lessonStatsMap])
 
-  const athleteEmailMap = useMemo(
-    () => new Map(athletes.map((a) => [a.id, a.email])),
-    [athletes],
-  )
+  const athleteEmailMap = useMemo(() => new Map(athletes.map((a) => [a.id, a.email])), [athletes])
 
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentTable | null>(null)
   const [editingAppointment, setEditingAppointment] = useState<EditAppointmentData | null>(null)
@@ -275,7 +271,11 @@ export default function MassaggiatoreAppuntamentiPage() {
       theme="amber"
       actions={
         <Link href="/dashboard/massaggiatore/calendario">
-          <Button variant="default" size="sm" className="bg-amber-600 hover:bg-amber-500 text-white min-h-[44px]">
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-amber-600 hover:bg-amber-500 text-white min-h-[44px]"
+          >
             <Calendar className="mr-1.5 h-4 w-4" />
             Calendario
           </Button>

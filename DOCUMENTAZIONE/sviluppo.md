@@ -54,31 +54,32 @@
 **Percentuale Completamento**: 100%
 
 ### Obiettivo
+
 Integrare Capacitor nel progetto per permettere la creazione di app native iOS e Android partendo dall'applicazione Next.js web.
 
 ### Configurazione Implementata
 
 #### Dipendenze Aggiunte
 
-| Pacchetto | Versione | Tipo | Descrizione |
-|-----------|----------|------|-------------|
-| `@capacitor/core` | ^7.4.5 | dependency | Core Capacitor (compatibile Node.js 20) |
-| `@capacitor/cli` | ^7.4.5 | devDependency | CLI Capacitor |
-| `@capacitor/app` | ^7.1.1 | dependency | Gestione ciclo vita app |
-| `@capacitor/haptics` | ^7.0.3 | dependency | Feedback tattile |
-| `@capacitor/keyboard` | ^7.0.4 | dependency | Gestione tastiera |
-| `@capacitor/status-bar` | ^7.0.4 | dependency | Personalizzazione status bar |
-| `@capacitor/splash-screen` | ^7.0.4 | dependency | Gestione splash screen |
+| Pacchetto                  | Versione | Tipo          | Descrizione                             |
+| -------------------------- | -------- | ------------- | --------------------------------------- |
+| `@capacitor/core`          | ^7.4.5   | dependency    | Core Capacitor (compatibile Node.js 20) |
+| `@capacitor/cli`           | ^7.4.5   | devDependency | CLI Capacitor                           |
+| `@capacitor/app`           | ^7.1.1   | dependency    | Gestione ciclo vita app                 |
+| `@capacitor/haptics`       | ^7.0.3   | dependency    | Feedback tattile                        |
+| `@capacitor/keyboard`      | ^7.0.4   | dependency    | Gestione tastiera                       |
+| `@capacitor/status-bar`    | ^7.0.4   | dependency    | Personalizzazione status bar            |
+| `@capacitor/splash-screen` | ^7.0.4   | dependency    | Gestione splash screen                  |
 
 #### File Creati/Modificati
 
-| File | Modifiche | Stato |
-|------|-----------|-------|
-| `capacitor.config.ts` | Creato file configurazione Capacitor | ✅ |
-| `next.config.ts` | Aggiunto supporto export statico condizionale | ✅ |
-| `package.json` | Aggiunte dipendenze e script npm | ✅ |
-| `.gitignore` | Aggiunte cartelle Capacitor (android/, ios/, .capacitor/) | ✅ |
-| `docs/CAPACITOR_SETUP.md` | Creato documento guida completa | ✅ |
+| File                      | Modifiche                                                 | Stato |
+| ------------------------- | --------------------------------------------------------- | ----- |
+| `capacitor.config.ts`     | Creato file configurazione Capacitor                      | ✅    |
+| `next.config.ts`          | Aggiunto supporto export statico condizionale             | ✅    |
+| `package.json`            | Aggiunte dipendenze e script npm                          | ✅    |
+| `.gitignore`              | Aggiunte cartelle Capacitor (android/, ios/, .capacitor/) | ✅    |
+| `docs/CAPACITOR_SETUP.md` | Creato documento guida completa                           | ✅    |
 
 #### Configurazione Next.js
 
@@ -88,27 +89,29 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 
 #### Script NPM Aggiunti
 
-| Script | Descrizione |
-|--------|-------------|
-| `capacitor:init` | Inizializza Capacitor (solo prima volta) |
-| `capacitor:add:ios` | Aggiunge piattaforma iOS |
-| `capacitor:add:android` | Aggiunge piattaforma Android |
-| `capacitor:sync` | Sincronizza web assets e plugin |
-| `capacitor:copy` | Copia solo web assets |
-| `capacitor:update` | Aggiorna Capacitor e plugin |
-| `capacitor:open:ios` | Apre progetto iOS in Xcode |
-| `capacitor:open:android` | Apre progetto Android in Android Studio |
-| `build:capacitor` | Build Next.js per Capacitor e sync |
-| `build:capacitor:ios` | Build e apri iOS |
-| `build:capacitor:android` | Build e apri Android |
+| Script                    | Descrizione                              |
+| ------------------------- | ---------------------------------------- |
+| `capacitor:init`          | Inizializza Capacitor (solo prima volta) |
+| `capacitor:add:ios`       | Aggiunge piattaforma iOS                 |
+| `capacitor:add:android`   | Aggiunge piattaforma Android             |
+| `capacitor:sync`          | Sincronizza web assets e plugin          |
+| `capacitor:copy`          | Copia solo web assets                    |
+| `capacitor:update`        | Aggiorna Capacitor e plugin              |
+| `capacitor:open:ios`      | Apre progetto iOS in Xcode               |
+| `capacitor:open:android`  | Apre progetto Android in Android Studio  |
+| `build:capacitor`         | Build Next.js per Capacitor e sync       |
+| `build:capacitor:ios`     | Build e apri iOS                         |
+| `build:capacitor:android` | Build e apri Android                     |
 
 ### Limitazioni e Considerazioni
 
 #### Export Statico Next.js
+
 - ❌ **NON disponibili con Capacitor**: API Routes, Server Components, Server Actions
 - ✅ **Disponibili**: Client Components, Static Generation, tutte le funzionalità client-side
 
 #### Soluzioni per Funzionalità Server-Side
+
 1. **API Routes**: Spostare logica in backend separato (Supabase Functions, API esterna)
 2. **Server Components**: Convertire in Client Components
 3. **Server Actions**: Usare chiamate API standard
@@ -116,9 +119,11 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 ### Prossimi Passi
 
 1. **Installazione dipendenze** (completata):
+
    ```bash
    npm install --legacy-peer-deps
    ```
+
    **Nota**: Usiamo `--legacy-peer-deps` per risolvere conflitti peer dependencies con React 19.
 
 2. **Inizializzazione Capacitor** (completata):
@@ -128,6 +133,7 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
    - Web Dir: `out`
 
 3. **Aggiunta piattaforme**:
+
    ```bash
    npm run capacitor:add:ios      # Richiede macOS + Xcode
    npm run capacitor:add:android  # Richiede Android Studio
@@ -139,12 +145,14 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
    ```
 
 ### Documentazione
+
 - **Guida completa dettagliata**: `docs/CAPACITOR_GUIDA_COMPLETA.md` ⭐ **NUOVO**
 - **Guida setup base**: `docs/CAPACITOR_SETUP.md`
 - **Configurazione**: `capacitor.config.ts`
 - **Documentazione ufficiale**: https://capacitorjs.com/docs
 
 **Nuova documentazione creata** (2025-01-17T23:15:00Z):
+
 - ✅ Tutti i comandi disponibili con descrizioni dettagliate
 - ✅ Workflow completo di sviluppo
 - ✅ Limitazioni e punti da sistemare (con priorità)
@@ -158,7 +166,7 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 - **App ID**: `com.club22.app` (configurato in `capacitor.config.ts`)
 - **Web Directory**: `out/` (deve corrispondere a output Next.js)
 - **Plugin configurati**: SplashScreen, StatusBar, Keyboard con impostazioni dark mode
-- **Compatibilità**: 
+- **Compatibilità**:
   - Next.js 15.5.9
   - React 19.2.3
   - Node.js 20.0.0+ (Capacitor 7 richiede Node.js ≥20)
@@ -179,6 +187,7 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 - **Script verifica**: Creato e testato `npm run capacitor:verify`
 
 **Risultati Build**:
+
 - ✅ 30 pagine statiche generate
 - ✅ Bundle size ottimizzato (First Load JS: ~686 kB, Bundle totale: ~3.90 MB)
 - ✅ Android sync completato con successo
@@ -187,6 +196,7 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 - ✅ 5 plugin Capacitor sincronizzati (app, haptics, keyboard, splash-screen, status-bar)
 
 **Test Eseguiti** (2025-01-17T23:55:00Z):
+
 - ✅ Build Capacitor: Completato senza errori
 - ✅ Verifica automatica: Tutti i check passati
 - ✅ Sync iOS/Android: Completato con successo
@@ -227,22 +237,22 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 
 #### Configurazioni Aggiunte
 
-| Configurazione | Valore | File |
-|----------------|--------|------|
-| Ruby PATH | `/usr/local/opt/ruby/bin` | `~/.zshrc` |
-| Ruby Gems PATH | `/usr/local/lib/ruby/gems/4.0.0/bin` | `~/.zshrc` |
-| Encoding | `en_US.UTF-8` | `~/.zshrc` |
-| iOS Deployment Target | `15.0` | `ios/App/Podfile` |
+| Configurazione        | Valore                               | File              |
+| --------------------- | ------------------------------------ | ----------------- |
+| Ruby PATH             | `/usr/local/opt/ruby/bin`            | `~/.zshrc`        |
+| Ruby Gems PATH        | `/usr/local/lib/ruby/gems/4.0.0/bin` | `~/.zshrc`        |
+| Encoding              | `en_US.UTF-8`                        | `~/.zshrc`        |
+| iOS Deployment Target | `15.0`                               | `ios/App/Podfile` |
 
 #### Versioni Installate
 
-| Componente | Versione | Note |
-|------------|----------|------|
-| Ruby | 4.0.1 | Installato via Homebrew |
-| CocoaPods | 1.16.2 | Installato via gem |
-| @capacitor/core | 7.4.5 | Allineato con altre dipendenze |
-| @capacitor/ios | 7.4.5 | Allineato (era 8.0.1) |
-| @capacitor/android | 7.4.5 | Allineato |
+| Componente         | Versione | Note                           |
+| ------------------ | -------- | ------------------------------ |
+| Ruby               | 4.0.1    | Installato via Homebrew        |
+| CocoaPods          | 1.16.2   | Installato via gem             |
+| @capacitor/core    | 7.4.5    | Allineato con altre dipendenze |
+| @capacitor/ios     | 7.4.5    | Allineato (era 8.0.1)          |
+| @capacitor/android | 7.4.5    | Allineato                      |
 
 #### Stato Finale Sync
 
@@ -255,13 +265,15 @@ Integrare Capacitor nel progetto per permettere la creazione di app native iOS e
 - ✅ Web assets copiati correttamente
 
 **Plugin Capacitor installati**:
+
 - @capacitor/app@7.1.1
 - @capacitor/haptics@7.0.3
 - @capacitor/keyboard@7.0.4
 - @capacitor/splash-screen@7.0.4
 - @capacitor/status-bar@7.0.4
 
-**Note**: 
+**Note**:
+
 - Le route esclusi vengono automaticamente ripristinate dopo il build
 - Le API routes non sono necessarie per Capacitor (app mobile usa Supabase direttamente)
 - Xcode richiesto per sviluppo iOS (non necessario per sync)
@@ -320,9 +332,11 @@ ESLint mostrava **15.807 problemi** (124 errori, 15.683 warning) perché analizz
 ### File Modificati
 
 **Configurazione**:
+
 - `eslint.config.mjs` - Aggiunte cartelle Capacitor agli ignore
 
 **Scripts** (15 file):
+
 - `scripts/analyze-schema-errors.ts`
 - `scripts/build-pgdump-command.ts`
 - `scripts/export-schema-pgdump.ts`
@@ -336,6 +350,7 @@ ESLint mostrava **15.807 problemi** (124 errori, 15.683 warning) perché analizz
 - `scripts/verify-supabase-sync.ts`
 
 **Source Code** (15 file):
+
 - `src/app/api/health/route.ts`
 - `src/app/dashboard/_components/upcoming-appointments-client.tsx`
 - `src/app/dashboard/abbonamenti/page.tsx`
@@ -361,6 +376,7 @@ ESLint mostrava **15.807 problemi** (124 errori, 15.683 warning) perché analizz
 - `src/providers/auth-provider.tsx`
 
 **Tests** (2 file):
+
 - `tests/e2e/global-setup-auth.ts`
 - `tests/e2e/smoke.spec.ts`
 
@@ -388,11 +404,13 @@ ESLint mostrava **15.807 problemi** (124 errori, 15.683 warning) perché analizz
 **Percentuale Completamento**: 100%
 
 ### Obiettivo
+
 Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più recenti compatibili per garantire sicurezza, performance e compatibilità con le ultime versioni dei framework.
 
 ### Analisi Stato Pre-Aggiornamento
 
 #### Stack Principale
+
 - **Next.js:** 15.5.9
 - **React:** 19.2.0
 - **TypeScript:** ^5 (versione generica)
@@ -401,6 +419,7 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 - **Sentry:** 10.20.0
 
 #### Configurazioni Verificate
+
 - ✅ TypeScript configurato con strict mode
 - ✅ ESLint configurato (flat config)
 - ✅ Prettier configurato
@@ -410,46 +429,48 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 
 #### Dipendenze Principali (Dependencies)
 
-| Pacchetto | Da | A | Tipo | Note |
-|-----------|----|---|------|------|
-| `next` | ^15.5.9 | ^15.6.0 | Minor | Aggiornamento framework principale |
-| `react` | ^19.2.0 | ^19.3.0 | Minor | Aggiornamento React |
-| `react-dom` | ^19.2.0 | ^19.3.0 | Minor | Allineato a React |
-| `@supabase/supabase-js` | ^2.74.0 | ^2.76.0 | Minor | Aggiornamento sicurezza |
-| `@supabase/ssr` | ^0.7.0 | ^0.8.0 | Minor | Aggiornamento SSR |
-| `@sentry/nextjs` | ^10.20.0 | ^10.30.0 | Minor | Aggiornamento sicurezza e funzionalità |
-| `@tanstack/react-query` | ^5.0.0 | ^5.62.0 | Minor | Aggiornamento funzionalità |
-| `@fullcalendar/*` | ^6.1.19 | ^6.1.20 | Patch | Aggiornamento patch |
-| `lucide-react` | ^0.546.0 | ^0.468.0 | Patch | Verificare compatibilità |
+| Pacchetto               | Da       | A        | Tipo  | Note                                   |
+| ----------------------- | -------- | -------- | ----- | -------------------------------------- |
+| `next`                  | ^15.5.9  | ^15.6.0  | Minor | Aggiornamento framework principale     |
+| `react`                 | ^19.2.0  | ^19.3.0  | Minor | Aggiornamento React                    |
+| `react-dom`             | ^19.2.0  | ^19.3.0  | Minor | Allineato a React                      |
+| `@supabase/supabase-js` | ^2.74.0  | ^2.76.0  | Minor | Aggiornamento sicurezza                |
+| `@supabase/ssr`         | ^0.7.0   | ^0.8.0   | Minor | Aggiornamento SSR                      |
+| `@sentry/nextjs`        | ^10.20.0 | ^10.30.0 | Minor | Aggiornamento sicurezza e funzionalità |
+| `@tanstack/react-query` | ^5.0.0   | ^5.62.0  | Minor | Aggiornamento funzionalità             |
+| `@fullcalendar/*`       | ^6.1.19  | ^6.1.20  | Patch | Aggiornamento patch                    |
+| `lucide-react`          | ^0.546.0 | ^0.468.0 | Patch | Verificare compatibilità               |
 
 #### Dipendenze di Sviluppo (DevDependencies)
 
-| Pacchetto | Da | A | Tipo | Note |
-|-----------|----|---|------|------|
-| `typescript` | ^5 | ^5.7.0 | Minor | Specificata versione esatta |
-| `eslint` | ^9 | ^9.17.0 | Patch | Specificata versione esatta |
-| `eslint-config-next` | ^15.5.9 | ^15.6.0 | Minor | Allineato a Next.js |
-| `@typescript-eslint/eslint-plugin` | ^8.46.1 | ^8.47.0 | Patch | Aggiornamento patch |
-| `@typescript-eslint/parser` | ^8.46.1 | ^8.47.0 | Patch | Allineato a plugin |
-| `@playwright/test` | ^1.40.0 | ^1.50.0 | Minor | Aggiornamento funzionalità test |
-| `vitest` | ^1.0.4 | ^1.6.0 | Minor | Aggiornamento funzionalità test |
-| `tailwindcss` | ^4 | ^4.1.0 | Patch | Specificata versione esatta |
+| Pacchetto                          | Da      | A       | Tipo  | Note                            |
+| ---------------------------------- | ------- | ------- | ----- | ------------------------------- |
+| `typescript`                       | ^5      | ^5.7.0  | Minor | Specificata versione esatta     |
+| `eslint`                           | ^9      | ^9.17.0 | Patch | Specificata versione esatta     |
+| `eslint-config-next`               | ^15.5.9 | ^15.6.0 | Minor | Allineato a Next.js             |
+| `@typescript-eslint/eslint-plugin` | ^8.46.1 | ^8.47.0 | Patch | Aggiornamento patch             |
+| `@typescript-eslint/parser`        | ^8.46.1 | ^8.47.0 | Patch | Allineato a plugin              |
+| `@playwright/test`                 | ^1.40.0 | ^1.50.0 | Minor | Aggiornamento funzionalità test |
+| `vitest`                           | ^1.0.4  | ^1.6.0  | Minor | Aggiornamento funzionalità test |
+| `tailwindcss`                      | ^4      | ^4.1.0  | Patch | Specificata versione esatta     |
 
 ### File Modificati
 
-| File | Modifiche | Stato |
-|------|-----------|-------|
-| `package.json` | Aggiornate tutte le dipendenze principali e dev | ✅ |
-| `AGGIORNAMENTO_DIPENDENZE_2025.md` | Creato documento di riepilogo aggiornamenti | ✅ |
+| File                               | Modifiche                                       | Stato |
+| ---------------------------------- | ----------------------------------------------- | ----- |
+| `package.json`                     | Aggiornate tutte le dipendenze principali e dev | ✅    |
+| `AGGIORNAMENTO_DIPENDENZE_2025.md` | Creato documento di riepilogo aggiornamenti     | ✅    |
 
 ### Note Importanti
 
 #### Breaking Changes Potenziali
+
 1. **React 19.3.0:** Verificare compatibilità con librerie terze
 2. **TypeScript 5.7.0:** Potrebbero esserci nuovi errori di tipo da risolvere
 3. **Next.js 15.6.0:** Verificare cambiamenti in App Router
 
 #### Test da Eseguire Dopo Aggiornamento
+
 - [ ] `npm install` - Installare dipendenze aggiornate
 - [ ] `npm run typecheck` - Verifica errori TypeScript
 - [ ] `npm run lint` - Verifica errori ESLint
@@ -460,11 +481,13 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 - [ ] `npm audit` - Verifica vulnerabilità sicurezza
 
 ### Vulnerabilità da Risolvere
+
 - Eseguire `npm audit` dopo installazione dipendenze
 - Risolvere vulnerabilità moderate e high
 - Considerare `npm audit fix` per patch automatiche
 
 ### Risultati Attesi
+
 - ✅ Tutte le dipendenze aggiornate alle versioni più recenti compatibili
 - ✅ Nessun errore TypeScript o ESLint
 - ✅ Build produzione funzionante
@@ -472,6 +495,7 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 - ✅ Vulnerabilità di sicurezza risolte
 
 ### Prossimi Passi
+
 1. Eseguire `npm install` per installare dipendenze aggiornate
 2. Verificare funzionamento applicazione
 3. Risolvere eventuali errori di compatibilità
@@ -492,6 +516,7 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 ### Problemi Risolti
 
 #### 1. Errore TypeScript in `src/app/api/athletes/[id]/route.ts`
+
 - **Errore**: `Type 'string | undefined' is not assignable to parameter of type 'string'`
 - **Causa**: `athleteProfileData.id` poteva essere `undefined` ma `deleteDependency` richiedeva `string`
 - **Soluzione**: Aggiunto controllo di validazione prima dell'uso:
@@ -504,21 +529,25 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 - **Rimosso**: Variabile `rpcFunctionName` non utilizzata (warning)
 
 #### 2. Errore jsPDF in `src/app/home/progressi/storico/page.tsx`
+
 - **Errore**: `Property 'getNumberOfPages' does not exist on type`
 - **Causa**: Uso errato di API jsPDF (`doc.internal.getNumberOfPages()` non esiste nelle versioni moderne)
 - **Soluzione**: Corretto uso API jsPDF:
+
   ```typescript
   // Prima
   const pageCount = doc.internal.getNumberOfPages()
   const pageWidth = doc.internal.pageSize.width
-  
+
   // Dopo
   const pageCount = doc.getNumberOfPages()
   const pageWidth = doc.internal.pageSize.getWidth()
   ```
+
 - **File**: `src/app/home/progressi/storico/page.tsx` (riga ~269)
 
 #### 3. Errori TypeScript in `src/components/ui/dropdown-menu.tsx`
+
 - **Errore 1**: `Type 'RefObject<HTMLElement | null>' is not assignable to type 'RefObject<HTMLElement>'`
 - **Errore 2**: `No overload matches this call` per `ref` in `cloneElement`
 - **Errore 3**: `Conversion of type ... may be a mistake` per tipo `position`
@@ -529,15 +558,17 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 - **File**: `src/components/ui/dropdown-menu.tsx` (righe ~24-124)
 
 ### Risultato
+
 ✅ Build completato con successo  
 ⚠️ Rimangono solo warning non bloccanti (variabili non utilizzate, dipendenze useEffect)
 
 ### File Modificati
-| File | Modifiche | Stato |
-|------|-----------|-------|
-| `src/app/api/athletes/[id]/route.ts` | Aggiunto controllo validazione `id` | ✅ |
-| `src/app/home/progressi/storico/page.tsx` | Corretto uso API jsPDF | ✅ |
-| `src/components/ui/dropdown-menu.tsx` | Corretti tipi ref e position | ✅ |
+
+| File                                      | Modifiche                           | Stato |
+| ----------------------------------------- | ----------------------------------- | ----- |
+| `src/app/api/athletes/[id]/route.ts`      | Aggiunto controllo validazione `id` | ✅    |
+| `src/app/home/progressi/storico/page.tsx` | Corretto uso API jsPDF              | ✅    |
+| `src/components/ui/dropdown-menu.tsx`     | Corretti tipi ref e position        | ✅    |
 
 ---
 
@@ -551,6 +582,7 @@ Aggiornare tutte le dipendenze e configurazioni del progetto alle versioni più 
 ### Obiettivo
 
 Refactorizzare il middleware per ridurre il carico eliminando:
+
 - Query al database (`profiles`)
 - Cache in-memory (`Map`, `setInterval`)
 - Logica di autorizzazione basata sul ruolo
@@ -563,6 +595,7 @@ Il middleware è ora un **guard leggero**, non un punto di business logic.
 
 **Prima**: Matcher su tutte le route (tranne static files, api, etc.)  
 **Dopo**: Matcher solo su:
+
 - `/dashboard/:path*`
 - `/home/:path*`
 - `/login`
@@ -572,16 +605,13 @@ Il middleware è ora un **guard leggero**, non un punto di business logic.
 matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)']
 
 // Dopo
-matcher: [
-  '/dashboard/:path*',
-  '/home/:path*',
-  '/login',
-]
+matcher: ['/dashboard/:path*', '/home/:path*', '/login']
 ```
 
 #### 2. Rimosso Cache e Query DB
 
 **Rimosso completamente**:
+
 - `roleCache` (Map in-memory)
 - `cleanupInterval` (setInterval)
 - Query `from('profiles').select('role')`
@@ -589,6 +619,7 @@ matcher: [
 - Redirect basati sul ruolo nel middleware
 
 **Middleware ora fa solo**:
+
 - Verifica sessione con `getSession()`
 - Redirect `/auth/login` → `/login`
 - Redirect route protette senza sessione → `/login`
@@ -598,6 +629,7 @@ matcher: [
 
 **Prima**: Client component che usava `useAuth()` hook  
 **Dopo**: Server component che:
+
 - Usa `createClient()` da `@/lib/supabase/server`
 - Fa `getUser()` per autenticazione server-side
 - Query `profiles` per ottenere il ruolo
@@ -608,9 +640,9 @@ matcher: [
 
 ### File Modificati
 
-| File | Modifiche |
-|------|-----------|
-| `src/middleware.ts` | Rimossa cache, query DB, logica ruoli. Matcher limitato. Guard leggero. |
+| File                          | Modifiche                                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| `src/middleware.ts`           | Rimossa cache, query DB, logica ruoli. Matcher limitato. Guard leggero.        |
 | `src/app/post-login/page.tsx` | Convertito da client a server component. Redirect server-side basato su ruolo. |
 
 ### Flusso Autenticazione Dopo Refactor
@@ -690,13 +722,13 @@ matcher: [
 
 ### File Modificati:
 
-| File | Modifiche |
-|------|-----------|
-| `src/app/dashboard/invita-atleta/page.tsx` | Import useAuth corretto, redirect non autenticati |
-| `src/hooks/use-invitations.ts` | Supporto role 'trainer', mapping stati, URL fix |
-| `src/types/invitation.ts` | Tipo `stato` corretto |
-| `src/components/invitations/qr-code.tsx` | URL parameter unificato |
-| `src/components/shared/dashboard/sidebar.tsx` | Aggiunto link "Invita Atleta" |
+| File                                          | Modifiche                                         |
+| --------------------------------------------- | ------------------------------------------------- |
+| `src/app/dashboard/invita-atleta/page.tsx`    | Import useAuth corretto, redirect non autenticati |
+| `src/hooks/use-invitations.ts`                | Supporto role 'trainer', mapping stati, URL fix   |
+| `src/types/invitation.ts`                     | Tipo `stato` corretto                             |
+| `src/components/invitations/qr-code.tsx`      | URL parameter unificato                           |
+| `src/components/shared/dashboard/sidebar.tsx` | Aggiunto link "Invita Atleta"                     |
 
 ### Test E2E:
 
@@ -730,6 +762,7 @@ matcher: [
 ### Problema Identificato
 
 Errore durante la creazione di un nuovo invito:
+
 ```
 Error creating invitation {}
 ```
@@ -764,10 +797,10 @@ Eseguire lo script: `docs/sql/FIX_INVITI_ATLETI_STRUTTURA.sql`
 
 ### File Modificati
 
-| File | Modifica |
-|------|----------|
+| File                                       | Modifica                                     |
+| ------------------------------------------ | -------------------------------------------- |
 | `src/app/dashboard/invita-atleta/page.tsx` | `userId: user?.id` invece di `user?.user_id` |
-| `src/hooks/use-invitations.ts` | Migliorato logging errore con dettagli |
+| `src/hooks/use-invitations.ts`             | Migliorato logging errore con dettagli       |
 
 **Timestamp**: 2026-01-15T15:55:00Z
 
@@ -783,6 +816,7 @@ Eseguire lo script: `docs/sql/FIX_INVITI_ATLETI_STRUTTURA.sql`
 **Problema**: L'atleta non vede i messaggi del trainer nella chat (`/home/chat`). La pagina mostra "Nessuna conversazione" anche se ci sono messaggi nel database.
 
 **Causa Root**: Mancava la policy RLS SELECT per la tabella `chat_messages`. Le policies presenti erano solo:
+
 - UPDATE: "Users can mark messages as read"
 - DELETE: "Users can delete own messages" e "No deletion allowed"
 - ❌ SELECT: **MANCANTE**
@@ -791,6 +825,7 @@ Eseguire lo script: `docs/sql/FIX_INVITI_ATLETI_STRUTTURA.sql`
 **Soluzione Applicata**:
 
 1. ✅ **Aggiunta policy SELECT**:
+
 ```sql
 CREATE POLICY "Users can view own messages" ON chat_messages
   FOR SELECT
@@ -802,6 +837,7 @@ CREATE POLICY "Users can view own messages" ON chat_messages
 ```
 
 2. ✅ **Aggiunta policy INSERT**:
+
 ```sql
 CREATE POLICY "Users can send messages" ON chat_messages
   FOR INSERT
@@ -817,17 +853,20 @@ CREATE POLICY "Users can send messages" ON chat_messages
    - Aggiunti log per tracciare RPC e fallback in `use-chat-conversations.ts`
 
 **File SQL Creati**:
+
 - `docs/sql/FIX_RLS_CHAT_MESSAGES_SELECT.sql` - Fix completo RLS policies
 - `docs/sql/QUERY_RAPIDE_CHAT.sql` - Query diagnostiche
 - `docs/sql/DIAGNOSTICA_CHAT_MESSAGGI_MANCANTI.sql` - Diagnostica completa
 - `docs/sql/TEST_CHAT_MESSAGES_ACCESS.sql` - Test accessibilità messaggi
 
 **File Modificati**:
+
 - `src/app/home/chat/page.tsx` - Auto-selezione PT migliorata
 - `src/hooks/chat/use-chat-messages.ts` - Log di debug aggiunti
 - `src/hooks/chat/use-chat-conversations.ts` - Log RPC aggiunti
 
 **Verifica Finale**:
+
 - ✅ SELECT policy presente: "Users can view own messages"
 - ✅ INSERT policy presente: "Users can send messages"
 - ✅ UPDATE policy presente: "Users can mark messages as read"
@@ -849,6 +888,7 @@ CREATE POLICY "Users can send messages" ON chat_messages
 **Stato**: ✅ VERIFICATO - FUNZIONANTE AL 100%
 
 **File analizzati**:
+
 - `src/app/home/chat/page.tsx` (703 righe)
 - `src/hooks/use-chat.ts` (675 righe)
 - `src/hooks/chat/use-chat-messages.ts` (559 righe)
@@ -875,14 +915,15 @@ CREATE POLICY "Users can send messages" ON chat_messages
 
 **Problemi minori identificati (non bloccanti)**:
 
-| ID | Problema | Severità | File |
-|----|----------|----------|------|
-| P1 | `console.log` in produzione | 🟡 Media | `use-chat-conversations.ts` |
-| P2 | `console.log` debug messaggi | 🟡 Media | `message-list.tsx:103,271-279` |
-| P3 | `confirm()` nativo eliminazione | 🟢 Bassa | `message-list.tsx:78` |
-| P4 | `alert()` per errori | 🟢 Bassa | `message-input.tsx:58` |
+| ID  | Problema                        | Severità | File                           |
+| --- | ------------------------------- | -------- | ------------------------------ |
+| P1  | `console.log` in produzione     | 🟡 Media | `use-chat-conversations.ts`    |
+| P2  | `console.log` debug messaggi    | 🟡 Media | `message-list.tsx:103,271-279` |
+| P3  | `confirm()` nativo eliminazione | 🟢 Bassa | `message-list.tsx:78`          |
+| P4  | `alert()` per errori            | 🟢 Bassa | `message-input.tsx:58`         |
 
 **Architettura**: ⭐⭐⭐⭐⭐ (Eccellente)
+
 - Separazione hooks specializzati
 - Cache multi-livello
 - TypeScript strict
@@ -894,15 +935,18 @@ CREATE POLICY "Users can send messages" ON chat_messages
 ### ✅ FIX APPLICATI (2026-01-14T16:35:00Z)
 
 **P1 - console.log rimossi da `use-chat-conversations.ts`**:
+
 - ✅ Aggiunto import `createLogger` e creato logger
 - ✅ 7 `console.log/warn/error` → `logger.debug/warn/error`
 
 **P2 - console.log rimossi da `message-list.tsx`**:
+
 - ✅ Aggiunto import `createLogger` e creato logger
 - ✅ 3 `console.log/warn` → `logger.debug/warn`
 - ✅ Rimosso verbose log nel rendering messaggi
 
 **P3 - confirm() sostituito con AlertDialog**:
+
 - ✅ Aggiunto import `AlertDialog` e componenti correlati
 - ✅ Creato stato `deleteDialogOpen` e `messageToDelete`
 - ✅ Creata funzione `openDeleteDialog()` e `handleConfirmDelete()`
@@ -910,11 +954,13 @@ CREATE POLICY "Users can send messages" ON chat_messages
 - ✅ Design: sfondo `bg-background-secondary`, bordo `border-red-500/30`
 
 **P4 - alert() sostituiti con notifyError**:
+
 - ✅ `message-list.tsx`: 2 alert → notifyError
 - ✅ `message-input.tsx`: 1 alert → notifyError
 - ✅ `file-upload.tsx`: 1 alert → notifyError
 
 **File modificati**:
+
 - `src/hooks/chat/use-chat-conversations.ts`
 - `src/components/chat/message-list.tsx`
 - `src/components/chat/message-input.tsx`
@@ -14509,7 +14555,7 @@ Creati due script SQL:
 - **Timestamp Creato**: 2026-01-11T01:05:00Z
 - **Timestamp Aggiornato**: 2026-01-20T14:00:00Z
 - **Collegamenti**: Dev server `http://localhost:3001` riutilizzato da Playwright; Supabase `icibqnmtacibgnhaidlz.supabase.co`; storage state admin/PT instabile.
-- **Note**: Fix applicati: password atleta `Ivan123` (`tests/e2e/helpers/auth.ts`), stabilizzato login admin/PT con `fill` + click/attesa (global setup), `clienti.spec.ts` aggiornata a vista grid/table e selettori aria; spec clienti ora verde. **NUOVO (2026-01-20)**: 
+- **Note**: Fix applicati: password atleta `Ivan123` (`tests/e2e/helpers/auth.ts`), stabilizzato login admin/PT con `fill` + click/attesa (global setup), `clienti.spec.ts` aggiornata a vista grid/table e selettori aria; spec clienti ora verde. **NUOVO (2026-01-20)**:
   - Fix cookie banner che bloccava login su Mobile Chrome/Safari (`athlete-home.spec.ts` ora passa: 3/3 passed su Mobile Chrome, Mobile Safari, webkit)
   - Fix `complete.spec.ts`: 12 test ora passano su webkit/Mobile Chrome/Mobile Safari (5/5 passed, ~19s)
   - Fix `dashboard.spec.ts`: 3 test ora passano su Mobile Chrome (3/3 passed, ~10s)
@@ -14520,7 +14566,7 @@ Creati due script SQL:
   - Migliorati selettori e attese per robustezza su mobile/webkit
   - Aggiornati test per riflettere la realtà della UI (testi corretti, gestione casi vuoti)
   - Sostituite funzioni login personalizzate con helper corretti che gestiscono cookie banner
-  TODO: rivalutare spec restanti e stabilizzare login PT/Admin (ERR_CONNECTION_REFUSED intermittenti).
+    TODO: rivalutare spec restanti e stabilizzare login PT/Admin (ERR_CONNECTION_REFUSED intermittenti).
 
 ### DASHBOARD-ERRORI-001: Analisi completa errori e rallentamenti dashboard trainer
 
@@ -15719,10 +15765,10 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
 ### E2E-ENDTOEND-ERRORHANDLING-001: Fix test end-to-end.spec.ts e error-handling.spec.ts su webkit/mobile
 
 - **ID Problema Originale**: E2E-ENDTOEND-ERRORHANDLING-001
-- **Descrizione**: 
+- **Descrizione**:
   - `end-to-end.spec.ts`: 12 test falliti su webkit/Mobile Chrome/Mobile Safari con timeout 1.5m (90s). Problemi: cookie banner bloccava "handle authentication errors", selettori non trovavano elementi PT/Athlete dopo login.
   - `error-handling.spec.ts`: 16 test falliti su Mobile Chrome/Mobile Safari con timeout ~20s. Problemi: funzioni login personalizzate (`loginPT`, `loginAthlete`) non gestivano cookie banner, test "error recovery" cercava bottone "Ricarica" inesistente.
-- **Soluzione Applicata**: 
+- **Soluzione Applicata**:
   - **end-to-end.spec.ts**:
     1. Aggiunta gestione cookie banner nel test "handle authentication errors" (import `dismissCookieBanner`, `addInitScript`, `force: true`)
     2. Migliorati selettori per PT: `getByRole('heading', { name: /Azioni Rapide/i })` invece di `getByText(/Dashboard|Azioni Rapide/i)`
@@ -15732,13 +15778,13 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
     1. Sostituite funzioni login personalizzate con helper corretti (`loginAsPT`, `loginAsAthlete`) che gestiscono cookie banner
     2. Aggiunta gestione cookie banner nei test "validation errors" e "authentication errors"
     3. Test "error recovery" reso più tollerante: verifica errore/retry se presente, altrimenti passa (alcuni errori gestiti silenziosamente)
-- **File Coinvolti**: 
+- **File Coinvolti**:
   - `tests/e2e/end-to-end.spec.ts`
   - `tests/e2e/error-handling.spec.ts`
 - **Percentuale**: 100%
 - **Timestamp Risoluzione**: 2026-01-20T14:00:00Z
 - **Collegamento Problema**: E2E-TIMEOUT-001 (parziale)
-- **Test Verificati**: 
+- **Test Verificati**:
   - ✅ `end-to-end.spec.ts` su chromium: 5/5 passed
   - ✅ `end-to-end.spec.ts` su firefox: 5/5 passed
   - ✅ `end-to-end.spec.ts` su webkit: 5/5 passed
@@ -15756,14 +15802,14 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
 ### E2E-DOCUMENTS-001: Fix test documents.spec.ts su tutti i progetti
 
 - **ID Problema Originale**: E2E-DOCUMENTS-001
-- **Descrizione**: 
+- **Descrizione**:
   - `documents.spec.ts`: 20 test falliti su tutti i progetti (chromium, firefox, webkit, Mobile Chrome, Mobile Safari) con timeout ~20s. Problemi:
     1. `beforeEach` non completava correttamente il login Admin (timeout 20s, pagina chiusa)
     2. Selettori non trovavano elementi: cercava "Documenti" invece di "Documenti Atleti", "Carica documento" invece di "Carica Documento"
     3. Test "upload" cercava modal che non esiste (bottone "Carica Documento" non ha onClick handler)
     4. Test "view document list" cercava colonne "Nome", "Tipo", "Data caricamento" invece di "Atleta", "Categoria", "File", "Stato", "Scadenza", "Azioni"
     5. Test "download" cercava bottone "Scarica" invece di icona Download
-- **Soluzione Applicata**: 
+- **Soluzione Applicata**:
   1. **beforeEach migliorato**:
      - Aggiunto `waitForURL(/\/post-login|\/dashboard/, { timeout: 30000 })` per verificare login
      - Aggiunto `waitForLoadState('networkidle')` per assicurare caricamento completo
@@ -15781,12 +15827,12 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
      - Gestisce caso "Nessun documento trovato"
      - Cerca bottone download come icona (non testo "Scarica")
      - Gestisce download browser (nessun messaggio "Download iniziato")
-- **File Coinvolti**: 
+- **File Coinvolti**:
   - `tests/e2e/documents.spec.ts`
 - **Percentuale**: 100%
 - **Timestamp Risoluzione**: 2026-01-20T13:30:00Z
 - **Collegamento Problema**: E2E-TIMEOUT-001 (parziale)
-- **Test Verificati**: 
+- **Test Verificati**:
   - ✅ `documents.spec.ts` su chromium: 4/4 passed (22.0s)
   - ✅ `documents.spec.ts` su firefox: 4/4 passed
   - ✅ `documents.spec.ts` su webkit: 4/4 passed
@@ -15798,10 +15844,10 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
 ### E2E-COMPLETE-DASHBOARD-001: Fix test complete.spec.ts e dashboard.spec.ts su Mobile/webkit
 
 - **ID Problema Originale**: E2E-COMPLETE-DASHBOARD-001
-- **Descrizione**: 
+- **Descrizione**:
   - `complete.spec.ts`: 12 test falliti su webkit/Mobile Chrome/Mobile Safari con timeout 1.5m (90s). Problemi: cookie banner bloccava "form validation", selettori non trovavano elementi PT/Athlete dopo login.
   - `dashboard.spec.ts`: 3 test falliti su Mobile Chrome con timeout 45s. Problema: `loginAndReach()` non gestiva cookie banner.
-- **Soluzione Applicata**: 
+- **Soluzione Applicata**:
   - **complete.spec.ts**:
     1. Aggiunta gestione cookie banner nel test "form validation" (import `dismissCookieBanner`, `addInitScript`, `force: true`)
     2. Migliorati selettori per PT: `getByRole('heading', { name: /Azioni Rapide/i })` con `waitForLoadState('networkidle')`
@@ -15812,14 +15858,14 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
     1. Esportata `dismissCookieBanner` da `helpers/auth.ts`
     2. Aggiunta gestione cookie banner in `loginAndReach()` e `newCleanPage()`
     3. Aggiunto `force: true` al click submit
-- **File Coinvolti**: 
+- **File Coinvolti**:
   - `tests/e2e/complete.spec.ts`
   - `tests/e2e/dashboard.spec.ts`
   - `tests/e2e/helpers/auth.ts` (esportata `dismissCookieBanner`)
 - **Percentuale**: 100%
 - **Timestamp Risoluzione**: 2026-01-20T13:00:00Z
 - **Collegamento Problema**: E2E-TIMEOUT-001 (parziale)
-- **Test Verificati**: 
+- **Test Verificati**:
   - ✅ `complete.spec.ts` su Mobile Chrome: 5/5 passed (19.9s)
   - ✅ `complete.spec.ts` su webkit: 5/5 passed (19.1s)
   - ✅ `complete.spec.ts` su Mobile Safari: 5/5 passed (18.8s)
@@ -15830,7 +15876,7 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
 
 - **ID Problema Originale**: E2E-COOKIE-BANNER-001
 - **Descrizione**: Il cookie banner (`CookieConsent`) con `z-[100]` e `fixed bottom-0` intercettava i click sui form di login su Mobile Chrome e Mobile Safari, causando timeout di 20s nei test `athlete-home.spec.ts`. Il banner bloccava i click su input password e pulsante submit.
-- **Soluzione Applicata**: 
+- **Soluzione Applicata**:
   - Aggiunta funzione `dismissCookieBanner()` in `tests/e2e/helpers/auth.ts` che:
     1. Imposta `localStorage.setItem('cookie-consent', 'true')` PRIMA di navigare (via `addInitScript`)
     2. Chiude il banner cliccando "Accetta tutto" se presente
@@ -15842,7 +15888,7 @@ Le RLS policies per `profiles` usano funzioni helper (`is_admin()`, `get_current
 - **Percentuale**: 100%
 - **Timestamp Risoluzione**: 2026-01-20T12:30:00Z
 - **Collegamento Problema**: E2E-TIMEOUT-001 (parziale)
-- **Test Verificati**: 
+- **Test Verificati**:
   - ✅ `athlete-home.spec.ts` su Mobile Chrome: 3/3 passed (16.6s)
   - ✅ `athlete-home.spec.ts` su Mobile Safari: 3/3 passed (13.7s)
   - ✅ `athlete-home.spec.ts` su webkit: 3/3 passed (14.7s)
@@ -24357,22 +24403,25 @@ Errore `Errore salvataggio workout_log {}` quando gli atleti tentavano di comple
 ### Dettagli Tecnici
 
 **Prima**:
+
 - Policy esistente: Solo "Staff can insert workout logs" (admin/pt)
 - Policy mancante: "Athletes can insert own workout logs"
 - Errore loggato come `{}` vuoto
 - `user_id` non incluso nei dati inseriti
 
 **Dopo**:
+
 - ✅ Policy "Athletes can insert own workout logs" creata e verificata
 - ✅ Errore loggato con dettagli completi (message, code, details, hint)
 - ✅ `user_id` incluso nei dati inseriti per compatibilità
 - ✅ Log dettagliati in sviluppo per debug
 
 **Verifica Policy**:
+
 ```sql
 policyname: "Athletes can insert own workout logs"
 cmd: INSERT
-with_check: 
+with_check:
   - athlete_id corrisponde al proprio profile.id (via profiles.user_id = auth.uid())
   - atleta_id corrisponde al proprio profile.id (via profiles.user_id = auth.uid())
   - user_id corrisponde a auth.uid()
@@ -24383,12 +24432,14 @@ with_check:
 **Percentuale Completamento**: 100%
 
 **File Coinvolti**:
+
 - `src/app/home/allenamenti/oggi/page.tsx` - Fix gestione errore e aggiunta user_id
 - `supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql` - Migration SQL
 - `docs/FIX-WORKOUT-LOG-INSERT-ERROR.md` - Documentazione fix
 - `docs/MIGRATION-WORKOUT-LOGS-COMPLETATA.md` - Documentazione completamento
 
 **Note Tecniche**:
+
 - Migration eseguita manualmente nel Supabase Dashboard
 - Policy verificata e attiva
 - Codice TypeScript aggiornato per includere `user_id`

@@ -52,7 +52,9 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    const { data: { users } } = await adminClient.auth.admin.listUsers()
+    const {
+      data: { users },
+    } = await adminClient.auth.admin.listUsers()
     const existingUser = users.find((u) => u.email === validated.email)
     if (existingUser) {
       return NextResponse.json({ error: 'Email già registrata' }, { status: 409 })

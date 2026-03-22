@@ -44,7 +44,9 @@ export function useInvitiCliente(profileId: string | null) {
 
     try {
       const supabase = createClient()
-      const { data: rows, error: fetchError } = await supabase.rpc('get_inviti_cliente_atleta_con_staff')
+      const { data: rows, error: fetchError } = await supabase.rpc(
+        'get_inviti_cliente_atleta_con_staff',
+      )
 
       if (fetchError) {
         setError(fetchError.message)

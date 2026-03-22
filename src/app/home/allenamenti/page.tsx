@@ -109,7 +109,9 @@ function calculateStreak(allenamenti: Array<{ data: string; stato: string }>): n
 }
 
 /** Calcola statistiche da workout logs (funzione pura per useMemo). */
-function computeStatsFromLogs(workoutLogs: Array<{ data?: string; stato?: string; volume_totale?: number | null }>) {
+function computeStatsFromLogs(
+  workoutLogs: Array<{ data?: string; stato?: string; volume_totale?: number | null }>,
+) {
   if (!workoutLogs || workoutLogs.length === 0) {
     return { settimana: 0, mese: 0, streak: 0, volume_medio: 0 }
   }
@@ -184,15 +186,17 @@ function organizeWorkoutLogs(
   if (!workoutLogs || workoutLogs.length === 0) {
     return { oggi: null, programmati: [], completati: [] }
   }
-  const validLogs = workoutLogs.filter((log): log is typeof log & { data: string; stato: string } => {
-    try {
-      if (typeof log.data !== 'string' || typeof log.stato !== 'string') return false
-      const date = new Date(log.data)
-      return !isNaN(date.getTime())
-    } catch {
-      return false
-    }
-  })
+  const validLogs = workoutLogs.filter(
+    (log): log is typeof log & { data: string; stato: string } => {
+      try {
+        if (typeof log.data !== 'string' || typeof log.stato !== 'string') return false
+        const date = new Date(log.data)
+        return !isNaN(date.getTime())
+      } catch {
+        return false
+      }
+    },
+  )
   if (validLogs.length === 0) {
     return { oggi: null, programmati: [], completati: [] }
   }
@@ -205,7 +209,9 @@ function organizeWorkoutLogs(
       const data = new Date(a.data!)
       if (isNaN(data.getTime())) return false
       data.setHours(0, 0, 0, 0)
-      return data.getTime() === oggi.getTime() && (a.stato === 'programmato' || a.stato === 'in_corso')
+      return (
+        data.getTime() === oggi.getTime() && (a.stato === 'programmato' || a.stato === 'in_corso')
+      )
     } catch {
       return false
     }
@@ -323,16 +329,14 @@ function AllenamentiHomePageContent() {
   useEffect(() => {
     if (!user?.id) return
     let cancelled = false
-    supabase
-      .rpc('get_my_trainer_profile')
-      .then((res: { data: unknown; error: unknown }) => {
-        const { data, error } = res
-        if (cancelled) return
-        if (error || !Array.isArray(data) || data.length === 0) return
-        const row = data[0] as { pt_avatar_url?: string | null }
-        const url = row?.pt_avatar_url ?? null
-        if (url && typeof url === 'string') setTrainerAvatarUrl(url)
-      })
+    supabase.rpc('get_my_trainer_profile').then((res: { data: unknown; error: unknown }) => {
+      const { data, error } = res
+      if (cancelled) return
+      if (error || !Array.isArray(data) || data.length === 0) return
+      const row = data[0] as { pt_avatar_url?: string | null }
+      const url = row?.pt_avatar_url ?? null
+      if (url && typeof url === 'string') setTrainerAvatarUrl(url)
+    })
     return () => {
       cancelled = true
     }
@@ -401,7 +405,8 @@ function AllenamentiHomePageContent() {
           if (isNaN(data.getTime())) return false
           data.setHours(0, 0, 0, 0)
           return (
-            data.getTime() === oggi.getTime() && (a.stato === 'programmato' || a.stato === 'in_corso')
+            data.getTime() === oggi.getTime() &&
+            (a.stato === 'programmato' || a.stato === 'in_corso')
           )
         } catch {
           return false
@@ -488,10 +493,7 @@ function AllenamentiHomePageContent() {
     }
   }, [workoutLogs, supabase])
 
-  const organizedAllenamenti = useMemo(
-    () => organizeWorkoutLogs(workoutLogs ?? []),
-    [workoutLogs],
-  )
+  const organizedAllenamenti = useMemo(() => organizeWorkoutLogs(workoutLogs ?? []), [workoutLogs])
 
   const workoutsAttivi = useMemo(
     () => (workouts ?? []).filter((w) => w.status === 'attivo'),
@@ -571,8 +573,12 @@ function AllenamentiHomePageContent() {
                 <Activity className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Questa settimana</div>
-                <div className="text-base font-bold leading-tight text-text-primary">{stats.settimana}</div>
+                <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                  Questa settimana
+                </div>
+                <div className="text-base font-bold leading-tight text-text-primary">
+                  {stats.settimana}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -583,8 +589,12 @@ function AllenamentiHomePageContent() {
                 <TrendingUp className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Questo mese</div>
-                <div className="text-base font-bold leading-tight text-text-primary">{stats.mese}</div>
+                <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                  Questo mese
+                </div>
+                <div className="text-base font-bold leading-tight text-text-primary">
+                  {stats.mese}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -603,7 +613,9 @@ function AllenamentiHomePageContent() {
 
         {workoutsAttivi.length > 0 && (
           <div className="space-y-3 sm:space-y-4">
-            <h2 className="text-base font-semibold text-text-primary sm:text-lg">Schede Assegnate</h2>
+            <h2 className="text-base font-semibold text-text-primary sm:text-lg">
+              Schede Assegnate
+            </h2>
             <div className="space-y-2.5 sm:space-y-3">
               {workoutsAttivi.map((workout) => (
                 <WorkoutPlanCard key={workout.id} workout={workout} />
@@ -617,27 +629,39 @@ function AllenamentiHomePageContent() {
             <div className="h-0.5 w-12 rounded-full bg-cyan-400/80" aria-hidden />
             <div className="flex items-center justify-center gap-4 sm:gap-5">
               {trainerAvatarUrl ? (
-                <div className="relative h-14 w-14 overflow-hidden rounded-full ring-2 ring-white/10 ring-offset-2 ring-offset-transparent sm:h-16 sm:w-16">
-                  <Image src={trainerAvatarUrl} alt="Il tuo trainer" fill className="object-cover" sizes="64px" unoptimized={trainerAvatarUrl.startsWith('http')} />
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 ring-offset-2 ring-offset-transparent sm:h-16 sm:w-16">
+                  <Image
+                    src={trainerAvatarUrl}
+                    alt="Il tuo trainer"
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                    unoptimized={trainerAvatarUrl.startsWith('http')}
+                  />
                 </div>
               ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-3xl sm:h-16 sm:w-16">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-3xl sm:h-16 sm:w-16">
                   🏆
                 </div>
               )}
-              <div className="min-w-0 text-left">
+              <div className="min-w-0 flex-1 text-left">
                 {stats.settimana > 0 ? (
                   <>
-                    <h3 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">Ottimo lavoro questa settimana!</h3>
-                    <p className="mt-0.5 text-sm leading-snug text-text-secondary sm:text-base">
+                    <h3 className="break-words text-base font-semibold tracking-tight text-text-primary sm:text-xl">
+                      Ottimo lavoro questa settimana!
+                    </h3>
+                    <p className="break-words mt-0.5 text-xs leading-snug text-text-secondary sm:text-base">
                       Hai completato{' '}
-                      <span className="font-bold tabular-nums text-cyan-400">{stats.settimana}</span>{' '}
+                      <span className="font-bold tabular-nums text-cyan-400">
+                        {stats.settimana}
+                      </span>{' '}
                       {stats.settimana === 1 ? 'allenamento' : 'allenamenti'}. Continua così!
                     </p>
                   </>
                 ) : (
-                  <h3 className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl">
-                    Oh no! Questa settimana non hai mai fatto nessun allenamento! Torna in 22 Club per riprendere con gli allenamenti!
+                  <h3 className="break-words text-base font-semibold tracking-tight text-text-primary sm:text-xl">
+                    Oh no! Questa settimana non hai mai fatto nessun allenamento! Torna in 22 Club
+                    per riprendere con gli allenamenti!
                   </h3>
                 )}
               </div>

@@ -27,9 +27,7 @@ export default function NotFound() {
         <Card className="w-full max-w-md bg-transparent border-0 relative z-10">
           <CardContent className="p-8 text-center">
             <h1 className="text-9xl font-bold text-brand mb-4">404</h1>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">
-              Pagina non trovata
-            </h2>
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">Pagina non trovata</h2>
             <p className="text-text-secondary mb-8">
               La pagina che stai cercando non esiste o è stata spostata.
             </p>

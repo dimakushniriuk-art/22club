@@ -207,11 +207,36 @@ export function AgendaTimeline({
 
   const summaryCards = useMemo(() => {
     const cards: Array<{ label: string; value: number; icon: ReactNode; valueClass: string }> = [
-      { label: 'Totali', value: stats.total, icon: <Calendar className="h-4 w-4 text-primary" />, valueClass: 'text-primary' },
-      { label: 'Completati', value: stats.completed, icon: <CheckCircle className="h-4 w-4 text-success" />, valueClass: 'text-success' },
-      { label: 'In corso', value: stats.inProgress, icon: <Clock className="h-4 w-4 text-warning" />, valueClass: 'text-warning' },
-      { label: 'Programm.', value: stats.scheduled, icon: <CalendarDays className="h-4 w-4 text-text-secondary" />, valueClass: 'text-text-primary' },
-      { label: 'Cancellati', value: stats.cancelled, icon: <XCircle className="h-4 w-4 text-state-error" />, valueClass: 'text-state-error' },
+      {
+        label: 'Totali',
+        value: stats.total,
+        icon: <Calendar className="h-4 w-4 text-primary" />,
+        valueClass: 'text-primary',
+      },
+      {
+        label: 'Completati',
+        value: stats.completed,
+        icon: <CheckCircle className="h-4 w-4 text-success" />,
+        valueClass: 'text-success',
+      },
+      {
+        label: 'In corso',
+        value: stats.inProgress,
+        icon: <Clock className="h-4 w-4 text-warning" />,
+        valueClass: 'text-warning',
+      },
+      {
+        label: 'Programm.',
+        value: stats.scheduled,
+        icon: <CalendarDays className="h-4 w-4 text-text-secondary" />,
+        valueClass: 'text-text-primary',
+      },
+      {
+        label: 'Cancellati',
+        value: stats.cancelled,
+        icon: <XCircle className="h-4 w-4 text-state-error" />,
+        valueClass: 'text-state-error',
+      },
     ]
     return cards.filter((card) => card.value > 0)
   }, [stats])
@@ -255,7 +280,10 @@ export function AgendaTimeline({
         </div>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse rounded-lg border border-white/10 bg-black/20 flex items-center gap-4 p-4">
+            <div
+              key={i}
+              className="animate-pulse rounded-lg border border-white/10 bg-black/20 flex items-center gap-4 p-4"
+            >
               <div className="h-6 w-14 rounded bg-white/10" />
               <div className="h-8 w-8 rounded-full bg-white/10" />
               <div className="flex-1 space-y-2">
@@ -281,7 +309,12 @@ export function AgendaTimeline({
           Non hai appuntamenti programmati per oggi. Aggiungine uno per iniziare la giornata.
         </p>
         <div className="flex flex-wrap justify-center gap-2 pt-2">
-          <Button variant="primary" size="sm" onClick={handleAddAppointment} aria-label="Crea nuovo appuntamento">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleAddAppointment}
+            aria-label="Crea nuovo appuntamento"
+          >
             <Calendar className="mr-2 h-4 w-4" />
             Nuovo Appuntamento
           </Button>
@@ -311,8 +344,12 @@ export function AgendaTimeline({
                 <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold text-text-primary truncate">Agenda di oggi</h2>
-                <p className="text-xs sm:text-sm text-text-secondary">I tuoi appuntamenti e sessioni</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-text-primary truncate">
+                  Agenda di oggi
+                </h2>
+                <p className="text-xs sm:text-sm text-text-secondary">
+                  I tuoi appuntamenti e sessioni
+                </p>
               </div>
             </div>
             {false && handleAddAppointment && (
@@ -406,7 +443,11 @@ export function AgendaTimeline({
                     {timeRemaining && (
                       <div
                         className={`mt-1 text-xs font-medium ${
-                          isActive ? 'text-warning' : isOverdue ? 'text-state-error' : 'text-text-tertiary'
+                          isActive
+                            ? 'text-warning'
+                            : isOverdue
+                              ? 'text-state-error'
+                              : 'text-text-tertiary'
                         }`}
                       >
                         {timeRemaining}
@@ -463,7 +504,9 @@ export function AgendaTimeline({
                       <div className="h-5 w-5">
                         <User className="h-5 w-5" />
                       </div>
-                      <span className="text-[10px] font-medium text-text-secondary leading-tight">Profilo</span>
+                      <span className="text-[10px] font-medium text-text-secondary leading-tight">
+                        Profilo
+                      </span>
                     </Button>
 
                     {/* Button Schede Allenamento */}
@@ -477,7 +520,9 @@ export function AgendaTimeline({
                       <div className="h-5 w-5">
                         <Dumbbell className="h-5 w-5" />
                       </div>
-                      <span className="text-[10px] font-medium text-text-secondary leading-tight">Schede</span>
+                      <span className="text-[10px] font-medium text-text-secondary leading-tight">
+                        Schede
+                      </span>
                     </Button>
 
                     {/* Bottoni Condizionali basati su stato */}
@@ -493,7 +538,9 @@ export function AgendaTimeline({
                           <div className="h-5 w-5">
                             <Play className="h-5 w-5" />
                           </div>
-                          <span className="text-[10px] font-medium text-text-secondary leading-tight">Inizia</span>
+                          <span className="text-[10px] font-medium text-text-secondary leading-tight">
+                            Inizia
+                          </span>
                         </Button>
                       </>
                     )}
@@ -510,7 +557,9 @@ export function AgendaTimeline({
                           <div className="h-5 w-5">
                             <CheckCircle className="h-5 w-5" />
                           </div>
-                          <span className="text-[10px] font-medium text-text-secondary leading-tight">Completa</span>
+                          <span className="text-[10px] font-medium text-text-secondary leading-tight">
+                            Completa
+                          </span>
                         </Button>
                       </>
                     )}
@@ -527,7 +576,9 @@ export function AgendaTimeline({
                         <div className="h-5 w-5">
                           <Edit className="h-5 w-5" />
                         </div>
-                        <span className="text-[10px] font-medium text-text-secondary leading-tight">Modifica</span>
+                        <span className="text-[10px] font-medium text-text-secondary leading-tight">
+                          Modifica
+                        </span>
                       </Button>
                     )}
 
@@ -543,7 +594,9 @@ export function AgendaTimeline({
                         <div className="h-5 w-5">
                           <Trash2 className="h-5 w-5" />
                         </div>
-                        <span className="text-[10px] font-medium text-text-secondary leading-tight">Elimina</span>
+                        <span className="text-[10px] font-medium text-text-secondary leading-tight">
+                          Elimina
+                        </span>
                       </Button>
                     )}
                   </div>

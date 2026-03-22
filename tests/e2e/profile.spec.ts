@@ -39,9 +39,18 @@ test.describe('Profile Flow', () => {
     const notificheTab = page.getByRole('tab', { name: /Notifiche/i })
     const impostazioniTab = page.getByRole('tab', { name: /Impostazioni/i })
 
-    const hasProfiloTab = await profiloTab.first().isVisible({ timeout: 10000 }).catch(() => false)
-    const hasNotificheTab = await notificheTab.first().isVisible({ timeout: 5000 }).catch(() => false)
-    const hasImpostazioniTab = await impostazioniTab.first().isVisible({ timeout: 5000 }).catch(() => false)
+    const hasProfiloTab = await profiloTab
+      .first()
+      .isVisible({ timeout: 10000 })
+      .catch(() => false)
+    const hasNotificheTab = await notificheTab
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
+    const hasImpostazioniTab = await impostazioniTab
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
 
     // Almeno uno dei tab deve essere visibile
     expect(hasProfiloTab || hasNotificheTab || hasImpostazioniTab).toBeTruthy()
@@ -64,9 +73,12 @@ test.describe('Profile Flow', () => {
     // Verifica che i tab impostazioni siano visibili
     // La pagina impostazioni ha: Profilo, Notifiche, Privacy, Account
     const profiloTab = page.getByRole('tab', { name: /Profilo/i })
-    
-    const hasProfiloTab = await profiloTab.first().isVisible({ timeout: 10000 }).catch(() => false)
-    
+
+    const hasProfiloTab = await profiloTab
+      .first()
+      .isVisible({ timeout: 10000 })
+      .catch(() => false)
+
     expect(hasProfiloTab).toBeTruthy()
   })
 
@@ -85,15 +97,18 @@ test.describe('Profile Flow', () => {
     // Cerca i tab - potrebbero essere in un TabsList
     const notificheTab = page.getByRole('tab', { name: /Notifiche/i }).first()
     const hasNotificheTab = await notificheTab.isVisible({ timeout: 5000 }).catch(() => false)
-    
+
     if (hasNotificheTab) {
       await notificheTab.click()
       // Attendi che il contenuto del tab cambi
       await page.waitForTimeout(500)
-      
+
       // Verifica che ci sia contenuto relativo alle notifiche
       const notificheContent = page.getByText(/email|push|sms|notifiche/i)
-      const hasNotificheContent = await notificheContent.first().isVisible({ timeout: 5000 }).catch(() => false)
+      const hasNotificheContent = await notificheContent
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
       expect(hasNotificheContent).toBeTruthy()
     } else {
       // Se non ci sono tab, va bene - la pagina è caricata

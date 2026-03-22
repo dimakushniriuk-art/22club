@@ -217,8 +217,7 @@ export async function middleware(request: NextRequest) {
 
         if (error || !profile) {
           const err = error as { code?: string; status?: number } | undefined
-          const is429 =
-            err?.code === 'over_request_rate_limit' || err?.status === 429
+          const is429 = err?.code === 'over_request_rate_limit' || err?.status === 429
           const isNoProfile = err?.code === 'PGRST116'
           if (pathname === '/welcome' && isNoProfile) {
             return NextResponse.next()
@@ -309,8 +308,10 @@ export async function middleware(request: NextRequest) {
             if (normalizedRole === 'admin') redirectUrl.pathname = '/dashboard/admin'
             else if (normalizedRole === 'trainer') redirectUrl.pathname = '/dashboard'
             else if (normalizedRole === 'marketing') redirectUrl.pathname = '/dashboard/marketing'
-            else if (normalizedRole === 'nutrizionista') redirectUrl.pathname = '/dashboard/nutrizionista'
-            else if (normalizedRole === 'massaggiatore') redirectUrl.pathname = '/dashboard/massaggiatore'
+            else if (normalizedRole === 'nutrizionista')
+              redirectUrl.pathname = '/dashboard/nutrizionista'
+            else if (normalizedRole === 'massaggiatore')
+              redirectUrl.pathname = '/dashboard/massaggiatore'
             else {
               redirectUrl.pathname = '/login'
               redirectUrl.searchParams.set('error', 'accesso_negato')
@@ -335,7 +336,9 @@ export async function middleware(request: NextRequest) {
           }
           if (normalizedRole === 'nutrizionista') {
             const allowedPaths = ['/dashboard/nutrizionista', '/dashboard/abbonamenti']
-            const isAllowed = allowedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+            const isAllowed = allowedPaths.some(
+              (path) => pathname === path || pathname.startsWith(`${path}/`),
+            )
             if (!isAllowed) {
               const redirectUrl = request.nextUrl.clone()
               redirectUrl.pathname = '/dashboard/nutrizionista'
@@ -353,7 +356,9 @@ export async function middleware(request: NextRequest) {
               '/dashboard/impostazioni',
               '/dashboard/abbonamenti',
             ]
-            const isAllowed = allowedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+            const isAllowed = allowedPaths.some(
+              (path) => pathname === path || pathname.startsWith(`${path}/`),
+            )
             if (!isAllowed) {
               const redirectUrl = request.nextUrl.clone()
               redirectUrl.pathname = '/dashboard/massaggiatore'
@@ -378,7 +383,9 @@ export async function middleware(request: NextRequest) {
               '/dashboard/profilo',
               '/dashboard/impostazioni',
             ]
-            const isAllowed = allowedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+            const isAllowed = allowedPaths.some(
+              (path) => pathname === path || pathname.startsWith(`${path}/`),
+            )
             if (!isAllowed) {
               const redirectUrl = request.nextUrl.clone()
               redirectUrl.pathname = '/dashboard/marketing'
@@ -397,8 +404,10 @@ export async function middleware(request: NextRequest) {
             if (normalizedRole === 'admin') redirectUrl.pathname = '/dashboard/admin'
             else if (normalizedRole === 'trainer') redirectUrl.pathname = '/dashboard'
             else if (normalizedRole === 'marketing') redirectUrl.pathname = '/dashboard/marketing'
-            else if (normalizedRole === 'nutrizionista') redirectUrl.pathname = '/dashboard/nutrizionista'
-            else if (normalizedRole === 'massaggiatore') redirectUrl.pathname = '/dashboard/massaggiatore'
+            else if (normalizedRole === 'nutrizionista')
+              redirectUrl.pathname = '/dashboard/nutrizionista'
+            else if (normalizedRole === 'massaggiatore')
+              redirectUrl.pathname = '/dashboard/massaggiatore'
             else {
               redirectUrl.pathname = '/login'
               redirectUrl.searchParams.set('error', 'accesso_negato')
@@ -428,26 +437,24 @@ export async function middleware(request: NextRequest) {
       redirectUrl.pathname = '/login'
       return NextResponse.redirect(redirectUrl)
     }
-    
+
     // Route pubbliche: permetti il passaggio
     if (isPublicRoute) {
       return NextResponse.next()
     }
-    
+
     // Route protette note: reindirizza a login
     // Queste route sono sicuramente protette e richiedono autenticazione
     const PROTECTED_ROUTES = ['/dashboard', '/home', '/api', '/welcome']
-    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-      pathname.startsWith(route),
-    )
-    
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
+
     if (isProtectedRoute) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
       redirectUrl.searchParams.set('redirectedFrom', pathname)
       return NextResponse.redirect(redirectUrl)
     }
-    
+
     // Per altre route non pubbliche: permettere a Next.js di gestire
     // Next.js mostrerà not-found.tsx se la route non esiste
     // Se la route esiste ma è protetta, il componente stesso gestirà l'autenticazione

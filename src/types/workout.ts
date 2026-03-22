@@ -47,6 +47,9 @@ export interface WorkoutSession {
   id: string
   workout_id: string
   workout_day_id?: string
+  /** Nome scheda (workout_plans.name), per header coerente con il dettaglio scheda */
+  plan_name?: string | null
+  plan_description?: string | null
   day_title?: string
   date: string
   duration_min?: number | null
@@ -150,7 +153,7 @@ export interface Workout {
   difficulty: 'bassa' | 'media' | 'alta'
   video_url?: string | null
   image_url?: string | null
-  status?: 'attivo' | 'completato' | 'archiviato'
+  status?: 'attivo' | 'completato' | 'archiviato' | 'bozza' | 'draft'
   exercises?: Exercise[]
   sessions?: WorkoutSession[]
   stats?: WorkoutStats

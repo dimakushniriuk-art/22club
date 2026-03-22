@@ -166,9 +166,7 @@ const privacySections: Section[] = [
   {
     id: 'p-10',
     title: '10. Reclamo',
-    content: (
-      <p>È possibile proporre reclamo al Garante per la Protezione dei Dati Personali.</p>
-    ),
+    content: <p>È possibile proporre reclamo al Garante per la Protezione dei Dati Personali.</p>,
   },
 ]
 
@@ -261,16 +259,12 @@ const terminiSections: Section[] = [
   {
     id: 't-8',
     title: '8. Sospensione e cessazione',
-    content: (
-      <p>22Club può sospendere o chiudere account che violano i presenti Termini.</p>
-    ),
+    content: <p>22Club può sospendere o chiudere account che violano i presenti Termini.</p>,
   },
   {
     id: 't-9',
     title: '9. Legge applicabile e foro competente',
-    content: (
-      <p>I presenti Termini sono regolati dalla legge italiana. Foro competente: [●].</p>
-    ),
+    content: <p>I presenti Termini sono regolati dalla legge italiana. Foro competente: [●].</p>,
   },
 ]
 
@@ -300,9 +294,7 @@ const cookieSections: Section[] = [
         <p className="mt-1">
           Utilizzati in forma aggregata e anonimizzata per analisi statistiche.
         </p>
-        <p className="mt-2">
-          22Club non utilizza cookie di profilazione senza consenso esplicito.
-        </p>
+        <p className="mt-2">22Club non utilizza cookie di profilazione senza consenso esplicito.</p>
       </>
     ),
   },
@@ -310,9 +302,7 @@ const cookieSections: Section[] = [
     id: 'c-3',
     title: '3. Gestione dei cookie',
     content: (
-      <p>
-        L&apos;utente può gestire o disabilitare i cookie tramite le impostazioni del browser.
-      </p>
+      <p>L&apos;utente può gestire o disabilitare i cookie tramite le impostazioni del browser.</p>
     ),
   },
   {
@@ -329,9 +319,7 @@ const cookieSections: Section[] = [
     id: 'c-5',
     title: '5. Aggiornamenti',
     content: (
-      <p>
-        La presente Cookie Policy può essere aggiornata. Le modifiche saranno comunicate.
-      </p>
+      <p>La presente Cookie Policy può essere aggiornata. Le modifiche saranno comunicate.</p>
     ),
   },
 ]

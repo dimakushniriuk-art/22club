@@ -75,7 +75,13 @@ type AthleteOverviewRow = {
   weight_delta_7d: number | null
 }
 
-type AssignedAthlete = { id: string; name: string; email: string | null; org_id: string; user_id: string | null }
+type AssignedAthlete = {
+  id: string
+  name: string
+  email: string | null
+  org_id: string
+  user_id: string | null
+}
 
 type SortOption = 'recent' | 'atleta' | 'peso_delta'
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
@@ -160,7 +166,9 @@ export default function NutrizionistaProgressiPage() {
   const [filterAthlete, setFilterAthlete] = useState<string>('all')
   const [filterPeriod, setFilterPeriod] = useState<'all' | 'today' | '7' | '30'>('all')
   const [filterOrigin, setFilterOrigin] = useState<'all' | 'athlete' | 'staff'>('all')
-  const [filterMeasureType, setFilterMeasureType] = useState<'all' | 'weight' | 'bf' | 'waist_hip'>('all')
+  const [filterMeasureType, setFilterMeasureType] = useState<'all' | 'weight' | 'bf' | 'waist_hip'>(
+    'all',
+  )
   const [sortBy, setSortBy] = useState<SortOption>('recent')
   const [nuovoProgressoOpen, setNuovoProgressoOpen] = useState(false)
   const [nuovoStep, setNuovoStep] = useState(1)
@@ -196,7 +204,9 @@ export default function NutrizionistaProgressiPage() {
         .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
         .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
       if (staffErr) throw staffErr
-      const athleteIds = (staffData ?? []).map((r) => (r as { atleta_id: string }).atleta_id).filter(Boolean)
+      const athleteIds = (staffData ?? [])
+        .map((r) => (r as { atleta_id: string }).atleta_id)
+        .filter(Boolean)
       if (athleteIds.length === 0) {
         setTimelineRows([])
         setAthleteOverviewRows([])
@@ -210,15 +220,24 @@ export default function NutrizionistaProgressiPage() {
         .select('id, user_id, nome, cognome, email, org_id')
         .in('id', athleteIds)
       const profilesMap = new Map(
-        (profilesData ?? []).map((p: { id: string; user_id: string | null; nome: string | null; cognome: string | null; email: string | null; org_id: string | null }) => [
-          p.id,
-          {
-            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-            email: p.email ?? null,
-            org_id: p.org_id ?? '',
-            user_id: p.user_id ?? null,
-          },
-        ]),
+        (profilesData ?? []).map(
+          (p: {
+            id: string
+            user_id: string | null
+            nome: string | null
+            cognome: string | null
+            email: string | null
+            org_id: string | null
+          }) => [
+            p.id,
+            {
+              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+              email: p.email ?? null,
+              org_id: p.org_id ?? '',
+              user_id: p.user_id ?? null,
+            },
+          ],
+        ),
       )
       const userIdToProfileId = new Map<string, string>()
       const athleteUserIds: string[] = []
@@ -243,24 +262,28 @@ export default function NutrizionistaProgressiPage() {
       if (athleteUserIds.length > 0) {
         const { data: progressLogsData, error: plErr } = await supabase
           .from('progress_logs')
-          .select('id, athlete_id, date, weight_kg, massa_grassa_percentuale, waist_cm, hips_cm, created_by_profile_id, source, created_at')
+          .select(
+            'id, athlete_id, date, weight_kg, massa_grassa_percentuale, waist_cm, hips_cm, created_by_profile_id, source, created_at',
+          )
           .in('athlete_id', athleteUserIds)
           .order('created_at', { ascending: false })
           .limit(500)
         if (!plErr && Array.isArray(progressLogsData)) {
           loadedFromProgressLogs = true
-          const rows: TimelineRow[] = (progressLogsData as Array<{
-            id: string
-            athlete_id: string
-            date?: string | null
-            weight_kg?: number | null
-            massa_grassa_percentuale?: number | null
-            waist_cm?: number | null
-            hips_cm?: number | null
-            created_by_profile_id?: string | null
-            source?: string | null
-            created_at?: string | null
-          }>).map((r) => {
+          const rows: TimelineRow[] = (
+            progressLogsData as Array<{
+              id: string
+              athlete_id: string
+              date?: string | null
+              weight_kg?: number | null
+              massa_grassa_percentuale?: number | null
+              waist_cm?: number | null
+              hips_cm?: number | null
+              created_by_profile_id?: string | null
+              source?: string | null
+              created_at?: string | null
+            }>
+          ).map((r) => {
             const profileId = userIdToProfileId.get(r.athlete_id)
             const prof = profileId ? profilesMap.get(profileId) : null
             return {
@@ -294,7 +317,10 @@ export default function NutrizionistaProgressiPage() {
               const t = new Date(x.created_at ?? 0).getTime()
               return now - t >= 7 * 24 * 60 * 60 * 1000 && x.weight != null
             })
-            const delta = last?.weight != null && weight7d?.weight != null ? last.weight - weight7d.weight : null
+            const delta =
+              last?.weight != null && weight7d?.weight != null
+                ? last.weight - weight7d.weight
+                : null
             return {
               athlete_id: aid,
               athlete_name: profilesMap.get(aid)?.name ?? null,
@@ -315,7 +341,8 @@ export default function NutrizionistaProgressiPage() {
       }
 
       if (!loadedFromProgressLogs) {
-        const timelineRes = (supabase as { from: (t: string) => ReturnType<typeof supabase.from> }).from(NUTRITION_TABLES.viewProgressTimeline)
+        const timelineRes = (supabase as { from: (t: string) => ReturnType<typeof supabase.from> })
+          .from(NUTRITION_TABLES.viewProgressTimeline)
           .select('*')
           .eq('nutritionist_id', profileId)
           .order('created_at', { ascending: false })
@@ -324,29 +351,58 @@ export default function NutrizionistaProgressiPage() {
         if (!timelineErr && timelineData && timelineData.length > 0) {
           setTimelineRows((timelineData ?? []) as TimelineRow[])
         }
-        const athletesRes = (supabase as { from: (t: string) => ReturnType<typeof supabase.from> }).from(NUTRITION_TABLES.viewProgressAthletes)
+        const athletesRes = (supabase as { from: (t: string) => ReturnType<typeof supabase.from> })
+          .from(NUTRITION_TABLES.viewProgressAthletes)
           .select('*')
           .eq('nutritionist_id', profileId)
         const { data: athletesData, error: athletesErr } = await athletesRes
         if (!athletesErr && athletesData && athletesData.length > 0) {
           setAthleteOverviewRows((athletesData ?? []) as AthleteOverviewRow[])
         } else {
-          const _lastProgressMap = new Map<string, { created_at: string; weight: number | null; body_fat: number | null; waist: number | null; hip: number | null }>()
+          const _lastProgressMap = new Map<
+            string,
+            {
+              created_at: string
+              weight: number | null
+              body_fat: number | null
+              waist: number | null
+              hip: number | null
+            }
+          >()
           const { data: progressData } = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
             .select('athlete_id, created_at, weight, body_fat, waist, hip, weight_kg')
             .in('athlete_id', athleteIds)
             .order('created_at', { ascending: false })
-          const byAthlete = new Map<string, Array<{ created_at: string; weight: number | null; body_fat: number | null; waist: number | null; hip: number | null }>>()
-          ;(progressData ?? []).forEach((p: { athlete_id: string; created_at: string; weight?: number | null; weight_kg?: number | null; body_fat?: number | null; waist?: number | null; hip?: number | null }) => {
-            if (!byAthlete.has(p.athlete_id)) byAthlete.set(p.athlete_id, [])
-            byAthlete.get(p.athlete_id)!.push({
-              created_at: p.created_at,
-              weight: p.weight ?? p.weight_kg ?? null,
-              body_fat: p.body_fat ?? null,
-              waist: p.waist ?? null,
-              hip: p.hip ?? null,
-            })
-          })
+          const byAthlete = new Map<
+            string,
+            Array<{
+              created_at: string
+              weight: number | null
+              body_fat: number | null
+              waist: number | null
+              hip: number | null
+            }>
+          >()
+          ;(progressData ?? []).forEach(
+            (p: {
+              athlete_id: string
+              created_at: string
+              weight?: number | null
+              weight_kg?: number | null
+              body_fat?: number | null
+              waist?: number | null
+              hip?: number | null
+            }) => {
+              if (!byAthlete.has(p.athlete_id)) byAthlete.set(p.athlete_id, [])
+              byAthlete.get(p.athlete_id)!.push({
+                created_at: p.created_at,
+                weight: p.weight ?? p.weight_kg ?? null,
+                body_fat: p.body_fat ?? null,
+                waist: p.waist ?? null,
+                hip: p.hip ?? null,
+              })
+            },
+          )
           const overview: AthleteOverviewRow[] = athleteIds.map((aid) => {
             const list = byAthlete.get(aid) ?? []
             const last = list[0]
@@ -357,7 +413,10 @@ export default function NutrizionistaProgressiPage() {
               const t = new Date(x.created_at).getTime()
               return now - t >= 7 * 24 * 60 * 60 * 1000 && x.weight != null
             })
-            const delta = last?.weight != null && weight7d?.weight != null ? last.weight - weight7d.weight : null
+            const delta =
+              last?.weight != null && weight7d?.weight != null
+                ? last.weight - weight7d.weight
+                : null
             return {
               athlete_id: aid,
               athlete_name: profilesMap.get(aid)?.name ?? null,
@@ -405,7 +464,9 @@ export default function NutrizionistaProgressiPage() {
 
   const kpiCounts = useMemo(() => {
     const last7 = timelineRows.filter((r) => r.created_at && r.created_at >= sevenDaysAgo).length
-    const noProgress14 = athleteOverviewRows.filter((r) => (r.days_since_last_progress ?? 999) >= 14).length
+    const noProgress14 = athleteOverviewRows.filter(
+      (r) => (r.days_since_last_progress ?? 999) >= 14,
+    ).length
     const withDelta = athleteOverviewRows.filter((r) => r.weight_delta_7d != null).length
     const byAthlete = timelineRows.filter(
       (r) => r.created_by_role === 'athlete' || (r.source ?? '').toLowerCase().includes('athlete'),
@@ -422,16 +483,29 @@ export default function NutrizionistaProgressiPage() {
           (r.athlete_email ?? '').toLowerCase().includes(debouncedSearch),
       )
     }
-    if (kpiFilter === 'last7') list = list.filter((r) => r.created_at && r.created_at >= sevenDaysAgo)
+    if (kpiFilter === 'last7')
+      list = list.filter((r) => r.created_at && r.created_at >= sevenDaysAgo)
     if (filterAthlete !== 'all') list = list.filter((r) => r.athlete_id === filterAthlete)
-    if (filterPeriod === 'today') list = list.filter((r) => r.created_at && r.created_at >= todayStart)
-    else if (filterPeriod === '7') list = list.filter((r) => r.created_at && r.created_at >= sevenDaysAgo)
-    else if (filterPeriod === '30') list = list.filter((r) => r.created_at && r.created_at >= thirtyDaysAgo)
-    if (filterOrigin === 'athlete') list = list.filter((r) => r.created_by_role === 'athlete' || (r.source ?? '').toLowerCase().includes('athlete'))
-    else if (filterOrigin === 'staff') list = list.filter((r) => r.created_by_role !== 'athlete' && !(r.source ?? '').toLowerCase().includes('athlete'))
+    if (filterPeriod === 'today')
+      list = list.filter((r) => r.created_at && r.created_at >= todayStart)
+    else if (filterPeriod === '7')
+      list = list.filter((r) => r.created_at && r.created_at >= sevenDaysAgo)
+    else if (filterPeriod === '30')
+      list = list.filter((r) => r.created_at && r.created_at >= thirtyDaysAgo)
+    if (filterOrigin === 'athlete')
+      list = list.filter(
+        (r) =>
+          r.created_by_role === 'athlete' || (r.source ?? '').toLowerCase().includes('athlete'),
+      )
+    else if (filterOrigin === 'staff')
+      list = list.filter(
+        (r) =>
+          r.created_by_role !== 'athlete' && !(r.source ?? '').toLowerCase().includes('athlete'),
+      )
     if (filterMeasureType === 'weight') list = list.filter((r) => r.weight != null)
     else if (filterMeasureType === 'bf') list = list.filter((r) => r.body_fat != null)
-    else if (filterMeasureType === 'waist_hip') list = list.filter((r) => r.waist != null || r.hip != null)
+    else if (filterMeasureType === 'waist_hip')
+      list = list.filter((r) => r.waist != null || r.hip != null)
     const sorted = [...list].sort((a, b) => {
       if (sortBy === 'atleta') return (a.athlete_name ?? '').localeCompare(b.athlete_name ?? '')
       const ca = a.created_at ?? ''
@@ -439,7 +513,19 @@ export default function NutrizionistaProgressiPage() {
       return cb.localeCompare(ca)
     })
     return sorted
-  }, [timelineRows, debouncedSearch, kpiFilter, filterAthlete, filterPeriod, filterOrigin, filterMeasureType, sortBy, todayStart, sevenDaysAgo, thirtyDaysAgo])
+  }, [
+    timelineRows,
+    debouncedSearch,
+    kpiFilter,
+    filterAthlete,
+    filterPeriod,
+    filterOrigin,
+    filterMeasureType,
+    sortBy,
+    todayStart,
+    sevenDaysAgo,
+    thirtyDaysAgo,
+  ])
 
   const filteredAthletes = useMemo(() => {
     let list = athleteOverviewRows
@@ -455,7 +541,10 @@ export default function NutrizionistaProgressiPage() {
     if (kpiFilter === 'byAthlete') {
       const athleteIdsWithAthleteSource = new Set(
         timelineRows
-          .filter((r) => r.created_by_role === 'athlete' || (r.source ?? '').toLowerCase().includes('athlete'))
+          .filter(
+            (r) =>
+              r.created_by_role === 'athlete' || (r.source ?? '').toLowerCase().includes('athlete'),
+          )
           .map((r) => r.athlete_id),
       )
       list = list.filter((r) => athleteIdsWithAthleteSource.has(r.athlete_id))
@@ -518,7 +607,9 @@ export default function NutrizionistaProgressiPage() {
     }
     setSubmitting(true)
     try {
-      const dateVal = nuovoDate ? new Date(nuovoDate).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+      const dateVal = nuovoDate
+        ? new Date(nuovoDate).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10)
       const payload = {
         athlete_id: athleteUserId,
         date: dateVal,
@@ -549,7 +640,18 @@ export default function NutrizionistaProgressiPage() {
     } finally {
       setSubmitting(false)
     }
-  }, [nuovoAthleteId, profileId, assignedAthletes, nuovoDate, nuovoWeight, nuovoBodyFat, nuovoWaist, nuovoHip, supabase, loadData])
+  }, [
+    nuovoAthleteId,
+    profileId,
+    assignedAthletes,
+    nuovoDate,
+    nuovoWeight,
+    nuovoBodyFat,
+    nuovoWaist,
+    nuovoHip,
+    supabase,
+    loadData,
+  ])
 
   const openNuovoProgresso = useCallback(() => {
     setNuovoStep(1)
@@ -581,11 +683,18 @@ export default function NutrizionistaProgressiPage() {
       theme="teal"
       actions={
         <>
-          <Button onClick={openNuovoProgresso} className="gap-2 bg-teal-600 hover:bg-teal-500 text-white">
+          <Button
+            onClick={openNuovoProgresso}
+            className="gap-2 bg-teal-600 hover:bg-teal-500 text-white"
+          >
             <Plus className="h-4 w-4" />
             Nuovo progresso
           </Button>
-          <Button variant="outline" onClick={() => setFiltersOpen(true)} className="lg:hidden gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setFiltersOpen(true)}
+            className="lg:hidden gap-2"
+          >
             <Filter className="h-4 w-4" />
             Filtri
           </Button>
@@ -599,7 +708,11 @@ export default function NutrizionistaProgressiPage() {
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
-          <button type="button" onClick={() => void loadData()} className="underline shrink-0 min-h-[44px] touch-manipulation flex items-center">
+          <button
+            type="button"
+            onClick={() => void loadData()}
+            className="underline shrink-0 min-h-[44px] touch-manipulation flex items-center"
+          >
             Riprova
           </button>
         </div>
@@ -750,7 +863,9 @@ export default function NutrizionistaProgressiPage() {
       ) : viewMode === 'timeline' ? (
         filteredTimeline.length === 0 ? (
           <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
-            {timelineRows.length === 0 ? 'Nessun progresso registrato.' : 'Nessun risultato per i filtri selezionati.'}
+            {timelineRows.length === 0
+              ? 'Nessun progresso registrato.'
+              : 'Nessun risultato per i filtri selezionati.'}
           </div>
         ) : (
           <div className="rounded-xl border border-border overflow-hidden">
@@ -767,10 +882,15 @@ export default function NutrizionistaProgressiPage() {
                 </thead>
                 <tbody>
                   {filteredTimeline.map((r) => (
-                    <tr key={r.progress_id} className="border-b border-border/50 hover:bg-background-tertiary/30">
+                    <tr
+                      key={r.progress_id}
+                      className="border-b border-border/50 hover:bg-background-tertiary/30"
+                    >
                       <td className="p-3">
                         <div className="font-medium text-text-primary">{r.athlete_name ?? '—'}</div>
-                        {r.athlete_email && <div className="text-xs text-text-muted">{r.athlete_email}</div>}
+                        {r.athlete_email && (
+                          <div className="text-xs text-text-muted">{r.athlete_email}</div>
+                        )}
                       </td>
                       <td className="p-3 text-text-secondary">
                         {r.created_at
@@ -789,19 +909,30 @@ export default function NutrizionistaProgressiPage() {
                           {r.body_fat != null && <span>BF: {r.body_fat}%</span>}
                           {r.waist != null && <span>Vita: {r.waist} cm</span>}
                           {r.hip != null && <span>Fianchi: {r.hip} cm</span>}
-                          {r.weight == null && r.body_fat == null && r.waist == null && r.hip == null && '—'}
+                          {r.weight == null &&
+                            r.body_fat == null &&
+                            r.waist == null &&
+                            r.hip == null &&
+                            '—'}
                         </div>
                       </td>
                       <td className="p-3">
-                        {r.created_by_role === 'athlete' || (r.source ?? '').toLowerCase().includes('athlete') ? (
-                          <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">ATLETA</span>
+                        {r.created_by_role === 'athlete' ||
+                        (r.source ?? '').toLowerCase().includes('athlete') ? (
+                          <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs">
+                            ATLETA
+                          </span>
                         ) : (
-                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">STAFF</span>
+                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">
+                            STAFF
+                          </span>
                         )}
                       </td>
                       <td className="p-3 text-right">
                         <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/dashboard/nutrizionista/atleti/${r.athlete_id}?tab=progressi`}>
+                          <Link
+                            href={`/dashboard/nutrizionista/atleti/${r.athlete_id}?tab=progressi`}
+                          >
                             Apri atleta <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
                           </Link>
                         </Button>
@@ -815,7 +946,9 @@ export default function NutrizionistaProgressiPage() {
         )
       ) : filteredAthletes.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
-          {athleteOverviewRows.length === 0 ? 'Nessun atleta con progressi.' : 'Nessun risultato per i filtri selezionati.'}
+          {athleteOverviewRows.length === 0
+            ? 'Nessun atleta con progressi.'
+            : 'Nessun risultato per i filtri selezionati.'}
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -836,10 +969,17 @@ export default function NutrizionistaProgressiPage() {
                   const daysSince = row.days_since_last_progress ?? 0
                   const inRitardo = daysSince >= 14
                   return (
-                    <tr key={row.athlete_id} className="border-b border-border/50 hover:bg-background-tertiary/30">
+                    <tr
+                      key={row.athlete_id}
+                      className="border-b border-border/50 hover:bg-background-tertiary/30"
+                    >
                       <td className="p-3">
-                        <div className="font-medium text-text-primary">{row.athlete_name ?? '—'}</div>
-                        {row.athlete_email && <div className="text-xs text-text-muted">{row.athlete_email}</div>}
+                        <div className="font-medium text-text-primary">
+                          {row.athlete_name ?? '—'}
+                        </div>
+                        {row.athlete_email && (
+                          <div className="text-xs text-text-muted">{row.athlete_email}</div>
+                        )}
                       </td>
                       <td className="p-3 text-text-secondary">
                         {row.last_progress_at
@@ -868,7 +1008,11 @@ export default function NutrizionistaProgressiPage() {
                       </td>
                       <td className="p-3">
                         {row.weight_delta_7d != null ? (
-                          <span className={row.weight_delta_7d >= 0 ? 'text-amber-400' : 'text-emerald-400'}>
+                          <span
+                            className={
+                              row.weight_delta_7d >= 0 ? 'text-amber-400' : 'text-emerald-400'
+                            }
+                          >
                             {row.weight_delta_7d >= 0 ? '+' : ''}
                             {row.weight_delta_7d.toFixed(1)} kg
                           </span>
@@ -878,14 +1022,20 @@ export default function NutrizionistaProgressiPage() {
                       </td>
                       <td className="p-3">
                         {inRitardo ? (
-                          <span className="rounded-full bg-amber-500/20 text-amber-400 px-2 py-0.5 text-xs">IN RITARDO</span>
+                          <span className="rounded-full bg-amber-500/20 text-amber-400 px-2 py-0.5 text-xs">
+                            IN RITARDO
+                          </span>
                         ) : (
-                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">OK</span>
+                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 px-2 py-0.5 text-xs">
+                            OK
+                          </span>
                         )}
                       </td>
                       <td className="p-3 text-right">
                         <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/dashboard/nutrizionista/atleti/${row.athlete_id}?tab=progressi`}>
+                          <Link
+                            href={`/dashboard/nutrizionista/atleti/${row.athlete_id}?tab=progressi`}
+                          >
                             Apri <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
                           </Link>
                         </Button>
@@ -953,15 +1103,22 @@ export default function NutrizionistaProgressiPage() {
                         const fd = new FormData()
                         fd.set('file', nuovoPdfFile)
                         fd.set('athleteProfileId', nuovoAthleteId)
-                        const res = await fetch('/api/nutritionist/extract-progress-pdf', { method: 'POST', body: fd })
+                        const res = await fetch('/api/nutritionist/extract-progress-pdf', {
+                          method: 'POST',
+                          body: fd,
+                        })
                         const json = await res.json()
                         if (!res.ok) throw new Error(json?.error ?? 'Estrazione fallita')
                         const ext = (json.extracted ?? {}) as Record<string, string>
                         setNuovoExtracted(ext)
-                        if (ext.peso_kg ?? ext.weight_kg) setNuovoWeight(ext.peso_kg ?? ext.weight_kg ?? '')
-                        if (ext.massa_grassa_percentuale) setNuovoBodyFat(ext.massa_grassa_percentuale)
-                        if (ext.vita_cm ?? ext.waist_cm) setNuovoWaist(ext.vita_cm ?? ext.waist_cm ?? '')
-                        if (ext.fianchi_cm ?? ext.hips_cm) setNuovoHip(ext.fianchi_cm ?? ext.hips_cm ?? '')
+                        if (ext.peso_kg ?? ext.weight_kg)
+                          setNuovoWeight(ext.peso_kg ?? ext.weight_kg ?? '')
+                        if (ext.massa_grassa_percentuale)
+                          setNuovoBodyFat(ext.massa_grassa_percentuale)
+                        if (ext.vita_cm ?? ext.waist_cm)
+                          setNuovoWaist(ext.vita_cm ?? ext.waist_cm ?? '')
+                        if (ext.fianchi_cm ?? ext.hips_cm)
+                          setNuovoHip(ext.fianchi_cm ?? ext.hips_cm ?? '')
                       } catch (e) {
                         logger.error('Extract PDF', e)
                         setError(e instanceof Error ? e.message : 'Errore estrazione PDF')
@@ -1033,12 +1190,17 @@ export default function NutrizionistaProgressiPage() {
                 <Button variant="outline" onClick={() => setNuovoStep(1)}>
                   Indietro
                 </Button>
-                {nuovoAthleteId && !assignedAthletes.find((a) => a.id === nuovoAthleteId)?.user_id && (
-                  <span className="text-xs text-amber-400">Atleta senza account: salvataggio non disponibile.</span>
-                )}
+                {nuovoAthleteId &&
+                  !assignedAthletes.find((a) => a.id === nuovoAthleteId)?.user_id && (
+                    <span className="text-xs text-amber-400">
+                      Atleta senza account: salvataggio non disponibile.
+                    </span>
+                  )}
                 <Button
                   onClick={handleNuovoProgressoSubmit}
-                  disabled={submitting || !assignedAthletes.find((a) => a.id === nuovoAthleteId)?.user_id}
+                  disabled={
+                    submitting || !assignedAthletes.find((a) => a.id === nuovoAthleteId)?.user_id
+                  }
                 >
                   {submitting ? 'Salvataggio…' : 'Salva'}
                 </Button>

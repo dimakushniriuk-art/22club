@@ -79,7 +79,7 @@ describe('Cache Strategy Coerenza', () => {
   it('should use React Query (useQuery/useMutation) in client-side hooks for data fetching', () => {
     // Verifica che gli hook principali usino React Query
     const mainHooks = [
-      'use-appointments.ts',
+      'useAthleteAppointments.ts',
       'use-documents.ts',
       'use-allenamenti.ts',
       'use-clienti.ts',

@@ -28,7 +28,8 @@ function getDateGroupLabel(dateStr: string): string {
   const today = new Date()
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
-  const key = (x: Date) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
+  const key = (x: Date) =>
+    `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
   if (key(d) === key(today)) return 'Oggi'
   if (key(d) === key(yesterday)) return 'Ieri'
   return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
@@ -109,10 +110,7 @@ export function MessageList({
       logger.debug('Delete result', { messageId: messageToDelete, result })
 
       if (!result) {
-        notifyError(
-          'Eliminazione fallita',
-          'Verifica di essere il mittente del messaggio.',
-        )
+        notifyError('Eliminazione fallita', 'Verifica di essere il mittente del messaggio.')
       }
     } catch (error) {
       logger.error('Error deleting message', error, { messageId: messageToDelete })
@@ -155,8 +153,9 @@ export function MessageList({
                 <p className="whitespace-pre-wrap break-words text-[14px] leading-snug select-text flex-1 min-w-0">
                   {message.message}
                 </p>
-                {isOwn && onDeleteMessage && (
-                  expandedMessageId === message.id ? (
+                {isOwn &&
+                  onDeleteMessage &&
+                  (expandedMessageId === message.id ? (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -176,8 +175,7 @@ export function MessageList({
                     >
                       <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
-                  )
-                )}
+                  ))}
               </div>
               <div
                 className={cn(
@@ -256,8 +254,9 @@ export function MessageList({
                     )}
                   </span>
                 )}
-                {isOwn && onDeleteMessage && (
-                  expandedMessageId === message.id ? (
+                {isOwn &&
+                  onDeleteMessage &&
+                  (expandedMessageId === message.id ? (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -277,8 +276,7 @@ export function MessageList({
                     >
                       <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
-                  )
-                )}
+                  ))}
               </div>
             </div>
           ) : (
@@ -320,23 +318,31 @@ export function MessageList({
                 const d = new Date(msg.created_at)
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
                 if (key !== currentKey) {
-                  if (currentGroup.length) groups.push({ dateKey: currentKey, label: getDateGroupLabel(currentGroup[0].created_at), msgs: currentGroup })
+                  if (currentGroup.length)
+                    groups.push({
+                      dateKey: currentKey,
+                      label: getDateGroupLabel(currentGroup[0].created_at),
+                      msgs: currentGroup,
+                    })
                   currentKey = key
                   currentGroup = [msg]
                 } else {
                   currentGroup.push(msg)
                 }
               })
-              if (currentGroup.length) groups.push({ dateKey: currentKey, label: getDateGroupLabel(currentGroup[0].created_at), msgs: currentGroup })
+              if (currentGroup.length)
+                groups.push({
+                  dateKey: currentKey,
+                  label: getDateGroupLabel(currentGroup[0].created_at),
+                  msgs: currentGroup,
+                })
               return (
                 <>
                   <div ref={messagesStartRef} />
                   {groups.map((g) => (
                     <div key={g.dateKey} className="space-y-1">
                       <div className="flex justify-center py-2">
-                        <span className="text-[10px] font-medium text-zinc-500">
-                          {g.label}
-                        </span>
+                        <span className="text-[10px] font-medium text-zinc-500">{g.label}</span>
                       </div>
                       {g.msgs.map((msg) => renderMessage(msg))}
                     </div>
@@ -348,7 +354,9 @@ export function MessageList({
           ) : (
             <div className="flex h-full min-h-[120px] items-center justify-center">
               <div className="text-text-secondary text-sm">
-                {isLoading ? 'Caricamento messaggi...' : 'Nessun messaggio. Invia un messaggio per iniziare.'}
+                {isLoading
+                  ? 'Caricamento messaggi...'
+                  : 'Nessun messaggio. Invia un messaggio per iniziare.'}
               </div>
             </div>
           )}
@@ -367,7 +375,8 @@ export function MessageList({
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Elimina messaggio</AlertDialogTitle>
             <AlertDialogDescription>
-              Sei sicuro di voler eliminare questo messaggio? Questa azione non può essere annullata.
+              Sei sicuro di voler eliminare questo messaggio? Questa azione non può essere
+              annullata.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -61,8 +61,8 @@
   /* Barra verticale sinistra tramite box-shadow inset (Home, Progressi, card navigazione) */
   --effect-card-bar-left: inset 6px 0 0 0 var(--effect-card-bar-color);
   /* Barra sinistra + destra (card Home blocchi) */
-  --effect-card-bar-both: inset 6px 0 0 0 var(--effect-card-bar-color),
-    inset -6px 0 0 0 var(--effect-card-bar-color);
+  --effect-card-bar-both:
+    inset 6px 0 0 0 var(--effect-card-bar-color), inset -6px 0 0 0 var(--effect-card-bar-color);
 
   /* ====================================== */
   /* ⏱️ TRANSITION TOKENS */

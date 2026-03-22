@@ -36,15 +36,35 @@ test.describe('Final E2E Tests', () => {
     await loginPT(page)
     await softVisible(page.getByText(/Dashboard/i))
     await softVisible(page.getByText(/Allenamenti|Clienti|Appuntamenti|Documenti|Statistiche/i))
-    await page.getByRole('link', { name: /appuntamenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /appuntamenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Appuntamenti/i))
-    await page.getByRole('link', { name: /documenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /documenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Documenti/i))
-    await page.getByRole('link', { name: /statistiche/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /statistiche/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Statistiche|Analisi Performance/i))
-    await page.getByRole('link', { name: /profilo/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /profilo/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Profilo/i))
-    await page.getByRole('button', { name: /logout/i }).first().click().catch(() => {})
+    await page
+      .getByRole('button', { name: /logout/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Accedi/i))
   })
 
@@ -52,30 +72,66 @@ test.describe('Final E2E Tests', () => {
     await loginAthlete(page)
     await softVisible(page.getByText(/Benvenuto|Home/i))
     await softVisible(page.getByText(/allenamenti|appuntamenti|documenti|profilo/i))
-    await page.getByRole('link', { name: /allenamenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /allenamenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/allenamenti/i))
-    await page.getByRole('link', { name: /appuntamenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /appuntamenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/appuntamenti/i))
-    await page.getByRole('link', { name: /documenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /documenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/documenti/i))
-    await page.getByRole('link', { name: /profilo/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /profilo/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Profilo/i))
-    await page.getByRole('button', { name: /logout/i }).first().click().catch(() => {})
+    await page
+      .getByRole('button', { name: /logout/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Accedi/i))
   })
 
   test('should handle cross-role interactions with real-time updates', async ({ page }) => {
     await loginPT(page)
     await softVisible(page.getByText(/Dashboard/i))
-    await page.getByRole('link', { name: /appuntamenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /appuntamenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Appuntamenti/i))
-    await page.getByRole('link', { name: /documenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /documenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Documenti/i))
-    await page.getByRole('button', { name: /Logout/i }).first().click().catch(() => {})
+    await page
+      .getByRole('button', { name: /Logout/i })
+      .first()
+      .click()
+      .catch(() => {})
 
     await loginAthlete(page)
     await softVisible(page.getByText(/appuntamenti|documenti/i))
-    await page.getByRole('button', { name: /Logout/i }).first().click().catch(() => {})
+    await page
+      .getByRole('button', { name: /Logout/i })
+      .first()
+      .click()
+      .catch(() => {})
   })
 
   test('should handle all error scenarios gracefully', async ({ page }) => {
@@ -89,7 +145,11 @@ test.describe('Final E2E Tests', () => {
     await softVisible(page.getByText(/Dashboard/i))
 
     await page.route('**/api/**', (route) => route.abort())
-    await page.getByRole('link', { name: /appuntamenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /appuntamenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Errore di connessione|Appuntamenti/i))
     await page.unroute('**/api/**')
 

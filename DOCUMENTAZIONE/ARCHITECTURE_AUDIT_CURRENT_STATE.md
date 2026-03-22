@@ -10,48 +10,48 @@ Documento tecnico che descrive la struttura attuale del progetto 22Club basandos
 
 Dalle migrations e da `src/lib/supabase/types.ts` risultano le seguenti tabelle pubbliche:
 
-| Tabella | Descrizione sintetica |
-|--------|------------------------|
-| **roles** | Ruoli nominali (admin, pt, trainer, atleta, athlete). Non include nutrizionista/massaggiatore. |
-| **profiles** | Utenti: id, user_id (FK auth.users), org_id, nome/cognome, email, **role**, avatar, stato, first_login, ecc. |
-| **appointments** | Appuntamenti: staff_id, athlete_id, trainer_id, org_id, starts_at, ends_at, type, status, is_open_booking_day, ecc. |
-| **pt_atleti** | Assegnazione trainer ↔ atleta (pt_id, atleta_id). UNIQUE(pt_id, atleta_id). |
-| **staff_atleti** | Assegnazione staff (nutrizionista/massaggiatore) ↔ atleta (staff_id, atleta_id). |
-| **inviti_atleti** | Inviti trainer → atleta (email, stato, pt_id, ecc.). |
-| **inviti_cliente** | Inviti staff (nutrizionista/massaggiatore) → atleta: staff_id, atleta_id, stato, expires_at, responded_at. |
-| **exercises** | Esercizi: org_id, created_by, nome, descrizione, ecc. |
-| **workouts** | Template workout: org_id, created_by, nome. |
-| **workout_days** | Giorni di un workout. |
-| **workout_day_exercises** | Esercizi per giorno. |
-| **workout_sets** | Set per esercizio. |
-| **workout_plans** | Schede assegnate: athlete_id, created_by, nome, ecc. |
-| **workout_logs** | Log allenamenti: athlete_id/atleta_id, workout_plan_id, ecc. |
-| **documents** | Documenti: org_id, profile_id, tipo, storage path. |
-| **payments** | Pagamenti: org_id, athlete_id, amount, created_by, ecc. |
-| **lesson_counters** | Contatori lezioni per athlete_id. |
-| **notifications** | Notifiche: user_id, title, message, type, is_read. |
-| **chat_messages** | Messaggi chat: sender_id, receiver_id (profile id), content, read_at. |
-| **cliente_tags** | Tag per clienti. |
-| **profiles_tags** | Associazione profile_id ↔ tag_id. |
-| **progress_logs** | Log progressi (athlete_id come user_id o profile id a seconda di contesto). |
-| **progress_photos** | Foto progressi. |
-| **audit_logs** | Log audit. |
-| **push_subscriptions** | Sottoscrizioni push. |
-| **user_settings** | Impostazioni utente (user_id). |
-| **credit_ledger** | Movimenti credito. |
-| **communications** | Comunicazioni. |
-| **communication_recipients** | Destinatari comunicazioni. |
-| **athlete_questionnaires** | Questionari atleta. |
-| **athlete_medical_data** | Dati medici atleta (athlete_id). |
-| **athlete_fitness_data** | Dati fitness. |
-| **athlete_nutrition_data** | Dati nutrizione. |
-| **athlete_massage_data** | Dati massaggio. |
-| **athlete_motivational_data** | Dati motivazionali. |
-| **athlete_administrative_data** | Dati amministrativi. |
-| **athlete_smart_tracking_data** | Dati tracking. |
-| **athlete_ai_data** | Dati AI. |
-| **trainer_profiles** | Estensione profilo trainer (profile_id FK profiles). |
-| **trainer_education**, **trainer_certifications**, **trainer_courses**, **trainer_specializations**, **trainer_experience**, **trainer_testimonials**, **trainer_transformations** | Dati aggiuntivi trainer. |
+| Tabella                                                                                                                                                                            | Descrizione sintetica                                                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **roles**                                                                                                                                                                          | Ruoli nominali (admin, pt, trainer, atleta, athlete). Non include nutrizionista/massaggiatore.                      |
+| **profiles**                                                                                                                                                                       | Utenti: id, user_id (FK auth.users), org_id, nome/cognome, email, **role**, avatar, stato, first_login, ecc.        |
+| **appointments**                                                                                                                                                                   | Appuntamenti: staff_id, athlete_id, trainer_id, org_id, starts_at, ends_at, type, status, is_open_booking_day, ecc. |
+| **pt_atleti**                                                                                                                                                                      | Assegnazione trainer ↔ atleta (pt_id, atleta_id). UNIQUE(pt_id, atleta_id).                                         |
+| **staff_atleti**                                                                                                                                                                   | Assegnazione staff (nutrizionista/massaggiatore) ↔ atleta (staff_id, atleta_id).                                    |
+| **inviti_atleti**                                                                                                                                                                  | Inviti trainer → atleta (email, stato, pt_id, ecc.).                                                                |
+| **inviti_cliente**                                                                                                                                                                 | Inviti staff (nutrizionista/massaggiatore) → atleta: staff_id, atleta_id, stato, expires_at, responded_at.          |
+| **exercises**                                                                                                                                                                      | Esercizi: org_id, created_by, nome, descrizione, ecc.                                                               |
+| **workouts**                                                                                                                                                                       | Template workout: org_id, created_by, nome.                                                                         |
+| **workout_days**                                                                                                                                                                   | Giorni di un workout.                                                                                               |
+| **workout_day_exercises**                                                                                                                                                          | Esercizi per giorno.                                                                                                |
+| **workout_sets**                                                                                                                                                                   | Set per esercizio.                                                                                                  |
+| **workout_plans**                                                                                                                                                                  | Schede assegnate: athlete_id, created_by, nome, ecc.                                                                |
+| **workout_logs**                                                                                                                                                                   | Log allenamenti: athlete_id/atleta_id, workout_plan_id, ecc.                                                        |
+| **documents**                                                                                                                                                                      | Documenti: org_id, profile_id, tipo, storage path.                                                                  |
+| **payments**                                                                                                                                                                       | Pagamenti: org_id, athlete_id, amount, created_by, ecc.                                                             |
+| **lesson_counters**                                                                                                                                                                | Contatori lezioni per athlete_id.                                                                                   |
+| **notifications**                                                                                                                                                                  | Notifiche: user_id, title, message, type, is_read.                                                                  |
+| **chat_messages**                                                                                                                                                                  | Messaggi chat: sender_id, receiver_id (profile id), content, read_at.                                               |
+| **cliente_tags**                                                                                                                                                                   | Tag per clienti.                                                                                                    |
+| **profiles_tags**                                                                                                                                                                  | Associazione profile_id ↔ tag_id.                                                                                   |
+| **progress_logs**                                                                                                                                                                  | Log progressi (athlete_id come user_id o profile id a seconda di contesto).                                         |
+| **progress_photos**                                                                                                                                                                | Foto progressi.                                                                                                     |
+| **audit_logs**                                                                                                                                                                     | Log audit.                                                                                                          |
+| **push_subscriptions**                                                                                                                                                             | Sottoscrizioni push.                                                                                                |
+| **user_settings**                                                                                                                                                                  | Impostazioni utente (user_id).                                                                                      |
+| **credit_ledger**                                                                                                                                                                  | Movimenti credito.                                                                                                  |
+| **communications**                                                                                                                                                                 | Comunicazioni.                                                                                                      |
+| **communication_recipients**                                                                                                                                                       | Destinatari comunicazioni.                                                                                          |
+| **athlete_questionnaires**                                                                                                                                                         | Questionari atleta.                                                                                                 |
+| **athlete_medical_data**                                                                                                                                                           | Dati medici atleta (athlete_id).                                                                                    |
+| **athlete_fitness_data**                                                                                                                                                           | Dati fitness.                                                                                                       |
+| **athlete_nutrition_data**                                                                                                                                                         | Dati nutrizione.                                                                                                    |
+| **athlete_massage_data**                                                                                                                                                           | Dati massaggio.                                                                                                     |
+| **athlete_motivational_data**                                                                                                                                                      | Dati motivazionali.                                                                                                 |
+| **athlete_administrative_data**                                                                                                                                                    | Dati amministrativi.                                                                                                |
+| **athlete_smart_tracking_data**                                                                                                                                                    | Dati tracking.                                                                                                      |
+| **athlete_ai_data**                                                                                                                                                                | Dati AI.                                                                                                            |
+| **trainer_profiles**                                                                                                                                                               | Estensione profilo trainer (profile_id FK profiles).                                                                |
+| **trainer_education**, **trainer_certifications**, **trainer_courses**, **trainer_specializations**, **trainer_experience**, **trainer_testimonials**, **trainer_transformations** | Dati aggiuntivi trainer.                                                                                            |
 
 View: **payments_per_staff_view**, **progress_trend_view**, **workout_stats_mensili**.
 
@@ -68,14 +68,14 @@ View: **payments_per_staff_view**, **progress_trend_view**, **workout_stats_mens
 
 Tabelle con **org_id** (tipicamente DEFAULT `'default-org'`):
 
-- profiles  
-- appointments  
-- exercises  
-- workouts  
-- documents  
-- payments  
+- profiles
+- appointments
+- exercises
+- workouts
+- documents
+- payments
 
-Altre tabelle (es. pt_atleti, staff_atleti, workout_plans, chat_messages, inviti_*, athlete_*, notifications, …) non hanno colonna org_id; l’isolamento è per relazione (pt_atleti, staff_atleti) o per created_by/athlete_id.
+Altre tabelle (es. pt*atleti, staff_atleti, workout_plans, chat_messages, inviti*_, athlete\__, notifications, …) non hanno colonna org_id; l’isolamento è per relazione (pt_atleti, staff_atleti) o per created_by/athlete_id.
 
 ### 1.4 Relazioni trainer ↔ atleta
 
@@ -87,7 +87,7 @@ Altre tabelle (es. pt_atleti, staff_atleti, workout_plans, chat_messages, inviti
 - **Ruoli in DB**: `profiles.role` con CHECK che include admin, pt, trainer, atleta, athlete, nutrizionista, massaggiatore. Tabella `roles` contiene solo admin, pt, trainer, atleta, athlete.
 - **Staff (nutrizionista/massaggiatore) ↔ atleta**:
   - **inviti_cliente**: invito da staff ad atleta (stato in_attesa/accettato/rifiutato); scadenza e responded_at.
-  - **staff_atleti**: legame confermato staff_id–atleta_id; usato da RLS per visibilità dati (profiles, workout_plans, workout_logs, appointments, athlete_*_data, storage, chat). Nutrizionista e massaggiatore esistono a livello DB (profiles.role) e nella relazione staff_atleti; non solo UI.
+  - **staff_atleti**: legame confermato staff*id–atleta_id; usato da RLS per visibilità dati (profiles, workout_plans, workout_logs, appointments, athlete*\*\_data, storage, chat). Nutrizionista e massaggiatore esistono a livello DB (profiles.role) e nella relazione staff_atleti; non solo UI.
 
 ### 1.6 RLS (Row Level Security)
 
@@ -102,12 +102,12 @@ Altre tabelle (es. pt_atleti, staff_atleti, workout_plans, chat_messages, inviti
   - **Role-based**: policy distinte per admin, trainer (pt/trainer), nutrizionista, massaggiatore, atleta.
   - **Org-based**: dove presente, filtro su `org_id` (es. appointments, chat: stesso org_id; RPC `get_conversation_participants` filtra per org_id; slot “libera prenotazione” per org_id).
   - **Owner/trainer-based**: visibilità dati atleta tramite pt_atleti (trainer vede solo atleti assegnati).
-  - **Staff-based**: nutrizionista/massaggiatore vedono solo atleti in staff_atleti (profiles, workout_plans, workout_logs, appointments, athlete_*_data, storage certificati/referti, chat).
+  - **Staff-based**: nutrizionista/massaggiatore vedono solo atleti in staff*atleti (profiles, workout_plans, workout_logs, appointments, athlete*\*\_data, storage certificati/referti, chat).
   - **Owner-based (propria riga)**: “Users can view own profile”, “Users can update own profile”; policy staff escludono esplicitamente la riga del proprio profilo (id IS DISTINCT FROM get_profile_id_from_user_id(auth.uid())) per evitare problemi al login.
 
 - **Sintesi**: il sistema è **ibrido** (role-based + org-based + owner/trainer/staff). Non esiste una tabella `permissions`; i permessi sono espressi da policy RLS e da ruolo in `profiles.role`.
 
-- **staff_atleti**: in una migration successiva (rollback) RLS su `staff_atleti` è stato disabilitato; le policy che *usano* staff_atleti (su altre tabelle) restano attive e leggono dalla tabella senza RLS su staff_atleti stessa.
+- **staff_atleti**: in una migration successiva (rollback) RLS su `staff_atleti` è stato disabilitato; le policy che _usano_ staff_atleti (su altre tabelle) restano attive e leggono dalla tabella senza RLS su staff_atleti stessa.
 
 - Policy per tabella (sintesi): ogni tabella business ha multiple policy (SELECT/INSERT/UPDATE/DELETE) che combinano ruolo, org_id dove presente, pt_atleti per trainer, staff_atleti per nutrizionista/massaggiatore, e “own row” per l’utente.
 
@@ -240,7 +240,7 @@ Altre tabelle (es. pt_atleti, staff_atleti, workout_plans, chat_messages, inviti
 
 ### 5.2 Uso di org_id
 
-- **Con org_id**: profiles, appointments, exercises, workouts, documents, payments (default `'default-org'`). Altre tabelle (pt_atleti, staff_atleti, inviti_*, workout_plans, chat_messages, athlete_*, ecc.) non hanno org_id.
+- **Con org_id**: profiles, appointments, exercises, workouts, documents, payments (default `'default-org'`). Altre tabelle (pt*atleti, staff_atleti, inviti*_, workout*plans, chat_messages, athlete*_, ecc.) non hanno org_id.
 - **RLS**: dove usato, il filtro è sul proprio org (es. `org_id = (SELECT org_id FROM profiles WHERE user_id = auth.uid())`); chat e slot “libera prenotazione” usano org_id; appointments e exercises filtrati per org.
 
 ### 5.3 Single-org vs multi-org
@@ -279,7 +279,7 @@ Altre tabelle (es. pt_atleti, staff_atleti, workout_plans, chat_messages, inviti
 
 ### 6.4 Cosa è facilmente estendibile
 
-- Aggiungere colonne o tabelle “athlete_*” o “trainer_*” seguendo lo schema esistente.
+- Aggiungere colonne o tabelle “athlete*\*” o “trainer*\*” seguendo lo schema esistente.
 - Replicare il pattern di policy “staff vede solo atleti in staff_atleti” per nuove tabelle dati atleta.
 - Estendere i path consentiti a nutrizionista/massaggiatore nel middleware (lista allowedPaths).
 - Aggiungere RPC e view senza cambiare il modello di accesso.
@@ -290,4 +290,4 @@ Altre tabelle (es. pt_atleti, staff_atleti, workout_plans, chat_messages, inviti
 
 ---
 
-*Documento generato da analisi del codice (migrations, types.ts, middleware, app). Nessuna modifica applicata.*
+_Documento generato da analisi del codice (migrations, types.ts, middleware, app). Nessuna modifica applicata._

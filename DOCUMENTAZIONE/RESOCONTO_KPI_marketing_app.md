@@ -4,11 +4,11 @@
 
 ## 1) File candidati completamento workout (già allineati)
 
-| File | Ruolo |
-|------|--------|
-| `src/app/home/allenamenti/oggi/page.tsx` | Pulsante "Completa allenamento" → modale → `handleTrainerSessionConfirm(withTrainer)` inserisce in `workout_logs` con `execution_mode: withTrainer ? 'coached' : 'solo'`. **Già implementato** (vedi PLAN_KPI_marketing_execution_mode.md). |
-| `src/components/workout/trainer-session-modal.tsx` | Modale con due pulsanti: "Con trainer" e "Eseguito da solo". **Già implementato.** |
-| `src/app/home/allenamenti/riepilogo/page.tsx` | Solo lettura post-completamento; nessuna modifica necessaria. |
+| File                                               | Ruolo                                                                                                                                                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/home/allenamenti/oggi/page.tsx`           | Pulsante "Completa allenamento" → modale → `handleTrainerSessionConfirm(withTrainer)` inserisce in `workout_logs` con `execution_mode: withTrainer ? 'coached' : 'solo'`. **Già implementato** (vedi PLAN_KPI_marketing_execution_mode.md). |
+| `src/components/workout/trainer-session-modal.tsx` | Modale con due pulsanti: "Con trainer" e "Eseguito da solo". **Già implementato.**                                                                                                                                                          |
+| `src/app/home/allenamenti/riepilogo/page.tsx`      | Solo lettura post-completamento; nessuna modifica necessaria.                                                                                                                                                                               |
 
 L’atleta sceglie già “Eseguito da solo” o “Con trainer” prima di confermare; il valore viene salvato in `workout_logs.execution_mode` nell’insert. Nessuna modifica aggiuntiva per il flusso atleta.
 
@@ -16,13 +16,13 @@ L’atleta sceglie già “Eseguito da solo” o “Con trainer” prima di conf
 
 ## 2) File modificati (max 5)
 
-| # | File | Modifica |
-|---|------|----------|
-| 1 | `src/lib/supabase/types.ts` | Aggiunto tipo per la view `athlete_marketing_metrics` (Row: athlete_id, workouts_total_count, workouts_solo_count, workouts_coached_count, last_workout_at) per tipizzare la query lato API. |
-| 2 | `src/app/api/marketing/kpi/route.ts` | **Nuovo.** GET: verifica sessione e ruolo (solo `admin` o `marketing`); con `createAdminClient()` legge dalla view `athlete_marketing_metrics`; restituisce JSON. Marketing non accede mai a `workout_logs`/`workout_plans`. |
-| 3 | `src/app/dashboard/marketing/page.tsx` | **Nuovo.** Pagina dashboard marketing: guard su ruolo (solo `marketing` o `admin`), fetch `GET /api/marketing/kpi`, mostra card (totale allenamenti, solo, coached, % coached, ultimo allenamento) e tabella per atleta. Solo dati dalla view. |
-| 4 | `src/components/shared/dashboard/sidebar.tsx` | Aggiunto ramo `userRole === 'marketing'`: nav con Dashboard → `/dashboard/marketing`, Profilo, Impostazioni. |
-| 5 | `src/components/shared/dashboard/dashboard-mobile-nav.tsx` | Stessa nav per ruolo `marketing`; link logo per marketing → `/dashboard/marketing`. |
+| #   | File                                                       | Modifica                                                                                                                                                                                                                                       |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `src/lib/supabase/types.ts`                                | Aggiunto tipo per la view `athlete_marketing_metrics` (Row: athlete_id, workouts_total_count, workouts_solo_count, workouts_coached_count, last_workout_at) per tipizzare la query lato API.                                                   |
+| 2   | `src/app/api/marketing/kpi/route.ts`                       | **Nuovo.** GET: verifica sessione e ruolo (solo `admin` o `marketing`); con `createAdminClient()` legge dalla view `athlete_marketing_metrics`; restituisce JSON. Marketing non accede mai a `workout_logs`/`workout_plans`.                   |
+| 3   | `src/app/dashboard/marketing/page.tsx`                     | **Nuovo.** Pagina dashboard marketing: guard su ruolo (solo `marketing` o `admin`), fetch `GET /api/marketing/kpi`, mostra card (totale allenamenti, solo, coached, % coached, ultimo allenamento) e tabella per atleta. Solo dati dalla view. |
+| 4   | `src/components/shared/dashboard/sidebar.tsx`              | Aggiunto ramo `userRole === 'marketing'`: nav con Dashboard → `/dashboard/marketing`, Profilo, Impostazioni.                                                                                                                                   |
+| 5   | `src/components/shared/dashboard/dashboard-mobile-nav.tsx` | Stessa nav per ruolo `marketing`; link logo per marketing → `/dashboard/marketing`.                                                                                                                                                            |
 
 ---
 

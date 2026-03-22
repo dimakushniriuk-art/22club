@@ -18,7 +18,6 @@ import { ErrorState } from '@/components/dashboard/error-state'
 import { User, Mail, Phone, Calendar, MapPin, Edit, Save, X, AlertCircle } from 'lucide-react'
 import { sanitizeString, sanitizeEmail, sanitizePhone } from '@/lib/sanitize'
 
-
 interface AthleteAnagraficaTabProps {
   athleteId: string
 }

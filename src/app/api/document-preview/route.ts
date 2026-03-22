@@ -12,30 +12,22 @@ export async function GET(request: NextRequest) {
   const path = searchParams.get('path')
 
   if (!bucket || !path) {
-    return NextResponse.json(
-      { error: 'Parametri bucket e path richiesti' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Parametri bucket e path richiesti' }, { status: 400 })
   }
 
   const supabase = await createClient()
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(path, 60 * 10)
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10)
 
   if (error || !data?.signedUrl) {
     return NextResponse.json(
       { error: error?.message ?? 'Impossibile generare signed URL' },
-      { status: 403 }
+      { status: 403 },
     )
   }
 
   const fileRes = await fetch(data.signedUrl)
   if (!fileRes.ok) {
-    return NextResponse.json(
-      { error: 'File non disponibile' },
-      { status: fileRes.status }
-    )
+    return NextResponse.json({ error: 'File non disponibile' }, { status: fileRes.status })
   }
 
   const contentType = fileRes.headers.get('content-type') ?? 'application/octet-stream'

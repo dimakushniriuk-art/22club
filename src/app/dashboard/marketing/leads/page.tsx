@@ -74,7 +74,9 @@ export default function MarketingLeadsPage() {
       }
     }
     fetchLeads()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [loading, role, router, statusFilter])
 
   const filtered = data.filter((row) => {
@@ -124,7 +126,9 @@ export default function MarketingLeadsPage() {
         >
           <SelectItem value="tutti">Tutti gli stati</SelectItem>
           {Object.entries(STATUS_LABELS).map(([value, label]) => (
-            <SelectItem key={value} value={value}>{label}</SelectItem>
+            <SelectItem key={value} value={value}>
+              {label}
+            </SelectItem>
           ))}
         </Select>
       </div>
@@ -140,7 +144,9 @@ export default function MarketingLeadsPage() {
       ) : (
         <Card className="bg-background-secondary/80 border-border">
           <CardHeader>
-            <CardTitle className="text-base text-text-primary">Elenco lead ({filtered.length})</CardTitle>
+            <CardTitle className="text-base text-text-primary">
+              Elenco lead ({filtered.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {filtered.length === 0 ? (
@@ -153,9 +159,9 @@ export default function MarketingLeadsPage() {
                       <TableHead className="text-text-secondary">Nome</TableHead>
                       <TableHead className="text-text-secondary">Email</TableHead>
                       <TableHead className="text-text-secondary">Fonte</TableHead>
-                        <TableHead className="text-text-secondary">Stato</TableHead>
-                        <TableHead className="text-text-secondary">Data</TableHead>
-                        <TableHead className="text-text-secondary w-24"></TableHead>
+                      <TableHead className="text-text-secondary">Stato</TableHead>
+                      <TableHead className="text-text-secondary">Data</TableHead>
+                      <TableHead className="text-text-secondary w-24"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -172,7 +178,9 @@ export default function MarketingLeadsPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-text-muted text-sm">
-                          {row.created_at ? new Date(row.created_at).toLocaleDateString('it-IT') : '-'}
+                          {row.created_at
+                            ? new Date(row.created_at).toLocaleDateString('it-IT')
+                            : '-'}
                         </TableCell>
                         <TableCell className="space-x-2">
                           <Button variant="outline" size="sm" asChild>
@@ -180,7 +188,10 @@ export default function MarketingLeadsPage() {
                           </Button>
                           {row.status === 'converted' && row.converted_athlete_profile_id && (
                             <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/dashboard/atleti/${row.converted_athlete_profile_id}`} className="inline-flex items-center gap-1">
+                              <Link
+                                href={`/dashboard/atleti/${row.converted_athlete_profile_id}`}
+                                className="inline-flex items-center gap-1"
+                              >
                                 <ExternalLink className="h-3.5 w-3.5" />
                                 Vai al profilo
                               </Link>

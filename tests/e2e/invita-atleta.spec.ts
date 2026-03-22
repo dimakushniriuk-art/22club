@@ -51,7 +51,11 @@ test.describe('Pagina Invita Atleta', () => {
     const button = page.getByRole('button', { name: /Nuovo Invito/i })
     if (!(await button.count())) return
     await button.first().click()
-    await page.getByRole('button', { name: /Crea Invito/i }).first().click().catch(() => {})
+    await page
+      .getByRole('button', { name: /Crea Invito/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.locator('form'))
   })
 
@@ -59,18 +63,31 @@ test.describe('Pagina Invita Atleta', () => {
     const button = page.getByRole('button', { name: /Nuovo Invito/i })
     if (!(await button.count())) return
     await button.first().click()
-    await page.getByPlaceholder(/Mario Rossi/i).fill('Test Atleta').catch(() => {})
-    await page.getByPlaceholder(/@example.com/i).fill('test@example.com').catch(() => {})
+    await page
+      .getByPlaceholder(/Mario Rossi/i)
+      .fill('Test Atleta')
+      .catch(() => {})
+    await page
+      .getByPlaceholder(/@example.com/i)
+      .fill('test@example.com')
+      .catch(() => {})
     const select = page.locator('select').first()
     if (await select.count()) await select.selectOption('14').catch(() => {})
-    await page.getByRole('button', { name: /Crea/i }).first().click().catch(() => {})
+    await page
+      .getByRole('button', { name: /Crea/i })
+      .first()
+      .click()
+      .catch(() => {})
     await page.waitForTimeout(300)
   })
 
   test('should filter invitations by stato', async ({ page }) => {
     const buttons = page.getByRole('button', { name: /Inviati/i })
     if (!(await buttons.count())) return
-    await buttons.first().click().catch(() => {})
+    await buttons
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(buttons.first())
   })
 
@@ -84,21 +101,32 @@ test.describe('Pagina Invita Atleta', () => {
   test('should copy invitation code', async ({ page }) => {
     const hasInvitations = await page.locator('[aria-label="Copia codice"]').count()
     if (hasInvitations === 0) return
-    await page.locator('[aria-label="Copia codice"]').first().click().catch(() => {})
+    await page
+      .locator('[aria-label="Copia codice"]')
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/Copiato/i))
   })
 
   test('should show QR code modal', async ({ page }) => {
     const hasInvitations = await page.locator('[aria-label="Mostra QR Code"]').count()
     if (hasInvitations === 0) return
-    await page.locator('[aria-label="Mostra QR Code"]').first().click().catch(() => {})
+    await page
+      .locator('[aria-label="Mostra QR Code"]')
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/QR Code Invito/i))
   })
 
   test('should export CSV', async ({ page }) => {
     const exportBtn = page.getByRole('button', { name: /Export CSV/i })
     if (!(await exportBtn.count())) return
-    await exportBtn.first().click().catch(() => {})
+    await exportBtn
+      .first()
+      .click()
+      .catch(() => {})
   })
 
   test('should have breadcrumb navigation', async ({ page }) => {

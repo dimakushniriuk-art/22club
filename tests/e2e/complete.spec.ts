@@ -6,7 +6,7 @@ test.describe('Complete E2E Tests', () => {
 
   test('should complete full application lifecycle as PT', async ({ page }) => {
     // Complete application lifecycle: Login → Dashboard → Navigation → Key pages
-    
+
     // Step 1: Login as PT
     await page.goto('/login', { waitUntil: 'commit' })
     await page.context().clearCookies()
@@ -70,7 +70,7 @@ test.describe('Complete E2E Tests', () => {
   test('should handle cross-role navigation protection', async ({ page }) => {
     // Try to access PT-only pages without login
     await page.goto('/dashboard/admin')
-    
+
     // Should redirect to login
     await page.waitForURL(/login/, { timeout: 10000 }).catch(() => {})
     const isProtected = page.url().includes('login')
@@ -82,10 +82,10 @@ test.describe('Complete E2E Tests', () => {
     await page.addInitScript(() => {
       localStorage.setItem('cookie-consent', 'true')
     })
-    
+
     await page.goto('/login')
     await page.waitForLoadState('domcontentloaded')
-    
+
     // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
     await dismissCookieBanner(page)
 

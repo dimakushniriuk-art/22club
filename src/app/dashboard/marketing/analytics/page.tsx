@@ -3,15 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
-import {
-  BarChart2,
-  UserPlus,
-  Percent,
-  Megaphone,
-  Euro,
-  Activity,
-  Target,
-} from 'lucide-react'
+import { BarChart2, UserPlus, Percent, Megaphone, Euro, Activity, Target } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { AnalyticsPayload } from '@/app/api/marketing/analytics/route'
 
@@ -24,7 +16,11 @@ const FUNNEL_LABELS: Record<string, string> = {
 }
 
 function formatDate(s: string): string {
-  return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(s).toLocaleDateString('it-IT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 export default function MarketingAnalyticsPage() {
@@ -55,7 +51,7 @@ export default function MarketingAnalyticsPage() {
           setLoading(false)
           return
         }
-        const payload = await res.json() as AnalyticsPayload
+        const payload = (await res.json()) as AnalyticsPayload
         if (!cancelled) setData(payload)
       } catch {
         if (!cancelled) setError('Errore di rete')
@@ -64,7 +60,9 @@ export default function MarketingAnalyticsPage() {
       }
     }
     fetchAnalytics()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [role, authLoading, router])
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
@@ -178,7 +176,9 @@ export default function MarketingAnalyticsPage() {
           <div className="grid gap-6 min-[834px]:grid-cols-2">
             <Card className="border-border bg-background-secondary/80">
               <CardHeader>
-                <CardTitle className="text-base text-text-primary">Trend leads (7d, per giorno)</CardTitle>
+                <CardTitle className="text-base text-text-primary">
+                  Trend leads (7d, per giorno)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {data.trendLeads7d.length === 0 ? (
@@ -200,7 +200,9 @@ export default function MarketingAnalyticsPage() {
             </Card>
             <Card className="border-border bg-background-secondary/80">
               <CardHeader>
-                <CardTitle className="text-base text-text-primary">Trend leads (30d, per settimana)</CardTitle>
+                <CardTitle className="text-base text-text-primary">
+                  Trend leads (30d, per settimana)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {data.trendLeads30d.length === 0 ? (
@@ -234,19 +236,27 @@ export default function MarketingAnalyticsPage() {
               <div className="grid grid-cols-2 gap-4 min-[834px]:grid-cols-5">
                 <div className="rounded-lg border border-border/50 px-3 py-2">
                   <div className="text-xs text-text-muted">Coached 7d</div>
-                  <div className="text-lg font-semibold tabular-nums">{data.atletiKpi.workoutsCoached7d}</div>
+                  <div className="text-lg font-semibold tabular-nums">
+                    {data.atletiKpi.workoutsCoached7d}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-border/50 px-3 py-2">
                   <div className="text-xs text-text-muted">Solo 7d</div>
-                  <div className="text-lg font-semibold tabular-nums">{data.atletiKpi.workoutsSolo7d}</div>
+                  <div className="text-lg font-semibold tabular-nums">
+                    {data.atletiKpi.workoutsSolo7d}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-border/50 px-3 py-2">
                   <div className="text-xs text-text-muted">Coached 30d</div>
-                  <div className="text-lg font-semibold tabular-nums">{data.atletiKpi.workoutsCoached30d}</div>
+                  <div className="text-lg font-semibold tabular-nums">
+                    {data.atletiKpi.workoutsCoached30d}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-border/50 px-3 py-2">
                   <div className="text-xs text-text-muted">Solo 30d</div>
-                  <div className="text-lg font-semibold tabular-nums">{data.atletiKpi.workoutsSolo30d}</div>
+                  <div className="text-lg font-semibold tabular-nums">
+                    {data.atletiKpi.workoutsSolo30d}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-border/50 px-3 py-2">
                   <div className="text-xs text-text-muted">Inattivi (&gt;30d)</div>
@@ -263,7 +273,8 @@ export default function MarketingAnalyticsPage() {
             <CardHeader>
               <CardTitle className="text-base text-text-primary">Campagne attive</CardTitle>
               <p className="text-sm text-text-secondary">
-                Eventi ultimi 7 giorni (totali: {data.eventsTotal7d}). Con campaign_id nel payload: conteggio per campagna.
+                Eventi ultimi 7 giorni (totali: {data.eventsTotal7d}). Con campaign_id nel payload:
+                conteggio per campagna.
               </p>
             </CardHeader>
             <CardContent>
@@ -279,8 +290,9 @@ export default function MarketingAnalyticsPage() {
                       <div>
                         <p className="font-medium">{c.name}</p>
                         <p className="text-sm text-text-muted">
-                          {c.budget != null ? `€ ${Number(c.budget).toLocaleString('it-IT')}` : '–'} ·{' '}
-                          {c.start_at ? formatDate(c.start_at) : '–'} → {c.end_at ? formatDate(c.end_at) : '–'}
+                          {c.budget != null ? `€ ${Number(c.budget).toLocaleString('it-IT')}` : '–'}{' '}
+                          · {c.start_at ? formatDate(c.start_at) : '–'} →{' '}
+                          {c.end_at ? formatDate(c.end_at) : '–'}
                         </p>
                       </div>
                       <div className="text-right">

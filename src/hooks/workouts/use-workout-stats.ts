@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { WorkoutStats } from '@/types/workout'
 import type { Tables } from '@/types/supabase'

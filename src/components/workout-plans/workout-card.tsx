@@ -21,6 +21,7 @@ interface WorkoutCardProps {
   onWorkoutClick: (workout: Workout) => void
   onViewClick: (workout: Workout) => void
   onDeleteClick?: (workout: Workout) => void
+  onDuplicateClick?: (workout: Workout) => void | Promise<void>
   getStatusColor: (status: string) => string
   getStatusText: (status: string) => string
   formatDate: (dateString: string) => string
@@ -32,6 +33,7 @@ export function WorkoutCard({
   onWorkoutClick,
   onViewClick,
   onDeleteClick,
+  onDuplicateClick,
   getStatusColor,
   getStatusText,
   formatDate,
@@ -39,11 +41,24 @@ export function WorkoutCard({
   const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const statusColor = getStatusColor(workout.status || 'attivo')
-  const isActive = statusColor === 'success'
-  const statusBadgeClass = isActive
-    ? 'rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium px-2.5 py-0.5 shrink-0'
-    : 'rounded-md bg-white/5 border border-white/10 text-text-tertiary text-xs font-medium px-2.5 py-0.5 shrink-0'
+  const [isDuplicating, setIsDuplicating] = useState(false)
+  const status = workout.status ?? 'attivo'
+  const statusColor = getStatusColor(status)
+  const isBozza = status === 'bozza' || status === 'draft'
+  const actionButtonCount = 2 + (onDuplicateClick ? 1 : 0) + (onDeleteClick ? 1 : 0)
+  const actionGridClass =
+    actionButtonCount >= 4
+      ? 'grid grid-cols-2 gap-2 pt-3 w-full min-w-0 sm:grid-cols-4'
+      : actionButtonCount === 3
+        ? 'grid grid-cols-3 gap-2 pt-3 w-full min-w-0'
+        : 'grid grid-cols-2 gap-2 pt-3 w-full min-w-0'
+
+  const statusBadgeClass =
+    statusColor === 'success'
+      ? 'rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium px-2.5 py-0.5 shrink-0'
+      : isBozza || statusColor === 'warning'
+        ? 'rounded-md bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-medium px-2.5 py-0.5 shrink-0'
+        : 'rounded-md bg-white/5 border border-white/10 text-text-tertiary text-xs font-medium px-2.5 py-0.5 shrink-0'
 
   const cardClass =
     'group relative overflow-hidden cursor-pointer rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20'
@@ -54,10 +69,7 @@ export function WorkoutCard({
   if (viewMode === 'list') {
     return (
       <>
-        <Card
-          className={cardClass}
-          onClick={() => onWorkoutClick(workout)}
-        >
+        <Card className={cardClass} onClick={() => onWorkoutClick(workout)}>
           <CardContent className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
               <div className="space-y-4">
@@ -69,7 +81,9 @@ export function WorkoutCard({
                 <div className="space-y-2">
                   <div className="flex justify-between gap-2">
                     <span className={labelClass}>Assegnata a</span>
-                    <span className={`${valueClass} text-right`}>{workout.athlete_name || '—'}</span>
+                    <span className={`${valueClass} text-right`}>
+                      {workout.athlete_name || '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between gap-2">
                     <span className={labelClass}>Obiettivo</span>
@@ -90,24 +104,68 @@ export function WorkoutCard({
                   </div>
                   <div className="flex justify-between gap-2">
                     <span className={labelClass}>Data</span>
-                    <span className={`${valueClass} text-right`}>{formatDate(workout.created_at)}</span>
+                    <span className={`${valueClass} text-right`}>
+                      {formatDate(workout.created_at)}
+                    </span>
                   </div>
                   <div className="flex justify-end">
-                    <span className={statusBadgeClass}>{getStatusText(workout.status || 'attivo')}</span>
+                    <span className={statusBadgeClass}>{getStatusText(status)}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
-              <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onViewClick(workout) }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onViewClick(workout)
+                }}
+              >
                 Visualizza
               </Button>
-              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/schede/${workout.id}/modifica`) }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/dashboard/schede/${workout.id}/modifica`)
+                }}
+              >
                 Modifica
               </Button>
+              {onDuplicateClick && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isDuplicating}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void (async () => {
+                      setIsDuplicating(true)
+                      try {
+                        await onDuplicateClick(workout)
+                      } finally {
+                        setIsDuplicating(false)
+                      }
+                    })()
+                  }}
+                >
+                  Duplica
+                </Button>
+              )}
               {onDeleteClick && (
-                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true) }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteDialogOpen(true)
+                  }}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
@@ -141,24 +199,28 @@ export function WorkoutCard({
 
   return (
     <>
-      <Card
-        className={`${cardClass} h-full flex flex-col`}
-        onClick={() => onWorkoutClick(workout)}
-      >
+      <Card className={`${cardClass} h-full flex flex-col`} onClick={() => onWorkoutClick(workout)}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle size="sm" className="line-clamp-2 text-base font-semibold text-text-primary underline decoration-border underline-offset-2">
+            <CardTitle
+              size="sm"
+              className="line-clamp-2 text-base font-semibold text-text-primary underline decoration-border underline-offset-2"
+            >
               {workout.name}
             </CardTitle>
-            <span className={statusBadgeClass}>{getStatusText(workout.status || 'attivo')}</span>
+            <span className={statusBadgeClass}>{getStatusText(status)}</span>
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col justify-end space-y-0">
           <div className="space-y-3 pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <Goal className={iconClass} />
-              <span className={`text-sm line-clamp-1 ${workout.objective ? 'text-text-primary' : 'text-text-tertiary italic'}`}>
-                {workout.objective ? getObjectiveLabel(workout.objective) : 'Obiettivo non specificato'}
+              <span
+                className={`text-sm line-clamp-1 ${workout.objective ? 'text-text-primary' : 'text-text-tertiary italic'}`}
+              >
+                {workout.objective
+                  ? getObjectiveLabel(workout.objective)
+                  : 'Obiettivo non specificato'}
               </span>
             </div>
           </div>
@@ -179,16 +241,61 @@ export function WorkoutCard({
           {workout.description && (
             <p className="text-text-tertiary line-clamp-2 text-xs py-2">{workout.description}</p>
           )}
-          <div className="flex gap-2 pt-3">
-            <Button variant="outline" size="sm" className="flex-1" onClick={(e) => { e.stopPropagation(); onViewClick(workout) }}>
+          <div className={actionGridClass}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-w-0 w-full"
+              onClick={(e) => {
+                e.stopPropagation()
+                onViewClick(workout)
+              }}
+            >
               Visualizza
             </Button>
-            <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/schede/${workout.id}/modifica`) }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-w-0 w-full"
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/dashboard/schede/${workout.id}/modifica`)
+              }}
+            >
               Modifica
             </Button>
+            {onDuplicateClick && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-w-0 w-full"
+                disabled={isDuplicating}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  void (async () => {
+                    setIsDuplicating(true)
+                    try {
+                      await onDuplicateClick(workout)
+                    } finally {
+                      setIsDuplicating(false)
+                    }
+                  })()
+                }}
+              >
+                Duplica
+              </Button>
+            )}
             {onDeleteClick && (
-              <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true) }}>
-                <Trash2 className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-w-0 w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setDeleteDialogOpen(true)
+                }}
+              >
+                <Trash2 className="h-4 w-4 mx-auto" />
               </Button>
             )}
           </div>

@@ -8,6 +8,7 @@
 **`schema-with-data.sql` è l'UNICA fonte di verità per lo schema del database.**
 
 Tutte le modifiche al database devono:
+
 1. ✅ Essere basate su questo file
 2. ✅ Essere applicate a questo file dopo l'esecuzione
 3. ✅ Essere sincronizzate con questo file
@@ -135,6 +136,7 @@ diff supabase-config-export/schema-with-data.sql supabase-config-export/schema-c
 ## 🎯 Obiettivo
 
 Mantenere `schema-with-data.sql` sempre:
+
 - ✅ Sincronizzato con il database reale
 - ✅ Aggiornato dopo ogni modifica
 - ✅ Usato come base per tutte le nuove migrazioni

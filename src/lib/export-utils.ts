@@ -62,7 +62,7 @@ export async function exportToPDF(data: ExportData, filename: string) {
   try {
     // Import dinamico di jsPDF per evitare problemi SSR
     const { jsPDF } = await import('jspdf')
-    
+
     // Crea nuovo documento PDF (A4, portrait)
     const doc = new jsPDF({
       orientation: 'landscape', // Landscape per tabelle larghe
@@ -74,7 +74,7 @@ export async function exportToPDF(data: ExportData, filename: string) {
     doc.setFontSize(18)
     doc.setFont('helvetica', 'bold')
     doc.text('REPORT CLIENTI', 14, 20)
-    
+
     doc.setFontSize(10)
     doc.setFont('helvetica', 'normal')
     doc.text(`Generato il: ${new Date().toLocaleString('it-IT')}`, 14, 27)
@@ -82,9 +82,7 @@ export async function exportToPDF(data: ExportData, filename: string) {
 
     // Prepara i dati per la tabella
     const headers = Object.keys(data[0])
-    const tableData = data.map((row) =>
-      headers.map((header) => String(row[header] || 'N/A')),
-    )
+    const tableData = data.map((row) => headers.map((header) => String(row[header] || 'N/A')))
 
     // Configurazione tabella
     const pageWidth = doc.internal.pageSize.getWidth()
@@ -100,11 +98,11 @@ export async function exportToPDF(data: ExportData, filename: string) {
     let currentY = startY
     doc.setFillColor(52, 152, 219) // Colore header (blu)
     doc.rect(margin, currentY - 5, tableWidth, 7, 'F')
-    
+
     doc.setTextColor(255, 255, 255) // Testo bianco per header
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9)
-    
+
     let currentX = margin
     headers.forEach((header, index) => {
       doc.text(header, currentX + 2, currentY, {
@@ -120,7 +118,7 @@ export async function exportToPDF(data: ExportData, filename: string) {
     // Disegna righe dati
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    
+
     const rowHeight = 7
     let dataIndex = 0
 
@@ -129,14 +127,14 @@ export async function exportToPDF(data: ExportData, filename: string) {
       if (currentY + rowHeight > pageHeight - 10) {
         doc.addPage()
         currentY = margin + 10
-        
+
         // Ridisegna header su nuova pagina
         doc.setFillColor(52, 152, 219)
         doc.rect(margin, currentY - 5, tableWidth, 7, 'F')
         doc.setTextColor(255, 255, 255)
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(9)
-        
+
         currentX = margin
         headers.forEach((header, index) => {
           doc.text(header, currentX + 2, currentY, {
@@ -145,7 +143,7 @@ export async function exportToPDF(data: ExportData, filename: string) {
           })
           currentX += columnWidths[index]
         })
-        
+
         currentY += 8
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(8)
@@ -162,14 +160,14 @@ export async function exportToPDF(data: ExportData, filename: string) {
         })
         currentX += columnWidths[cellIndex]
       })
-      
+
       currentY += rowHeight
       dataIndex++
     }
 
     // Salva PDF
     doc.save(filename)
-    
+
     logger.debug('PDF generato con successo', { filename, rows: data.length })
   } catch (err) {
     logger.error('Errore generazione PDF', err, { filename })
@@ -197,18 +195,18 @@ function downloadBlob(blob: Blob, filename: string) {
 export function formatClientiForExport(clienti: unknown[]): ExportData {
   return clienti.map((cliente) => {
     const c = cliente as Record<string, unknown>
-    
+
     // Usa first_name/last_name come primari con fallback a nome/cognome per compatibilità
     const firstName = (c.first_name as string) || (c.nome as string) || ''
     const lastName = (c.last_name as string) || (c.cognome as string) || ''
     const nomeCompleto = `${firstName} ${lastName}`.trim() || 'N/A'
-    
+
     // Validazione email
     const email = (c.email as string) || 'N/A'
-    
+
     // Validazione telefono
     const phone = (c.phone as string) || 'N/A'
-    
+
     // Validazione data_iscrizione con fallback
     let dataIscrizione = 'N/A'
     if (c.data_iscrizione) {
@@ -230,19 +228,19 @@ export function formatClientiForExport(clienti: unknown[]): ExportData {
         // Se conversione fallisce, mantieni 'N/A'
       }
     }
-    
+
     // Validazione stato
     const stato = (c.stato as string) || 'N/A'
-    
+
     // Validazione allenamenti_mese
     const allenamentiMese = typeof c.allenamenti_mese === 'number' ? c.allenamenti_mese : 0
-    
+
     // Validazione scheda_attiva
     const schedaAttiva = (c.scheda_attiva as string) || 'Nessuna'
-    
+
     // Validazione documenti_scadenza
     const documentiScadenza = Boolean(c.documenti_scadenza) ? 'Sì' : 'No'
-    
+
     return {
       Nome: nomeCompleto,
       Email: email,

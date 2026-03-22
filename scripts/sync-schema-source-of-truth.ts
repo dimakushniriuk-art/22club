@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Script per sincronizzare schema-with-data.sql come fonte di verità
- * 
+ *
  * Questo script:
  * 1. Verifica che schema-with-data.sql esista
  * 2. Esporta lo schema attuale dal database
@@ -41,7 +41,7 @@ let databaseUrl: string | undefined
 try {
   const envContent = readFileSync(join(projectRoot, 'env.local'), 'utf-8')
   const envLines = envContent.split('\n')
-  
+
   for (const line of envLines) {
     if (line.startsWith('DATABASE_URL=') || line.startsWith('DIRECT_URL=')) {
       const match = line.match(/^[^=]+="?([^"]+)"?$/)
@@ -52,7 +52,7 @@ try {
     }
   }
 } catch {
-  console.log('⚠️  Impossibile leggere env.local, userò variabili d\'ambiente\n')
+  console.log("⚠️  Impossibile leggere env.local, userò variabili d'ambiente\n")
 }
 
 databaseUrl = databaseUrl || process.env.DATABASE_URL || process.env.DIRECT_URL
@@ -73,13 +73,13 @@ try {
     {
       stdio: 'inherit',
       cwd: projectRoot,
-      env: { ...process.env }
-    }
+      env: { ...process.env },
+    },
   )
   console.log(`\n✅ Schema esportato in: ${EXPORT_FILE}\n`)
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err))
-  console.error('❌ Errore durante l\'esportazione:')
+  console.error("❌ Errore durante l'esportazione:")
   console.error(`   ${error.message}\n`)
   console.error('💡 Verifica:')
   console.error('   1. La connection string è corretta')
@@ -124,11 +124,11 @@ console.log('   (Confronto prime 100 righe)')
 if (sourceHash !== exportHash) {
   console.log('\n   ⚠️  Le prime 100 righe sono diverse')
   console.log('   💡 Il database potrebbe essere stato modificato\n')
-  
+
   // Mostra un sample delle differenze
   const sourceSample = sourceContent.split('\n').slice(0, 5).join('\n')
   const exportSample = exportContent.split('\n').slice(0, 5).join('\n')
-  
+
   if (sourceSample !== exportSample) {
     console.log('   Sample fonte di verità (prime 5 righe):')
     console.log('   ' + sourceSample.split('\n')[0])
@@ -144,7 +144,7 @@ console.log(`   cp ${EXPORT_FILE} ${SOURCE_OF_TRUTH}\n`)
 
 console.log('📋 Prossimi passi:')
 console.log('   1. Verifica le differenze tra i file')
-console.log('   2. Se l\'export è corretto, aggiorna schema-with-data.sql')
+console.log("   2. Se l'export è corretto, aggiorna schema-with-data.sql")
 console.log('   3. Committa il file aggiornato nel repository\n')
 
 process.exit(0)

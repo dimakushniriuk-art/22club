@@ -1,4 +1,5 @@
 # 📊 ANALISI RISULTATI RLS POLICIES
+
 **Data**: 2025-01-27  
 **File**: Risultati query `PAGE_AUDIT_STEP2_VERIFICA_RLS.sql`
 
@@ -7,10 +8,12 @@
 ## ✅ RISULTATI RACCOLTI
 
 ### 1. Stato RLS ✅
+
 ```
 tablename    | rls_enabled | stato_rls
 appointments | true        | ATTIVO
 ```
+
 **Stato**: ✅ RLS è **ATTIVO** su `appointments`
 
 ---
@@ -24,6 +27,7 @@ Le policies attuali usano **subquery dirette su `profiles`** che possono causare
 #### Policies Esistenti (PROBLEMATICHE):
 
 1. **`authenticated_users_select_appointments`** (SELECT)
+
    ```sql
    USING (
      athlete_id IN (SELECT profiles.id FROM profiles WHERE profiles.user_id = auth.uid())
@@ -32,9 +36,11 @@ Le policies attuali usano **subquery dirette su `profiles`** che possono causare
      OR EXISTS (SELECT 1 FROM profiles WHERE profiles.user_id = auth.uid() AND role IN (...))
    )
    ```
+
    **Problema**: Subquery `SELECT profiles.id FROM profiles` → **RICORSIONE RLS** ⚠️
 
 2. **`authenticated_users_insert_appointments`** (INSERT)
+
    ```sql
    WITH CHECK (
      auth.uid() IS NOT NULL
@@ -42,9 +48,11 @@ Le policies attuali usano **subquery dirette su `profiles`** che possono causare
           OR EXISTS (SELECT 1 FROM profiles WHERE profiles.user_id = auth.uid() AND role IN (...)))
    )
    ```
+
    **Problema**: Subquery `SELECT profiles.id FROM profiles` → **RICORSIONE RLS** ⚠️
 
 3. **`authenticated_users_update_appointments`** (UPDATE)
+
    ```sql
    USING (
      staff_id IN (SELECT profiles.id FROM profiles WHERE profiles.user_id = auth.uid())
@@ -53,6 +61,7 @@ Le policies attuali usano **subquery dirette su `profiles`** che possono causare
    )
    WITH CHECK (...stesso problema...)
    ```
+
    **Problema**: Subquery `SELECT profiles.id FROM profiles` → **RICORSIONE RICORSIONE RLS** ⚠️
 
 4. **`authenticated_users_delete_appointments`** (DELETE)
@@ -70,6 +79,7 @@ Le policies attuali usano **subquery dirette su `profiles`** che possono causare
 ## 🔍 PERCHÉ È UN PROBLEMA?
 
 ### Ricorsione RLS:
+
 1. Utente esegue query su `appointments`
 2. RLS policy valida accesso usando subquery `SELECT profiles.id FROM profiles`
 3. `profiles` ha RLS attivo
@@ -80,6 +90,7 @@ Le policies attuali usano **subquery dirette su `profiles`** che possono causare
    - ⚠️ Problemi di timing/race conditions
 
 ### Esempio Problema Reale:
+
 ```
 Utente fa login → Supabase valida token → Query appointments →
 RLS policy usa subquery profiles → RLS policy profiles valida →
@@ -93,16 +104,19 @@ Possibile errore: "permission denied for table profiles"
 ### Pattern Corretto (già usato in altre tabelle):
 
 Invece di:
+
 ```sql
 staff_id IN (SELECT profiles.id FROM profiles WHERE profiles.user_id = auth.uid())
 ```
 
 Usare:
+
 ```sql
 staff_id = get_current_staff_profile_id()
 ```
 
 Dove `get_current_staff_profile_id()` è una funzione `SECURITY DEFINER` che:
+
 - Disabilita RLS internamente (`set_config('row_security', 'off', true)`)
 - Esegue query su `profiles` senza RLS
 - Restituisce `profiles.id` senza ricorsione
@@ -114,6 +128,7 @@ Dove `get_current_staff_profile_id()` è una funzione `SECURITY DEFINER` che:
 ### File: `PAGE_AUDIT_STEP3_SQL_FIX_V2.sql`
 
 #### Cosa fa:
+
 1. ✅ **Verifica/crea funzioni helper**:
    - `get_current_staff_profile_id()` → Restituisce `profiles.id` staff corrente
    - `get_current_athlete_profile_id()` → Restituisce `profiles.id` atleta corrente
@@ -139,23 +154,28 @@ Dove `get_current_staff_profile_id()` è una funzione `SECURITY DEFINER` che:
 ## 🚀 ISTRUZIONI ESECUZIONE
 
 ### 1. Backup (Importante!)
+
 ```sql
 -- Fare backup completo del database prima di procedere
 ```
 
 ### 2. Eseguire Script Fix
+
 ```sql
 -- Copiare ed eseguire: PAGE_AUDIT_STEP3_SQL_FIX_V2.sql
 ```
 
 ### 3. Verificare Risultati
+
 Dopo l'esecuzione, verificare che:
+
 - ✅ Policies NON abbiano subquery `SELECT profiles` (PARTE 7.2)
 - ✅ Policies usino funzioni helper (`get_current_staff_profile_id`, `is_admin`)
 - ✅ Ruolo `anon` NON abbia permessi (PARTE 7.3)
 - ✅ Funzioni helper esistano (PARTE 7.4)
 
 ### 4. Test Funzionale
+
 - ✅ Testare login staff → dovrebbe vedere solo propri appuntamenti
 - ✅ Testare login admin → dovrebbe vedere tutti gli appuntamenti della propria org
 - ✅ Testare login atleta → dovrebbe vedere solo propri appuntamenti
@@ -166,6 +186,7 @@ Dopo l'esecuzione, verificare che:
 ## ✅ CRITERI DI ACCETTAZIONE
 
 ### Fix Completato con Successo se:
+
 - ✅ Policies NON hanno subquery `SELECT profiles` dirette
 - ✅ Policies usano funzioni helper (`get_current_staff_profile_id()`, `is_admin()`, ecc.)
 - ✅ Verifica PARTE 7.2 mostra: `✅ USA funzione helper` (NON `❌ SUBQUERY RICORSIVA`)

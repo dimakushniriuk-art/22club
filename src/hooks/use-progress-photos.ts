@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import type { ProgressPhoto } from '@/types/progress'

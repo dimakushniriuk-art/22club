@@ -82,7 +82,12 @@ export async function GET() {
       type: string | null
       status: string | null
       athlete_id: string
-      athlete: { avatar?: string | null; avatar_url?: string | null; nome?: string | null; cognome?: string | null } | null
+      athlete: {
+        avatar?: string | null
+        avatar_url?: string | null
+        nome?: string | null
+        cognome?: string | null
+      } | null
     }
     const appointmentsTyped = (appointments || []) as AppointmentRow[]
     const formattedAppointments = appointmentsTyped
@@ -125,7 +130,12 @@ export async function GET() {
         const athleteRecord = apt.athlete
         const athleteProfile =
           athleteRecord && typeof athleteRecord === 'object' && !('message' in athleteRecord)
-            ? (athleteRecord as { avatar?: string | null; avatar_url?: string | null; nome?: string | null; cognome?: string | null })
+            ? (athleteRecord as {
+                avatar?: string | null
+                avatar_url?: string | null
+                nome?: string | null
+                cognome?: string | null
+              })
             : null
 
         const athleteName =

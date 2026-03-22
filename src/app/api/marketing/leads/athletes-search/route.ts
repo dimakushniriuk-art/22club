@@ -4,7 +4,12 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api:marketing:leads:athletes-search')
 
-type RpcRow = { athlete_id: string; first_name: string | null; last_name: string | null; email: string | null }
+type RpcRow = {
+  athlete_id: string
+  first_name: string | null
+  last_name: string | null
+  email: string | null
+}
 
 /**
  * GET /api/marketing/leads/athletes-search?q=
@@ -41,10 +46,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.warn('Errore RPC search_athletes_for_marketing', error)
-      return NextResponse.json(
-        { error: error.message || 'Errore ricerca atleti' },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: error.message || 'Errore ricerca atleti' }, { status: 500 })
     }
 
     const list = (Array.isArray(rows) ? rows : []) as RpcRow[]
@@ -58,9 +60,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data })
   } catch (err) {
     logger.error('Errore API marketing leads athletes-search', err)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

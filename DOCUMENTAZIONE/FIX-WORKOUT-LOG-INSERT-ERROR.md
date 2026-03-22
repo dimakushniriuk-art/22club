@@ -6,11 +6,13 @@
 ## 🐛 Problema Identificato
 
 L'errore `Errore salvataggio workout_log {}` si verifica quando:
+
 1. **RLS Policy mancante**: Non c'è una policy che permette agli atleti di inserire i propri `workout_logs`
 2. **Errore non serializzato**: L'errore Supabase non viene serializzato correttamente nel logger
 3. **user_id mancante**: Alcune RLS policies verificano `user_id = auth.uid()` ma il campo non viene passato
 
 **Dettagli**:
+
 - Policy esistente: Solo "Staff can insert workout logs" (admin/pt)
 - Policy mancante: "Athletes can insert own workout logs"
 - Il codice inserisce `athlete_id` e `atleta_id` ma non `user_id`
@@ -22,11 +24,13 @@ L'errore `Errore salvataggio workout_log {}` si verifica quando:
 **File**: `src/app/home/allenamenti/oggi/page.tsx` (righe 673-720)
 
 **Modifiche**:
+
 - Serializzazione corretta dell'errore Supabase
 - Log dettagliati con tutte le informazioni
 - Messaggio errore più descrittivo
 
 **Prima**:
+
 ```typescript
 if (logError) {
   logger.error('Errore salvataggio workout_log', logError, { athleteId: profileTyped.id })
@@ -35,6 +39,7 @@ if (logError) {
 ```
 
 **Dopo**:
+
 ```typescript
 if (logError) {
   const errorDetails = {
@@ -56,10 +61,12 @@ if (logError) {
 **File**: `src/app/home/allenamenti/oggi/page.tsx` (righe 661-671)
 
 **Modifiche**:
+
 - Aggiunto `user_id` ai dati inseriti
 - `user_id` è necessario per alcune RLS policies che verificano `auth.uid()`
 
 **Prima**:
+
 ```typescript
 const workoutLogData = {
   athlete_id: profileTyped.id,
@@ -69,6 +76,7 @@ const workoutLogData = {
 ```
 
 **Dopo**:
+
 ```typescript
 const workoutLogData = {
   athlete_id: profileTyped.id,
@@ -82,6 +90,7 @@ const workoutLogData = {
 **File**: `supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql`
 
 **Contenuto**:
+
 - Crea policy "Athletes can insert own workout logs"
 - Permette agli atleti di inserire i propri `workout_logs`
 - Verifica che `athlete_id`, `atleta_id` o `user_id` corrispondano all'utente corrente
@@ -91,11 +100,13 @@ const workoutLogData = {
 ### 1. Esegui la Migration SQL
 
 **Opzione A: Supabase Dashboard**
+
 1. Vai su Supabase Dashboard > SQL Editor
 2. Copia il contenuto di `supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql`
 3. Esegui lo script
 
 **Opzione B: Supabase CLI**
+
 ```bash
 supabase db push
 ```
@@ -105,14 +116,14 @@ supabase db push
 Dopo aver eseguito la migration, verifica che la policy esista:
 
 ```sql
-SELECT 
+SELECT
   policyname,
   cmd,
   qual,
   with_check
-FROM pg_policies 
-WHERE schemaname = 'public' 
-  AND tablename = 'workout_logs' 
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND tablename = 'workout_logs'
   AND policyname = 'Athletes can insert own workout logs';
 ```
 

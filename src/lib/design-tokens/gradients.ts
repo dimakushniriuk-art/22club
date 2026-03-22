@@ -15,5 +15,6 @@ export const gradients = {
   /** Card gradient (athlete) */
   cardAthlete: 'linear-gradient(to bottom right, var(--tw-gradient-stops))', // use from-teal-900 to-cyan-900 in Tailwind
   /** Radial overlay for glass header */
-  glassHeaderRadial: 'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
+  glassHeaderRadial:
+    'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
 } as const

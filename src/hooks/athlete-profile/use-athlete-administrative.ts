@@ -7,7 +7,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { handleApiError } from '@/lib/error-handler'
 import { createLogger } from '@/lib/logger'
 import {
@@ -308,7 +308,8 @@ export function useUploadDocumentoContrattuale(athleteId: string | null) {
           .eq('athlete_id', athleteId)
           .single()
 
-        const documentiEsistenti: DocumentoContrattuale[] = (existing?.documenti_contrattuali ?? []) as unknown as DocumentoContrattuale[]
+        const documentiEsistenti: DocumentoContrattuale[] = (existing?.documenti_contrattuali ??
+          []) as unknown as DocumentoContrattuale[]
 
         // 5. Aggiungi nuovo documento all'array
         const documentiAggiornati = [...documentiEsistenti, nuovoDocumento]
@@ -317,7 +318,10 @@ export function useUploadDocumentoContrattuale(athleteId: string | null) {
         if (existing) {
           const { error: updateError } = await supabase
             .from('athlete_administrative_data')
-            .update({ documenti_contrattuali: documentiAggiornati as unknown as import('@/lib/supabase/types').Json })
+            .update({
+              documenti_contrattuali:
+                documentiAggiornati as unknown as import('@/lib/supabase/types').Json,
+            })
             .eq('athlete_id', athleteId)
 
           if (updateError) {
@@ -328,7 +332,9 @@ export function useUploadDocumentoContrattuale(athleteId: string | null) {
         } else {
           const { error: insertError } = await supabase.from('athlete_administrative_data').insert({
             athlete_id: athleteId,
-            documenti_contrattuali: [nuovoDocumento] as unknown as import('@/lib/supabase/types').Json,
+            documenti_contrattuali: [
+              nuovoDocumento,
+            ] as unknown as import('@/lib/supabase/types').Json,
           })
 
           if (insertError) {

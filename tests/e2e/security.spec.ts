@@ -53,13 +53,17 @@ test.describe('Security Tests', () => {
 
     // Should redirect to login or show access denied
     await page.waitForURL(/login|access-denied|unauthorized/, { timeout: 10000 }).catch(() => {})
-    
+
     // Verify we're not on the admin page or we got an error
     const currentUrl = page.url()
-    const isProtected = currentUrl.includes('login') || 
-                        !currentUrl.includes('/dashboard/admin') ||
-                        await page.getByText(/Accedi|Login|Accesso negato/i).isVisible().catch(() => false)
-    
+    const isProtected =
+      currentUrl.includes('login') ||
+      !currentUrl.includes('/dashboard/admin') ||
+      (await page
+        .getByText(/Accedi|Login|Accesso negato/i)
+        .isVisible()
+        .catch(() => false))
+
     expect(isProtected).toBeTruthy()
   })
 
@@ -69,7 +73,7 @@ test.describe('Security Tests', () => {
 
     // Should redirect to login
     await page.waitForURL(/login/, { timeout: 10000 }).catch(() => {})
-    
+
     const isOnLogin = page.url().includes('login')
     expect(isOnLogin).toBeTruthy()
   })
@@ -124,7 +128,11 @@ test.describe('Security Tests', () => {
 
     // Should show error message or stay on login page
     const isOnLogin = page.url().includes('login')
-    const hasError = await page.getByText(/Credenziali|Errore|Invalid|error|non valide/i).first().isVisible().catch(() => false)
+    const hasError = await page
+      .getByText(/Credenziali|Errore|Invalid|error|non valide/i)
+      .first()
+      .isVisible()
+      .catch(() => false)
 
     expect(isOnLogin || hasError).toBeTruthy()
   })

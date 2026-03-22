@@ -8,6 +8,7 @@
 ## 🔍 Analisi
 
 **Dati Push**:
+
 - ✅ Oggetti enumerati: 3736
 - ✅ Oggetti compressi: 3502/3502 (100%)
 - ✅ Oggetti scritti: 3735/3735 (100%) - **696.80 MiB**
@@ -96,15 +97,15 @@ for ($i = $batches; $i -ge 1; $i--) {
     $skip = ($i - 1) * $batchSize
     $commit = git log --oneline origin/main..HEAD | Select-Object -Skip $skip -First 1
     $commitHash = $commit.Split(' ')[0]
-    
+
     Write-Host "`nBatch $($batches - $i + 1)/$batches: Push fino a $commitHash" -ForegroundColor Yellow
     git push origin $commitHash:main
-    
+
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Errore nel push del batch $i" -ForegroundColor Red
         exit 1
     }
-    
+
     Start-Sleep -Seconds 2
 }
 

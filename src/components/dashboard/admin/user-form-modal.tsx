@@ -42,13 +42,21 @@ export function UserFormModal({ user, open, onClose, onSuccess }: UserFormModalP
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loadingTrainers, setLoadingTrainers] = useState(false)
   const [assignedTrainerId, setAssignedTrainerId] = useState<string | null>(null)
-  const [assignmentHistory, setAssignmentHistory] = useState<Array<{ trainerName: string | null; activated_at: string; deactivated_at: string | null }>>([])
+  const [assignmentHistory, setAssignmentHistory] = useState<
+    Array<{ trainerName: string | null; activated_at: string; deactivated_at: string | null }>
+  >([])
   const [formData, setFormData] = useState({
     email: '',
     nome: '',
     cognome: '',
     phone: '',
-    role: 'athlete' as 'admin' | 'trainer' | 'athlete' | 'marketing' | 'nutrizionista' | 'massaggiatore',
+    role: 'athlete' as
+      | 'admin'
+      | 'trainer'
+      | 'athlete'
+      | 'marketing'
+      | 'nutrizionista'
+      | 'massaggiatore',
     stato: 'attivo' as 'attivo' | 'inattivo' | 'sospeso',
     password: '',
     confirmPassword: '',
@@ -66,7 +74,7 @@ export function UserFormModal({ user, open, onClose, onSuccess }: UserFormModalP
     if (user && open && user.role === 'athlete') {
       loadAssignedTrainer(user.id)
       fetch(`/api/admin/users/assignments?athleteId=${user.id}`)
-        .then((r) => r.ok ? r.json() : null)
+        .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.history) setAssignmentHistory(data.history)
           else setAssignmentHistory([])
@@ -113,9 +121,7 @@ export function UserFormModal({ user, open, onClose, onSuccess }: UserFormModalP
       if (response.ok) {
         const data = await response.json()
         // Filtra solo trainer (pt o trainer)
-        const trainerList = (data.users || []).filter(
-          (u: User) => u.role === 'trainer',
-        )
+        const trainerList = (data.users || []).filter((u: User) => u.role === 'trainer')
         setTrainers(trainerList)
       }
     } catch (error) {
@@ -185,7 +191,8 @@ export function UserFormModal({ user, open, onClose, onSuccess }: UserFormModalP
         if (formData.role !== undefined) updateData.role = formData.role
         if (formData.stato !== undefined) updateData.stato = formData.stato
         if (formData.email !== undefined) updateData.email = formData.email
-        if (formData.password && formData.password.trim().length >= 6) updateData.password = formData.password
+        if (formData.password && formData.password.trim().length >= 6)
+          updateData.password = formData.password
 
         // Aggiungi trainer_id se è un atleta e c'è un trainer selezionato
         if (formData.role === 'athlete' && assignedTrainerId) {
@@ -426,7 +433,8 @@ export function UserFormModal({ user, open, onClose, onSuccess }: UserFormModalP
                 <SelectItem value="">Nessun trainer</SelectItem>
                 {trainers.map((trainer) => (
                   <SelectItem key={trainer.id} value={trainer.id}>
-                    {trainer.nome || ''} {trainer.cognome || ''} {trainer.email ? `(${trainer.email})` : ''}
+                    {trainer.nome || ''} {trainer.cognome || ''}{' '}
+                    {trainer.email ? `(${trainer.email})` : ''}
                   </SelectItem>
                 ))}
               </Select>
@@ -439,7 +447,8 @@ export function UserFormModal({ user, open, onClose, onSuccess }: UserFormModalP
                   <ul className="mt-1 max-h-24 overflow-y-auto text-xs text-text-secondary">
                     {assignmentHistory.map((h, i) => (
                       <li key={i}>
-                        {h.trainerName ?? 'Trainer'} · {h.activated_at?.slice(0, 10)} → {h.deactivated_at?.slice(0, 10) ?? 'ora'}
+                        {h.trainerName ?? 'Trainer'} · {h.activated_at?.slice(0, 10)} →{' '}
+                        {h.deactivated_at?.slice(0, 10) ?? 'ora'}
                       </li>
                     ))}
                   </ul>

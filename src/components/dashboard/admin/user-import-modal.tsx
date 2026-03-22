@@ -2,7 +2,13 @@
 
 import { useState, useRef } from 'react'
 import { Upload, CheckCircle2, XCircle, Download } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { notifySuccess, notifyError } from '@/lib/notifications'
 import { createLogger } from '@/lib/logger'
@@ -120,9 +126,9 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
     // Normalizza line endings
     const normalizedText = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     const lines = normalizedText.split('\n').filter((line) => line.trim().length > 0)
-    
+
     if (lines.length < 2) {
-      throw new Error('Il file CSV deve contenere almeno l\'intestazione e una riga di dati')
+      throw new Error("Il file CSV deve contenere almeno l'intestazione e una riga di dati")
     }
 
     // Rileva il separatore dalla prima riga
@@ -142,17 +148,20 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
       { patterns: ['telefono', 'phone', 'tel', 'cellulare', 'mobile'], key: 'phone' },
       { patterns: ['ruolo', 'role', 'ruolo utente'], key: 'role' },
       { patterns: ['stato', 'status', 'stato utente'], key: 'stato' },
-      { patterns: ['trainer assegnato', 'trainer', 'trainerassegnato', 'pt assegnato', 'pt assegn'], key: 'trainer_assegnato' },
+      {
+        patterns: ['trainer assegnato', 'trainer', 'trainerassegnato', 'pt assegnato', 'pt assegn'],
+        key: 'trainer_assegnato',
+      },
       { patterns: ['password', 'pwd', 'pass'], key: 'password' },
     ]
 
     // Trova gli indici delle colonne
     const columnIndices: Record<string, number> = {}
-    
+
     // Prima passata: match esatti (priorità alta)
     headers.forEach((header, index) => {
       const normalizedHeader = header.toLowerCase().trim()
-      
+
       for (const { patterns, key } of headerMap) {
         // Cerca match esatto prima
         for (const pattern of patterns) {
@@ -171,7 +180,7 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
     // Seconda passata: match parziali (solo se non trovato match esatto)
     headers.forEach((header, index) => {
       const normalizedHeader = header.toLowerCase().trim()
-      
+
       // Se questa colonna non è ancora mappata, prova match parziali
       let isMapped = false
       for (const key of Object.keys(columnIndices)) {
@@ -211,7 +220,7 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
       } else {
         const availableHeaders = headers.join(', ')
         throw new Error(
-          `Il file CSV deve contenere una colonna "Email". Colonne trovate: ${availableHeaders}`
+          `Il file CSV deve contenere una colonna "Email". Colonne trovate: ${availableHeaders}`,
         )
       }
     }
@@ -262,7 +271,8 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
       // Normalizza ruolo
       let role: UserRole = 'athlete'
       if (roleRaw === 'admin') role = 'admin'
-      else if (roleRaw === 'pt' || roleRaw === 'personal trainer' || roleRaw === 'trainer') role = 'trainer'
+      else if (roleRaw === 'pt' || roleRaw === 'personal trainer' || roleRaw === 'trainer')
+        role = 'trainer'
       else if (roleRaw === 'marketing') role = 'marketing'
       else if (roleRaw === 'nutrizionista') role = 'nutrizionista'
       else if (roleRaw === 'massaggiatore') role = 'massaggiatore'
@@ -308,7 +318,10 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
         parsedUsers = parseCSV(text)
       } catch (parseError) {
         logger.error('Errore parsing CSV', parseError)
-        notifyError('Errore', parseError instanceof Error ? parseError.message : 'Errore nel parsing del file CSV')
+        notifyError(
+          'Errore',
+          parseError instanceof Error ? parseError.message : 'Errore nel parsing del file CSV',
+        )
         setImporting(false)
         return
       }
@@ -345,7 +358,7 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
         const data = await response.json()
 
         if (!response.ok) {
-          throw new Error(data.error || 'Errore durante l\'import bulk')
+          throw new Error(data.error || "Errore durante l'import bulk")
         }
 
         // Converti i risultati dal formato API al formato del modal
@@ -366,7 +379,10 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
         const errorCount = data.errorCount || 0
 
         if (errorCount === 0) {
-          notifySuccess('Import completato', `Tutti i ${successCount} utenti sono stati importati con successo`)
+          notifySuccess(
+            'Import completato',
+            `Tutti i ${successCount} utenti sono stati importati con successo`,
+          )
         } else if (successCount > 0) {
           notifySuccess(
             'Import parzialmente completato',
@@ -382,13 +398,19 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
         }
       } catch (error) {
         logger.error('Errore import bulk CSV', error)
-        notifyError('Errore', error instanceof Error ? error.message : 'Errore durante l\'import del file CSV')
+        notifyError(
+          'Errore',
+          error instanceof Error ? error.message : "Errore durante l'import del file CSV",
+        )
         setImporting(false)
         return
       }
     } catch (error) {
       logger.error('Errore import CSV', error)
-      notifyError('Errore', error instanceof Error ? error.message : 'Errore durante l\'import del file CSV')
+      notifyError(
+        'Errore',
+        error instanceof Error ? error.message : "Errore durante l'import del file CSV",
+      )
     } finally {
       setImporting(false)
     }
@@ -398,15 +420,60 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
   const handleDownloadTemplate = () => {
     try {
       // Intestazioni CSV
-      const headers = ['Nome', 'Cognome', 'Email', 'Telefono', 'Ruolo', 'Stato', 'Trainer Assegnato', 'Password']
-      
+      const headers = [
+        'Nome',
+        'Cognome',
+        'Email',
+        'Telefono',
+        'Ruolo',
+        'Stato',
+        'Trainer Assegnato',
+        'Password',
+      ]
+
       // Righe di esempio
       const exampleRows = [
-        ['Mario', 'Rossi', 'mario.rossi@example.com', '+39123456789', 'athlete', 'attivo', 'luigi.verdi@example.com', 'Password123!'],
-        ['Luigi', 'Verdi', 'luigi.verdi@example.com', '+39987654321', 'trainer', 'attivo', '', 'Password123!'],
+        [
+          'Mario',
+          'Rossi',
+          'mario.rossi@example.com',
+          '+39123456789',
+          'athlete',
+          'attivo',
+          'luigi.verdi@example.com',
+          'Password123!',
+        ],
+        [
+          'Luigi',
+          'Verdi',
+          'luigi.verdi@example.com',
+          '+39987654321',
+          'trainer',
+          'attivo',
+          '',
+          'Password123!',
+        ],
         ['Giulia', 'Bianchi', 'giulia.bianchi@example.com', '', 'trainer', 'attivo', '', ''],
-        ['Marco', 'Neri', 'marco.neri@example.com', '+39111222333', 'nutrizionista', 'attivo', '', 'Password123!'],
-        ['Sofia', 'Gialli', 'sofia.gialli@example.com', '+39444555666', 'massaggiatore', 'attivo', '', 'Password123!'],
+        [
+          'Marco',
+          'Neri',
+          'marco.neri@example.com',
+          '+39111222333',
+          'nutrizionista',
+          'attivo',
+          '',
+          'Password123!',
+        ],
+        [
+          'Sofia',
+          'Gialli',
+          'sofia.gialli@example.com',
+          '+39444555666',
+          'massaggiatore',
+          'attivo',
+          '',
+          'Password123!',
+        ],
       ]
 
       // Crea contenuto CSV
@@ -420,7 +487,10 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
       link.setAttribute('href', url)
-      link.setAttribute('download', `template_import_utenti_${new Date().toISOString().split('T')[0]}.csv`)
+      link.setAttribute(
+        'download',
+        `template_import_utenti_${new Date().toISOString().split('T')[0]}.csv`,
+      )
       link.style.visibility = 'hidden'
       document.body.appendChild(link)
       link.click()
@@ -509,14 +579,21 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
                   </Button>
                 </div>
                 <div className="text-text-secondary text-xs space-y-1">
-                  <p>• Intestazione: Nome, Cognome, Email, Telefono, Ruolo, Stato, Trainer Assegnato, Password</p>
+                  <p>
+                    • Intestazione: Nome, Cognome, Email, Telefono, Ruolo, Stato, Trainer Assegnato,
+                    Password
+                  </p>
                   <p>• Email è obbligatoria</p>
                   <p>• Ruolo: admin, trainer, athlete, marketing, nutrizionista, massaggiatore</p>
                   <p>• Stato: attivo, inattivo, sospeso (default: attivo)</p>
-                  <p>• Trainer Assegnato: email o nome+cognome del trainer (solo per atleti, opzionale)</p>
+                  <p>
+                    • Trainer Assegnato: email o nome+cognome del trainer (solo per atleti,
+                    opzionale)
+                  </p>
                   <p>• Password: opzionale (default: Password123!)</p>
                   <p className="text-primary/80 mt-2">
-                    💡 <strong>Suggerimento:</strong> Scarica il template per vedere esempi di formato corretto
+                    💡 <strong>Suggerimento:</strong> Scarica il template per vedere esempi di
+                    formato corretto
                   </p>
                 </div>
               </div>
@@ -581,7 +658,9 @@ export function UserImportModal({ open, onClose, onSuccess }: UserImportModalPro
                               ? `${result.nome} ${result.cognome}`
                               : result.email}
                           </span>
-                          <span className="text-text-secondary text-xs">(Riga {result.rowNumber})</span>
+                          <span className="text-text-secondary text-xs">
+                            (Riga {result.rowNumber})
+                          </span>
                         </div>
                         <p
                           className={`text-xs ${

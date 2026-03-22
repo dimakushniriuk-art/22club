@@ -33,7 +33,12 @@ async function globalSetupAuth(_config: FullConfig) {
   }
 
   const needMarketing = MARKETING_CREDENTIALS && !isRecent(marketingStatePath)
-  if (isRecent(athleteStatePath) && isRecent(ptStatePath) && isRecent(adminStatePath) && !needMarketing) {
+  if (
+    isRecent(athleteStatePath) &&
+    isRecent(ptStatePath) &&
+    isRecent(adminStatePath) &&
+    !needMarketing
+  ) {
     console.log('✅ Storage state validi trovati, riuso cache')
     return
   }
@@ -86,7 +91,10 @@ async function globalSetupAuth(_config: FullConfig) {
     }
 
     await targetPage.waitForSelector('#login-email, #email', { timeout: 20000, state: 'visible' })
-    await targetPage.waitForSelector('#login-password, #password', { timeout: 20000, state: 'visible' })
+    await targetPage.waitForSelector('#login-password, #password', {
+      timeout: 20000,
+      state: 'visible',
+    })
 
     const emailInput = targetPage.locator('#login-email, #email').first()
     const passwordInput = targetPage.locator('#login-password, #password').first()
@@ -177,7 +185,9 @@ async function globalSetupAuth(_config: FullConfig) {
       await marketingContext.storageState({ path: marketingStatePath })
       await marketingContext.close()
     } else {
-      console.log('⏭️  Credenziali marketing non impostate: salto marketing-auth.json (imposta MARKETING_TEST_EMAIL e MARKETING_TEST_PASSWORD)')
+      console.log(
+        '⏭️  Credenziali marketing non impostate: salto marketing-auth.json (imposta MARKETING_TEST_EMAIL e MARKETING_TEST_PASSWORD)',
+      )
     }
   } catch (error) {
     console.error('❌ Global Setup Auth Error:', error)

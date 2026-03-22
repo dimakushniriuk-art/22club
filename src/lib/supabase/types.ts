@@ -1,16 +1,10 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: '13.0.5'
   }
   public: {
     Tables: {
@@ -89,130 +83,130 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "appointments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "appointments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "appointments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "appointments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "appointments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "appointments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "appointments_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'appointments_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "appointments_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'appointments_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "appointments_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'appointments_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "appointments_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'appointments_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "appointments_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'appointments_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "appointments_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'appointments_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "appointments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'appointments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "appointments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'appointments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "appointments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'appointments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "appointments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'appointments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "appointments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'appointments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "appointments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'appointments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -246,18 +240,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "appointment_cancellations_appointment_id_fkey"
-            columns: ["appointment_id"]
+            foreignKeyName: 'appointment_cancellations_appointment_id_fkey'
+            columns: ['appointment_id']
             isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
+            referencedRelation: 'appointments'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "appointment_cancellations_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'appointment_cancellations_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -291,18 +285,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "calendar_blocks_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'calendar_blocks_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "calendar_blocks_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'calendar_blocks_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -369,18 +363,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staff_calendar_settings_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_calendar_settings_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_calendar_settings_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'staff_calendar_settings_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -435,11 +429,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_administrative_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_administrative_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -491,11 +485,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_ai_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_ai_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -550,11 +544,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_fitness_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_fitness_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -609,46 +603,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_marketing_kpis_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'athlete_marketing_kpis_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_marketing_kpis_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'athlete_marketing_kpis_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_marketing_kpis_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'athlete_marketing_kpis_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_marketing_kpis_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'athlete_marketing_kpis_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_marketing_kpis_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'athlete_marketing_kpis_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_marketing_kpis_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'athlete_marketing_kpis_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -691,11 +685,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_massage_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_massage_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -747,11 +741,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_medical_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_medical_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -800,11 +794,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_motivational_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_motivational_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -859,11 +853,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_nutrition_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_nutrition_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -903,46 +897,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_questionnaires_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_questionnaires_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_questionnaires_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_questionnaires_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_questionnaires_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_questionnaires_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_questionnaires_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_questionnaires_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_questionnaires_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_questionnaires_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_questionnaires_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_questionnaires_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1006,11 +1000,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_smart_tracking_data_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_smart_tracking_data_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -1053,130 +1047,130 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'athlete_trainer_assignments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'athlete_trainer_assignments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'athlete_trainer_assignments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'athlete_trainer_assignments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'athlete_trainer_assignments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'athlete_trainer_assignments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1270,88 +1264,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "audit_logs_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "audit_logs_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "audit_logs_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "audit_logs_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "audit_logs_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "audit_logs_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "audit_logs_impersonated_profile_id_fkey"
-            columns: ["impersonated_profile_id"]
+            foreignKeyName: 'audit_logs_impersonated_profile_id_fkey'
+            columns: ['impersonated_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "audit_logs_impersonated_profile_id_fkey"
-            columns: ["impersonated_profile_id"]
+            foreignKeyName: 'audit_logs_impersonated_profile_id_fkey'
+            columns: ['impersonated_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "audit_logs_impersonated_profile_id_fkey"
-            columns: ["impersonated_profile_id"]
+            foreignKeyName: 'audit_logs_impersonated_profile_id_fkey'
+            columns: ['impersonated_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "audit_logs_impersonated_profile_id_fkey"
-            columns: ["impersonated_profile_id"]
+            foreignKeyName: 'audit_logs_impersonated_profile_id_fkey'
+            columns: ['impersonated_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "audit_logs_impersonated_profile_id_fkey"
-            columns: ["impersonated_profile_id"]
+            foreignKeyName: 'audit_logs_impersonated_profile_id_fkey'
+            columns: ['impersonated_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "audit_logs_impersonated_profile_id_fkey"
-            columns: ["impersonated_profile_id"]
+            foreignKeyName: 'audit_logs_impersonated_profile_id_fkey'
+            columns: ['impersonated_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1397,88 +1391,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "chat_messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'chat_messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "chat_messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'chat_messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "chat_messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'chat_messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "chat_messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'chat_messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "chat_messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'chat_messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "chat_messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'chat_messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'chat_messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'chat_messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'chat_messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'chat_messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'chat_messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'chat_messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1566,53 +1560,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "communication_recipients_communication_id_fkey"
-            columns: ["communication_id"]
+            foreignKeyName: 'communication_recipients_communication_id_fkey'
+            columns: ['communication_id']
             isOneToOne: false
-            referencedRelation: "communications"
-            referencedColumns: ["id"]
+            referencedRelation: 'communications'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "communication_recipients_recipient_profile_id_fkey"
-            columns: ["recipient_profile_id"]
+            foreignKeyName: 'communication_recipients_recipient_profile_id_fkey'
+            columns: ['recipient_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "communication_recipients_recipient_profile_id_fkey"
-            columns: ["recipient_profile_id"]
+            foreignKeyName: 'communication_recipients_recipient_profile_id_fkey'
+            columns: ['recipient_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "communication_recipients_recipient_profile_id_fkey"
-            columns: ["recipient_profile_id"]
+            foreignKeyName: 'communication_recipients_recipient_profile_id_fkey'
+            columns: ['recipient_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "communication_recipients_recipient_profile_id_fkey"
-            columns: ["recipient_profile_id"]
+            foreignKeyName: 'communication_recipients_recipient_profile_id_fkey'
+            columns: ['recipient_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "communication_recipients_recipient_profile_id_fkey"
-            columns: ["recipient_profile_id"]
+            foreignKeyName: 'communication_recipients_recipient_profile_id_fkey'
+            columns: ['recipient_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "communication_recipients_recipient_profile_id_fkey"
-            columns: ["recipient_profile_id"]
+            foreignKeyName: 'communication_recipients_recipient_profile_id_fkey'
+            columns: ['recipient_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1676,46 +1670,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "communications_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'communications_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "communications_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'communications_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "communications_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'communications_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "communications_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'communications_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "communications_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'communications_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "communications_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'communications_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1764,102 +1758,102 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "credit_ledger_appointment_id_fkey"
-            columns: ["appointment_id"]
+            foreignKeyName: 'credit_ledger_appointment_id_fkey'
+            columns: ['appointment_id']
             isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
+            referencedRelation: 'appointments'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "credit_ledger_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'credit_ledger_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "credit_ledger_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'credit_ledger_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "credit_ledger_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'credit_ledger_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "credit_ledger_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'credit_ledger_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "credit_ledger_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'credit_ledger_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "credit_ledger_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'credit_ledger_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "credit_ledger_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'credit_ledger_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "credit_ledger_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'credit_ledger_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "credit_ledger_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'credit_ledger_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "credit_ledger_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'credit_ledger_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "credit_ledger_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'credit_ledger_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "credit_ledger_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'credit_ledger_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "credit_ledger_payment_id_fkey"
-            columns: ["payment_id"]
+            foreignKeyName: 'credit_ledger_payment_id_fkey'
+            columns: ['payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1911,88 +1905,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2056,46 +2050,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "exercises_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'exercises_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "exercises_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'exercises_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "exercises_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'exercises_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exercises_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'exercises_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "exercises_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'exercises_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "exercises_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'exercises_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2150,88 +2144,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inviti_atleti_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: 'inviti_atleti_invited_by_fkey'
+            columns: ['invited_by']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "inviti_atleti_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: 'inviti_atleti_invited_by_fkey'
+            columns: ['invited_by']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "inviti_atleti_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: 'inviti_atleti_invited_by_fkey'
+            columns: ['invited_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "inviti_atleti_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: 'inviti_atleti_invited_by_fkey'
+            columns: ['invited_by']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_atleti_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: 'inviti_atleti_invited_by_fkey'
+            columns: ['invited_by']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_atleti_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: 'inviti_atleti_invited_by_fkey'
+            columns: ['invited_by']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "inviti_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'inviti_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "inviti_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'inviti_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "inviti_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'inviti_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "inviti_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'inviti_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'inviti_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'inviti_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2265,88 +2259,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inviti_cliente_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'inviti_cliente_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "inviti_cliente_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'inviti_cliente_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "inviti_cliente_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'inviti_cliente_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "inviti_cliente_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'inviti_cliente_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_cliente_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'inviti_cliente_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_cliente_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'inviti_cliente_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "inviti_cliente_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'inviti_cliente_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "inviti_cliente_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'inviti_cliente_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "inviti_cliente_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'inviti_cliente_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "inviti_cliente_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'inviti_cliente_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_cliente_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'inviti_cliente_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "inviti_cliente_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'inviti_cliente_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2377,53 +2371,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "lead_to_athlete_links_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'lead_to_athlete_links_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "lead_to_athlete_links_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'lead_to_athlete_links_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "lead_to_athlete_links_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'lead_to_athlete_links_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "lead_to_athlete_links_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'lead_to_athlete_links_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "lead_to_athlete_links_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'lead_to_athlete_links_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "lead_to_athlete_links_athlete_profile_id_fkey"
-            columns: ["athlete_profile_id"]
+            foreignKeyName: 'lead_to_athlete_links_athlete_profile_id_fkey'
+            columns: ['athlete_profile_id']
             isOneToOne: true
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "lead_to_athlete_links_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: 'lead_to_athlete_links_lead_id_fkey'
+            columns: ['lead_id']
             isOneToOne: true
-            referencedRelation: "marketing_leads"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_leads'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2454,88 +2448,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "lesson_counters_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_profile_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_profile_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_profile_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_profile_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_profile_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_profile_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_profile_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_profile_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_profile_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_profile_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "lesson_counters_athlete_profile_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'lesson_counters_athlete_profile_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2581,11 +2575,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "marketing_automations_segment_id_fkey"
-            columns: ["segment_id"]
+            foreignKeyName: 'marketing_automations_segment_id_fkey'
+            columns: ['segment_id']
             isOneToOne: false
-            referencedRelation: "marketing_segments"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_segments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2679,60 +2673,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "marketing_events_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'marketing_events_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "marketing_events_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'marketing_events_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "marketing_events_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'marketing_events_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_events_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'marketing_events_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_events_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'marketing_events_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_events_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: 'marketing_events_actor_profile_id_fkey'
+            columns: ['actor_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_events_campaign_id_fkey"
-            columns: ["campaign_id"]
+            foreignKeyName: 'marketing_events_campaign_id_fkey'
+            columns: ['campaign_id']
             isOneToOne: false
-            referencedRelation: "marketing_campaigns"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_campaigns'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_events_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: 'marketing_events_lead_id_fkey'
+            columns: ['lead_id']
             isOneToOne: false
-            referencedRelation: "marketing_leads"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_leads'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2766,53 +2760,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "marketing_lead_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'marketing_lead_notes_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "marketing_lead_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'marketing_lead_notes_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "marketing_lead_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'marketing_lead_notes_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_lead_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'marketing_lead_notes_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_lead_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'marketing_lead_notes_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_lead_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'marketing_lead_notes_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_lead_notes_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: 'marketing_lead_notes_lead_id_fkey'
+            columns: ['lead_id']
             isOneToOne: false
-            referencedRelation: "marketing_leads"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_leads'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2849,53 +2843,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "marketing_lead_status_history_changed_by_profile_id_fkey"
-            columns: ["changed_by_profile_id"]
+            foreignKeyName: 'marketing_lead_status_history_changed_by_profile_id_fkey'
+            columns: ['changed_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "marketing_lead_status_history_changed_by_profile_id_fkey"
-            columns: ["changed_by_profile_id"]
+            foreignKeyName: 'marketing_lead_status_history_changed_by_profile_id_fkey'
+            columns: ['changed_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "marketing_lead_status_history_changed_by_profile_id_fkey"
-            columns: ["changed_by_profile_id"]
+            foreignKeyName: 'marketing_lead_status_history_changed_by_profile_id_fkey'
+            columns: ['changed_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_lead_status_history_changed_by_profile_id_fkey"
-            columns: ["changed_by_profile_id"]
+            foreignKeyName: 'marketing_lead_status_history_changed_by_profile_id_fkey'
+            columns: ['changed_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_lead_status_history_changed_by_profile_id_fkey"
-            columns: ["changed_by_profile_id"]
+            foreignKeyName: 'marketing_lead_status_history_changed_by_profile_id_fkey'
+            columns: ['changed_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_lead_status_history_changed_by_profile_id_fkey"
-            columns: ["changed_by_profile_id"]
+            foreignKeyName: 'marketing_lead_status_history_changed_by_profile_id_fkey'
+            columns: ['changed_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_lead_status_history_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: 'marketing_lead_status_history_lead_id_fkey'
+            columns: ['lead_id']
             isOneToOne: false
-            referencedRelation: "marketing_leads"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_leads'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2959,88 +2953,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "marketing_leads_converted_athlete_profile_id_fkey"
-            columns: ["converted_athlete_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_athlete_profile_id_fkey'
+            columns: ['converted_athlete_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_athlete_profile_id_fkey"
-            columns: ["converted_athlete_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_athlete_profile_id_fkey'
+            columns: ['converted_athlete_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_athlete_profile_id_fkey"
-            columns: ["converted_athlete_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_athlete_profile_id_fkey'
+            columns: ['converted_athlete_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_athlete_profile_id_fkey"
-            columns: ["converted_athlete_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_athlete_profile_id_fkey'
+            columns: ['converted_athlete_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_athlete_profile_id_fkey"
-            columns: ["converted_athlete_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_athlete_profile_id_fkey'
+            columns: ['converted_athlete_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_athlete_profile_id_fkey"
-            columns: ["converted_athlete_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_athlete_profile_id_fkey'
+            columns: ['converted_athlete_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_by_profile_id_fkey"
-            columns: ["converted_by_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_by_profile_id_fkey'
+            columns: ['converted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_by_profile_id_fkey"
-            columns: ["converted_by_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_by_profile_id_fkey'
+            columns: ['converted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_by_profile_id_fkey"
-            columns: ["converted_by_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_by_profile_id_fkey'
+            columns: ['converted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_by_profile_id_fkey"
-            columns: ["converted_by_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_by_profile_id_fkey'
+            columns: ['converted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_by_profile_id_fkey"
-            columns: ["converted_by_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_by_profile_id_fkey'
+            columns: ['converted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "marketing_leads_converted_by_profile_id_fkey"
-            columns: ["converted_by_profile_id"]
+            foreignKeyName: 'marketing_leads_converted_by_profile_id_fkey'
+            columns: ['converted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3116,11 +3110,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "marketing_trials_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: 'marketing_trials_lead_id_fkey'
+            columns: ['lead_id']
             isOneToOne: false
-            referencedRelation: "marketing_leads"
-            referencedColumns: ["id"]
+            referencedRelation: 'marketing_leads'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3181,11 +3175,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_appointment_id_fkey"
-            columns: ["appointment_id"]
+            foreignKeyName: 'notifications_appointment_id_fkey'
+            columns: ['appointment_id']
             isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
+            referencedRelation: 'appointments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3228,11 +3222,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_adaptive_settings_version_id_fkey"
-            columns: ["version_id"]
+            foreignKeyName: 'nutrition_adaptive_settings_version_id_fkey'
+            columns: ['version_id']
             isOneToOne: true
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3293,60 +3287,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_adjustments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_adjustments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_adjustments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_adjustments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_adjustments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_adjustments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_adjustments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_new_version_id_fkey"
-            columns: ["new_version_id"]
+            foreignKeyName: 'nutrition_adjustments_new_version_id_fkey'
+            columns: ['new_version_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_adjustments_previous_version_id_fkey"
-            columns: ["previous_version_id"]
+            foreignKeyName: 'nutrition_adjustments_previous_version_id_fkey'
+            columns: ['previous_version_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3377,11 +3371,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_auto_config_version_id_fkey"
-            columns: ["version_id"]
+            foreignKeyName: 'nutrition_auto_config_version_id_fkey'
+            columns: ['version_id']
             isOneToOne: true
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3406,11 +3400,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_plan_days_version_id_fkey"
-            columns: ["version_id"]
+            foreignKeyName: 'nutrition_plan_days_version_id_fkey'
+            columns: ['version_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3444,95 +3438,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_plan_groups_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_plan_groups_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_plan_groups_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_plan_groups_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_plan_groups_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_plan_groups_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_plan_groups_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_nutrizionista_id_fkey"
-            columns: ["nutrizionista_id"]
+            foreignKeyName: 'nutrition_plan_groups_nutrizionista_id_fkey'
+            columns: ['nutrizionista_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_nutrizionista_id_fkey"
-            columns: ["nutrizionista_id"]
+            foreignKeyName: 'nutrition_plan_groups_nutrizionista_id_fkey'
+            columns: ['nutrizionista_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_nutrizionista_id_fkey"
-            columns: ["nutrizionista_id"]
+            foreignKeyName: 'nutrition_plan_groups_nutrizionista_id_fkey'
+            columns: ['nutrizionista_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_nutrizionista_id_fkey"
-            columns: ["nutrizionista_id"]
+            foreignKeyName: 'nutrition_plan_groups_nutrizionista_id_fkey'
+            columns: ['nutrizionista_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_nutrizionista_id_fkey"
-            columns: ["nutrizionista_id"]
+            foreignKeyName: 'nutrition_plan_groups_nutrizionista_id_fkey'
+            columns: ['nutrizionista_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_nutrizionista_id_fkey"
-            columns: ["nutrizionista_id"]
+            foreignKeyName: 'nutrition_plan_groups_nutrizionista_id_fkey'
+            columns: ['nutrizionista_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_groups_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'nutrition_plan_groups_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3578,18 +3572,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_plan_items_meal_id_fkey"
-            columns: ["meal_id"]
+            foreignKeyName: 'nutrition_plan_items_meal_id_fkey'
+            columns: ['meal_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_meals"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_meals'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_items_plan_meal_id_fkey"
-            columns: ["plan_meal_id"]
+            foreignKeyName: 'nutrition_plan_items_plan_meal_id_fkey'
+            columns: ['plan_meal_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_meals"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_meals'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3614,11 +3608,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_plan_meals_plan_day_id_fkey"
-            columns: ["plan_day_id"]
+            foreignKeyName: 'nutrition_plan_meals_plan_day_id_fkey'
+            columns: ['plan_day_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_days"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_days'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3748,53 +3742,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_plan_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'nutrition_plan_versions_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_plan_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'nutrition_plan_versions_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_plan_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'nutrition_plan_versions_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'nutrition_plan_versions_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_plan_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'nutrition_plan_versions_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_plan_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'nutrition_plan_versions_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_plan_versions_plan_group_id_fkey"
-            columns: ["plan_group_id"]
+            foreignKeyName: 'nutrition_plan_versions_plan_group_id_fkey'
+            columns: ['plan_group_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_groups"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_groups'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3840,95 +3834,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'nutrition_progress_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3971,53 +3965,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_version_id_fkey"
-            columns: ["version_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_version_id_fkey'
+            columns: ['version_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4117,172 +4111,172 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'payments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "payments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'payments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "payments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'payments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'payments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'payments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'payments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'payments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "payments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'payments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "payments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'payments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'payments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'payments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'payments_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_created_by_staff_id_fkey"
-            columns: ["created_by_staff_id"]
+            foreignKeyName: 'payments_created_by_staff_id_fkey'
+            columns: ['created_by_staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "payments_created_by_staff_id_fkey"
-            columns: ["created_by_staff_id"]
+            foreignKeyName: 'payments_created_by_staff_id_fkey'
+            columns: ['created_by_staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "payments_created_by_staff_id_fkey"
-            columns: ["created_by_staff_id"]
+            foreignKeyName: 'payments_created_by_staff_id_fkey'
+            columns: ['created_by_staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_created_by_staff_id_fkey"
-            columns: ["created_by_staff_id"]
+            foreignKeyName: 'payments_created_by_staff_id_fkey'
+            columns: ['created_by_staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_created_by_staff_id_fkey"
-            columns: ["created_by_staff_id"]
+            foreignKeyName: 'payments_created_by_staff_id_fkey'
+            columns: ['created_by_staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_created_by_staff_id_fkey"
-            columns: ["created_by_staff_id"]
+            foreignKeyName: 'payments_created_by_staff_id_fkey'
+            columns: ['created_by_staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'payments_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "payments_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'payments_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "payments_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'payments_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'payments_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'payments_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "payments_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'payments_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4325,88 +4319,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profile_tombstones_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profile_tombstones_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "profile_tombstones_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profile_tombstones_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "profile_tombstones_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profile_tombstones_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profile_tombstones_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profile_tombstones_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profile_tombstones_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profile_tombstones_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profile_tombstones_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profile_tombstones_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profile_tombstones_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profile_tombstones_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "profile_tombstones_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profile_tombstones_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "profile_tombstones_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profile_tombstones_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profile_tombstones_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profile_tombstones_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profile_tombstones_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profile_tombstones_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profile_tombstones_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profile_tombstones_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4641,46 +4635,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profiles_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "profiles_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profiles_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "profiles_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profiles_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profiles_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profiles_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profiles_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profiles_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profiles_deleted_by_profile_id_fkey"
-            columns: ["deleted_by_profile_id"]
+            foreignKeyName: 'profiles_deleted_by_profile_id_fkey'
+            columns: ['deleted_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4705,95 +4699,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_tags_assigned_by_fkey"
-            columns: ["assigned_by"]
+            foreignKeyName: 'profiles_tags_assigned_by_fkey'
+            columns: ['assigned_by']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "profiles_tags_assigned_by_fkey"
-            columns: ["assigned_by"]
+            foreignKeyName: 'profiles_tags_assigned_by_fkey'
+            columns: ['assigned_by']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "profiles_tags_assigned_by_fkey"
-            columns: ["assigned_by"]
+            foreignKeyName: 'profiles_tags_assigned_by_fkey'
+            columns: ['assigned_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profiles_tags_assigned_by_fkey"
-            columns: ["assigned_by"]
+            foreignKeyName: 'profiles_tags_assigned_by_fkey'
+            columns: ['assigned_by']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profiles_tags_assigned_by_fkey"
-            columns: ["assigned_by"]
+            foreignKeyName: 'profiles_tags_assigned_by_fkey'
+            columns: ['assigned_by']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profiles_tags_assigned_by_fkey"
-            columns: ["assigned_by"]
+            foreignKeyName: 'profiles_tags_assigned_by_fkey'
+            columns: ['assigned_by']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profiles_tags_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profiles_tags_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "profiles_tags_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profiles_tags_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "profiles_tags_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profiles_tags_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profiles_tags_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profiles_tags_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profiles_tags_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profiles_tags_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "profiles_tags_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'profiles_tags_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "profiles_tags_tag_id_fkey"
-            columns: ["tag_id"]
+            foreignKeyName: 'profiles_tags_tag_id_fkey'
+            columns: ['tag_id']
             isOneToOne: false
-            referencedRelation: "cliente_tags"
-            referencedColumns: ["id"]
+            referencedRelation: 'cliente_tags'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5034,53 +5028,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "progress_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5120,46 +5114,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "progress_photos_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_photos_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "progress_photos_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_photos_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "progress_photos_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_photos_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "progress_photos_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_photos_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "progress_photos_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_photos_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "progress_photos_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_photos_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5187,88 +5181,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "pt_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'pt_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "pt_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'pt_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "pt_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'pt_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "pt_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'pt_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "pt_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'pt_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "pt_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'pt_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "pt_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'pt_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "pt_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'pt_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "pt_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'pt_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "pt_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'pt_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "pt_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'pt_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "pt_atleti_pt_id_fkey"
-            columns: ["pt_id"]
+            foreignKeyName: 'pt_atleti_pt_id_fkey'
+            columns: ['pt_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5368,95 +5362,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'staff_atleti_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5499,95 +5493,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staff_inviti_esterni_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_inviti_esterni_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_inviti_esterni_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_inviti_esterni_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_inviti_esterni_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_inviti_esterni_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_inviti_esterni_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'staff_inviti_esterni_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_inviti_esterni_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_inviti_esterni_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_inviti_esterni_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_inviti_esterni_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_inviti_esterni_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_inviti_esterni_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_inviti_esterni_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5627,95 +5621,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staff_requests_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_requests_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_requests_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_requests_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_requests_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_requests_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_requests_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_requests_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_requests_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_requests_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_requests_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_requests_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_requests_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'staff_requests_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_requests_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_requests_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_requests_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_requests_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_requests_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_requests_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_requests_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_requests_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_requests_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_requests_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_requests_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_requests_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5743,88 +5737,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_athletes_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'trainer_athletes_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_athletes_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'trainer_athletes_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_athletes_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'trainer_athletes_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_athletes_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'trainer_athletes_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_athletes_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'trainer_athletes_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_athletes_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'trainer_athletes_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_athletes_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'trainer_athletes_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_athletes_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'trainer_athletes_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_athletes_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'trainer_athletes_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_athletes_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'trainer_athletes_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_athletes_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'trainer_athletes_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_athletes_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'trainer_athletes_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5864,46 +5858,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_certifications_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_certifications_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_certifications_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_certifications_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_certifications_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_certifications_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_certifications_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_certifications_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_certifications_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_certifications_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_certifications_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_certifications_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -5937,46 +5931,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_courses_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_courses_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_courses_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_courses_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_courses_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_courses_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_courses_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_courses_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_courses_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_courses_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_courses_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_courses_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6013,46 +6007,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_education_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_education_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_education_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_education_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_education_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_education_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_education_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_education_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_education_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_education_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_education_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_education_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6092,46 +6086,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_experience_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_experience_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_experience_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_experience_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_experience_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_experience_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_experience_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_experience_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_experience_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_experience_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_experience_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_experience_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6255,46 +6249,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_profiles_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_profiles_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_profiles_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_profiles_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_profiles_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_profiles_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_profiles_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_profiles_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_profiles_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_profiles_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_profiles_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_profiles_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: true
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6325,46 +6319,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_specializations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_specializations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_specializations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_specializations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_specializations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_specializations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_specializations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_specializations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_specializations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_specializations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_specializations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_specializations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6407,46 +6401,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_testimonials_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_testimonials_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_testimonials_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_testimonials_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_testimonials_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_testimonials_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_testimonials_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_testimonials_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_testimonials_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_testimonials_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_testimonials_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_testimonials_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6486,46 +6480,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "trainer_transformations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_transformations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "trainer_transformations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_transformations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "trainer_transformations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_transformations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "trainer_transformations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_transformations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_transformations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_transformations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "trainer_transformations_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'trainer_transformations_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6670,18 +6664,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workout_day_exercises_exercise_id_fkey"
-            columns: ["exercise_id"]
+            foreignKeyName: 'workout_day_exercises_exercise_id_fkey'
+            columns: ['exercise_id']
             isOneToOne: false
-            referencedRelation: "exercises"
-            referencedColumns: ["id"]
+            referencedRelation: 'exercises'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_day_exercises_workout_day_id_fkey"
-            columns: ["workout_day_id"]
+            foreignKeyName: 'workout_day_exercises_workout_day_id_fkey'
+            columns: ['workout_day_id']
             isOneToOne: false
-            referencedRelation: "workout_days"
-            referencedColumns: ["id"]
+            referencedRelation: 'workout_days'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6721,11 +6715,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workout_days_workout_plan_id_fkey"
-            columns: ["workout_plan_id"]
+            foreignKeyName: 'workout_days_workout_plan_id_fkey'
+            columns: ['workout_plan_id']
             isOneToOne: false
-            referencedRelation: "workout_plans"
-            referencedColumns: ["id"]
+            referencedRelation: 'workout_plans'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6804,144 +6798,144 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workout_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_coached_by_profile_id_fkey"
-            columns: ["coached_by_profile_id"]
+            foreignKeyName: 'workout_logs_coached_by_profile_id_fkey'
+            columns: ['coached_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_logs_coached_by_profile_id_fkey"
-            columns: ["coached_by_profile_id"]
+            foreignKeyName: 'workout_logs_coached_by_profile_id_fkey'
+            columns: ['coached_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_logs_coached_by_profile_id_fkey"
-            columns: ["coached_by_profile_id"]
+            foreignKeyName: 'workout_logs_coached_by_profile_id_fkey'
+            columns: ['coached_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_coached_by_profile_id_fkey"
-            columns: ["coached_by_profile_id"]
+            foreignKeyName: 'workout_logs_coached_by_profile_id_fkey'
+            columns: ['coached_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_coached_by_profile_id_fkey"
-            columns: ["coached_by_profile_id"]
+            foreignKeyName: 'workout_logs_coached_by_profile_id_fkey'
+            columns: ['coached_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_coached_by_profile_id_fkey"
-            columns: ["coached_by_profile_id"]
+            foreignKeyName: 'workout_logs_coached_by_profile_id_fkey'
+            columns: ['coached_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_scheda_id_fkey"
-            columns: ["scheda_id"]
+            foreignKeyName: 'workout_logs_scheda_id_fkey'
+            columns: ['scheda_id']
             isOneToOne: false
-            referencedRelation: "workout_plans"
-            referencedColumns: ["id"]
+            referencedRelation: 'workout_plans'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_workout_id_fkey"
-            columns: ["workout_id"]
+            foreignKeyName: 'workout_logs_workout_id_fkey'
+            columns: ['workout_id']
             isOneToOne: false
-            referencedRelation: "workouts"
-            referencedColumns: ["id"]
+            referencedRelation: 'workouts'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -6990,130 +6984,130 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workout_plans_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_plans_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_plans_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_plans_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_plans_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_plans_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_plans_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_plans_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_plans_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_plans_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_plans_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workout_plans_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_plans_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'workout_plans_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_plans_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'workout_plans_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_plans_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'workout_plans_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_plans_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'workout_plans_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_plans_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'workout_plans_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_plans_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'workout_plans_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_plans_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'workout_plans_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_plans_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'workout_plans_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_plans_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'workout_plans_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_plans_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'workout_plans_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_plans_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'workout_plans_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_plans_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'workout_plans_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7162,18 +7156,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workout_sets_workout_day_exercise_id_fkey"
-            columns: ["workout_day_exercise_id"]
+            foreignKeyName: 'workout_sets_workout_day_exercise_id_fkey'
+            columns: ['workout_day_exercise_id']
             isOneToOne: false
-            referencedRelation: "workout_day_exercises"
-            referencedColumns: ["id"]
+            referencedRelation: 'workout_day_exercises'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_sets_workout_log_id_fkey"
-            columns: ["workout_log_id"]
+            foreignKeyName: 'workout_sets_workout_log_id_fkey'
+            columns: ['workout_log_id']
             isOneToOne: false
-            referencedRelation: "workout_logs"
-            referencedColumns: ["id"]
+            referencedRelation: 'workout_logs'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7213,88 +7207,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workouts_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workouts_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workouts_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workouts_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workouts_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workouts_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workouts_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workouts_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workouts_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workouts_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workouts_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'workouts_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workouts_created_by_trainer_id_fkey"
-            columns: ["created_by_trainer_id"]
+            foreignKeyName: 'workouts_created_by_trainer_id_fkey'
+            columns: ['created_by_trainer_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workouts_created_by_trainer_id_fkey"
-            columns: ["created_by_trainer_id"]
+            foreignKeyName: 'workouts_created_by_trainer_id_fkey'
+            columns: ['created_by_trainer_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workouts_created_by_trainer_id_fkey"
-            columns: ["created_by_trainer_id"]
+            foreignKeyName: 'workouts_created_by_trainer_id_fkey'
+            columns: ['created_by_trainer_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workouts_created_by_trainer_id_fkey"
-            columns: ["created_by_trainer_id"]
+            foreignKeyName: 'workouts_created_by_trainer_id_fkey'
+            columns: ['created_by_trainer_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workouts_created_by_trainer_id_fkey"
-            columns: ["created_by_trainer_id"]
+            foreignKeyName: 'workouts_created_by_trainer_id_fkey'
+            columns: ['created_by_trainer_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workouts_created_by_trainer_id_fkey"
-            columns: ["created_by_trainer_id"]
+            foreignKeyName: 'workouts_created_by_trainer_id_fkey'
+            columns: ['created_by_trainer_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7353,11 +7347,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "progress_logs_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'progress_logs_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
         ]
       }
@@ -7379,88 +7373,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'athlete_trainer_assignments_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "athlete_trainer_assignments_trainer_id_fkey"
-            columns: ["trainer_id"]
+            foreignKeyName: 'athlete_trainer_assignments_trainer_id_fkey'
+            columns: ['trainer_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7516,130 +7510,130 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7664,130 +7658,130 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'documents_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "documents_uploaded_by_profile_id_fkey"
-            columns: ["uploaded_by_profile_id"]
+            foreignKeyName: 'documents_uploaded_by_profile_id_fkey'
+            columns: ['uploaded_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7807,88 +7801,88 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_atleta_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'staff_atleti_atleta_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7913,53 +7907,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "progress_logs_athlete_id_fkey"
-            columns: ["athlete_user_id"]
+            foreignKeyName: 'progress_logs_athlete_id_fkey'
+            columns: ['athlete_user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['user_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "progress_logs_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'progress_logs_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -7982,137 +7976,137 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_progress_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_progress_created_by_profile_id_fkey"
-            columns: ["created_by_profile_id"]
+            foreignKeyName: 'nutrition_progress_created_by_profile_id_fkey'
+            columns: ['created_by_profile_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_progress_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: 'nutrition_progress_org_id_fkey'
+            columns: ['org_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -8136,95 +8130,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_athlete_id_fkey"
-            columns: ["athlete_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_athlete_id_fkey'
+            columns: ['athlete_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "nutrition_weekly_analysis_version_id_fkey"
-            columns: ["version_id"]
+            foreignKeyName: 'nutrition_weekly_analysis_version_id_fkey'
+            columns: ['version_id']
             isOneToOne: false
-            referencedRelation: "nutrition_plan_versions_legacy"
-            referencedColumns: ["id"]
+            referencedRelation: 'nutrition_plan_versions_legacy'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "staff_atleti_staff_id_fkey"
-            columns: ["nutritionist_id"]
+            foreignKeyName: 'staff_atleti_staff_id_fkey'
+            columns: ['nutritionist_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -8275,46 +8269,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "marketing_athletes"
-            referencedColumns: ["athlete_id"]
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "payments_per_staff_view"
-            referencedColumns: ["staff_id"]
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_marketing_athletes"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_nutritionist_progress_logs_timeline"
-            referencedColumns: ["athlete_profile_id"]
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
           },
           {
-            foreignKeyName: "workout_logs_atleta_id_fkey"
-            columns: ["atleta_id"]
+            foreignKeyName: 'workout_logs_atleta_id_fkey'
+            columns: ['atleta_id']
             isOneToOne: false
-            referencedRelation: "v_profiles_marketing_subset"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -8585,8 +8579,8 @@ export type Database = {
           user_id: string | null
         }
         SetofOptions: {
-          from: "*"
-          to: "profiles"
+          from: '*'
+          to: 'profiles'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -8808,8 +8802,8 @@ export type Database = {
           user_id: string
         }
         SetofOptions: {
-          from: "*"
-          to: "user_settings"
+          from: '*'
+          to: 'user_settings'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -9097,33 +9091,31 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -9132,23 +9124,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -9157,23 +9149,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -9182,36 +9174,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {

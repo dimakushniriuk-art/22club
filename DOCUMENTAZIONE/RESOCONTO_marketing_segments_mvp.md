@@ -7,18 +7,18 @@
 
 ## 1) File creati/modificati
 
-| File | Modifica |
-|------|----------|
-| `supabase/migrations/20260228230000_marketing_segments.sql` | **Nuovo.** Tabella `marketing_segments`, indici, RLS (SELECT/INSERT/UPDATE/DELETE per admin/marketing stesso org_id). |
-| `src/lib/supabase/types.ts` | Aggiunta tabella `marketing_segments` (Row, Insert, Update). |
-| `src/lib/marketing/segment-rules.ts` | **Nuovo.** Tipo `SegmentRules`, tipo `MarketingAthleteForFilter`, funzione `applySegmentRules()` (filtro client-side). |
-| `src/app/dashboard/marketing/segments/page.tsx` | **Nuovo.** Lista segmenti, #atleti stimati, toggle attivo, pulsante Nuovo segmento. |
-| `src/app/dashboard/marketing/segments/new/page.tsx` | **Nuovo.** Form nuovo segmento (nome, descrizione, builder regole), salvataggio su `marketing_segments`. |
-| `src/app/dashboard/marketing/segments/[id]/page.tsx` | **Nuovo.** Dettaglio segmento, tabella atleti filtrati (da view), pulsanti Modifica e Disattiva. |
-| `src/app/dashboard/marketing/segments/[id]/edit/page.tsx` | **Nuovo.** Form modifica segmento (stesso schema regole), update su `marketing_segments`. |
-| `src/components/shared/dashboard/sidebar.tsx` | Voce "Segmenti" (icona Layers) → `/dashboard/marketing/segments`. |
-| `src/components/shared/dashboard/dashboard-mobile-nav.tsx` | Voce "Segmenti" (icona Layers) → `/dashboard/marketing/segments`. |
-| `src/middleware.ts` | Allowlist marketing: `/dashboard/marketing/segments` (e sotto-path). |
+| File                                                        | Modifica                                                                                                               |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260228230000_marketing_segments.sql` | **Nuovo.** Tabella `marketing_segments`, indici, RLS (SELECT/INSERT/UPDATE/DELETE per admin/marketing stesso org_id).  |
+| `src/lib/supabase/types.ts`                                 | Aggiunta tabella `marketing_segments` (Row, Insert, Update).                                                           |
+| `src/lib/marketing/segment-rules.ts`                        | **Nuovo.** Tipo `SegmentRules`, tipo `MarketingAthleteForFilter`, funzione `applySegmentRules()` (filtro client-side). |
+| `src/app/dashboard/marketing/segments/page.tsx`             | **Nuovo.** Lista segmenti, #atleti stimati, toggle attivo, pulsante Nuovo segmento.                                    |
+| `src/app/dashboard/marketing/segments/new/page.tsx`         | **Nuovo.** Form nuovo segmento (nome, descrizione, builder regole), salvataggio su `marketing_segments`.               |
+| `src/app/dashboard/marketing/segments/[id]/page.tsx`        | **Nuovo.** Dettaglio segmento, tabella atleti filtrati (da view), pulsanti Modifica e Disattiva.                       |
+| `src/app/dashboard/marketing/segments/[id]/edit/page.tsx`   | **Nuovo.** Form modifica segmento (stesso schema regole), update su `marketing_segments`.                              |
+| `src/components/shared/dashboard/sidebar.tsx`               | Voce "Segmenti" (icona Layers) → `/dashboard/marketing/segments`.                                                      |
+| `src/components/shared/dashboard/dashboard-mobile-nav.tsx`  | Voce "Segmenti" (icona Layers) → `/dashboard/marketing/segments`.                                                      |
+| `src/middleware.ts`                                         | Allowlist marketing: `/dashboard/marketing/segments` (e sotto-path).                                                   |
 
 ---
 

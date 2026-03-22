@@ -146,7 +146,9 @@ export default function NutrizionistaPianoNuovoPage() {
   const [selectedTemplateName, setSelectedTemplateName] = useState<string | null>(null)
   const [dayMealItems, setDayMealItems] = useState<Record<string, MealItemDraft[]>>({})
   const [addProductsDayIndex, setAddProductsDayIndex] = useState<number | null>(null)
-  const [dialogDraftInputs, setDialogDraftInputs] = useState<Record<string, { name: string; quantity: string; unit: 'g' | 'pz' }>>({})
+  const [dialogDraftInputs, setDialogDraftInputs] = useState<
+    Record<string, { name: string; quantity: string; unit: 'g' | 'pz' }>
+  >({})
 
   const caloriesFromMacros = useMemo(() => {
     const p = Number(proteinTarget) || 0
@@ -617,7 +619,9 @@ export default function NutrizionistaPianoNuovoPage() {
                           {athlete.lastPlan && (
                             <div className="text-xs text-text-muted mt-1">
                               Ultimo piano:
-                              {(athlete.lastPlan as { calories_target?: number }).calories_target}{' '}
+                              {
+                                (athlete.lastPlan as { calories_target?: number }).calories_target
+                              }{' '}
                               kcal
                             </div>
                           )}
@@ -906,7 +910,8 @@ export default function NutrizionistaPianoNuovoPage() {
           <div className="rounded-xl border border-border bg-background-secondary/50 p-6">
             <h3 className="font-semibold text-lg mb-4">Distribuzione pasti</h3>
             <p className="text-sm text-text-muted mb-6">
-              Scegli i pasti e mettili nell’ordine desiderato (min 3, max 6). Clicca su un pasto disponibile per aggiungerlo, usa le frecce per riordinare.
+              Scegli i pasti e mettili nell’ordine desiderato (min 3, max 6). Clicca su un pasto
+              disponibile per aggiungerlo, usa le frecce per riordinare.
             </p>
 
             <div className="mb-6">
@@ -916,66 +921,66 @@ export default function NutrizionistaPianoNuovoPage() {
                   Nessun pasto selezionato. Aggiungi almeno 3 pasti dall’elenco sotto.
                 </p>
               ) : (
-              <div className="flex flex-wrap gap-2">
-                {selectedMealsOrder.map((meal, idx) => (
-                  <div
-                    key={`${meal}-${idx}`}
-                    className="flex items-center gap-1 p-3 rounded-lg bg-background-secondary border border-border"
-                  >
-                    {MEAL_ICONS[meal] ?? <Coffee className="h-4 w-4 text-text-muted" />}
-                    <span className="text-sm">{meal}</span>
-                    <div className="flex items-center ml-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (idx > 0) {
-                            const next = [...selectedMealsOrder]
-                            const t = next[idx - 1]
-                            next[idx - 1] = next[idx]
-                            next[idx] = t
-                            setSelectedMealsOrder(next)
-                          }
-                        }}
-                        disabled={idx === 0}
-                        className="p-1 rounded hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
-                        aria-label="Sposta su"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (idx < selectedMealsOrder.length - 1) {
-                            const next = [...selectedMealsOrder]
-                            const t = next[idx + 1]
-                            next[idx + 1] = next[idx]
-                            next[idx] = t
-                            setSelectedMealsOrder(next)
-                          }
-                        }}
-                        disabled={idx === selectedMealsOrder.length - 1}
-                        className="p-1 rounded hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
-                        aria-label="Sposta giù"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (selectedMealsOrder.length > 3) {
-                            setSelectedMealsOrder(selectedMealsOrder.filter((_, i) => i !== idx))
-                          }
-                        }}
-                        disabled={selectedMealsOrder.length <= 3}
-                        className="p-1 rounded hover:bg-red-500/20 text-red-400 disabled:opacity-30 disabled:pointer-events-none"
-                        aria-label="Rimuovi"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                <div className="flex flex-wrap gap-2">
+                  {selectedMealsOrder.map((meal, idx) => (
+                    <div
+                      key={`${meal}-${idx}`}
+                      className="flex items-center gap-1 p-3 rounded-lg bg-background-secondary border border-border"
+                    >
+                      {MEAL_ICONS[meal] ?? <Coffee className="h-4 w-4 text-text-muted" />}
+                      <span className="text-sm">{meal}</span>
+                      <div className="flex items-center ml-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (idx > 0) {
+                              const next = [...selectedMealsOrder]
+                              const t = next[idx - 1]
+                              next[idx - 1] = next[idx]
+                              next[idx] = t
+                              setSelectedMealsOrder(next)
+                            }
+                          }}
+                          disabled={idx === 0}
+                          className="p-1 rounded hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                          aria-label="Sposta su"
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (idx < selectedMealsOrder.length - 1) {
+                              const next = [...selectedMealsOrder]
+                              const t = next[idx + 1]
+                              next[idx + 1] = next[idx]
+                              next[idx] = t
+                              setSelectedMealsOrder(next)
+                            }
+                          }}
+                          disabled={idx === selectedMealsOrder.length - 1}
+                          className="p-1 rounded hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                          aria-label="Sposta giù"
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (selectedMealsOrder.length > 3) {
+                              setSelectedMealsOrder(selectedMealsOrder.filter((_, i) => i !== idx))
+                            }
+                          }}
+                          disabled={selectedMealsOrder.length <= 3}
+                          className="p-1 rounded hover:bg-red-500/20 text-red-400 disabled:opacity-30 disabled:pointer-events-none"
+                          aria-label="Rimuovi"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -1177,17 +1182,17 @@ export default function NutrizionistaPianoNuovoPage() {
                       const key = `${addProductsDayIndex}-${mealIdx}`
                       const items = dayMealItems[key] ?? []
                       return (
-                        <div key={key} className="rounded-lg border border-border p-4 bg-background-secondary/30">
+                        <div
+                          key={key}
+                          className="rounded-lg border border-border p-4 bg-background-secondary/30"
+                        >
                           <div className="font-medium text-sm mb-3 flex items-center gap-2">
                             {MEAL_ICONS[meal] ?? <Coffee className="h-4 w-4 text-text-muted" />}
                             {meal}
                           </div>
                           <ul className="space-y-2 mb-3">
                             {items.map((it, idx) => (
-                              <li
-                                key={idx}
-                                className="flex items-center gap-2 text-sm flex-wrap"
-                              >
+                              <li key={idx} className="flex items-center gap-2 text-sm flex-wrap">
                                 <span className="font-medium">{it.name}</span>
                                 <span className="text-text-muted">
                                   {it.quantity} {it.unit}
@@ -1219,7 +1224,10 @@ export default function NutrizionistaPianoNuovoPage() {
                                 onChange={(e) =>
                                   setDialogDraftInputs((prev) => ({
                                     ...prev,
-                                    [key]: { ...(prev[key] ?? { name: '', quantity: '', unit: 'g' }), name: e.target.value },
+                                    [key]: {
+                                      ...(prev[key] ?? { name: '', quantity: '', unit: 'g' }),
+                                      name: e.target.value,
+                                    },
                                   }))
                                 }
                                 onKeyDown={(e) => {
@@ -1230,8 +1238,17 @@ export default function NutrizionistaPianoNuovoPage() {
                                     const qty = Number(d?.quantity) || 0
                                     const unit = (d?.unit === 'pz' ? 'pz' : 'g') as 'g' | 'pz'
                                     if (name && qty > 0) {
-                                      setDayMealItems((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), { name, quantity: qty, unit }] }))
-                                      setDialogDraftInputs((prev) => ({ ...prev, [key]: { name: '', quantity: '', unit: 'g' } }))
+                                      setDayMealItems((prev) => ({
+                                        ...prev,
+                                        [key]: [
+                                          ...(prev[key] ?? []),
+                                          { name, quantity: qty, unit },
+                                        ],
+                                      }))
+                                      setDialogDraftInputs((prev) => ({
+                                        ...prev,
+                                        [key]: { name: '', quantity: '', unit: 'g' },
+                                      }))
                                     }
                                   }
                                 }}
@@ -1248,7 +1265,10 @@ export default function NutrizionistaPianoNuovoPage() {
                                 onChange={(e) =>
                                   setDialogDraftInputs((prev) => ({
                                     ...prev,
-                                    [key]: { ...(prev[key] ?? { name: '', quantity: '', unit: 'g' }), quantity: e.target.value },
+                                    [key]: {
+                                      ...(prev[key] ?? { name: '', quantity: '', unit: 'g' }),
+                                      quantity: e.target.value,
+                                    },
                                   }))
                                 }
                               />
@@ -1261,7 +1281,10 @@ export default function NutrizionistaPianoNuovoPage() {
                                 onChange={(e) =>
                                   setDialogDraftInputs((prev) => ({
                                     ...prev,
-                                    [key]: { ...(prev[key] ?? { name: '', quantity: '', unit: 'g' }), unit: e.target.value === 'pz' ? 'pz' : 'g' },
+                                    [key]: {
+                                      ...(prev[key] ?? { name: '', quantity: '', unit: 'g' }),
+                                      unit: e.target.value === 'pz' ? 'pz' : 'g',
+                                    },
                                   }))
                                 }
                               >
@@ -1280,8 +1303,14 @@ export default function NutrizionistaPianoNuovoPage() {
                                 const qty = Number(d?.quantity) || 0
                                 const unit = (d?.unit === 'pz' ? 'pz' : 'g') as 'g' | 'pz'
                                 if (name && qty > 0) {
-                                  setDayMealItems((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), { name, quantity: qty, unit }] }))
-                                  setDialogDraftInputs((prev) => ({ ...prev, [key]: { name: '', quantity: '', unit: 'g' } }))
+                                  setDayMealItems((prev) => ({
+                                    ...prev,
+                                    [key]: [...(prev[key] ?? []), { name, quantity: qty, unit }],
+                                  }))
+                                  setDialogDraftInputs((prev) => ({
+                                    ...prev,
+                                    [key]: { name: '', quantity: '', unit: 'g' },
+                                  }))
                                 }
                               }}
                             >
@@ -1294,7 +1323,11 @@ export default function NutrizionistaPianoNuovoPage() {
                   </div>
                 )}
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setAddProductsDayIndex(null)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAddProductsDayIndex(null)}
+                  >
                     Chiudi
                   </Button>
                 </DialogFooter>
@@ -1438,10 +1471,7 @@ export default function NutrizionistaPianoNuovoPage() {
               ) : (
                 <ul className="rounded-lg border border-border divide-y divide-border bg-background-secondary/30 overflow-hidden">
                   {shoppingList.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center justify-between px-4 py-3 text-sm"
-                    >
+                    <li key={idx} className="flex items-center justify-between px-4 py-3 text-sm">
                       <span className="font-medium capitalize">{item.name}</span>
                       <span className="text-primary font-semibold">
                         {item.quantity} {item.unit}

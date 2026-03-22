@@ -55,14 +55,15 @@ function KpiCard({
         {label}
       </div>
       <p className="text-xl font-bold text-text-primary tabular-nums">{value}</p>
-      {sublabel != null && (
-        <p className="text-xs text-text-muted mt-0.5">{sublabel}</p>
-      )}
+      {sublabel != null && <p className="text-xs text-text-muted mt-0.5">{sublabel}</p>}
     </div>
   )
   if (href) {
     return (
-      <Link href={href} className="block touch-manipulation focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl">
+      <Link
+        href={href}
+        className="block touch-manipulation focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl"
+      >
         {content}
       </Link>
     )
@@ -91,7 +92,6 @@ export default function MassaggiatoreStatistichePage() {
     setError(null)
     setLoading(true)
     try {
-
       const [clientiRes, appointmentsRes, paymentsRes, oggiRes, weekRes] = await Promise.all([
         supabase
           .from('staff_atleti')
@@ -114,7 +114,10 @@ export default function MassaggiatoreStatistichePage() {
           .eq('staff_id', profileId)
           .eq('type', 'massaggio')
           .gte('starts_at', new Date().toISOString().split('T')[0] + 'T00:00:00.000Z')
-          .lt('starts_at', new Date(Date.now() + 86400000).toISOString().split('T')[0] + 'T00:00:00.000Z')
+          .lt(
+            'starts_at',
+            new Date(Date.now() + 86400000).toISOString().split('T')[0] + 'T00:00:00.000Z',
+          )
           .neq('status', 'annullato'),
         supabase
           .from('appointments')
@@ -172,7 +175,12 @@ export default function MassaggiatoreStatistichePage() {
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
-          <Button variant="outline" size="sm" className="min-h-[44px] touch-manipulation shrink-0" onClick={() => void loadData()}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px] touch-manipulation shrink-0"
+            onClick={() => void loadData()}
+          >
             Riprova
           </Button>
         </div>

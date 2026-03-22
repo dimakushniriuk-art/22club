@@ -87,7 +87,10 @@ export async function POST(request: Request) {
 
     if (action === 'deleted' && !snapshot?.athlete_id) {
       return NextResponse.json(
-        { error: 'Per action=deleted è richiesto snapshot con athlete_id, starts_at, ends_at, type, staff_id' },
+        {
+          error:
+            'Per action=deleted è richiesto snapshot con athlete_id, starts_at, ends_at, type, staff_id',
+        },
         { status: 400 },
       )
     }
@@ -146,7 +149,12 @@ export async function POST(request: Request) {
         typeStr = row.type
       }
       if (action === 'modified') {
-        const nu = newData ?? { starts_at: row.starts_at, ends_at: row.ends_at, type: row.type, location: row.location }
+        const nu = newData ?? {
+          starts_at: row.starts_at,
+          ends_at: row.ends_at,
+          type: row.type,
+          location: row.location,
+        }
         newDateFormatted = formatDate(nu.starts_at)
         newTimeFormatted = formatTimeRange(nu.starts_at, nu.ends_at)
         newTypeStr = nu.type
@@ -172,7 +180,12 @@ export async function POST(request: Request) {
         : Promise.resolve({ data: null, error: null }),
     ])
 
-    const profiles = (profileRes.data ?? []) as { id: string; email: string | null; nome: string | null; cognome: string | null }[]
+    const profiles = (profileRes.data ?? []) as {
+      id: string
+      email: string | null
+      nome: string | null
+      cognome: string | null
+    }[]
     const athleteProfile = profiles.find((p) => p.id === athleteId)
     const staffProfile = profiles.find((p) => p.id === staffId)
     const email = athleteProfile?.email?.trim()
@@ -181,10 +194,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ sent: false, reason: 'no_email' })
     }
 
-    const rawCustomTypes = (settingsRes.data as { custom_appointment_types?: unknown } | null)?.custom_appointment_types
-    const customTypes: CustomType[] = Array.isArray(rawCustomTypes) ? (rawCustomTypes as CustomType[]) : []
+    const rawCustomTypes = (settingsRes.data as { custom_appointment_types?: unknown } | null)
+      ?.custom_appointment_types
+    const customTypes: CustomType[] = Array.isArray(rawCustomTypes)
+      ? (rawCustomTypes as CustomType[])
+      : []
     const typeLabelResolved = getTypeLabel(typeStr, customTypes)
-    let newTypeLabelResolved: string | undefined = newTypeStr !== undefined ? getTypeLabel(newTypeStr, customTypes) : undefined
+    let newTypeLabelResolved: string | undefined =
+      newTypeStr !== undefined ? getTypeLabel(newTypeStr, customTypes) : undefined
     const staffName = staffProfile
       ? [staffProfile.nome, staffProfile.cognome].filter(Boolean).join(' ') || 'Staff'
       : 'Staff'
@@ -199,7 +216,12 @@ export async function POST(request: Request) {
         .eq('id', appointmentId)
         .single()
       if (apt) {
-        const a = apt as { starts_at: string; ends_at: string; type: string; location: string | null }
+        const a = apt as {
+          starts_at: string
+          ends_at: string
+          type: string
+          location: string | null
+        }
         newDateFormatted = formatDate(a.starts_at)
         newTimeFormatted = formatTimeRange(a.starts_at, a.ends_at)
         newTypeStr = a.type

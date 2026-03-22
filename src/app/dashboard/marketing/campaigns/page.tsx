@@ -37,7 +37,11 @@ const CHANNEL_LABELS: Record<string, string> = {
 
 function formatDate(s: string | null): string {
   if (!s) return '–'
-  return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(s).toLocaleDateString('it-IT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 export default function MarketingCampaignsPage() {
@@ -76,7 +80,9 @@ export default function MarketingCampaignsPage() {
       setLoading(false)
     }
     fetchData()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [role, authLoading, router, supabase])
 
   const filtered = useMemo(() => {
@@ -187,7 +193,9 @@ export default function MarketingCampaignsPage() {
               >
                 <option value="all">Tutti gli stati</option>
                 {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                  <option key={v} value={v}>{l}</option>
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
                 ))}
               </select>
               <select
@@ -197,7 +205,9 @@ export default function MarketingCampaignsPage() {
               >
                 <option value="all">Tutti i canali</option>
                 {Object.entries(CHANNEL_LABELS).map(([v, l]) => (
-                  <option key={v} value={v}>{l}</option>
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
                 ))}
               </select>
             </div>
@@ -205,14 +215,18 @@ export default function MarketingCampaignsPage() {
 
           <Card className="border-border bg-background-secondary/80">
             <CardHeader>
-              <CardTitle className="text-base text-text-primary">Elenco ({filtered.length})</CardTitle>
+              <CardTitle className="text-base text-text-primary">
+                Elenco ({filtered.length})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Megaphone className="mb-3 h-12 w-12 text-text-muted" />
                   <p className="text-center text-sm text-text-secondary">
-                    {data.length === 0 ? 'Nessuna campagna. Creane una.' : 'Nessun risultato per i filtri.'}
+                    {data.length === 0
+                      ? 'Nessuna campagna. Creane una.'
+                      : 'Nessun risultato per i filtri.'}
                   </p>
                   {data.length === 0 && (
                     <Button asChild className="mt-4">
@@ -236,13 +250,18 @@ export default function MarketingCampaignsPage() {
                     </TableHeader>
                     <TableBody>
                       {filtered.map((row) => (
-                        <TableRow key={row.id} className="border-border/50 hover:bg-background-tertiary/30">
+                        <TableRow
+                          key={row.id}
+                          className="border-border/50 hover:bg-background-tertiary/30"
+                        >
                           <TableCell className="font-medium">{row.name}</TableCell>
                           <TableCell className="text-text-muted">
                             {CHANNEL_LABELS[row.channel ?? ''] ?? row.channel ?? '–'}
                           </TableCell>
                           <TableCell className="tabular-nums">
-                            {row.budget != null ? `€ ${Number(row.budget).toLocaleString('it-IT')}` : '–'}
+                            {row.budget != null
+                              ? `€ ${Number(row.budget).toLocaleString('it-IT')}`
+                              : '–'}
                           </TableCell>
                           <TableCell className="text-text-muted text-sm">
                             {formatDate(row.start_at)} → {formatDate(row.end_at)}
@@ -262,10 +281,14 @@ export default function MarketingCampaignsPage() {
                               {STATUS_LABELS[row.status] ?? row.status}
                             </span>
                           </TableCell>
-                          <TableCell className="text-text-muted text-sm">{formatDate(row.updated_at)}</TableCell>
+                          <TableCell className="text-text-muted text-sm">
+                            {formatDate(row.updated_at)}
+                          </TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/marketing/campaigns/${row.id}`}>Dettaglio</Link>
+                              <Link href={`/dashboard/marketing/campaigns/${row.id}`}>
+                                Dettaglio
+                              </Link>
                             </Button>
                           </TableCell>
                         </TableRow>

@@ -26,7 +26,9 @@ export function useImpostazioniPageGuard(): { showLoader: boolean } {
 
   useEffect(() => {
     if (loading || role === null) return
-    const allowed = ALLOWED_IMPOSTAZIONI_ROLES.includes(role as (typeof ALLOWED_IMPOSTAZIONI_ROLES)[number])
+    const allowed = ALLOWED_IMPOSTAZIONI_ROLES.includes(
+      role as (typeof ALLOWED_IMPOSTAZIONI_ROLES)[number],
+    )
     if (!allowed) {
       const path = REDIRECT_PATH_BY_ROLE[role] ?? DEFAULT_REDIRECT
       router.replace(path)
@@ -34,7 +36,9 @@ export function useImpostazioniPageGuard(): { showLoader: boolean } {
   }, [role, loading, router])
 
   const showLoader =
-    loading || (role !== null && !ALLOWED_IMPOSTAZIONI_ROLES.includes(role as (typeof ALLOWED_IMPOSTAZIONI_ROLES)[number]))
+    loading ||
+    (role !== null &&
+      !ALLOWED_IMPOSTAZIONI_ROLES.includes(role as (typeof ALLOWED_IMPOSTAZIONI_ROLES)[number]))
 
   return { showLoader }
 }

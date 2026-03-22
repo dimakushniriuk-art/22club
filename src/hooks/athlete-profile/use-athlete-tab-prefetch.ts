@@ -6,7 +6,7 @@
 
 import { useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { athleteAnagraficaKeys } from '@/hooks/athlete-profile/use-athlete-anagrafica'
 import { athleteMedicalKeys } from '@/hooks/athlete-profile/use-athlete-medical'
 import { athleteFitnessKeys } from '@/hooks/athlete-profile/use-athlete-fitness'

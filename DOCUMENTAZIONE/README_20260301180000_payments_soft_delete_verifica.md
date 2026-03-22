@@ -4,14 +4,14 @@
 
 ## Oggetti DB toccati
 
-| Tipo       | Nome |
-|-----------|------|
-| Colonne   | `payments.created_by_profile_id`, `payments.payment_type`, `payments.deleted_at`, `payments.deleted_by_profile_id` |
-| Constraint| `payments_payment_type_check` (trainer \| marketing) |
-| Indici    | `idx_payments_org_id`, `idx_payments_deleted_at`, `idx_payments_created_by_profile_id`, `idx_payments_org_athlete_deleted` |
-| Funzioni  | `payments_set_created_by_profile()`, `payments_audit_trigger_fn()`, `soft_delete_payments_for_profile(uuid, uuid)` |
-| Trigger   | `payments_set_created_by_trigger` (BEFORE INSERT), `payments_audit_trigger` (AFTER INSERT OR UPDATE; no DELETE) |
-| Policy RLS| `payments_select`, `payments_insert`, `payments_update`; rimosse le 4 policy precedenti su payments |
+| Tipo       | Nome                                                                                                                       |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Colonne    | `payments.created_by_profile_id`, `payments.payment_type`, `payments.deleted_at`, `payments.deleted_by_profile_id`         |
+| Constraint | `payments_payment_type_check` (trainer \| marketing)                                                                       |
+| Indici     | `idx_payments_org_id`, `idx_payments_deleted_at`, `idx_payments_created_by_profile_id`, `idx_payments_org_athlete_deleted` |
+| Funzioni   | `payments_set_created_by_profile()`, `payments_audit_trigger_fn()`, `soft_delete_payments_for_profile(uuid, uuid)`         |
+| Trigger    | `payments_set_created_by_trigger` (BEFORE INSERT), `payments_audit_trigger` (AFTER INSERT OR UPDATE; no DELETE)            |
+| Policy RLS | `payments_select`, `payments_insert`, `payments_update`; rimosse le 4 policy precedenti su payments                        |
 
 ## Query di verifica (eseguire dopo la migration)
 
@@ -59,8 +59,8 @@ FROM audit_logs WHERE table_name = 'payments' ORDER BY created_at DESC LIMIT 10;
 4. **Marketing SELECT payments**  
    Login marketing → nessuna chiamata diretta a `payments` dall’UI. Se si prova da client (es. Supabase client): SELECT da payments con ruolo marketing. Atteso: 0 righe (RLS) o errore/empty.
 
-5. **Soft delete**  
-   - Da app: eliminazione utente (admin) o atleta (trainer/admin) → i pagamenti collegati devono essere aggiornati con `deleted_at` e `deleted_by_profile_id`, non rimossi.  
+5. **Soft delete**
+   - Da app: eliminazione utente (admin) o atleta (trainer/admin) → i pagamenti collegati devono essere aggiornati con `deleted_at` e `deleted_by_profile_id`, non rimossi.
    - Verifica DB: `SELECT id, deleted_at, deleted_by_profile_id FROM payments WHERE deleted_at IS NOT NULL LIMIT 5;` dopo una “eliminazione” utente/atleta.
 
 6. **Admin vede anche eliminati**  

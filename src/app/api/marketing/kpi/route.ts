@@ -44,33 +44,37 @@ export async function GET() {
 
     if (error) {
       logger.warn('Errore RPC marketing_list_athletes', error)
-      return NextResponse.json(
-        { error: 'Errore nel caricamento KPI' },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: 'Errore nel caricamento KPI' }, { status: 500 })
     }
 
-    const enriched: AthleteMarketingMetricEnriched[] = (rows ?? []).map((r: { athlete_profile_id: string; first_name: string | null; last_name: string | null; email: string | null; workouts_coached_30d: number; workouts_solo_30d: number; last_workout_at: string | null }) => {
-      const coached = Number(r.workouts_coached_30d ?? 0)
-      const solo = Number(r.workouts_solo_30d ?? 0)
-      return {
-        athlete_id: r.athlete_profile_id,
-        workouts_total_count: coached + solo,
-        workouts_solo_count: solo,
-        workouts_coached_count: coached,
-        last_workout_at: r.last_workout_at,
-        nome: r.first_name ?? null,
-        cognome: r.last_name ?? null,
-        email: r.email ?? null,
-      }
-    })
+    const enriched: AthleteMarketingMetricEnriched[] = (rows ?? []).map(
+      (r: {
+        athlete_profile_id: string
+        first_name: string | null
+        last_name: string | null
+        email: string | null
+        workouts_coached_30d: number
+        workouts_solo_30d: number
+        last_workout_at: string | null
+      }) => {
+        const coached = Number(r.workouts_coached_30d ?? 0)
+        const solo = Number(r.workouts_solo_30d ?? 0)
+        return {
+          athlete_id: r.athlete_profile_id,
+          workouts_total_count: coached + solo,
+          workouts_solo_count: solo,
+          workouts_coached_count: coached,
+          last_workout_at: r.last_workout_at,
+          nome: r.first_name ?? null,
+          cognome: r.last_name ?? null,
+          email: r.email ?? null,
+        }
+      },
+    )
 
     return NextResponse.json({ data: enriched })
   } catch (err) {
     logger.error('Errore API marketing KPI', err)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

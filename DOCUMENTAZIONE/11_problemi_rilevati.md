@@ -7,6 +7,7 @@
 ## 🔴 CRITICI (Azione Immediata) - ✅ TUTTI RISOLTI
 
 ### PROB-001: Debug Logging in Produzione ✅ RISOLTO
+
 ```
 Categoria: Performance, Sicurezza
 Data Fix: 2026-01-13
@@ -38,6 +39,7 @@ Status: ✅ COMPLETAMENTE RISOLTO
 ```
 
 ### PROB-002: Test E2E WebKit/Safari Falliscono ✅ RISOLTO
+
 ```
 Categoria: Test
 Data Fix: 2026-01-13
@@ -48,7 +50,7 @@ SOLUZIONE APPLICATA:
 ├── Browser gate CI: Chromium + Firefox (affidabili)
 └── Test manuali Safari raccomandati prima di release
 
-Motivo tecnico: 
+Motivo tecnico:
 Cookie Secure non funziona su HTTP (limitazione browser Safari)
 In produzione (HTTPS) Safari funziona correttamente
 
@@ -56,6 +58,7 @@ Status: ✅ RISOLTO - Skip permanente documentato
 ```
 
 ### PROB-003: Auth Provider 833 Righe ✅ PARZIALMENTE RISOLTO
+
 ```
 Categoria: Manutenibilità
 Data Fix: 2026-01-13
@@ -78,6 +81,7 @@ Status: ✅ DEBUG RIMOSSO - Refactor strutturale opzionale
 ## 🟡 MEDI (Pianificare Fix)
 
 ### PROB-004: useClienti 1405 Righe
+
 ```
 Categoria: Manutenibilità
 File: src/hooks/use-clienti.ts
@@ -99,6 +103,7 @@ Azione: Spezzare in hook più piccoli, migrare a React Query
 ```
 
 ### PROB-005: Cache Ruoli Non Distribuita
+
 ```
 Categoria: Architettura
 File: src/middleware.ts
@@ -118,9 +123,10 @@ Azione: Valutare Redis/Upstash per cache condivisa
 ```
 
 ### PROB-006: Tipi Supabase Duplicati
+
 ```
 Categoria: Manutenibilità
-File: 
+File:
 ├── src/types/supabase.ts (863 righe)
 ├── src/lib/supabase/types.ts
 
@@ -136,6 +142,7 @@ Azione: Consolidare in singola fonte di verità
 ```
 
 ### PROB-007: Campi DB Duplicati
+
 ```
 Categoria: Schema
 Tabelle: profiles, workout_logs, appointments
@@ -157,6 +164,7 @@ Azione: Migration per consolidare (breaking change)
 ```
 
 ### PROB-008: RPC Functions Fallback a Mock ✅ RISOLTO
+
 ```
 Categoria: Data Quality
 File: src/lib/analytics.ts
@@ -183,6 +191,7 @@ Status: ✅ RISOLTO - Fallback onesto a dati vuoti
 ## 🟢 BASSI (Backlog)
 
 ### PROB-009: Health Check Incompleto
+
 ```
 File: src/app/api/health/route.ts
 Problema: TODO per DB health check
@@ -190,6 +199,7 @@ Urgenza: BASSA
 ```
 
 ### PROB-010: Profile ID Cache No TTL
+
 ```
 File: src/hooks/use-appointments.ts
 Problema: Map senza scadenza
@@ -198,6 +208,7 @@ Urgenza: BASSA
 ```
 
 ### PROB-011: Port 3001 Hardcoded
+
 ```
 File: playwright.config.ts
 Problema: Port non configurabile via env
@@ -205,6 +216,7 @@ Urgenza: BASSA
 ```
 
 ### PROB-012: Mock Client Espone Struttura
+
 ```
 File: src/lib/supabase/client.ts
 Problema: Mock client rivela API shape
@@ -216,35 +228,37 @@ Urgenza: BASSA
 
 ## 📊 RIEPILOGO (Aggiornato 2026-01-13)
 
-| Priorità | Count | Stato |
-|----------|-------|-------|
-| 🔴 CRITICO | 3 | ✅ TUTTI RISOLTI |
-| 🟡 MEDIO | 5 | 1 risolto, 4 in backlog |
-| 🟢 BASSO | 4 | Backlog |
+| Priorità   | Count | Stato                   |
+| ---------- | ----- | ----------------------- |
+| 🔴 CRITICO | 3     | ✅ TUTTI RISOLTI        |
+| 🟡 MEDIO   | 5     | 1 risolto, 4 in backlog |
+| 🟢 BASSO   | 4     | Backlog                 |
 
 ### Fix Applicati Oggi (2026-01-13)
-| ID | Problema | Soluzione |
-|----|----------|-----------|
-| PROB-001 | Debug logging | Rimosso da 15 file |
-| PROB-002 | Safari/WebKit test | Skip permanente documentato |
-| PROB-003 | Auth Provider grande | Debug code rimosso (-50%) |
-| PROB-008 | RPC mock fallback | Cambiato a dati vuoti |
 
-| Categoria | Count |
-|-----------|-------|
-| Performance | 2 |
-| Test | 1 |
-| Manutenibilità | 3 |
-| Architettura | 2 |
-| Schema | 2 |
-| Data | 1 |
-| Sicurezza | 1 |
+| ID       | Problema             | Soluzione                   |
+| -------- | -------------------- | --------------------------- |
+| PROB-001 | Debug logging        | Rimosso da 15 file          |
+| PROB-002 | Safari/WebKit test   | Skip permanente documentato |
+| PROB-003 | Auth Provider grande | Debug code rimosso (-50%)   |
+| PROB-008 | RPC mock fallback    | Cambiato a dati vuoti       |
+
+| Categoria      | Count |
+| -------------- | ----- |
+| Performance    | 2     |
+| Test           | 1     |
+| Manutenibilità | 3     |
+| Architettura   | 2     |
+| Schema         | 2     |
+| Data           | 1     |
+| Sicurezza      | 1     |
 
 ---
 
 ## ✅ PROBLEMI RISOLTI (Storico)
 
 ### FIX-001: Pagina 404 Mancante
+
 ```
 Data: 2026-01-11
 File: src/app/not-found.tsx
@@ -254,6 +268,7 @@ Status: ✅ Risolto
 ```
 
 ### FIX-002: Test Protected Routes
+
 ```
 Data: 2026-01-11
 File: tests/e2e/smoke.spec.ts
@@ -263,6 +278,7 @@ Status: ✅ Risolto
 ```
 
 ### FIX-003: Dashboard Test
+
 ```
 Data: 2026-01-11
 File: tests/e2e/dashboard.spec.ts

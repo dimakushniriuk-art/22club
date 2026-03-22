@@ -8,10 +8,7 @@ const logger = createLogger('api:marketing:leads:[id]')
  * GET /api/marketing/leads/:id
  * Dettaglio lead + note. Solo admin/marketing stesso tenant (RLS).
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     if (!id) {
@@ -66,10 +63,7 @@ export async function GET(
  * PATCH /api/marketing/leads/:id
  * Aggiorna stato e/o nota di un lead. Solo admin/marketing stesso tenant (RLS).
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     if (!id) {
@@ -97,11 +91,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
     }
 
-    const body = await request.json() as Record<string, unknown>
+    const body = (await request.json()) as Record<string, unknown>
     const { status, note } = body
 
     const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
-    if (typeof status === 'string' && ['new', 'contacted', 'trial', 'converted', 'lost'].includes(status)) {
+    if (
+      typeof status === 'string' &&
+      ['new', 'contacted', 'trial', 'converted', 'lost'].includes(status)
+    ) {
       update.status = status
     }
 
@@ -114,7 +111,10 @@ export async function PATCH(
 
     if (updateError) {
       logger.warn('Errore PATCH marketing/leads', updateError)
-      return NextResponse.json({ error: updateError.message || 'Errore aggiornamento lead' }, { status: 500 })
+      return NextResponse.json(
+        { error: updateError.message || 'Errore aggiornamento lead' },
+        { status: 500 },
+      )
     }
     if (!lead) {
       return NextResponse.json({ error: 'Lead non trovato' }, { status: 404 })

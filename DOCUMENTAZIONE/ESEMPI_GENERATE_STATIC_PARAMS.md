@@ -26,22 +26,24 @@ export async function generateStaticParams() {
   try {
     // Usa createClient server-side per il build
     const supabase = await createClient()
-    
+
     // Carica tutti gli ID atleti
     const { data: athletes, error } = await supabase
       .from('profiles')
       .select('id')
       .eq('role', 'athlete')
       .limit(100) // Limita per non sovraccaricare il build
-    
+
     if (error) {
       console.warn('Errore caricamento atleti per generateStaticParams:', error)
       return []
     }
-    
-    return athletes?.map(athlete => ({
-      id: athlete.id,
-    })) || []
+
+    return (
+      athletes?.map((athlete) => ({
+        id: athlete.id,
+      })) || []
+    )
   } catch (error) {
     console.error('Errore generateStaticParams atleti:', error)
     return []
@@ -71,21 +73,20 @@ import { createClient } from '@/lib/supabase/server'
 export async function generateStaticParams() {
   try {
     const supabase = await createClient()
-    
+
     // Carica tutti gli ID schede
-    const { data: schede, error } = await supabase
-      .from('workout_plans')
-      .select('id')
-      .limit(100)
-    
+    const { data: schede, error } = await supabase.from('workout_plans').select('id').limit(100)
+
     if (error) {
       console.warn('Errore caricamento schede per generateStaticParams:', error)
       return []
     }
-    
-    return schede?.map(scheda => ({
-      id: scheda.id,
-    })) || []
+
+    return (
+      schede?.map((scheda) => ({
+        id: scheda.id,
+      })) || []
+    )
   } catch (error) {
     console.error('Errore generateStaticParams schede:', error)
     return []
@@ -112,28 +113,28 @@ import { createClient } from '@/lib/supabase/server'
 export async function generateStaticParams() {
   try {
     const supabase = await createClient()
-    
+
     // Carica workout plans
     const { data: workoutPlans, error: plansError } = await supabase
       .from('workout_plans')
       .select('id')
       .limit(50)
-    
+
     if (plansError) {
       console.warn('Errore caricamento workout plans:', plansError)
       return []
     }
-    
+
     // Per ogni workout plan, carica i giorni
     const params: { workout_plan_id: string; day_id: string }[] = []
-    
+
     for (const plan of workoutPlans || []) {
       const { data: days, error: daysError } = await supabase
         .from('workout_plan_days')
         .select('id')
         .eq('workout_plan_id', plan.id)
         .limit(10) // Limita giorni per plan
-      
+
       if (!daysError && days) {
         for (const day of days) {
           params.push({
@@ -143,7 +144,7 @@ export async function generateStaticParams() {
         }
       }
     }
-    
+
     return params
   } catch (error) {
     console.error('Errore generateStaticParams allenamenti:', error)
@@ -182,17 +183,19 @@ import { useSearchParams } from 'next/navigation'
 export default function AtletiPage() {
   const searchParams = useSearchParams()
   const athleteId = searchParams.get('id')
-  
+
   // ... carica dati per athleteId
 }
 ```
 
 **Vantaggi**:
+
 - ✅ Funziona sempre con export statico
 - ✅ Non richiede pre-generazione
 - ✅ Più flessibile
 
 **Svantaggi**:
+
 - ⚠️ Cambia URL structure
 - ⚠️ Richiede refactoring
 
@@ -246,7 +249,7 @@ export async function generateStaticParams() {
       // ... query database
     },
     ['static-params-atleti'],
-    { revalidate: 3600 } // Cache per 1 ora
+    { revalidate: 3600 }, // Cache per 1 ora
   )()
 }
 ```
@@ -256,14 +259,17 @@ export async function generateStaticParams() {
 ## Quando Implementare
 
 **Priorità Alta**:
+
 - Route molto utilizzate (es. `/dashboard/atleti/[id]`)
 - Route con numero limitato di parametri possibili
 
 **Priorità Media**:
+
 - Route utilizzate occasionalmente
 - Route con molti parametri possibili (considera query parameters)
 
 **Priorità Bassa**:
+
 - Route raramente utilizzate
 - Route con parametri illimitati (usa query parameters)
 
@@ -278,6 +284,7 @@ npm run build:capacitor
 ```
 
 Verifica che:
+
 1. ✅ Le route vengono pre-generate correttamente
 2. ✅ Il build non fallisce
 3. ✅ Le route funzionano nell'app mobile

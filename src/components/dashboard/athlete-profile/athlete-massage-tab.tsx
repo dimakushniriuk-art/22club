@@ -46,7 +46,8 @@ const INTENSITA_MASSAGGIO: { value: IntensitaMassaggioEnum; label: string }[] = 
 const CHIP_BASE =
   'min-h-[44px] shrink-0 rounded-full border px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 const CHIP_SELECTED = 'bg-white/[0.06] text-primary border border-white/10'
-const CHIP_UNSELECTED = 'border border-white/10 bg-transparent text-text-secondary hover:border-primary/20 hover:bg-white/[0.04]'
+const CHIP_UNSELECTED =
+  'border border-white/10 bg-transparent text-text-secondary hover:border-primary/20 hover:bg-white/[0.04]'
 
 export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
   const { data: massage, isLoading, error } = useAthleteMassage(athleteId)
@@ -196,7 +197,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">Zone Problematiche</CardTitle>
+              <CardTitle className="text-lg font-bold text-text-primary">
+                Zone Problematiche
+              </CardTitle>
             </CardHeader>
             <CardContent className="relative z-10 space-y-3">
               <div className="flex gap-2">
@@ -245,7 +248,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
 
           <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">Allergie Prodotti</CardTitle>
+              <CardTitle className="text-lg font-bold text-text-primary">
+                Allergie Prodotti
+              </CardTitle>
             </CardHeader>
             <CardContent className="relative z-10 space-y-3">
               <div className="flex gap-2">
@@ -299,7 +304,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">Zone Problematiche</CardTitle>
+              <CardTitle className="text-lg font-bold text-text-primary">
+                Zone Problematiche
+              </CardTitle>
             </CardHeader>
             <CardContent className="relative z-10">
               {massage?.zone_problematiche && massage.zone_problematiche.length > 0 ? (
@@ -318,7 +325,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
 
           <Card variant="default" className="overflow-hidden">
             <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">Allergie Prodotti</CardTitle>
+              <CardTitle className="text-lg font-bold text-text-primary">
+                Allergie Prodotti
+              </CardTitle>
             </CardHeader>
             <CardContent className="relative z-10">
               {massage?.allergie_prodotti && massage.allergie_prodotti.length > 0 ? (
@@ -398,14 +407,18 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               ))}
             </div>
           ) : (
-            <p className="py-4 text-center text-sm text-text-secondary">Nessun massaggio nello storico</p>
+            <p className="py-4 text-center text-sm text-text-secondary">
+              Nessun massaggio nello storico
+            </p>
           )}
 
           {/* Form Aggiungi Massaggio */}
           {showMassaggioForm && (
             <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-4 min-[834px]:p-5">
               <div className="space-y-2">
-                <Label htmlFor="massaggio-data" className="text-text-tertiary">Data</Label>
+                <Label htmlFor="massaggio-data" className="text-text-tertiary">
+                  Data
+                </Label>
                 <Input
                   id="massaggio-data"
                   type="date"
@@ -420,7 +433,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="massaggio-tipo" className="text-text-tertiary">Tipo</Label>
+                <Label htmlFor="massaggio-tipo" className="text-text-tertiary">
+                  Tipo
+                </Label>
                 <SimpleSelect
                   value={newArrayItem.massaggio?.tipo || ''}
                   onValueChange={(v) =>
@@ -437,7 +452,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="massaggio-durata" className="text-text-tertiary">Durata (minuti)</Label>
+                <Label htmlFor="massaggio-durata" className="text-text-tertiary">
+                  Durata (minuti)
+                </Label>
                 <Input
                   id="massaggio-durata"
                   type="number"
@@ -463,7 +480,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="massaggio-note" className="text-text-tertiary">Note (opzionale)</Label>
+                <Label htmlFor="massaggio-note" className="text-text-tertiary">
+                  Note (opzionale)
+                </Label>
                 <Textarea
                   id="massaggio-note"
                   value={newArrayItem.massaggio?.note || ''}

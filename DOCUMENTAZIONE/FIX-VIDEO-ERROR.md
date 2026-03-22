@@ -6,6 +6,7 @@
 ## 🐛 Problema Identificato
 
 L'errore `❌ Errore caricamento video: {}` si verifica quando:
+
 1. Il video non può essere caricato (URL non valido, CORS, formato non supportato)
 2. L'oggetto `errorDetails` non viene serializzato correttamente nel `console.error`
 3. Mancano informazioni utili per il debug
@@ -17,11 +18,13 @@ L'errore `❌ Errore caricamento video: {}` si verifica quando:
 **File**: `src/app/home/allenamenti/oggi/page.tsx` (righe 85-122)
 
 **Modifiche**:
+
 - Tutti i valori in `errorDetails` sono ora esplicitamente convertiti a `string | number | null`
 - Aggiunto `JSON.stringify()` per serializzazione corretta nel log
 - Aggiunti log aggiuntivi con stato completo del video element
 
 **Prima**:
+
 ```typescript
 const errorDetails: Record<string, unknown> = {
   exerciseId: exercise?.id ?? 'unknown',
@@ -31,6 +34,7 @@ console.error('❌ Errore caricamento video:', errorDetails)
 ```
 
 **Dopo**:
+
 ```typescript
 const errorDetails: Record<string, string | number | null> = {
   exerciseId: String(exercise?.id ?? 'unknown'),
@@ -38,7 +42,9 @@ const errorDetails: Record<string, string | number | null> = {
   // ...
 }
 console.error('❌ Errore caricamento video:', JSON.stringify(errorDetails, null, 2))
-console.error('Video element state:', { /* stato completo */ })
+console.error('Video element state:', {
+  /* stato completo */
+})
 ```
 
 ### 2. Migliorata Validazione URL Video
@@ -46,31 +52,34 @@ console.error('Video element state:', { /* stato completo */ })
 **File**: `src/app/home/allenamenti/oggi/page.tsx` (righe 931-936)
 
 **Modifiche**:
+
 - Aggiunta verifica che l'URL non sia `'null'` o `'undefined'` (stringhe)
 - Aggiunta verifica che l'URL non contenga placeholder template (`{{`, `${`)
 - Validazione più rigorosa
 
 **Prima**:
+
 ```typescript
 const isValidVideoUrl: boolean = Boolean(
   exerciseVideoUrl &&
-    typeof exerciseVideoUrl === 'string' &&
-    exerciseVideoUrl.trim() !== '' &&
-    (exerciseVideoUrl.startsWith('http://') || exerciseVideoUrl.startsWith('https://')),
+  typeof exerciseVideoUrl === 'string' &&
+  exerciseVideoUrl.trim() !== '' &&
+  (exerciseVideoUrl.startsWith('http://') || exerciseVideoUrl.startsWith('https://')),
 )
 ```
 
 **Dopo**:
+
 ```typescript
 const isValidVideoUrl: boolean = Boolean(
   exerciseVideoUrl &&
-    typeof exerciseVideoUrl === 'string' &&
-    exerciseVideoUrl.trim() !== '' &&
-    exerciseVideoUrl.trim() !== 'null' &&
-    exerciseVideoUrl.trim() !== 'undefined' &&
-    (exerciseVideoUrl.startsWith('http://') || exerciseVideoUrl.startsWith('https://')) &&
-    !exerciseVideoUrl.includes('{{') &&
-    !exerciseVideoUrl.includes('${'),
+  typeof exerciseVideoUrl === 'string' &&
+  exerciseVideoUrl.trim() !== '' &&
+  exerciseVideoUrl.trim() !== 'null' &&
+  exerciseVideoUrl.trim() !== 'undefined' &&
+  (exerciseVideoUrl.startsWith('http://') || exerciseVideoUrl.startsWith('https://')) &&
+  !exerciseVideoUrl.includes('{{') &&
+  !exerciseVideoUrl.includes('${'),
 )
 ```
 
@@ -79,17 +88,21 @@ const isValidVideoUrl: boolean = Boolean(
 **File**: `src/app/home/allenamenti/oggi/page.tsx` (riga 70)
 
 **Modifiche**:
+
 - Il fallback all'immagine viene attivato anche quando `videoError` è true
 - Assicura che se il video fallisce, l'immagine venga mostrata automaticamente
 
 **Prima**:
+
 ```typescript
 const shouldShowImage = !shouldShowVideo && isValidThumbUrl && thumbUrl && !imageError
 ```
 
 **Dopo**:
+
 ```typescript
-const shouldShowImage = (!shouldShowVideo || videoError) && isValidThumbUrl && thumbUrl && !imageError
+const shouldShowImage =
+  (!shouldShowVideo || videoError) && isValidThumbUrl && thumbUrl && !imageError
 ```
 
 ## 📊 Informazioni Aggiuntive nel Log
@@ -112,6 +125,7 @@ Ora quando un video fallisce, vedrai:
 ```
 
 E anche:
+
 ```
 Video element state: {
   src: "https://...",
@@ -161,10 +175,11 @@ Video element state: {
 Se il problema persiste:
 
 1. **Verifica URL video nel database**:
+
    ```sql
-   SELECT id, name, video_url, thumb_url 
-   FROM exercises 
-   WHERE video_url IS NOT NULL 
+   SELECT id, name, video_url, thumb_url
+   FROM exercises
+   WHERE video_url IS NOT NULL
    LIMIT 10;
    ```
 

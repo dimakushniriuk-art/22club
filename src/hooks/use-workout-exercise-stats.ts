@@ -164,10 +164,10 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const workoutDayExerciseIds = (workoutDayExercises as any[]).map((e: any) => e.id)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const uniqueExerciseIds = [...new Set((workoutDayExercises as any[]).map((e: any) => e.exercise_id))]
+        type WdeRow = { id: string; exercise_id: string }
+        const wdeRows = workoutDayExercises as WdeRow[]
+        const workoutDayExerciseIds = wdeRows.map((e) => e.id)
+        const uniqueExerciseIds = [...new Set(wdeRows.map((e) => e.exercise_id))]
 
         // STEP 5: Recupera i nomi degli esercizi
         const { data: exercisesData, error: exercisesNamesError } = await supabase
@@ -180,9 +180,9 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           throw exercisesNamesError
         }
 
+        type ExRow = { id: string; name: string; category?: string | null }
         const exercisesMap = new Map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((exercisesData as any[]) || []).map((e: any) => [e.id, { name: e.name, category: e.category }]),
+          ((exercisesData as ExRow[] | null) ?? []).map((e) => [e.id, { name: e.name, category: e.category }]),
         )
 
         // STEP 6: Recupera tutti i workout_sets completati (con almeno completed_at; includiamo anche set senza peso per reps/tempo)
@@ -218,8 +218,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         // STEP 7: Raggruppa i set per esercizio
         const exerciseStatsMap = new Map<string, ExerciseStat>()
         // Crea una mappa workout_day_exercise_id -> exercise_id
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const exerciseIdMap = new Map((workoutDayExercises as any[]).map((e: any) => [e.id, e.exercise_id]))
+        const exerciseIdMap = new Map(wdeRows.map((e) => [e.id, e.exercise_id]))
 
         for (const set of setsWithData) {
           const exerciseId = exerciseIdMap.get(set.workout_day_exercise_id)

@@ -444,7 +444,10 @@ export function AdminUsersContent() {
             } catch (parseError) {
               // Se non riesce a parsare JSON, usa il testo grezzo come messaggio
               errorMessage = text || errorMessage
-              errorData = { rawText: text, parseError: parseError instanceof Error ? parseError.message : String(parseError) }
+              errorData = {
+                rawText: text,
+                parseError: parseError instanceof Error ? parseError.message : String(parseError),
+              }
             }
           } else {
             // Risposta vuota, usa status text come fallback

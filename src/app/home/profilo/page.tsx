@@ -268,13 +268,23 @@ export default function ProfiloPage() {
               </TabsList>
 
               <TabsContent value="overview" className="mt-2 pt-0">
-                <AthleteOverviewTab user={user} stats={stats} calculateProgress={calculateProgress} />
+                <AthleteOverviewTab
+                  user={user}
+                  stats={stats}
+                  calculateProgress={calculateProgress}
+                />
               </TabsContent>
 
               <TabsContent value="profilo" className="mt-2 pt-0">
                 {athleteUserId ? (
-                  <Tabs value={activeProfileTab} onValueChange={setActiveProfileTab} className="w-full">
-                    <TabsList className={`grid grid-cols-2 w-full min-[834px]:grid-cols-3 mb-5 min-h-0 ${TABS_LIST_CLASS}`}>
+                  <Tabs
+                    value={activeProfileTab}
+                    onValueChange={setActiveProfileTab}
+                    className="w-full"
+                  >
+                    <TabsList
+                      className={`grid grid-cols-2 w-full min-[834px]:grid-cols-3 mb-5 min-h-0 ${TABS_LIST_CLASS}`}
+                    >
                       <TabsTrigger value="anagrafica" className={PROFILE_TAB_TRIGGER_CLASS}>
                         <User className="h-3 w-3 shrink-0" />
                         <span className="truncate">Anagrafica</span>

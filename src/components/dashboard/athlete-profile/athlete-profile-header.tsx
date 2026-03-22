@@ -89,11 +89,7 @@ export function AthleteProfileHeader({
             </Button>
           </Link>
           {showEditButton && (
-            <Button
-              variant="default"
-              onClick={onEditClick}
-              size="sm"
-            >
+            <Button variant="default" onClick={onEditClick} size="sm">
               <Edit className="mr-2 h-4 w-4" />
               Modifica
             </Button>
@@ -151,8 +147,8 @@ export function AthleteProfileHeader({
 
               {athlete.phone && (
                 <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
-                  <Phone className="h-4 w-4" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
+                    <Phone className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-text-secondary text-xs mb-0.5">Telefono</p>
@@ -175,8 +171,8 @@ export function AthleteProfileHeader({
 
               {stats.ultimo_accesso && (
                 <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
-                  <Clock className="h-4 w-4" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
+                    <Clock className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-text-secondary text-xs mb-0.5">Ultimo accesso</p>
@@ -199,8 +195,12 @@ export function AthleteProfileHeader({
                     <Dumbbell className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary mb-0.5 font-medium">Allenamenti pagati rimanenti</p>
-                    <p className={`text-4xl md:text-5xl font-extrabold tracking-tight tabular-nums text-text-primary ${kpiTone === 'positive' ? 'text-primary' : ''}`}>
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary mb-0.5 font-medium">
+                      Allenamenti pagati rimanenti
+                    </p>
+                    <p
+                      className={`text-4xl md:text-5xl font-extrabold tracking-tight tabular-nums text-text-primary ${kpiTone === 'positive' ? 'text-primary' : ''}`}
+                    >
                       {stats.lessons_remaining}
                     </p>
                   </div>

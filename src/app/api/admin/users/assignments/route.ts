@@ -45,7 +45,9 @@ export async function GET(request: NextRequest) {
     const adminClient = createAdminClient()
     const { data: rows, error } = await adminClient
       .from('athlete_trainer_assignments')
-      .select('id, trainer_id, status, activated_at, deactivated_at, created_at, profiles!athlete_trainer_assignments_trainer_id_fkey(nome, cognome)')
+      .select(
+        'id, trainer_id, status, activated_at, deactivated_at, created_at, profiles!athlete_trainer_assignments_trainer_id_fkey(nome, cognome)',
+      )
       .eq('athlete_id', athleteId)
       .order('activated_at', { ascending: false })
 
@@ -61,8 +63,12 @@ export async function GET(request: NextRequest) {
       current: current
         ? {
             trainerId: current.trainer_id,
-            trainerName: (current.profiles as { nome?: string | null; cognome?: string | null } | null)
-              ? `${(current.profiles as { cognome?: string | null }).cognome ?? ''} ${(current.profiles as { nome?: string | null }).nome ?? ''}`.trim() || null
+            trainerName: (current.profiles as {
+              nome?: string | null
+              cognome?: string | null
+            } | null)
+              ? `${(current.profiles as { cognome?: string | null }).cognome ?? ''} ${(current.profiles as { nome?: string | null }).nome ?? ''}`.trim() ||
+                null
               : null,
             activated_at: current.activated_at,
           }
@@ -70,7 +76,8 @@ export async function GET(request: NextRequest) {
       history: history.map((h) => ({
         trainerId: h.trainer_id,
         trainerName: (h.profiles as { nome?: string | null; cognome?: string | null } | null)
-          ? `${(h.profiles as { cognome?: string | null }).cognome ?? ''} ${(h.profiles as { nome?: string | null }).nome ?? ''}`.trim() || null
+          ? `${(h.profiles as { cognome?: string | null }).cognome ?? ''} ${(h.profiles as { nome?: string | null }).nome ?? ''}`.trim() ||
+            null
           : null,
         activated_at: h.activated_at,
         deactivated_at: h.deactivated_at,

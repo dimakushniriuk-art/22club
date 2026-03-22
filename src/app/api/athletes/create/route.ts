@@ -33,10 +33,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Ottieni il profilo dello staff corrente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id'>
+    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'role'>
     const { data: profile, error: staffProfileError } = await supabase
       .from('profiles')
-      .select('id, org_id')
+      .select('id, org_id, role')
       .eq('user_id', session.user.id)
       .single()
 
@@ -46,12 +46,18 @@ export async function POST(request: NextRequest) {
     }
     const profileTyped = profile as ProfileRow
 
+    if (profileTyped.role !== 'admin' && profileTyped.role !== 'trainer') {
+      return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    }
+
     // Usa admin client per operazioni auth.admin
     const adminClient = createAdminClient()
 
     // Verifica che l'email non sia già registrata
     // Nota: getUserByEmail non esiste, usiamo listUsers con filtro
-    const { data: { users } } = await adminClient.auth.admin.listUsers()
+    const {
+      data: { users },
+    } = await adminClient.auth.admin.listUsers()
     const existingUser = users.find((u) => u.email === body.email)
 
     if (existingUser) {
@@ -145,25 +151,22 @@ export async function POST(request: NextRequest) {
     const athleteProfileTyped = athleteProfile as AthleteProfileRow | null
 
     // Se lo staff è un trainer, crea l'assegnazione in athlete_trainer_assignments (bypassa RLS)
-    type StaffProfileRow = Pick<Tables<'profiles'>, 'role' | 'org_id'>
-    const { data: staffProfile } = await supabase
-      .from('profiles')
-      .select('role, org_id')
-      .eq('id', profileTyped.id)
-      .single()
-
-    const staffProfileTyped = staffProfile as StaffProfileRow | null
-    if (staffProfileTyped?.role === 'trainer' && athleteProfileTyped) {
-      const orgId = staffProfileTyped.org_id ?? (athleteProfile as { org_id?: string | null })?.org_id ?? 'default-org'
-      const { error: relationError } = await adminClient.from('athlete_trainer_assignments').insert({
-        org_id: orgId,
-        org_id_text: orgId,
-        athlete_id: athleteProfileTyped.id,
-        trainer_id: profileTyped.id,
-        status: 'active',
-        activated_at: new Date().toISOString(),
-        created_by_profile_id: profileTyped.id,
-      })
+    if (profileTyped.role === 'trainer' && athleteProfileTyped) {
+      const orgId =
+        profileTyped.org_id ??
+        (athleteProfile as { org_id?: string | null })?.org_id ??
+        'default-org'
+      const { error: relationError } = await adminClient
+        .from('athlete_trainer_assignments')
+        .insert({
+          org_id: orgId,
+          org_id_text: orgId,
+          athlete_id: athleteProfileTyped.id,
+          trainer_id: profileTyped.id,
+          status: 'active',
+          activated_at: new Date().toISOString(),
+          created_by_profile_id: profileTyped.id,
+        })
 
       if (relationError) {
         logger.warn('Errore creazione assegnazione trainer', relationError, {
@@ -174,7 +177,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!athleteProfileTyped) {
-      return NextResponse.json({ error: 'Errore durante la creazione del profilo' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Errore durante la creazione del profilo' },
+        { status: 500 },
+      )
     }
     type AthleteProfileResponse = Pick<Tables<'profiles'>, 'id' | 'nome' | 'cognome' | 'email'>
     const athleteProfileResponse = athleteProfile as AthleteProfileResponse
@@ -191,7 +197,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     )
   } catch (error) {
-    logger.error('Errore durante la creazione dell\'atleta', error)
+    logger.error("Errore durante la creazione dell'atleta", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

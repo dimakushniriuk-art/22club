@@ -107,7 +107,9 @@ export function WorkoutPlansFilters({
               { value: 'archiviato', label: 'Archiviate' },
               { value: 'attivo', label: 'Attive' },
               { value: 'completato', label: 'Completate' },
-            ].sort((a, b) => (a.value === '' ? -1 : b.value === '' ? 1 : a.label.localeCompare(b.label, 'it')))}
+            ].sort((a, b) =>
+              a.value === '' ? -1 : b.value === '' ? 1 : a.label.localeCompare(b.label, 'it'),
+            )}
             placeholder="Filtra per stato"
           />
         </div>

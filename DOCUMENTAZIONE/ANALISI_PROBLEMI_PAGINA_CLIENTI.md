@@ -9,17 +9,19 @@
 ## 📋 LISTA COMPLETA PROBLEMI IDENTIFICATI
 
 ### 🔴 **PROBLEMA 1: Count Query non Gestisce Trainer**
+
 **File**: `src/hooks/use-clienti.ts` (riga 1120-1123)  
 **Criticità**: 80 (blocca paginazione corretta per trainer)  
 **Descrizione**:  
 Il count query in background (righe 1114-1167) usa SEMPRE `.or('role.eq.atleta,role.eq.athlete')` senza verificare se l'utente è un trainer. Per i trainer, il count dovrebbe essere basato sul numero di atleti assegnati in `pt_atleti`, non su tutti gli atleti.
 
 **Codice Problematico**:
+
 ```typescript
 let countQuery = supabase
   .from('profiles')
   .select('*', { count: 'estimated', head: true })
-  .or('role.eq.atleta,role.eq.athlete')  // ❌ Non gestisce trainer!
+  .or('role.eq.atleta,role.eq.athlete') // ❌ Non gestisce trainer!
 ```
 
 **Soluzione**:  
@@ -28,19 +30,21 @@ Verificare il ruolo dell'utente e, se è trainer, contare gli atleti assegnati d
 ---
 
 ### 🔴 **PROBLEMA 2: fetchStats() non Gestisce Trainer**
+
 **File**: `src/hooks/use-clienti.ts` (righe 181-216)  
 **Criticità**: 70 (stats errate per trainer)  
 **Descrizione**:  
 La funzione `fetchStats()` usa SEMPRE `.or('role.eq.atleta,role.eq.athlete')` per tutte le query stats, senza verificare se l'utente è un trainer. Per i trainer, le stats dovrebbero essere calcolate solo sugli atleti assegnati.
 
 **Codice Problematico**:
+
 ```typescript
 const [totaliRes, attiviRes, inattiviRes, nuoviRes, documentiRes] = await Promise.allSettled([
   queryWithTimeout(
     supabase
       .from('profiles')
       .select('id', { count: 'estimated', head: true })
-      .or('role.eq.atleta,role.eq.athlete'),  // ❌ Non gestisce trainer!
+      .or('role.eq.atleta,role.eq.athlete'), // ❌ Non gestisce trainer!
   ),
   // ... altre query con stesso problema
 ])
@@ -52,18 +56,20 @@ Verificare il ruolo dell'utente e, se è trainer, filtrare le query stats usando
 ---
 
 ### 🔴 **PROBLEMA 3: Query Test pt_atleti Senza Filtri (Possibile Problema RLS)**
+
 **File**: `src/hooks/use-clienti.ts` (righe 546-549)  
 **Criticità**: 60 (potrebbe fallire per RLS o restituire dati non corretti)  
 **Descrizione**:  
 C'è una query di test a `pt_atleti` senza filtri che potrebbe fallire per RLS o restituire dati non corretti (tutti i trainer, non solo quello corrente).
 
 **Codice Problematico**:
+
 ```typescript
 // Test: prima prova a vedere tutte le righe in pt_atleti (senza filtri)
 const { data: allPtAtleti, error: allPtAtletiError } = await supabase
   .from('pt_atleti')
   .select('pt_id, atleta_id')
-  .limit(10)  // ❌ Nessun filtro per trainer corrente!
+  .limit(10) // ❌ Nessun filtro per trainer corrente!
 ```
 
 **Soluzione**:  
@@ -72,12 +78,14 @@ Rimuovere questa query di test oppure filtrarla per il trainer corrente (anche s
 ---
 
 ### 🟡 **PROBLEMA 4: Campi `allenamenti_mese` e `scheda_attiva` Hardcoded**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1193-1195)  
 **Criticità**: 50 (dati mancanti nella UI)  
 **Descrizione**:  
 I campi `allenamenti_mese` e `scheda_attiva` sono hardcoded a `0` e `null` rispettivamente. Il commento dice "Calcolo reale implementato in fetchClienti" ma il calcolo non è presente.
 
 **Codice Problematico**:
+
 ```typescript
 allenamenti_mese: 0, // Calcolo reale implementato in fetchClienti
 ultimo_accesso: (profile.ultimo_accesso as string | null | undefined) ?? null,
@@ -90,12 +98,14 @@ Implementare il calcolo di `allenamenti_mese` (contando gli allenamenti del mese
 ---
 
 ### 🟡 **PROBLEMA 5: Paginazione Client-Side non Ottimale**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1026-1029)  
 **Criticità**: 40 (performance con molti dati)  
 **Descrizione**:  
 La paginazione è completamente client-side: vengono caricati tutti i dati, poi vengono filtrati e paginati. Questo può causare problemi di performance con molti dati.
 
 **Codice Problematico**:
+
 ```typescript
 // Paginazione client-side
 const from = (page - 1) * pageSize
@@ -109,6 +119,7 @@ Implementare paginazione server-side usando `limit()` e `range()` di Supabase, o
 ---
 
 ### 🟡 **PROBLEMA 6: Filtri Client-Side Potrebbero Essere Applicati Due Volte**
+
 **File**: `src/hooks/use-clienti.ts` (righe 952-1024)  
 **Criticità**: 30 (possibile duplicazione logica)  
 **Descrizione**:  
@@ -120,12 +131,14 @@ Il codice commenta "Per trainer, il filtro è già applicato nella query (solo a
 ---
 
 ### 🟡 **PROBLEMA 7: Count Stima Conservativa Non Preciso**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1106-1112)  
 **Criticità**: 30 (pagina potrebbe mostrare count errato)  
 **Descrizione**:  
 Il count viene stimato come `data.length * 5` se la pagina è piena, che è molto conservativo e potrebbe non essere preciso.
 
 **Codice Problematico**:
+
 ```typescript
 if (data.length === pageSize) {
   // Se abbiamo una pagina piena, probabilmente ce ne sono altre
@@ -141,6 +154,7 @@ Usare il count effettivo dalla query quando disponibile, oppure fare una query c
 ---
 
 ### 🟡 **PROBLEMA 8: Query Limit Applicato Prima dei Filtri**
+
 **File**: `src/hooks/use-clienti.ts` (righe 689-691, 716-718)  
 **Criticità**: 30 (paginazione potrebbe non funzionare correttamente)  
 **Descrizione**:  
@@ -152,12 +166,14 @@ Caricare più dati di `pageSize` (ad esempio `pageSize * 2`) per compensare il f
 ---
 
 ### 🟡 **PROBLEMA 9: Tags Sempre Vuoto**
+
 **File**: `src/hooks/use-clienti.ts` (riga 1198)  
 **Criticità**: 20 (funzionalità tags non implementata)  
 **Descrizione**:  
 Il campo `tags` è sempre un array vuoto `[]`. Non c'è query per recuperare i tags associati ai clienti.
 
 **Codice Problematico**:
+
 ```typescript
 tags: [],
 ```
@@ -168,6 +184,7 @@ Implementare query per recuperare i tags dalla tabella `profiles_tags` e `client
 ---
 
 ### 🟡 **PROBLEMA 10: Logging Eccessivo con fetch() a URL Hardcoded**
+
 **File**: `src/hooks/use-clienti.ts` (multiple righe)  
 **Criticità**: 20 (spam console, possibile problema sicurezza)  
 **Descrizione**:  
@@ -179,6 +196,7 @@ Rimuovere questi log di debug o spostarli in un sistema di logging configurato.
 ---
 
 ### 🟡 **PROBLEMA 11: Test Query pt_atleti Non Necessaria**
+
 **File**: `src/hooks/use-clienti.ts` (righe 546-571)  
 **Criticità**: 20 (query non necessaria, performance)  
 **Descrizione**:  
@@ -190,6 +208,7 @@ Rimuovere questa query di test.
 ---
 
 ### 🟡 **PROBLEMA 12: fetchStats() Eseguita in Background con setTimeout**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1232-1238)  
 **Criticità**: 20 (stats potrebbero non essere aggiornate immediatamente)  
 **Descrizione**:  
@@ -201,6 +220,7 @@ Eseguire `fetchStats()` in parallelo con `fetchClienti()` usando `Promise.all()`
 ---
 
 ### 🟡 **PROBLEMA 13: Total Count per Trainer Basato su Stima**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1106-1112, 1169)  
 **Criticità**: 30 (count potrebbe essere errato per trainer)  
 **Descrizione**:  
@@ -212,6 +232,7 @@ Per i trainer, calcolare il count effettivo dal numero di atleti assegnati in `p
 ---
 
 ### 🟡 **PROBLEMA 14: ClientiTableView Usa Campi Mancanti**
+
 **File**: `src/components/dashboard/clienti/clienti-table-view.tsx` (riga 213)  
 **Criticità**: 40 (UI mostra 0 per allenamenti/mese)  
 **Descrizione**:  
@@ -220,6 +241,7 @@ Per i trainer, calcolare il count effettivo dal numero di atleti assegnati in `p
 ---
 
 ### 🟡 **PROBLEMA 15: ClientiGridView Non Mostra Informazioni Complete**
+
 **File**: `src/components/dashboard/clienti/clienti-grid-view.tsx`  
 **Criticità**: 20 (funzionalità limitata)  
 **Descrizione**:  
@@ -228,6 +250,7 @@ Per i trainer, calcolare il count effettivo dal numero di atleti assegnati in `p
 ---
 
 ### 🟡 **PROBLEMA 16: useClientiFilters() Non Sincronizza con URL**
+
 **File**: `src/hooks/use-clienti-filters.ts` (righe 11-15)  
 **Criticità**: 30 (stato potrebbe essere desincronizzato)  
 **Descrizione**:  
@@ -239,6 +262,7 @@ Usare `useEffect` per sincronizzare lo stato con i `searchParams` quando cambian
 ---
 
 ### 🟡 **PROBLEMA 17: TotalPages Calcolato con Total che Potrebbe Essere 0**
+
 **File**: `src/hooks/use-clienti.ts` (riga 1457)  
 **Criticità**: 20 (paginazione potrebbe mostrare "0 di 0 pagine")  
 **Descrizione**:  
@@ -250,6 +274,7 @@ Gestire il caso `total === 0` e mostrare almeno 1 pagina vuota.
 ---
 
 ### 🟡 **PROBLEMA 18: Sorting Client-Side per Campi Diversi da data_iscrizione**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1006-1024)  
 **Criticità**: 30 (performance con molti dati)  
 **Descrizione**:  
@@ -261,6 +286,7 @@ Applicare il sorting nella query Supabase usando `.order()`.
 ---
 
 ### 🟡 **PROBLEMA 19: Query con `.in('id', validIds)` Potrebbe Essere Lenta con Molti ID**
+
 **File**: `src/hooks/use-clienti.ts` (riga 689)  
 **Criticità**: 30 (performance con molti atleti assegnati)  
 **Descrizione**:  
@@ -272,6 +298,7 @@ Usare una JOIN con `pt_atleti` invece di `.in('id', validIds)` per migliorare le
 ---
 
 ### 🟡 **PROBLEMA 20: Count Query nel Background Non Gestisce Trainer**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1114-1167)  
 **Criticità**: 60 (count errato per trainer)  
 **Descrizione**:  
@@ -283,6 +310,7 @@ Verificare il ruolo dell'utente e, se è trainer, contare gli atleti assegnati i
 ---
 
 ### 🟡 **PROBLEMA 21: Error Handling Generico**
+
 **File**: `src/hooks/use-clienti.ts` (righe 891-918, 1042-1090)  
 **Criticità**: 40 (difficile debug di errori specifici)  
 **Descrizione**:  
@@ -294,6 +322,7 @@ Implementare error handling più specifico che distingue tra diversi tipi di err
 ---
 
 ### 🟡 **PROBLEMA 22: Timeout Query 15 Secondi Troppo Lungo**
+
 **File**: `src/hooks/use-clienti.ts` (riga 838)  
 **Criticità**: 20 (UX povera se la query è lenta)  
 **Descrizione**:  
@@ -305,6 +334,7 @@ Ridurre il timeout a 5-10 secondi e mostrare un messaggio di loading più chiaro
 ---
 
 ### 🟡 **PROBLEMA 23: Loading State Gestito Male**
+
 **File**: `src/app/dashboard/clienti/page.tsx` (righe 148-154, 222-225)  
 **Criticità**: 30 (doppio loading state potrebbe causare flickering)  
 **Descrizione**:  
@@ -313,6 +343,7 @@ Ci sono due controlli di loading state: uno all'inizio (riga 148) e uno nella li
 ---
 
 ### 🟡 **PROBLEMA 24: Stats Cards Usano Stats Generali Non Filtrate**
+
 **File**: `src/app/dashboard/clienti/page.tsx` (righe 259-289)  
 **Criticità**: 40 (stats non riflettono i filtri applicati)  
 **Descrizione**:  
@@ -324,6 +355,7 @@ Calcolare le stats basate sui dati filtrati, oppure chiarire che le stats sono g
 ---
 
 ### 🟡 **PROBLEMA 25: Query Profiles per Trainer Non Include Filtro Stato**
+
 **File**: `src/hooks/use-clienti.ts` (righe 683-691)  
 **Criticità**: 30 (filtro stato applicato solo client-side per trainer)  
 **Descrizione**:  
@@ -335,12 +367,14 @@ Applicare i filtri essenziali (come `stato`) nella query Supabase per i trainer.
 ---
 
 ### 🟡 **PROBLEMA 26: RLS Policy su pt_atleti Troppo Permissiva**
+
 **File**: `supabase/migrations/20250110_022_pt_atleti.sql` (righe 42-45)  
 **Criticità**: 60 (sicurezza: tutti possono vedere tutte le relazioni)  
 **Descrizione**:  
 La policy RLS su `pt_atleti` è `USING (true)`, il che significa che TUTTI gli utenti autenticati possono vedere TUTTE le relazioni trainer-atleta, non solo le proprie.
 
 **Codice Problematico**:
+
 ```sql
 CREATE POLICY "Users can view pt_atleti"
   ON pt_atleti FOR SELECT
@@ -354,6 +388,7 @@ Creare una policy più restrittiva che permetta ai trainer di vedere solo le lor
 ---
 
 ### 🟡 **PROBLEMA 27: Query pt_atleti Potrebbe Fallire per RLS**
+
 **File**: `src/hooks/use-clienti.ts` (riga 591)  
 **Criticità**: 50 (query potrebbe fallire se RLS è troppo restrittiva)  
 **Descrizione**:  
@@ -365,6 +400,7 @@ Attualmente la policy è `USING (true)` quindi funziona, ma se viene cambiata, q
 ---
 
 ### 🟡 **PROBLEMA 28: Mapping ProfileSummary a Cliente Non Gestisce Errori**
+
 **File**: `src/hooks/use-clienti.ts` (righe 1172-1203)  
 **Criticità**: 30 (dati potrebbero essere null o undefined causando errori)  
 **Descrizione**:  
@@ -376,6 +412,7 @@ Aggiungere validazione più robusta per tutti i campi obbligatori.
 ---
 
 ### 🟡 **PROBLEMA 29: useEffect con Dipendenze Mancanti**
+
 **File**: `src/hooks/use-clienti.ts` (riga 1247)  
 **Criticità**: 30 (useEffect potrebbe non eseguirsi quando necessario)  
 **Descrizione**:  
@@ -387,6 +424,7 @@ Il commento spiega che `total` è stato rimosso per evitare loop infinito, ma qu
 ---
 
 ### 🟡 **PROBLEMA 30: fetchClienti() Non Gestisce Caso user Non Disponibile**
+
 **File**: `src/hooks/use-clienti.ts` (riga 507)  
 **Criticità**: 30 (query potrebbe fallire se user non è disponibile)  
 **Descrizione**:  
@@ -400,11 +438,13 @@ Aggiungere un controllo per verificare che `user` sia disponibile prima di esegu
 ## 📊 RIEPILOGO PROBLEMI PER CRITICITÀ
 
 ### 🔴 **Criticità Alta (70-80)** - 3 problemi
+
 1. Count Query non Gestisce Trainer
-2. fetchStats() non Gestisce Trainer  
+2. fetchStats() non Gestisce Trainer
 3. Query Test pt_atleti Senza Filtri
 
 ### 🟡 **Criticità Media (40-60)** - 10 problemi
+
 4. Campi `allenamenti_mese` e `scheda_attiva` Hardcoded
 5. Paginazione Client-Side non Ottimale
 6. Count Stima Conservativa Non Preciso
@@ -418,6 +458,7 @@ Aggiungere un controllo per verificare che `user` sia disponibile prima di esegu
 14. Query pt_atleti Potrebbe Fallire per RLS
 
 ### 🟡 **Criticità Bassa (20-30)** - 13 problemi
+
 15. Filtri Client-Side Potrebbero Essere Applicati Due Volte
 16. Tags Sempre Vuoto
 17. Logging Eccessivo con fetch() a URL Hardcoded
@@ -440,17 +481,20 @@ Aggiungere un controllo per verificare che `user` sia disponibile prima di esegu
 ## 🎯 PRIORITÀ FIX
 
 ### ⚡ **FIX IMMEDIATO** (Blocca funzionalità trainer)
+
 1. ✅ Count Query per Trainer - Usa count da `pt_atleti` invece di tutti gli atleti
 2. ✅ fetchStats() per Trainer - Calcola stats solo su atleti assegnati
 3. ✅ RLS Policy su pt_atleti - Restringere per sicurezza
 
 ### 🔧 **FIX IMPORTANTE** (Migliora UX e Performance)
+
 4. ✅ Campi `allenamenti_mese` e `scheda_attiva` - Implementare calcolo reale
 5. ✅ Paginazione Server-Side - Applicare limit nella query Supabase
 6. ✅ Query Profiles per Trainer - Includere filtri essenziali nella query
 7. ✅ Count Query nel Background - Gestire trainer correttamente
 
 ### 📦 **FIX BACKLOG** (Miglioramenti)
+
 8. ✅ Rimuovere query test `pt_atleti` non necessaria
 9. ✅ Rimuovere logging eccessivo con fetch() hardcoded
 10. ✅ Gestire errori più specificamente

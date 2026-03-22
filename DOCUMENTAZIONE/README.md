@@ -3,11 +3,13 @@
 ## ⚡ Quick Start (Comandi Funzionanti)
 
 **Per esportare lo schema completo:**
+
 ```bash
 bash supabase-config-export/pg-dump-completo.sh
 ```
 
 **Vedi anche:**
+
 - `ISTRUZIONI-FINALI-FUNZIONANTI.md` - Istruzioni complete con comandi testati
 - `COMANDI-RAPIDI.md` - Reference rapido dei comandi
 
@@ -16,7 +18,9 @@ bash supabase-config-export/pg-dump-completo.sh
 ## File Disponibili
 
 ### 1. `export-database-schema.sql`
+
 Contiene 16 query SQL per esportare tutte le informazioni del database:
+
 - Tabelle
 - Colonne
 - Primary Keys
@@ -35,17 +39,21 @@ Contiene 16 query SQL per esportare tutte le informazioni del database:
 - **Comments** (Query 16) - Commenti su tabelle e colonne
 
 ### 2. `storage-config.json`
+
 Configurazione completa dei bucket storage (10 bucket trovati).
 
 ### 3. `config.json`
+
 Configurazione generale del progetto Supabase.
 
 ### 4. `REPORT.md`
+
 Report markdown con riepilogo della configurazione.
 
 ## Come Usare
 
 ### Passo 1: Esegui le Query SQL
+
 1. Apri [Supabase Dashboard](https://supabase.com/dashboard)
 2. Vai al progetto `icibqnmtacibgnhaidlz`
 3. Apri **SQL Editor**
@@ -53,7 +61,9 @@ Report markdown con riepilogo della configurazione.
 5. Esegui una query alla volta o tutte insieme
 
 ### Passo 2: Esporta i Risultati
+
 Per ogni query, esporta i risultati:
+
 - **Formato JSON**: Clicca su "Download" > "JSON" nel SQL Editor
 - **Formato CSV**: Clicca su "Download" > "CSV"
 - Salva i file con nomi descrittivi:
@@ -63,12 +73,15 @@ Per ogni query, esporta i risultati:
   - ...e così via
 
 ### Passo 3: Query 16 - Comments
+
 La query 16 restituisce tutti i commenti su tabelle e colonne. Questo è molto utile per:
+
 - Documentazione del database
 - Capire lo scopo di ogni tabella/colonna
 - Onboarding nuovi sviluppatori
 
 **Esempio risultato Query 16:**
+
 ```sql
 -- 16. COMMENTS (Table and column comments)
 SELECT
@@ -103,11 +116,13 @@ ORDER BY n.nspname, c.relname, a.attnum;
 ## Script Utili
 
 Per rieseguire l'esportazione storage:
+
 ```bash
 npm run db:export-config
 ```
 
 Oppure:
+
 ```bash
 npx tsx scripts/export-supabase-config-complete.ts
 ```

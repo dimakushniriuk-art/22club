@@ -6,8 +6,12 @@ import { createClient } from '@/lib/supabase/server'
  * Diagnostica: chiama la RPC debug_trainer_clienti_visibility con la sessione
  * dell'utente (cookie). Usare da browser loggato come trainer.
  * Restituisce trainer_profile_id e visible_count.
+ * Solo in development (NODE_ENV=development); in altri ambienti 404.
  */
 export async function GET() {
+  if (process.env.NODE_ENV !== 'development') {
+    return new NextResponse(null, { status: 404 })
+  }
   try {
     const supabase = await createClient()
     const { data, error } = await supabase.rpc('debug_trainer_clienti_visibility').single()

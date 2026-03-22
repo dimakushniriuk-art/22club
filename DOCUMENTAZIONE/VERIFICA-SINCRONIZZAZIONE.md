@@ -25,12 +25,14 @@
 **Messaggio**: Il codice usa correttamente `supabase.storage.from()` per i bucket storage
 
 **Verifica completata**:
+
 - ✅ `athlete-certificates` - Usato correttamente con `supabase.storage.from()` (use-athlete-medical.ts)
 - ✅ `athlete-referti` - Usato correttamente con `supabase.storage.from()` (use-athlete-medical.ts)
 - ✅ `athlete-documents` - Usato correttamente con `supabase.storage.from()` (use-athlete-administrative.ts)
 - ✅ `documents` - Usato correttamente sia come tabella (`supabase.from()`) che come bucket (`supabase.storage.from()`)
 
 **File verificati**:
+
 - `src/hooks/athlete-profile/use-athlete-medical.ts` - ✅ Corretto
 - `src/hooks/athlete-profile/use-athlete-administrative.ts` - ✅ Corretto
 - `src/lib/documents.ts` - ✅ Corretto
@@ -38,6 +40,7 @@
 - `src/app/dashboard/abbonamenti/page.tsx` - ✅ Corretto
 
 **Stato**: ✅ **Nessun problema trovato** - Il codice usa correttamente:
+
 - `supabase.from('table_name')` per tabelle database
 - `supabase.storage.from('bucket-name')` per storage buckets
 
@@ -50,6 +53,7 @@
 **Messaggio**: Tutte le funzioni RPC chiamate nel codice sono definite nel database
 
 **Funzioni chiamate nel codice**:
+
 - ✅ `get_clienti_stats` - **Presente** (riga 2139 in schema-with-data.sql)
 - ✅ `get_current_staff_profile_id` - **Presente** (riga 2298 in schema-with-data.sql)
 - ✅ `notify_expiring_documents` - **Presente** (riga 3577 in schema-with-data.sql)
@@ -60,6 +64,7 @@
 - ✅ `update_expired_invites` - **Presente** (riga 4333 in schema-with-data.sql)
 
 **File coinvolti**:
+
 - `src/hooks/use-clienti.ts`
 - `src/components/dashboard/appointment-modal.tsx`
 - `src/lib/notifications/scheduler.ts`
@@ -76,6 +81,7 @@
 **Messaggio**: Alcune tabelle nel database non sembrano essere usate nel codice
 
 **Tabelle nel database ma non trovate nel codice**:
+
 - `audit_logs` - Potrebbe essere usata solo da trigger
 - `cliente_tags` - Potrebbe essere usata indirettamente
 - `communication_recipients` - Potrebbe essere usata indirettamente
@@ -84,7 +90,8 @@
 - `web_vitals` - Potrebbe essere usata solo per analytics
 - `workouts` - ⚠️ **IMPORTANTE**: Verificare se è usata (diversa da `workout_plans`)
 
-**Suggerimento**: 
+**Suggerimento**:
+
 - Se queste tabelle sono necessarie, assicurati che siano accessibili
 - Se non sono necessarie, considera di rimuoverle per semplificare lo schema
 - **Particolare attenzione a `workouts`**: Verifica se è diversa da `workout_plans` e se è necessaria
@@ -96,6 +103,7 @@
 ### 1. Tabelle Principali Usate
 
 **Tabelle più usate nel codice**:
+
 1. `profiles` - Usata in ~50+ file
 2. `appointments` - Usata in ~15+ file
 3. `workout_plans` - Usata in ~10+ file
@@ -112,11 +120,13 @@
 ### 2. Colonne Multiple in `workout_logs`
 
 **Nota**: La tabella `workout_logs` ha tre colonne che sembrano riferirsi allo stesso concetto:
+
 - `atleta_id` (NOT NULL) - Colonna principale
 - `athlete_id` (NULL) - Colonna aggiunta
 - `user_id` (NULL) - Colonna aggiunta
 
-**Stato**: 
+**Stato**:
+
 - Il codice usa principalmente `athlete_id` e `atleta_id`
 - `user_id` è usata nelle RLS policies
 - Questo è già documentato in `ERRORI-DA-CORREGGERE.md`
@@ -143,6 +153,7 @@ Tutte le funzioni RPC sono presenti nel database. Nessuna azione richiesta.
 ### 2. ✅ Storage Buckets - Verificato
 
 Il codice usa correttamente tutti i bucket storage. Verifica che esistano in Supabase Dashboard:
+
 - ✅ `athlete-certificates` - Usato correttamente nel codice
 - ✅ `athlete-referti` - Usato correttamente nel codice
 - ✅ `athlete-documents` - Usato correttamente nel codice
@@ -159,9 +170,9 @@ Verifica se la tabella `workouts` è diversa da `workout_plans` e se è necessar
 
 ```sql
 -- Verifica struttura
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_schema = 'public' 
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public'
   AND table_name = 'workouts'
 ORDER BY ordinal_position;
 ```
@@ -199,13 +210,15 @@ npm run db:verify-sync
 **Il progetto è perfettamente sincronizzato con Supabase!** ✅
 
 **Risultato analisi**:
+
 - ✅ **0 errori critici**
 - ✅ **Funzioni RPC**: Tutte presenti e funzionanti
 - ✅ **Storage buckets**: Tutti usati correttamente nel codice
 - ✅ **Tabelle**: Tutte le tabelle usate esistono nel database
 - ℹ️ **Note**: Alcune tabelle potrebbero non essere usate direttamente (non critico)
 
-**Raccomandazione**: 
+**Raccomandazione**:
+
 1. ✅ **Completato**: Verifica codice completata - tutto corretto
 2. ℹ️ **Opzionale**: Verifica manuale che i storage buckets esistano in Supabase Dashboard
 3. ℹ️ **Opzionale**: Considera se le tabelle non usate sono necessarie

@@ -1,6 +1,7 @@
 # 🔧 Rimozione File Grandi dalla Storia Git
 
 **Problema**: File ZIP nella storia Git superano il limite di 100 MB di GitHub:
+
 - `22club-setup V1 online.zip` (326.35 MB)
 - `22club-setup Design OK .zip` (306.75 MB)
 - `22club-setup 1.zip` (277.16 MB)

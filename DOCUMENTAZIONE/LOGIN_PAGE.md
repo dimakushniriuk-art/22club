@@ -25,16 +25,16 @@ La pagina condivide **stile e struttura** con la pagina [Forgot Password](FORGOT
 
 ### Elementi UI
 
-| Elemento        | Descrizione |
-|-----------------|-------------|
-| Logo            | `/logo.svg`, h-28, drop-shadow teal `rgba(20,184,166,0.3)`, blur decorativo |
-| Titolo          | "Accedi" – `text-2xl font-bold text-text-primary` |
-| Sottotitolo     | "Inserisci le tue credenziali per accedere al tuo account." – `text-text-secondary` |
-| Campi           | Email e Password con icone (Mail, Lock) a sinistra, `pl-10`, `focus:border-teal-500` |
-| Placeholder     | Email: `la.tua@email.com`, Password: `••••••••` |
-| Pulsante        | Teal `bg-teal-500 hover:bg-teal-600`, spinner in loading, disabled se email/password vuoti |
-| Link            | "Password dimenticata? Reimposta password" → `/forgot-password` (teal-400/teal-300) |
-| Box errore      | Sfondo/bordo rosso, icona `AlertCircle`, titolo "Errore" + messaggio |
+| Elemento    | Descrizione                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| Logo        | `/logo.svg`, h-28, drop-shadow teal `rgba(20,184,166,0.3)`, blur decorativo                |
+| Titolo      | "Accedi" – `text-2xl font-bold text-text-primary`                                          |
+| Sottotitolo | "Inserisci le tue credenziali per accedere al tuo account." – `text-text-secondary`        |
+| Campi       | Email e Password con icone (Mail, Lock) a sinistra, `pl-10`, `focus:border-teal-500`       |
+| Placeholder | Email: `la.tua@email.com`, Password: `••••••••`                                            |
+| Pulsante    | Teal `bg-teal-500 hover:bg-teal-600`, spinner in loading, disabled se email/password vuoti |
+| Link        | "Password dimenticata? Reimposta password" → `/forgot-password` (teal-400/teal-300)        |
+| Box errore  | Sfondo/bordo rosso, icona `AlertCircle`, titolo "Errore" + messaggio                       |
 
 ### Componenti usati
 
@@ -60,14 +60,14 @@ La pagina condivide **stile e struttura** con la pagina [Forgot Password](FORGOT
    - Altro → messaggio restituito dal backend.
 6. **Redirect in base al ruolo:**
 
-| Ruolo (DB)   | Normalizzato | Redirect |
-|--------------|--------------|----------|
-| admin, owner | admin        | `/dashboard/admin` |
-| pt, staff    | trainer      | `/dashboard` |
-| nutrizionista| –            | `/dashboard/nutrizionista` |
-| massaggiatore| –            | `/dashboard/massaggiatore` |
-| atleta       | athlete      | `first_login === true` → `/welcome`, altrimenti `/home` |
-| Altro        | –            | Nessun redirect; messaggio "Ruolo non riconosciuto" |
+| Ruolo (DB)    | Normalizzato | Redirect                                                |
+| ------------- | ------------ | ------------------------------------------------------- |
+| admin, owner  | admin        | `/dashboard/admin`                                      |
+| pt, staff     | trainer      | `/dashboard`                                            |
+| nutrizionista | –            | `/dashboard/nutrizionista`                              |
+| massaggiatore | –            | `/dashboard/massaggiatore`                              |
+| atleta        | athlete      | `first_login === true` → `/welcome`, altrimenti `/home` |
+| Altro         | –            | Nessun redirect; messaggio "Ruolo non riconosciuto"     |
 
 7. **Fallback:** in caso di eccezione durante il caricamento del profilo → `router.replace('/post-login')`.
 

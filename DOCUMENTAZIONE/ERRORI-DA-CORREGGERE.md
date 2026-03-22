@@ -16,16 +16,19 @@ Il file SQL è **sintatticamente corretto** e può essere usato così com'è. Tu
 ### 1. ⚠️ Colonne Multiple in `workout_logs`
 
 **Situazione attuale:**
+
 - `atleta_id` (uuid NOT NULL) - Colonna principale/legacy
 - `athlete_id` (uuid NULL) - Colonna aggiunta successivamente
 - `user_id` (uuid NULL) - Colonna aggiunta successivamente
 
 **Analisi:**
+
 - Il codice usa principalmente `athlete_id` in alcuni posti
 - `atleta_id` è ancora usata in alcuni query e indici
 - `user_id` è usata nelle RLS policies
 
 **Raccomandazione:**
+
 - ✅ **Nessuna azione richiesta** se il sistema funziona correttamente
 - ⚠️ Considera di standardizzare su una sola colonna in futuro
 - ⚠️ Se vuoi pulire, crea una migrazione che:
@@ -43,17 +46,21 @@ Il file SQL è **sintatticamente corretto** e può essere usato così com'è. Tu
 Alcune tabelle usano `profiles(id)`, altre `profiles(user_id)`:
 
 **Usano `profiles(id)`** (maggioranza):
+
 - `appointments`, `athlete_administrative_data`, `athlete_ai_data`, `athlete_motivational_data`, `athlete_smart_tracking_data`, `chat_messages`, `documents`, `lesson_counters`, `payments`, `progress_photos`, `pt_atleti`, `workout_logs`, `workout_plans`, `workouts`
 
 **Usano `profiles(user_id)`** (minoranza):
+
 - `athlete_fitness_data`, `athlete_massage_data`, `athlete_medical_data`, `athlete_nutrition_data`, `progress_logs`
 
 **Analisi:**
+
 - Potrebbe essere intenzionale (alcune tabelle usano `id`, altre `user_id`)
 - `profiles.id` è la primary key
 - `profiles.user_id` è un foreign key a `auth.users(id)`
 
 **Raccomandazione:**
+
 - ✅ **Nessuna azione richiesta** se funziona correttamente
 - ⚠️ Se vuoi standardizzare, considera di usare sempre `profiles(id)` per coerenza
 - ⚠️ Le tabelle che usano `profiles(user_id)` potrebbero avere una ragione specifica
@@ -68,11 +75,13 @@ Alcune tabelle usano `profiles(id)`, altre `profiles(user_id)`:
 8 foreign keys puntano a `auth.users` (schema di sistema Supabase).
 
 **Analisi:**
+
 - ✅ **Corretto** - `auth.users` è lo schema di autenticazione di Supabase
 - ✅ Il file SQL è corretto così com'è
 - ⚠️ Assicurati che lo schema `auth` esista quando importi il file
 
 **Raccomandazione:**
+
 - ✅ **Nessuna azione richiesta** - è corretto così
 
 **Priorità**: Nessuna (già corretto)
@@ -98,6 +107,7 @@ Alcune tabelle usano `profiles(id)`, altre `profiles(user_id)`:
 ### ❌ **Nessun errore da correggere**
 
 Il file `schema-with-data.sql` è:
+
 - ✅ Sintatticamente corretto
 - ✅ Strutturalmente valido
 - ✅ Pronto per l'uso
@@ -132,6 +142,7 @@ Se in futuro vuoi migliorare la coerenza, considera:
 ## ✅ File Pronto per Uso
 
 Il file può essere usato per:
+
 - ✅ Importare modifiche
 - ✅ Ricreare il database
 - ✅ Versioning dello schema

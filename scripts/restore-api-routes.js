@@ -68,14 +68,14 @@ dynamicRoutes.forEach((route) => {
   const routePath = path.join(process.cwd(), route)
   const routeName = route.split('/').pop()
   const backupPath = path.join(dynamicBackupBase, routeName)
-  
+
   if (fs.existsSync(backupPath)) {
     // Crea la directory padre se non esiste
     const parentDir = path.dirname(routePath)
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true })
     }
-    
+
     if (fs.existsSync(routePath)) {
       fs.rmSync(routePath, { recursive: true, force: true })
     }
@@ -95,19 +95,21 @@ const serverSidePagesMap = {
 Object.entries(serverSidePagesMap).forEach(([backupName, pagePath]) => {
   const fullPagePath = path.join(process.cwd(), pagePath)
   const backupPath = path.join(dynamicBackupBase, backupName)
-  
+
   if (fs.existsSync(backupPath)) {
     // Crea la directory padre se non esiste
     const parentDir = path.dirname(fullPagePath)
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true })
     }
-    
+
     if (fs.existsSync(fullPagePath)) {
       fs.rmSync(fullPagePath, { recursive: true, force: true })
     }
     fs.renameSync(backupPath, fullPagePath)
-    console.log(`✅ Pagina server-side ${path.basename(pagePath)} ripristinata dopo build Capacitor`)
+    console.log(
+      `✅ Pagina server-side ${path.basename(pagePath)} ripristinata dopo build Capacitor`,
+    )
   }
 })
 

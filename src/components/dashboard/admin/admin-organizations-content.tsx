@@ -70,7 +70,9 @@ export function AdminOrganizationsContent() {
       setLoading(true)
 
       // Verifica se esiste la tabella organizations (non nei tipi generati)
-      const orgsClient = supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> }
+      const orgsClient = supabase as unknown as {
+        from: (table: string) => ReturnType<typeof supabase.from>
+      }
       const { data: orgsData, error: orgsError } = await orgsClient
         .from('organizations')
         .select('id, name, created_at')
@@ -111,7 +113,11 @@ export function AdminOrganizationsContent() {
       }
 
       // Se la tabella esiste, conta utenti per organizzazione
-      const orgsList = (orgsData || []) as unknown as Array<{ id: string; name?: string; created_at?: string }>
+      const orgsList = (orgsData || []) as unknown as Array<{
+        id: string
+        name?: string
+        created_at?: string
+      }>
       const orgsWithCounts = await Promise.all(
         orgsList.map(async (org) => {
           const { count } = await supabase
@@ -129,7 +135,10 @@ export function AdminOrganizationsContent() {
       setOrganizations(orgsWithCounts as Organization[])
     } catch (error: unknown) {
       logger.error('Errore nel caricamento organizzazioni', error)
-      notifyError('Errore', error instanceof Error ? error.message : 'Errore nel caricamento organizzazioni')
+      notifyError(
+        'Errore',
+        error instanceof Error ? error.message : 'Errore nel caricamento organizzazioni',
+      )
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -146,10 +155,7 @@ export function AdminOrganizationsContent() {
   }, [fetchOrganizations])
 
   const filteredOrganizations = useMemo(
-    () =>
-      organizations.filter((org) =>
-        org.name.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
+    () => organizations.filter((org) => org.name.toLowerCase().includes(searchTerm.toLowerCase())),
     [organizations, searchTerm],
   )
 
@@ -157,8 +163,7 @@ export function AdminOrganizationsContent() {
   const stats = useMemo(() => {
     const total = organizations.length
     const totalUsers = organizations.reduce((sum, org) => sum + (org.user_count || 0), 0)
-    const avgUsersPerOrg =
-      total > 0 ? Math.round((totalUsers / total) * 10) / 10 : 0
+    const avgUsersPerOrg = total > 0 ? Math.round((totalUsers / total) * 10) / 10 : 0
     const orgsWithUsers = organizations.filter((org) => (org.user_count || 0) > 0).length
 
     return {
@@ -189,7 +194,10 @@ export function AdminOrganizationsContent() {
         setOrgUsers((profiles || []) as OrganizationUser[])
       } catch (error: unknown) {
         logger.error('Errore nel caricamento utenti organizzazione', error)
-        notifyError('Errore', error instanceof Error ? error.message : 'Errore nel caricamento utenti')
+        notifyError(
+          'Errore',
+          error instanceof Error ? error.message : 'Errore nel caricamento utenti',
+        )
         setOrgUsers([])
       } finally {
         setLoadingUsers(false)
@@ -268,9 +276,7 @@ export function AdminOrganizationsContent() {
             disabled={refreshing}
             className="bg-background-secondary border-border hover:bg-background-tertiary"
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Aggiorna
           </Button>
           <Button
@@ -321,8 +327,8 @@ export function AdminOrganizationsContent() {
         <Card variant="trainer" className="bg-background-secondary border-border">
           <CardContent className="p-4">
             <p className="text-sm text-gray-400">
-              ⚠️ La tabella organizations non è ancora stata creata. Le organizzazioni sono
-              gestite tramite org_id nei profili.
+              ⚠️ La tabella organizations non è ancora stata creata. Le organizzazioni sono gestite
+              tramite org_id nei profili.
             </p>
           </CardContent>
         </Card>

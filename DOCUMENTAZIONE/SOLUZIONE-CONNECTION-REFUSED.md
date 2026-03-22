@@ -3,6 +3,7 @@
 ## Problema
 
 Se vedi l'errore:
+
 ```
 connection to server at "db.icibqnmtacibgnhaidlz.supabase.co" failed: Connection refused
 ```
@@ -19,6 +20,7 @@ Significa che la **Direct Connection** non è disponibile o non è abilitata.
 4. Copia la connection string
 
 Dovrebbe essere qualcosa come:
+
 ```
 postgresql://postgres.icibqnmtacibgnhaidlz:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
 ```
@@ -28,10 +30,12 @@ postgresql://postgres.icibqnmtacibgnhaidlz:[YOUR-PASSWORD]@aws-0-eu-central-1.po
 Ho creato un file alternativo: `pg-dump-command-pooler.sh`
 
 Modificalo con:
+
 1. La password corretta (sostituisci `22Club-NEW` se diversa)
 2. La regione corretta (sostituisci `eu-central-1` se diversa)
 
 Poi esegui:
+
 ```bash
 bash supabase-config-export/pg-dump-command-pooler.sh
 ```
@@ -39,6 +43,7 @@ bash supabase-config-export/pg-dump-command-pooler.sh
 ### Passo 3: Se Anche il Pooler Non Funziona
 
 Verifica la regione corretta:
+
 - Vai su Dashboard > Settings > Database
 - La connection string mostra la regione (es: `eu-central-1`, `us-east-1`)
 - Assicurati di usare la stessa regione nel comando
@@ -46,6 +51,7 @@ Verifica la regione corretta:
 ## 🔍 Come Trovare la Regione Corretta
 
 La regione è nella connection string del pooler:
+
 - `aws-0-eu-central-1` = Europa Centrale
 - `aws-0-us-east-1` = USA Est
 - `aws-0-us-west-1` = USA Ovest
@@ -54,11 +60,13 @@ La regione è nella connection string del pooler:
 ## 📝 Esempio Comando Corretto
 
 Se la tua connection string del pooler è:
+
 ```
 postgresql://postgres.icibqnmtacibgnhaidlz:mypassword@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
 ```
 
 Il comando sarà:
+
 ```bash
 pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:mypassword@aws-0-eu-central-1.pooler.supabase.com:5432/postgres" \
   --schema=public \

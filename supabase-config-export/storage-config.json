@@ -5,9 +5,7 @@
       "name": "general-files",
       "public": false,
       "file_size_limit": null,
-      "allowed_mime_types": [
-        "*/*"
-      ],
+      "allowed_mime_types": ["*/*"],
       "created_at": "2025-10-16T14:09:01.081Z",
       "updated_at": "2025-10-16T14:09:01.081Z"
     },
@@ -16,12 +14,7 @@
       "name": "athlete-certificates",
       "public": false,
       "file_size_limit": 10485760,
-      "allowed_mime_types": [
-        "application/pdf",
-        "image/jpeg",
-        "image/png",
-        "image/jpg"
-      ],
+      "allowed_mime_types": ["application/pdf", "image/jpeg", "image/png", "image/jpg"],
       "created_at": "2025-12-07T12:49:14.130Z",
       "updated_at": "2025-12-07T12:49:14.130Z"
     },
@@ -30,12 +23,7 @@
       "name": "athlete-referti",
       "public": false,
       "file_size_limit": 10485760,
-      "allowed_mime_types": [
-        "application/pdf",
-        "image/jpeg",
-        "image/png",
-        "image/jpg"
-      ],
+      "allowed_mime_types": ["application/pdf", "image/jpeg", "image/png", "image/jpg"],
       "created_at": "2025-12-07T12:49:14.130Z",
       "updated_at": "2025-12-07T12:49:14.130Z"
     },
@@ -44,12 +32,7 @@
       "name": "athlete-progress-photos",
       "public": false,
       "file_size_limit": 5242880,
-      "allowed_mime_types": [
-        "image/jpeg",
-        "image/png",
-        "image/jpg",
-        "image/webp"
-      ],
+      "allowed_mime_types": ["image/jpeg", "image/png", "image/jpg", "image/webp"],
       "created_at": "2025-12-07T12:49:14.130Z",
       "updated_at": "2025-12-07T12:49:14.130Z"
     },
@@ -97,9 +80,7 @@
       "name": "progress-photos",
       "public": false,
       "file_size_limit": 5242880,
-      "allowed_mime_types": [
-        "image/*"
-      ],
+      "allowed_mime_types": ["image/*"],
       "created_at": "2025-10-16T14:08:39.680Z",
       "updated_at": "2025-10-16T14:08:39.680Z"
     },
@@ -108,9 +89,7 @@
       "name": "avatars",
       "public": true,
       "file_size_limit": 2097152,
-      "allowed_mime_types": [
-        "image/*"
-      ],
+      "allowed_mime_types": ["image/*"],
       "created_at": "2025-12-07T01:51:03.813Z",
       "updated_at": "2025-12-07T01:51:03.813Z"
     },
@@ -119,9 +98,7 @@
       "name": "exercise-videos",
       "public": true,
       "file_size_limit": 52428800,
-      "allowed_mime_types": [
-        "video/*"
-      ],
+      "allowed_mime_types": ["video/*"],
       "created_at": "2025-11-02T11:01:50.328Z",
       "updated_at": "2026-01-09T12:00:59.950Z"
     }

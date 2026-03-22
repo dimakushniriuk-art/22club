@@ -23,13 +23,16 @@ async function loginAndWait(page: Page, role: 'trainer' | 'athlete') {
     .toMatch(/(dashboard|home|post-login)/)
 
   if (page.url().includes('/post-login')) {
-    await expect
-      .poll(() => page.url(), { timeout: 60000, intervals: [500] })
-      .toContain(target)
+    await expect.poll(() => page.url(), { timeout: 60000, intervals: [500] }).toContain(target)
   }
 }
 
-async function gotoWithAuth(page: Page, url: string, role: 'trainer' | 'athlete', pattern?: RegExp) {
+async function gotoWithAuth(
+  page: Page,
+  url: string,
+  role: 'trainer' | 'athlete',
+  pattern?: RegExp,
+) {
   const expected = pattern ?? new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
   const tryNav = async () => {
     await page.goto(url)
@@ -83,7 +86,11 @@ test.describe('Workflow Tests', () => {
 
     // Step 2: Complete profile setup (navigazione diretta, evita menu)
     if (!(await gotoWithAuth(page, '/dashboard/profilo', 'trainer'))) return
-    await page.getByText(/caricamento/i).first().waitFor({ state: 'detached', timeout: 8000 }).catch(() => {})
+    await page
+      .getByText(/caricamento/i)
+      .first()
+      .waitFor({ state: 'detached', timeout: 8000 })
+      .catch(() => {})
     await fillIfExists(page.locator('input[name="name"]'), 'Mario Rossi')
     await fillIfExists(page.locator('input[name="phone"]'), '+39 123 456 7890')
     await fillIfExists(page.locator('textarea[name="bio"]'), 'Personal trainer esperto')
@@ -103,7 +110,9 @@ test.describe('Workflow Tests', () => {
     // Step 4: Upload document (best effort)
     await gotoWithAuth(page, '/dashboard/documenti', 'trainer')
     if (await safeClick(page.getByRole('button', { name: /carica documento/i }))) {
-      await page.setInputFiles('input[type="file"]', 'tests/fixtures/sample-document.pdf').catch(() => {})
+      await page
+        .setInputFiles('input[type="file"]', 'tests/fixtures/sample-document.pdf')
+        .catch(() => {})
       await fillIfExists(page.locator('input[name="name"]'), 'Programma Allenamento')
       await safeClick(page.getByRole('button', { name: /carica|salva|submit/i }))
     }
@@ -118,7 +127,11 @@ test.describe('Workflow Tests', () => {
 
     // Step 2: Complete profile setup
     if (!(await gotoWithAuth(page, '/home/profilo', 'athlete', /home\/profilo/))) return
-    await page.getByText(/caricamento/i).first().waitFor({ state: 'detached', timeout: 8000 }).catch(() => {})
+    await page
+      .getByText(/caricamento/i)
+      .first()
+      .waitFor({ state: 'detached', timeout: 8000 })
+      .catch(() => {})
     await fillIfExists(page.locator('input[name="name"]'), 'Luigi Bianchi')
     await fillIfExists(page.locator('input[name="phone"]'), '+39 987 654 3210')
     await fillIfExists(page.locator('textarea[name="bio"]'), 'Atleta amatoriale')
@@ -163,9 +176,14 @@ test.describe('Workflow Tests', () => {
     // Upload document
     await gotoWithAuth(page, '/dashboard/documenti', 'trainer')
     if (await safeClick(page.getByRole('button', { name: /carica documento/i }))) {
-      await page.setInputFiles('input[type="file"]', 'tests/fixtures/sample-document.pdf').catch(() => {})
+      await page
+        .setInputFiles('input[type="file"]', 'tests/fixtures/sample-document.pdf')
+        .catch(() => {})
       await fillIfExists(page.locator('input[name="name"]'), 'Programma Allenamento')
-      await fillIfExists(page.locator('textarea[name="description"]'), 'Programma di allenamento personalizzato')
+      await fillIfExists(
+        page.locator('textarea[name="description"]'),
+        'Programma di allenamento personalizzato',
+      )
       await safeClick(page.getByRole('button', { name: /carica|salva|submit/i }))
     }
 
@@ -181,11 +199,20 @@ test.describe('Workflow Tests', () => {
     await loginAndWait(page, 'trainer')
 
     // View statistics
-    const ok = await gotoWithAuth(page, '/dashboard/statistiche', 'trainer', /dashboard\/statistiche/)
+    const ok = await gotoWithAuth(
+      page,
+      '/dashboard/statistiche',
+      'trainer',
+      /dashboard\/statistiche/,
+    )
     if (!ok) return
     // Se la pagina mostra errori server, esci senza fallire
-    const bodyText = await page.locator('body').innerText().catch(() => '')
-    if (/unstable_cache|cookies|Errore caricamento grafico|Ricarica la pagina/i.test(bodyText)) return
+    const bodyText = await page
+      .locator('body')
+      .innerText()
+      .catch(() => '')
+    if (/unstable_cache|cookies|Errore caricamento grafico|Ricarica la pagina/i.test(bodyText))
+      return
     await page.selectOption('select[name="period"]', 'month').catch(() => {})
     await safeClick(page.getByRole('button', { name: /esporta/i }))
     await safeClick(page.getByRole('button', { name: /pdf/i }))
@@ -213,7 +240,9 @@ test.describe('Workflow Tests', () => {
 
     // Upload profile picture (best effort)
     if (await safeClick(page.getByRole('button', { name: /carica foto/i }))) {
-      await page.setInputFiles('input[type="file"]', 'tests/fixtures/profile-picture.jpg').catch(() => {})
+      await page
+        .setInputFiles('input[type="file"]', 'tests/fixtures/profile-picture.jpg')
+        .catch(() => {})
       await safeClick(page.getByRole('button', { name: /carica/i }))
     }
   })

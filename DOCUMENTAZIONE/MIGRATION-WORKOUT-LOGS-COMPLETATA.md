@@ -14,7 +14,7 @@ La policy è stata verificata e risulta attiva:
 ```
 policyname: "Athletes can insert own workout logs"
 cmd: INSERT
-with_check: 
+with_check:
   - athlete_id corrisponde al proprio profile.id (via profiles.user_id = auth.uid())
   - atleta_id corrisponde al proprio profile.id (via profiles.user_id = auth.uid())
   - user_id corrisponde a auth.uid()
@@ -23,11 +23,13 @@ with_check:
 ## 🔧 Fix Applicati
 
 ### 1. Migration SQL ✅
+
 - **File**: `supabase/migrations/20250117_fix_workout_logs_athlete_insert.sql`
 - **Stato**: Eseguita manualmente nel Supabase Dashboard
 - **Risultato**: Policy creata correttamente
 
 ### 2. Codice TypeScript ✅
+
 - **File**: `src/app/home/allenamenti/oggi/page.tsx`
 - **Modifiche**:
   - ✅ Aggiunto `user_id` ai dati inseriti
@@ -52,9 +54,9 @@ with_check:
 
 4. **Verifica nel database** (opzionale)
    ```sql
-   SELECT * FROM workout_logs 
+   SELECT * FROM workout_logs
    WHERE athlete_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-   ORDER BY created_at DESC 
+   ORDER BY created_at DESC
    LIMIT 1;
    ```
 
@@ -70,20 +72,23 @@ with_check:
 Se dopo la migration vedi ancora errori:
 
 1. **Verifica che la policy sia attiva**:
+
    ```sql
-   SELECT policyname, cmd, with_check 
-   FROM pg_policies 
-   WHERE tablename = 'workout_logs' 
+   SELECT policyname, cmd, with_check
+   FROM pg_policies
+   WHERE tablename = 'workout_logs'
      AND policyname = 'Athletes can insert own workout logs';
    ```
 
 2. **Verifica che RLS sia abilitato**:
+
    ```sql
-   SELECT tablename, rowsecurity 
-   FROM pg_tables 
-   WHERE schemaname = 'public' 
+   SELECT tablename, rowsecurity
+   FROM pg_tables
+   WHERE schemaname = 'public'
      AND tablename = 'workout_logs';
    ```
+
    `rowsecurity` deve essere `true`
 
 3. **Controlla i log della console**:

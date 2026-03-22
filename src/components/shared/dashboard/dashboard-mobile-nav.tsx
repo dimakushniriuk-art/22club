@@ -140,7 +140,13 @@ export function DashboardMobileNav() {
       </header>
 
       {/* Drawer navigazione */}
-      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} side="left" size="md" className="w-[280px] max-w-[85vw] h-full">
+      <Drawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        side="left"
+        size="md"
+        className="w-[280px] max-w-[85vw] h-full"
+      >
         <div className="flex flex-col h-full bg-background-secondary">
           <div className="flex items-center justify-between p-4 border-b border-white/5">
             <Logo22Club className="h-6 w-auto max-w-[140px]" />
@@ -156,8 +162,14 @@ export function DashboardMobileNav() {
           <nav className="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
             {nav.map((item) => {
               const itemPath = item.href.split('?')[0]
-              const isHomePage = itemPath === '/dashboard' || itemPath === '/home' || itemPath === '/dashboard/nutrizionista' || itemPath === '/dashboard/massaggiatore'
-              const active = isHomePage ? path === itemPath : path === itemPath || path.startsWith(itemPath + '/')
+              const isHomePage =
+                itemPath === '/dashboard' ||
+                itemPath === '/home' ||
+                itemPath === '/dashboard/nutrizionista' ||
+                itemPath === '/dashboard/massaggiatore'
+              const active = isHomePage
+                ? path === itemPath
+                : path === itemPath || path.startsWith(itemPath + '/')
               const Icon = item.icon
               return (
                 <Link

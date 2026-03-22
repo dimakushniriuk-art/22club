@@ -30,7 +30,14 @@ function RegisterFormFallback() {
         <CardContent className={AUTH_CARD_CONTENT_CLASS}>
           <div className="text-center mb-6 min-[834px]:mb-8">
             <div className="mb-4 min-[834px]:mb-6 flex justify-center">
-              <Image src="/logo.svg" alt="22 Club Logo" width={200} height={200} className={AUTH_LOGO_CLASS} priority />
+              <Image
+                src="/logo.svg"
+                alt="22 Club Logo"
+                width={200}
+                height={200}
+                className={AUTH_LOGO_CLASS}
+                priority
+              />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-text-primary">Crea il tuo account</h2>
             <p className="text-text-secondary text-sm mt-2">Caricamento...</p>
@@ -70,7 +77,10 @@ function RegisterContent() {
   const [showConfirmationScreen, setShowConfirmationScreen] = useState(false)
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   const [resendLoading, setResendLoading] = useState(false)
-  const [resendMessage, setResendMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [resendMessage, setResendMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
   const router = useRouter()
   const supabase = createClient()
@@ -99,8 +109,11 @@ function RegisterContent() {
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const codiceAtRedirect = codiceInvito || ''
-      const redirectTo =
-        origin ? (codiceAtRedirect ? `${origin}/welcome?codice=${encodeURIComponent(codiceAtRedirect)}` : `${origin}/welcome`) : undefined
+      const redirectTo = origin
+        ? codiceAtRedirect
+          ? `${origin}/welcome?codice=${encodeURIComponent(codiceAtRedirect)}`
+          : `${origin}/welcome`
+        : undefined
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -171,7 +184,10 @@ function RegisterContent() {
             })
             if (!cpRes.ok) {
               const errData = await cpRes.json().catch(() => ({}))
-              logger.warn('complete-profile dopo registrazione fallito', { status: cpRes.status, errData })
+              logger.warn('complete-profile dopo registrazione fallito', {
+                status: cpRes.status,
+                errData,
+              })
             }
           } catch (e) {
             logger.warn('complete-profile dopo registrazione errore di rete', e)
@@ -221,7 +237,7 @@ function RegisterContent() {
         logger.warn('Resend confirmation email failed', error, { email })
         setResendMessage({
           type: 'error',
-          text: error.message ?? 'Impossibile inviare di nuovo l\'email. Riprova più tardi.',
+          text: error.message ?? "Impossibile inviare di nuovo l'email. Riprova più tardi.",
         })
       } else {
         setResendMessage({
@@ -252,7 +268,8 @@ function RegisterContent() {
                 <span className="font-medium text-text-primary">{registeredEmail ?? ''}</span>.
               </p>
               <p className="text-text-secondary mt-3 text-sm">
-                Clicca sul link nell&apos;email per attivare l&apos;account. Poi accedi per completare il profilo
+                Clicca sul link nell&apos;email per attivare l&apos;account. Poi accedi per
+                completare il profilo
                 {codiceInvito ? ' e collegarti al tuo trainer.' : '.'}
               </p>
             </div>
@@ -269,11 +286,14 @@ function RegisterContent() {
               >
                 {resendLoading ? (
                   <>
-                    <span className="inline-block h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" aria-hidden />
+                    <span
+                      className="inline-block h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"
+                      aria-hidden
+                    />
                     Invio in corso...
                   </>
                 ) : (
-                  'Invia di nuovo l\'email di conferma'
+                  "Invia di nuovo l'email di conferma"
                 )}
               </Button>
               {resendMessage && (
@@ -301,39 +321,96 @@ function RegisterContent() {
         <CardContent className={AUTH_CARD_CONTENT_CLASS}>
           <div className="text-center mb-6 min-[834px]:mb-8">
             <div className="mb-4 min-[834px]:mb-6 flex justify-center">
-              <Image src="/logo.svg" alt="22 Club Logo" width={200} height={200} className={AUTH_LOGO_CLASS} priority />
+              <Image
+                src="/logo.svg"
+                alt="22 Club Logo"
+                width={200}
+                height={200}
+                className={AUTH_LOGO_CLASS}
+                priority
+              />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-text-primary">Crea il tuo account</h2>
-              <p className="text-text-secondary text-sm mt-2">Compila i campi per registrarti.</p>
-              {codiceInvito && (
-                <p className="text-primary text-xs mt-1">
-                  Registrazione con invito: sarai collegato al tuo PT dopo l’iscrizione.
-                </p>
-              )}
+            <p className="text-text-secondary text-sm mt-2">Compila i campi per registrarti.</p>
+            {codiceInvito && (
+              <p className="text-primary text-xs mt-1">
+                Registrazione con invito: sarai collegato al tuo PT dopo l’iscrizione.
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleRegister} className="space-y-5 min-[834px]:space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nome" className="text-sm font-medium text-text-primary">Nome</Label>
-                <Input id="nome" type="text" value={formData.nome} onChange={(e) => handleInputChange('nome', e.target.value)} placeholder="Mario" className={AUTH_INPUT_CLASS} required />
+                <Label htmlFor="nome" className="text-sm font-medium text-text-primary">
+                  Nome
+                </Label>
+                <Input
+                  id="nome"
+                  type="text"
+                  value={formData.nome}
+                  onChange={(e) => handleInputChange('nome', e.target.value)}
+                  placeholder="Mario"
+                  className={AUTH_INPUT_CLASS}
+                  required
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cognome" className="text-sm font-medium text-text-primary">Cognome</Label>
-                <Input id="cognome" type="text" value={formData.cognome} onChange={(e) => handleInputChange('cognome', e.target.value)} placeholder="Rossi" className={AUTH_INPUT_CLASS} required />
+                <Label htmlFor="cognome" className="text-sm font-medium text-text-primary">
+                  Cognome
+                </Label>
+                <Input
+                  id="cognome"
+                  type="text"
+                  value={formData.cognome}
+                  onChange={(e) => handleInputChange('cognome', e.target.value)}
+                  placeholder="Rossi"
+                  className={AUTH_INPUT_CLASS}
+                  required
+                />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-text-primary">Email</Label>
-              <Input id="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} placeholder="la.tua@email.com" className={AUTH_INPUT_CLASS} required />
+              <Label htmlFor="email" className="text-sm font-medium text-text-primary">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="la.tua@email.com"
+                className={AUTH_INPUT_CLASS}
+                required
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-text-primary">Password</Label>
-              <Input id="password" type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} placeholder="••••••" className={AUTH_INPUT_CLASS} required />
+              <Label htmlFor="password" className="text-sm font-medium text-text-primary">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="••••••"
+                className={AUTH_INPUT_CLASS}
+                required
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-text-primary">Conferma Password</Label>
-              <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} placeholder="••••••" className={AUTH_INPUT_CLASS} required />
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-text-primary">
+                Conferma Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                placeholder="••••••"
+                className={AUTH_INPUT_CLASS}
+                required
+              />
             </div>
             {error && (
               <div className={AUTH_ERROR_BOX_CLASS} role="alert">
@@ -341,21 +418,32 @@ function RegisterContent() {
                 <p className="text-sm text-state-error flex-1">{error}</p>
               </div>
             )}
-            <Button type="submit" variant="primary" disabled={loading} className={AUTH_BUTTON_PRIMARY_CLASS}>
-                {loading ? (
-                  <>
-                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" aria-hidden />
-                    Registrazione in corso...
-                  </>
-                ) : (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={loading}
+              className={AUTH_BUTTON_PRIMARY_CLASS}
+            >
+              {loading ? (
+                <>
+                  <span
+                    className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"
+                    aria-hidden
+                  />
+                  Registrazione in corso...
+                </>
+              ) : (
                 'Registrati'
-            )}
+              )}
             </Button>
           </form>
           <div className="text-center mt-6">
             <p className="text-text-secondary text-sm">
               Hai già un account?{' '}
-              <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
+              <Link
+                href="/login"
+                className="font-medium text-primary hover:text-primary/80 transition-colors"
+              >
                 Accedi
               </Link>
             </p>

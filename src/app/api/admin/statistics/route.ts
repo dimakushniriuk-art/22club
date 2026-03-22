@@ -35,7 +35,10 @@ export async function GET(_request: NextRequest) {
     const profileTyped = profile as ProfileRow
 
     if (profileTyped.role !== 'admin') {
-      return NextResponse.json({ error: 'Solo admin può accedere a questa risorsa' }, { status: 403 })
+      return NextResponse.json(
+        { error: 'Solo admin può accedere a questa risorsa' },
+        { status: 403 },
+      )
     }
 
     // Usa admin client per vedere tutte le statistiche
@@ -53,7 +56,9 @@ export async function GET(_request: NextRequest) {
       supabaseAdmin.from('payments').select('id, amount, payment_method, payment_date'),
       supabaseAdmin.from('appointments').select('id, status, starts_at'),
       supabaseAdmin.from('documents').select('id, status, expires_at'),
-      supabaseAdmin.from('communications').select('id, status, sent_at, total_delivered, total_opened, total_failed'),
+      supabaseAdmin
+        .from('communications')
+        .select('id, status, sent_at, total_delivered, total_opened, total_failed'),
     ])
 
     const profiles = profilesResult.data || []
@@ -86,11 +91,14 @@ export async function GET(_request: NextRequest) {
       payments: {
         total: payments.length,
         totalAmount: payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0),
-        byMethod: payments.reduce((acc, p) => {
-          const method = p.payment_method || 'unknown'
-          acc[method] = (acc[method] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
+        byMethod: payments.reduce(
+          (acc, p) => {
+            const method = p.payment_method || 'unknown'
+            acc[method] = (acc[method] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>,
+        ),
         thisMonth: payments.filter((p) => {
           if (!p.payment_date) return false
           const date = new Date(p.payment_date)
@@ -99,11 +107,14 @@ export async function GET(_request: NextRequest) {
       },
       appointments: {
         total: appointments.length,
-        byStatus: appointments.reduce((acc, a) => {
-          const status = a.status || 'unknown'
-          acc[status] = (acc[status] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
+        byStatus: appointments.reduce(
+          (acc, a) => {
+            const status = a.status || 'unknown'
+            acc[status] = (acc[status] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>,
+        ),
         thisMonth: appointments.filter((a) => {
           if (!a.starts_at) return false
           const date = new Date(a.starts_at)
@@ -112,11 +123,14 @@ export async function GET(_request: NextRequest) {
       },
       documents: {
         total: documents.length,
-        byStatus: documents.reduce((acc, d) => {
-          const status = d.status || 'unknown'
-          acc[status] = (acc[status] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
+        byStatus: documents.reduce(
+          (acc, d) => {
+            const status = d.status || 'unknown'
+            acc[status] = (acc[status] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>,
+        ),
         expiring: documents.filter((d) => {
           if (!d.expires_at) return false
           const expiry = new Date(d.expires_at)

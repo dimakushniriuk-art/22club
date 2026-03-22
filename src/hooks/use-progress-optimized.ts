@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { ProgressStats } from '@/types/progress'
 import type { Tables } from '@/types/supabase'
 import { createLogger } from '@/lib/logger'

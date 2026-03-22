@@ -27,10 +27,7 @@ export function AIDataNotesSection({
   onFormDataChange,
 }: AIDataNotesSectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg">Note AI</CardTitle>
       </CardHeader>

@@ -1310,9 +1310,7 @@ export function SettingsTrainerProfileTab() {
   return (
     <div className="space-y-6">
       {/* Blocco 1: Identità professionale (profiles) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Briefcase className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1404,9 +1402,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 2: Bio e presentazione (trainer_profiles) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <FileText className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1480,9 +1476,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 3: Formazione (trainer_education) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <GraduationCap className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1637,9 +1631,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 4: Certificazioni (trainer_certifications) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Award className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1820,9 +1812,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 5: Corsi (trainer_courses) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <BookOpen className="h-5 w-5 text-teal-400 shrink-0" />
@@ -1946,9 +1936,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 6: Specializzazioni */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Target className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2067,9 +2055,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 7: Esperienza lavorativa */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Building2 className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2204,9 +2190,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 8: Metodo di lavoro */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <ClipboardList className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2269,9 +2253,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 9: Risultati e statistiche */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <BarChart3 className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2337,9 +2319,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 10: Testimonianze */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Quote className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2486,9 +2466,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 11: Trasformazioni */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <ImageIcon className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2700,9 +2678,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 12: Etica */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Scale className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2749,9 +2725,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Blocco 13: Dati legali */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <FileCheck className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2833,9 +2807,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Strumenti (app, software, metodi misurazione) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Smartphone className="h-5 w-5 text-teal-400 shrink-0" />
@@ -2895,9 +2867,7 @@ export function SettingsTrainerProfileTab() {
       </div>
 
       {/* Media (video presentazione, galleria) */}
-      <div
-        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200"
-      >
+      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition-all duration-200">
         <CardHeader className="relative pb-4">
           <CardTitle className="flex items-center gap-2.5 text-xl">
             <Video className="h-5 w-5 text-teal-400 shrink-0" />

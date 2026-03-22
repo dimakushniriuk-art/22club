@@ -69,9 +69,6 @@ export async function POST() {
     return NextResponse.json({ ok: true, synced: rows.length })
   } catch (err) {
     logger.error('Errore API sync-pt-atleti', err)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

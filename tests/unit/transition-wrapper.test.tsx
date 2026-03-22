@@ -23,12 +23,9 @@ vi.mock('@/components/shared/ui/transition-wrapper', async () => {
       wrap(p.children, p.className),
     SlideTransitionWrapper: (p: { children: unknown; className?: string }) =>
       wrap(p.children, p.className),
-    FadeInWrapper: (p: { children: unknown; className?: string }) =>
-      wrap(p.children, p.className),
-    StaggerWrapper: (p: { children: unknown; className?: string }) =>
-      wrap(p.children, p.className),
-    StaggerItem: (p: { children: unknown; className?: string }) =>
-      wrap(p.children, p.className),
+    FadeInWrapper: (p: { children: unknown; className?: string }) => wrap(p.children, p.className),
+    StaggerWrapper: (p: { children: unknown; className?: string }) => wrap(p.children, p.className),
+    StaggerItem: (p: { children: unknown; className?: string }) => wrap(p.children, p.className),
   }
 })
 

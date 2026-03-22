@@ -45,8 +45,7 @@ function roleLabel(role: ChatRecipientRole): string {
   return 'Trainer'
 }
 
-const HEADER_BASE_CLASS =
-  'relative overflow-hidden p-3 min-[834px]:p-4'
+const HEADER_BASE_CLASS = 'relative overflow-hidden p-3 min-[834px]:p-4'
 const HEADER_FULL_CLASS =
   'rounded-b-xl border-b border-white/10 bg-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] z-10 shrink-0'
 const HEADER_STANDALONE_CLASS =
@@ -183,7 +182,8 @@ function ChatLoadingFullPage({ footerChildren }: { footerChildren?: ReactNode })
         <div
           className="absolute inset-x-0 top-0 h-px z-20"
           style={{
-            background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+            background:
+              'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
           }}
           aria-hidden
         />
@@ -630,7 +630,8 @@ function AthleteChatPageContent() {
           <div
             className="absolute inset-x-0 top-0 h-px z-20"
             style={{
-              background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+              background:
+                'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
             }}
             aria-hidden
           />
@@ -675,7 +676,8 @@ function AthleteChatPageContent() {
         <div
           className="absolute inset-x-0 bottom-0 h-px"
           style={{
-            background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+            background:
+              'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
           }}
           aria-hidden
         />
@@ -786,7 +788,8 @@ function AthleteChatPageContent() {
         <div
           className="absolute inset-x-0 top-0 h-px z-20"
           style={{
-            background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+            background:
+              'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
           }}
           aria-hidden
         />

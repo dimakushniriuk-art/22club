@@ -55,17 +55,17 @@ test.describe('Error Handling Tests', () => {
     await page.addInitScript(() => {
       localStorage.setItem('cookie-consent', 'true')
     })
-    
+
     await page.goto('/login')
     await page.waitForLoadState('domcontentloaded')
-    
+
     // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
     await dismissCookieBanner(page)
 
     // Submit form with invalid data
     await page.fill('input[name="email"]', 'invalid-email')
     await page.fill('input[name="password"]', '')
-    
+
     // Verifica che il banner non blocchi prima di cliccare submit
     await dismissCookieBanner(page)
     await page.click('button[type="submit"]', { force: true })
@@ -91,17 +91,17 @@ test.describe('Error Handling Tests', () => {
     await page.addInitScript(() => {
       localStorage.setItem('cookie-consent', 'true')
     })
-    
+
     await page.goto('/login')
     await page.waitForLoadState('domcontentloaded')
-    
+
     // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
     await dismissCookieBanner(page)
 
     // Try with invalid credentials
     await page.fill('input[name="email"]', 'expired@example.com')
     await page.fill('input[name="password"]', '123456')
-    
+
     // Verifica che il banner non blocchi prima di cliccare submit
     await dismissCookieBanner(page)
     await page.click('button[type="submit"]', { force: true })
@@ -145,7 +145,7 @@ test.describe('Error Handling Tests', () => {
     // Il test passa se l'errore è gestito (mostrato o ignorato silenziosamente)
     const hasError = await softVisible(page.getByText(/Errore|errore/i), 3000)
     const hasRetry = await softVisible(page.getByText(/Riprova|Ricarica|Retry/i), 3000)
-    
+
     // Il test passa se c'è un errore mostrato O un bottone retry O se la pagina carica normalmente
     // (alcuni errori potrebbero essere gestiti silenziosamente)
     expect(hasError || hasRetry || true).toBeTruthy()

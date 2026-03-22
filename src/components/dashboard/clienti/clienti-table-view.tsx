@@ -43,11 +43,7 @@ interface ClientiTableViewProps {
 }
 
 // Funzione helper pura per generare iniziali (estratto da useAvatarInitials per uso in funzione non-React)
-function getAvatarInitials(
-  nome?: string,
-  cognome?: string,
-  email?: string,
-): string {
+function getAvatarInitials(nome?: string, cognome?: string, email?: string): string {
   // Usa nome/cognome se disponibili
   if (nome || cognome) {
     const firstInitial = nome?.charAt(0)?.toUpperCase() || ''
@@ -114,7 +110,7 @@ export function ClientiTableView({
     if (!dataString || typeof dataString !== 'string') {
       return 'N/A'
     }
-    
+
     try {
       const date = new Date(dataString)
       if (isNaN(date.getTime())) {
@@ -174,7 +170,9 @@ export function ClientiTableView({
   return (
     <div className="relative p-4 sm:p-5 md:p-6">
       <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-        <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">Lista Clienti ({total})</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">
+          Lista Clienti ({total})
+        </h3>
       </div>
       <div className="overflow-hidden rounded-lg border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
         <Table>
@@ -188,8 +186,8 @@ export function ClientiTableView({
                 />
               </TableHead>
               {/* FIX #9: Aggiunto aria-label per intestazione colonna cliccabile */}
-              <TableHead 
-                className="cursor-pointer select-none" 
+              <TableHead
+                className="cursor-pointer select-none"
                 onClick={() => onSort('nome')}
                 role="button"
                 tabIndex={0}
@@ -259,129 +257,132 @@ export function ClientiTableView({
             {clienti.map((cliente) => {
               const isBlocked = Boolean(cliente.invitatoInAttesa)
               return (
-              <TableRow key={cliente.id} className={isBlocked ? 'opacity-80' : undefined}>
-                <TableCell>
-                  {isBlocked ? (
-                    <span className="sr-only">Invito in attesa, non selezionabile</span>
-                  ) : (
-                    <Checkbox
-                      checked={selectedIds.has(cliente.id)}
-                      onChange={(e) => onSelectOne(cliente.id, e)}
-                      aria-label={`Seleziona ${cliente.nome} ${cliente.cognome}`}
-                    />
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-primary/10 font-bold text-primary">
-                      {getInitials(cliente)}
-                    </div>
-                    <div>
-                      <p className="text-text-primary font-medium">
-                        {(cliente.first_name || cliente.nome || cliente.last_name || cliente.cognome)
+                <TableRow key={cliente.id} className={isBlocked ? 'opacity-80' : undefined}>
+                  <TableCell>
+                    {isBlocked ? (
+                      <span className="sr-only">Invito in attesa, non selezionabile</span>
+                    ) : (
+                      <Checkbox
+                        checked={selectedIds.has(cliente.id)}
+                        onChange={(e) => onSelectOne(cliente.id, e)}
+                        aria-label={`Seleziona ${cliente.nome} ${cliente.cognome}`}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-primary/10 font-bold text-primary">
+                        {getInitials(cliente)}
+                      </div>
+                      <div>
+                        <p className="text-text-primary font-medium">
+                          {cliente.first_name ||
+                          cliente.nome ||
+                          cliente.last_name ||
+                          cliente.cognome
                             ? `${cliente.first_name ?? cliente.nome ?? ''} ${cliente.last_name ?? cliente.cognome ?? ''}`.trim()
                             : cliente.email || '—'}
-                      </p>
-                      {cliente.documenti_scadenza && (
-                        <div className="flex items-center gap-1">
-                          <AlertCircle className="text-state-warn h-3 w-3" />
-                          <span className="text-state-warn text-xs">Doc. in scadenza</span>
+                        </p>
+                        {cliente.documenti_scadenza && (
+                          <div className="flex items-center gap-1">
+                            <AlertCircle className="text-state-warn h-3 w-3" />
+                            <span className="text-state-warn text-xs">Doc. in scadenza</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Mail className="text-text-tertiary h-3 w-3" aria-hidden="true" />
+                        <span className="text-text-secondary text-sm">{cliente.email}</span>
+                      </div>
+                      {cliente.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="text-text-tertiary h-3 w-3" aria-hidden="true" />
+                          <span className="text-text-secondary text-sm">{cliente.phone}</span>
                         </div>
                       )}
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2">
-                      <Mail className="text-text-tertiary h-3 w-3" aria-hidden="true" />
-                      <span className="text-text-secondary text-sm">{cliente.email}</span>
+                      <Calendar className="text-text-tertiary h-4 w-4" aria-hidden="true" />
+                      <span className="text-text-secondary text-sm">
+                        {formatData(cliente.data_iscrizione)}
+                      </span>
                     </div>
-                    {cliente.phone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="text-text-tertiary h-3 w-3" aria-hidden="true" />
-                        <span className="text-text-secondary text-sm">{cliente.phone}</span>
-                      </div>
+                  </TableCell>
+                  <TableCell>
+                    {isBlocked ? (
+                      <Badge variant="warning" size="sm">
+                        Invito in attesa
+                      </Badge>
+                    ) : (
+                      getStatoBadge(cliente.stato)
                     )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="text-text-tertiary h-4 w-4" aria-hidden="true" />
-                    <span className="text-text-secondary text-sm">
-                      {formatData(cliente.data_iscrizione)}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {isBlocked ? (
-                    <Badge variant="warning" size="sm">
-                      Invito in attesa
-                    </Badge>
-                  ) : (
-                    getStatoBadge(cliente.stato)
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="text-center">
-                    <p className="text-text-primary font-bold">{cliente.allenamenti_mese}</p>
-                    <p className="text-text-tertiary text-xs">questo mese</p>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {cliente.scheda_attiva ? (
-                    <Badge variant="primary" size="sm">
-                      {cliente.scheda_attiva}
-                    </Badge>
-                  ) : (
-                    <span className="text-text-tertiary text-sm">Nessuna</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  {isBlocked ? (
-                    <span className="text-text-secondary text-sm">Invito in attesa</span>
-                  ) : (
-                    <div className="flex items-center justify-end gap-2">
-                      <Link href={`/dashboard/atleti/${cliente.id}`}>
-                        <Button variant="outline" size="sm">
-                          <User className="mr-1 h-4 w-4" />
-                          Profilo
-                        </Button>
-                      </Link>
-                      <Link href={`/dashboard/chat?with=${cliente.id}`}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={`Chat con ${cliente.nome} ${cliente.cognome}`}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <ClienteDropdownMenu
-                        cliente={cliente}
-                        trigger={
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-center">
+                      <p className="text-text-primary font-bold">{cliente.allenamenti_mese}</p>
+                      <p className="text-text-tertiary text-xs">questo mese</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {cliente.scheda_attiva ? (
+                      <Badge variant="primary" size="sm">
+                        {cliente.scheda_attiva}
+                      </Badge>
+                    ) : (
+                      <span className="text-text-tertiary text-sm">Nessuna</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {isBlocked ? (
+                      <span className="text-text-secondary text-sm">Invito in attesa</span>
+                    ) : (
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/dashboard/atleti/${cliente.id}`}>
+                          <Button variant="outline" size="sm">
+                            <User className="mr-1 h-4 w-4" />
+                            Profilo
+                          </Button>
+                        </Link>
+                        <Link href={`/dashboard/chat?with=${cliente.id}`}>
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Altre azioni per ${cliente.nome} ${cliente.cognome}`}
+                            aria-label={`Chat con ${cliente.nome} ${cliente.cognome}`}
                           >
-                            <MoreVertical className="h-4 w-4" />
+                            <MessageSquare className="h-4 w-4" />
                           </Button>
-                        }
-                        onEdit={onEdit}
-                        onViewHistory={onViewHistory}
-                        onViewDocuments={onViewDocuments}
-                        onSendEmail={onSendEmail}
-                        onStartChat={onStartChat}
-                        onDelete={onDelete}
-                        onDisable={onDisable}
-                        onEnable={onEnable}
-                      />
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            )
+                        </Link>
+                        <ClienteDropdownMenu
+                          cliente={cliente}
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`Altre azioni per ${cliente.nome} ${cliente.cognome}`}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          }
+                          onEdit={onEdit}
+                          onViewHistory={onViewHistory}
+                          onViewDocuments={onViewDocuments}
+                          onSendEmail={onSendEmail}
+                          onStartChat={onStartChat}
+                          onDelete={onDelete}
+                          onDisable={onDisable}
+                          onEnable={onEnable}
+                        />
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              )
             })}
           </TableBody>
         </Table>

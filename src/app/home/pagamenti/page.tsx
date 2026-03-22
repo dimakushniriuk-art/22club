@@ -60,11 +60,7 @@ export default function PagamentiPage() {
           .eq('athlete_id', athleteId)
           .eq('status', 'completed')
           .order('payment_date', { ascending: false }),
-        supabase
-          .from('lesson_counters')
-          .select('count')
-          .eq('athlete_id', athleteId)
-          .maybeSingle(),
+        supabase.from('lesson_counters').select('count').eq('athlete_id', athleteId).maybeSingle(),
       ])
 
       const { data: payments, error: paymentsError } = paymentsRes

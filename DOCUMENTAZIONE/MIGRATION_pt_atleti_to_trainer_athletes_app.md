@@ -14,22 +14,22 @@ Dopo l’allineamento DB (trainer_athletes come source-of-truth con status/activ
 
 ## File modificati (batch 1 – core)
 
-| # | File | Modifica |
-|---|------|----------|
-| 1 | `src/lib/supabase/types.ts` | Aggiunto tipo `trainer_athletes` (Row/Insert/Update con trainer_id, athlete_id, status, activated_at, deactivated_at). |
-| 2 | `src/app/api/register/complete-profile/route.ts` | Invito accettato: update su trainer_athletes (disattiva precedente per athlete_id) + insert trainer_athletes(trainer_id, athlete_id, status='active'). Rimosso insert pt_atleti. |
-| 3 | `src/app/api/athletes/create/route.ts` | Creazione atleta da trainer: insert su `trainer_athletes` (trainer_id, athlete_id, status='active') al posto di pt_atleti. |
-| 4 | `src/app/api/athletes/[id]/route.ts` | GET/PUT: verifica relazione con `trainer_athletes` (trainer_id, athlete_id, status='active'). DELETE: safeDelete su `trainer_athletes` (trainer_id, athlete_id) al posto di pt_atleti. |
-| 5 | `src/app/api/admin/users/route.ts` | Lista utenti: trainer da `trainer_athletes` (athlete_id, status='active') + join profiles. Delete utente: safeDelete su `trainer_athletes` al posto di pt_atleti. |
+| #   | File                                             | Modifica                                                                                                                                                                               |
+| --- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `src/lib/supabase/types.ts`                      | Aggiunto tipo `trainer_athletes` (Row/Insert/Update con trainer_id, athlete_id, status, activated_at, deactivated_at).                                                                 |
+| 2   | `src/app/api/register/complete-profile/route.ts` | Invito accettato: update su trainer_athletes (disattiva precedente per athlete_id) + insert trainer_athletes(trainer_id, athlete_id, status='active'). Rimosso insert pt_atleti.       |
+| 3   | `src/app/api/athletes/create/route.ts`           | Creazione atleta da trainer: insert su `trainer_athletes` (trainer_id, athlete_id, status='active') al posto di pt_atleti.                                                             |
+| 4   | `src/app/api/athletes/[id]/route.ts`             | GET/PUT: verifica relazione con `trainer_athletes` (trainer_id, athlete_id, status='active'). DELETE: safeDelete su `trainer_athletes` (trainer_id, athlete_id) al posto di pt_atleti. |
+| 5   | `src/app/api/admin/users/route.ts`               | Lista utenti: trainer da `trainer_athletes` (athlete_id, status='active') + join profiles. Delete utente: safeDelete su `trainer_athletes` al posto di pt_atleti.                      |
 
 ---
 
 ## File modificati (batch 2 – chat / UI)
 
-| # | File | Modifica |
-|---|------|----------|
-| 6 | `src/app/home/chat/page.tsx` | Caricamento PT per atleta: da `trainer_athletes` (athlete_id, status='active'), select `trainer_id`; poi RPC get_my_trainer_profile invariato. |
-| 7 | `src/hooks/chat/use-chat-conversations.ts` | Conversazioni atleta: da `trainer_athletes` (athlete_id, status='active') con join `profiles!trainer_athletes_trainer_id_fkey`; uso di `trainer_id` e `trainer` al posto di pt_id/pt. |
+| #   | File                                       | Modifica                                                                                                                                                                              |
+| --- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6   | `src/app/home/chat/page.tsx`               | Caricamento PT per atleta: da `trainer_athletes` (athlete_id, status='active'), select `trainer_id`; poi RPC get_my_trainer_profile invariato.                                        |
+| 7   | `src/hooks/chat/use-chat-conversations.ts` | Conversazioni atleta: da `trainer_athletes` (athlete_id, status='active') con join `profiles!trainer_athletes_trainer_id_fkey`; uso di `trainer_id` e `trainer` al posto di pt_id/pt. |
 
 ---
 

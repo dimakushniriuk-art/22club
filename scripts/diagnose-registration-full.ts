@@ -18,7 +18,10 @@ if (fs.existsSync(envPath)) {
     const match = trimmed.match(/^([^=]+)=(.*)$/)
     if (match) {
       let value = match[2].trim()
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      )
         value = value.slice(1, -1)
       process.env[match[1].trim()] = value
     }
@@ -42,7 +45,10 @@ async function main() {
   console.log('Progetto:', supabaseUrl.replace('https://', '').split('.')[0], '\n')
 
   // 1) Organizations (default-org)
-  const { data: orgs, error: eOrg } = await admin.from('organizations').select('id, slug, name').limit(10)
+  const { data: orgs, error: eOrg } = await admin
+    .from('organizations')
+    .select('id, slug, name')
+    .limit(10)
   console.log('1) ORGANIZATIONS')
   if (eOrg) {
     console.log('   Errore:', eOrg.message)
@@ -59,7 +65,16 @@ async function main() {
   console.log('\n2) AUTH.USERS (ultimi 20)')
   console.log('   Totale:', authUsers.length)
   authUsers.slice(0, 10).forEach((u) => {
-    console.log('   ', u.id, '|', u.email, '| confirmed:', !!u.email_confirmed_at, '|', u.created_at)
+    console.log(
+      '   ',
+      u.id,
+      '|',
+      u.email,
+      '| confirmed:',
+      !!u.email_confirmed_at,
+      '|',
+      u.created_at,
+    )
   })
   if (authUsers.length > 10) console.log('   ... e altri', authUsers.length - 10)
 
@@ -74,7 +89,9 @@ async function main() {
     console.log('   Errore:', eProf.message)
   } else {
     console.log('   Righe:', profiles?.length ?? 0)
-    profiles?.forEach((p) => console.log('   ', p.email, '| user_id:', p.user_id, '| role:', p.role))
+    profiles?.forEach((p) =>
+      console.log('   ', p.email, '| user_id:', p.user_id, '| role:', p.role),
+    )
   }
 
   // 4) Inviti (ultimi)
@@ -89,7 +106,18 @@ async function main() {
   } else {
     console.log('   Righe:', inviti?.length ?? 0)
     inviti?.forEach((i) =>
-      console.log('   ', i.email, '|', i.codice, '| stato:', i.stato, '| status:', i.status, '| accepted_at:', i.accepted_at ?? 'null'),
+      console.log(
+        '   ',
+        i.email,
+        '|',
+        i.codice,
+        '| stato:',
+        i.stato,
+        '| status:',
+        i.status,
+        '| accepted_at:',
+        i.accepted_at ?? 'null',
+      ),
     )
   }
 
@@ -104,7 +132,11 @@ async function main() {
   })
 
   // 6) Email note (dial, shoppinghouseitaly, dklavoro)
-  const knownEmails = ['dial.system2016@gmail.com', 'shoppinghouseitaly@gmail.com', 'dklavoro@gmail.com']
+  const knownEmails = [
+    'dial.system2016@gmail.com',
+    'shoppinghouseitaly@gmail.com',
+    'dklavoro@gmail.com',
+  ]
   console.log('\n6) RIEPILOGO EMAIL NOTE')
   for (const email of knownEmails) {
     const authU = authUsers.find((u) => u.email?.toLowerCase() === email)
@@ -113,14 +145,24 @@ async function main() {
     console.log('   ', email)
     console.log('      auth:', authU ? `sì (${authU.id})` : 'no')
     console.log('      profile:', prof ? `sì (${prof.id})` : 'no')
-    console.log('      inviti:', inv.length, inv.length ? inv.map((i) => `${i.codice}=${i.stato}`).join(', ') : '')
+    console.log(
+      '      inviti:',
+      inv.length,
+      inv.length ? inv.map((i) => `${i.codice}=${i.stato}`).join(', ') : '',
+    )
   }
 
   console.log('\n=== FINE DIAGNOSTICA ===')
   if (withoutProfile.length > 0) {
-    console.log('\n💡 Ci sono utenti in auth senza profilo. Il trigger handle_new_user potrebbe non essere stato eseguito')
-    console.log('   (migration applicata dopo la creazione utente) o aver fallito (es. tipo org_id uuid vs text).')
-    console.log('   Applica la funzione handle_new_user corretta (uuid) in Supabase SQL Editor e usa lo script di riparazione per gli utenti esistenti.')
+    console.log(
+      '\n💡 Ci sono utenti in auth senza profilo. Il trigger handle_new_user potrebbe non essere stato eseguito',
+    )
+    console.log(
+      '   (migration applicata dopo la creazione utente) o aver fallito (es. tipo org_id uuid vs text).',
+    )
+    console.log(
+      '   Applica la funzione handle_new_user corretta (uuid) in Supabase SQL Editor e usa lo script di riparazione per gli utenti esistenti.',
+    )
   }
 }
 

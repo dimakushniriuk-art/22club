@@ -1,4 +1,5 @@
 # 🔧 FIX URGENTE RLS PROFILES - Guida Esecuzione
+
 **Data**: 2025-01-27  
 **Problema**: Errore "query would be affected by row-level security policy for table 'profiles'"
 
@@ -16,17 +17,21 @@ L'errore si verifica quando si cerca di creare un nuovo appuntamento. Il problem
 ## ✅ SOLUZIONE
 
 ### Step 1: Eseguire Script SQL
+
 Eseguire `PAGE_AUDIT_FIX_RLS_PROFILES_ESEGUIRE.sql` in Supabase SQL Editor.
 
 **Cosa fa lo script**:
+
 1. ✅ Crea funzione `get_current_staff_profile_id()` con `SECURITY DEFINER` (disabilita RLS internamente)
 2. ✅ Verifica che policy SELECT permissiva esista su `profiles`
 3. ✅ Verifica finale che tutto sia corretto
 
 ### Step 2: Verifica Codice TypeScript
+
 Il codice in `appointment-modal.tsx` è già stato aggiornato per usare la funzione helper:
 
 **Prima (❌)**:
+
 ```typescript
 const { data: profile } = await supabase
   .from('profiles')
@@ -36,6 +41,7 @@ const { data: profile } = await supabase
 ```
 
 **Dopo (✅)**:
+
 ```typescript
 const { data: profileId, error: profileError } = await supabase.rpc('get_current_staff_profile_id')
 const profile = profileId ? { id: profileId } : null

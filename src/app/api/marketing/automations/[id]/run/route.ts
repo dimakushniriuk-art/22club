@@ -9,10 +9,7 @@ const logger = createLogger('api:marketing:automations:run')
  * POST /api/marketing/automations/:id/run
  * Esegue manualmente l'automation: carica segmento + atleti, applica regole, esegue action (eventi/suggerimenti), aggiorna last_run_at.
  */
-export async function POST(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     if (!id) {
@@ -52,7 +49,10 @@ export async function POST(
       .single()
 
     if (autoErr || !automation) {
-      return NextResponse.json({ error: autoErr?.message ?? 'Automation non trovata' }, { status: 404 })
+      return NextResponse.json(
+        { error: autoErr?.message ?? 'Automation non trovata' },
+        { status: 404 },
+      )
     }
 
     const { data: segment, error: segErr } = await supabase
@@ -67,7 +67,9 @@ export async function POST(
 
     const { data: athletesRows, error: athErr } = await supabase
       .from('marketing_athletes')
-      .select('athlete_id, last_workout_at, workouts_coached_7d, workouts_solo_7d, workouts_coached_30d, workouts_solo_30d')
+      .select(
+        'athlete_id, last_workout_at, workouts_coached_7d, workouts_solo_7d, workouts_coached_30d, workouts_solo_30d',
+      )
 
     if (athErr) {
       logger.warn('Errore fetch marketing_athletes', athErr)
@@ -88,10 +90,13 @@ export async function POST(
 
     const segmentId = (segment as { id: string }).id
     const actionType = (automation as { action_type: string }).action_type
-    const actionPayload = (automation as { action_payload: Record<string, unknown> }).action_payload ?? {}
+    const actionPayload =
+      (automation as { action_payload: Record<string, unknown> }).action_payload ?? {}
 
     if (actionType === 'create_campaign_suggestion') {
-      const suggestedName = (actionPayload.suggested_name as string) ?? `Suggerimento: ${(segment as { name?: string }).name ?? 'Segmento'}`
+      const suggestedName =
+        (actionPayload.suggested_name as string) ??
+        `Suggerimento: ${(segment as { name?: string }).name ?? 'Segmento'}`
       const suggestedBudget = (actionPayload.suggested_budget as number) ?? null
       await supabase.from('marketing_events').insert({
         org_id: orgId,

@@ -35,11 +35,13 @@ Quando incolli la connection string con `[YOUR-PASSWORD]`, lo script ti chieder√
 Apri il file `pg-dump-command-ready.sh` e sostituisci `[YOUR-PASSWORD]` con la tua password reale.
 
 **PRIMA:**
+
 ```bash
 pg_dump "postgresql://postgres:[YOUR-PASSWORD]@db.icibqnmtacibgnhaidlz.supabase.co:5432/postgres" \
 ```
 
 **DOPO (esempio):**
+
 ```bash
 pg_dump "postgresql://postgres:miapwd123@db.icibqnmtacibgnhaidlz.supabase.co:5432/postgres" \
 ```

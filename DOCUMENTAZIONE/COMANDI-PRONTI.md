@@ -12,6 +12,7 @@ pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.
 ```
 
 **Oppure esegui direttamente:**
+
 ```bash
 bash supabase-config-export/pg-dump-completo.sh
 ```
@@ -27,6 +28,7 @@ pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.
 ```
 
 **Oppure esegui direttamente:**
+
 ```bash
 bash supabase-config-export/pg-dump-con-dati.sh
 ```
@@ -58,6 +60,7 @@ Dovresti vedere un file con dimensioni > 0.
 ## 🎯 Cosa Contiene il File
 
 Il file `schema-complete.sql` conterrà:
+
 - ✅ CREATE TABLE statements
 - ✅ CREATE INDEX statements
 - ✅ CREATE FUNCTION statements
@@ -69,6 +72,7 @@ Il file `schema-complete.sql` conterrà:
 - ✅ COMMENT statements
 
 Questo file può essere usato come base per:
+
 - Importare modifiche
 - Ricreare il database
 - Versioning dello schema

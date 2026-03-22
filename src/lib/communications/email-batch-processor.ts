@@ -4,7 +4,8 @@
 // Estratto da email.ts per migliorare manutenibilità
 // ============================================================
 
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/types/supabase'
 import { updateRecipientStatus } from './service'
 import { sendEmailViaResend } from './email-resend-client'
@@ -18,27 +19,11 @@ type CommunicationRecipientRow = Tables<'communication_recipients'>
 const EMAIL_BATCH_SIZE = 100
 const EMAIL_BATCH_DELAY_MS = 2000
 
-let serviceClient: ReturnType<typeof createClient<Database>> | null = null
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`)
-  }
-  return value
-}
+let serviceClient: SupabaseClient<Database> | null = null
 
 function getSupabaseClient() {
   if (!serviceClient) {
-    serviceClient = createClient<Database>(
-      requiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-      requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
+    serviceClient = createAdminClient() as unknown as SupabaseClient<Database>
   }
   return serviceClient
 }

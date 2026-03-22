@@ -8,19 +8,22 @@ import { useToast } from '@/components/ui/toast'
 export function useNotify() {
   const { addToast } = useToast()
 
-  const notify = useCallback((
-    message: string,
-    variant: 'success' | 'error' | 'warning' | 'info' = 'info',
-    title?: string,
-    duration?: number
-  ) => {
-    addToast({
-      message,
-      variant,
-      title,
-      duration,
-    })
-  }, [addToast])
+  const notify = useCallback(
+    (
+      message: string,
+      variant: 'success' | 'error' | 'warning' | 'info' = 'info',
+      title?: string,
+      duration?: number,
+    ) => {
+      addToast({
+        message,
+        variant,
+        title,
+        duration,
+      })
+    },
+    [addToast],
+  )
 
   return { notify }
 }

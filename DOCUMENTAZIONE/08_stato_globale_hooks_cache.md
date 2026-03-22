@@ -7,6 +7,7 @@
 ## 🌐 STATO GLOBALE
 
 ### AuthProvider (Context)
+
 ```typescript
 // src/providers/auth-provider.tsx
 interface AuthContextType {
@@ -24,6 +25,7 @@ const [loading, setLoading] = useState(true)
 ```
 
 ### QueryProvider (TanStack Query)
+
 ```typescript
 // src/providers/query-provider.tsx
 // Wraps app con QueryClientProvider
@@ -31,6 +33,7 @@ const [loading, setLoading] = useState(true)
 ```
 
 ### ThemeProvider
+
 ```typescript
 // src/providers/theme-provider.tsx
 // Gestione dark/light mode
@@ -41,6 +44,7 @@ const [loading, setLoading] = useState(true)
 ## 🪝 HOOKS PRINCIPALI
 
 ### useAuth
+
 ```typescript
 // src/providers/auth-provider.tsx:826-832
 export const useAuth = () => {
@@ -51,9 +55,11 @@ export const useAuth = () => {
   return context
 }
 ```
+
 **Uso**: Accesso a user, role, org_id, loading
 
 ### useClienti
+
 ```typescript
 // src/hooks/use-clienti.ts (1405 righe!)
 interface UseClientiReturn {
@@ -68,9 +74,11 @@ interface UseClientiReturn {
   deleteCliente: (id: string) => Promise<void>
 }
 ```
+
 **Pattern**: useState + useEffect (legacy, TODO migrate to React Query)
 
 ### useAppointments
+
 ```typescript
 // src/hooks/use-appointments.ts
 // Pattern: React Query (useQuery + useMutation)
@@ -78,12 +86,14 @@ interface UseClientiReturn {
 ```
 
 ### useSupabase
+
 ```typescript
 // src/hooks/use-supabase.ts
 // Accesso a supabase client, user, loading
 ```
 
 ### useRealtimeChannel
+
 ```typescript
 // src/hooks/useRealtimeChannel.ts
 // Subscription a postgres_changes
@@ -95,6 +105,7 @@ interface UseClientiReturn {
 ## 💾 STRATEGIE CACHE
 
 ### 1. Middleware Role Cache
+
 ```typescript
 // src/middleware.ts:8-16
 const roleCache = new Map<string, CachedRole>()
@@ -103,6 +114,7 @@ const roleCache = new Map<string, CachedRole>()
 ```
 
 ### 2. React Query Cache
+
 ```typescript
 // Configurazione in query-provider.tsx
 // Stale time, cache time configurabili
@@ -110,6 +122,7 @@ const roleCache = new Map<string, CachedRole>()
 ```
 
 ### 3. Local Storage Cache
+
 ```typescript
 // src/lib/cache/local-storage-cache.ts
 export const localStorageCache = {
@@ -121,6 +134,7 @@ export const localStorageCache = {
 ```
 
 ### 4. Stats Cache
+
 ```typescript
 // src/lib/cache/cache-strategies.ts
 export const statsCache = {
@@ -130,6 +144,7 @@ export const statsCache = {
 ```
 
 ### 5. Frequent Query Cache
+
 ```typescript
 // src/lib/cache/cache-strategies.ts
 export const frequentQueryCache = {
@@ -139,16 +154,20 @@ export const frequentQueryCache = {
 ```
 
 ### 6. Next.js unstable_cache
+
 ```typescript
 // src/lib/analytics.ts
 unstable_cache(
-  async () => { /* fetch data */ },
+  async () => {
+    /* fetch data */
+  },
   ['analytics-key'],
-  { revalidate: 300, tags: ['analytics'] }  // 5 minuti
+  { revalidate: 300, tags: ['analytics'] }, // 5 minuti
 )
 ```
 
 ### 7. Profile ID Cache
+
 ```typescript
 // src/hooks/use-appointments.ts:13
 const profileIdCache = new Map<string, string>()
@@ -185,6 +204,7 @@ const profileIdCache = new Map<string, string>()
 ## ⚠️ PROBLEMI RILEVATI
 
 ### SEG-016: useClienti Troppo Grande
+
 ```
 🧠 REFACTOR
 File: src/hooks/use-clienti.ts
@@ -196,6 +216,7 @@ Azione: Spezzare in hook più piccoli
 ```
 
 ### SEG-007: Migrazione React Query
+
 ```
 🧠 IMPROVE
 File: src/hooks/use-clienti.ts
@@ -206,6 +227,7 @@ Urgenza: MEDIA
 ```
 
 ### SEG-015: Profile ID Cache No TTL
+
 ```
 🧠 RISK
 File: src/hooks/use-appointments.ts
@@ -219,11 +241,11 @@ Urgenza: BASSA
 
 ## 📊 VALUTAZIONE
 
-| Aspetto | Rating | Note |
-|---------|--------|------|
-| Chiarezza logica | ★★★☆☆ | Troppe strategie cache |
-| Robustezza | ★★★★☆ | Fallback presenti |
-| Debito tecnico | **ALTO** | Pattern misti |
+| Aspetto             | Rating    | Note                         |
+| ------------------- | --------- | ---------------------------- |
+| Chiarezza logica    | ★★★☆☆     | Troppe strategie cache       |
+| Robustezza          | ★★★★☆     | Fallback presenti            |
+| Debito tecnico      | **ALTO**  | Pattern misti                |
 | Rischio regressioni | **MEDIO** | Cache invalidation complessa |
 
 ---

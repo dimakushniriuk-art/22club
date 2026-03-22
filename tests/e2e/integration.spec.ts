@@ -59,16 +59,26 @@ test.describe('Integration Tests (safe)', () => {
   test('should handle cross-browser compatibility', async ({ page }) => {
     await ensurePTSession(page)
     if (page.url().includes('/login')) return
-    await page.getByRole('link', { name: /appuntamenti/i }).first().click().catch(() => {})
+    await page
+      .getByRole('link', { name: /appuntamenti/i })
+      .first()
+      .click()
+      .catch(() => {})
     await softVisible(page.getByText(/appuntamenti/i), 2000)
   })
 
   test('should handle offline/online transitions', async ({ page }) => {
     await ensurePTSession(page)
     if (page.url().includes('/login')) return
-    await page.context().setOffline(true).catch(() => {})
+    await page
+      .context()
+      .setOffline(true)
+      .catch(() => {})
     await softVisible(page.getByText(/offline/i), 500)
-    await page.context().setOffline(false).catch(() => {})
+    await page
+      .context()
+      .setOffline(false)
+      .catch(() => {})
     await softVisible(page.getByText(/online|ripristinata/i), 500)
   })
 })

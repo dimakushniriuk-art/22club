@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import { localStorageCache } from '@/lib/cache/local-storage-cache'
 import { useChatNotifications } from './use-chat-notifications'
@@ -152,11 +152,7 @@ export function useChat() {
 
         // Non sostituire con [] una conversazione che ha già messaggi (fetch ritardato con loading).
         const combinedMessages =
-          messages.length > 0
-            ? messages
-            : existingMessages.length > 0
-              ? existingMessages
-              : messages
+          messages.length > 0 ? messages : existingMessages.length > 0 ? existingMessages : messages
 
         return {
           ...prev,
@@ -452,14 +448,13 @@ export function useChat() {
 
       // Cambio destinatario: imposta subito la conversazione corrente sul nuovo other_user_id
       // con messaggi vuoti, così la lista non mostra più i messaggi della chat precedente.
-      const participant =
-        state.conversations.find((c) => c.other_user_id === otherUserId) ?? {
-          other_user_id: otherUserId,
-          other_user_name: 'Utente',
-          other_user_role: 'unknown',
-          last_message_at: new Date().toISOString(),
-          unread_count: 0,
-        }
+      const participant = state.conversations.find((c) => c.other_user_id === otherUserId) ?? {
+        other_user_id: otherUserId,
+        other_user_name: 'Utente',
+        other_user_role: 'unknown',
+        last_message_at: new Date().toISOString(),
+        unread_count: 0,
+      }
 
       setState((prev) => ({
         ...prev,
@@ -551,12 +546,9 @@ export function useChat() {
         }, 300)
       }
 
-      const hasMessages =
-        (stateRef.current.currentConversation?.messages?.length ?? 0) > 0
+      const hasMessages = (stateRef.current.currentConversation?.messages?.length ?? 0) > 0
       const shouldFetchConversations =
-        !currentOtherUserId ||
-        !stateRef.current.currentConversation ||
-        !hasMessages
+        !currentOtherUserId || !stateRef.current.currentConversation || !hasMessages
 
       if (shouldFetchConversations) {
         void fetchConversations()

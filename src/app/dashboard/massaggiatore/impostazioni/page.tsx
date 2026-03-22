@@ -107,16 +107,12 @@ export default function MassaggiatoreImpostazioniPage() {
   const { notify } = useNotify()
   const { user: authUser, loading: authLoading } = useAuth()
   const { showLoader: showGuardLoader } = useStaffDashboardGuard('massaggiatore')
-  const {
-    settings,
-    loadSettings,
-    saveNotifications,
-    savePrivacy,
-    saveAccount,
-    saveTwoFactor,
-  } = useUserSettings()
+  const { settings, loadSettings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
+    useUserSettings()
 
-  const [notifications, setNotifications] = useState<NotificationSettings>({ ...DEFAULT_NOTIFICATIONS })
+  const [notifications, setNotifications] = useState<NotificationSettings>({
+    ...DEFAULT_NOTIFICATIONS,
+  })
   const [privacy, setPrivacy] = useState<PrivacySettings>({ ...DEFAULT_PRIVACY })
   const [account, setAccount] = useState<AccountSettings>({ ...DEFAULT_ACCOUNT })
   const [activeTab, setActiveTab] = useState<MassaggiatoreImpostazioniTab>(() => {
@@ -153,7 +149,10 @@ export default function MassaggiatoreImpostazioniPage() {
   const [showConfirmUnsaved, setShowConfirmUnsaved] = useState(false)
   const [pendingTabChange, setPendingTabChange] = useState<string | null>(null)
   const [showDisable2FADialog, setShowDisable2FADialog] = useState(false)
-  const [lastSaveError, setLastSaveError] = useState<{ message: string; type: SaveErrorType } | null>(null)
+  const [lastSaveError, setLastSaveError] = useState<{
+    message: string
+    type: SaveErrorType
+  } | null>(null)
 
   const isCurrentTabDirty = useCallback(() => {
     if (activeTab === 'profilo') return profileDirty
@@ -209,7 +208,11 @@ export default function MassaggiatoreImpostazioniPage() {
     }
     const phoneTrimmed = profile.phone?.trim() ?? ''
     if (phoneTrimmed && !/^[\d\s+()-]{6,20}$/.test(phoneTrimmed)) {
-      notify('Inserisci un numero di telefono valido (6-20 caratteri).', 'error', 'Telefono non valido')
+      notify(
+        'Inserisci un numero di telefono valido (6-20 caratteri).',
+        'error',
+        'Telefono non valido',
+      )
       return
     }
     setLoading(true)
@@ -287,7 +290,8 @@ export default function MassaggiatoreImpostazioniPage() {
       } else throw new Error(result.error || 'Errore nel salvare le impostazioni account')
     } catch (error) {
       logger.error('Errore nel salvare le impostazioni account', error)
-      const msg = error instanceof Error ? error.message : 'Errore nel salvare le impostazioni account'
+      const msg =
+        error instanceof Error ? error.message : 'Errore nel salvare le impostazioni account'
       notify(msg, 'error', 'Errore')
       setLastSaveError({ message: msg, type: 'account' })
     } finally {
@@ -297,11 +301,19 @@ export default function MassaggiatoreImpostazioniPage() {
 
   const handleChangePassword = useCallback(async () => {
     if (passwords.new !== passwords.confirm) {
-      notify('Le password inserite non corrispondono. Verifica e riprova.', 'warning', 'Password non corrispondenti')
+      notify(
+        'Le password inserite non corrispondono. Verifica e riprova.',
+        'warning',
+        'Password non corrispondenti',
+      )
       return
     }
     if (passwords.new.length < 8) {
-      notify('La password deve essere di almeno 8 caratteri per motivi di sicurezza.', 'warning', 'Password troppo corta')
+      notify(
+        'La password deve essere di almeno 8 caratteri per motivi di sicurezza.',
+        'warning',
+        'Password troppo corta',
+      )
       return
     }
     setLoading(true)
@@ -312,7 +324,11 @@ export default function MassaggiatoreImpostazioniPage() {
       setPasswords({ current: '', new: '', confirm: '' })
     } catch (error) {
       logger.error('Errore nel cambiare la password', error)
-      notify(`Errore durante l'aggiornamento della password: ${error instanceof Error ? error.message : 'Errore'}`, 'error', 'Errore password')
+      notify(
+        `Errore durante l'aggiornamento della password: ${error instanceof Error ? error.message : 'Errore'}`,
+        'error',
+        'Errore password',
+      )
     } finally {
       setLoading(false)
     }
@@ -327,7 +343,11 @@ export default function MassaggiatoreImpostazioniPage() {
       else throw new Error(result.error || 'Errore nel disabilitare 2FA')
     } catch (error) {
       logger.error('Errore nel disabilitare 2FA', error)
-      notify(error instanceof Error ? error.message : 'Errore nel disabilitare 2FA', 'error', 'Errore')
+      notify(
+        error instanceof Error ? error.message : 'Errore nel disabilitare 2FA',
+        'error',
+        'Errore',
+      )
     } finally {
       setLoading(false)
     }
@@ -337,10 +357,13 @@ export default function MassaggiatoreImpostazioniPage() {
     setShowDisable2FADialog(true)
   }, [])
 
-  const handleProfileChange = useCallback((field: string, value: unknown) => {
-    setProfile((prev) => ({ ...prev, [field]: value }))
-    setProfileDirty(true)
-  }, [setProfile])
+  const handleProfileChange = useCallback(
+    (field: string, value: unknown) => {
+      setProfile((prev) => ({ ...prev, [field]: value }))
+      setProfileDirty(true)
+    },
+    [setProfile],
+  )
   const handleNotificationChange = useCallback((field: string, value: unknown) => {
     setNotifications((prev) => ({ ...prev, [field]: value }))
     setNotificationsDirty(true)
@@ -375,7 +398,13 @@ export default function MassaggiatoreImpostazioniPage() {
     else if (type === 'notifications') handleSaveNotifications()
     else if (type === 'privacy') handleSavePrivacy()
     else if (type === 'account') handleSaveAccount()
-  }, [lastSaveError, handleSaveProfile, handleSaveNotifications, handleSavePrivacy, handleSaveAccount])
+  }, [
+    lastSaveError,
+    handleSaveProfile,
+    handleSaveNotifications,
+    handleSavePrivacy,
+    handleSaveAccount,
+  ])
 
   if (showGuardLoader) {
     return (
@@ -420,7 +449,11 @@ export default function MassaggiatoreImpostazioniPage() {
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-4 sm:space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full space-y-4 sm:space-y-6"
+        >
           <div className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10">
             <div className="relative p-1.5">
               <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-transparent gap-2">

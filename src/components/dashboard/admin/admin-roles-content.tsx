@@ -249,7 +249,14 @@ const PERMISSION_CATEGORIES: PermissionCategory[] = [
   },
 ]
 
-const VALID_ROLE_NAMES = ['admin', 'trainer', 'athlete', 'marketing', 'nutrizionista', 'massaggiatore']
+const VALID_ROLE_NAMES = [
+  'admin',
+  'trainer',
+  'athlete',
+  'marketing',
+  'nutrizionista',
+  'massaggiatore',
+]
 
 export function AdminRolesContent() {
   const [roles, setRoles] = useState<Role[]>([])
@@ -406,15 +413,18 @@ export function AdminRolesContent() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Errore nell\'eliminazione ruolo')
+        throw new Error(error.error || "Errore nell'eliminazione ruolo")
       }
 
       notifySuccess('Ruolo eliminato', 'Il ruolo è stato eliminato con successo')
       fetchRoles()
       handleCancelDelete()
     } catch (error: unknown) {
-      logger.error('Errore nell\'eliminazione ruolo', error, { roleId: roleToDelete.id })
-      notifyError('Errore', error instanceof Error ? error.message : 'Errore nell\'eliminazione ruolo')
+      logger.error("Errore nell'eliminazione ruolo", error, { roleId: roleToDelete.id })
+      notifyError(
+        'Errore',
+        error instanceof Error ? error.message : "Errore nell'eliminazione ruolo",
+      )
     }
   }
 
@@ -432,9 +442,10 @@ export function AdminRolesContent() {
       const { users } = await response.json()
       // Filtra utenti per ruolo
       const filteredUsers = (users || []).filter(
-        (user: RoleUser) => user.role === role.name || (role.name === 'pt' && user.role === 'trainer'),
+        (user: RoleUser) =>
+          user.role === role.name || (role.name === 'pt' && user.role === 'trainer'),
       )
-      
+
       // Log per debug struttura utenti
       if (filteredUsers.length > 0) {
         logger.debug('Utenti filtrati per ruolo', {
@@ -444,11 +455,14 @@ export function AdminRolesContent() {
           firstUserId: filteredUsers[0].id,
         })
       }
-      
+
       setRoleUsers(filteredUsers)
     } catch (error: unknown) {
       logger.error('Errore nel caricamento utenti ruolo', error)
-      notifyError('Errore', error instanceof Error ? error.message : 'Errore nel caricamento utenti')
+      notifyError(
+        'Errore',
+        error instanceof Error ? error.message : 'Errore nel caricamento utenti',
+      )
       setRoleUsers([])
     } finally {
       setLoadingUsers(false)
@@ -507,7 +521,10 @@ export function AdminRolesContent() {
         userId: resettingPasswordUser?.id,
         userEmail: resettingPasswordUser?.email,
       })
-      notifyError('Errore', error instanceof Error ? error.message : 'Errore durante il reset della password')
+      notifyError(
+        'Errore',
+        error instanceof Error ? error.message : 'Errore durante il reset della password',
+      )
     } finally {
       setResettingPassword(false)
     }
@@ -606,7 +623,18 @@ export function AdminRolesContent() {
       })
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({} as { error?: string; details?: string; code?: string; hint?: string; errorDetails?: string }))
+        const error = await response
+          .json()
+          .catch(
+            () =>
+              ({}) as {
+                error?: string
+                details?: string
+                code?: string
+                hint?: string
+                errorDetails?: string
+              },
+          )
         const messageParts = [
           error?.error || "Errore nell'eliminazione utente",
           error?.details ? String(error.details) : null,
@@ -633,7 +661,10 @@ export function AdminRolesContent() {
         userId: deletingUser?.id,
         userEmail: deletingUser?.email,
       })
-      notifyError('Errore', error instanceof Error ? error.message : "Errore nell'eliminazione utente")
+      notifyError(
+        'Errore',
+        error instanceof Error ? error.message : "Errore nell'eliminazione utente",
+      )
     }
   }
 
@@ -661,7 +692,10 @@ export function AdminRolesContent() {
       admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
       trainer: { label: 'Trainer', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
       athlete: { label: 'Atleta', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
-      marketing: { label: 'Marketing', className: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+      marketing: {
+        label: 'Marketing',
+        className: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+      },
     }
 
     const roleInfo = roleMap[roleName] || {
@@ -678,9 +712,7 @@ export function AdminRolesContent() {
       athlete: 'from-green-500/10 to-emerald-500/10 border-green-500/30',
       marketing: 'from-cyan-500/10 to-teal-500/10 border-cyan-500/30',
     }
-    return (
-      gradientMap[roleName] || 'from-gray-500/10 to-slate-500/10 border-gray-500/30'
-    )
+    return gradientMap[roleName] || 'from-gray-500/10 to-slate-500/10 border-gray-500/30'
   }
 
   // Calcola statistiche
@@ -689,7 +721,9 @@ export function AdminRolesContent() {
     const totalUsers = roles.reduce((sum, role) => sum + (role.user_count || 0), 0)
     const totalPermissions = roles.reduce((sum, role) => {
       if (role.permissions && typeof role.permissions === 'object') {
-        return sum + Object.keys(role.permissions).filter((key) => role.permissions[key] === true).length
+        return (
+          sum + Object.keys(role.permissions).filter((key) => role.permissions[key] === true).length
+        )
       }
       return sum
     }, 0)
@@ -816,29 +850,29 @@ export function AdminRolesContent() {
                     </div>
                     {getRoleBadge(role.name)}
                   </div>
-                {editingRole?.id !== role.id && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(role)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    {role.user_count === 0 && (
+                  {editingRole?.id !== role.id && (
+                    <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteClick(role)}
-                        className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() => handleEdit(role)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Edit className="h-4 w-4" />
                       </Button>
-                    )}
-                  </div>
-                )}
-              </div>
+                      {role.user_count === 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(role)}
+                          className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <CardTitle className="text-white mt-3 text-lg capitalize">{role.name}</CardTitle>
                 {editingRole?.id === role.id ? (
                   <div className="space-y-2 mt-3">
@@ -898,28 +932,28 @@ export function AdminRolesContent() {
                   </div>
                 ) : null}
 
-              {editingRole?.id === role.id ? (
-                <div className="space-y-4">
-                  <RolePermissionsEditor
-                    permissions={editedPermissions}
-                    onChange={setEditedPermissions}
-                    categories={PERMISSION_CATEGORIES}
-                  />
-                  <div className="flex gap-2 pt-4">
-                    <Button
-                      onClick={handleSave}
-                      size="sm"
-                      className="flex-1 bg-primary hover:bg-primary/90"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Salva
-                    </Button>
-                    <Button onClick={handleCancel} variant="outline" size="sm" className="flex-1">
-                      <X className="h-4 w-4 mr-2" />
-                      Annulla
-                    </Button>
+                {editingRole?.id === role.id ? (
+                  <div className="space-y-4">
+                    <RolePermissionsEditor
+                      permissions={editedPermissions}
+                      onChange={setEditedPermissions}
+                      categories={PERMISSION_CATEGORIES}
+                    />
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleSave}
+                        size="sm"
+                        className="flex-1 bg-primary hover:bg-primary/90"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Salva
+                      </Button>
+                      <Button onClick={handleCancel} variant="outline" size="sm" className="flex-1">
+                        <X className="h-4 w-4 mr-2" />
+                        Annulla
+                      </Button>
+                    </div>
                   </div>
-                </div>
                 ) : (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -945,10 +979,14 @@ export function AdminRolesContent() {
                         : null}
                       {role.permissions &&
                         typeof role.permissions === 'object' &&
-                        Object.keys(role.permissions).filter((key) => role.permissions[key] === true)
-                          .length > 6 && (
+                        Object.keys(role.permissions).filter(
+                          (key) => role.permissions[key] === true,
+                        ).length > 6 && (
                           <Badge variant="outline" className="text-xs">
-                            +{Object.keys(role.permissions).filter((key) => role.permissions[key] === true).length - 6}
+                            +
+                            {Object.keys(role.permissions).filter(
+                              (key) => role.permissions[key] === true,
+                            ).length - 6}
                           </Badge>
                         )}
                       {(!role.permissions ||
@@ -956,7 +994,9 @@ export function AdminRolesContent() {
                           Object.keys(role.permissions).filter(
                             (key) => role.permissions[key] === true,
                           ).length === 0)) && (
-                        <span className="text-xs text-gray-500 italic">Nessun permesso configurato</span>
+                        <span className="text-xs text-gray-500 italic">
+                          Nessun permesso configurato
+                        </span>
                       )}
                     </div>
                   </div>
@@ -995,9 +1035,7 @@ export function AdminRolesContent() {
                   <option key={name} value={name} />
                 ))}
               </datalist>
-              <p className="text-xs text-gray-400">
-                Valori validi: {VALID_ROLE_NAMES.join(', ')}
-              </p>
+              <p className="text-xs text-gray-400">Valori validi: {VALID_ROLE_NAMES.join(', ')}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-role-description" className="text-gray-300">
@@ -1102,7 +1140,9 @@ export function AdminRolesContent() {
                                 ? `${user.nome} ${user.cognome}`
                                 : user.nome || user.cognome || 'Nome non disponibile'}
                             </h4>
-                            <Badge className={getRoleBadgeColor(user.role ?? '')}>{user.role ?? ''}</Badge>
+                            <Badge className={getRoleBadgeColor(user.role ?? '')}>
+                              {user.role ?? ''}
+                            </Badge>
                             <Badge className={getStatoBadgeColor(user.stato || 'attivo')}>
                               {user.stato || 'attivo'}
                             </Badge>
@@ -1126,11 +1166,7 @@ export function AdminRolesContent() {
                       <div className="flex gap-2">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex items-center gap-2"
-                            >
+                            <Button variant="outline" size="sm" className="flex items-center gap-2">
                               <MoreVertical className="h-4 w-4" />
                               Gestisci
                             </Button>

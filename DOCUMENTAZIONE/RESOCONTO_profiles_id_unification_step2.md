@@ -2,21 +2,21 @@
 
 ## 1) File modificati
 
-| File | Modifica |
-|------|----------|
-| `src/components/dashboard/assign-workout-modal.tsx` | Insert solo `created_by_profile_id`; rimosso `created_by` e select `user_id` |
-| `src/app/api/exercises/route.ts` | Insert solo `created_by_profile_id`; rimosso `created_by` |
-| `src/hooks/use-communications.ts` | Insert solo `created_by_profile_id`; rimosso `created_by`; obbligo profilo |
-| `src/lib/communications/service.ts` | `createCommunication(profileId, ...)`; `getCommunications` con `created_by_profile_id` |
-| `src/app/api/admin/users/route.ts` | Delete comunicazioni/recipients per `created_by_profile_id` / `recipient_profile_id` (userId = profile id) |
-| `src/hooks/workouts/use-workout-plans-list.ts` | Filtro e select `created_by_profile_id`; lookup profili per `id` |
-| `src/hooks/workout-plans/use-workout-plans.ts` | Select/insert/update solo `created_by_profile_id`; fetch profilo per id; tipo `WorkoutRowSelected` aggiornato |
-| `src/hooks/workout/use-workout-detail.ts` | Select e tipo `created_by_profile_id`; staff lookup per `id` |
-| `src/hooks/use-allenamenti.ts` | `scheda.created_by_profile_id` e lookup profili per `id` |
-| `src/lib/credits/ledger.ts` | Insert `credit_ledger` con `created_by_profile_id` |
-| `src/lib/supabase/types.ts` | Rimosso `created_by` da workout_plans, exercises, communications; rimosso `user_id` da communication_recipients |
-| `supabase/migrations/20260228210000_profiles_id_unification_step2.sql` | **Nuovo**: RLS solo *_profile_id, indici, drop colonne legacy |
-| `docs/RESOCONTO_profiles_id_unification_step2.md` | **Nuovo**: questo resoconto |
+| File                                                                   | Modifica                                                                                                        |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `src/components/dashboard/assign-workout-modal.tsx`                    | Insert solo `created_by_profile_id`; rimosso `created_by` e select `user_id`                                    |
+| `src/app/api/exercises/route.ts`                                       | Insert solo `created_by_profile_id`; rimosso `created_by`                                                       |
+| `src/hooks/use-communications.ts`                                      | Insert solo `created_by_profile_id`; rimosso `created_by`; obbligo profilo                                      |
+| `src/lib/communications/service.ts`                                    | `createCommunication(profileId, ...)`; `getCommunications` con `created_by_profile_id`                          |
+| `src/app/api/admin/users/route.ts`                                     | Delete comunicazioni/recipients per `created_by_profile_id` / `recipient_profile_id` (userId = profile id)      |
+| `src/hooks/workouts/use-workout-plans-list.ts`                         | Filtro e select `created_by_profile_id`; lookup profili per `id`                                                |
+| `src/hooks/workout-plans/use-workout-plans.ts`                         | Select/insert/update solo `created_by_profile_id`; fetch profilo per id; tipo `WorkoutRowSelected` aggiornato   |
+| `src/hooks/workout/use-workout-detail.ts`                              | Select e tipo `created_by_profile_id`; staff lookup per `id`                                                    |
+| `src/hooks/use-allenamenti.ts`                                         | `scheda.created_by_profile_id` e lookup profili per `id`                                                        |
+| `src/lib/credits/ledger.ts`                                            | Insert `credit_ledger` con `created_by_profile_id`                                                              |
+| `src/lib/supabase/types.ts`                                            | Rimosso `created_by` da workout_plans, exercises, communications; rimosso `user_id` da communication_recipients |
+| `supabase/migrations/20260228210000_profiles_id_unification_step2.sql` | **Nuovo**: RLS solo \*\_profile_id, indici, drop colonne legacy                                                 |
+| `docs/RESOCONTO_profiles_id_unification_step2.md`                      | **Nuovo**: questo resoconto                                                                                     |
 
 ## 2) SQL Step 2 – contenuto
 

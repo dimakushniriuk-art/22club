@@ -2,11 +2,11 @@
 
 ## File modificati/creati
 
-| File | Azione |
-|------|--------|
-| `src/app/api/marketing/analytics/route.ts` | Creato: GET aggregati da leads, campaigns, events, marketing_athletes |
+| File                                             | Azione                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `src/app/api/marketing/analytics/route.ts`       | Creato: GET aggregati da leads, campaigns, events, marketing_athletes           |
 | `src/app/dashboard/marketing/analytics/page.tsx` | Sostituito placeholder con dashboard (KPI, funnel, trend, atleti KPI, campagne) |
-| `src/lib/supabase/types.ts` | Aggiunte tabelle `marketing_leads` e `marketing_events` (Row/Insert/Update) |
+| `src/lib/supabase/types.ts`                      | Aggiunte tabelle `marketing_leads` e `marketing_events` (Row/Insert/Update)     |
 
 Nav: voce "Analytics" già presente → `/dashboard/marketing/analytics`. Middleware: `/dashboard/marketing/analytics` già in allowlist. Nessuna modifica.
 
@@ -29,7 +29,7 @@ Tutto in **server-side** (Route Handler) con `createClient()` (RLS attiva, nessu
 - **marketing_athletes (view):**  
   `select('workouts_coached_7d, workouts_solo_7d, workouts_coached_30d, workouts_solo_30d, last_workout_at')`
 
-Nessun accesso a: workout_logs, workout_plans, athlete_*_data, chat, progress_photos.
+Nessun accesso a: workout*logs, workout_plans, athlete*\*\_data, chat, progress_photos.
 
 ---
 

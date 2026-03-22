@@ -6,10 +6,6 @@ export const metadata: Metadata = {
     'Gestisci appuntamenti, allenamenti e sessioni. Calendario con viste giorno, settimana, mese e agenda.',
 }
 
-export default function CalendarioLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function CalendarioLayout({ children }: { children: React.ReactNode }) {
   return children
 }

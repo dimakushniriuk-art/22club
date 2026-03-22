@@ -34,8 +34,7 @@ export function useStaffDashboardGuard(allowedRole: StaffRole): {
     }
   }, [role, loading, router, allowedRole])
 
-  const showLoader =
-    loading || (role !== null && role !== allowedRole)
+  const showLoader = loading || (role !== null && role !== allowedRole)
 
   return { showLoader }
 }

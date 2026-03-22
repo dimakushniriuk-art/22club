@@ -35,10 +35,7 @@ export function MotivationalPreferencesSection({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Preferenze Ambiente</CardTitle>
         </CardHeader>
@@ -76,10 +73,7 @@ export function MotivationalPreferencesSection({
         </CardContent>
       </Card>
 
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Preferenze Compagnia</CardTitle>
         </CardHeader>

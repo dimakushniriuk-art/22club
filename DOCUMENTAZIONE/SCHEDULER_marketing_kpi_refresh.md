@@ -119,10 +119,10 @@ Dopo una run corretta, i `updated_at` più recenti devono riflettere l’orario 
 
 ### File toccati
 
-| File | Modifica |
-|------|----------|
-| `supabase/functions/marketing-kpi-refresh/index.ts` | Aggiunto controllo header `x-cron-secret` vs env `MARKETING_KPI_REFRESH_SECRET`; 401 con `{ ok: false, error: "unauthorized" }` se assente o diverso. Service role invariato. |
-| `docs/SCHEDULER_marketing_kpi_refresh.md` | Rimossa nota su tabelle/funzioni mancanti. Prerequisiti DB dichiarati presenti. Test manuale con `x-cron-secret` (no Bearer). Aggiunta query di verifica `updated_at`. Istruzioni schedule in Dashboard con header `x-cron-secret`. |
+| File                                                | Modifica                                                                                                                                                                                                                            |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/functions/marketing-kpi-refresh/index.ts` | Aggiunto controllo header `x-cron-secret` vs env `MARKETING_KPI_REFRESH_SECRET`; 401 con `{ ok: false, error: "unauthorized" }` se assente o diverso. Service role invariato.                                                       |
+| `docs/SCHEDULER_marketing_kpi_refresh.md`           | Rimossa nota su tabelle/funzioni mancanti. Prerequisiti DB dichiarati presenti. Test manuale con `x-cron-secret` (no Bearer). Aggiunta query di verifica `updated_at`. Istruzioni schedule in Dashboard con header `x-cron-secret`. |
 
 ### Come impostare lo schedule in Dashboard
 

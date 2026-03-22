@@ -109,7 +109,10 @@ test.describe('Performance Tests', () => {
 
     // Verifica che l'UI sia responsive
     const navigation = page.locator('nav, [role="navigation"], aside, [class*="sidebar"]')
-    const hasNavigation = await navigation.first().isVisible({ timeout: 5000 }).catch(() => false)
+    const hasNavigation = await navigation
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
 
     expect(hasNavigation).toBeTruthy()
   })

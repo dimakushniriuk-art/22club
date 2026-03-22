@@ -19,12 +19,14 @@
 ### Opzione A: Script Automatico (Consigliato)
 
 **Su macOS/Linux:**
+
 ```bash
 cd /Users/dmytroushniriuk/Desktop/Gestionale_22club
 ./scripts/aggiorna-dipendenze.sh
 ```
 
 **Su Windows (PowerShell):**
+
 ```powershell
 cd C:\Users\dmytroushniriuk\Desktop\Gestionale_22club
 .\scripts\aggiorna-dipendenze.ps1
@@ -127,6 +129,7 @@ Per l'elenco completo, vedere `AGGIORNAMENTO_DIPENDENZE_2025.md`.
 ### Se Qualcosa Non Funziona
 
 1. **Rollback:** Se necessario, puoi tornare alla versione precedente:
+
    ```bash
    git checkout package.json package-lock.json
    npm install
@@ -156,16 +159,17 @@ Per l'elenco completo, vedere `AGGIORNAMENTO_DIPENDENZE_2025.md`.
 - [ ] Eseguire `npm audit` (vulnerabilità risolte)
 - [ ] Testare `npm run dev` (app funzionante)
 - [ ] Commit delle modifiche:
-   ```bash
-   git add package.json package-lock.json
-   git commit -m "chore: aggiorna dipendenze a versioni più recenti"
-   ```
+  ```bash
+  git add package.json package-lock.json
+  git commit -m "chore: aggiorna dipendenze a versioni più recenti"
+  ```
 
 ---
 
 ## 🎯 Risultato Atteso
 
 Dopo aver completato tutti i passi, il progetto dovrebbe essere:
+
 - ✅ Aggiornato alle versioni più recenti delle dipendenze
 - ✅ Privo di vulnerabilità di sicurezza note
 - ✅ Funzionante correttamente in sviluppo e produzione

@@ -50,7 +50,12 @@ export function NewAppointmentButton({
       title={isAvailable ? undefined : 'Vai al calendario per creare un appuntamento'}
       className={cn(CARD_CLASS, !isAvailable && 'opacity-80')}
     >
-      <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border', iconBoxClass)}>
+      <div
+        className={cn(
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+          iconBoxClass,
+        )}
+      >
         <Calendar className="h-4 w-4" />
       </div>
       <span className="mt-2 block text-[10px] font-semibold text-text-primary">

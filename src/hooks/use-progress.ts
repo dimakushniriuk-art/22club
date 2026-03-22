@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { statsCache } from '@/lib/cache/cache-strategies'
 import type { ProgressLog, ProgressPhoto, ProgressStats } from '@/types/progress'

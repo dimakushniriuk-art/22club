@@ -22,7 +22,8 @@ interface AthleteStatsCardsProps {
 
 const CARD_DS =
   'relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200 active:scale-[0.98]'
-const ICON_BOX = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-10 sm:w-10'
+const ICON_BOX =
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-10 sm:w-10'
 
 export function AthleteStatsCards({ stats, hideIcons = false }: AthleteStatsCardsProps) {
   return (

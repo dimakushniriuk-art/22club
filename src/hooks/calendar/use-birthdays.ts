@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 
 export interface BirthdayEntry {
   id: string
@@ -33,22 +33,29 @@ export function useBirthdays(date: Date, orgId: string | null): BirthdayEntry[] 
       .then(({ data, error }) => {
         if (cancelled || error) return
         const list: BirthdayEntry[] = []
-        ;(data ?? []).forEach((row: { id: string; nome?: string | null; cognome?: string | null; data_nascita?: string | null }) => {
-          const d = row.data_nascita
-          if (!d) return
-          const birth = new Date(d)
-          if (birth.getMonth() + 1 === month && birth.getDate() === day) {
-            const name = `${row.nome ?? ''} ${row.cognome ?? ''}`.trim() || 'Atleta'
-            list.push({ id: row.id, name })
-          }
-        })
+        ;(data ?? []).forEach(
+          (row: {
+            id: string
+            nome?: string | null
+            cognome?: string | null
+            data_nascita?: string | null
+          }) => {
+            const d = row.data_nascita
+            if (!d) return
+            const birth = new Date(d)
+            if (birth.getMonth() + 1 === month && birth.getDate() === day) {
+              const name = `${row.nome ?? ''} ${row.cognome ?? ''}`.trim() || 'Atleta'
+              list.push({ id: row.id, name })
+            }
+          },
+        )
         setEntries(list)
       })
     return () => {
       cancelled = true
     }
-  // dateTs deriva da date; dipendere da date causerebbe re-run a ogni render se il parent passa new Date()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // dateTs deriva da date; dipendere da date causerebbe re-run a ogni render se il parent passa new Date()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId, dateTs])
 
   return entries

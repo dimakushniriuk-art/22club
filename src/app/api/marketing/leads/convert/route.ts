@@ -40,7 +40,10 @@ type ProfileRow = {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
 
     if (userError || !user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
@@ -81,7 +84,9 @@ export async function POST(request: NextRequest) {
 
     const { data: lead, error: leadErr } = await supabase
       .from('marketing_leads')
-      .select('id, org_id, first_name, last_name, email, phone, status, converted_athlete_profile_id')
+      .select(
+        'id, org_id, first_name, last_name, email, phone, status, converted_athlete_profile_id',
+      )
       .eq('id', leadId)
       .single()
 
@@ -91,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     const leadRow = lead as LeadRow
     if (leadRow.org_id !== callerOrgId) {
-      return NextResponse.json({ error: 'Lead di un\'altra organizzazione' }, { status: 403 })
+      return NextResponse.json({ error: "Lead di un'altra organizzazione" }, { status: 403 })
     }
 
     if (leadRow.converted_athlete_profile_id != null) {
@@ -126,7 +131,7 @@ export async function POST(request: NextRequest) {
     if (existingProfile) {
       if (existingProfile.org_id != null && existingProfile.org_id !== leadRow.org_id) {
         return NextResponse.json(
-          { error: 'Questa email è già usata da un atleta di un\'altra organizzazione.' },
+          { error: "Questa email è già usata da un atleta di un'altra organizzazione." },
           { status: 409 },
         )
       }
@@ -159,18 +164,26 @@ export async function POST(request: NextRequest) {
 
       if (sendInvite) {
         const redirectTo = getAbsoluteUrl('/post-login', request)
-        const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
-          redirectTo,
-          data: {
-            first_name: leadRow.first_name,
-            last_name: leadRow.last_name,
-            lead_id: leadId,
+        const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(
+          email,
+          {
+            redirectTo,
+            data: {
+              first_name: leadRow.first_name,
+              last_name: leadRow.last_name,
+              lead_id: leadId,
+            },
           },
-        })
+        )
         if (inviteErr) {
           const msg = inviteErr.message ?? ''
-          if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('already registered')) {
-            const { data: { users } } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+          if (
+            msg.toLowerCase().includes('already') ||
+            msg.toLowerCase().includes('already registered')
+          ) {
+            const {
+              data: { users },
+            } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
             const existingAuth = users?.find((u) => u.email?.toLowerCase() === email.toLowerCase())
             if (!existingAuth) {
               logger.warn('Invite failed, no existing auth user', inviteErr)
@@ -184,7 +197,10 @@ export async function POST(request: NextRequest) {
           const inv = inviteData as { user?: { id: string }; id?: string }
           authUserId = inv?.user?.id ?? inv?.id ?? ''
           if (!authUserId) {
-            return NextResponse.json({ error: 'Invito inviato ma utente non restituito' }, { status: 500 })
+            return NextResponse.json(
+              { error: 'Invito inviato ma utente non restituito' },
+              { status: 500 },
+            )
           }
           inviteSent = true
         }
@@ -200,7 +216,9 @@ export async function POST(request: NextRequest) {
         if (createErr) {
           const msg = createErr.message ?? ''
           if (msg.toLowerCase().includes('already')) {
-            const { data: { users } } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+            const {
+              data: { users },
+            } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
             const existingAuth = users?.find((u) => u.email?.toLowerCase() === email.toLowerCase())
             if (!existingAuth) {
               return NextResponse.json({ error: msg || 'Email già registrata' }, { status: 500 })
@@ -219,7 +237,11 @@ export async function POST(request: NextRequest) {
 
       userId = authUserId
 
-      const { data: existingByUser } = await admin.from('profiles').select('id').eq('user_id', authUserId).single()
+      const { data: existingByUser } = await admin
+        .from('profiles')
+        .select('id')
+        .eq('user_id', authUserId)
+        .single()
       if (existingByUser?.id) {
         profileId = (existingByUser as { id: string }).id
         await admin

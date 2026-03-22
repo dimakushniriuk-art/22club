@@ -35,17 +35,17 @@ Esegui questa query nel SQL Editor:
 
 ```sql
 -- Reset password per trainer
-UPDATE auth.users 
+UPDATE auth.users
 SET encrypted_password = crypt('FrancescoB', gen_salt('bf'))
 WHERE email = 'b.francesco@22club.it';
 
 -- Reset password per admin
-UPDATE auth.users 
+UPDATE auth.users
 SET encrypted_password = crypt('adminadmin', gen_salt('bf'))
 WHERE email = 'admin@22club.it';
 
 -- Reset password per athlete
-UPDATE auth.users 
+UPDATE auth.users
 SET encrypted_password = crypt('dimon280894', gen_salt('bf'))
 WHERE email = 'dima.kushniriuk@gmail.com';
 ```
@@ -61,12 +61,12 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
 // Reset password
 await supabase.auth.admin.updateUserById(userId, {
-  password: 'nuova_password'
+  password: 'nuova_password',
 })
 ```
 
@@ -95,6 +95,7 @@ Dopo aver resettato la password:
 ### Problema: Password reset non funziona
 
 **Soluzione**:
+
 - Verifica che l'utente esista in `auth.users`
 - Verifica che l'email sia corretta
 - Prova a resettare via email (`/forgot-password`)
@@ -102,6 +103,7 @@ Dopo aver resettato la password:
 ### Problema: Login ancora fallisce dopo reset
 
 **Soluzione**:
+
 - Verifica che la password sia stata salvata correttamente
 - Controlla console per errori dettagliati
 - Verifica RLS policies non bloccano l'accesso
@@ -109,6 +111,7 @@ Dopo aver resettato la password:
 ### Problema: Redirect non funziona
 
 **Soluzione**:
+
 - Verifica che `/post-login` esista
 - Verifica che AuthProvider carichi correttamente
 - Controlla console per errori JavaScript

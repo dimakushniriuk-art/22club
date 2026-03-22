@@ -76,13 +76,23 @@ export function UpcomingAppointmentsClient({ initialData }: UpcomingAppointments
               id: string
               starts_at: string
               type?: string | null
-              athlete?: { nome?: string; cognome?: string; first_name?: string; last_name?: string } | null
+              athlete?: {
+                nome?: string
+                cognome?: string
+                first_name?: string
+                last_name?: string
+              } | null
             }
             type AppointmentRaw = {
               id: unknown
               starts_at: unknown
               type?: unknown
-              athlete?: { nome?: unknown; cognome?: unknown; first_name?: unknown; last_name?: unknown } | null
+              athlete?: {
+                nome?: unknown
+                cognome?: unknown
+                first_name?: unknown
+                last_name?: unknown
+              } | null
             }
             return ((appointments || []) as AppointmentRaw[]).map((apt) => {
               const aptTyped = apt as AppointmentWithAthlete

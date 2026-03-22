@@ -82,10 +82,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
       }
       logger.warn('GET marketing/athletes RPC error', error)
-      return NextResponse.json(
-        { error: 'Errore nel caricamento atleti' },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: 'Errore nel caricamento atleti' }, { status: 500 })
     }
 
     const list: MarketingAthleteRow[] = (rows ?? []).map((r: RpcRow) => ({
@@ -106,9 +103,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: list })
   } catch (err) {
     logger.error('Errore API marketing athletes', err)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

@@ -40,9 +40,11 @@
 **Test da eseguire**:
 
 1. **Aprire la pagina login**:
+
    ```
    https://club1225.vercel.app/login
    ```
+
    - ✅ Verificare che la pagina carichi con CSS/JS applicati
    - ✅ Aprire DevTools > Network tab
    - ✅ Verificare che tutte le richieste `/_next/static/*` ritornino `200 OK`
@@ -63,15 +65,19 @@
 **Test da eseguire**:
 
 1. **Homepage**:
+
    ```
    https://club1225.vercel.app/
    ```
+
    - ✅ Verificare redirect a `/login` (comportamento atteso)
 
 2. **Pagina Login**:
+
    ```
    https://club1225.vercel.app/login
    ```
+
    - ✅ Form di login visibile e funzionante
    - ✅ CSS applicato correttamente
    - ✅ Nessun errore in console (F12 > Console)
@@ -80,6 +86,7 @@
    ```
    https://club1225.vercel.app/registrati
    ```
+
    - ✅ Form di registrazione visibile
    - ✅ CSS applicato correttamente
 
@@ -88,9 +95,11 @@
 **Test da eseguire**:
 
 1. **Health Check**:
+
    ```
    https://club1225.vercel.app/api/health
    ```
+
    - ✅ Aprire in browser o usare Postman/curl
    - ✅ Verificare che ritorni `200 OK` con JSON valido
    - ✅ Verificare che il JSON contenga informazioni sullo stato
@@ -99,6 +108,7 @@
    ```
    https://club1225.vercel.app/api/auth/context
    ```
+
    - ✅ Verificare che risponda correttamente (anche se non autenticato)
 
 ---
@@ -108,16 +118,19 @@
 **Nota**: Richiede credenziali valide per ogni ruolo.
 
 #### Test Login Admin
+
 - ✅ Login con credenziali admin
 - ✅ Verificare redirect a `/dashboard/admin` dopo login
 - ✅ Verificare che la dashboard admin carichi correttamente
 
 #### Test Login Trainer
+
 - ✅ Login con credenziali trainer
 - ✅ Verificare redirect a `/dashboard` dopo login
 - ✅ Verificare che la dashboard trainer carichi correttamente
 
 #### Test Login Atleta
+
 - ✅ Login con credenziali atleta
 - ✅ Verificare redirect a `/home` dopo login
 - ✅ Verificare che la dashboard atleta carichi correttamente
@@ -186,6 +199,7 @@ curl.exe https://club1225.vercel.app/api/health
 ## 📋 Checklist Rapida
 
 ### Test Critici
+
 - [ ] Pagina login carica con CSS/JS
 - [ ] Asset `/_next/static/*` ritornano `200 OK`
 - [ ] Nessun redirect per asset
@@ -193,6 +207,7 @@ curl.exe https://club1225.vercel.app/api/health
 - [ ] Homepage redirecta a login
 
 ### Test Funzionalità
+
 - [ ] Form login funziona
 - [ ] Form registrazione funziona
 - [ ] Login admin funziona (se possibile)
@@ -200,6 +215,7 @@ curl.exe https://club1225.vercel.app/api/health
 - [ ] Login atleta funziona (se possibile)
 
 ### Test Opzionali
+
 - [ ] Lighthouse score > 80
 - [ ] Mobile responsive
 - [ ] Cross-browser compatibile
@@ -209,6 +225,7 @@ curl.exe https://club1225.vercel.app/api/health
 ## ✅ Risultato Atteso
 
 Dopo i test manuali, il sito dovrebbe:
+
 - ✅ Caricare correttamente tutte le pagine con CSS/JS
 - ✅ Servire correttamente gli asset Next.js
 - ✅ Funzionare identicamente a `app.22club.it`
@@ -220,6 +237,7 @@ Dopo i test manuali, il sito dovrebbe:
 ## 🐛 Problemi Noti
 
 ### Warning Build (Non Critici)
+
 - ⚠️ `twilio` module not found - **Normale** (modulo opzionale, importato dinamicamente)
 - ⚠️ `web-push` module not found - **Normale** (modulo opzionale, importato dinamicamente)
 

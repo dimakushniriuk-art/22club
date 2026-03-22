@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Script di test E2E per pagina Admin Utenti
- * 
+ *
  * Verifica:
  * - Navigazione alla pagina
  * - Creazione utente
@@ -20,7 +20,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Variabili d\'ambiente mancanti: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
+  console.error(
+    "❌ Variabili d'ambiente mancanti: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY",
+  )
   process.exit(1)
 }
 

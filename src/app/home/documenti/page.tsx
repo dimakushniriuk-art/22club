@@ -233,7 +233,11 @@ function DocumentiPageContent() {
   const performUpload = useCallback(
     async (file: File, category: string) => {
       if (!athleteProfileId) {
-        notify('Profilo non disponibile. Ricarica la pagina e riprova.', 'error', 'Errore autenticazione')
+        notify(
+          'Profilo non disponibile. Ricarica la pagina e riprova.',
+          'error',
+          'Errore autenticazione',
+        )
         return
       }
       try {
@@ -461,7 +465,11 @@ function DocumentiPageContent() {
                               : item.category}
                           </h3>
                           {item.status != null && (
-                            <Badge variant={getStatusColor(item.status as DocStatus)} size="sm" className="shrink-0 text-xs">
+                            <Badge
+                              variant={getStatusColor(item.status as DocStatus)}
+                              size="sm"
+                              className="shrink-0 text-xs"
+                            >
                               {getStatusIcon(item.status)}
                               {getStatusText(item.status)}
                             </Badge>

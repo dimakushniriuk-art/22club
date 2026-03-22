@@ -68,18 +68,21 @@ const PAGE_WRAPPER_CLASS =
 
 const HEADER_STYLE = {
   border: '1px solid rgba(2, 179, 191, 0.4)',
-  background: 'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
+  background:
+    'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
   boxShadow: '0 4px 24px rgba(0,0,0,0.22), 0 0 0 1px rgba(2,179,191,0.1) inset',
 } as const
 const HEADER_OVERLAY_STYLE = {
-  background: 'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
+  background:
+    'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
 } as const
 const HEADER_ICON_STYLE = {
   backgroundColor: 'rgba(2, 179, 191, 0.2)',
   border: '1px solid rgba(2, 179, 191, 0.35)',
 } as const
 const CARD_STATS_STYLE = {
-  background: 'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
+  background:
+    'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
   boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
 } as const
 const CARD_MAIN_STYLE = {
@@ -177,22 +180,22 @@ function MassaggiatorePageContent() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-          <div className="flex flex-1 items-center gap-3 min-w-0">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-xl min-[834px]:h-14 min-[834px]:w-14"
-              style={HEADER_ICON_STYLE}
-            >
-              <Hand className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />
+            <div className="flex flex-1 items-center gap-3 min-w-0">
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-xl min-[834px]:h-14 min-[834px]:w-14"
+                style={HEADER_ICON_STYLE}
+              >
+                <Hand className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
+                  Massaggiatore
+                </h1>
+                <p className="mt-0.5 truncate text-xs text-text-tertiary">
+                  Prenota e gestisci trattamenti
+                </p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="truncate text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
-                Massaggiatore
-              </h1>
-              <p className="mt-0.5 truncate text-xs text-text-tertiary">
-                Prenota e gestisci trattamenti
-              </p>
-            </div>
-          </div>
           </div>
         </div>
 

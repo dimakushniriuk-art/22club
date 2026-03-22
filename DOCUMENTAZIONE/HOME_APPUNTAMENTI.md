@@ -24,7 +24,7 @@ L’atleta vede:
 - **Click su evento normale:** apre un **popover** con dettagli, Modifica, Annulla, Elimina (solo per eventi creati dall’atleta).
 - **FAB “+”** per nuovo appuntamento (solo se ha un trainer assegnato).
 - **Drag & resize** solo sugli eventi creati dall’atleta (`created_by_role === 'athlete'`).
-- Se **non ha un trainer assegnato**, viene mostrato il messaggio: *“Non hai ancora un trainer assegnato. Contatta l’organizzazione per poter prenotare.”* e il FAB non è mostrato.
+- Se **non ha un trainer assegnato**, viene mostrato il messaggio: _“Non hai ancora un trainer assegnato. Contatta l’organizzazione per poter prenotare.”_ e il FAB non è mostrato.
 
 ### 2. Vista Trainer / Admin (ruoli `pt`, `trainer`, `admin`)
 
@@ -80,14 +80,14 @@ Navigazione: pulsanti **Oggi**, **Precedente**, **Successivo** e titolo corrente
 
 ### Origine dati
 
-- **Atleta:** `useAthleteCalendarPage(profileId)`  
-  - Carica appuntamenti (RLS: propri + eventuali slot weekend visibili a tutti).  
-  - Risolve nomi atleti/trainer e **avatar atleta** da `profiles` (avatar, avatar_url).  
-  - Calcola `slotBookingCounts` per gli slot Libera (conteggio prenotazioni per `starts_at|ends_at`).  
+- **Atleta:** `useAthleteCalendarPage(profileId)`
+  - Carica appuntamenti (RLS: propri + eventuali slot weekend visibili a tutti).
+  - Risolve nomi atleti/trainer e **avatar atleta** da `profiles` (avatar, avatar_url).
+  - Calcola `slotBookingCounts` per gli slot Libera (conteggio prenotazioni per `starts_at|ends_at`).
   - Trainer assegnato tramite RPC `get_my_trainer_profile` (pt_id, nome, cognome).
 
-- **Trainer/Admin:** `useAppointments({ userId: profileId, role })`  
-  - Query su `appointments` con join su `profiles` per atleta (nome, cognome, **avatar, avatar_url**), trainer, staff.  
+- **Trainer/Admin:** `useAppointments({ userId: profileId, role })`
+  - Query su `appointments` con join su `profiles` per atleta (nome, cognome, **avatar, avatar_url**), trainer, staff.
   - Restituisce lista con `athlete_name`, `athlete_avatar_url`, `trainer_name`, ecc.
 
 ### Tipo appuntamento e titolo in calendario
@@ -104,15 +104,15 @@ Navigazione: pulsanti **Oggi**, **Precedente**, **Successivo** e titolo corrente
 
 ## File principali
 
-| File | Ruolo |
-|------|--------|
-| `src/app/home/appuntamenti/page.tsx` | Pagina: branching atleta vs lista, header, calendario/liste, modale form, popover |
-| `src/components/calendar/calendar-view.tsx` | FullCalendar: viste, eventContent (mese/settimana/giorno/agenda), avatar, FAB, tooltip, Oggi/Prev/Next |
-| `src/components/calendar/appointment-form.tsx` | Form creazione/modifica appuntamento (date, orari, tipo, atleta, note, sede, Libera prenotazione) |
-| `src/components/calendar/appointment-popover.tsx` | Popover su click evento/card: dettagli, Modifica, Annulla, Elimina |
-| `src/hooks/use-appointments.ts` | Hook lista appuntamenti per trainer/admin (con avatar atleta da profiles) |
-| `src/hooks/calendar/use-athlete-calendar-page.ts` | Hook calendario atleta: fetch, slotBookingCounts, trainer, submit/cancel/delete/drop/resize |
-| `src/types/appointment.ts` | Tipi `AppointmentUI`, `CreateAppointmentData`, `EditAppointmentData`, colori, `athlete_avatar_url` |
+| File                                              | Ruolo                                                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `src/app/home/appuntamenti/page.tsx`              | Pagina: branching atleta vs lista, header, calendario/liste, modale form, popover                      |
+| `src/components/calendar/calendar-view.tsx`       | FullCalendar: viste, eventContent (mese/settimana/giorno/agenda), avatar, FAB, tooltip, Oggi/Prev/Next |
+| `src/components/calendar/appointment-form.tsx`    | Form creazione/modifica appuntamento (date, orari, tipo, atleta, note, sede, Libera prenotazione)      |
+| `src/components/calendar/appointment-popover.tsx` | Popover su click evento/card: dettagli, Modifica, Annulla, Elimina                                     |
+| `src/hooks/use-appointments.ts`                   | Hook lista appuntamenti per trainer/admin (con avatar atleta da profiles)                              |
+| `src/hooks/calendar/use-athlete-calendar-page.ts` | Hook calendario atleta: fetch, slotBookingCounts, trainer, submit/cancel/delete/drop/resize            |
+| `src/types/appointment.ts`                        | Tipi `AppointmentUI`, `CreateAppointmentData`, `EditAppointmentData`, colori, `athlete_avatar_url`     |
 
 ---
 

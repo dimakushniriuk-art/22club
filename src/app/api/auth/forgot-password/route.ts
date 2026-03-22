@@ -20,10 +20,7 @@ export async function POST(request: NextRequest) {
         : request.nextUrl.origin + '/reset-password'
 
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email obbligatoria' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Email obbligatoria' }, { status: 400 })
     }
 
     const result = await sendResetPasswordEmail({
@@ -47,9 +44,6 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     logger.error('Errore API forgot-password', error)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

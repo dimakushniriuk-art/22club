@@ -77,7 +77,11 @@ export function AppointmentsList({
             : 'Inizia aggiungendo il tuo primo appuntamento per gestire le sessioni con i tuoi atleti.'}
         </p>
         {hasActiveFilters ? (
-          <Button variant="outline" onClick={onSearchClear} className="border-white/10 hover:border-white/20">
+          <Button
+            variant="outline"
+            onClick={onSearchClear}
+            className="border-white/10 hover:border-white/20"
+          >
             Rimuovi filtri
           </Button>
         ) : (

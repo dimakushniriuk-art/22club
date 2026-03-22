@@ -7,6 +7,7 @@
 ## 📡 API ROUTES
 
 ### Struttura Directory
+
 ```
 src/app/api/
 ├── admin/
@@ -66,6 +67,7 @@ src/app/api/
 ## 🔍 API PRINCIPALI ANALIZZATE
 
 ### Health Check
+
 ```typescript
 // src/app/api/health/route.ts
 export async function GET() {
@@ -86,6 +88,7 @@ export async function GET() {
 **Nota**: Database health check è placeholder
 
 ### Auth Context
+
 ```typescript
 // src/app/api/auth/context/route.ts
 // Sincronizza ruolo/org_id tra client e server
@@ -97,6 +100,7 @@ export async function GET() {
 ## 🔧 SERVIZI BACKEND
 
 ### Supabase Client
+
 ```
 src/lib/supabase/
 ├── client.ts      # Browser client (singleton)
@@ -106,6 +110,7 @@ src/lib/supabase/
 ```
 
 ### Logger
+
 ```
 src/lib/logger/
 ├── index.ts              # createLogger factory
@@ -114,6 +119,7 @@ src/lib/logger/
 ```
 
 ### Cache
+
 ```
 src/lib/cache/
 ├── cache-strategies.ts    # statsCache, frequentQueryCache
@@ -122,6 +128,7 @@ src/lib/cache/
 ```
 
 ### Communications
+
 ```
 src/lib/communications/
 ├── service.ts           # Servizio principale
@@ -134,6 +141,7 @@ src/lib/communications/
 ```
 
 ### Notifications
+
 ```
 src/lib/notifications/
 ├── push.ts              # Web push
@@ -142,6 +150,7 @@ src/lib/notifications/
 ```
 
 ### Validations
+
 ```
 src/lib/validations/
 ├── allenamento.ts
@@ -158,6 +167,7 @@ src/lib/validations/
 ## 🔄 PATTERN API
 
 ### Struttura Standard
+
 ```typescript
 // route.ts
 import { NextResponse } from 'next/server'
@@ -166,19 +176,21 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     // Logica
     const { data, error } = await supabase.from('table').select()
-    
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    
+
     return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
@@ -197,21 +209,22 @@ export async function POST(request: Request) {
 
 ## 📊 STATISTICHE API
 
-| Categoria | Endpoints | Metodi |
-|-----------|-----------|--------|
-| Admin | 7 | GET, POST, PUT, DELETE |
-| Athletes | 2 | GET, POST, PATCH |
-| Communications | 6 | GET, POST |
-| Push | 3 | GET, POST, DELETE |
-| Webhooks | 2 | POST |
-| Altri | 9 | Vari |
-| **Totale** | **29** | - |
+| Categoria      | Endpoints | Metodi                 |
+| -------------- | --------- | ---------------------- |
+| Admin          | 7         | GET, POST, PUT, DELETE |
+| Athletes       | 2         | GET, POST, PATCH       |
+| Communications | 6         | GET, POST              |
+| Push           | 3         | GET, POST, DELETE      |
+| Webhooks       | 2         | POST                   |
+| Altri          | 9         | Vari                   |
+| **Totale**     | **29**    | -                      |
 
 ---
 
 ## ⚠️ PROBLEMI RILEVATI
 
 ### SEG-008: Health Check Incompleto
+
 ```
 🧠 IMPROVE
 File: src/app/api/health/route.ts
@@ -223,6 +236,7 @@ Azione: Aggiungere ping a Supabase
 ```
 
 ### Pattern Mancanti
+
 ```
 Non trovati:
 ├── Rate limiting globale
@@ -235,12 +249,12 @@ Non trovati:
 
 ## 📊 VALUTAZIONE
 
-| Aspetto | Rating | Note |
-|---------|--------|------|
-| Chiarezza logica | ★★★★☆ | Struttura RESTful ok |
-| Robustezza | ★★★☆☆ | Error handling variabile |
-| Debito tecnico | **MEDIO** | Manca standardizzazione |
-| Rischio regressioni | **BASSO** | API isolate |
+| Aspetto             | Rating    | Note                     |
+| ------------------- | --------- | ------------------------ |
+| Chiarezza logica    | ★★★★☆     | Struttura RESTful ok     |
+| Robustezza          | ★★★☆☆     | Error handling variabile |
+| Debito tecnico      | **MEDIO** | Manca standardizzazione  |
+| Rischio regressioni | **BASSO** | API isolate              |
 
 ---
 

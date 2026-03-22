@@ -160,8 +160,7 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
 
   const linkBase =
     'flex items-center gap-3 min-h-[44px] p-3 rounded-lg transition-colors duration-200 group min-w-0 border'
-  const linkActive =
-    'bg-white/[0.06] border-white/10 text-primary font-medium'
+  const linkActive = 'bg-white/[0.06] border-white/10 text-primary font-medium'
   const linkInactive =
     'border-transparent text-text-secondary hover:text-primary hover:bg-white/[0.04] hover:border-white/20'
 
@@ -242,7 +241,9 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
             />
             {!isCollapsed && (
               <>
-                <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1 truncate">Admin</span>
+                <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1 truncate">
+                  Admin
+                </span>
                 {(path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')) && (
                   <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                 )}
@@ -271,7 +272,11 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
             title={isCollapsed ? 'Espandi sidebar' : 'Riduci sidebar'}
             suppressHydrationWarning
           >
-            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {isCollapsed ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <ChevronLeft className="w-5 h-5" />
+            )}
           </button>
         </div>
       </nav>

@@ -11,17 +11,14 @@ const logger = createLogger('api:marketing:leads:[id]:convert')
  * Imposta: status=converted, converted_athlete_profile_id, converted_by_profile_id, converted_at.
  * Il trigger su marketing_leads scrive la history e converted_at se non fornito.
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     if (!id) {
       return NextResponse.json({ error: 'id lead obbligatorio' }, { status: 400 })
     }
 
-    const body = await request.json() as { athlete_profile_id?: string }
+    const body = (await request.json()) as { athlete_profile_id?: string }
     const athleteProfileId = body?.athlete_profile_id
     if (typeof athleteProfileId !== 'string' || !athleteProfileId.trim()) {
       return NextResponse.json({ error: 'athlete_profile_id obbligatorio' }, { status: 400 })
@@ -65,7 +62,10 @@ export async function POST(
 
     if (updateError) {
       logger.warn('Errore convert lead', updateError)
-      return NextResponse.json({ error: updateError.message ?? 'Errore conversione lead' }, { status: 500 })
+      return NextResponse.json(
+        { error: updateError.message ?? 'Errore conversione lead' },
+        { status: 500 },
+      )
     }
     if (!lead) {
       return NextResponse.json({ error: 'Lead non trovato' }, { status: 404 })

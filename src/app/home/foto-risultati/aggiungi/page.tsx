@@ -5,13 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { PageHeaderFixed } from '@/components/layout'
-import {
-  Camera,
-  CheckCircle2,
-  Image as ImageIcon,
-  ImagePlus,
-  Loader2,
-} from 'lucide-react'
+import { Camera, CheckCircle2, Image as ImageIcon, ImagePlus, Loader2 } from 'lucide-react'
 import {
   Button,
   Dialog,
@@ -33,7 +27,11 @@ type Angle = 'fronte' | 'retro' | 'profilo'
 
 const ANGLE_LABELS: Record<Angle, string> = { fronte: 'Davanti', retro: 'Dietro', profilo: 'Lato' }
 
-const OPTIONS: { angle: Angle; label: string; Figure: (props?: { className?: string }) => ReactElement }[] = [
+const OPTIONS: {
+  angle: Angle
+  label: string
+  Figure: (props?: { className?: string }) => ReactElement
+}[] = [
   {
     angle: 'fronte',
     label: 'Davanti',
@@ -192,7 +190,7 @@ export default function AggiungiFotoPage() {
       const angle = currentAngleRef.current
       if (!file || !angle || !profileId || !authUserId) return
       if (!file.type.startsWith('image/')) {
-        notify('Seleziona un\'immagine', 'error')
+        notify("Seleziona un'immagine", 'error')
         return
       }
 
@@ -237,7 +235,7 @@ export default function AggiungiFotoPage() {
         })
         notify(`Foto "${ANGLE_LABELS[angle]}" salvata`, 'success')
       } catch (e) {
-        notify(e instanceof Error ? e.message : 'Errore durante l\'upload', 'error')
+        notify(e instanceof Error ? e.message : "Errore durante l'upload", 'error')
       } finally {
         setUploading(false)
         if (galleryInputRef.current) galleryInputRef.current.value = ''
@@ -259,53 +257,55 @@ export default function AggiungiFotoPage() {
           icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
         />
 
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={() => handleFileChange(galleryInputRef)}
-      />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={() => handleFileChange(cameraInputRef)}
-      />
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={() => handleFileChange(galleryInputRef)}
+        />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={() => handleFileChange(cameraInputRef)}
+        />
 
-      <Dialog open={choiceOpen} onOpenChange={setChoiceOpen}>
-        <DialogContent className="max-w-sm border border-white/10 bg-background">
-          <DialogHeader>
-            <DialogTitle className="text-text-primary">
-              {selectedAngle ? OPTIONS.find((o) => o.angle === selectedAngle)?.label : 'Aggiungi foto'}
-            </DialogTitle>
-            <DialogDescription className="text-text-secondary">
-              {selectedAngle && addedInThisSession.has(selectedAngle)
-                ? 'Aggiungi un\'altra foto: carica da galleria o scatta.'
-                : 'Carica un\'immagine dalla galleria o scatta una nuova foto.'}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <Button
-              onClick={handleChooseGallery}
-              className="w-full gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <ImagePlus className="h-4 w-4" />
-              Carica da galleria
-            </Button>
-            <Button
-              onClick={handleChooseCamera}
-              variant="outline"
-              className="w-full gap-2 rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
-            >
-              <Camera className="h-4 w-4" />
-              Scatta foto
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <Dialog open={choiceOpen} onOpenChange={setChoiceOpen}>
+          <DialogContent className="max-w-sm border border-white/10 bg-background">
+            <DialogHeader>
+              <DialogTitle className="text-text-primary">
+                {selectedAngle
+                  ? OPTIONS.find((o) => o.angle === selectedAngle)?.label
+                  : 'Aggiungi foto'}
+              </DialogTitle>
+              <DialogDescription className="text-text-secondary">
+                {selectedAngle && addedInThisSession.has(selectedAngle)
+                  ? "Aggiungi un'altra foto: carica da galleria o scatta."
+                  : "Carica un'immagine dalla galleria o scatta una nuova foto."}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex-col gap-2 sm:flex-col">
+              <Button
+                onClick={handleChooseGallery}
+                className="w-full gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <ImagePlus className="h-4 w-4" />
+                Carica da galleria
+              </Button>
+              <Button
+                onClick={handleChooseCamera}
+                variant="outline"
+                className="w-full gap-2 rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
+              >
+                <Camera className="h-4 w-4" />
+                Scatta foto
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* 3 pulsanti con figure */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
@@ -317,9 +317,15 @@ export default function AggiungiFotoPage() {
               disabled={uploading}
               className={`group relative flex min-h-[180px] flex-1 flex-col items-center justify-center gap-2 p-3 disabled:pointer-events-none disabled:opacity-60 sm:min-h-[200px] sm:p-4 ${CARD_DS}`}
             >
-              <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white"
+                aria-hidden
+              />
               {addedInThisSession.has(angle) && (
-                <div className="absolute right-2 top-2 z-20 rounded-full bg-state-valid/90 p-0.5" title="Aggiunta in questo inserimento">
+                <div
+                  className="absolute right-2 top-2 z-20 rounded-full bg-state-valid/90 p-0.5"
+                  title="Aggiunta in questo inserimento"
+                >
                   <CheckCircle2 className="h-5 w-5 text-white" />
                 </div>
               )}
@@ -353,7 +359,8 @@ export default function AggiungiFotoPage() {
         )}
 
         <p className="text-text-tertiary text-xs min-[834px]:text-sm text-center px-2">
-          Tocca una figura: potrai caricare un&apos;immagine dalla galleria o scattare una nuova foto. Verrà salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
+          Tocca una figura: potrai caricare un&apos;immagine dalla galleria o scattare una nuova
+          foto. Verrà salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
         </p>
 
         {allThreeUploaded && (

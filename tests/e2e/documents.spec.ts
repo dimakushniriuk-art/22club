@@ -11,18 +11,18 @@ test.describe('Documents Flow', () => {
       sessionStorage.clear()
     })
     await loginAsAdmin(page)
-    
+
     // Verifica che il login sia completato correttamente
     await page.waitForURL(/\/post-login|\/dashboard/, { timeout: 30000 })
-    
+
     // Se siamo su /post-login, attendi redirect a /dashboard
     if (page.url().includes('/post-login')) {
       await page.waitForURL('**/dashboard**', { timeout: 20000 })
     }
-    
+
     // Attendi che la pagina sia completamente caricata
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
-    
+
     // Verifica che siamo effettivamente su dashboard
     const currentUrl = page.url()
     if (!currentUrl.includes('/dashboard')) {
@@ -38,8 +38,12 @@ test.describe('Documents Flow', () => {
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
 
     // Verifica heading "Documenti Atleti" e bottone "Carica Documento"
-    await expect(page.getByRole('heading', { name: /Documenti Atleti/i })).toBeVisible({ timeout: 10000 })
-    await expect(page.getByRole('button', { name: /Carica Documento/i })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Documenti Atleti/i })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(page.getByRole('button', { name: /Carica Documento/i })).toBeVisible({
+      timeout: 10000,
+    })
   })
 
   test('should upload a document', async ({ page }) => {
@@ -52,7 +56,7 @@ test.describe('Documents Flow', () => {
     // Questo test verifica solo che il bottone esista
     const uploadBtn = page.getByRole('button', { name: /Carica Documento/i })
     await expect(uploadBtn).toBeVisible({ timeout: 10000 })
-    
+
     // TODO: Quando il modal sarà integrato, questo test dovrà essere aggiornato per:
     // 1. Cliccare il bottone per aprire il modal
     // 2. Verificare che il modal si apra (DialogTitle "Carica Documento")
@@ -69,8 +73,11 @@ test.describe('Documents Flow', () => {
     // Verifica elementi della pagina documenti
     // Se ci sono documenti, verifica le colonne della tabella
     // Se non ci sono documenti, verifica il messaggio "Nessun documento trovato"
-    const hasDocuments = await page.getByText(/Nessun documento trovato/i).isVisible().catch(() => false)
-    
+    const hasDocuments = await page
+      .getByText(/Nessun documento trovato/i)
+      .isVisible()
+      .catch(() => false)
+
     if (!hasDocuments) {
       // Se ci sono documenti, verifica le colonne della tabella
       await expect(page.getByText(/Atleta/i)).toBeVisible({ timeout: 5000 })
@@ -91,8 +98,11 @@ test.describe('Documents Flow', () => {
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
 
     // Verifica se ci sono documenti
-    const hasDocuments = await page.getByText(/Nessun documento trovato/i).isVisible().catch(() => false)
-    
+    const hasDocuments = await page
+      .getByText(/Nessun documento trovato/i)
+      .isVisible()
+      .catch(() => false)
+
     if (hasDocuments) {
       // Se non ci sono documenti, il test passa (non c'è nulla da scaricare)
       test.skip(false, 'Nessun documento disponibile per il download')
@@ -101,9 +111,12 @@ test.describe('Documents Flow', () => {
 
     // Se ci sono documenti, cerca il bottone download (icona Download, non testo "Scarica")
     // Il bottone download è un Button con icona Download, senza testo
-    const downloadButton = page.locator('button:has(svg)').filter({ has: page.locator('svg') }).first()
+    const downloadButton = page
+      .locator('button:has(svg)')
+      .filter({ has: page.locator('svg') })
+      .first()
     const downloadButtonCount = await downloadButton.count()
-    
+
     if (downloadButtonCount === 0) {
       // Se non ci sono bottoni download, il test passa
       return

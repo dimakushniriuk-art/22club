@@ -8,20 +8,20 @@
 
 ## File esistenti individuati
 
-| Categoria | File | Ruolo |
-|-----------|------|--------|
-| **Pagina showcase** | `src/app/design-system/page.tsx` | Pagina unica di riferimento (~2200 righe) |
-| **Token base** | `src/config/design-system.ts` | Colori, radius, spacing, shadows, gradients (valori hex) |
-| **Token estesi** | `src/config/design-tokens.ts` | Re-export da design-system + `tokenToCSS` |
-| **Config completa** | `src/config/master-design.config.ts` | masterColors, masterLayout, masterCards, masterButtons, masterAnimations, masterTypography, breakpoints, helper |
-| **Utility classi** | `src/config/dkdesign.ts` | `dk.container`, `dk.card`, pattern layout/card/button |
-| **Tailwind** | `tailwind.config.ts` | theme.extend da design-system + brand/state/semantic/athlete colors, keyframes, plugin (.text-gradient, .bg-glass, .border-gradient) |
-| **CSS globale** | `src/app/globals.css` | :root (--color-*), body gradient, .focus-ring |
-| **CSS token** | `src/styles/design-tokens.css` | (da verificare uso) |
-| **CSS ruoli** | `src/styles/athlete-colors.css` | (da verificare) |
-| **Componenti UI** | `src/components/ui/*.tsx` (34 file) | Button, Card, Input, Badge, Tabs, Dialog, Drawer, Table, ecc. |
-| **Export UI** | `src/components/ui/index.ts` | Export centralizzato (manca Alert/Toast in index se esistono) |
-| **Doc** | `docs/DESIGN_SYSTEM_COMPLETO.md`, `docs/DESIGN_GUIDELINES.md`, `docs/design.md` | Documentazione esistente |
+| Categoria           | File                                                                            | Ruolo                                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Pagina showcase** | `src/app/design-system/page.tsx`                                                | Pagina unica di riferimento (~2200 righe)                                                                                            |
+| **Token base**      | `src/config/design-system.ts`                                                   | Colori, radius, spacing, shadows, gradients (valori hex)                                                                             |
+| **Token estesi**    | `src/config/design-tokens.ts`                                                   | Re-export da design-system + `tokenToCSS`                                                                                            |
+| **Config completa** | `src/config/master-design.config.ts`                                            | masterColors, masterLayout, masterCards, masterButtons, masterAnimations, masterTypography, breakpoints, helper                      |
+| **Utility classi**  | `src/config/dkdesign.ts`                                                        | `dk.container`, `dk.card`, pattern layout/card/button                                                                                |
+| **Tailwind**        | `tailwind.config.ts`                                                            | theme.extend da design-system + brand/state/semantic/athlete colors, keyframes, plugin (.text-gradient, .bg-glass, .border-gradient) |
+| **CSS globale**     | `src/app/globals.css`                                                           | :root (--color-\*), body gradient, .focus-ring                                                                                       |
+| **CSS token**       | `src/styles/design-tokens.css`                                                  | (da verificare uso)                                                                                                                  |
+| **CSS ruoli**       | `src/styles/athlete-colors.css`                                                 | (da verificare)                                                                                                                      |
+| **Componenti UI**   | `src/components/ui/*.tsx` (34 file)                                             | Button, Card, Input, Badge, Tabs, Dialog, Drawer, Table, ecc.                                                                        |
+| **Export UI**       | `src/components/ui/index.ts`                                                    | Export centralizzato (manca Alert/Toast in index se esistono)                                                                        |
+| **Doc**             | `docs/DESIGN_SYSTEM_COMPLETO.md`, `docs/DESIGN_GUIDELINES.md`, `docs/design.md` | Documentazione esistente                                                                                                             |
 
 ---
 
@@ -74,15 +74,15 @@ Raggruppati per categoria.
 
 ### A4. Riepilogo per categoria
 
-| Categoria | Problema | Dove |
-|-----------|----------|------|
-| **Colori** | Hex/rgba inline; scale teal/cyan/green/emerald/amber non unificate in un unico layer token | design-system page, home/*, dashboard/calendario, settings-trainer |
-| **Gradienti** | Linear gradient e box-shadow ripetuti per Glass e card | design-system, home layout |
-| **Tipografia** | Classi ad hoc (text-lg font-bold, text-[10px] uppercase) senza sempre riferirsi a scale tipografica | Tutte le pagine |
-| **Spacing/Radius** | Uso diretto di classi Tailwind invece di token nominali (es. space-2, rounded-xl) | Globale |
-| **Focus/Accessibility** | Focus ring definito in più posti; non sempre applicato a controlli custom | master-design, globals, button |
-| **Layout** | Header (Glass/Compatto), card con barra, blocchi griglia non componentizzati | home, design-system |
-| **Theming ruolo** | master-design trainer = blue/indigo; UI trainer = teal; incoerenza | master-design.config vs settings-trainer, dashboard |
+| Categoria               | Problema                                                                                            | Dove                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **Colori**              | Hex/rgba inline; scale teal/cyan/green/emerald/amber non unificate in un unico layer token          | design-system page, home/\*, dashboard/calendario, settings-trainer |
+| **Gradienti**           | Linear gradient e box-shadow ripetuti per Glass e card                                              | design-system, home layout                                          |
+| **Tipografia**          | Classi ad hoc (text-lg font-bold, text-[10px] uppercase) senza sempre riferirsi a scale tipografica | Tutte le pagine                                                     |
+| **Spacing/Radius**      | Uso diretto di classi Tailwind invece di token nominali (es. space-2, rounded-xl)                   | Globale                                                             |
+| **Focus/Accessibility** | Focus ring definito in più posti; non sempre applicato a controlli custom                           | master-design, globals, button                                      |
+| **Layout**              | Header (Glass/Compatto), card con barra, blocchi griglia non componentizzati                        | home, design-system                                                 |
+| **Theming ruolo**       | master-design trainer = blue/indigo; UI trainer = teal; incoerenza                                  | master-design.config vs settings-trainer, dashboard                 |
 
 ---
 
@@ -92,20 +92,20 @@ Raggruppati per categoria.
 
 ### B1. File da creare/modificare
 
-| File | Azione |
-|------|--------|
-| `src/lib/design-tokens/index.ts` | **Creare** — Export unificato di tutti i token (re-export da sotto-moduli). |
-| `src/lib/design-tokens/colors.ts` | **Creare** — Neutral scale, semantic (success/warning/error/info), background layers (DEFAULT, elevated, subtle, secondary, tertiary), glass (teal/cyan), border/input, primary/accent per ruolo (athlete/trainer/admin). Valori hex; mappa anche per “role accent” (teal, cyan, green, emerald, amber per atleta). |
-| `src/lib/design-tokens/typography.ts` | **Creare** — Scale (xs → 6xl), font-family, font-weight, line-height; label “display”, “heading”, “body”, “caption”, “overline”. |
-| `src/lib/design-tokens/spacing.ts` | **Creare** — Scale (0, 1, 2, … 128 + valori custom 18, 88), touch target (44px), container padding. |
-| `src/lib/design-tokens/radius.ts` | **Creare** — none, sm, md, lg, xl, 2xl, full con valori px. |
-| `src/lib/design-tokens/shadow.ts` | **Creare** — soft, glow, elevation (sm, md, lg, xl, 2xl), inner; glow primary/teal. |
-| `src/lib/design-tokens/motion.ts` | **Creare** — Durations (150, 200, 300), easing (ease-out, ease-in-out), keyframes names (fade-in, slide-in-up, …). |
-| `src/lib/design-tokens/focus.ts` | **Creare** — Ring width, ring color, ring offset, outline; stati accessibility. |
-| `src/lib/design-tokens/gradients.ts` | **Creare** — Brand (teal–gold), glass header (teal), card gradient (from-teal-900 to-cyan-900), role gradients. |
-| `src/config/design-system.ts` | **Modificare** — Ridurre a thin layer che importa da `@/lib/design-tokens` e re-esporta per backward compatibility (opzionale) oppure deprecare in favore di `lib/design-tokens`. |
-| `tailwind.config.ts` | **Modificare** — Estendere theme da `@/lib/design-tokens` (colori, spacing, radius, boxShadow, animation) invece di duplicare valori. |
-| `src/app/globals.css` | **Modificare** — :root che usa CSS variables derivate dai token (o generate da script) per coerenza. |
+| File                                  | Azione                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/design-tokens/index.ts`      | **Creare** — Export unificato di tutti i token (re-export da sotto-moduli).                                                                                                                                                                                                                                         |
+| `src/lib/design-tokens/colors.ts`     | **Creare** — Neutral scale, semantic (success/warning/error/info), background layers (DEFAULT, elevated, subtle, secondary, tertiary), glass (teal/cyan), border/input, primary/accent per ruolo (athlete/trainer/admin). Valori hex; mappa anche per “role accent” (teal, cyan, green, emerald, amber per atleta). |
+| `src/lib/design-tokens/typography.ts` | **Creare** — Scale (xs → 6xl), font-family, font-weight, line-height; label “display”, “heading”, “body”, “caption”, “overline”.                                                                                                                                                                                    |
+| `src/lib/design-tokens/spacing.ts`    | **Creare** — Scale (0, 1, 2, … 128 + valori custom 18, 88), touch target (44px), container padding.                                                                                                                                                                                                                 |
+| `src/lib/design-tokens/radius.ts`     | **Creare** — none, sm, md, lg, xl, 2xl, full con valori px.                                                                                                                                                                                                                                                         |
+| `src/lib/design-tokens/shadow.ts`     | **Creare** — soft, glow, elevation (sm, md, lg, xl, 2xl), inner; glow primary/teal.                                                                                                                                                                                                                                 |
+| `src/lib/design-tokens/motion.ts`     | **Creare** — Durations (150, 200, 300), easing (ease-out, ease-in-out), keyframes names (fade-in, slide-in-up, …).                                                                                                                                                                                                  |
+| `src/lib/design-tokens/focus.ts`      | **Creare** — Ring width, ring color, ring offset, outline; stati accessibility.                                                                                                                                                                                                                                     |
+| `src/lib/design-tokens/gradients.ts`  | **Creare** — Brand (teal–gold), glass header (teal), card gradient (from-teal-900 to-cyan-900), role gradients.                                                                                                                                                                                                     |
+| `src/config/design-system.ts`         | **Modificare** — Ridurre a thin layer che importa da `@/lib/design-tokens` e re-esporta per backward compatibility (opzionale) oppure deprecare in favore di `lib/design-tokens`.                                                                                                                                   |
+| `tailwind.config.ts`                  | **Modificare** — Estendere theme da `@/lib/design-tokens` (colori, spacing, radius, boxShadow, animation) invece di duplicare valori.                                                                                                                                                                               |
+| `src/app/globals.css`                 | **Modificare** — :root che usa CSS variables derivate dai token (o generate da script) per coerenza.                                                                                                                                                                                                                |
 
 ### B2. Contenuto concettuale token
 
@@ -125,25 +125,25 @@ Raggruppati per categoria.
 
 ### C1. File da creare/modificare
 
-| File | Azione |
-|------|--------|
-| `src/components/ui/button.tsx` | **Modificare** — Varianti e size già presenti; allineare a token (primary/secondary/ghost/outline/destructive/success/warning/link); stati loading/disabled; opzionale variant “role” (athlete/trainer/admin) che applica colori tema. Rimuovere hex/teal hardcoded dove possibile. |
-| `src/components/ui/card.tsx` | **Modificare** — Varianti default/elevated/outlined/athlete/trainer/admin; aggiungere varianti “glass”, “metric” (con barra laterale); usare token per bordi e gradient. |
-| `src/components/ui/input.tsx` | **Modificare** — Stati default, focus, error, disabled, success; classi da token (border, ring). |
-| `src/components/ui/select.tsx`, `simple-select.tsx` | **Modificare** — Stessi stati di Input dove applicabile. |
-| `src/components/ui/textarea.tsx` | **Modificare** — Stessi stati di Input. |
-| `src/components/ui/badge.tsx` | **Modificare** — Varianti semantic (success, warning, error, info) + optional “role”; usare token. |
-| `src/components/ui/tabs.tsx` | **Modificare** — Allineare a token (border, active state). |
-| `src/components/ui/dialog.tsx` | **Modificare** — Overlay e content da token (background, shadow, radius). |
-| `src/components/ui/drawer.tsx` | **Modificare** — Stesso approccio. |
-| `src/components/ui/toast.tsx` | **Verificare** — Se esiste, esporre in index e allineare a token. |
-| `src/components/ui/table.tsx` | **Modificare** — Stili header/cell da token; adatto a dashboard. |
-| **Pattern condivisi** | |
-| `src/components/layout/page-header-glass.tsx` | **Creare** — Header “Glass” (teal): back button, icon, titolo, sottotitolo; stili da token. |
-| `src/components/layout/page-header-compact.tsx` | **Creare** — Header “Compatto” (cyan): stesso schema, variante compatta. |
-| `src/components/ui/card-metric.tsx` | **Creare** — Card con barra sinistra, icon, label, value; variante accent (teal/cyan/…) da token. |
-| `src/components/home/home-block-tile.tsx` | **Creare** (opzionale) — Tile griglia home (icon, label, description, link) con accent da token. |
-| `src/components/ui/index.ts` | **Modificare** — Export Toast/Alert se presenti; eventuale export CardMetric, PageHeaderGlass, PageHeaderCompact da layout. |
+| File                                                | Azione                                                                                                                                                                                                                                                                              |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/ui/button.tsx`                      | **Modificare** — Varianti e size già presenti; allineare a token (primary/secondary/ghost/outline/destructive/success/warning/link); stati loading/disabled; opzionale variant “role” (athlete/trainer/admin) che applica colori tema. Rimuovere hex/teal hardcoded dove possibile. |
+| `src/components/ui/card.tsx`                        | **Modificare** — Varianti default/elevated/outlined/athlete/trainer/admin; aggiungere varianti “glass”, “metric” (con barra laterale); usare token per bordi e gradient.                                                                                                            |
+| `src/components/ui/input.tsx`                       | **Modificare** — Stati default, focus, error, disabled, success; classi da token (border, ring).                                                                                                                                                                                    |
+| `src/components/ui/select.tsx`, `simple-select.tsx` | **Modificare** — Stessi stati di Input dove applicabile.                                                                                                                                                                                                                            |
+| `src/components/ui/textarea.tsx`                    | **Modificare** — Stessi stati di Input.                                                                                                                                                                                                                                             |
+| `src/components/ui/badge.tsx`                       | **Modificare** — Varianti semantic (success, warning, error, info) + optional “role”; usare token.                                                                                                                                                                                  |
+| `src/components/ui/tabs.tsx`                        | **Modificare** — Allineare a token (border, active state).                                                                                                                                                                                                                          |
+| `src/components/ui/dialog.tsx`                      | **Modificare** — Overlay e content da token (background, shadow, radius).                                                                                                                                                                                                           |
+| `src/components/ui/drawer.tsx`                      | **Modificare** — Stesso approccio.                                                                                                                                                                                                                                                  |
+| `src/components/ui/toast.tsx`                       | **Verificare** — Se esiste, esporre in index e allineare a token.                                                                                                                                                                                                                   |
+| `src/components/ui/table.tsx`                       | **Modificare** — Stili header/cell da token; adatto a dashboard.                                                                                                                                                                                                                    |
+| **Pattern condivisi**                               |                                                                                                                                                                                                                                                                                     |
+| `src/components/layout/page-header-glass.tsx`       | **Creare** — Header “Glass” (teal): back button, icon, titolo, sottotitolo; stili da token.                                                                                                                                                                                         |
+| `src/components/layout/page-header-compact.tsx`     | **Creare** — Header “Compatto” (cyan): stesso schema, variante compatta.                                                                                                                                                                                                            |
+| `src/components/ui/card-metric.tsx`                 | **Creare** — Card con barra sinistra, icon, label, value; variante accent (teal/cyan/…) da token.                                                                                                                                                                                   |
+| `src/components/home/home-block-tile.tsx`           | **Creare** (opzionale) — Tile griglia home (icon, label, description, link) con accent da token.                                                                                                                                                                                    |
+| `src/components/ui/index.ts`                        | **Modificare** — Export Toast/Alert se presenti; eventuale export CardMetric, PageHeaderGlass, PageHeaderCompact da layout.                                                                                                                                                         |
 
 ### C2. Stati da mostrare in design-system
 
@@ -165,11 +165,11 @@ Raggruppati per categoria.
 
 ### D1. File da creare/modificare
 
-| File | Azione |
-|------|--------|
-| `src/lib/design-tokens/themes.ts` | **Creare** — Definizione “role themes”: `athlete`, `trainer`, `admin`. Ogni tema: primary, primaryHover, primaryActive, accent (opzionale), gradient primary, gradient glass (se diverso), border accent. Resto (neutral, semantic, typography, spacing, radius) condiviso. |
-| `src/config/master-design.config.ts` | **Modificare** — Allineare trainer a tema “trainer” (decisione prodotto: mantenere blue/indigo o unificare a teal per coerenza con UI attuale). Far dipendere masterColors.athlete/trainer/admin da `themes.ts` dove possibile. |
-| **CSS / Context** | **Opzionale** — Se si vuole theme switch runtime: React context + class su `<html>` (es. `data-theme="athlete"`) e CSS variables per primary/accent; oppure solo token a build-time per ruolo. |
+| File                                 | Azione                                                                                                                                                                                                                                                                      |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/design-tokens/themes.ts`    | **Creare** — Definizione “role themes”: `athlete`, `trainer`, `admin`. Ogni tema: primary, primaryHover, primaryActive, accent (opzionale), gradient primary, gradient glass (se diverso), border accent. Resto (neutral, semantic, typography, spacing, radius) condiviso. |
+| `src/config/master-design.config.ts` | **Modificare** — Allineare trainer a tema “trainer” (decisione prodotto: mantenere blue/indigo o unificare a teal per coerenza con UI attuale). Far dipendere masterColors.athlete/trainer/admin da `themes.ts` dove possibile.                                             |
+| **CSS / Context**                    | **Opzionale** — Se si vuole theme switch runtime: React context + class su `<html>` (es. `data-theme="athlete"`) e CSS variables per primary/accent; oppure solo token a build-time per ruolo.                                                                              |
 
 ### D2. Contenuto themes
 
@@ -185,31 +185,31 @@ Raggruppati per categoria.
 
 ### E1. File
 
-| File | Azione |
-|------|--------|
-| `src/app/design-system/page.tsx` | **Refactor** — Ridurre a “showcase” che importa sezioni da sotto-componenti; non tenere tutto in un unico file da 2200 righe. |
-| `src/app/design-system/_sections/foundations-colors.tsx` | **Creare** — Sezione Colori: neutral, semantic, layers, glass, role accents; swatch + hex. |
-| `src/app/design-system/_sections/foundations-typography.tsx` | **Creare** — Scale, famiglie, pesi, colori testo. |
-| `src/app/design-system/_sections/foundations-spacing-radius.tsx` | **Creare** — Spacing e radius con valori px. |
-| `src/app/design-system/_sections/foundations-motion.tsx` | **Creare** — Duration, easing, keyframes demo. |
-| `src/app/design-system/_sections/components-buttons.tsx` | **Creare** — Tutte le varianti e stati Button. |
-| `src/app/design-system/_sections/components-cards.tsx` | **Creare** — Card variants + glass + metric. |
-| `src/app/design-system/_sections/components-forms.tsx` | **Creare** — Input, Select, Textarea, Checkbox, stati. |
-| `src/app/design-system/_sections/components-feedback.tsx` | **Creare** — Badge, Toast, Alert, Spinner. |
-| `src/app/design-system/_sections/components-navigation.tsx` | **Creare** — Tabs, Nav item, Sidebar sample. |
-| `src/app/design-system/_sections/components-overlays.tsx` | **Creare** — Dialog, Drawer. |
-| `src/app/design-system/_sections/components-data.tsx` | **Creare** — Table, Skeleton. |
-| `src/app/design-system/_sections/patterns-headers.tsx` | **Creare** — PageHeaderGlass, PageHeaderCompact. |
-| `src/app/design-system/_sections/patterns-layouts.tsx` | **Creare** — Esempi dashboard sections, liste, form layout. |
-| `src/app/design-system/_sections/design-home.tsx` | **Modificare** — Estrarre da page.tsx la sezione Design Home (route /home/*) e usare token/componenti condivisi (CardMetric, header components). |
-| `src/app/design-system/page.tsx` | **Sostituire** — Layout con nav interna (anchor), Role switcher (mini palette) opzionale, import delle sezioni sopra. |
+| File                                                             | Azione                                                                                                                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/design-system/page.tsx`                                 | **Refactor** — Ridurre a “showcase” che importa sezioni da sotto-componenti; non tenere tutto in un unico file da 2200 righe.                     |
+| `src/app/design-system/_sections/foundations-colors.tsx`         | **Creare** — Sezione Colori: neutral, semantic, layers, glass, role accents; swatch + hex.                                                        |
+| `src/app/design-system/_sections/foundations-typography.tsx`     | **Creare** — Scale, famiglie, pesi, colori testo.                                                                                                 |
+| `src/app/design-system/_sections/foundations-spacing-radius.tsx` | **Creare** — Spacing e radius con valori px.                                                                                                      |
+| `src/app/design-system/_sections/foundations-motion.tsx`         | **Creare** — Duration, easing, keyframes demo.                                                                                                    |
+| `src/app/design-system/_sections/components-buttons.tsx`         | **Creare** — Tutte le varianti e stati Button.                                                                                                    |
+| `src/app/design-system/_sections/components-cards.tsx`           | **Creare** — Card variants + glass + metric.                                                                                                      |
+| `src/app/design-system/_sections/components-forms.tsx`           | **Creare** — Input, Select, Textarea, Checkbox, stati.                                                                                            |
+| `src/app/design-system/_sections/components-feedback.tsx`        | **Creare** — Badge, Toast, Alert, Spinner.                                                                                                        |
+| `src/app/design-system/_sections/components-navigation.tsx`      | **Creare** — Tabs, Nav item, Sidebar sample.                                                                                                      |
+| `src/app/design-system/_sections/components-overlays.tsx`        | **Creare** — Dialog, Drawer.                                                                                                                      |
+| `src/app/design-system/_sections/components-data.tsx`            | **Creare** — Table, Skeleton.                                                                                                                     |
+| `src/app/design-system/_sections/patterns-headers.tsx`           | **Creare** — PageHeaderGlass, PageHeaderCompact.                                                                                                  |
+| `src/app/design-system/_sections/patterns-layouts.tsx`           | **Creare** — Esempi dashboard sections, liste, form layout.                                                                                       |
+| `src/app/design-system/_sections/design-home.tsx`                | **Modificare** — Estrarre da page.tsx la sezione Design Home (route /home/\*) e usare token/componenti condivisi (CardMetric, header components). |
+| `src/app/design-system/page.tsx`                                 | **Sostituire** — Layout con nav interna (anchor), Role switcher (mini palette) opzionale, import delle sezioni sopra.                             |
 
 ### E2. Contenuto showcase
 
 - **Foundations:** Colori (swatch + hex), Tipografia (scale + sample), Spacing, Radius, Shadow, Motion, Focus ring.
 - **Components:** Per ogni componente: varianti, size, stati (hover, active, focus, disabled, loading).
 - **Patterns:** Header Glass/Compatto, Card con barra, Griglia blocchi home; layout dashboard (section, list, form).
-- **Design Home:** Card per ogni route /home/* con token table, elementi reali (header + card bar), griglia colori/tipografia/icone/moduli/radius/spacing (come oggi ma dati da token).
+- **Design Home:** Card per ogni route /home/\* con token table, elementi reali (header + card bar), griglia colori/tipografia/icone/moduli/radius/spacing (come oggi ma dati da token).
 - **Theming:** Sezione “Role themes” con palette atleta/trainer/admin; opzionale switcher che cambia preview (es. primary/accent).
 
 ---
@@ -284,4 +284,4 @@ Raggruppati per categoria.
 
 ---
 
-*Fine piano. Prima azione consigliata: implementare Batch 1 (token + tailwind) e poi procedere con Audit fine su 2–3 route (es. /home, /home/progressi, /dashboard) per sostituire i primi hardcode.*
+_Fine piano. Prima azione consigliata: implementare Batch 1 (token + tailwind) e poi procedere con Audit fine su 2–3 route (es. /home, /home/progressi, /dashboard) per sostituire i primi hardcode._

@@ -72,7 +72,7 @@ dynamicRoutes.forEach((route) => {
   const routePath = path.join(process.cwd(), route)
   const routeName = route.split('/').pop()
   const backupPath = path.join(dynamicBackupBase, routeName)
-  
+
   if (fs.existsSync(routePath)) {
     if (fs.existsSync(backupPath)) {
       fs.rmSync(backupPath, { recursive: true, force: true })
@@ -87,7 +87,7 @@ serverSidePages.forEach((page) => {
   const pagePath = path.join(process.cwd(), page)
   const pageName = page.split('/').pop()
   const backupPath = path.join(dynamicBackupBase, `page-${pageName}`)
-  
+
   if (fs.existsSync(pagePath)) {
     if (fs.existsSync(backupPath)) {
       fs.rmSync(backupPath, { recursive: true, force: true })

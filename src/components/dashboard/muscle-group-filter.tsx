@@ -88,7 +88,12 @@ interface MuscleGroupFilterProps {
   responsive?: boolean
 }
 
-export function MuscleGroupFilter({ selectedGroup, onSelect, className, responsive }: MuscleGroupFilterProps) {
+export function MuscleGroupFilter({
+  selectedGroup,
+  onSelect,
+  className,
+  responsive,
+}: MuscleGroupFilterProps) {
   // Trova quale filtro è selezionato in base al valore del database
   const selectedFilterId = useMemo(() => {
     if (!selectedGroup) return null
@@ -150,11 +155,13 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className, responsi
               )}
             >
               {option.id === 'multipli' ? (
-                <span className={cn(
-                  'font-bold',
-                  responsive ? 'text-xs' : 'text-base',
-                  isSelected ? 'text-white' : 'text-text-secondary'
-                )}>
+                <span
+                  className={cn(
+                    'font-bold',
+                    responsive ? 'text-xs' : 'text-base',
+                    isSelected ? 'text-white' : 'text-text-secondary',
+                  )}
+                >
                   MIX
                 </span>
               ) : (
@@ -214,7 +221,13 @@ export function MuscleGroupFilter({ selectedGroup, onSelect, className, responsi
             selectedFilterId === null ? 'bg-white/20' : 'bg-background-tertiary/50',
           )}
         >
-          <LayoutGrid className={cn('h-5 w-5', responsive && 'h-4 w-4', selectedFilterId === null ? 'text-white' : 'text-text-secondary')} />
+          <LayoutGrid
+            className={cn(
+              'h-5 w-5',
+              responsive && 'h-4 w-4',
+              selectedFilterId === null ? 'text-white' : 'text-text-secondary',
+            )}
+          />
         </div>
         <span
           className={cn(

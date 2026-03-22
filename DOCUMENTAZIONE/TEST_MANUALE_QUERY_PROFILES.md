@@ -5,6 +5,7 @@
 ### STEP 0 — Setup DevTools
 
 1. **Avvia dev server:**
+
    ```bash
    npm run dev
    ```
@@ -46,7 +47,8 @@
 #### Per ogni ruolo (trainer, admin, athlete):
 
 **A1. Network Tab:**
-- Numero totale richieste filtrate `profiles`: __
+
+- Numero totale richieste filtrate `profiles`: \_\_
 - Lista endpoint esatti (copia URL):
   ```
   1. /rest/v1/profiles?...
@@ -55,6 +57,7 @@
   ```
 
 **A2. Console Tab:**
+
 - Log `[profiles]` in ordine temporale (copia tutti):
   ```
   1. [profiles] ... → ...
@@ -83,7 +86,8 @@
 ### 📊 DATI DA RACCOGLIERE (Scenario B)
 
 **B1. Network Tab:**
-- Numero totale richieste filtrate `profiles`: __
+
+- Numero totale richieste filtrate `profiles`: \_\_
 - Lista endpoint:
   ```
   1. /rest/v1/profiles?...
@@ -91,6 +95,7 @@
   ```
 
 **B2. Console Tab:**
+
 - Log `[profiles]`:
   ```
   1. [profiles] ... → ...
@@ -129,7 +134,8 @@
 ### 📊 DATI DA RACCOGLIERE (Scenario C)
 
 **C1. Tab A (login + navigazione):**
-- Numero query `profiles`: __
+
+- Numero query `profiles`: \_\_
 - Lista endpoint:
   ```
   1. /rest/v1/profiles?...
@@ -137,7 +143,8 @@
   ```
 
 **C2. Tab B (refresh su pagina protetta):**
-- Numero query `profiles`: __
+
+- Numero query `profiles`: \_\_
 - Lista endpoint:
   ```
   1. /rest/v1/profiles?...
@@ -145,10 +152,12 @@
   ```
 
 **C3. Tab B (dopo logout Tab A):**
-- Fa query `profiles` extra? (sì/no): __
-- Se sì, quante: __
+
+- Fa query `profiles` extra? (sì/no): \_\_
+- Se sì, quante: \_\_
 
 **C4. Console Tab B:**
+
 - Log `[profiles]` dopo logout Tab A:
   ```
   1. [profiles] ... → ...
@@ -156,8 +165,9 @@
   ```
 
 **C5. Duplicate nello stesso tab:**
-- Tab A ha fatto query duplicate? (sì/no): __
-- Tab B ha fatto query duplicate? (sì/no): __
+
+- Tab A ha fatto query duplicate? (sì/no): \_\_
+- Tab B ha fatto query duplicate? (sì/no): \_\_
 
 ---
 
@@ -172,7 +182,8 @@ SCENARIO A — Login Completo
 ────────────────────────────
 
 Trainer:
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
@@ -181,7 +192,8 @@ Trainer:
   2. ...
 
 Admin:
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
@@ -190,61 +202,65 @@ Admin:
   2. ...
 
 Athlete:
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
 - Console log:
   1. [profiles] ... → ...
   2. ...
-
 
 SCENARIO B — Refresh Pagina
 ────────────────────────────
 
 Trainer:
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
 
 Admin:
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
 
 Athlete:
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
-
 
 SCENARIO C — Multi-Tab
 ───────────────────────
 
 Tab A (login + navigazione):
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
 - Query duplicate nello stesso tab: (sì/no)
 
 Tab B (refresh su pagina protetta):
-- Query totali: __
+
+- Query totali: \_\_
 - Endpoint:
   1. /rest/v1/profiles?...
   2. ...
 - Query duplicate nello stesso tab: (sì/no)
 
 Tab B (dopo logout Tab A):
+
 - Fa query extra: (sì/no)
-- Se sì, quante: __
+- Se sì, quante: \_\_
 - Console log:
   1. [profiles] ... → ...
   2. ...
-
 
 ALLEGATI (OBBLIGATORI)
 ──────────────────────
@@ -284,6 +300,7 @@ Prima di iniziare, verifica:
 ## 🎯 OBIETTIVO FINALE
 
 Raccogliere dati reali per:
+
 1. Verificare se le ottimizzazioni (phone in UserProfile, useAuth in useProfileId) hanno ridotto le query
 2. Identificare eventuali query duplicate residue
 3. Confermare che singleflight + cache funzionano correttamente

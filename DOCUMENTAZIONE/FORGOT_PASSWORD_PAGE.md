@@ -106,13 +106,13 @@ Con Resend non configurato (es. sviluppo senza env), l’invio viene **simulato*
 
 ### Variabili d’ambiente (server)
 
-| Variabile                   | Obbligatoria | Uso |
-|----------------------------|--------------|-----|
-| `RESEND_API_KEY`           | Sì*          | API key Resend |
-| `RESEND_FROM_EMAIL`        | Sì*          | Mittente (es. noreply@22club.it) |
-| `RESEND_FROM_NAME`         | Sì*          | Nome mittente (es. 22Club) |
-| `SUPABASE_SERVICE_ROLE_KEY`| Sì           | Per `createAdminClient()` e `generateLink` |
-| `NEXT_PUBLIC_SUPABASE_URL` | Sì           | Per client Supabase |
+| Variabile                   | Obbligatoria | Uso                                        |
+| --------------------------- | ------------ | ------------------------------------------ |
+| `RESEND_API_KEY`            | Sì\*         | API key Resend                             |
+| `RESEND_FROM_EMAIL`         | Sì\*         | Mittente (es. noreply@22club.it)           |
+| `RESEND_FROM_NAME`          | Sì\*         | Nome mittente (es. 22Club)                 |
+| `SUPABASE_SERVICE_ROLE_KEY` | Sì           | Per `createAdminClient()` e `generateLink` |
+| `NEXT_PUBLIC_SUPABASE_URL`  | Sì           | Per client Supabase                        |
 
 \*Se mancano, `isResendConfigured()` è false e l’email viene simulata (nessun invio reale).
 
@@ -134,7 +134,7 @@ Con Resend non configurato (es. sviluppo senza env), l’invio viene **simulato*
    In **Supabase Dashboard** → **Authentication** → **URL Configuration** → **Redirect URLs** devono essere presenti gli URL di destinazione, ad esempio:
    - Produzione: `https://tuodominio.com/reset-password`
    - Sviluppo: `http://localhost:3001/reset-password`  
-   Se l'URL non è in elenco, dopo il click il flusso si interrompe.
+     Se l'URL non è in elenco, dopo il click il flusso si interrompe.
 
 3. **URL pulito**  
    Il backend invia già l'URL senza spazi/newline, adatto all'uso in `href` nel template.
@@ -143,13 +143,13 @@ Con Resend non configurato (es. sviluppo senza env), l’invio viene **simulato*
 
 ## File coinvolti (riepilogo)
 
-| Ruolo              | File |
-|--------------------|------|
-| Pagina UI          | `src/app/forgot-password/page.tsx` |
-| API route          | `src/app/api/auth/forgot-password/route.ts` |
-| Logica + template  | `src/lib/communications/send-reset-password-email.ts` |
-| Client Resend      | `src/lib/communications/email-resend-client.ts` (incluso `sendEmailViaResendTemplate`, `RESEND_TEMPLATE_PASSWORD_RESET`) |
-| Client Supabase    | `src/lib/supabase/server.ts` (`createAdminClient`) |
+| Ruolo             | File                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Pagina UI         | `src/app/forgot-password/page.tsx`                                                                                       |
+| API route         | `src/app/api/auth/forgot-password/route.ts`                                                                              |
+| Logica + template | `src/lib/communications/send-reset-password-email.ts`                                                                    |
+| Client Resend     | `src/lib/communications/email-resend-client.ts` (incluso `sendEmailViaResendTemplate`, `RESEND_TEMPLATE_PASSWORD_RESET`) |
+| Client Supabase   | `src/lib/supabase/server.ts` (`createAdminClient`)                                                                       |
 
 ---
 

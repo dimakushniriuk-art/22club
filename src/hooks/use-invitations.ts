@@ -1,6 +1,6 @@
 'use client'
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import type { CreateInvitationData, InvitationStats, InvitationWithPT } from '@/types/invitation'
@@ -93,9 +93,7 @@ export function useInvitations({
       const json = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        throw new Error(
-          (json as { error?: string }).error || 'Errore nel caricamento degli inviti',
-        )
+        throw new Error((json as { error?: string }).error || 'Errore nel caricamento degli inviti')
       }
 
       const rawData = (json as { data?: Tables<'inviti_atleti'>[] }).data ?? []
@@ -223,67 +221,73 @@ export function useInvitations({
     [userId, role, currentPage, fetchInvitations],
   )
 
-  const deleteInvitation = useCallback(async (invitationId: string) => {
-    try {
-      setError(null)
+  const deleteInvitation = useCallback(
+    async (invitationId: string) => {
+      try {
+        setError(null)
 
-      const { error: deleteError } = await supabase
-        .from('inviti_atleti')
-        .delete()
-        .eq('id', invitationId)
+        const { error: deleteError } = await supabase
+          .from('inviti_atleti')
+          .delete()
+          .eq('id', invitationId)
 
-      if (deleteError) throw deleteError
+        if (deleteError) throw deleteError
 
-      // Invalida cache
-      if (userId) {
-        frequentQueryCache.invalidate(`invitations:${userId}:${role}:${currentPage}`)
-      }
-
-      // Ricarica gli inviti
-      await fetchInvitations()
-
-      return true
-    } catch (err) {
-      logger.error('Error deleting invitation', err, { invitationId })
-      setError(err instanceof Error ? err.message : "Errore nell'eliminazione dell'invito")
-      throw err
-    }
-  }, [userId, role, currentPage, fetchInvitations])
-
-  const bulkDeleteInvitations = useCallback(async (ids: string[]) => {
-    if (!ids || ids.length === 0) {
-      return false
-    }
-
-    try {
-      setError(null)
-
-      // Batch DELETE usando .in() invece di loop con delete singoli
-      const { error: deleteError } = await supabase.from('inviti_atleti').delete().in('id', ids)
-
-      if (deleteError) throw deleteError
-
-      // Invalida cache
-      if (userId) {
-        frequentQueryCache.invalidate(`invitations:${userId}:${role}:${currentPage}`)
-        // Invalida anche altre pagine potenzialmente interessate
-        for (let i = 0; i <= currentPage; i++) {
-          frequentQueryCache.invalidate(`invitations:${userId}:${role}:${i}`)
+        // Invalida cache
+        if (userId) {
+          frequentQueryCache.invalidate(`invitations:${userId}:${role}:${currentPage}`)
         }
+
+        // Ricarica gli inviti
+        await fetchInvitations()
+
+        return true
+      } catch (err) {
+        logger.error('Error deleting invitation', err, { invitationId })
+        setError(err instanceof Error ? err.message : "Errore nell'eliminazione dell'invito")
+        throw err
+      }
+    },
+    [userId, role, currentPage, fetchInvitations],
+  )
+
+  const bulkDeleteInvitations = useCallback(
+    async (ids: string[]) => {
+      if (!ids || ids.length === 0) {
+        return false
       }
 
-      // Ricarica gli inviti
-      await fetchInvitations()
+      try {
+        setError(null)
 
-      return true
-    } catch (err) {
-      logger.error('Error bulk deleting invitations', err, { count: ids.length })
-      setError(
-        err instanceof Error ? err.message : "Errore nell'eliminazione multipla degli inviti",
-      )
-      throw err
-    }
-  }, [userId, role, currentPage, fetchInvitations])
+        // Batch DELETE usando .in() invece di loop con delete singoli
+        const { error: deleteError } = await supabase.from('inviti_atleti').delete().in('id', ids)
+
+        if (deleteError) throw deleteError
+
+        // Invalida cache
+        if (userId) {
+          frequentQueryCache.invalidate(`invitations:${userId}:${role}:${currentPage}`)
+          // Invalida anche altre pagine potenzialmente interessate
+          for (let i = 0; i <= currentPage; i++) {
+            frequentQueryCache.invalidate(`invitations:${userId}:${role}:${i}`)
+          }
+        }
+
+        // Ricarica gli inviti
+        await fetchInvitations()
+
+        return true
+      } catch (err) {
+        logger.error('Error bulk deleting invitations', err, { count: ids.length })
+        setError(
+          err instanceof Error ? err.message : "Errore nell'eliminazione multipla degli inviti",
+        )
+        throw err
+      }
+    },
+    [userId, role, currentPage, fetchInvitations],
+  )
 
   const generateQRCode = useCallback((invitationCode: string) => {
     const baseUrl =

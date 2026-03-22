@@ -7,10 +7,7 @@ export async function GET(request: NextRequest) {
     const communicationId = searchParams.get('communication_id')
 
     if (!communicationId || !communicationId.trim()) {
-      return NextResponse.json(
-        { error: 'communication_id obbligatorio' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'communication_id obbligatorio' }, { status: 400 })
     }
 
     const supabase = await createClient()
@@ -25,15 +22,14 @@ export async function GET(request: NextRequest) {
 
     const { data: rows, error: recError } = await supabase
       .from('communication_recipients')
-      .select('id, recipient_profile_id, recipient_type, status, sent_at, delivered_at, opened_at, failed_at, error_message, created_at')
+      .select(
+        'id, recipient_profile_id, recipient_type, status, sent_at, delivered_at, opened_at, failed_at, error_message, created_at',
+      )
       .eq('communication_id', communicationId.trim())
       .order('created_at', { ascending: true })
 
     if (recError) {
-      return NextResponse.json(
-        { error: recError.message, recipients: [] },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: recError.message, recipients: [] }, { status: 500 })
     }
 
     const profileIds = [...new Set((rows ?? []).map((r) => r.recipient_profile_id))]
@@ -47,10 +43,7 @@ export async function GET(request: NextRequest) {
       .in('id', profileIds)
 
     if (profError) {
-      return NextResponse.json(
-        { error: profError.message, recipients: [] },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: profError.message, recipients: [] }, { status: 500 })
     }
 
     const profileMap = new Map(
@@ -58,7 +51,8 @@ export async function GET(request: NextRequest) {
         p.id,
         {
           user_id: p.user_id ?? '',
-          name: [p.first_name, p.last_name].filter(Boolean).join(' ') ||
+          name:
+            [p.first_name, p.last_name].filter(Boolean).join(' ') ||
             [p.nome, p.cognome].filter(Boolean).join(' ') ||
             p.email ||
             '—',

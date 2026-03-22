@@ -4,8 +4,9 @@
 // Gestisce la logica per selezionare destinatari in base ai filtri
 // ============================================================
 
-import { createClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import type { RecipientFilter } from './service'
 
@@ -19,27 +20,11 @@ export interface Recipient {
   has_push_token?: boolean
 }
 
-let serviceClient: ReturnType<typeof createClient<Database>> | null = null
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`)
-  }
-  return value
-}
+let serviceClient: SupabaseClient<Database> | null = null
 
 function getSupabaseClient() {
   if (!serviceClient) {
-    serviceClient = createClient<Database>(
-      requiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-      requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
+    serviceClient = createAdminClient() as unknown as SupabaseClient<Database>
   }
   return serviceClient
 }

@@ -82,7 +82,9 @@ export async function POST(request: NextRequest) {
           ? body.muscle_groups.join(', ')
           : body.muscle_groups
         : body.muscle_group !== undefined
-          ? (typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group))
+          ? typeof body.muscle_group === 'string'
+            ? body.muscle_group
+            : String(body.muscle_group)
           : null
 
     const exerciseData: Database['public']['Tables']['exercises']['Insert'] = {
@@ -105,13 +107,13 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      logger.error('Errore durante la creazione dell\'esercizio', error, { exerciseData })
+      logger.error("Errore durante la creazione dell'esercizio", error, { exerciseData })
       return NextResponse.json({ error: 'Errore durante la creazione' }, { status: 500 })
     }
 
     return NextResponse.json({ data: exercise }, { status: 201 })
   } catch (error) {
-    logger.error('Errore durante la creazione dell\'esercizio', error)
+    logger.error("Errore durante la creazione dell'esercizio", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }
@@ -174,9 +176,12 @@ export async function PUT(request: NextRequest) {
     if (body.name !== undefined) updateData.name = body.name
     if (body.description !== undefined) updateData.description = body.description
     if (body.muscle_groups !== undefined) {
-      updateData.muscle_group = Array.isArray(body.muscle_groups) ? body.muscle_groups.join(', ') : body.muscle_groups
+      updateData.muscle_group = Array.isArray(body.muscle_groups)
+        ? body.muscle_groups.join(', ')
+        : body.muscle_groups
     } else if (body.muscle_group !== undefined) {
-      updateData.muscle_group = typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group)
+      updateData.muscle_group =
+        typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group)
     }
     if (body.equipment !== undefined) updateData.equipment = body.equipment
     if (body.difficulty !== undefined) updateData.difficulty = body.difficulty
@@ -192,16 +197,16 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (error) {
-      logger.error('Errore durante l\'aggiornamento dell\'esercizio', error, {
+      logger.error("Errore durante l'aggiornamento dell'esercizio", error, {
         exerciseId: body.id,
         updateData,
       })
-      return NextResponse.json({ error: 'Errore durante l\'aggiornamento' }, { status: 500 })
+      return NextResponse.json({ error: "Errore durante l'aggiornamento" }, { status: 500 })
     }
 
     return NextResponse.json({ data: exercise })
   } catch (error) {
-    logger.error('Errore durante l\'aggiornamento dell\'esercizio', error)
+    logger.error("Errore durante l'aggiornamento dell'esercizio", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }
@@ -278,9 +283,13 @@ export async function DELETE(request: NextRequest) {
       .single()
 
     if (error || !deleted) {
-      logger.error('Errore durante l\'eliminazione dell\'esercizio', error ?? 'Nessuna riga eliminata', {
-        exerciseId: id,
-      })
+      logger.error(
+        "Errore durante l'eliminazione dell'esercizio",
+        error ?? 'Nessuna riga eliminata',
+        {
+          exerciseId: id,
+        },
+      )
       return NextResponse.json(
         { error: 'Esercizio non eliminato. Verifica i permessi (RLS).' },
         { status: 403 },
@@ -289,7 +298,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    logger.error('Errore durante l\'eliminazione dell\'esercizio', error)
+    logger.error("Errore durante l'eliminazione dell'esercizio", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

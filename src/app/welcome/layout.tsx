@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Scopri come usare 22Club e chi è il tuo Personal Trainer.',
 }
 
-export default function WelcomeLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function WelcomeLayout({ children }: { children: React.ReactNode }) {
   return children
 }

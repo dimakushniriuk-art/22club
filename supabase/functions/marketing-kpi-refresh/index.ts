@@ -12,17 +12,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-cron-secret',
 }
 
 function unauthorizedResponse() {
-  return new Response(
-    JSON.stringify({ ok: false, error: 'unauthorized' }),
-    {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 401,
-    },
-  )
+  return new Response(JSON.stringify({ ok: false, error: 'unauthorized' }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status: 401,
+  })
 }
 
 serve(async (req: Request) => {
@@ -62,7 +60,12 @@ serve(async (req: Request) => {
     const { data, error } = await supabase.rpc('run_marketing_kpi_refresh')
 
     const durationMs = Date.now() - startedAt
-    console.log('[marketing-kpi-refresh] RPC finished in', durationMs, 'ms', error ? `error: ${error.message}` : 'ok')
+    console.log(
+      '[marketing-kpi-refresh] RPC finished in',
+      durationMs,
+      'ms',
+      error ? `error: ${error.message}` : 'ok',
+    )
 
     if (error) {
       console.error('[marketing-kpi-refresh] RPC error:', error)

@@ -14,7 +14,13 @@ import type { LucideIcon } from 'lucide-react'
 import { Button, Card, CardTitle, Input, Label } from '@/components/ui'
 import { AthleteBackground } from '@/components/athlete/athlete-background'
 import { cn } from '@/lib/utils'
-import { DS_CARD_FRAME_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_BLOCK_TITLE_CLASS, DS_LABEL_CLASS } from './helpers'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+  DS_BLOCK_TITLE_CLASS,
+  DS_LABEL_CLASS,
+} from './helpers'
 
 const AUTH_LOGIN_TOKENS: Array<{ token: string; value: string; Icon: LucideIcon }> = [
   {
@@ -69,7 +75,8 @@ export function PatternsAuthLogin() {
         Auth (Login)
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Token per login, reset password, registrati. AthleteBackground, card backdrop-blur, form, input, button Accedi, stati errore.
+        Token per login, reset password, registrati. AthleteBackground, card backdrop-blur, form,
+        input, button Accedi, stati errore.
       </p>
 
       <div className="space-y-6 sm:space-y-8">
@@ -98,18 +105,13 @@ export function PatternsAuthLogin() {
 
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>Preview contesto (sfondo + card)</h3>
-          <p className={DS_LABEL_CLASS}>
-            Riduzione: stesso sfondo e stile card della login.
-          </p>
+          <p className={DS_LABEL_CLASS}>Riduzione: stesso sfondo e stile card della login.</p>
           <div className="relative min-h-[320px] overflow-hidden rounded-lg border border-white/10 bg-black">
             <div className="absolute inset-0 z-0">
               <AthleteBackground />
             </div>
             <div className="relative z-10 flex min-h-[320px] items-center justify-center p-4">
-              <Card
-                variant="default"
-                className={`w-full max-w-sm ${DS_CARD_FRAME_CLASS}`}
-              >
+              <Card variant="default" className={`w-full max-w-sm ${DS_CARD_FRAME_CLASS}`}>
                 <CardTitle className="mb-2 text-lg text-text-primary">Accedi</CardTitle>
                 <p className={cn(DS_LABEL_CLASS, 'mb-4')}>Inserisci le tue credenziali.</p>
                 <div className="space-y-3">
@@ -159,11 +161,7 @@ export function PatternsAuthLogin() {
             </div>
             <div className="space-y-2 flex flex-col min-h-0">
               <Label className="text-sm text-text-primary">Email (con errore)</Label>
-              <Input
-                variant="error"
-                errorMessage="Email è richiesta"
-                placeholder="email"
-              />
+              <Input variant="error" errorMessage="Email è richiesta" placeholder="email" />
             </div>
           </div>
         </div>

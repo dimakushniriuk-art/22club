@@ -27,9 +27,7 @@ export function ClientiPageHeader({
       <div className="rounded-3xl bg-gradient-to-r from-primary/5 via-transparent to-primary/5 border border-white/5 backdrop-blur-xl p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
-              Clienti
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Clienti</h1>
             <p className="mt-1 text-sm text-text-secondary">
               Gestisci i tuoi atleti e monitora i progressi
             </p>

@@ -62,7 +62,7 @@
 
 - **Stato**: 🔒 PRIVATO ❌
 - **Limite Dimensione**: 50.00 MB ✅
-- **MIME Types**: video/* ✅
+- **MIME Types**: video/\* ✅
 - **Policies RLS**: 18 per SELECT, 18 per INSERT, 18 per DELETE
   - ⚠️ **Nota**: 18 policies sembrano eccessive, potrebbe esserci duplicazione
 
@@ -70,7 +70,7 @@
 
 - **Stato**: ✅ PUBBLICO ✅
 - **Limite Dimensione**: Illimitato ⚠️ (dovrebbe essere limitato a 5MB)
-- **MIME Types**: Tutti i tipi ⚠️ (dovrebbe essere solo image/*)
+- **MIME Types**: Tutti i tipi ⚠️ (dovrebbe essere solo image/\*)
 - **Policies RLS**: ⚠️ DA VERIFICARE
 
 ### RLS Policies Tabella exercises
@@ -100,7 +100,7 @@
 
 3. **Limitare configurazione bucket exercise-thumbs**
    - Impostare limite dimensione a 5MB
-   - Restringere MIME types a image/*
+   - Restringere MIME types a image/\*
 
 4. **Pulire policies duplicate**
    - Verificare le 18 policies per exercise-videos
@@ -119,11 +119,13 @@
 ### Perché il bucket deve essere pubblico?
 
 Quando un bucket è **privato**:
+
 - I file richiedono signed URLs per l'accesso
 - I video non possono essere visualizzati direttamente nel tag `<video>`
 - Serve chiamare `getSignedUrl()` invece di `getPublicUrl()`
 
 Quando un bucket è **pubblico**:
+
 - I file sono accessibili direttamente via URL pubblico
 - I video possono essere visualizzati nel tag `<video>` senza problemi
 - `getPublicUrl()` funziona correttamente
@@ -131,14 +133,16 @@ Quando un bucket è **pubblico**:
 ### Configurazione Consigliata
 
 **exercise-videos**:
+
 - ✅ Pubblico: true
 - ✅ Limite: 50MB
-- ✅ MIME types: video/*
+- ✅ MIME types: video/\*
 
 **exercise-thumbs**:
+
 - ✅ Pubblico: true
 - ✅ Limite: 5MB
-- ✅ MIME types: image/*
+- ✅ MIME types: image/\*
 
 ---
 

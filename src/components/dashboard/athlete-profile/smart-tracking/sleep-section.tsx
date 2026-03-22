@@ -36,10 +36,7 @@ export function SleepSection({
   onQualitaSonnoChange,
 }: SleepSectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold flex items-center gap-2">
           <Moon className="h-5 w-5 text-primary" />

@@ -68,14 +68,14 @@ export default function MarketingPage() {
   const totalSolo = data.reduce((s, r) => s + Number(r.workouts_solo_count ?? 0), 0)
   const totalCoached = data.reduce((s, r) => s + Number(r.workouts_coached_count ?? 0), 0)
   const pctCoached = totalWorkouts > 0 ? Math.round((totalCoached / totalWorkouts) * 100) : 0
-  const lastDates = data
-    .map((r) => r.last_workout_at)
-    .filter(Boolean) as string[]
+  const lastDates = data.map((r) => r.last_workout_at).filter(Boolean) as string[]
   const lastWorkoutAt =
     lastDates.length > 0
-      ? new Date(
-          lastDates.reduce((a, b) => (a > b ? a : b)),
-        ).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })
+      ? new Date(lastDates.reduce((a, b) => (a > b ? a : b))).toLocaleDateString('it-IT', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
       : null
 
   return (
@@ -86,7 +86,8 @@ export default function MarketingPage() {
           KPI Marketing
         </h1>
         <p className="text-text-secondary text-sm mt-1">
-          Metriche aggregate allenamenti (solo/coached). Dati dalla vista KPI, nessun accesso a dettagli workout.
+          Metriche aggregate allenamenti (solo/coached). Dati dalla vista KPI, nessun accesso a
+          dettagli workout.
         </p>
       </header>
 
@@ -124,8 +125,7 @@ export default function MarketingPage() {
             </div>
             <div className="rounded-xl border border-border bg-background-secondary/80 p-4 ring-1 ring-white/5">
               <div className="flex items-center gap-2 text-text-secondary text-sm mb-1">
-                <BarChart3 className="w-4 h-4" />
-                % con trainer
+                <BarChart3 className="w-4 h-4" />% con trainer
               </div>
               <p className="text-2xl font-bold text-primary">{pctCoached}%</p>
             </div>
@@ -158,15 +158,24 @@ export default function MarketingPage() {
                   </thead>
                   <tbody>
                     {data.map((row) => (
-                      <tr key={row.athlete_id} className="border-b border-border/50 hover:bg-background-tertiary/30">
+                      <tr
+                        key={row.athlete_id}
+                        className="border-b border-border/50 hover:bg-background-tertiary/30"
+                      >
                         <td className="p-3">
                           {[row.nome, row.cognome].filter(Boolean).join(' ') || (
-                            <span className="font-mono text-xs text-text-muted" title={row.athlete_id}>
+                            <span
+                              className="font-mono text-xs text-text-muted"
+                              title={row.athlete_id}
+                            >
                               {row.athlete_id.slice(0, 8)}…
                             </span>
                           )}
                         </td>
-                        <td className="p-3 text-text-muted truncate max-w-[180px]" title={row.email ?? undefined}>
+                        <td
+                          className="p-3 text-text-muted truncate max-w-[180px]"
+                          title={row.email ?? undefined}
+                        >
                           {row.email ?? '-'}
                         </td>
                         <td className="p-3">{Number(row.workouts_total_count ?? 0)}</td>

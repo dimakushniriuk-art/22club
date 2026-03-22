@@ -1,6 +1,6 @@
 'use client'
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
@@ -344,10 +344,17 @@ export function useProgressAnalytics(athleteId?: string) {
     const progressLogs = progressLogsRaw as ProgressLogExtended[] | null
 
     if (progressError) {
-      const err = progressError as { code?: string; message?: string; details?: string; hint?: string }
+      const err = progressError as {
+        code?: string
+        message?: string
+        details?: string
+        hint?: string
+      }
       logger.error('Progress analytics query failed', progressError, {
         code: err?.code,
-        message: err?.message ?? (progressError instanceof Error ? progressError.message : String(progressError)),
+        message:
+          err?.message ??
+          (progressError instanceof Error ? progressError.message : String(progressError)),
         details: err?.details,
         hint: err?.hint,
         athleteId,
@@ -564,7 +571,9 @@ export function useProgressAnalytics(athleteId?: string) {
 
     // Calculate completion percentage for last 30 days
     const totalWorkouts = safeWorkouts.length || 0
-    const completedWorkouts = safeWorkouts.filter((workout: { is_active?: boolean | null }) => !workout.is_active).length || 0
+    const completedWorkouts =
+      safeWorkouts.filter((workout: { is_active?: boolean | null }) => !workout.is_active).length ||
+      0
     const percentualeCompletamento =
       totalWorkouts > 0 ? Math.round((completedWorkouts / totalWorkouts) * 100) : 0
 
@@ -575,12 +584,18 @@ export function useProgressAnalytics(athleteId?: string) {
 
     for (let i = 0; i < 30; i++) {
       const checkDate = new Date(today.getTime() - i * 24 * 60 * 60 * 1000)
-      const hasWorkoutOnDate = safeWorkouts.some((workout: { created_at: string | null; is_active?: boolean | null }) => {
-        const raw = workout.created_at ?? ''
-        const workoutDate = new Date(raw)
-        workoutDate.setHours(0, 0, 0, 0)
-        return !isNaN(workoutDate.getTime()) && workoutDate.getTime() === checkDate.getTime() && !workout.is_active
-      })
+      const hasWorkoutOnDate = safeWorkouts.some(
+        (workout: { created_at: string | null; is_active?: boolean | null }) => {
+          const raw = workout.created_at ?? ''
+          const workoutDate = new Date(raw)
+          workoutDate.setHours(0, 0, 0, 0)
+          return (
+            !isNaN(workoutDate.getTime()) &&
+            workoutDate.getTime() === checkDate.getTime() &&
+            !workout.is_active
+          )
+        },
+      )
 
       if (hasWorkoutOnDate) {
         streak++
@@ -591,20 +606,25 @@ export function useProgressAnalytics(athleteId?: string) {
 
     // Prepare datasets for charts (usa progressLogsSorted per avere ordine cronologico)
     const datasetPeso =
-      (progressLogsSorted
+      progressLogsSorted
         ?.filter((log): log is typeof log & { weight_kg: number } => log.weight_kg !== null)
         .map((log) => ({
           date: log.date,
           peso: log.weight_kg,
-        }))) || []
+        })) || []
 
     const datasetForza =
-      (progressLogsSorted
-        ?.filter((log) => (log.max_bench_kg ?? 0) > 0 || (log.max_squat_kg ?? 0) > 0 || (log.max_deadlift_kg ?? 0) > 0)
+      progressLogsSorted
+        ?.filter(
+          (log) =>
+            (log.max_bench_kg ?? 0) > 0 ||
+            (log.max_squat_kg ?? 0) > 0 ||
+            (log.max_deadlift_kg ?? 0) > 0,
+        )
         .map((log) => ({
           date: log.date,
           forza: Math.max(log.max_bench_kg || 0, log.max_squat_kg || 0, log.max_deadlift_kg || 0),
-        }))) || []
+        })) || []
 
     // Calculate completion percentage by week
     const datasetCompletamento = []
@@ -618,7 +638,9 @@ export function useProgressAnalytics(athleteId?: string) {
         return !isNaN(workoutDate.getTime()) && workoutDate >= weekStart && workoutDate < weekEnd
       })
 
-      const completedWeekWorkouts = weekWorkouts.filter((workout: { is_active?: boolean | null }) => !workout.is_active).length
+      const completedWeekWorkouts = weekWorkouts.filter(
+        (workout: { is_active?: boolean | null }) => !workout.is_active,
+      ).length
 
       const weekPercentage =
         weekWorkouts.length > 0

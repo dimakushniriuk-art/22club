@@ -18,12 +18,14 @@ Il build Capacitor è stato completato con successo! L'applicazione Next.js è s
 ### Piattaforme
 
 #### Android
+
 - ✅ Progetto Android creato in `android/`
 - ✅ Plugin Capacitor installati (5 plugin)
 - ✅ Sync completato con successo
 - ⚠️ Versione allineata: @capacitor/android@7.4.5
 
 #### iOS
+
 - ✅ Progetto iOS creato in `ios/`
 - ✅ Plugin Capacitor installati (5 plugin)
 - ⚠️ Sync richiede Xcode (non installato)
@@ -33,17 +35,17 @@ Il build Capacitor è stato completato con successo! L'applicazione Next.js è s
 
 ### Versioni Capacitor
 
-| Pacchetto | Versione | Stato |
-|-----------|----------|-------|
-| @capacitor/core | 7.4.5 | ✅ |
-| @capacitor/cli | 7.4.5 | ✅ |
-| @capacitor/app | 7.1.1 | ✅ |
-| @capacitor/android | 7.4.5 | ✅ Allineato |
-| @capacitor/ios | 7.4.5 | ✅ |
-| @capacitor/haptics | 7.0.3 | ✅ |
-| @capacitor/keyboard | 7.0.4 | ✅ |
-| @capacitor/status-bar | 7.0.4 | ✅ |
-| @capacitor/splash-screen | 7.0.4 | ✅ |
+| Pacchetto                | Versione | Stato        |
+| ------------------------ | -------- | ------------ |
+| @capacitor/core          | 7.4.5    | ✅           |
+| @capacitor/cli           | 7.4.5    | ✅           |
+| @capacitor/app           | 7.1.1    | ✅           |
+| @capacitor/android       | 7.4.5    | ✅ Allineato |
+| @capacitor/ios           | 7.4.5    | ✅           |
+| @capacitor/haptics       | 7.0.3    | ✅           |
+| @capacitor/keyboard      | 7.0.4    | ✅           |
+| @capacitor/status-bar    | 7.0.4    | ✅           |
+| @capacitor/splash-screen | 7.0.4    | ✅           |
 
 ### Plugin Installati
 
@@ -58,15 +60,18 @@ Il build Capacitor è stato completato con successo! L'applicazione Next.js è s
 Per compatibilità con `output: export`, le seguenti route sono automaticamente escluse durante il build:
 
 ### API Routes
+
 - Tutte le route in `src/app/api/**` (non supportate con export statico)
 
 ### Route Dinamiche
+
 - `src/app/dashboard/atleti/[id]`
 - `src/app/dashboard/schede/[id]`
 - `src/app/home/allenamenti/[workout_plan_id]`
 - `src/app/home/allenamenti/[workout_plan_id]/[day_id]`
 
 ### Pagine Server-Side
+
 - `src/app/dashboard/admin`
 - `src/app/dashboard/admin/organizzazioni`
 - `src/app/dashboard/admin/ruoli`
@@ -82,11 +87,13 @@ Per compatibilità con `output: export`, le seguenti route sono automaticamente 
 ### Per Sviluppare App iOS
 
 1. **Installa Xcode**:
+
    ```bash
    # Scarica da App Store (gratuito ma richiede account Apple)
    ```
 
 2. **Installa CocoaPods**:
+
    ```bash
    sudo gem install cocoapods
    ```

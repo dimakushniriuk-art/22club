@@ -12,7 +12,9 @@ test.describe('Marketing: pagina Atleti e KPI', () => {
     await page.goto('/dashboard/marketing/athletes')
     await expect(page).toHaveURL(/\/dashboard\/marketing\/athletes/)
 
-    await expect(page.getByRole('heading', { level: 1, name: /Atleti/i })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { level: 1, name: /Atleti/i })).toBeVisible({
+      timeout: 10000,
+    })
 
     const totAtleti = page.getByText(/Totale atleti/i)
     const workoutTrainer = page.getByText(/Workout con trainer/i)
@@ -25,8 +27,10 @@ test.describe('Marketing: pagina Atleti e KPI', () => {
       (await workoutSolo.isVisible().catch(() => false)) ||
       (await inattivi.isVisible().catch(() => false))
 
-    const hasTable = await page.getByRole('table').isVisible().catch(() => false)
+    const hasTable = await page
+      .getByRole('table')
+      .isVisible()
+      .catch(() => false)
     expect(hasKpiCards || hasTable).toBeTruthy()
   })
-
 })

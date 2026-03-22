@@ -7,14 +7,23 @@ export type ExtractProgressPdfResponse = Record<string, string>
 /** Pattern per estrazione valori da testo PDF (etichetta seguita da numero). */
 const PATTERNS: Array<{ keys: string[]; regex: RegExp }> = [
   { keys: ['peso_kg', 'weight_kg'], regex: /(?:peso|weight)\s*(?:\(kg\))?\s*[:\s]*([\d.,]+)/gi },
-  { keys: ['massa_grassa_percentuale', 'body_fat'], regex: /massa\s*grassa\s*(?:%|percentuale)?\s*[:\s]*([\d.,]+)/gi },
-  { keys: ['massa_grassa_percentuale', 'body_fat'], regex: /(?:body\s*fat|fat\s*%?|grasso\s*%?)\s*[:\s]*([\d.,]+)/gi },
+  {
+    keys: ['massa_grassa_percentuale', 'body_fat'],
+    regex: /massa\s*grassa\s*(?:%|percentuale)?\s*[:\s]*([\d.,]+)/gi,
+  },
+  {
+    keys: ['massa_grassa_percentuale', 'body_fat'],
+    regex: /(?:body\s*fat|fat\s*%?|grasso\s*%?)\s*[:\s]*([\d.,]+)/gi,
+  },
   { keys: ['massa_grassa_kg'], regex: /massa\s*grassa\s*(?:kg)?\s*[:\s]*([\d.,]+)/gi },
   { keys: ['massa_magra_kg'], regex: /massa\s*magra\s*(?:kg)?\s*[:\s]*([\d.,]+)/gi },
   { keys: ['massa_muscolare_kg'], regex: /massa\s*muscolare\s*(?:kg)?\s*[:\s]*([\d.,]+)/gi },
   { keys: ['collo_cm'], regex: /collo\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi },
   { keys: ['spalle_cm'], regex: /spalle\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi },
-  { keys: ['torace_cm', 'chest_cm'], regex: /(?:torace|chest|petto)\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi },
+  {
+    keys: ['torace_cm', 'chest_cm'],
+    regex: /(?:torace|chest|petto)\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi,
+  },
   { keys: ['vita_cm', 'waist_cm'], regex: /(?:vita|waist)\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi },
   { keys: ['fianchi_cm', 'hips_cm'], regex: /(?:fianchi|hips)\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi },
   { keys: ['braccio_rilassato_cm'], regex: /braccio\s*rilassato\s*(?:cm)?\s*[:\s]*([\d.,]+)/gi },
@@ -44,7 +53,9 @@ function extractFromText(text: string): Record<string, string> {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
@@ -56,7 +67,10 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (profile?.role !== 'nutrizionista') {
-      return NextResponse.json({ error: 'Solo il nutrizionista può usare questa funzione' }, { status: 403 })
+      return NextResponse.json(
+        { error: 'Solo il nutrizionista può usare questa funzione' },
+        { status: 403 },
+      )
     }
 
     const formData = await request.formData()
@@ -110,7 +124,7 @@ export async function POST(request: NextRequest) {
     console.error('[extract-progress-pdf]', e)
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Errore estrazione PDF' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

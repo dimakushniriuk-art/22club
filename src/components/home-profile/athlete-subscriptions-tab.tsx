@@ -6,13 +6,7 @@ import { Button } from '@/components/ui'
 import { createClient } from '@/lib/supabase/client'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
-import {
-  FileText,
-  Download,
-  Calendar,
-  Target,
-  CheckCircle,
-} from 'lucide-react'
+import { FileText, Download, Calendar, Target, CheckCircle } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
 import { useProfileId } from '@/lib/utils/profile-id-utils'
 
@@ -214,23 +208,33 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
             <div className="text-center">
               <div className="mb-1 flex items-center justify-center gap-1.5">
                 <Target className="h-4 w-4 shrink-0 text-cyan-400" />
-                <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">Comprati</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                  Comprati
+                </span>
               </div>
-              <div className="text-2xl font-bold tabular-nums text-text-primary">{totalPurchased}</div>
+              <div className="text-2xl font-bold tabular-nums text-text-primary">
+                {totalPurchased}
+              </div>
             </div>
             <div className="text-center">
               <div className="mb-1 flex items-center justify-center gap-1.5">
                 <CheckCircle className="h-4 w-4 shrink-0 text-state-valid" />
-                <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">Fatti</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                  Fatti
+                </span>
               </div>
               <div className="text-2xl font-bold tabular-nums text-text-primary">{totalUsed}</div>
             </div>
             <div className="text-center">
               <div className="mb-1 flex items-center justify-center gap-1.5">
                 <Calendar className="h-4 w-4 shrink-0 text-cyan-400" />
-                <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">Rimasti</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                  Rimasti
+                </span>
               </div>
-              <div className="text-2xl font-bold tabular-nums text-text-primary">{totalRemaining}</div>
+              <div className="text-2xl font-bold tabular-nums text-text-primary">
+                {totalRemaining}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -257,8 +261,12 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
-                      <span className="font-medium text-text-primary">{formatDate(pagamento.payment_date)}</span>
-                      <span className="text-text-secondary">{formatCurrency(pagamento.amount)}</span>
+                      <span className="font-medium text-text-primary">
+                        {formatDate(pagamento.payment_date)}
+                      </span>
+                      <span className="text-text-secondary">
+                        {formatCurrency(pagamento.amount)}
+                      </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
@@ -300,7 +308,6 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
           ))}
         </div>
       )}
-
     </div>
   )
 }

@@ -6,14 +6,7 @@ import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from '@/compo
 import { PageHeaderFixed } from '@/components/layout'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
-import {
-  Calendar,
-  Dumbbell,
-  Clock,
-  TrendingUp,
-  History,
-  Download,
-} from 'lucide-react'
+import { Calendar, Dumbbell, Clock, TrendingUp, History, Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useNotify } from '@/lib/ui/notify'
 import jsPDF from 'jspdf'
@@ -71,12 +64,15 @@ export default function StoricoAllenamentiAtletaPage() {
     try {
       setLoading(true)
       setError(null)
-      
+
       const supabase = createClient()
 
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
       if (userError || !user) {
         throw new Error('Utente non autenticato')
       }
@@ -175,7 +171,8 @@ export default function StoricoAllenamentiAtletaPage() {
               note: w.note,
               created_at: w.created_at,
               started_at: dataOrCreated,
-              completed_at: w.stato === 'completato' ? (w.completed_at ?? w.created_at ?? dataOrCreated) : null,
+              completed_at:
+                w.stato === 'completato' ? (w.completed_at ?? w.created_at ?? dataOrCreated) : null,
               duration_minutes: w.durata_minuti,
               is_coached: w.is_coached ?? false,
               workout: scheda
@@ -188,7 +185,11 @@ export default function StoricoAllenamentiAtletaPage() {
 
       // Calcola statistiche
       if (workoutData && workoutData.length > 0) {
-        const typed = workoutData as Array<{ durata_minuti?: number | null; data?: string; created_at?: string | null }>
+        const typed = workoutData as Array<{
+          durata_minuti?: number | null
+          data?: string
+          created_at?: string | null
+        }>
         const totalMinutes = typed.reduce((sum, w) => sum + (w.durata_minuti ?? 0), 0)
         const totalHours = Math.round((totalMinutes / 60) * 10) / 10
 
@@ -268,7 +269,7 @@ export default function StoricoAllenamentiAtletaPage() {
         '7d': 'Ultimi 7 giorni',
         '30d': 'Ultimi 30 giorni',
         '90d': 'Ultimi 90 giorni',
-        'all': 'Tutti gli allenamenti'
+        all: 'Tutti gli allenamenti',
       }
       doc.text(`Periodo: ${periodLabels[selectedPeriod]}`, 14, 36)
       doc.text(`Generato il: ${new Date().toLocaleDateString('it-IT')}`, 14, 42)
@@ -282,7 +283,7 @@ export default function StoricoAllenamentiAtletaPage() {
         ['Allenamenti Totali', stats.total_workouts.toString()],
         ['Ore Totali', `${stats.total_hours}h`],
         ['Media Settimanale', stats.avg_per_week.toString()],
-        ['Streak Giorni', stats.current_streak.toString()]
+        ['Streak Giorni', stats.current_streak.toString()],
       ]
 
       autoTable(doc, {
@@ -292,7 +293,7 @@ export default function StoricoAllenamentiAtletaPage() {
         theme: 'grid',
         headStyles: { fillColor: [20, 184, 166], textColor: [255, 255, 255] },
         margin: { left: 14 },
-        styles: { fontSize: 10 }
+        styles: { fontSize: 10 },
       })
 
       // Lista Allenamenti
@@ -302,12 +303,12 @@ export default function StoricoAllenamentiAtletaPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         doc.text('Dettaglio Allenamenti', 14, (doc as any).lastAutoTable.finalY + 10)
 
-        const workoutsData = workouts.map(w => [
+        const workoutsData = workouts.map((w) => [
           formatDate(w.started_at),
           w.workout?.titolo || 'Allenamento',
           formatDuration(w.duration_minutes),
           w.completed_at ? 'Completato' : 'In corso',
-          w.note || '-'
+          w.note || '-',
         ])
 
         autoTable(doc, {
@@ -325,8 +326,8 @@ export default function StoricoAllenamentiAtletaPage() {
             1: { cellWidth: 40 },
             2: { cellWidth: 25 },
             3: { cellWidth: 25 },
-            4: { cellWidth: 'auto' }
-          }
+            4: { cellWidth: 'auto' },
+          },
         })
       }
 
@@ -338,12 +339,9 @@ export default function StoricoAllenamentiAtletaPage() {
         doc.setTextColor(150, 150, 150)
         const pageWidth = doc.internal.pageSize.getWidth()
         const pageHeight = doc.internal.pageSize.getHeight()
-        doc.text(
-          `Pagina ${i} di ${pageCount} - 22Club`,
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: 'center' }
-        )
+        doc.text(`Pagina ${i} di ${pageCount} - 22Club`, pageWidth / 2, pageHeight - 10, {
+          align: 'center',
+        })
       }
 
       // Salva PDF
@@ -540,7 +538,10 @@ export default function StoricoAllenamentiAtletaPage() {
                             </Badge>
                           )}
                           {workout.stato === 'completato' && (
-                            <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0 border-white/20 text-text-secondary">
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 text-[10px] px-1.5 py-0 border-white/20 text-text-secondary"
+                            >
                               {workout.is_coached ? 'Con trainer' : 'Da solo'}
                             </Badge>
                           )}

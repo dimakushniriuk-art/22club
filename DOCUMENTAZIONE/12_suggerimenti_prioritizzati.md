@@ -7,6 +7,7 @@
 ## 🔴 TOP 5 RISCHI
 
 ### 1. Debug Logging in Produzione
+
 ```
 Rischio: Performance degradata + leak dati sensibili
 File: auth-provider.tsx, use-clienti.ts, dashboard/page.tsx
@@ -21,6 +22,7 @@ Mitigazione:
 ```
 
 ### 2. Test E2E Copertura Parziale
+
 ```
 Rischio: Bug non rilevati su Safari/WebKit (~20% mercato)
 File: tests/e2e/*.spec.ts
@@ -35,6 +37,7 @@ Mitigazione:
 ```
 
 ### 3. Auth Provider Complessità
+
 ```
 Rischio: Bug in modifiche auth, difficile debug
 File: src/providers/auth-provider.tsx
@@ -49,6 +52,7 @@ Mitigazione:
 ```
 
 ### 4. Cache Ruoli Non Sincronizzata
+
 ```
 Rischio: Utente con permessi stale per 60s dopo cambio ruolo
 File: src/middleware.ts
@@ -63,6 +67,7 @@ Mitigazione:
 ```
 
 ### 5. Schema DB Inconsistente
+
 ```
 Rischio: Bug in query, maintenance overhead
 Tabelle: profiles, workout_logs
@@ -81,6 +86,7 @@ Mitigazione:
 ## ✅ TOP 5 INTERVENTI CONSIGLIATI
 
 ### 1. Pulizia Debug Logging
+
 ```
 Priorità: IMMEDIATA
 Effort: 2-4 ore
@@ -94,6 +100,7 @@ Azioni:
 ```
 
 ### 2. Refactor Auth Provider
+
 ```
 Priorità: ALTA
 Effort: 1-2 giorni
@@ -108,6 +115,7 @@ Azioni:
 ```
 
 ### 3. Migrazione useClienti a React Query
+
 ```
 Priorità: MEDIA
 Effort: 2-3 giorni
@@ -122,6 +130,7 @@ Azioni:
 ```
 
 ### 4. Consolidamento Tipi Supabase
+
 ```
 Priorità: MEDIA
 Effort: 4-8 ore
@@ -135,6 +144,7 @@ Azioni:
 ```
 
 ### 5. Documentazione Test Browser
+
 ```
 Priorità: BASSA
 Effort: 2 ore
@@ -152,26 +162,29 @@ Azioni:
 ## ⏰ COSA FARE SUBITO vs DOPO
 
 ### SUBITO (Prima del prossimo deploy)
-| Azione | Tempo | Rischio se non fatto |
-|--------|-------|---------------------|
-| Rimuovere debug logging | 2-4h | Performance prod |
-| Verificare RPC esistono | 1h | Analytics mock |
-| Test manuale Safari | 1h | Bug non rilevati |
+
+| Azione                  | Tempo | Rischio se non fatto |
+| ----------------------- | ----- | -------------------- |
+| Rimuovere debug logging | 2-4h  | Performance prod     |
+| Verificare RPC esistono | 1h    | Analytics mock       |
+| Test manuale Safari     | 1h    | Bug non rilevati     |
 
 ### SPRINT CORRENTE
-| Azione | Tempo | Beneficio |
-|--------|-------|-----------|
-| Refactor auth-provider | 1-2d | Manutenibilità |
-| Split use-clienti | 2-3d | Testabilità |
-| Consolidare tipi | 4-8h | Developer experience |
+
+| Azione                 | Tempo | Beneficio            |
+| ---------------------- | ----- | -------------------- |
+| Refactor auth-provider | 1-2d  | Manutenibilità       |
+| Split use-clienti      | 2-3d  | Testabilità          |
+| Consolidare tipi       | 4-8h  | Developer experience |
 
 ### BACKLOG
-| Azione | Tempo | Note |
-|--------|-------|------|
-| Redis cache ruoli | 1w | Richiede infra |
-| Migration schema DB | 1-2w | Breaking change |
-| HTTPS locale test | 1d | Opzionale |
-| Performance monitoring | 1w | Nice to have |
+
+| Azione                 | Tempo | Note            |
+| ---------------------- | ----- | --------------- |
+| Redis cache ruoli      | 1w    | Richiede infra  |
+| Migration schema DB    | 1-2w  | Breaking change |
+| HTTPS locale test      | 1d    | Opzionale       |
+| Performance monitoring | 1w    | Nice to have    |
 
 ---
 
@@ -191,7 +204,7 @@ Azioni:
     T      │        │ Query  │ logging│
      ALTO  │        │ migr   │ Auth   │
            └────────┴────────┴────────┘
-                    
+
 Legenda:
 ├── Alto Impatto + Basso Effort = FARE SUBITO
 ├── Alto Impatto + Alto Effort = PIANIFICARE
@@ -218,6 +231,7 @@ Legenda:
 ## 📈 METRICHE SUCCESSO
 
 Dopo interventi:
+
 - [ ] Build time < 2 minuti
 - [ ] TTFB < 200ms
 - [ ] Test E2E > 90% pass (browser supportati)

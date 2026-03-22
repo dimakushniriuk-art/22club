@@ -33,6 +33,7 @@ npm run capacitor:verify
 ```
 
 **Cosa verificare**:
+
 - ✅ Build completa senza errori
 - ✅ Cartella `out/` creata e popolata
 - ✅ API routes ripristinate correttamente
@@ -61,6 +62,7 @@ npm run build:capacitor:ios
 ```
 
 **Debug iOS**:
+
 - Apri Safari → Sviluppo → [Nome Simulatore] → [Nome App]
 - Console per vedere errori JavaScript
 
@@ -79,6 +81,7 @@ npm run build:capacitor:android
 ```
 
 **Debug Android**:
+
 - Apri Chrome → `chrome://inspect` → Devices → [Nome Emulatore]
 - Console per vedere errori JavaScript
 
@@ -156,10 +159,12 @@ Quando i test su simulatore/emulatore sono OK:
 #### Icone App
 
 **iOS**:
+
 - Aggiungi icone in `ios/App/App/Assets.xcassets/AppIcon.appiconset/`
 - Dimensioni: 20x20, 29x29, 40x40, 60x60, 76x76, 83.5x83.5, 1024x1024
 
 **Android**:
+
 - Aggiungi icone in `android/app/src/main/res/mipmap-*/ic_launcher.png`
 - Dimensioni: mdpi (48x48), hdpi (72x72), xhdpi (96x96), xxhdpi (144x144), xxxhdpi (192x192)
 
@@ -202,17 +207,20 @@ Aggiungi plugin se necessario:
 ## 📋 Checklist Completa
 
 ### Setup Iniziale
+
 - [x] Capacitor installato e configurato
 - [x] Build system funzionante
 - [x] Documentazione completa
 - [x] Script di verifica creato
 
 ### Test Build
+
 - [ ] Build Capacitor eseguito: `npm run build:capacitor`
 - [ ] Verifica automatica OK: `npm run capacitor:verify`
 - [ ] Nessun errore nel build
 
 ### Test Funzionalità (Simulatore/Emulatore)
+
 - [ ] Login/Logout funziona
 - [ ] Navigazione tra pagine funziona
 - [ ] Caricamento dati funziona
@@ -221,11 +229,13 @@ Aggiungi plugin se necessario:
 - [ ] Performance accettabile
 
 ### Test Dispositivo Reale
+
 - [ ] Test su iOS (se disponibile)
 - [ ] Test su Android (se disponibile)
 - [ ] Tutte le funzionalità core verificate
 
 ### Configurazione Produzione
+
 - [ ] Icone configurate
 - [ ] Splash screen configurato
 - [ ] Version number aggiornato
@@ -285,6 +295,7 @@ Dopo aver completato i test base:
 4. ✅ Performance accettabile
 
 **Puoi procedere con**:
+
 - Configurazione produzione (icone, splash screen)
 - Test su dispositivi reali
 - Preparazione per App Store/Play Store

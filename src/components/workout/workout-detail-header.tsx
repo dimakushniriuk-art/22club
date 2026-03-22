@@ -33,9 +33,7 @@ export function WorkoutDetailHeader({
   formatDate,
 }: WorkoutDetailHeaderProps) {
   return (
-    <Card
-      className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl"
-    >
+    <Card className="relative overflow-hidden rounded-2xl border border-white/5 bg-background-secondary/45 shadow-[0_0_24px_rgba(2,179,191,0.05)] backdrop-blur-xl">
       <CardContent className="relative z-10 p-6">
         <div className="flex items-start justify-between mb-5">
           <div className="flex-1 min-w-0">

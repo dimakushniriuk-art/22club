@@ -28,6 +28,7 @@ grep -r "'use server'" src/
 ### Verifica
 
 **Route dinamiche identificate** (già gestite dagli script di build):
+
 - `/dashboard/atleti/[id]`
 - `/dashboard/schede/[id]`
 - `/home/allenamenti/[workout_plan_id]`
@@ -47,12 +48,9 @@ Per rendere queste route compatibili con Capacitor, dobbiamo implementare `gener
 export async function generateStaticParams() {
   // Carica tutti gli ID atleti dal database
   const supabase = createClient()
-  const { data: athletes } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('role', 'athlete')
-  
-  return athletes?.map(athlete => ({ id: athlete.id })) || []
+  const { data: athletes } = await supabase.from('profiles').select('id').eq('role', 'athlete')
+
+  return athletes?.map((athlete) => ({ id: athlete.id })) || []
 }
 ```
 
@@ -68,11 +66,13 @@ Usare query parameters invece di route dinamiche:
 ```
 
 **Vantaggi**:
+
 - ✅ Funziona con export statico
 - ✅ Non richiede pre-generazione
 - ✅ Più flessibile
 
 **Svantaggi**:
+
 - ⚠️ Cambia l'URL structure
 - ⚠️ Richiede refactoring
 
@@ -81,10 +81,12 @@ Usare query parameters invece di route dinamiche:
 **Stato attuale**: Le route vengono spostate durante il build e ripristinate dopo.
 
 **Vantaggi**:
+
 - ✅ Funziona già
 - ✅ Non richiede modifiche al codice
 
 **Svantaggi**:
+
 - ⚠️ Le route non sono disponibili nell'app mobile
 - ⚠️ Funzionalità limitate
 
@@ -97,6 +99,7 @@ Usare query parameters invece di route dinamiche:
 **Documentazione**: Vedi `docs/ESEMPI_GENERATE_STATIC_PARAMS.md` per esempi completi di implementazione.
 
 **Prossimi passi**:
+
 1. [ ] Implementare `generateStaticParams()` per `/dashboard/atleti/[id]` (vedi esempi)
 2. [ ] Implementare `generateStaticParams()` per `/dashboard/schede/[id]` (vedi esempi)
 3. [ ] Convertire `/home/allenamenti/[workout_plan_id]` in query parameters
@@ -113,6 +116,7 @@ Usare query parameters invece di route dinamiche:
 **File**: `src/middleware.ts`
 
 **Funzionalità**:
+
 - Autenticazione e autorizzazione
 - Redirect basati su ruolo
 - Cache ruoli utente
@@ -132,7 +136,7 @@ export async function middleware(request: NextRequest) {
   if (process.env.CAPACITOR === 'true') {
     return NextResponse.next()
   }
-  
+
   // ... resto del middleware
 }
 ```
@@ -149,17 +153,17 @@ Usare `AuthProvider` e `RoleLayout` per proteggere le route client-side:
 
 export function RoleLayout({ role, children }) {
   const { user, role: userRole } = useAuth()
-  
+
   if (!user) {
     redirect('/login')
     return null
   }
-  
+
   if (role && userRole !== role) {
     redirect('/unauthorized')
     return null
   }
-  
+
   return <>{children}</>
 }
 ```
@@ -171,6 +175,7 @@ export function RoleLayout({ role, children }) {
 **Priorità**: ✅ Completato
 
 **Soluzione**: Il middleware è gestito correttamente:
+
 - ✅ Per web: Middleware attivo
 - ✅ Per Capacitor: Middleware disabilitato automaticamente, route protette da `RoleLayout` client-side
 - ✅ File modificato: `src/middleware.ts` - Aggiunto check `CAPACITOR === 'true'`
@@ -186,6 +191,7 @@ export function RoleLayout({ role, children }) {
 **File**: `next.config.ts` - Funzione `headers()`
 
 **Headers configurati**:
+
 - Content-Security-Policy
 - X-Content-Type-Options
 - X-Frame-Options
@@ -205,12 +211,12 @@ const isCapacitor = process.env.CAPACITOR === 'true'
 
 const nextConfig: NextConfig = {
   // ... altre configurazioni
-  
+
   // Headers solo per web (non per Capacitor)
   ...(!isCapacitor && {
     async headers() {
       // ... headers configurati
-    }
+    },
   }),
 }
 ```
@@ -222,6 +228,7 @@ const nextConfig: NextConfig = {
 **Priorità**: ✅ Completato
 
 **Soluzione**: Headers disabilitati per Capacitor in `next.config.ts`.
+
 - ✅ File modificato: `next.config.ts` - Headers condizionali con `!isCapacitor`
 - ✅ Headers applicati solo per build web normale
 - ✅ Headers disabilitati per build Capacitor (non supportati con export statico)
@@ -245,6 +252,7 @@ grep -r "rewrites\|redirects" next.config.ts
 ✅ **Nessuna azione necessaria** - Il progetto non usa rewrites/redirects in `next.config.ts`.
 
 **Nota**: I redirect sono gestiti tramite:
+
 - `next/navigation` (`router.push()`, `redirect()`) - ✅ Funzionano client-side
 - Middleware redirects - ⚠️ Non funzionano con export statico (ma già gestiti da `RoleLayout`)
 
@@ -252,13 +260,13 @@ grep -r "rewrites\|redirects" next.config.ts
 
 ## 📊 Riepilogo Stato
 
-| Limitazione | Stato | Azione Necessaria | Priorità |
-|-------------|-------|-------------------|----------|
-| **Server Actions** | ✅ Nessuno | Nessuna | ✅ Completato |
-| **Route dinamiche** | ⚠️ Spostate temporaneamente | Implementare `generateStaticParams()` (vedi esempi) | 🟡 Media |
-| **Middleware** | ✅ Disabilitato per Capacitor | Nessuna | ✅ Completato |
-| **Headers personalizzati** | ✅ Disabilitati per Capacitor | Nessuna | ✅ Completato |
-| **Rewrites/Redirects** | ✅ Nessuno | Nessuna | ✅ Completato |
+| Limitazione                | Stato                         | Azione Necessaria                                   | Priorità      |
+| -------------------------- | ----------------------------- | --------------------------------------------------- | ------------- |
+| **Server Actions**         | ✅ Nessuno                    | Nessuna                                             | ✅ Completato |
+| **Route dinamiche**        | ⚠️ Spostate temporaneamente   | Implementare `generateStaticParams()` (vedi esempi) | 🟡 Media      |
+| **Middleware**             | ✅ Disabilitato per Capacitor | Nessuna                                             | ✅ Completato |
+| **Headers personalizzati** | ✅ Disabilitati per Capacitor | Nessuna                                             | ✅ Completato |
+| **Rewrites/Redirects**     | ✅ Nessuno                    | Nessuna                                             | ✅ Completato |
 
 ---
 
@@ -298,7 +306,7 @@ Per le route dinamiche più importanti, implementare `generateStaticParams()` pe
 - ✅ Headers: Disabilitati per Capacitor
 - ✅ Rewrites/Redirects: Nessuno configurato
 
-**Il progetto è completamente compatibile con Capacitor!** 
+**Il progetto è completamente compatibile con Capacitor!**
 
 Tutte le limitazioni critiche sono state risolte. L'unica limitazione rimanente (route dinamiche) è gestita correttamente dagli script di build e può essere migliorata in futuro implementando `generateStaticParams()` seguendo gli esempi forniti.
 

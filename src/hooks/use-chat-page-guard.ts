@@ -34,7 +34,8 @@ export function useChatPageGuard(): { showLoader: boolean } {
   }, [role, loading, router])
 
   const showLoader =
-    loading || (role !== null && !ALLOWED_CHAT_ROLES.includes(role as (typeof ALLOWED_CHAT_ROLES)[number]))
+    loading ||
+    (role !== null && !ALLOWED_CHAT_ROLES.includes(role as (typeof ALLOWED_CHAT_ROLES)[number]))
 
   return { showLoader }
 }

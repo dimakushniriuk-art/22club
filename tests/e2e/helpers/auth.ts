@@ -32,8 +32,10 @@ export const TEST_CREDENTIALS = {
 
 /** Credenziali marketing opzionali per test sicurezza. Se mancanti, i test marketing vengono skippati. */
 export const MARKETING_CREDENTIALS: { email: string; password: string } | null = (() => {
-  const email = getEnvOptional('MARKETING_TEST_EMAIL') ?? getEnvOptional('PLAYWRIGHT_MARKETING_EMAIL')
-  const password = getEnvOptional('MARKETING_TEST_PASSWORD') ?? getEnvOptional('PLAYWRIGHT_MARKETING_PASSWORD')
+  const email =
+    getEnvOptional('MARKETING_TEST_EMAIL') ?? getEnvOptional('PLAYWRIGHT_MARKETING_EMAIL')
+  const password =
+    getEnvOptional('MARKETING_TEST_PASSWORD') ?? getEnvOptional('PLAYWRIGHT_MARKETING_PASSWORD')
   if (email && password) return { email, password }
   return null
 })()
@@ -48,10 +50,10 @@ export async function dismissCookieBanner(page: Page): Promise<void> {
     await page.evaluate(() => {
       localStorage.setItem('cookie-consent', 'true')
     })
-    
+
     // Attendi un attimo per permettere al React di reagire al cambio di localStorage
     await page.waitForTimeout(200)
-    
+
     // Prova a cliccare il bottone "Accetta tutto" se il banner è ancora visibile
     try {
       const cookieButton = page.getByRole('button', { name: /Accetta tutto/i })
@@ -62,7 +64,7 @@ export async function dismissCookieBanner(page: Page): Promise<void> {
     } catch {
       // Bottone non trovato o non cliccabile, continua
     }
-    
+
     // Fallback robusto: rimuovi il banner dal DOM se presente (importante per Mobile Safari)
     await page.evaluate(() => {
       const selectors = [
@@ -97,12 +99,12 @@ export async function loginAsAthlete(page: Page): Promise<void> {
   await page.addInitScript(() => {
     localStorage.setItem('cookie-consent', 'true')
   })
-  
+
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  
+
   // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
-  
+
   const emailInput = page.locator('#email')
   const passwordInput = page.locator('#password')
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
@@ -113,13 +115,13 @@ export async function loginAsAthlete(page: Page): Promise<void> {
   await emailInput.click({ force: true })
   await emailInput.fill('')
   await emailInput.type(TEST_CREDENTIALS.athlete.email, { delay: 20 })
-  
+
   // Verifica che il banner non blocchi prima di cliccare password
   await dismissCookieBanner(page)
   await passwordInput.click({ force: true })
   await passwordInput.fill('')
   await passwordInput.type(TEST_CREDENTIALS.athlete.password, { delay: 20 })
-  
+
   // Verifica che i valori siano stati inseriti correttamente (importante per WebKit)
   const emailValue = await emailInput.inputValue()
   if (emailValue !== TEST_CREDENTIALS.athlete.email) {
@@ -132,10 +134,10 @@ export async function loginAsAthlete(page: Page): Promise<void> {
   // Cerca il pulsante di submit e attendi redirect in modo robusto per WebKit
   const submitButton = page.locator('button[type="submit"]')
   await submitButton.waitFor({ state: 'visible', timeout: 5000 })
-  
+
   // Verifica che il banner non blocchi prima di cliccare submit (critico per Mobile)
   await dismissCookieBanner(page)
-  
+
   // Avvia navigazione promise prima del click
   const navigationPromise = Promise.race([
     page.waitForURL(/\/post-login/, { timeout: 45000 }),
@@ -143,10 +145,10 @@ export async function loginAsAthlete(page: Page): Promise<void> {
   ]).catch(() => null)
 
   await submitButton.click({ force: true })
-  
+
   // Attendi navigazione o verifica auth state (cookies/localStorage) per WebKit
   const navigationResult = await navigationPromise
-  
+
   if (!navigationResult) {
     // WebKit: verifica auth state invece di affidarsi solo alla navigazione
     // Attendi che i cookie di autenticazione Supabase siano impostati o che l'URL cambi
@@ -154,7 +156,9 @@ export async function loginAsAthlete(page: Page): Promise<void> {
       .poll(
         async () => {
           const cookies = await page.context().cookies()
-          const hasAuthCookie = cookies.some((c) => c.name.includes('sb-') && c.name.includes('auth-token'))
+          const hasAuthCookie = cookies.some(
+            (c) => c.name.includes('sb-') && c.name.includes('auth-token'),
+          )
           const currentUrl = page.url()
           const isRedirected = !currentUrl.includes('/login')
           // Ritorna true se abbiamo auth cookie O se siamo redirectati
@@ -183,12 +187,12 @@ export async function loginAsPT(page: Page): Promise<void> {
   await page.addInitScript(() => {
     localStorage.setItem('cookie-consent', 'true')
   })
-  
+
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  
+
   // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
-  
+
   const emailInput = page.locator('#email')
   const passwordInput = page.locator('#password')
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
@@ -199,13 +203,13 @@ export async function loginAsPT(page: Page): Promise<void> {
   await emailInput.click({ force: true })
   await emailInput.fill('')
   await emailInput.type(TEST_CREDENTIALS.pt.email, { delay: 20 })
-  
+
   // Verifica che il banner non blocchi prima di cliccare password
   await dismissCookieBanner(page)
   await passwordInput.click({ force: true })
   await passwordInput.fill('')
   await passwordInput.type(TEST_CREDENTIALS.pt.password, { delay: 20 })
-  
+
   // Verifica che i valori siano stati inseriti correttamente (importante per WebKit)
   const emailValue = await emailInput.inputValue()
   if (emailValue !== TEST_CREDENTIALS.pt.email) {
@@ -218,10 +222,10 @@ export async function loginAsPT(page: Page): Promise<void> {
   // Cerca il pulsante di submit e attendi redirect in modo robusto per WebKit
   const submitButton = page.locator('button[type="submit"]')
   await submitButton.waitFor({ state: 'visible', timeout: 5000 })
-  
+
   // Verifica che il banner non blocchi prima di cliccare submit (critico per Mobile)
   await dismissCookieBanner(page)
-  
+
   // Avvia navigazione promise prima del click
   const navigationPromise = Promise.race([
     page.waitForURL(/\/post-login/, { timeout: 45000 }),
@@ -229,10 +233,10 @@ export async function loginAsPT(page: Page): Promise<void> {
   ]).catch(() => null)
 
   await submitButton.click({ force: true })
-  
+
   // Attendi navigazione o verifica auth state (cookies/localStorage) per WebKit
   const navigationResult = await navigationPromise
-  
+
   if (!navigationResult) {
     // WebKit: verifica auth state invece di affidarsi solo alla navigazione
     // Attendi che i cookie di autenticazione Supabase siano impostati o che l'URL cambi
@@ -240,7 +244,9 @@ export async function loginAsPT(page: Page): Promise<void> {
       .poll(
         async () => {
           const cookies = await page.context().cookies()
-          const hasAuthCookie = cookies.some((c) => c.name.includes('sb-') && c.name.includes('auth-token'))
+          const hasAuthCookie = cookies.some(
+            (c) => c.name.includes('sb-') && c.name.includes('auth-token'),
+          )
           const currentUrl = page.url()
           const isRedirected = !currentUrl.includes('/login')
           // Ritorna true se abbiamo auth cookie O se siamo redirectati
@@ -269,12 +275,12 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   await page.addInitScript(() => {
     localStorage.setItem('cookie-consent', 'true')
   })
-  
+
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  
+
   // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
-  
+
   const emailInput = page.locator('#email')
   const passwordInput = page.locator('#password')
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
@@ -285,13 +291,13 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   await emailInput.click({ force: true })
   await emailInput.fill('')
   await emailInput.type(TEST_CREDENTIALS.admin.email, { delay: 20 })
-  
+
   // Verifica che il banner non blocchi prima di cliccare password
   await dismissCookieBanner(page)
   await passwordInput.click({ force: true })
   await passwordInput.fill('')
   await passwordInput.type(TEST_CREDENTIALS.admin.password, { delay: 20 })
-  
+
   // Verifica che i valori siano stati inseriti correttamente (importante per WebKit)
   const emailValue = await emailInput.inputValue()
   if (emailValue !== TEST_CREDENTIALS.admin.email) {
@@ -304,10 +310,10 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   // Cerca il pulsante di submit e attendi redirect in modo robusto per WebKit
   const submitButton = page.locator('button[type="submit"]')
   await submitButton.waitFor({ state: 'visible', timeout: 5000 })
-  
+
   // Verifica che il banner non blocchi prima di cliccare submit (critico per Mobile)
   await dismissCookieBanner(page)
-  
+
   // Avvia navigazione promise prima del click
   const navigationPromise = Promise.race([
     page.waitForURL(/\/post-login/, { timeout: 45000 }),
@@ -315,10 +321,10 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   ]).catch(() => null)
 
   await submitButton.click({ force: true })
-  
+
   // Attendi navigazione o verifica auth state (cookies/localStorage) per WebKit
   const navigationResult = await navigationPromise
-  
+
   if (!navigationResult) {
     // WebKit: verifica auth state invece di affidarsi solo alla navigazione
     // Attendi che i cookie di autenticazione Supabase siano impostati o che l'URL cambi
@@ -326,7 +332,9 @@ export async function loginAsAdmin(page: Page): Promise<void> {
       .poll(
         async () => {
           const cookies = await page.context().cookies()
-          const hasAuthCookie = cookies.some((c) => c.name.includes('sb-') && c.name.includes('auth-token'))
+          const hasAuthCookie = cookies.some(
+            (c) => c.name.includes('sb-') && c.name.includes('auth-token'),
+          )
           const currentUrl = page.url()
           const isRedirected = !currentUrl.includes('/login')
           // Ritorna true se abbiamo auth cookie O se siamo redirectati

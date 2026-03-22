@@ -6,10 +6,6 @@ export const metadata: Metadata = {
     'Area massaggiatore: gestisci clienti, chat, calendario e profilo dalla tua dashboard 22Club.',
 }
 
-export default function MassaggiatoreLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function MassaggiatoreLayout({ children }: { children: React.ReactNode }) {
   return children
 }

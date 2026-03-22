@@ -3,7 +3,12 @@
 import { LayoutGrid } from 'lucide-react'
 import { Card } from '@/components/ui'
 import { Button, Input, Label } from '@/components/ui'
-import { DS_CARD_FRAME_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_BLOCK_TITLE_CLASS } from './helpers'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+  DS_BLOCK_TITLE_CLASS,
+} from './helpers'
 
 export function PatternsLayouts() {
   return (
@@ -17,9 +22,7 @@ export function PatternsLayouts() {
       </p>
       <div className="space-y-6 sm:space-y-8">
         <div>
-          <h3 className={DS_BLOCK_TITLE_CLASS}>
-            Section (titolo + contenuto)
-          </h3>
+          <h3 className={DS_BLOCK_TITLE_CLASS}>Section (titolo + contenuto)</h3>
           <div>
             <h4 className="mb-2 text-sm font-semibold text-text-primary">Titolo sezione</h4>
             <p className="text-sm text-text-secondary">

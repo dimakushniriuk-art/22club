@@ -46,9 +46,21 @@ test.describe('Statistics Flow', () => {
     // Cerca elementi tipici di una pagina statistiche
     // (KPI, grafici, tabelle, filtri)
     const hasContent =
-      (await page.getByText(/allenamenti|clienti|fatturato|trend/i).first().isVisible({ timeout: 5000 }).catch(() => false)) ||
-      (await page.locator('canvas, svg, [class*="chart"], [class*="graph"]').first().isVisible({ timeout: 5000 }).catch(() => false)) ||
-      (await page.locator('[class*="kpi"], [class*="stat"], [class*="card"]').first().isVisible({ timeout: 5000 }).catch(() => false))
+      (await page
+        .getByText(/allenamenti|clienti|fatturato|trend/i)
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)) ||
+      (await page
+        .locator('canvas, svg, [class*="chart"], [class*="graph"]')
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)) ||
+      (await page
+        .locator('[class*="kpi"], [class*="stat"], [class*="card"]')
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false))
 
     // Se la pagina è caricata, consideriamo il test passato
     expect(hasHeading || hasContent).toBeTruthy()
@@ -68,18 +80,15 @@ test.describe('Statistics Flow', () => {
     }
 
     // Cerca KPI cards o metriche
-    const kpiTexts = [
-      /allenamenti/i,
-      /clienti/i,
-      /fatturato/i,
-      /sessioni/i,
-      /totale/i,
-      /mensile/i,
-    ]
+    const kpiTexts = [/allenamenti/i, /clienti/i, /fatturato/i, /sessioni/i, /totale/i, /mensile/i]
 
     // Verifica presenza KPI (opzionale) - la pagina è comunque valida se caricata
     for (const kpiText of kpiTexts) {
-      const hasKPI = await page.getByText(kpiText).first().isVisible({ timeout: 2000 }).catch(() => false)
+      const hasKPI = await page
+        .getByText(kpiText)
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
       if (hasKPI) break
     }
 

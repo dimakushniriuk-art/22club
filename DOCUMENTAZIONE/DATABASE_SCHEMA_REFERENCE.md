@@ -6,56 +6,56 @@ Documento di riferimento per tabelle, struttura e relazioni del database Supabas
 
 ## 1. Elenco tabelle e viste (public)
 
-| Tabella | Tipo | Commento |
-|---------|------|----------|
-| appointments | table | Tabella semplificata per gestire appuntamenti |
-| athlete_administrative_data | table | Dati amministrativi: abbonamenti, pagamenti, documenti contrattuali |
-| athlete_ai_data | table | Dati AI: insights, raccomandazioni, pattern, predizioni, score |
-| athlete_fitness_data | table | Dati fitness: livello, obiettivi, preferenze, infortuni |
-| athlete_massage_data | table | Dati massaggi: preferenze, zone, intensità, storico |
-| athlete_medical_data | table | Dati medici: certificati, referti, allergie, patologie, farmaci |
-| athlete_motivational_data | table | Dati motivazionali: motivazioni, ostacoli, preferenze, abbandoni |
-| athlete_nutrition_data | table | Dati nutrizionali: obiettivi, macro, dieta, intolleranze |
-| athlete_questionnaires | table | Questionario onboarding atleta (anamnesi, manleva, liberatoria) versionato |
-| athlete_smart_tracking_data | table | Dati smart tracking: wearable, metriche, storico giornaliero |
-| audit_logs | table | Log azioni utente |
-| chat_messages | table | Messaggi chat 1-1 |
-| cliente_tags | table | Definizione tag clienti |
-| communication_recipients | table | Tracking destinatari comunicazioni |
-| communications | table | Comunicazioni di massa (push, email, SMS) |
-| credit_ledger | table | Movimenti crediti/lezioni |
-| documents | table | Documenti atleta |
-| exercises | table | Catalogo esercizi |
-| inviti_atleti | table | Inviti atleti da PT |
-| lesson_counters | table | Contatori lezioni per atleta |
-| notifications | table | Notifiche utente |
-| payments | table | Pagamenti atleta |
-| profiles | table | Profili utenti (atleti, staff, admin) |
-| profiles_tags | table | Associazione profili–tag |
-| progress_logs | table | Misure e valori progressi atleta |
-| progress_photos | table | Foto progresso |
-| pt_atleti | table | Assegnazione atleti a PT |
-| push_subscriptions | table | Sottoscrizioni push |
-| roles | table | Ruoli e permessi |
-| trainer_athletes | table | Assegnazione atleti a trainer |
-| user_settings | table | Impostazioni utente (notifiche, privacy, account, 2FA) |
-| web_vitals | table | Core Web Vitals dal client |
-| workout_day_exercises | table | Esercizi per giorno di scheda (serie, rip, peso, recupero) |
-| workout_days | table | Giorni di una scheda |
-| workout_logs | table | Sessione allenamento eseguita |
-| workout_plans | table | Scheda assegnata all’atleta (wizard “Nuova scheda”) |
-| workout_sets | table | Singole serie per esercizio (target/completamento) |
-| workouts | table | Schede allenamento (struttura per pagina storico) |
-| payments_per_staff_view | view | Statistiche pagamenti per staff |
-| progress_trend_view | view | Trend progressi atleti con percentuali |
-| workout_stats_mensili | view | Statistiche workout mensili |
+| Tabella                     | Tipo  | Commento                                                                   |
+| --------------------------- | ----- | -------------------------------------------------------------------------- |
+| appointments                | table | Tabella semplificata per gestire appuntamenti                              |
+| athlete_administrative_data | table | Dati amministrativi: abbonamenti, pagamenti, documenti contrattuali        |
+| athlete_ai_data             | table | Dati AI: insights, raccomandazioni, pattern, predizioni, score             |
+| athlete_fitness_data        | table | Dati fitness: livello, obiettivi, preferenze, infortuni                    |
+| athlete_massage_data        | table | Dati massaggi: preferenze, zone, intensità, storico                        |
+| athlete_medical_data        | table | Dati medici: certificati, referti, allergie, patologie, farmaci            |
+| athlete_motivational_data   | table | Dati motivazionali: motivazioni, ostacoli, preferenze, abbandoni           |
+| athlete_nutrition_data      | table | Dati nutrizionali: obiettivi, macro, dieta, intolleranze                   |
+| athlete_questionnaires      | table | Questionario onboarding atleta (anamnesi, manleva, liberatoria) versionato |
+| athlete_smart_tracking_data | table | Dati smart tracking: wearable, metriche, storico giornaliero               |
+| audit_logs                  | table | Log azioni utente                                                          |
+| chat_messages               | table | Messaggi chat 1-1                                                          |
+| cliente_tags                | table | Definizione tag clienti                                                    |
+| communication_recipients    | table | Tracking destinatari comunicazioni                                         |
+| communications              | table | Comunicazioni di massa (push, email, SMS)                                  |
+| credit_ledger               | table | Movimenti crediti/lezioni                                                  |
+| documents                   | table | Documenti atleta                                                           |
+| exercises                   | table | Catalogo esercizi                                                          |
+| inviti_atleti               | table | Inviti atleti da PT                                                        |
+| lesson_counters             | table | Contatori lezioni per atleta                                               |
+| notifications               | table | Notifiche utente                                                           |
+| payments                    | table | Pagamenti atleta                                                           |
+| profiles                    | table | Profili utenti (atleti, staff, admin)                                      |
+| profiles_tags               | table | Associazione profili–tag                                                   |
+| progress_logs               | table | Misure e valori progressi atleta                                           |
+| progress_photos             | table | Foto progresso                                                             |
+| pt_atleti                   | table | Assegnazione atleti a PT                                                   |
+| push_subscriptions          | table | Sottoscrizioni push                                                        |
+| roles                       | table | Ruoli e permessi                                                           |
+| trainer_athletes            | table | Assegnazione atleti a trainer                                              |
+| user_settings               | table | Impostazioni utente (notifiche, privacy, account, 2FA)                     |
+| web_vitals                  | table | Core Web Vitals dal client                                                 |
+| workout_day_exercises       | table | Esercizi per giorno di scheda (serie, rip, peso, recupero)                 |
+| workout_days                | table | Giorni di una scheda                                                       |
+| workout_logs                | table | Sessione allenamento eseguita                                              |
+| workout_plans               | table | Scheda assegnata all’atleta (wizard “Nuova scheda”)                        |
+| workout_sets                | table | Singole serie per esercizio (target/completamento)                         |
+| workouts                    | table | Schede allenamento (struttura per pagina storico)                          |
+| payments_per_staff_view     | view  | Statistiche pagamenti per staff                                            |
+| progress_trend_view         | view  | Trend progressi atleti con percentuali                                     |
+| workout_stats_mensili       | view  | Statistiche workout mensili                                                |
 
 ---
 
 ## 2. Punto critico: profiles.id vs profiles.user_id
 
 - **profiles.id** (PK): identificativo del profilo. Usato da: `workout_plans.athlete_id`, `documents`, `chat_messages`, `progress_photos`, `athlete_questionnaires`, `profiles_tags`, `payments.athlete_id`, `trainer_athletes`, `pt_atleti`, `inviti_atleti`, `workout_logs`, `credit_ledger.athlete_id`, `lesson_counters`, `appointments`, `workouts`, ecc.
-- **profiles.user_id**: utente Auth Supabase. Le tabelle **athlete_*_data** e **progress_logs** usano **profiles.user_id** per la colonna `athlete_id`.
+- **profiles.user_id**: utente Auth Supabase. Le tabelle **athlete\_\*\_data** e **progress_logs** usano **profiles.user_id** per la colonna `athlete_id`.
 
 Quando una colonna si chiama `athlete_id`, verificare la FK: se punta a `profiles(id)` è il profilo; se punta a `profiles(user_id)` è l’user Auth.
 
@@ -89,10 +89,10 @@ workout_plans (scheda: nome, atleta, obiettivo, created_by)
 
 ## 4. Due strutture “scheda”
 
-| Struttura | Tabella principale | Uso |
-|-----------|-------------------|-----|
-| **Scheda wizard** | workout_plans | Pagina “Nuova scheda”, lista schede, assegnazione atleta. Giorni in workout_days, esercizi in workout_day_exercises, serie in workout_sets. |
-| **Scheda storico** | workouts | Pagina/storico allenamenti (“nuova struttura per pagina storico”). |
+| Struttura          | Tabella principale | Uso                                                                                                                                         |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Scheda wizard**  | workout_plans      | Pagina “Nuova scheda”, lista schede, assegnazione atleta. Giorni in workout_days, esercizi in workout_day_exercises, serie in workout_sets. |
+| **Scheda storico** | workouts           | Pagina/storico allenamenti (“nuova struttura per pagina storico”).                                                                          |
 
 Non confondere le due: stessi concetto logico (scheda allenamento), due tabelle e due flussi (creazione wizard vs storico).
 
@@ -100,25 +100,25 @@ Non confondere le due: stessi concetto logico (scheda allenamento), due tabelle 
 
 ## 5. Foreign key principali (riepilogo)
 
-| Da tabella | Colonna | → Tabella | Colonna | ON DELETE |
-|------------|---------|-----------|---------|-----------|
-| workout_days | workout_plan_id | workout_plans | id | CASCADE |
-| workout_day_exercises | workout_day_id | workout_days | id | CASCADE |
-| workout_day_exercises | exercise_id | exercises | id | RESTRICT |
-| workout_sets | workout_day_exercise_id | workout_day_exercises | id | CASCADE |
-| workout_plans | athlete_id | profiles | id | CASCADE |
-| workout_plans | trainer_id | profiles | id | SET NULL |
-| workout_logs | scheda_id | workout_plans | id | SET NULL |
-| workout_logs | workout_id | workouts | id | SET NULL |
-| workout_logs | athlete_id, atleta_id | profiles | id | CASCADE |
-| appointments | athlete_id, staff_id | profiles | id | CASCADE |
-| documents | athlete_id, uploaded_by_profile_id | profiles | id | CASCADE |
-| payments | athlete_id, created_by_staff_id | profiles | id | CASCADE / RESTRICT |
-| athlete_questionnaires | athlete_id | profiles | id | CASCADE |
-| athlete_*_data (tutte) | athlete_id | profiles | user_id | CASCADE |
-| progress_logs | athlete_id | profiles | user_id | CASCADE |
-| communication_recipients | communication_id | communications | id | CASCADE |
-| profiles_tags | profile_id, tag_id | profiles, cliente_tags | id | CASCADE |
+| Da tabella                | Colonna                            | → Tabella              | Colonna | ON DELETE          |
+| ------------------------- | ---------------------------------- | ---------------------- | ------- | ------------------ |
+| workout_days              | workout_plan_id                    | workout_plans          | id      | CASCADE            |
+| workout_day_exercises     | workout_day_id                     | workout_days           | id      | CASCADE            |
+| workout_day_exercises     | exercise_id                        | exercises              | id      | RESTRICT           |
+| workout_sets              | workout_day_exercise_id            | workout_day_exercises  | id      | CASCADE            |
+| workout_plans             | athlete_id                         | profiles               | id      | CASCADE            |
+| workout_plans             | trainer_id                         | profiles               | id      | SET NULL           |
+| workout_logs              | scheda_id                          | workout_plans          | id      | SET NULL           |
+| workout_logs              | workout_id                         | workouts               | id      | SET NULL           |
+| workout_logs              | athlete_id, atleta_id              | profiles               | id      | CASCADE            |
+| appointments              | athlete_id, staff_id               | profiles               | id      | CASCADE            |
+| documents                 | athlete_id, uploaded_by_profile_id | profiles               | id      | CASCADE            |
+| payments                  | athlete_id, created_by_staff_id    | profiles               | id      | CASCADE / RESTRICT |
+| athlete_questionnaires    | athlete_id                         | profiles               | id      | CASCADE            |
+| athlete\_\*\_data (tutte) | athlete_id                         | profiles               | user_id | CASCADE            |
+| progress_logs             | athlete_id                         | profiles               | user_id | CASCADE            |
+| communication_recipients  | communication_id                   | communications         | id      | CASCADE            |
+| profiles_tags             | profile_id, tag_id                 | profiles, cliente_tags | id      | CASCADE            |
 
 ---
 
@@ -150,4 +150,4 @@ ORDER BY tc.table_name, kcu.ordinal_position;
 
 ---
 
-*Ultimo aggiornamento: febbraio 2025. Aggiornare questo file dopo modifiche alle migration.*
+_Ultimo aggiornamento: febbraio 2025. Aggiornare questo file dopo modifiche alle migration._

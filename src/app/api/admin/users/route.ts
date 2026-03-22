@@ -11,7 +11,10 @@ const logger = createLogger('api:admin:users')
 type AdminRpc = (
   fn: string,
   params?: Record<string, unknown>,
-) => Promise<{ data: unknown; error: { code?: string; message?: string; hint?: string; details?: string } | null }>
+) => Promise<{
+  data: unknown
+  error: { code?: string; message?: string; hint?: string; details?: string } | null
+}>
 
 // Schema validazione creazione utente
 const createUserSchema = z.object({
@@ -32,7 +35,9 @@ const updateUserSchema = z.object({
   nome: z.string().nullish(),
   cognome: z.string().nullish(),
   phone: z.string().nullish(),
-  role: z.enum(['admin', 'trainer', 'athlete', 'marketing', 'nutrizionista', 'massaggiatore']).optional(),
+  role: z
+    .enum(['admin', 'trainer', 'athlete', 'marketing', 'nutrizionista', 'massaggiatore'])
+    .optional(),
   stato: z.enum(['attivo', 'inattivo', 'sospeso']).optional(),
   trainerId: z.string().uuid().nullish(),
 })
@@ -67,7 +72,10 @@ export async function GET(_request: NextRequest) {
     const profileTyped = profile as ProfileRow
 
     if (profileTyped.role !== 'admin') {
-      return NextResponse.json({ error: 'Solo admin può accedere a questa risorsa' }, { status: 403 })
+      return NextResponse.json(
+        { error: 'Solo admin può accedere a questa risorsa' },
+        { status: 403 },
+      )
     }
 
     // Se l'utente è admin, usa service role key per bypassare RLS e vedere TUTTO
@@ -83,7 +91,10 @@ export async function GET(_request: NextRequest) {
 
     if (fetchError) {
       logger.error('Errore durante il recupero degli utenti', fetchError)
-      return NextResponse.json({ error: 'Errore durante il recupero degli utenti' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Errore durante il recupero degli utenti' },
+        { status: 500 },
+      )
     }
 
     // Ottieni trainer assegnati per ogni atleta (athlete_trainer_assignments, status=active)
@@ -92,13 +103,19 @@ export async function GET(_request: NextRequest) {
         if (profile.role === 'athlete') {
           const { data: assignment } = await supabaseAdmin
             .from('athlete_trainer_assignments')
-            .select('trainer_id, profiles!athlete_trainer_assignments_trainer_id_fkey(id, nome, cognome, email)')
+            .select(
+              'trainer_id, profiles!athlete_trainer_assignments_trainer_id_fkey(id, nome, cognome, email)',
+            )
             .eq('athlete_id', profile.id)
             .eq('status', 'active')
             .limit(1)
             .maybeSingle()
 
-          const trainerProfile = assignment?.profiles as { id: string; nome: string | null; cognome: string | null } | null
+          const trainerProfile = assignment?.profiles as {
+            id: string
+            nome: string | null
+            cognome: string | null
+          } | null
           return {
             ...profile,
             trainer: assignment
@@ -161,7 +178,9 @@ export async function POST(request: NextRequest) {
     const adminClient = createAdminClient()
 
     // Verifica che l'email non sia già registrata
-    const { data: { users } } = await adminClient.auth.admin.listUsers()
+    const {
+      data: { users },
+    } = await adminClient.auth.admin.listUsers()
     const existingUser = users.find((u) => u.email === validatedData.email)
 
     if (existingUser) {
@@ -285,9 +304,13 @@ export async function PUT(request: NextRequest) {
     // Prepara dati aggiornamento profilo (solo se ci sono campi da aggiornare)
     type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
     const updateData: ProfileUpdate = {}
-    if (validatedData.nome !== undefined) updateData.nome = validatedData.nome == null ? null : (validatedData.nome.trim() || null)
-    if (validatedData.cognome !== undefined) updateData.cognome = validatedData.cognome == null ? null : (validatedData.cognome.trim() || null)
-    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone == null ? null : (validatedData.phone.trim() || null)
+    if (validatedData.nome !== undefined)
+      updateData.nome = validatedData.nome == null ? null : validatedData.nome.trim() || null
+    if (validatedData.cognome !== undefined)
+      updateData.cognome =
+        validatedData.cognome == null ? null : validatedData.cognome.trim() || null
+    if (validatedData.phone !== undefined)
+      updateData.phone = validatedData.phone == null ? null : validatedData.phone.trim() || null
     if (validatedData.role !== undefined) updateData.role = validatedData.role
     if (validatedData.stato !== undefined) updateData.stato = validatedData.stato
 
@@ -302,8 +325,8 @@ export async function PUT(request: NextRequest) {
         .single()
 
       if (updateError) {
-        logger.error('Errore durante l\'aggiornamento profilo', updateError)
-        return NextResponse.json({ error: 'Errore durante l\'aggiornamento' }, { status: 500 })
+        logger.error("Errore durante l'aggiornamento profilo", updateError)
+        return NextResponse.json({ error: "Errore durante l'aggiornamento" }, { status: 500 })
       }
       updatedProfile = profileAfterUpdate as Tables<'profiles'>
     }
@@ -311,22 +334,28 @@ export async function PUT(request: NextRequest) {
     // Aggiorna auth.users se email o password cambiate
     if (existingProfileTyped.user_id) {
       if (validatedData.email) {
-        const { error: emailError } = await adminClient.auth.admin.updateUserById(existingProfileTyped.user_id, {
-          email: validatedData.email.trim(),
-        })
+        const { error: emailError } = await adminClient.auth.admin.updateUserById(
+          existingProfileTyped.user_id,
+          {
+            email: validatedData.email.trim(),
+          },
+        )
         if (emailError) {
           logger.warn('Errore durante aggiornamento email auth', emailError)
         }
       }
 
       if (validatedData.password) {
-        const { error: passwordError } = await adminClient.auth.admin.updateUserById(existingProfileTyped.user_id, {
-          password: validatedData.password,
-        })
+        const { error: passwordError } = await adminClient.auth.admin.updateUserById(
+          existingProfileTyped.user_id,
+          {
+            password: validatedData.password,
+          },
+        )
         if (passwordError) {
           logger.error('Errore durante aggiornamento password auth', passwordError)
           return NextResponse.json(
-            { error: passwordError.message || 'Errore durante l\'aggiornamento della password' },
+            { error: passwordError.message || "Errore durante l'aggiornamento della password" },
             { status: 500 },
           )
         }
@@ -347,20 +376,46 @@ export async function PUT(request: NextRequest) {
     if (validatedData.trainerId !== undefined && validatedData.trainerId !== null) {
       const athleteId = validatedData.userId
       const trainerId = validatedData.trainerId
-      const { data: athleteRow } = await adminClient.from('profiles').select('id, role, org_id').eq('id', athleteId).single()
-      const { data: trainerRow } = await adminClient.from('profiles').select('id, role, org_id').eq('id', trainerId).single()
+      const { data: athleteRow } = await adminClient
+        .from('profiles')
+        .select('id, role, org_id')
+        .eq('id', athleteId)
+        .single()
+      const { data: trainerRow } = await adminClient
+        .from('profiles')
+        .select('id, role, org_id')
+        .eq('id', trainerId)
+        .single()
       if (athleteRow?.role !== 'athlete' || trainerRow?.role !== 'trainer') {
-        return NextResponse.json({ error: 'Assegnazione consentita solo tra athlete e trainer' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'Assegnazione consentita solo tra athlete e trainer' },
+          { status: 400 },
+        )
       }
       let orgId: string = athleteRow.org_id ?? trainerRow.org_id ?? ''
       if (!orgId) {
-        const { data: defaultOrg } = await adminClient.from('organizations').select('id').eq('slug', 'default-org').maybeSingle()
+        const { data: defaultOrg } = await adminClient
+          .from('organizations')
+          .select('id')
+          .eq('slug', 'default-org')
+          .maybeSingle()
         orgId = defaultOrg?.id ?? 'default-org'
       }
-      if (athleteRow.org_id != null && trainerRow?.org_id != null && athleteRow.org_id !== trainerRow.org_id) {
-        return NextResponse.json({ error: 'Athlete e trainer devono appartenere allo stesso org' }, { status: 400 })
+      if (
+        athleteRow.org_id != null &&
+        trainerRow?.org_id != null &&
+        athleteRow.org_id !== trainerRow.org_id
+      ) {
+        return NextResponse.json(
+          { error: 'Athlete e trainer devono appartenere allo stesso org' },
+          { status: 400 },
+        )
       }
-      await adminClient.from('athlete_trainer_assignments').update({ status: 'inactive', deactivated_at: new Date().toISOString() }).eq('athlete_id', athleteId).eq('status', 'active')
+      await adminClient
+        .from('athlete_trainer_assignments')
+        .update({ status: 'inactive', deactivated_at: new Date().toISOString() })
+        .eq('athlete_id', athleteId)
+        .eq('status', 'active')
       const { error: insErr } = await adminClient.from('athlete_trainer_assignments').insert({
         org_id: orgId,
         org_id_text: orgId,
@@ -372,11 +427,18 @@ export async function PUT(request: NextRequest) {
       })
       if (insErr) {
         logger.warn('Errore assegnazione trainer', insErr)
-        return NextResponse.json({ error: 'Errore durante l\'assegnazione del trainer' }, { status: 500 })
+        return NextResponse.json(
+          { error: "Errore durante l'assegnazione del trainer" },
+          { status: 500 },
+        )
       }
     } else if (validatedData.trainerId === null) {
       // Rimuovi trainer attivo (disattiva)
-      await adminClient.from('athlete_trainer_assignments').update({ status: 'inactive', deactivated_at: new Date().toISOString() }).eq('athlete_id', validatedData.userId).eq('status', 'active')
+      await adminClient
+        .from('athlete_trainer_assignments')
+        .update({ status: 'inactive', deactivated_at: new Date().toISOString() })
+        .eq('athlete_id', validatedData.userId)
+        .eq('status', 'active')
     }
 
     return NextResponse.json({ user: updatedProfile })
@@ -384,7 +446,7 @@ export async function PUT(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Dati non validi', details: error.issues }, { status: 400 })
     }
-    logger.error('Errore durante l\'aggiornamento utente', error)
+    logger.error("Errore durante l'aggiornamento utente", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }
@@ -512,7 +574,9 @@ export async function DELETE(request: NextRequest) {
       }
       await safeDelete('profile_tombstones', { column: 'profile_id', value: profileId })
     } catch (depsError) {
-      logger.warn('Errore durante eliminazione dipendenze (continuo)', depsError, { userId: profileId })
+      logger.warn('Errore durante eliminazione dipendenze (continuo)', depsError, {
+        userId: profileId,
+      })
     }
 
     if (authUserId) {
@@ -522,14 +586,20 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    const { data: deleteResult, error: rpcError } = await (adminClient.rpc as unknown as (fn: string, params?: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>)(
-      'delete_profile_bypass_rls',
-      { profile_id_to_delete: profileId },
-    )
+    const { data: deleteResult, error: rpcError } = await (
+      adminClient.rpc as unknown as (
+        fn: string,
+        params?: Record<string, unknown>,
+      ) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>
+    )('delete_profile_bypass_rls', { profile_id_to_delete: profileId })
     if (rpcError) {
       logger.error('Errore RPC delete_profile_bypass_rls', rpcError, { userId: profileId })
       return NextResponse.json(
-        { error: 'Errore durante la cancellazione del profilo', details: rpcError.message, code: rpcError.code },
+        {
+          error: 'Errore durante la cancellazione del profilo',
+          details: rpcError.message,
+          code: rpcError.code,
+        },
         { status: 500 },
       )
     }
@@ -544,14 +614,17 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     const errorUserId = userId || 'unknown'
-    logger.error('Errore durante l\'eliminazione utente', error, { 
+    logger.error("Errore durante l'eliminazione utente", error, {
       userId: errorUserId,
       errorMessage: error instanceof Error ? error.message : String(error),
-      errorStack: error instanceof Error ? error.stack : undefined
+      errorStack: error instanceof Error ? error.stack : undefined,
     })
-    return NextResponse.json({ 
-      error: 'Errore interno del server',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Errore interno del server',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    )
   }
 }

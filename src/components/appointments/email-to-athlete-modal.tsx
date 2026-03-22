@@ -93,7 +93,9 @@ export function EmailToAthleteModal({
 
         <div className="space-y-4">
           <div>
-            <label className="text-text-secondary text-xs font-medium mb-1 block">Destinatario</label>
+            <label className="text-text-secondary text-xs font-medium mb-1 block">
+              Destinatario
+            </label>
             <div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary">
               {athleteName}
               {athleteEmail != null && athleteEmail !== '' && (
@@ -103,7 +105,10 @@ export function EmailToAthleteModal({
           </div>
 
           <div>
-            <label htmlFor="email-subject" className="text-text-secondary text-xs font-medium mb-1 block">
+            <label
+              htmlFor="email-subject"
+              className="text-text-secondary text-xs font-medium mb-1 block"
+            >
               Oggetto
             </label>
             <Input
@@ -117,7 +122,10 @@ export function EmailToAthleteModal({
           </div>
 
           <div>
-            <label htmlFor="email-body" className="text-text-secondary text-xs font-medium mb-1 block">
+            <label
+              htmlFor="email-body"
+              className="text-text-secondary text-xs font-medium mb-1 block"
+            >
               Messaggio
             </label>
             <textarea
@@ -139,11 +147,7 @@ export function EmailToAthleteModal({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleClose(false)}
-            disabled={sending}
-          >
+          <Button variant="outline" onClick={() => handleClose(false)} disabled={sending}>
             Annulla
           </Button>
           <Button

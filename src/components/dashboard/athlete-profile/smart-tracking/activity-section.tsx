@@ -36,10 +36,7 @@ export function ActivitySection({
   onAttivitaMinutiChange,
 }: ActivitySectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />

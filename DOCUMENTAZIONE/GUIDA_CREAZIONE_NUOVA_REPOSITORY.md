@@ -8,9 +8,11 @@
 ## 🎯 Scenari Possibili
 
 ### Scenario A: Sostituire Repository Esistente con Nuova
+
 Vuoi creare una nuova repository GitHub e sostituire quella attuale (`club_1225`).
 
 ### Scenario B: Aggiungere Seconda Repository come Remote
+
 Vuoi mantenere la repository attuale e aggiungere una nuova come remote aggiuntivo.
 
 ---
@@ -46,7 +48,7 @@ git commit -m "chore: salvataggio stato corrente prima creazione nuova repositor
 3. **Compila i campi**:
    - **Repository name**: `22club-setup-v1` (o il nome che preferisci)
    - **Description**: `22Club Setup V1 Online - Complete Project`
-   - **Visibility**: 
+   - **Visibility**:
      - ✅ **Public** (se vuoi condividerla)
      - ⚠️ **Private** (se vuoi mantenerla privata)
    - ⚠️ **NON inizializzare** con README, .gitignore o license (lasci tutto deselezionato)
@@ -114,6 +116,7 @@ git push -u secondary main
 ```
 
 **Nota**: Con multi-remote, ogni push va fatto esplicitamente:
+
 - `git push origin main` → push su repository principale
 - `git push backup main` → push su repository backup
 

@@ -66,18 +66,21 @@ const PAGE_WRAPPER_CLASS =
 
 const HEADER_STYLE = {
   border: '1px solid rgba(2, 179, 191, 0.4)',
-  background: 'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
+  background:
+    'linear-gradient(135deg, rgba(2,179,191,0.09) 0%, rgba(2,179,191,0.02) 50%, rgba(6,182,212,0.05) 100%)',
   boxShadow: '0 4px 24px rgba(0,0,0,0.22), 0 0 0 1px rgba(2,179,191,0.1) inset',
 } as const
 const HEADER_OVERLAY_STYLE = {
-  background: 'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
+  background:
+    'radial-gradient(ellipse 85% 60% at 50% 0%, rgba(2,179,191,0.14) 0%, transparent 65%)',
 } as const
 const HEADER_ICON_STYLE = {
   backgroundColor: 'rgba(2, 179, 191, 0.2)',
   border: '1px solid rgba(2, 179, 191, 0.35)',
 } as const
 const CARD_STATS_STYLE = {
-  background: 'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
+  background:
+    'linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)',
   boxShadow: '0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(6,182,212,0.12) inset',
 } as const
 const CARD_MAIN_STYLE = {
@@ -142,7 +145,11 @@ function NutrizionistaPageContent() {
           message="Non hai i permessi per accedere a questa pagina."
         />
         <div className="mt-4 flex justify-center">
-          <Button onClick={handleGoHome} variant="outline" className="min-h-[44px] text-sm md:text-base">
+          <Button
+            onClick={handleGoHome}
+            variant="outline"
+            className="min-h-[44px] text-sm md:text-base"
+          >
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             Torna alla Home
           </Button>
@@ -228,7 +235,9 @@ function NutrizionistaPageContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
-            <Suspense fallback={<LoadingState message="Caricamento dati nutrizione..." size="sm" />}>
+            <Suspense
+              fallback={<LoadingState message="Caricamento dati nutrizione..." size="sm" />}
+            >
               <AthleteNutritionTab athleteId={athleteUserId} />
             </Suspense>
           </CardContent>

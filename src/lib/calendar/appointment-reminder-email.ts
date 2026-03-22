@@ -10,7 +10,12 @@ const logger = createLogger('lib:calendar:appointment-reminder-email')
 
 /** Escape per contenuti testo in .ics (CRLF, virgole, backslash). */
 function icsEscape(s: string): string {
-  return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n').replace(/\r/g, '')
+  return s
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '')
 }
 
 /**
@@ -223,7 +228,8 @@ export async function sendAppointmentReminderEmail(
     year: 'numeric',
   })
   const title = `${typeLabel} - 22Club`
-  const description = `Appuntamento con ${staffName}. ${notes?.trim() ? `Note: ${notes.trim()}` : ''}`.trim()
+  const description =
+    `Appuntamento con ${staffName}. ${notes?.trim() ? `Note: ${notes.trim()}` : ''}`.trim()
   const dateFormatted = new Date(startsAt).toLocaleDateString('it-IT', {
     weekday: 'long',
     day: 'numeric',
@@ -261,12 +267,9 @@ export async function sendAppointmentReminderEmail(
   })
   const subject = `Promemoria: ${typeLabel} il ${dateFormatted}`
 
-  const result = await sendEmailViaResendWithAttachments(
-    athleteEmail,
-    subject,
-    html,
-    [{ filename: 'appuntamento.ics', content: Buffer.from(icsContent, 'utf-8') }],
-  )
+  const result = await sendEmailViaResendWithAttachments(athleteEmail, subject, html, [
+    { filename: 'appuntamento.ics', content: Buffer.from(icsContent, 'utf-8') },
+  ])
   if (!result.success) {
     logger.error('Invio promemoria appuntamento fallito', undefined, {
       appointmentId,
@@ -332,9 +335,10 @@ function buildAppointmentChangeHtml(params: SendAppointmentChangeParams): string
     modified: `Il tuo appuntamento è stato <strong>modificato</strong> da ${escapeHtml(staffName)}.<br><br>Prima: ${escapeHtml(dateFormatted)} – ${escapeHtml(timeFormatted)}, ${escapeHtml(typeLabel)}${location ? `, ${escapeHtml(location)}` : ''}.<br>Nuova data/ora: <strong>${escapeHtml(newDateFormatted ?? dateFormatted)}</strong> – <strong>${escapeHtml(newTimeFormatted ?? timeFormatted)}</strong>${newTypeLabel ? `, ${escapeHtml(newTypeLabel)}` : ''}${newLocation !== undefined && newLocation ? `, ${escapeHtml(newLocation)}` : ''}.`,
   }
   const ctaMap: Record<AppointmentChangeAction, string> = {
-    cancelled: 'Ti invitiamo a <strong>rimuovere l\'evento</strong> dal tuo Google Calendar.',
-    deleted: 'Ti invitiamo a <strong>rimuovere l\'evento</strong> dal tuo Google Calendar.',
-    modified: 'Ti invitiamo ad <strong>aggiornare l\'evento</strong> nel tuo Google Calendar con le nuove date e orari.',
+    cancelled: "Ti invitiamo a <strong>rimuovere l'evento</strong> dal tuo Google Calendar.",
+    deleted: "Ti invitiamo a <strong>rimuovere l'evento</strong> dal tuo Google Calendar.",
+    modified:
+      "Ti invitiamo ad <strong>aggiornare l'evento</strong> nel tuo Google Calendar con le nuove date e orari.",
   }
   const _title = titleMap[action]
   const intro = introMap[action]

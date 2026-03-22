@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { Tables } from '@/types/supabase'
 import type { Json } from '@/lib/supabase/types'
 import type { RecipientFilter } from '@/lib/communications/service'
@@ -319,7 +319,9 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         }
 
         if (text.trimStart().startsWith('<')) {
-          const errorMessage = response.ok ? 'Risposta non valida dal server' : `Errore ${response.status}`
+          const errorMessage = response.ok
+            ? 'Risposta non valida dal server'
+            : `Errore ${response.status}`
           setError(new Error(errorMessage))
           logger.error('Error sending communication', null, { errorMessage, communicationId: id })
           return { success: false, error: errorMessage }

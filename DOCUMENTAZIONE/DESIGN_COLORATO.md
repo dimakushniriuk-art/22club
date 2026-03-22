@@ -16,16 +16,16 @@ Stile vivace con card colorate, gradienti teal/cyan/blue/indigo, bordi e ombre a
 
 ## Palette
 
-| Uso | Colori |
-|-----|--------|
-| **Primario (header, trend)** | teal-400/500, cyan-400/500 |
-| **KPI 1** | teal (Allenamenti) |
-| **KPI 2** | yellow / orange (Documenti) |
-| **KPI 3** | green / emerald (Ore) |
-| **KPI 4** | purple / pink (Atleti) |
-| **Chart secondario** | purple (Distribuzione) |
-| **Performance / Dettagli** | blue, indigo |
-| **Chart colors (pie/bar)** | #14B8A6, #F59E0B, #10B981, #EF4444, #8B5CF6, #EC4899, #06B6D4, #F97316 |
+| Uso                          | Colori                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| **Primario (header, trend)** | teal-400/500, cyan-400/500                                             |
+| **KPI 1**                    | teal (Allenamenti)                                                     |
+| **KPI 2**                    | yellow / orange (Documenti)                                            |
+| **KPI 3**                    | green / emerald (Ore)                                                  |
+| **KPI 4**                    | purple / pink (Atleti)                                                 |
+| **Chart secondario**         | purple (Distribuzione)                                                 |
+| **Performance / Dettagli**   | blue, indigo                                                           |
+| **Chart colors (pie/bar)**   | #14B8A6, #F59E0B, #10B981, #EF4444, #8B5CF6, #EC4899, #06B6D4, #F97316 |
 
 ---
 
@@ -46,6 +46,7 @@ Stile vivace con card colorate, gradienti teal/cyan/blue/indigo, bordi e ombre a
 - **Label**: `text-sm text-text-secondary font-medium`
 
 Varianti KPI:
+
 - Teal: `border-teal-500/40`, `from-teal-500/20 via-cyan-500/10 to-teal-500/20`, `shadow-teal-500/20`
 - Yellow: `border-yellow-500/40`, `from-yellow-500/20 via-orange-500/10 to-yellow-500/20`, `shadow-yellow-500/20`
 - Green: `border-green-500/40`, `from-green-500/20 via-emerald-500/10 to-green-500/20`, `shadow-green-500/20`

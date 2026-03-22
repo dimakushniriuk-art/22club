@@ -20,7 +20,7 @@ function loadEnv() {
     const envPath = join(projectRoot, 'env.local')
     const envContent = readFileSync(envPath, 'utf-8')
     const env: Record<string, string> = {}
-    
+
     envContent.split('\n').forEach((line) => {
       const trimmed = line.trim()
       if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
@@ -29,7 +29,7 @@ function loadEnv() {
         env[key.trim()] = value.trim()
       }
     })
-    
+
     return env
   } catch (error) {
     console.error('Errore nel caricamento env.local:', error)
@@ -43,7 +43,7 @@ const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('❌ Variabili d\'ambiente mancanti!')
+  console.error("❌ Variabili d'ambiente mancanti!")
   console.error('Richiesto: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
   process.exit(1)
 }
@@ -354,14 +354,14 @@ async function main() {
     writeFileSync(
       join(outputDir, 'storage-config.json'),
       JSON.stringify(storageInfo, null, 2),
-      'utf-8'
+      'utf-8',
     )
     console.log(`   ✓ Trovati ${storageInfo.buckets.length} bucket\n`)
 
     // 3. Genera report markdown
     console.log('📄 Generazione report...')
     const projectId = SUPABASE_URL.split('//')[1]?.split('.')[0] || 'unknown'
-    
+
     let markdown = `# 📊 Report Configurazione Supabase - 22Club\n\n`
     markdown += `**Data esportazione**: ${new Date().toLocaleString('it-IT')}\n\n`
     markdown += `**URL Progetto**: ${SUPABASE_URL}\n\n`
@@ -419,11 +419,7 @@ async function main() {
       },
     }
 
-    writeFileSync(
-      join(outputDir, 'config.json'),
-      JSON.stringify(config, null, 2),
-      'utf-8'
-    )
+    writeFileSync(join(outputDir, 'config.json'), JSON.stringify(config, null, 2), 'utf-8')
     console.log('   ✓ Configurazione JSON generata: config.json\n')
 
     console.log('✅ Esportazione completata!')
@@ -435,7 +431,7 @@ async function main() {
     console.log('   - REPORT.md (Report markdown)')
     console.log('\n💡 Prossimo passo: Esegui export-database-schema.sql nel SQL Editor di Supabase')
   } catch (error) {
-    console.error('\n❌ Errore durante l\'esportazione:', error)
+    console.error("\n❌ Errore durante l'esportazione:", error)
     process.exit(1)
   }
 }

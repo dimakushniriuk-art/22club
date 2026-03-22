@@ -6,10 +6,10 @@
 
 ## File toccati
 
-| File | Modifica |
-|------|----------|
-| `src/app/dashboard/marketing/segments/new/page.tsx` | Rimosso `org_id` da `useAuth()`; validazione solo su `name.trim()`; rimosso `org_id` dal payload di INSERT. |
-| `src/lib/supabase/types.ts` | In `marketing_segments.Insert`: `org_id` reso opzionale (`org_id?: string`) per consentire INSERT senza org_id (trigger lo imposta). |
+| File                                                | Modifica                                                                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/app/dashboard/marketing/segments/new/page.tsx` | Rimosso `org_id` da `useAuth()`; validazione solo su `name.trim()`; rimosso `org_id` dal payload di INSERT.                          |
+| `src/lib/supabase/types.ts`                         | In `marketing_segments.Insert`: `org_id` reso opzionale (`org_id?: string`) per consentire INSERT senza org_id (trigger lo imposta). |
 
 **Verificato (nessuna modifica):**
 

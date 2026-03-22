@@ -10,10 +10,10 @@ test.describe('Regression Tests', () => {
 
     // Test login form still works
     await expect(page.getByText(/Accedi|Login/i)).toBeVisible({ timeout: 10000 })
-    
+
     const emailInput = page.locator('#email, input[name="email"]').first()
     const passwordInput = page.locator('#password, input[name="password"]').first()
-    
+
     await expect(emailInput).toBeVisible({ timeout: 5000 })
     await expect(passwordInput).toBeVisible({ timeout: 5000 })
   })
@@ -27,21 +27,20 @@ test.describe('Regression Tests', () => {
     })
     await loginAsPT(page)
     await page.waitForURL(/post-login|dashboard|home/, { timeout: 30000 }).catch(() => {})
-    
+
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle').catch(() => {})
 
     // Verify core dashboard elements still exist (at least one)
-    const dashboardTexts = [
-      /Dashboard/i,
-      /Clienti/i,
-      /Appuntamenti/i,
-      /Azioni Rapide/i,
-    ]
+    const dashboardTexts = [/Dashboard/i, /Clienti/i, /Appuntamenti/i, /Azioni Rapide/i]
 
     let foundElement = false
     for (const text of dashboardTexts) {
-      const isVisible = await page.getByText(text).first().isVisible({ timeout: 3000 }).catch(() => false)
+      const isVisible = await page
+        .getByText(text)
+        .first()
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
       if (isVisible) {
         foundElement = true
         break

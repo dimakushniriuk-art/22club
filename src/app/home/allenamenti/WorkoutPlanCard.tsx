@@ -30,15 +30,21 @@ function WorkoutPlanCardComponent({ workout }: WorkoutPlanCardProps) {
         <CardContent className="relative z-10 p-3 sm:p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <h3 className="mb-1 truncate text-sm font-semibold text-cyan-400 sm:text-base">{workout.name}</h3>
+              <h3 className="mb-1 truncate text-sm font-semibold text-cyan-400 sm:text-base">
+                {workout.name}
+              </h3>
               {workout.description && (
-                <p className="mb-1.5 line-clamp-2 text-xs text-text-secondary">{workout.description}</p>
+                <p className="mb-1.5 line-clamp-2 text-xs text-text-secondary">
+                  {workout.description}
+                </p>
               )}
               <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
                 {workout.difficulty && (
                   <div className="flex items-center gap-0.5">
                     <Target className="h-3 w-3 text-cyan-400" />
-                    <span className="truncate capitalize text-text-secondary">{workout.difficulty}</span>
+                    <span className="truncate capitalize text-text-secondary">
+                      {workout.difficulty}
+                    </span>
                   </div>
                 )}
                 {workout.muscle_group && (
@@ -52,7 +58,11 @@ function WorkoutPlanCardComponent({ workout }: WorkoutPlanCardProps) {
                 )}
               </div>
             </div>
-            <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] border-0 bg-cyan-500 text-white">
+            <Badge
+              variant="secondary"
+              size="sm"
+              className="shrink-0 text-[10px] border-0 bg-cyan-500 text-white"
+            >
               Attiva
             </Badge>
           </div>

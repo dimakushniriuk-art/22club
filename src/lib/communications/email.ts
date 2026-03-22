@@ -4,8 +4,9 @@
 // Integra provider email (Resend) con sistema comunicazioni
 // ============================================================
 
-import { createClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/types/supabase'
 import { updateCommunicationStats } from './service'
 import { generateEmailHTML } from './email-template'
@@ -19,27 +20,11 @@ const logger = createLogger('lib:communications:email')
 type CommunicationRow = Tables<'communications'>
 type CommunicationRecipientRow = Tables<'communication_recipients'>
 
-let serviceClient: ReturnType<typeof createClient<Database>> | null = null
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`)
-  }
-  return value
-}
+let serviceClient: SupabaseClient<Database> | null = null
 
 function getSupabaseClient() {
   if (!serviceClient) {
-    serviceClient = createClient<Database>(
-      requiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-      requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
+    serviceClient = createAdminClient() as unknown as SupabaseClient<Database>
   }
   return serviceClient
 }
@@ -146,7 +131,8 @@ export async function sendCommunicationEmail(
     // Genera HTML email (logo incorporato da public/logo.png se non c'è URL pubblico)
     const baseMetadata = (communicationData.metadata as Record<string, unknown> | undefined) ?? {}
     const logoUrl =
-      (typeof baseMetadata.logo_url === 'string' && baseMetadata.logo_url.trim()) || getEmbeddedLogoDataUri()
+      (typeof baseMetadata.logo_url === 'string' && baseMetadata.logo_url.trim()) ||
+      getEmbeddedLogoDataUri()
     const metadataWithLogo = logoUrl ? { ...baseMetadata, logo_url: logoUrl } : baseMetadata
     const emailHTML = generateEmailHTML(
       communicationData.title,

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import type { ChatMessage, ConversationParticipant } from '@/types/chat'
 import { createLogger } from '@/lib/logger'
@@ -120,12 +120,19 @@ export function useChatMessages(
           profileId,
           otherUserId,
           count: data1?.length ?? 0,
-          messages: data1?.map((m: { id: string; sender_id: string; receiver_id: string; created_at: string | null }) => ({
-            id: m.id,
-            sender_id: m.sender_id,
-            receiver_id: m.receiver_id,
-            created_at: m.created_at ?? '',
-          })),
+          messages: data1?.map(
+            (m: {
+              id: string
+              sender_id: string
+              receiver_id: string
+              created_at: string | null
+            }) => ({
+              id: m.id,
+              sender_id: m.sender_id,
+              receiver_id: m.receiver_id,
+              created_at: m.created_at ?? '',
+            }),
+          ),
         })
 
         // Query 2: messaggi dove otherUserId è sender e profileId è receiver
@@ -157,12 +164,19 @@ export function useChatMessages(
           profileId,
           otherUserId,
           count: data2?.length ?? 0,
-          messages: data2?.map((m: { id: string; sender_id: string; receiver_id: string; created_at: string | null }) => ({
-            id: m.id,
-            sender_id: m.sender_id,
-            receiver_id: m.receiver_id,
-            created_at: m.created_at ?? '',
-          })),
+          messages: data2?.map(
+            (m: {
+              id: string
+              sender_id: string
+              receiver_id: string
+              created_at: string | null
+            }) => ({
+              id: m.id,
+              sender_id: m.sender_id,
+              receiver_id: m.receiver_id,
+              created_at: m.created_at ?? '',
+            }),
+          ),
         })
 
         // Unisci i risultati e ordina per data (crescente: più vecchi prima, più recenti dopo)

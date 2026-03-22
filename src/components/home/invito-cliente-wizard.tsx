@@ -34,9 +34,17 @@ interface InvitoClienteWizardProps {
   onRefetchInviti?: () => void
 }
 
-export function InvitoClienteWizard({ open, onOpenChange, invito, onSuccess, onRefetchInviti }: InvitoClienteWizardProps) {
+export function InvitoClienteWizard({
+  open,
+  onOpenChange,
+  invito,
+  onSuccess,
+  onRefetchInviti,
+}: InvitoClienteWizardProps) {
   const { notify } = useNotify()
-  const [loading, setLoading] = useState<'conferma' | 'disdetta' | 'disdici_collegamento' | null>(null)
+  const [loading, setLoading] = useState<'conferma' | 'disdetta' | 'disdici_collegamento' | null>(
+    null,
+  )
 
   const staffName =
     [invito?.staff_nome, invito?.staff_cognome].filter(Boolean).join(' ') ||
@@ -48,14 +56,20 @@ export function InvitoClienteWizard({ open, onOpenChange, invito, onSuccess, onR
     setLoading('conferma')
     try {
       const supabase = createClient()
-      const { data, error } = await supabase.rpc('accetta_invito_cliente', { p_invito_id: invito.id })
+      const { data, error } = await supabase.rpc('accetta_invito_cliente', {
+        p_invito_id: invito.id,
+      })
       if (error) {
         notify(error.message ?? 'Errore durante la conferma', 'error', 'Errore')
         return
       }
       const res = data as { success?: boolean; error?: string } | null
       if (res?.success) {
-        notify('Hai accettato l\'invito. Ora compare nella lista clienti e in Chat.', 'success', 'Invito accettato')
+        notify(
+          "Hai accettato l'invito. Ora compare nella lista clienti e in Chat.",
+          'success',
+          'Invito accettato',
+        )
         onOpenChange(false)
         onSuccess?.()
       } else {
@@ -73,7 +87,9 @@ export function InvitoClienteWizard({ open, onOpenChange, invito, onSuccess, onR
     setLoading('disdetta')
     try {
       const supabase = createClient()
-      const { data, error } = await supabase.rpc('rifiuta_invito_cliente', { p_invito_id: invito.id })
+      const { data, error } = await supabase.rpc('rifiuta_invito_cliente', {
+        p_invito_id: invito.id,
+      })
       if (error) {
         notify(error.message ?? 'Errore durante la disdetta', 'error', 'Errore')
         return
@@ -93,20 +109,27 @@ export function InvitoClienteWizard({ open, onOpenChange, invito, onSuccess, onR
     }
   }
 
-  const staffType = invito?.staff_role?.toLowerCase() === 'massaggiatore' ? 'massaggiatore' : 'nutrizionista'
+  const staffType =
+    invito?.staff_role?.toLowerCase() === 'massaggiatore' ? 'massaggiatore' : 'nutrizionista'
   const handleDisdiciCollegamento = async () => {
     if (!invito) return
     setLoading('disdici_collegamento')
     try {
       const supabase = createClient()
-      const { data, error } = await supabase.rpc('disdici_collegamento_staff_atleta', { p_staff_type: staffType })
+      const { data, error } = await supabase.rpc('disdici_collegamento_staff_atleta', {
+        p_staff_type: staffType,
+      })
       if (error) {
         notify(error.message ?? 'Errore durante la disdetta del collegamento', 'error', 'Errore')
         return
       }
       const res = data as { success?: boolean; error?: string } | null
       if (res?.success) {
-        notify('Collegamento attuale disdetto. Puoi ora confermare il nuovo invito.', 'success', 'Collegamento disdetto')
+        notify(
+          'Collegamento attuale disdetto. Puoi ora confermare il nuovo invito.',
+          'success',
+          'Collegamento disdetto',
+        )
         onRefetchInviti?.()
       } else {
         notify(res?.error ?? 'Errore durante la disdetta del collegamento', 'error', 'Errore')
@@ -141,7 +164,8 @@ export function InvitoClienteWizard({ open, onOpenChange, invito, onSuccess, onR
                   Nuovo invito
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-text-secondary text-sm">
-                  Sei stato invitato a far parte dei clienti. Conferma per comparire nella sua lista e in Chat, oppure rifiuta.
+                  Sei stato invitato a far parte dei clienti. Conferma per comparire nella sua lista
+                  e in Chat, oppure rifiuta.
                 </DialogDescription>
               </div>
             </div>
@@ -160,14 +184,16 @@ export function InvitoClienteWizard({ open, onOpenChange, invito, onSuccess, onR
               <p className="text-sm text-text-secondary capitalize">{role}</p>
             </div>
             <p className="text-center text-sm text-text-secondary max-w-[280px] leading-relaxed">
-              Sei stato invitato da <strong className="text-text-primary">{staffName}</strong> ({role}) a far parte dei suoi clienti.
+              Sei stato invitato da <strong className="text-text-primary">{staffName}</strong> (
+              {role}) a far parte dei suoi clienti.
             </p>
           </div>
 
           {invito.atleta_ha_altro_attivo && (
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 mb-4">
               <p className="text-sm text-amber-200/90 mb-3">
-                Hai già un {role} attivo nella lista. Per accettare questo invito disdici il collegamento attuale.
+                Hai già un {role} attivo nella lista. Per accettare questo invito disdici il
+                collegamento attuale.
               </p>
               <Button
                 type="button"

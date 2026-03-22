@@ -77,21 +77,26 @@ export async function GET() {
     const iso30 = daysAgo(30)
 
     // --- Leads ---
-    const [leadsAllRes, leads7d, leads30dRows, campaignsRows, eventsRows, athletesRows] = await Promise.all([
-      supabase.from('marketing_leads').select('*', { count: 'exact', head: true }),
-      supabase.from('marketing_leads').select('id').gte('created_at', iso7),
-      supabase.from('marketing_leads').select('status').gte('created_at', iso30),
-      supabase.from('marketing_campaigns').select('id, name, status, budget, start_at, end_at'),
-      supabase.from('marketing_events').select('campaign_id, occurred_at').gte('occurred_at', iso7),
-      supabase.rpc('marketing_list_athletes', { p_limit: 5000, p_offset: 0 }),
-    ])
+    const [leadsAllRes, leads7d, leads30dRows, campaignsRows, eventsRows, athletesRows] =
+      await Promise.all([
+        supabase.from('marketing_leads').select('*', { count: 'exact', head: true }),
+        supabase.from('marketing_leads').select('id').gte('created_at', iso7),
+        supabase.from('marketing_leads').select('status').gte('created_at', iso30),
+        supabase.from('marketing_campaigns').select('id, name, status, budget, start_at, end_at'),
+        supabase
+          .from('marketing_events')
+          .select('campaign_id, occurred_at')
+          .gte('occurred_at', iso7),
+        supabase.rpc('marketing_list_athletes', { p_limit: 5000, p_offset: 0 }),
+      ])
 
     const leadsTotal = leadsAllRes.count ?? 0
     const leadsNew7d = (leads7d.data?.length ?? 0) as number
     const leads30d = (leads30dRows.data ?? []) as { status: string }[]
     const total30d = leads30d.length
     const converted30d = leads30d.filter((r) => r.status === 'converted').length
-    const conversionRate30d = total30d > 0 ? Math.round((converted30d / total30d) * 1000) / 10 : null
+    const conversionRate30d =
+      total30d > 0 ? Math.round((converted30d / total30d) * 1000) / 10 : null
 
     const funnel: Record<string, number> = { new: 0, contacted: 0, trial: 0, converted: 0, lost: 0 }
     leads30d.forEach((r) => {
@@ -214,9 +219,6 @@ export async function GET() {
     return NextResponse.json(payload)
   } catch (err) {
     logger.error('Errore API marketing analytics', err)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

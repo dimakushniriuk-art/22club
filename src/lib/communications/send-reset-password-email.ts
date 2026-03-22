@@ -65,18 +65,17 @@ export async function sendResetPasswordEmail(
     }
 
     // URL assoluto e pulito per il bottone nell'email (niente newline/spazi che rompono l'href)
-    const rawUrl =
-      /^https?:\/\//i.test(actionLink.trim())
-        ? actionLink.trim()
-        : (() => {
-            try {
-              const base = new URL(redirectTo).origin
-              const path = actionLink.startsWith('/') ? actionLink : `/${actionLink}`
-              return `${base}${path}`
-            } catch {
-              return actionLink
-            }
-          })()
+    const rawUrl = /^https?:\/\//i.test(actionLink.trim())
+      ? actionLink.trim()
+      : (() => {
+          try {
+            const base = new URL(redirectTo).origin
+            const path = actionLink.startsWith('/') ? actionLink : `/${actionLink}`
+            return `${base}${path}`
+          } catch {
+            return actionLink
+          }
+        })()
     const fullResetUrl = rawUrl.replace(/\s+/g, '').trim()
 
     const subject = 'Reimposta la password - 22Club'

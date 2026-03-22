@@ -1,11 +1,13 @@
 # 🔧 Troubleshooting Reset Password Timeout
 
 ## Problema
+
 Il reset password va in timeout dopo 30-60 secondi, ma potrebbe comunque aver cambiato la password.
 
 ## Verifica se la password è stata cambiata
 
 ### Metodo 1: Prova a fare login
+
 1. Vai su `/login`
 2. Inserisci l'email
 3. Inserisci la **nuova password** che hai appena impostato
@@ -13,15 +15,17 @@ Il reset password va in timeout dopo 30-60 secondi, ma potrebbe comunque aver ca
 5. Se il login non funziona → La password non è stata cambiata, richiedi un nuovo link
 
 ### Metodo 2: Verifica tramite Supabase Studio
+
 1. Apri Supabase Studio: `http://localhost:54323`
 2. Vai su **Authentication** → **Users**
 3. Trova l'utente per email
 4. Controlla **Last Sign In** - se è recente, la password potrebbe essere stata cambiata
 
 ### Metodo 3: Verifica tramite database
+
 ```sql
 -- Verifica ultimo aggiornamento utente
-SELECT 
+SELECT
   id,
   email,
   updated_at,
@@ -34,34 +38,39 @@ WHERE email = 'tua-email@example.com';
 ## Possibili cause del timeout
 
 ### 1. Problema di rete
+
 - **Sintomo**: Timeout costante
-- **Soluzione**: 
+- **Soluzione**:
   - Verifica connessione internet
   - Controlla firewall/proxy
   - Prova da un'altra rete
 
 ### 2. Token di recovery scaduto
+
 - **Sintomo**: "Link non valido o scaduto"
-- **Soluzione**: 
+- **Soluzione**:
   - Richiedi un nuovo link di reset
   - Verifica che `jwt_expiry` in `supabase/config.toml` sia almeno 3600 (1 ora)
 
 ### 3. Sessione non valida
+
 - **Sintomo**: "Sessione scaduta"
-- **Soluzione**: 
+- **Soluzione**:
   - Il codice ora fa `refreshSession()` prima di `updateUser()`
   - Se persiste, richiedi un nuovo link
 
 ### 4. Supabase locale lento
+
 - **Sintomo**: Timeout solo in sviluppo locale
-- **Soluzione**: 
+- **Soluzione**:
   - Riavvia Supabase: `npx supabase stop && npx supabase start`
   - Verifica che non ci siano altri processi che usano le porte
   - Controlla i log: `npx supabase logs`
 
 ### 5. Problema con updateUser API
+
 - **Sintomo**: Timeout costante anche con rete stabile
-- **Soluzione**: 
+- **Soluzione**:
   - Verifica i log di Supabase: `npx supabase logs --db`
   - Controlla che non ci siano trigger o constraint che bloccano l'update
   - Esegui la migration: `20260109_verify_password_reset_flow.sql`
@@ -69,6 +78,7 @@ WHERE email = 'tua-email@example.com';
 ## Configurazione ottimale
 
 ### `supabase/config.toml`
+
 ```toml
 [auth]
 enabled = true
@@ -82,6 +92,7 @@ enable_refresh_token_rotation = true
 ```
 
 ### Timeout nel codice
+
 - **Attuale**: 60 secondi (aumentato da 30)
 - **Raccomandato**: 60-90 secondi per sviluppo locale
 - **Produzione**: 30 secondi dovrebbero essere sufficienti
@@ -89,7 +100,9 @@ enable_refresh_token_rotation = true
 ## Logging e Debug
 
 ### Console del browser
+
 Cerca questi log:
+
 ```
 [RESET PASSWORD] Inizio aggiornamento password...
 [RESET PASSWORD] Utente autenticato: { userId, email }
@@ -97,6 +110,7 @@ Cerca questi log:
 ```
 
 ### Log Supabase
+
 ```bash
 # Log generali
 npx supabase logs
@@ -109,7 +123,9 @@ npx supabase logs | grep -i auth
 ```
 
 ### Verifica sessione
+
 Il codice ora:
+
 1. Fa `refreshSession()` prima di `updateUser()`
 2. Verifica l'utente con `getUser()` dopo il timeout
 3. Suggerisce di provare a fare login se il timeout si verifica
@@ -142,6 +158,7 @@ Se il timeout si verifica costantemente:
 ## Supporto
 
 Se il problema persiste:
+
 1. Controlla i log di Supabase
 2. Verifica la configurazione `supabase/config.toml`
 3. Esegui la migration di verifica

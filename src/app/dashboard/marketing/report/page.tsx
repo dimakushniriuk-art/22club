@@ -32,9 +32,7 @@ export default function MarketingReportPage() {
           <FileText className="w-6 h-6 text-cyan-400" />
           Report
         </h1>
-        <p className="text-text-secondary text-sm mt-1">
-          Report e export. Modulo in preparazione.
-        </p>
+        <p className="text-text-secondary text-sm mt-1">Report e export. Modulo in preparazione.</p>
       </header>
       <div className="rounded-xl border border-border bg-background-secondary/50 p-8 text-center text-text-secondary text-sm">
         Sezione Report in arrivo. Qui potrai generare report e export sui KPI e lead.

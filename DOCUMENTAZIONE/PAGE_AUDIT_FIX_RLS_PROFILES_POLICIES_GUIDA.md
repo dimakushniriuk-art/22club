@@ -1,4 +1,5 @@
 # 🔧 FIX POLICIES PROBLEMATICHE - Guida Esecuzione
+
 **Data**: 2025-01-27  
 **Problema**: Policies "Staff can view all profiles" e "Trainers can view assigned athletes" hanno condizioni problematiche
 
@@ -18,9 +19,11 @@ Queste policies potrebbero causare problemi RLS quando si fanno query su `profil
 ## ✅ SOLUZIONE
 
 ### Step 1: Eseguire Script SQL
+
 Eseguire `PAGE_AUDIT_FIX_RLS_PROFILES_POLICIES_ESEGUIRE.sql` in Supabase SQL Editor.
 
 **Cosa fa lo script**:
+
 1. ✅ Verifica che funzioni helper esistano (`is_staff()`, `get_current_trainer_profile_id()`, `is_athlete_assigned_to_current_trainer()`)
 2. ✅ Crea le funzioni helper se non esistono
 3. ✅ Rimuove le policies problematiche
@@ -43,6 +46,7 @@ Eseguire `PAGE_AUDIT_FIX_RLS_PROFILES_POLICIES_ESEGUIRE.sql` in Supabase SQL Edi
 ## 🔍 COSA CAMBIA
 
 ### Prima (❌ - Potrebbe avere subquery ricorsive):
+
 ```sql
 CREATE POLICY "Staff can view all profiles"
   ON profiles FOR SELECT
@@ -57,6 +61,7 @@ CREATE POLICY "Staff can view all profiles"
 ```
 
 ### Dopo (✅ - Usa funzione helper):
+
 ```sql
 CREATE POLICY "Staff can view all profiles"
   ON profiles FOR SELECT
@@ -65,6 +70,7 @@ CREATE POLICY "Staff can view all profiles"
 ```
 
 **Vantaggi**:
+
 - ✅ Nessuna subquery ricorsiva (la funzione helper disabilita RLS internamente)
 - ✅ Performance migliore
 - ✅ Nessun problema di ricorsione RLS
@@ -74,11 +80,13 @@ CREATE POLICY "Staff can view all profiles"
 ## ✅ VERIFICA POST-FIX
 
 Dopo aver eseguito lo script, tutte le policies su `profiles` devono avere:
+
 - ✅ "✅ Usa funzione helper (OK)" per policies che usano funzioni helper
 - ✅ "✅ Permissiva (OK)" per policies permissive
 - ✅ "✅ Usa auth.uid() (OK)" per policies che usano auth.uid()
 
 **Nessuna policy deve avere**:
+
 - ❌ "⚠️ Potrebbe avere subquery"
 - ❌ "⚠️ Verificare"
 

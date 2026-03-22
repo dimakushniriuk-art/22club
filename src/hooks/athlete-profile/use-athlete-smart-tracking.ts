@@ -7,7 +7,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { handleApiError } from '@/lib/error-handler'
 import { createLogger } from '@/lib/logger'
 import {
@@ -254,10 +254,16 @@ export function useUpdateAthleteSmartTracking(athleteId: string | null) {
           result = data
         } else {
           // Insert nuovo record
-          type InsertRow = import('@/lib/supabase/types').Database['public']['Tables']['athlete_smart_tracking_data']['Insert']
+          type InsertRow =
+            import('@/lib/supabase/types').Database['public']['Tables']['athlete_smart_tracking_data']['Insert']
           const { data, error } = await supabase
             .from('athlete_smart_tracking_data')
-            .insert({ athlete_id: athleteId, data_rilevazione: updateData.data_rilevazione ?? new Date().toISOString().slice(0, 10), ...updateData } as InsertRow)
+            .insert({
+              athlete_id: athleteId,
+              data_rilevazione:
+                updateData.data_rilevazione ?? new Date().toISOString().slice(0, 10),
+              ...updateData,
+            } as InsertRow)
             .select('*')
             .single()
 

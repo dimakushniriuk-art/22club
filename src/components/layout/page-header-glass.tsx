@@ -72,11 +72,7 @@ export function PageHeaderGlass({
           )}
         </div>
       </div>
-      <div
-        className="absolute inset-x-0 bottom-0 h-px"
-        style={CYAN_LINE_STYLE}
-        aria-hidden
-      />
+      <div className="absolute inset-x-0 bottom-0 h-px" style={CYAN_LINE_STYLE} aria-hidden />
     </div>
   )
 }

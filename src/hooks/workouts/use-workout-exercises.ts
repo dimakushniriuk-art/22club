@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { Exercise } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 import { transformExercises } from '@/lib/workouts/workout-transformers'

@@ -35,6 +35,7 @@ npm run capacitor:init
 ```
 
 Questo comando ti chiederà:
+
 - **App name**: 22Club
 - **App ID**: com.club22.app (o un ID personalizzato)
 - **Web dir**: out
@@ -66,6 +67,7 @@ npm run capacitor:add:ios
 ```
 
 **Requisiti**:
+
 - macOS
 - Xcode installato
 - CocoaPods installato (`sudo gem install cocoapods`)
@@ -77,6 +79,7 @@ npm run capacitor:add:android
 ```
 
 **Requisiti**:
+
 - Android Studio installato
 - Java Development Kit (JDK) installato
 - Variabili d'ambiente Android configurate
@@ -143,7 +146,7 @@ async function triggerHaptic() {
 ```typescript
 import { Keyboard } from '@capacitor/keyboard'
 
-Keyboard.addListener('keyboardWillShow', info => {
+Keyboard.addListener('keyboardWillShow', (info) => {
   console.log('keyboard will show with height:', info.keyboardHeight)
 })
 
@@ -164,6 +167,7 @@ Quando si usa Capacitor, Next.js deve generare un export statico. Questo signifi
 ### Gestione automatica delle limitazioni
 
 Il progetto include script automatici che:
+
 1. **Spostano temporaneamente** le API routes durante il build
 2. **Escludono** le route dinamiche e le pagine server-side
 3. **Ripristinano** tutto dopo il build
@@ -181,6 +185,7 @@ Questo permette di mantenere il codice completo per il web e generare solo le pa
 ### iOS
 
 1. Apri il progetto in Xcode:
+
    ```bash
    npm run capacitor:open:ios
    ```
@@ -197,6 +202,7 @@ Questo permette di mantenere il codice completo per il web e generare solo le pa
 ### Android
 
 1. Apri il progetto in Android Studio:
+
    ```bash
    npm run capacitor:open:android
    ```
@@ -224,6 +230,7 @@ const platform = Capacitor.getPlatform() // 'ios', 'android', o 'web'
 ### Problema: Build fallisce con errori SSR
 
 **Soluzione**: Assicurati di usare `CAPACITOR=true` nel build:
+
 ```bash
 npm run build:capacitor
 ```
@@ -231,13 +238,15 @@ npm run build:capacitor
 ### Problema: Plugin non funzionano
 
 **Soluzione**: Esegui sync dopo aver installato nuovi plugin:
+
 ```bash
 npm run capacitor:sync
 ```
 
 ### Problema: Modifiche non visibili nell'app
 
-**Soluzione**: 
+**Soluzione**:
+
 1. Ricostruisci: `npm run build:capacitor`
 2. Oppure solo copy: `npm run capacitor:copy`
 
@@ -247,19 +256,19 @@ npm run capacitor:sync
 
 ## Script disponibili
 
-| Script | Descrizione |
-|--------|-------------|
-| `capacitor:init` | Inizializza Capacitor (solo prima volta) |
-| `capacitor:add:ios` | Aggiunge piattaforma iOS |
-| `capacitor:add:android` | Aggiunge piattaforma Android |
-| `capacitor:sync` | Sincronizza web assets e plugin |
-| `capacitor:copy` | Copia solo web assets |
-| `capacitor:update` | Aggiorna Capacitor e plugin |
-| `capacitor:open:ios` | Apre progetto iOS in Xcode |
-| `capacitor:open:android` | Apre progetto Android in Android Studio |
-| `build:capacitor` | Build Next.js per Capacitor e sync |
-| `build:capacitor:ios` | Build e apri iOS |
-| `build:capacitor:android` | Build e apri Android |
+| Script                    | Descrizione                              |
+| ------------------------- | ---------------------------------------- |
+| `capacitor:init`          | Inizializza Capacitor (solo prima volta) |
+| `capacitor:add:ios`       | Aggiunge piattaforma iOS                 |
+| `capacitor:add:android`   | Aggiunge piattaforma Android             |
+| `capacitor:sync`          | Sincronizza web assets e plugin          |
+| `capacitor:copy`          | Copia solo web assets                    |
+| `capacitor:update`        | Aggiorna Capacitor e plugin              |
+| `capacitor:open:ios`      | Apre progetto iOS in Xcode               |
+| `capacitor:open:android`  | Apre progetto Android in Android Studio  |
+| `build:capacitor`         | Build Next.js per Capacitor e sync       |
+| `build:capacitor:ios`     | Build e apri iOS                         |
+| `build:capacitor:android` | Build e apri Android                     |
 
 ## Risorse
 

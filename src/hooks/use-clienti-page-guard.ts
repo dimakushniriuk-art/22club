@@ -34,7 +34,9 @@ export function useClientiPageGuard(): { showLoader: boolean } {
   }, [role, loading, router])
 
   const showLoader =
-    loading || (role !== null && !ALLOWED_CLIENTI_ROLES.includes(role as (typeof ALLOWED_CLIENTI_ROLES)[number]))
+    loading ||
+    (role !== null &&
+      !ALLOWED_CLIENTI_ROLES.includes(role as (typeof ALLOWED_CLIENTI_ROLES)[number]))
 
   return { showLoader }
 }

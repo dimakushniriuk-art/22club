@@ -2,16 +2,16 @@
 
 ## 1) File modificati/creati
 
-| File | Azione |
-|------|--------|
-| `docs/ANALISI_profiles_id_unification.md` | Creato – analisi FASE A |
-| `supabase/migrations/20260228200000_profiles_id_unification_step1.sql` | Creato – migration Step 1 |
-| `src/lib/supabase/get-current-profile.ts` | Creato – utility server `getCurrentProfile()` / `getCurrentProfileId()` |
-| `src/components/dashboard/assign-workout-modal.tsx` | Modificato – insert `workout_plans` con `created_by_profile_id` + legacy `created_by` |
-| `src/app/api/exercises/route.ts` | Modificato – POST insert con `created_by_profile_id` e `created_by` = auth uid |
-| `src/hooks/use-communications.ts` | Modificato – create communication con `created_by_profile_id` |
-| `src/lib/supabase/types.ts` | Modificato – aggiunte colonne `created_by_profile_id` / `recipient_profile_id` in Row/Insert/Update per workout_plans, exercises, communications, communication_recipients |
-| `docs/RESOCONTO_profiles_id_unification_step1.md` | Creato – questo resoconto |
+| File                                                                   | Azione                                                                                                                                                                     |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/ANALISI_profiles_id_unification.md`                              | Creato – analisi FASE A                                                                                                                                                    |
+| `supabase/migrations/20260228200000_profiles_id_unification_step1.sql` | Creato – migration Step 1                                                                                                                                                  |
+| `src/lib/supabase/get-current-profile.ts`                              | Creato – utility server `getCurrentProfile()` / `getCurrentProfileId()`                                                                                                    |
+| `src/components/dashboard/assign-workout-modal.tsx`                    | Modificato – insert `workout_plans` con `created_by_profile_id` + legacy `created_by`                                                                                      |
+| `src/app/api/exercises/route.ts`                                       | Modificato – POST insert con `created_by_profile_id` e `created_by` = auth uid                                                                                             |
+| `src/hooks/use-communications.ts`                                      | Modificato – create communication con `created_by_profile_id`                                                                                                              |
+| `src/lib/supabase/types.ts`                                            | Modificato – aggiunte colonne `created_by_profile_id` / `recipient_profile_id` in Row/Insert/Update per workout_plans, exercises, communications, communication_recipients |
+| `docs/RESOCONTO_profiles_id_unification_step1.md`                      | Creato – questo resoconto                                                                                                                                                  |
 
 ## 2) Migration creata – contenuto
 

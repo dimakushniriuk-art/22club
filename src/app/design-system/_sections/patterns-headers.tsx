@@ -50,7 +50,9 @@ export function PatternsHeaders() {
 
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>PageHeaderFixed</h3>
-          <p className={DS_LABEL_CLASS}>Nero, linea cyan in basso. Allenamenti, Appuntamenti, Foto.</p>
+          <p className={DS_LABEL_CLASS}>
+            Nero, linea cyan in basso. Allenamenti, Appuntamenti, Foto.
+          </p>
           <div className={DS_CARD_FRAME_CLASS}>
             <PageHeaderFixed
               title="I miei Allenamenti"

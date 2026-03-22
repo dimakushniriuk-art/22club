@@ -19,8 +19,7 @@ export interface PageHeaderFixedProps {
 
 const HEADER_BASE =
   'overflow-hidden bg-background px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
-const HEADER_BASE_CHAT =
-  'overflow-hidden bg-black border-b border-white/10 p-3 min-[834px]:p-4'
+const HEADER_BASE_CHAT = 'overflow-hidden bg-black border-b border-white/10 p-3 min-[834px]:p-4'
 const HEADER_FIXED =
   'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))] border-x-0 border-t-0'
 const HEADER_FIXED_CHAT = 'fixed inset-x-0 top-0 z-20 pt-[calc(10px+env(safe-area-inset-top,0px))]'
@@ -42,7 +41,8 @@ export function PageHeaderFixed({
 }: PageHeaderFixedProps) {
   const base = variant === 'chat' ? HEADER_BASE_CHAT : HEADER_BASE
   const fixed = variant === 'chat' ? HEADER_FIXED_CHAT : HEADER_FIXED
-  const headerClass = `${base} ${isStatic ? HEADER_STATIC : fixed}${className ? ` ${className}` : ''}`.trim()
+  const headerClass =
+    `${base} ${isStatic ? HEADER_STATIC : fixed}${className ? ` ${className}` : ''}`.trim()
   const hasBack = backHref != null || onBack != null
   const backContent =
     hasBack &&
@@ -86,11 +86,7 @@ export function PageHeaderFixed({
           )}
         </div>
       </div>
-      <div
-        className="absolute inset-x-0 bottom-0 h-px"
-        style={CYAN_LINE_STYLE}
-        aria-hidden
-      />
+      <div className="absolute inset-x-0 bottom-0 h-px" style={CYAN_LINE_STYLE} aria-hidden />
     </header>
   )
 }

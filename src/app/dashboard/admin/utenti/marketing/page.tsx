@@ -158,7 +158,9 @@ export default function AdminCreaMarketingPage() {
           {result?.success && (
             <div className="mt-4 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-200">
               <p className="font-medium">Utente creato.</p>
-              <p className="mt-1 text-text-secondary">Email: {result.email} — Usa la password inserita per il login.</p>
+              <p className="mt-1 text-text-secondary">
+                Email: {result.email} — Usa la password inserita per il login.
+              </p>
               <p className="mt-1 font-mono text-xs">user_id: {result.user_id}</p>
             </div>
           )}

@@ -130,8 +130,11 @@ export function MiniCalendar({
             className={cn(
               'h-7 w-7 flex items-center justify-center text-xs rounded-full relative transition-colors duration-200 mx-auto border border-transparent',
               day.isCurrentMonth ? 'text-text-primary' : 'text-text-tertiary',
-              isToday(day.date) && !isSelected(day.date) && 'text-primary font-medium ring-2 ring-primary/50 ring-offset-2 ring-offset-[var(--background)]',
-              isSelected(day.date) && 'bg-primary/20 text-primary border border-primary/30 font-medium',
+              isToday(day.date) &&
+                !isSelected(day.date) &&
+                'text-primary font-medium ring-2 ring-primary/50 ring-offset-2 ring-offset-[var(--background)]',
+              isSelected(day.date) &&
+                'bg-primary/20 text-primary border border-primary/30 font-medium',
               !isToday(day.date) && !isSelected(day.date) && 'hover:bg-primary/10',
             )}
           >

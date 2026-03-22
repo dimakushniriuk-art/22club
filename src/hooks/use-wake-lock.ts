@@ -23,9 +23,12 @@ export function useWakeLock(enabled = true) {
       if (document.visibilityState === 'visible') {
         requestWakeLock()
       } else {
-        sentinel?.release().catch(() => {}).finally(() => {
-          sentinel = null
-        })
+        sentinel
+          ?.release()
+          .catch(() => {})
+          .finally(() => {
+            sentinel = null
+          })
       }
     }
 

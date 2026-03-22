@@ -1,11 +1,11 @@
 /**
  * Script di test per verificare il reset password in Supabase
- * 
+ *
  * Questo script verifica:
  * 1. Se la chiamata updateUser funziona correttamente
  * 2. Se la password viene effettivamente cambiata nel database
  * 3. Se ci sono problemi di timeout o configurazione
- * 
+ *
  * Uso: npx tsx scripts/test-password-reset.ts <email> <newPassword>
  */
 
@@ -43,14 +43,17 @@ async function testPasswordReset() {
   try {
     // Step 1: Verifica se l'utente esiste
     console.log('📋 Step 1: Verifica esistenza utente...')
-    const { data: { user: existingUser }, error: userError } = await supabase.auth.admin.getUserByEmail(email)
-    
+    const {
+      data: { user: existingUser },
+      error: userError,
+    } = await supabase.auth.admin.getUserByEmail(email)
+
     if (userError || !existingUser) {
       console.error('❌ Utente non trovato:', userError?.message)
-      console.log('\n💡 Suggerimento: Crea prima l\'utente o usa un email esistente')
+      console.log("\n💡 Suggerimento: Crea prima l'utente o usa un email esistente")
       return
     }
-    
+
     console.log(`✅ Utente trovato: ${existingUser.id}`)
     console.log(`   Email: ${existingUser.email}`)
     console.log(`   Creato: ${existingUser.created_at}\n`)
@@ -72,7 +75,7 @@ async function testPasswordReset() {
     // Step 5: Test timeout
     console.log('📋 Step 5: Test timeout updateUser...')
     const startTime = Date.now()
-    
+
     try {
       // Nota: Questo richiede una sessione valida, quindi non funzionerà senza auth
       // Ma possiamo testare il timeout
@@ -102,7 +105,6 @@ async function testPasswordReset() {
     console.log('   - Verifica i log di Supabase per errori')
     console.log('   - Controlla che il token di recovery non sia scaduto')
     console.log('   - Assicurati che site_url e redirect_urls siano corretti\n')
-
   } catch (error) {
     console.error('❌ Errore durante il test:', error)
     if (error instanceof Error) {

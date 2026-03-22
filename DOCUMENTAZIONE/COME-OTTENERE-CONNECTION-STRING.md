@@ -19,11 +19,13 @@ postgresql://postgres.icibqnmtacibgnhaidlz:[YOUR-PASSWORD]@aws-0-eu-central-1.po
 Hai due opzioni:
 
 ### Opzione A: Connection Pooling (Raccomandato)
+
 - Usa: **"Connection pooling"**
 - Formato: `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres`
 - Esempio: `postgresql://postgres.icibqnmtacibgnhaidlz:mypassword@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
 
 ### Opzione B: Direct Connection
+
 - Usa: **"Direct connection"**
 - Formato: `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`
 - Esempio: `postgresql://postgres.icibqnmtacibgnhaidlz:mypassword@db.icibqnmtacibgnhaidlz.supabase.co:5432/postgres`
@@ -33,6 +35,7 @@ Hai due opzioni:
 **IMPORTANTE**: La password NON è la service role key!
 
 La password è quella che hai impostato quando hai creato il progetto, oppure:
+
 - Vai su: Settings > Database > Database password
 - Se non la ricordi, clicca "Reset database password"
 
@@ -45,6 +48,7 @@ npm run db:build-pgdump
 ```
 
 Lo script ti chiederà:
+
 1. Se vuoi incollare la connection string completa OPPURE
 2. Se vuoi inserire i valori separatamente (project ref, password, region)
 
@@ -53,11 +57,13 @@ Poi genererà automaticamente il comando corretto!
 ## 📝 Esempio Completo
 
 Se la tua connection string è:
+
 ```
 postgresql://postgres.icibqnmtacibgnhaidlz:mypassword123@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
 ```
 
 Il comando sarà:
+
 ```bash
 pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:mypassword123@aws-0-eu-central-1.pooler.supabase.com:5432/postgres" \
   --schema=public \

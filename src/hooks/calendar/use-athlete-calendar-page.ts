@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useNotify } from '@/lib/ui/notify'
 import type {
@@ -68,25 +68,23 @@ export function useAthleteCalendarPage(profileId: string | null) {
   useEffect(() => {
     let cancelled = false
     setTrainerLoading(true)
-    supabase
-      .rpc('get_my_trainer_profile')
-      .then(({ data, error }) => {
-        if (cancelled) return
-        setTrainerLoading(false)
-        if (error || !Array.isArray(data) || data.length === 0) {
-          setStaffId(null)
-          setTrainerName(null)
-          return
-        }
-        const row = data[0] as {
-          pt_id?: string
-          pt_nome?: string | null
-          pt_cognome?: string | null
-        }
-        setStaffId(row?.pt_id ?? null)
-        const name = [row?.pt_nome, row?.pt_cognome].filter(Boolean).join(' ').trim()
-        setTrainerName(name || null)
-      })
+    supabase.rpc('get_my_trainer_profile').then(({ data, error }) => {
+      if (cancelled) return
+      setTrainerLoading(false)
+      if (error || !Array.isArray(data) || data.length === 0) {
+        setStaffId(null)
+        setTrainerName(null)
+        return
+      }
+      const row = data[0] as {
+        pt_id?: string
+        pt_nome?: string | null
+        pt_cognome?: string | null
+      }
+      setStaffId(row?.pt_id ?? null)
+      const name = [row?.pt_nome, row?.pt_cognome].filter(Boolean).join(' ').trim()
+      setTrainerName(name || null)
+    })
     return () => {
       cancelled = true
     }
@@ -131,7 +129,9 @@ export function useAthleteCalendarPage(profileId: string | null) {
       // Conteggio prenotazioni per slot Libera (starts_at|ends_at) per UI "x/6"
       const slotBookingCounts: Record<string, number> = {}
       const openSlotKeys = new Set(
-        rows.filter((r) => r.is_open_booking_day && r.starts_at && r.ends_at).map((r) => `${r.starts_at}|${r.ends_at}`),
+        rows
+          .filter((r) => r.is_open_booking_day && r.starts_at && r.ends_at)
+          .map((r) => `${r.starts_at}|${r.ends_at}`),
       )
       for (const key of openSlotKeys) {
         const [s, e] = key.split('|')
@@ -173,7 +173,10 @@ export function useAthleteCalendarPage(profileId: string | null) {
             avatar?: string | null
             avatar_url?: string | null
           }) => {
-            athleteNamesMap.set(p.id, [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Atleta')
+            athleteNamesMap.set(
+              p.id,
+              [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Atleta',
+            )
             athleteAvatarMap.set(p.id, p.avatar_url ?? p.avatar ?? null)
           },
         )
@@ -181,12 +184,17 @@ export function useAthleteCalendarPage(profileId: string | null) {
 
       const mapped: AppointmentUI[] = rows.map((apt) => {
         const isOpenSlot = apt.is_open_booking_day === true
-        const createdByRole = (apt.created_by_role === 'athlete' ? 'athlete' : apt.created_by_role === 'admin' ? 'admin' : 'trainer') as
-          | 'athlete'
-          | 'trainer'
-          | 'admin'
+        const createdByRole = (
+          apt.created_by_role === 'athlete'
+            ? 'athlete'
+            : apt.created_by_role === 'admin'
+              ? 'admin'
+              : 'trainer'
+        ) as 'athlete' | 'trainer' | 'admin'
         const displayColor =
-          createdByRole === 'athlete' ? ATHLETE_CREATED_COLOR : (apt.color as AppointmentColor) || TRAINER_CREATED_COLOR
+          createdByRole === 'athlete'
+            ? ATHLETE_CREATED_COLOR
+            : (apt.color as AppointmentColor) || TRAINER_CREATED_COLOR
         return {
           id: apt.id,
           org_id: apt.org_id ?? orgId ?? null,
@@ -203,8 +211,12 @@ export function useAthleteCalendarPage(profileId: string | null) {
           created_at: apt.created_at ?? new Date().toISOString(),
           created_by_role: createdByRole,
           is_open_booking_day: isOpenSlot,
-          athlete_name: isOpenSlot ? 'Libera prenotazione' : (athleteNamesMap.get(apt.athlete_id!) ?? 'Atleta'),
-          athlete_avatar_url: isOpenSlot ? undefined : athleteAvatarMap.get(apt.athlete_id!) ?? undefined,
+          athlete_name: isOpenSlot
+            ? 'Libera prenotazione'
+            : (athleteNamesMap.get(apt.athlete_id!) ?? 'Atleta'),
+          athlete_avatar_url: isOpenSlot
+            ? undefined
+            : (athleteAvatarMap.get(apt.athlete_id!) ?? undefined),
           staff_name: staffNamesMap.get(apt.staff_id) ?? trainerName ?? 'Trainer',
           trainer_name: staffNamesMap.get(apt.staff_id) ?? trainerName ?? 'Trainer',
         }
@@ -224,11 +236,15 @@ export function useAthleteCalendarPage(profileId: string | null) {
   const handleFormSubmit = useCallback(
     async (data: CreateAppointmentData, editing: EditAppointmentData | null) => {
       if (!staffId || !profileId) {
-        notify('Nessun trainer assegnato. Contatta l\'amministratore.', 'warning', 'Attenzione')
+        notify("Nessun trainer assegnato. Contatta l'amministratore.", 'warning', 'Attenzione')
         return
       }
       if (!orgId && !editing?.id) {
-        notify('Organizzazione non disponibile. Riprova dopo il login.', 'error', 'Errore creazione appuntamento')
+        notify(
+          'Organizzazione non disponibile. Riprova dopo il login.',
+          'error',
+          'Errore creazione appuntamento',
+        )
         return
       }
       setLoading(true)
@@ -260,7 +276,9 @@ export function useAthleteCalendarPage(profileId: string | null) {
             .select('max_free_pass_athletes_per_slot')
             .eq('staff_id', staffId)
             .maybeSingle()
-          const maxPerSlot = (settingsRow as { max_free_pass_athletes_per_slot?: number } | null)?.max_free_pass_athletes_per_slot ?? 4
+          const maxPerSlot =
+            (settingsRow as { max_free_pass_athletes_per_slot?: number } | null)
+              ?.max_free_pass_athletes_per_slot ?? 4
           if (currentCount >= maxPerSlot) {
             notify(
               `Questo slot è al completo (${maxPerSlot}/${maxPerSlot}). Scegli un altro orario.`,
@@ -306,10 +324,18 @@ export function useAthleteCalendarPage(profileId: string | null) {
         await fetchAppointments()
       } catch (err) {
         logger.error('Errore salvataggio appuntamento', err)
-        const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null && 'message' in err ? String((err as { message: unknown }).message) : ''
-        const isSlotFull = typeof msg === 'string' && (msg.includes('SLOT_FULL') || msg.includes('al completo'))
+        const msg =
+          err instanceof Error
+            ? err.message
+            : typeof err === 'object' && err !== null && 'message' in err
+              ? String((err as { message: unknown }).message)
+              : ''
+        const isSlotFull =
+          typeof msg === 'string' && (msg.includes('SLOT_FULL') || msg.includes('al completo'))
         notify(
-          isSlotFull ? 'Questo orario è al completo (6/6). Scegli un altro slot tra quelli disponibili.' : (msg || "Errore durante il salvataggio dell'appuntamento"),
+          isSlotFull
+            ? 'Questo orario è al completo (6/6). Scegli un altro slot tra quelli disponibili.'
+            : msg || "Errore durante il salvataggio dell'appuntamento",
           'error',
           isSlotFull ? 'Slot pieno' : 'Errore',
         )

@@ -285,7 +285,9 @@ export function ExerciseCatalog({
   // Prepara le icone di base
   const defaultMuscleIcon = useIcon('💪', { size: 16, className: 'text-teal-400' })
   const defaultEquipmentIcon = useIcon('🏋️', { size: 16, className: 'text-teal-400' })
-  const [muscleGroupFilterId, setMuscleGroupFilterId] = useState<MuscleGroupFilterType | null>('multipli')
+  const [muscleGroupFilterId, setMuscleGroupFilterId] = useState<MuscleGroupFilterType | null>(
+    'multipli',
+  )
   const [filters, setFilters] = useState<ExerciseFilter>({
     search: '',
     muscle_group: 'all',
@@ -578,7 +580,9 @@ export function ExerciseCatalog({
             </label>
             <div className="overflow-x-auto pb-1 scrollbar-thin -mx-0.5">
               <MuscleGroupFilter
-                selectedGroup={muscleGroupFilterId ? muscleGroupFilterToDbValue(muscleGroupFilterId) : ''}
+                selectedGroup={
+                  muscleGroupFilterId ? muscleGroupFilterToDbValue(muscleGroupFilterId) : ''
+                }
                 onSelect={setMuscleGroupFilterId}
                 responsive
               />
@@ -642,9 +646,7 @@ export function ExerciseCatalog({
           {filteredExercises.map((exercise) => {
             const isSelected = selectedExercises.includes(exercise.id)
             const selectionIndex =
-              showSelectionOrder && isSelected
-                ? selectedExercises.indexOf(exercise.id) + 1
-                : null
+              showSelectionOrder && isSelected ? selectedExercises.indexOf(exercise.id) + 1 : null
 
             return (
               <Card
@@ -734,9 +736,7 @@ export function ExerciseCatalog({
           {filteredExercises.map((exercise) => {
             const isSelected = selectedExercises.includes(exercise.id)
             const selectionIndex =
-              showSelectionOrder && isSelected
-                ? selectedExercises.indexOf(exercise.id) + 1
-                : null
+              showSelectionOrder && isSelected ? selectedExercises.indexOf(exercise.id) + 1 : null
 
             return (
               <Card

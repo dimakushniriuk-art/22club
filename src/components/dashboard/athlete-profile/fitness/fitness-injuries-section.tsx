@@ -152,10 +152,16 @@ export function FitnessInjuriesSection({
               />
             </div>
             <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => onShowInfortunioFormChange(false)} className="border-white/10 hover:border-primary/20">
+              <Button
+                variant="outline"
+                onClick={() => onShowInfortunioFormChange(false)}
+                className="border-white/10 hover:border-primary/20"
+              >
                 Annulla
               </Button>
-              <Button variant="default" onClick={onInfortunioAdd}>Aggiungi</Button>
+              <Button variant="default" onClick={onInfortunioAdd}>
+                Aggiungi
+              </Button>
             </div>
           </div>
         )}

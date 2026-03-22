@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Appointment } from '@/types/appointment'
 

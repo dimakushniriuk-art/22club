@@ -1,6 +1,7 @@
 # Verifica migration 20260301190000 – User tombstone (DELETE utente non distruttivo)
 
 ## Obiettivo
+
 - **auth.users**: eliminato (reale) così l’utente non può più loggarsi.
 - **public.profiles**: NON eliminato; marcato con `is_deleted`, `deleted_at`, `deleted_by_profile_id` (tombstone).
 - **profile_tombstones**: snapshot minimo (display_name, email_hash, role_at_time, org_id, …).
@@ -8,14 +9,14 @@
 
 ## Oggetti DB toccati
 
-| Tipo | Nome |
-|------|------|
-| Colonne profiles | `is_deleted`, `deleted_at`, `deleted_by_profile_id` |
-| Tabella | `profile_tombstones` (profile_id PK, display_name, email_hash, role_at_time, org_id, deleted_at, deleted_by_profile_id, reason, created_at) |
-| Indici | `idx_profiles_is_deleted`, `idx_profiles_org_id_is_deleted`, `idx_profile_tombstones_org_id`, `idx_profile_tombstones_deleted_at` |
-| Funzione | `soft_delete_profile(p_profile_id, p_actor_profile_id, p_reason)` |
-| Policy profiles | SELECT/UPDATE aggiornate con filtro `(is_deleted = false OR is_admin())`; "Admin can view all profiles including deleted" |
-| Policy profile_tombstones | Solo admin può fare SELECT |
+| Tipo                      | Nome                                                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Colonne profiles          | `is_deleted`, `deleted_at`, `deleted_by_profile_id`                                                                                         |
+| Tabella                   | `profile_tombstones` (profile_id PK, display_name, email_hash, role_at_time, org_id, deleted_at, deleted_by_profile_id, reason, created_at) |
+| Indici                    | `idx_profiles_is_deleted`, `idx_profiles_org_id_is_deleted`, `idx_profile_tombstones_org_id`, `idx_profile_tombstones_deleted_at`           |
+| Funzione                  | `soft_delete_profile(p_profile_id, p_actor_profile_id, p_reason)`                                                                           |
+| Policy profiles           | SELECT/UPDATE aggiornate con filtro `(is_deleted = false OR is_admin())`; "Admin can view all profiles including deleted"                   |
+| Policy profile_tombstones | Solo admin può fare SELECT                                                                                                                  |
 
 ## Query di verifica (dopo la migration)
 

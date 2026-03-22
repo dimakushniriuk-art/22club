@@ -18,10 +18,7 @@ export function AIDataRiskFactorsSection({ fattoriRischio }: AIDataRiskFactorsSe
   if (fattoriRischio.length === 0) return null
 
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-primary" />

@@ -1,20 +1,21 @@
 'use client'
 
 import { useState, useEffect, lazy, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('app:dashboard:documenti:page')
 import { Button } from '@/components/ui'
 import { Upload } from 'lucide-react'
-import { mockDocuments } from '@/data/mock-documents-data'
 import { useDocumentsFilters } from '@/hooks/use-documents-filters'
 import { DocumentsFilters } from '@/components/dashboard/documenti/documents-filters'
 import { DocumentsTable } from '@/components/dashboard/documenti/documents-table'
 import { DocumentsStatsCards } from '@/components/dashboard/documenti/documents-stats-cards'
 import { extractFileName } from '@/lib/documents'
 import { LoadingState } from '@/components/dashboard/loading-state'
-import { createClient } from '@/lib/supabase/client'
+import { useDocuments } from '@/hooks/use-documents'
 import { useToast } from '@/components/ui/toast'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import type { Document } from '@/types/document'
 
 // Lazy load modali per ridurre bundle size iniziale
@@ -30,12 +31,22 @@ const DocumentInvalidModal = lazy(() =>
 )
 
 export default function DocumentiPage() {
-  const [documents, setDocuments] = useState<Document[]>(mockDocuments)
+  const searchParams = useSearchParams()
+  const athleteIdFromQuery = searchParams.get('atleta')
+
+  const {
+    documents: fetchedDocuments,
+    loading,
+    error,
+  } = useDocuments({
+    athleteId: athleteIdFromQuery,
+  })
+
+  const [documents, setDocuments] = useState<Document[]>([])
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const [showDrawer, setShowDrawer] = useState(false)
   const [showInvalidModal, setShowInvalidModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
-  const [loading, setLoading] = useState(true)
 
   // Hook per filtri
   const {
@@ -51,47 +62,31 @@ export default function DocumentiPage() {
 
   const { addToast } = useToast()
 
-  // Carica documenti reali da Supabase invece di mock data
   useEffect(() => {
-    const loadDocuments = async () => {
-      setLoading(true)
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('documents')
-          .select('*')
-          .order('created_at', { ascending: false })
+    // Durante il loading React Query può restituire un array "di default"
+    // con riferimento diverso ad ogni render: evita di fare setState in loop.
+    if (loading) return
+    setDocuments(fetchedDocuments)
+  }, [fetchedDocuments, loading])
 
-        if (error) {
-          logger.error('Errore caricamento documenti', error)
-          addToast({
-            title: 'Errore',
-            message: 'Errore durante il caricamento dei documenti',
-            variant: 'error',
-          })
-          setLoading(false)
-          return
-        }
-
-        setDocuments((data as Document[]) || [])
-      } catch (err) {
-        logger.error('Errore caricamento documenti', err)
-        addToast({
-          title: 'Errore',
-          message: err instanceof Error ? err.message : 'Errore durante il caricamento dei documenti',
-          variant: 'error',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadDocuments()
-  }, [addToast])
+  useEffect(() => {
+    if (!error) return
+    logger.error('Errore caricamento documenti', error)
+    addToast({
+      title: 'Errore',
+      message: error,
+      variant: 'error',
+    })
+  }, [addToast, error])
 
   const handleDocumentClick = (document: Document) => {
     setSelectedDocument(document)
     setShowDrawer(true)
+  }
+
+  const handlePreview = (document: Document) => {
+    if (!document.file_url) return
+    window.open(document.file_url, '_blank', 'noopener,noreferrer')
   }
 
   const handleMarkInvalid = () => {
@@ -111,76 +106,93 @@ export default function DocumentiPage() {
     setSelectedDocument(null)
   }
 
-  const handleDownload = (document: Document) => {
-    logger.debug('Download document', undefined, {
-      fileName: extractFileName(document.file_url),
-      documentId: document.id,
-    })
+  const handleDownload = (doc: Document) => {
+    if (!doc.file_url) return
+
+    const fileName = doc.file_name || extractFileName(doc.file_url)
+
+    void (async () => {
+      try {
+        const res = await fetch(doc.file_url, { credentials: 'include' })
+        if (!res.ok) throw new Error(`Download fallito: ${res.status}`)
+
+        const blob = await res.blob()
+        const objectUrl = window.URL.createObjectURL(blob)
+
+        const a = globalThis.document.createElement('a')
+        a.href = objectUrl
+        a.download = fileName
+        a.rel = 'noopener noreferrer'
+        globalThis.document.body.appendChild(a)
+        a.click()
+        globalThis.document.body.removeChild(a)
+
+        window.URL.revokeObjectURL(objectUrl)
+      } catch {
+        // Fallback: apri in nuova tab (viewer del browser)
+        window.open(doc.file_url, '_blank', 'noopener,noreferrer')
+      }
+    })()
   }
 
   if (loading) {
     return (
-      <div className="relative min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-          <div className="animate-pulse space-y-4">
-            <div className="bg-background-tertiary h-8 w-64 rounded" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="bg-background-tertiary h-16 rounded-lg" />
-              ))}
-            </div>
+      <StaffContentLayout
+        title="Documenti Atleti"
+        description="Gestisci certificati, liberatorie e contratti"
+        theme="teal"
+        onBack={() => window.history.back()}
+      >
+        <div className="animate-pulse space-y-4 py-2">
+          <div className="bg-background-tertiary h-8 w-64 rounded" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="bg-background-tertiary h-16 rounded-lg" />
+            ))}
           </div>
         </div>
-      </div>
+      </StaffContentLayout>
     )
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-indigo-500/5 via-transparent to-transparent" />
-      </div>
-
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Documenti Atleti
-            </h1>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Gestisci certificati, liberatorie e contratti
-            </p>
-          </div>
-          <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200">
-            <Upload className="mr-2 h-4 w-4" />
+    <>
+      <StaffContentLayout
+        title="Documenti Atleti"
+        description="Gestisci certificati, liberatorie e contratti"
+        theme="teal"
+        onBack={() => window.history.back()}
+        actions={
+          <Button variant="primary" size="sm" className="gap-2">
+            <Upload className="h-4 w-4" />
             Carica Documento
           </Button>
+        }
+      >
+        <div className="space-y-4 sm:space-y-6">
+          {/* Filtri */}
+          <DocumentsFilters
+            searchTerm={searchTerm}
+            statusFilter={statusFilter}
+            categoryFilter={categoryFilter}
+            onSearchChange={setSearchTerm}
+            onStatusFilterChange={setStatusFilter}
+            onCategoryFilterChange={setCategoryFilter}
+            onReset={resetFilters}
+          />
+
+          {/* Tabella documenti */}
+          <DocumentsTable
+            documents={filteredDocuments}
+            onDocumentClick={handleDocumentClick}
+            onPreview={handlePreview}
+            onDownload={handleDownload}
+          />
+
+          {/* Statistiche rapide */}
+          <DocumentsStatsCards documents={documents} />
         </div>
-
-        {/* Filtri */}
-        <DocumentsFilters
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
-          categoryFilter={categoryFilter}
-          onSearchChange={setSearchTerm}
-          onStatusFilterChange={setStatusFilter}
-          onCategoryFilterChange={setCategoryFilter}
-          onReset={resetFilters}
-        />
-
-        {/* Tabella documenti */}
-        <DocumentsTable
-          documents={filteredDocuments}
-          onDocumentClick={handleDocumentClick}
-          onDownload={handleDownload}
-        />
-
-        {/* Statistiche rapide */}
-        <DocumentsStatsCards documents={documents} />
-      </div>
+      </StaffContentLayout>
 
       {/* Drawer dettaglio documento - Lazy loaded solo quando aperto */}
       {showDrawer && selectedDocument && (
@@ -213,6 +225,6 @@ export default function DocumentiPage() {
           />
         </Suspense>
       )}
-    </div>
+    </>
   )
 }

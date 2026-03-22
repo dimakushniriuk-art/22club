@@ -38,8 +38,11 @@ test.describe('Mobile Responsiveness', () => {
 
     // Verify dashboard content is visible on mobile
     const dashboardContent = page.getByText(/Dashboard|Azioni Rapide/i)
-    const hasDashboard = await dashboardContent.first().isVisible({ timeout: 15000 }).catch(() => false)
-    
+    const hasDashboard = await dashboardContent
+      .first()
+      .isVisible({ timeout: 15000 })
+      .catch(() => false)
+
     expect(hasDashboard).toBeTruthy()
   })
 
@@ -78,11 +81,19 @@ test.describe('Mobile Responsiveness', () => {
     await page.waitForLoadState('networkidle').catch(() => {})
 
     // Look for mobile menu button or navigation
-    const menuButton = page.locator('button[aria-label*="menu" i], button[aria-label*="Menu" i], [class*="hamburger"]')
+    const menuButton = page.locator(
+      'button[aria-label*="menu" i], button[aria-label*="Menu" i], [class*="hamburger"]',
+    )
     const sideNav = page.locator('nav, aside, [role="navigation"]')
-    
-    const hasMenuButton = await menuButton.first().isVisible({ timeout: 5000 }).catch(() => false)
-    const hasSideNav = await sideNav.first().isVisible({ timeout: 5000 }).catch(() => false)
+
+    const hasMenuButton = await menuButton
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
+    const hasSideNav = await sideNav
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
 
     // Should have some form of navigation
     expect(hasMenuButton || hasSideNav).toBeTruthy()
@@ -90,9 +101,9 @@ test.describe('Mobile Responsiveness', () => {
 
   test('should be responsive on different mobile sizes', async ({ page }) => {
     const viewports = [
-      { width: 320, height: 568 },  // iPhone SE
-      { width: 375, height: 667 },  // iPhone 8
-      { width: 414, height: 896 },  // iPhone 11
+      { width: 320, height: 568 }, // iPhone SE
+      { width: 375, height: 667 }, // iPhone 8
+      { width: 414, height: 896 }, // iPhone 11
     ]
 
     for (const viewport of viewports) {

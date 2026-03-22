@@ -15,23 +15,23 @@ Documentazione del wizard di onboarding atleta (pagina `/welcome`): step, dati, 
 
 ## 2. Elenco step (STEPS)
 
-| Indice | Titolo                | Descrizione breve                                      | Salvataggio                          |
-|--------|------------------------|--------------------------------------------------------|--------------------------------------|
-| 0      | Benvenuto              | Completa il tuo profilo per iniziare.                  | —                                     |
-| 1      | Identità               | Nome, cognome, codice fiscale, sesso, data nascita     | `profiles` (formStateToUpdate)        |
-| 2      | Contatti & emergenza   | Telefono, contatto emergenza                           | `profiles`                            |
-| 3      | Residenza & dati fiscali | Indirizzo, CAP, città, provincia, nazione, professione, codice fiscale | `profiles` |
-| 4      | Dati fisici            | Altezza, peso, obiettivo peso, BMI                     | `profiles`                            |
-| 5      | Obiettivi & livello    | Livello esperienza, tipo atleta, obiettivi fitness     | `profiles`                            |
-| 6      | Motivazione            | Livello 1–5, note                                       | `profiles`                            |
-| 7      | Salute                  | Certificato medico, limitazioni, infortuni, operazioni, allergie; upload certificato | `profiles` + Storage + `documents` |
-| 8      | Nutrizione             | Obiettivo nutrizionale, intolleranze, allergie alimentari, abitudini | `profiles` |
-| 9      | Anamnesi                | Questionario clinico + dichiarazione + firma            | `athlete_questionnaires.anamnesi`    |
-| 10     | Manleva                 | Documento manleva, dati read-only, ruolo, firma         | `athlete_questionnaires.manleva`     |
-| 11     | Liberatoria foto e video | Consenso media (Autorizzo/Non autorizzo), canali, firma | `athlete_questionnaires.liberatoria_media` |
-| 12     | Riepilogo               | Solo lettura, sezioni con CTA “Modifica” → step corrispondente, card Documenti | — |
-| 13     | Conferma finale         | Checkbox obbligatoria per procedere                     | Solo stato locale (nessun DB)        |
-| 14     | Genera dossier          | Chiamata API, generazione PDF, download, link Documenti | API aggiorna `first_login`, `signed_at`, inserisce in `documents` |
+| Indice | Titolo                   | Descrizione breve                                                                    | Salvataggio                                                       |
+| ------ | ------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| 0      | Benvenuto                | Completa il tuo profilo per iniziare.                                                | —                                                                 |
+| 1      | Identità                 | Nome, cognome, codice fiscale, sesso, data nascita                                   | `profiles` (formStateToUpdate)                                    |
+| 2      | Contatti & emergenza     | Telefono, contatto emergenza                                                         | `profiles`                                                        |
+| 3      | Residenza & dati fiscali | Indirizzo, CAP, città, provincia, nazione, professione, codice fiscale               | `profiles`                                                        |
+| 4      | Dati fisici              | Altezza, peso, obiettivo peso, BMI                                                   | `profiles`                                                        |
+| 5      | Obiettivi & livello      | Livello esperienza, tipo atleta, obiettivi fitness                                   | `profiles`                                                        |
+| 6      | Motivazione              | Livello 1–5, note                                                                    | `profiles`                                                        |
+| 7      | Salute                   | Certificato medico, limitazioni, infortuni, operazioni, allergie; upload certificato | `profiles` + Storage + `documents`                                |
+| 8      | Nutrizione               | Obiettivo nutrizionale, intolleranze, allergie alimentari, abitudini                 | `profiles`                                                        |
+| 9      | Anamnesi                 | Questionario clinico + dichiarazione + firma                                         | `athlete_questionnaires.anamnesi`                                 |
+| 10     | Manleva                  | Documento manleva, dati read-only, ruolo, firma                                      | `athlete_questionnaires.manleva`                                  |
+| 11     | Liberatoria foto e video | Consenso media (Autorizzo/Non autorizzo), canali, firma                              | `athlete_questionnaires.liberatoria_media`                        |
+| 12     | Riepilogo                | Solo lettura, sezioni con CTA “Modifica” → step corrispondente, card Documenti       | —                                                                 |
+| 13     | Conferma finale          | Checkbox obbligatoria per procedere                                                  | Solo stato locale (nessun DB)                                     |
+| 14     | Genera dossier           | Chiamata API, generazione PDF, download, link Documenti                              | API aggiorna `first_login`, `signed_at`, inserisce in `documents` |
 
 ---
 
@@ -156,4 +156,4 @@ Se la validazione fallisce, viene mostrato `stepError` e non si avanza.
 
 ---
 
-*Ultimo aggiornamento: febbraio 2026*
+_Ultimo aggiornamento: febbraio 2026_

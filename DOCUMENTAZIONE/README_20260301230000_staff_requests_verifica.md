@@ -82,19 +82,19 @@ SELECT * FROM staff_atleti;  -- solo dove staff_id = mio profile_id
 
 ## Riassunto modifiche migration
 
-| Area | Modifica |
-|------|----------|
-| profiles / roles | CHECK ruoli a 6 valori (incl. nutrizionista, massaggiatore); trigger guard aggiornato |
-| staff_atleti | Colonne org_id, staff_type, status, activated_at, deactivated_at, updated_at; backfill; unique partial (atleta_id, staff_type) WHERE status='active' |
-| staff_requests | Nuova tabella con org_id, athlete_id, staff_id, staff_type, status; unique partial per richieste aperte |
-| Trigger | AFTER UPDATE status su staff_requests: su staff_confirmed disattiva vecchio staff_atleti, inserisce nuovo, audit_write |
-| RLS | staff_atleti e staff_requests: admin/staff/athlete; reintrodotte policy su profiles, appointments, workout_logs per nutrizionista/massaggiatore |
+| Area             | Modifica                                                                                                                                             |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| profiles / roles | CHECK ruoli a 6 valori (incl. nutrizionista, massaggiatore); trigger guard aggiornato                                                                |
+| staff_atleti     | Colonne org_id, staff_type, status, activated_at, deactivated_at, updated_at; backfill; unique partial (atleta_id, staff_type) WHERE status='active' |
+| staff_requests   | Nuova tabella con org_id, athlete_id, staff_id, staff_type, status; unique partial per richieste aperte                                              |
+| Trigger          | AFTER UPDATE status su staff_requests: su staff_confirmed disattiva vecchio staff_atleti, inserisce nuovo, audit_write                               |
+| RLS              | staff_atleti e staff_requests: admin/staff/athlete; reintrodotte policy su profiles, appointments, workout_logs per nutrizionista/massaggiatore      |
 
 ---
 
 ## FASE 0 – Stato attuale (pre-implementazione)
 
-- **Ruoli**: UserRole e validRoles solo 4 (admin, trainer, athlete, marketing). DB: profiles_role_check e _profiles_role_guard solo 4 ruoli; nutrizionista/massaggiatore erano stati migrati a trainer (20260301170000).
+- **Ruoli**: UserRole e validRoles solo 4 (admin, trainer, athlete, marketing). DB: profiles_role_check e \_profiles_role_guard solo 4 ruoli; nutrizionista/massaggiatore erano stati migrati a trainer (20260301170000).
 - **staff_atleti**: Esiste con id, staff_id, atleta_id, created_at. Nessun org_id, staff_type, status. RLS disabilitata (20260225_rollback). Policy su profiles/appointments/workout_logs per nutrizionista/massaggiatore rimosse in 20260301170000.
 - **Pagine**: /dashboard/nutrizionista e /dashboard/massaggiatore presenti; useStaffDashboardGuard già previsto; middleware non gestiva i due ruoli (redirect/allow path).
 - **audit_write**: Firma (p_action, p_table_name, p_record_id, p_before, p_after, p_actor_profile_id, p_org_id uuid, p_impersonated_profile_id). audit_logs.org_id uuid. get_org_id_for_current_user() ritorna uuid.

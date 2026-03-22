@@ -48,12 +48,15 @@ export function AdminDashboardContent() {
 
         const statsData: AdminStats = {
           totalUsers: usersResult.count || 0,
-          activeUsers: allUsers.filter((u: { stato?: string | null }) => u.stato === 'attivo').length,
+          activeUsers: allUsers.filter((u: { stato?: string | null }) => u.stato === 'attivo')
+            .length,
           newUsersThisMonth: allUsers.filter(
-            (u: { created_at?: string | null }) => u.created_at && new Date(u.created_at) >= startOfMonth,
+            (u: { created_at?: string | null }) =>
+              u.created_at && new Date(u.created_at) >= startOfMonth,
           ).length,
           totalOrganizations: new Set(
-            profilesResult.data?.map((p: { org_id?: string | null }) => p.org_id).filter(Boolean) || [],
+            profilesResult.data?.map((p: { org_id?: string | null }) => p.org_id).filter(Boolean) ||
+              [],
           ).size,
           totalTrainers: allUsers.filter((u: { role?: string }) => u.role === 'trainer').length,
           totalAthletes: allUsers.filter((u: { role?: string }) => u.role === 'athlete').length,

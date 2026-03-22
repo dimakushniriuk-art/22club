@@ -29,7 +29,9 @@ export function SectionIcone({ iconSamples }: { iconSamples: IconSample[] }) {
               className="flex flex-col items-center gap-2 rounded-lg border border-white/10 bg-zinc-800/80 p-4 transition-colors hover:border-primary/25 hover:bg-zinc-700/80"
             >
               <Icon className="h-6 w-6 text-primary" />
-              <span className="text-xs text-text-muted truncate w-full text-center px-0.5">{name}</span>
+              <span className="text-xs text-text-muted truncate w-full text-center px-0.5">
+                {name}
+              </span>
             </div>
           ))}
         </div>

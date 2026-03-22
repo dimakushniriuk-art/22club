@@ -93,7 +93,11 @@ export default function SchedePage() {
 
   if (loading) {
     return (
-      <StaffContentLayout title="Schede" description="Gestisci le schede di allenamento per i tuoi atleti" theme="teal">
+      <StaffContentLayout
+        title="Schede"
+        description="Gestisci le schede di allenamento per i tuoi atleti"
+        theme="teal"
+      >
         <SkeletonWorkoutList cards={8} />
       </StaffContentLayout>
     )
@@ -101,12 +105,12 @@ export default function SchedePage() {
 
   if (error) {
     return (
-      <StaffContentLayout title="Schede" description="Gestisci le schede di allenamento per i tuoi atleti" theme="teal">
-        <ErrorState
-          title="Impossibile caricare le schede"
-          message={error}
-          onRetry={handleRetry}
-        />
+      <StaffContentLayout
+        title="Schede"
+        description="Gestisci le schede di allenamento per i tuoi atleti"
+        theme="teal"
+      >
+        <ErrorState title="Impossibile caricare le schede" message={error} onRetry={handleRetry} />
       </StaffContentLayout>
     )
   }
@@ -128,20 +132,20 @@ export default function SchedePage() {
       }
     >
       {showFilters && (
-          <Suspense fallback={<LoadingState message="Caricamento filtri..." />}>
-            <WorkoutPlansFilters
-              searchTerm={searchTerm}
-              statusFilter={statusFilter}
-              athleteFilter={athleteFilter}
-              objectiveFilter={objectiveFilter}
-              athletes={athletes}
-              onSearchChange={setSearchTerm}
-              onStatusFilterChange={setStatusFilter}
-              onAthleteFilterChange={setAthleteFilter}
-              onObjectiveFilterChange={setObjectiveFilter}
-            />
-          </Suspense>
-        )}
+        <Suspense fallback={<LoadingState message="Caricamento filtri..." />}>
+          <WorkoutPlansFilters
+            searchTerm={searchTerm}
+            statusFilter={statusFilter}
+            athleteFilter={athleteFilter}
+            objectiveFilter={objectiveFilter}
+            athletes={athletes}
+            onSearchChange={setSearchTerm}
+            onStatusFilterChange={setStatusFilter}
+            onAthleteFilterChange={setAthleteFilter}
+            onObjectiveFilterChange={setObjectiveFilter}
+          />
+        </Suspense>
+      )}
 
       <div role="status" aria-live="polite" className="sr-only">
         {workouts.length} {workouts.length === 1 ? 'scheda' : 'schede'}

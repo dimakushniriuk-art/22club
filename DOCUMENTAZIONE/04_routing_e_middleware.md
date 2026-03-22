@@ -7,67 +7,71 @@
 ## 📍 MAPPA ROUTE
 
 ### Route Pubbliche
-| Route | File | Descrizione |
-|-------|------|-------------|
-| `/` | - | Redirect a /login |
-| `/login` | `src/app/login/page.tsx` | Form login |
-| `/registrati` | `src/app/registrati/page.tsx` | Registrazione atleta |
-| `/forgot-password` | `src/app/forgot-password/page.tsx` | Reset password |
-| `/reset-password` | `src/app/reset-password/page.tsx` | Nuova password |
-| `/reset` | `src/app/reset/page.tsx` | Legacy reset |
+
+| Route              | File                               | Descrizione          |
+| ------------------ | ---------------------------------- | -------------------- |
+| `/`                | -                                  | Redirect a /login    |
+| `/login`           | `src/app/login/page.tsx`           | Form login           |
+| `/registrati`      | `src/app/registrati/page.tsx`      | Registrazione atleta |
+| `/forgot-password` | `src/app/forgot-password/page.tsx` | Reset password       |
+| `/reset-password`  | `src/app/reset-password/page.tsx`  | Nuova password       |
+| `/reset`           | `src/app/reset/page.tsx`           | Legacy reset         |
 
 ### Route Protette - Dashboard (trainer/admin)
-| Route | File | Descrizione |
-|-------|------|-------------|
-| `/dashboard` | `src/app/dashboard/page.tsx` | Home trainer |
-| `/dashboard/admin` | `src/app/dashboard/admin/page.tsx` | Home admin |
-| `/dashboard/clienti` | `src/app/dashboard/clienti/page.tsx` | Lista clienti |
-| `/dashboard/calendario` | `src/app/dashboard/calendario/page.tsx` | Calendario |
-| `/dashboard/schede` | `src/app/dashboard/schede/page.tsx` | Schede allenamento |
-| `/dashboard/statistiche` | `src/app/dashboard/statistiche/page.tsx` | Analytics |
-| `/dashboard/chat` | `src/app/dashboard/chat/page.tsx` | Messaggi |
-| `/dashboard/allenamenti` | `src/app/dashboard/allenamenti/page.tsx` | Allenamenti |
-| `/dashboard/profilo` | `src/app/dashboard/profilo/page.tsx` | Profilo PT |
+
+| Route                    | File                                     | Descrizione        |
+| ------------------------ | ---------------------------------------- | ------------------ |
+| `/dashboard`             | `src/app/dashboard/page.tsx`             | Home trainer       |
+| `/dashboard/admin`       | `src/app/dashboard/admin/page.tsx`       | Home admin         |
+| `/dashboard/clienti`     | `src/app/dashboard/clienti/page.tsx`     | Lista clienti      |
+| `/dashboard/calendario`  | `src/app/dashboard/calendario/page.tsx`  | Calendario         |
+| `/dashboard/schede`      | `src/app/dashboard/schede/page.tsx`      | Schede allenamento |
+| `/dashboard/statistiche` | `src/app/dashboard/statistiche/page.tsx` | Analytics          |
+| `/dashboard/chat`        | `src/app/dashboard/chat/page.tsx`        | Messaggi           |
+| `/dashboard/allenamenti` | `src/app/dashboard/allenamenti/page.tsx` | Allenamenti        |
+| `/dashboard/profilo`     | `src/app/dashboard/profilo/page.tsx`     | Profilo PT         |
 
 ### Route Protette - Home (athlete)
-| Route | File | Descrizione |
-|-------|------|-------------|
-| `/home` | `src/app/home/page.tsx` | Home atleta |
-| `/home/allenamenti` | `src/app/home/allenamenti/page.tsx` | Schede atleta |
-| `/home/appuntamenti` | `src/app/home/appuntamenti/page.tsx` | Appuntamenti |
-| `/home/progressi` | `src/app/home/progressi/page.tsx` | Progressi |
-| `/home/chat` | `src/app/home/chat/page.tsx` | Chat con PT |
-| `/home/profilo` | `src/app/home/profilo/page.tsx` | Profilo atleta |
+
+| Route                 | File                                  | Descrizione        |
+| --------------------- | ------------------------------------- | ------------------ |
+| `/home`               | `src/app/home/page.tsx`               | Home atleta        |
+| `/home/allenamenti`   | `src/app/home/allenamenti/page.tsx`   | Schede atleta      |
+| `/home/appuntamenti`  | `src/app/home/appuntamenti/page.tsx`  | Appuntamenti       |
+| `/home/progressi`     | `src/app/home/progressi/page.tsx`     | Progressi          |
+| `/home/chat`          | `src/app/home/chat/page.tsx`          | Chat con PT        |
+| `/home/profilo`       | `src/app/home/profilo/page.tsx`       | Profilo atleta     |
 | `/home/nutrizionista` | `src/app/home/nutrizionista/page.tsx` | Area nutrizionista |
 | `/home/massaggiatore` | `src/app/home/massaggiatore/page.tsx` | Area massaggiatore |
-| `/home/documenti` | `src/app/home/documenti/page.tsx` | Documenti |
+| `/home/documenti`     | `src/app/home/documenti/page.tsx`     | Documenti          |
 
 ### Route API
-| Pattern | File | Descrizione |
-|---------|------|-------------|
-| `/api/health` | `src/app/api/health/route.ts` | Health check |
-| `/api/admin/*` | `src/app/api/admin/` | Operazioni admin |
-| `/api/athletes/*` | `src/app/api/athletes/` | CRUD atleti |
-| `/api/communications/*` | `src/app/api/communications/` | Notifiche/email |
-| `/api/push/*` | `src/app/api/push/` | Push notifications |
-| `/api/webhooks/*` | `src/app/api/webhooks/` | Webhook handlers |
+
+| Pattern                 | File                          | Descrizione        |
+| ----------------------- | ----------------------------- | ------------------ |
+| `/api/health`           | `src/app/api/health/route.ts` | Health check       |
+| `/api/admin/*`          | `src/app/api/admin/`          | Operazioni admin   |
+| `/api/athletes/*`       | `src/app/api/athletes/`       | CRUD atleti        |
+| `/api/communications/*` | `src/app/api/communications/` | Notifiche/email    |
+| `/api/push/*`           | `src/app/api/push/`           | Push notifications |
+| `/api/webhooks/*`       | `src/app/api/webhooks/`       | Webhook handlers   |
 
 ---
 
 ## 🛡️ MIDDLEWARE
 
 ### Configurazione
+
 ```typescript
 // src/middleware.ts:279-291
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
   runtime: 'nodejs',
 }
 ```
 
 ### Flusso Principale
+
 ```
 Request
     │
@@ -115,6 +119,7 @@ Request
 ```
 
 ### Cache Ruoli
+
 ```typescript
 // src/middleware.ts:8-16
 interface CachedRole {
@@ -128,6 +133,7 @@ roleCache.set(userId, { role, expires: Date.now() + 60 * 1000 })
 ```
 
 ### Cleanup Interval
+
 ```typescript
 // src/middleware.ts:20-36
 let cleanupInterval: NodeJS.Timeout | null = null
@@ -150,6 +156,7 @@ function initCleanupInterval() {
 ## 🔀 REDIRECT LOGIC
 
 ### Utente Autenticato su /login
+
 ```typescript
 // src/middleware.ts:186-194
 if (pathname === '/login') {
@@ -164,6 +171,7 @@ if (pathname === '/login') {
 ```
 
 ### Root Sempre a Login
+
 ```typescript
 // src/middleware.ts:196-201
 if (pathname === '/') {
@@ -174,6 +182,7 @@ if (pathname === '/') {
 ```
 
 ### Accesso Negato
+
 ```typescript
 // src/middleware.ts:206-220
 // Dashboard solo per admin/trainer
@@ -195,18 +204,19 @@ if (pathname.startsWith('/home') && normalizedRole !== 'athlete') {
 
 ## 📊 VALUTAZIONE
 
-| Aspetto | Rating | Note |
-|---------|--------|------|
-| Chiarezza logica | ★★★★★ | Flusso lineare e documentato |
-| Robustezza | ★★★★☆ | Gestione errori silenziosa ok |
-| Debito tecnico | **BASSO** | Struttura pulita |
-| Rischio regressioni | **BASSO** | Cambi localizzati |
+| Aspetto             | Rating    | Note                          |
+| ------------------- | --------- | ----------------------------- |
+| Chiarezza logica    | ★★★★★     | Flusso lineare e documentato  |
+| Robustezza          | ★★★★☆     | Gestione errori silenziosa ok |
+| Debito tecnico      | **BASSO** | Struttura pulita              |
+| Rischio regressioni | **BASSO** | Cambi localizzati             |
 
 ---
 
 ## ⚠️ PROBLEMI RILEVATI
 
 ### SEG-005: Cache Non Distribuita
+
 ```
 🧠 RISK
 File: src/middleware.ts
@@ -218,6 +228,7 @@ Azione: In produzione con più worker, ogni worker ha cache separata
 ```
 
 ### SEG-020: Protected Routes Hardcoded
+
 ```
 🧠 RISK
 File: src/middleware.ts:247

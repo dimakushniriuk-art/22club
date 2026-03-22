@@ -1,6 +1,18 @@
 'use client'
 
-import { Palette, Type, Square, Zap, Sparkles, Box, LayoutGrid, Layout, Globe, Home, LogIn } from 'lucide-react'
+import {
+  Palette,
+  Type,
+  Square,
+  Zap,
+  Sparkles,
+  Box,
+  LayoutGrid,
+  Layout,
+  Globe,
+  Home,
+  LogIn,
+} from 'lucide-react'
 import Link from 'next/link'
 import { DS_CARD_FRAME_CLASS } from './helpers'
 
@@ -50,14 +62,20 @@ export function SectionOverview() {
         22Club Design System
       </h2>
       <p className="mb-6 sm:mb-8 text-xs sm:text-sm text-text-secondary">
-        Riferimento unico per colori, tipografia, componenti e pattern dell’app. Usa le fondazioni e i componenti in modo coerente in tutte le aree (pubbliche, atleta, dashboard).
+        Riferimento unico per colori, tipografia, componenti e pattern dell’app. Usa le fondazioni e
+        i componenti in modo coerente in tutte le aree (pubbliche, atleta, dashboard).
       </p>
 
       <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {BLOCKS.map((block) => (
-          <div key={block.title} className={`${DS_CARD_FRAME_CLASS} border-l-4 border-l-primary/50`}>
+          <div
+            key={block.title}
+            className={`${DS_CARD_FRAME_CLASS} border-l-4 border-l-primary/50`}
+          >
             <h3 className="mb-1.5 text-sm font-semibold text-text-primary">{block.title}</h3>
-            <p className="mb-3 sm:mb-4 text-xs text-text-secondary leading-relaxed">{block.description}</p>
+            <p className="mb-3 sm:mb-4 text-xs text-text-secondary leading-relaxed">
+              {block.description}
+            </p>
             <ul className="space-y-1.5">
               {block.links.map(({ href, label, icon: Icon }) => (
                 <li key={href}>

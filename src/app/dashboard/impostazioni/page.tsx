@@ -444,135 +444,134 @@ export default function ImpostazioniPage() {
       theme="teal"
       className="max-w-[1200px]"
     >
+      {/* Banner errore salvataggio con Riprova */}
+      {lastSaveError && (
+        <div
+          className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+          role="alert"
+        >
+          <p className="text-red-400 text-sm">{lastSaveError.message}</p>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLastSaveError(null)}
+              className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+            >
+              Chiudi
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleRetrySave}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Riprova
+            </Button>
+          </div>
+        </div>
+      )}
 
-        {/* Banner errore salvataggio con Riprova */}
-        {lastSaveError && (
-          <div
-            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-            role="alert"
-          >
-            <p className="text-red-400 text-sm">{lastSaveError.message}</p>
-            <div className="flex gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLastSaveError(null)}
-                className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-              >
-                Chiudi
-              </Button>
-              <Button
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]">
+          <div className="relative p-1.5">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-transparent gap-1 items-stretch justify-items-stretch h-10 p-0">
+              <TabsTrigger value="profilo" variant="default" className={TAB_TRIGGER_CLASS}>
+                <UserCircle className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Profilo</span>
+              </TabsTrigger>
+              <TabsTrigger value="notifiche" variant="default" className={TAB_TRIGGER_CLASS}>
+                <Bell className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Notifiche</span>
+              </TabsTrigger>
+              <TabsTrigger value="privacy" variant="default" className={TAB_TRIGGER_CLASS}>
+                <Shield className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Privacy</span>
+              </TabsTrigger>
+              <TabsTrigger value="account" variant="default" className={TAB_TRIGGER_CLASS}>
+                <Globe className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Account</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="profilo-professionale"
                 variant="default"
-                size="sm"
-                onClick={handleRetrySave}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className={TAB_TRIGGER_CLASS}
               >
-                Riprova
-              </Button>
-            </div>
+                <Briefcase className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline truncate max-w-full">Profilo professionale</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
-        )}
+        </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]">
-            <div className="relative p-1.5">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-transparent gap-1 items-stretch justify-items-stretch h-10 p-0">
-                <TabsTrigger value="profilo" variant="default" className={TAB_TRIGGER_CLASS}>
-                  <UserCircle className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Profilo</span>
-                </TabsTrigger>
-                <TabsTrigger value="notifiche" variant="default" className={TAB_TRIGGER_CLASS}>
-                  <Bell className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Notifiche</span>
-                </TabsTrigger>
-                <TabsTrigger value="privacy" variant="default" className={TAB_TRIGGER_CLASS}>
-                  <Shield className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Privacy</span>
-                </TabsTrigger>
-                <TabsTrigger value="account" variant="default" className={TAB_TRIGGER_CLASS}>
-                  <Globe className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Account</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="profilo-professionale"
-                  variant="default"
-                  className={TAB_TRIGGER_CLASS}
-                >
-                  <Briefcase className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline truncate max-w-full">Profilo professionale</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
-          </div>
+        {/* Tab: Profilo */}
+        <TabsContent value="profilo" className="mt-6 space-y-6">
+          <Suspense fallback={<SettingsTabSkeleton />}>
+            <SettingsProfileTab
+              profile={profile}
+              profileLoading={profileLoading}
+              loading={loading}
+              onProfileChange={handleProfileChange}
+              onSaveProfile={handleSaveProfile}
+            />
+          </Suspense>
+        </TabsContent>
 
-          {/* Tab: Profilo */}
-          <TabsContent value="profilo" className="mt-6 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
-              <SettingsProfileTab
-                profile={profile}
-                profileLoading={profileLoading}
-                loading={loading}
-                onProfileChange={handleProfileChange}
-                onSaveProfile={handleSaveProfile}
-              />
-            </Suspense>
-          </TabsContent>
+        {/* Tab: Notifiche */}
+        <TabsContent value="notifiche" className="mt-6 space-y-6">
+          <Suspense fallback={<SettingsTabSkeleton />}>
+            <SettingsNotificationsTab
+              notifications={notifications}
+              loading={loading}
+              onNotificationChange={handleNotificationChange}
+              onNotificationsChange={handleNotificationsChange}
+              onSave={handleSaveNotifications}
+            />
+          </Suspense>
+        </TabsContent>
 
-          {/* Tab: Notifiche */}
-          <TabsContent value="notifiche" className="mt-6 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
-              <SettingsNotificationsTab
-                notifications={notifications}
-                loading={loading}
-                onNotificationChange={handleNotificationChange}
-                onNotificationsChange={handleNotificationsChange}
-                onSave={handleSaveNotifications}
-              />
-            </Suspense>
-          </TabsContent>
+        {/* Tab: Privacy */}
+        <TabsContent value="privacy" className="mt-6 space-y-6">
+          <Suspense fallback={<SettingsTabSkeleton />}>
+            <SettingsPrivacyTab
+              privacy={privacy}
+              loading={loading}
+              onPrivacyChange={handlePrivacyChange}
+              onSave={handleSavePrivacy}
+            />
+          </Suspense>
+        </TabsContent>
 
-          {/* Tab: Privacy */}
-          <TabsContent value="privacy" className="mt-6 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
-              <SettingsPrivacyTab
-                privacy={privacy}
-                loading={loading}
-                onPrivacyChange={handlePrivacyChange}
-                onSave={handleSavePrivacy}
-              />
-            </Suspense>
-          </TabsContent>
+        {/* Tab: Profilo professionale (trainer) */}
+        <TabsContent value="profilo-professionale" className="mt-6 space-y-6">
+          <Suspense fallback={<SettingsTabSkeleton />}>
+            <SettingsTrainerProfileTab />
+          </Suspense>
+        </TabsContent>
 
-          {/* Tab: Profilo professionale (trainer) */}
-          <TabsContent value="profilo-professionale" className="mt-6 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
-              <SettingsTrainerProfileTab />
-            </Suspense>
-          </TabsContent>
-
-          {/* Tab: Account */}
-          <TabsContent value="account" className="mt-6 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
-              <SettingsAccountTab
-                account={account}
-                loading={loading}
-                passwords={passwords}
-                showCurrentPassword={showCurrentPassword}
-                showNewPassword={showNewPassword}
-                showConfirmPassword={showConfirmPassword}
-                twoFactorEnabled={settings?.two_factor_enabled ?? false}
-                onAccountChange={handleAccountChange}
-                onPasswordChange={handlePasswordChange}
-                onTogglePasswordVisibility={handleTogglePasswordVisibility}
-                onSave={handleSaveAccount}
-                onChangePassword={handleChangePassword}
-                onTwoFactorSetup={noop}
-                onDisableTwoFactor={handleDisableTwoFactor}
-              />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
+        {/* Tab: Account */}
+        <TabsContent value="account" className="mt-6 space-y-6">
+          <Suspense fallback={<SettingsTabSkeleton />}>
+            <SettingsAccountTab
+              account={account}
+              loading={loading}
+              passwords={passwords}
+              showCurrentPassword={showCurrentPassword}
+              showNewPassword={showNewPassword}
+              showConfirmPassword={showConfirmPassword}
+              twoFactorEnabled={settings?.two_factor_enabled ?? false}
+              onAccountChange={handleAccountChange}
+              onPasswordChange={handlePasswordChange}
+              onTogglePasswordVisibility={handleTogglePasswordVisibility}
+              onSave={handleSaveAccount}
+              onChangePassword={handleChangePassword}
+              onTwoFactorSetup={noop}
+              onDisableTwoFactor={handleDisableTwoFactor}
+            />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
 
       {/* Conferma uscita con modifiche non salvate */}
       <ConfirmDialog

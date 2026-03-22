@@ -17,10 +17,7 @@ export function AIDataInsightsSection({ insightsAggregati }: AIDataInsightsSecti
   if (!insightsAggregati || Object.keys(insightsAggregati).length === 0) return null
 
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />

@@ -19,8 +19,10 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
-  console.error('❌ Variabili d\'ambiente mancanti!')
-  console.error('Richiesti: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY')
+  console.error("❌ Variabili d'ambiente mancanti!")
+  console.error(
+    'Richiesti: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY',
+  )
   process.exit(1)
 }
 
@@ -36,7 +38,9 @@ async function testUserLogin(email: string, password: string) {
   console.log('🔍 Test Login Utente')
   console.log('='.repeat(60))
   console.log(`Email: ${email}`)
-  console.log(`Password: ${password.length >= 6 ? '✅ Valida' : '❌ Troppo corta'} (${password.length} caratteri)`)
+  console.log(
+    `Password: ${password.length >= 6 ? '✅ Valida' : '❌ Troppo corta'} (${password.length} caratteri)`,
+  )
   console.log()
 
   // 1. Verifica utente in auth.users
@@ -95,14 +99,14 @@ async function testUserLogin(email: string, password: string) {
       console.error('❌ Errore login:', signInError.message)
       console.error('   Codice:', (signInError as { code?: string }).code)
       console.error('   Status:', (signInError as { status?: number }).status)
-      
+
       // Suggerimenti
       if (signInError.message?.includes('Invalid login credentials')) {
         console.log()
         console.log('💡 Suggerimenti:')
         console.log('   1. Verifica che la password sia corretta')
         console.log('   2. Prova a resettare la password tramite API Admin')
-        console.log('   3. Verifica che l\'email sia confermata')
+        console.log("   3. Verifica che l'email sia confermata")
       }
       return
     }
@@ -112,7 +116,7 @@ async function testUserLogin(email: string, password: string) {
       console.log(`   User ID: ${signInData.user.id}`)
       console.log(`   Email: ${signInData.user.email}`)
       console.log(`   Session: ${signInData.session ? '✅ Creata' : '❌ Non creata'}`)
-      
+
       // Logout
       await supabase.auth.signOut()
       console.log('   Logout eseguito')

@@ -58,7 +58,6 @@ export interface EmailLayoutOptions {
   logoUrl?: string
 }
 
-
 /**
  * Wrapper HTML comune: header brand, container, body, footer.
  * Usa EMAIL_DESIGN per stili coerenti.
@@ -68,7 +67,7 @@ export function wrapEmailLayout(options: EmailLayoutOptions): string {
     headerTitle,
     bodyHtml,
     footerBrand = EMAIL_DESIGN.defaultOrgName,
-    footerDisclaimer = "Questa email è stata inviata automaticamente. Non rispondere a questo messaggio.",
+    footerDisclaimer = 'Questa email è stata inviata automaticamente. Non rispondere a questo messaggio.',
     pageTitle = headerTitle,
   } = options
 
@@ -128,7 +127,7 @@ export function wrapEmailLayoutDark(options: EmailLayoutOptions): string {
     headerTitle,
     bodyHtml,
     footerBrand = EMAIL_DESIGN.defaultOrgName,
-    footerDisclaimer = "Questa email è stata inviata automaticamente dal sistema. Non rispondere a questo messaggio.",
+    footerDisclaimer = 'Questa email è stata inviata automaticamente dal sistema. Non rispondere a questo messaggio.',
     pageTitle = headerTitle,
     logoUrl,
   } = options

@@ -68,7 +68,7 @@ export function WorkoutWizardContent({
 
   const {
     currentStep,
-    progress,
+    progress: _progress,
     wizardData,
     setWizardData,
     isLoading,
@@ -162,7 +162,7 @@ export function WorkoutWizardContent({
     closeCircuitModal()
   }, [editingCircuitId, circuitExerciseParams, closeCircuitModal, addCircuitToDay, selectedDayIndex])
 
-  const toggleCircuitInDay = useCallback(
+  const _toggleCircuitInDay = useCallback(
     (circuitId: string) => {
       const day = wizardData.days[selectedDayIndex]
       const inDay =
@@ -174,7 +174,7 @@ export function WorkoutWizardContent({
     [wizardData.days, selectedDayIndex, getDayItems, addCircuitToDay, removeCircuitFromDay],
   )
 
-  const removeCircuit = useCallback(
+  const _removeCircuit = useCallback(
     (id: string) => {
       setCircuitList((prev) => prev.filter((c) => c.id !== id))
       wizardData.days.forEach((_, dayIndex) => removeCircuitFromDay(dayIndex, id))

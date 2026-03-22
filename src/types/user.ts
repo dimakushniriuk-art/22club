@@ -1,5 +1,11 @@
 // 👤 User Types — 22Club
-export type UserRole = 'athlete' | 'trainer' | 'admin' | 'marketing' | 'nutrizionista' | 'massaggiatore'
+export type UserRole =
+  | 'athlete'
+  | 'trainer'
+  | 'admin'
+  | 'marketing'
+  | 'nutrizionista'
+  | 'massaggiatore'
 
 export interface UserProfile {
   id: string // profiles.id

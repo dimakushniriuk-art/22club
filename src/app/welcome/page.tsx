@@ -214,7 +214,8 @@ const ALLERGIE_ALIMENTARI_PRESET = [
 const STEPS = [
   {
     title: 'Welcome in 22 Club!',
-    description: 'È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!',
+    description:
+      'È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!',
     icon: Sparkles,
     skippable: false,
     emoji: '👋',
@@ -658,7 +659,10 @@ function WelcomePageContent() {
                 ? sessionStorage.getItem('pending_invite_codice')?.trim()
                 : null) ||
               ''
-            const meta = (authUser?.user_metadata ?? (user as { user_metadata?: unknown } | null)?.user_metadata) as { nome?: string; cognome?: string } | undefined
+            const meta = (authUser?.user_metadata ??
+              (user as { user_metadata?: unknown } | null)?.user_metadata) as
+              | { nome?: string; cognome?: string }
+              | undefined
             const res = await fetch('/api/register/complete-profile', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -717,7 +721,11 @@ function WelcomePageContent() {
             .eq('athlete_id', row.id)
             .eq('version', QUESTIONNAIRE_VERSION)
             .maybeSingle()
-          const qRow = qData as { anamnesi?: unknown; manleva?: unknown; liberatoria_media?: unknown } | null
+          const qRow = qData as {
+            anamnesi?: unknown
+            manleva?: unknown
+            liberatoria_media?: unknown
+          } | null
           if (!cancelled && qRow) {
             const a = (qRow.anamnesi as Partial<AnamnesiState>) ?? {}
             setAnamnesi((prev) => ({ ...emptyAnamnesi(), ...prev, ...a }))
@@ -826,8 +834,7 @@ function WelcomePageContent() {
         if (!form.livello_esperienza.trim()) return 'Seleziona il livello di esperienza.'
       }
       if (step === 9) {
-        if (!anamnesi.consenso_termini_condizioni)
-          return 'Devi accettare i Termini e Condizioni.'
+        if (!anamnesi.consenso_termini_condizioni) return 'Devi accettare i Termini e Condizioni.'
         if (!anamnesi.consenso_privacy) return "Devi accettare l'Informativa Privacy."
         if (!anamnesi.consenso_idoneita_fisica)
           return 'Devi accettare la dichiarazione di idoneità fisica.'
@@ -881,7 +888,7 @@ function WelcomePageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ step, payload }),
       })
-      const data = await res.json().catch(() => ({})) as { error?: string }
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
       if (!res.ok) {
         logger.error('Welcome save step failed', { step, status: res.status, error: data.error })
         setStepError(data.error ?? 'Errore salvataggio')
@@ -909,7 +916,7 @@ function WelcomePageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      const data = await res.json().catch(() => ({})) as { error?: string }
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
       if (!res.ok) {
         logger.error('Welcome save questionnaire failed', { status: res.status, error: data.error })
         setStepError(data.error ?? 'Errore salvataggio questionario')
@@ -1208,9 +1215,9 @@ function WelcomePageContent() {
                       <p className="text-text-secondary text-xs text-center mb-4">
                         {profile?.avatar_url || profile?.avatar
                           ? 'Vuoi cambiarla? Scegli una nuova immagine qui sotto.'
-                          : 'Carica un\'immagine che useremo come foto del profilo. JPG, PNG o WebP, max 100 MB.'}
+                          : "Carica un'immagine che useremo come foto del profilo. JPG, PNG o WebP, max 100 MB."}
                       </p>
-                      {(profile?.avatar_url || profile?.avatar) ? (
+                      {profile?.avatar_url || profile?.avatar ? (
                         <div className="flex justify-center mb-4">
                           <Avatar
                             src={profile.avatar_url ?? profile.avatar ?? null}
@@ -1267,10 +1274,13 @@ function WelcomePageContent() {
                                     ? sessionStorage.getItem('pending_invite_codice')?.trim()
                                     : null) ||
                                   ''
-                                const meta = (authUser.user_metadata ?? (user as { user_metadata?: unknown } | null)?.user_metadata) as {
-                                  nome?: string
-                                  cognome?: string
-                                } | undefined
+                                const meta = (authUser.user_metadata ??
+                                  (user as { user_metadata?: unknown } | null)?.user_metadata) as
+                                  | {
+                                      nome?: string
+                                      cognome?: string
+                                    }
+                                  | undefined
                                 const res = await fetch('/api/register/complete-profile', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
@@ -1289,7 +1299,8 @@ function WelcomePageContent() {
                                     variant: 'error',
                                     title: 'Errore',
                                     message:
-                                      (errData?.error as string) ?? 'Impossibile preparare il profilo. Riprova.',
+                                      (errData?.error as string) ??
+                                      'Impossibile preparare il profilo. Riprova.',
                                   })
                                   return
                                 }
@@ -1327,7 +1338,8 @@ function WelcomePageContent() {
                             )}
                           </Button>
                           <p className="text-text-muted text-xs text-center">
-                            Se il pulsante è disattivo, clicca per creare il profilo e abilitare subito il caricamento della foto.
+                            Se il pulsante è disattivo, clicca per creare il profilo e abilitare
+                            subito il caricamento della foto.
                           </p>
                         </div>
                       )}
@@ -1527,7 +1539,11 @@ function WelcomePageContent() {
               {/* Step 5: Obiettivi e livello */}
               {step === 5 && (
                 <div className="space-y-6 text-left">
-                  <div role="radiogroup" aria-label="Seleziona il tuo livello di esperienza" className="space-y-3">
+                  <div
+                    role="radiogroup"
+                    aria-label="Seleziona il tuo livello di esperienza"
+                    className="space-y-3"
+                  >
                     <Label className="block">Seleziona il tuo livello di esperienza</Label>
                     <div className="flex flex-wrap gap-3">
                       {(['Principiante', 'Intermedio', 'Avanzato'] as const).map((liv) => (
@@ -1556,7 +1572,9 @@ function WelcomePageContent() {
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-baseline gap-2">
                       <Label className="block">Obiettivi fitness</Label>
-                      <span className="text-text-tertiary text-xs">&quot;È possibile selezionare più di un&apos;opzione&quot;</span>
+                      <span className="text-text-tertiary text-xs">
+                        &quot;È possibile selezionare più di un&apos;opzione&quot;
+                      </span>
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {OBIETTIVI_FITNESS_OPZIONI.map((opt) => {
@@ -1682,7 +1700,8 @@ function WelcomePageContent() {
               {step === 7 && (
                 <div className="space-y-5 text-left">
                   <p className="text-text-tertiary text-sm mb-2">
-                    Se ne sei già in possesso, carica la tua documentazione medica adesso, altrimenti ti chiederemo di completare il tuo profilo in un secondo momento.
+                    Se ne sei già in possesso, carica la tua documentazione medica adesso,
+                    altrimenti ti chiederemo di completare il tuo profilo in un secondo momento.
                   </p>
 
                   <div className="space-y-4">
@@ -2118,7 +2137,8 @@ function WelcomePageContent() {
                   <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-5">
                     <p className="text-text-primary text-sm font-medium">Dichiarazione e firma</p>
                     <p className="text-text-tertiary text-xs">
-                      Ogni consenso ha una checkbox separata. Alcune sono obbligatorie, altre facoltative.
+                      Ogni consenso ha una checkbox separata. Alcune sono obbligatorie, altre
+                      facoltative.
                     </p>
 
                     <div className="space-y-4">
@@ -2134,7 +2154,10 @@ function WelcomePageContent() {
                           label="Dichiaro di aver letto e accettato i Termini e Condizioni del servizio."
                           checked={anamnesi.consenso_termini_condizioni}
                           onChange={(e) =>
-                            setAnamnesi((p) => ({ ...p, consenso_termini_condizioni: e.target.checked }))
+                            setAnamnesi((p) => ({
+                              ...p,
+                              consenso_termini_condizioni: e.target.checked,
+                            }))
                           }
                         />
                         <Checkbox
@@ -2148,7 +2171,10 @@ function WelcomePageContent() {
                           label="Dichiaro di essere in condizioni fisiche idonee alla pratica di attività fisica e mi assumo la responsabilità di eventuali controindicazioni non comunicate. Mi impegno a informare lo staff di eventuali patologie, infortuni o condizioni mediche rilevanti."
                           checked={anamnesi.consenso_idoneita_fisica}
                           onChange={(e) =>
-                            setAnamnesi((p) => ({ ...p, consenso_idoneita_fisica: e.target.checked }))
+                            setAnamnesi((p) => ({
+                              ...p,
+                              consenso_idoneita_fisica: e.target.checked,
+                            }))
                           }
                         />
                         <Checkbox
@@ -2162,7 +2188,10 @@ function WelcomePageContent() {
                           label="Sono consapevole che l'attività fisica comporta rischi e sollevo lo studio e i trainer da responsabilità derivanti da dichiarazioni non veritiere sul mio stato di salute."
                           checked={anamnesi.consenso_liberatoria_attivita_fisica}
                           onChange={(e) =>
-                            setAnamnesi((p) => ({ ...p, consenso_liberatoria_attivita_fisica: e.target.checked }))
+                            setAnamnesi((p) => ({
+                              ...p,
+                              consenso_liberatoria_attivita_fisica: e.target.checked,
+                            }))
                           }
                         />
                       </div>
@@ -2491,7 +2520,9 @@ function WelcomePageContent() {
                           ))}
                         </ul>
                         <p className="text-text-secondary text-sm mt-3">
-                          La presente autorizzazione potrà essere revocata in qualsiasi momento mediante comunicazione scritta inviata via e-mail all&apos;indirizzo info@22club.it.
+                          La presente autorizzazione potrà essere revocata in qualsiasi momento
+                          mediante comunicazione scritta inviata via e-mail all&apos;indirizzo
+                          info@22club.it.
                         </p>
                       </div>
                       <Input
@@ -3016,10 +3047,12 @@ function WelcomePageContent() {
                             <span className="ml-2 text-amber-400 text-xs">Da scegliere</span>
                           )}
                           {liberatoria.authorized === true && (
-                              <p className="text-text-tertiary text-xs mt-0.5">
-                                Canali: {liberatoria.channels.join(', ') || '—'}. La presente autorizzazione potrà essere revocata in qualsiasi momento via e-mail a info@22club.it.
-                              </p>
-                            )}
+                            <p className="text-text-tertiary text-xs mt-0.5">
+                              Canali: {liberatoria.channels.join(', ') || '—'}. La presente
+                              autorizzazione potrà essere revocata in qualsiasi momento via e-mail a
+                              info@22club.it.
+                            </p>
+                          )}
                         </div>
                         <Button
                           type="button"
@@ -3044,7 +3077,8 @@ function WelcomePageContent() {
                 <div className="space-y-5 text-left">
                   <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
                     <p className="text-text-primary text-sm">
-                      Conferma che i dati inseriti sono corretti. Genereremo il Documento di riepilogo dei dati inseriti e lo salveremo nei Documenti.
+                      Conferma che i dati inseriti sono corretti. Genereremo il Documento di
+                      riepilogo dei dati inseriti e lo salveremo nei Documenti.
                     </p>
                     <Checkbox
                       label="Confermo che tutti i dati inseriti sono corretti e autorizzo la generazione del Documento di riepilogo dei dati inseriti. *"
@@ -3073,7 +3107,8 @@ function WelcomePageContent() {
                     <div className="space-y-4">
                       <div className="rounded-xl border border-border bg-background/30 p-4 space-y-4">
                         <p className="text-text-primary text-sm">
-                          Genereremo il Documento di riepilogo dei dati inseriti e lo salveremo automaticamente nei tuoi Documenti.
+                          Genereremo il Documento di riepilogo dei dati inseriti e lo salveremo
+                          automaticamente nei tuoi Documenti.
                         </p>
                       </div>
                       <Link

@@ -6,10 +6,6 @@ export const metadata: Metadata = {
     'Area nutrizionista: gestisci clienti, chat, calendario e profilo dalla tua dashboard 22Club.',
 }
 
-export default function NutrizionistaLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function NutrizionistaLayout({ children }: { children: React.ReactNode }) {
   return children
 }

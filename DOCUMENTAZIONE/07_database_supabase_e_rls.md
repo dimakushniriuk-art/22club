@@ -7,6 +7,7 @@
 ## 📊 SCHEMA TABELLE
 
 ### Tabelle Principali
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ profiles                                                        │
@@ -66,25 +67,27 @@
 ```
 
 ### Altre Tabelle
-| Tabella | Descrizione |
-|---------|-------------|
-| `exercises` | Catalogo esercizi |
-| `workout_plans` | Schede allenamento |
-| `payments` | Pagamenti atleti |
-| `lesson_counters` | Contatori lezioni |
-| `communications` | Sistema notifiche |
-| `communication_recipients` | Destinatari |
-| `notifications` | Notifiche push |
-| `user_push_tokens` | Token push |
-| `chat_messages` | Messaggi chat |
-| `inviti_atleti` | Inviti registrazione |
-| `cliente_tags` | Tag clienti |
+
+| Tabella                    | Descrizione          |
+| -------------------------- | -------------------- |
+| `exercises`                | Catalogo esercizi    |
+| `workout_plans`            | Schede allenamento   |
+| `payments`                 | Pagamenti atleti     |
+| `lesson_counters`          | Contatori lezioni    |
+| `communications`           | Sistema notifiche    |
+| `communication_recipients` | Destinatari          |
+| `notifications`            | Notifiche push       |
+| `user_push_tokens`         | Token push           |
+| `chat_messages`            | Messaggi chat        |
+| `inviti_atleti`            | Inviti registrazione |
+| `cliente_tags`             | Tag clienti          |
 
 ---
 
 ## 🔒 RLS POLICIES
 
 ### Pattern Generali
+
 ```sql
 -- Utenti vedono solo propri dati
 CREATE POLICY "Users can view own profile" ON profiles
@@ -94,7 +97,7 @@ CREATE POLICY "Users can view own profile" ON profiles
 CREATE POLICY "Trainers can view assigned athletes" ON profiles
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM pt_atleti 
+      SELECT 1 FROM pt_atleti
       WHERE pt_id = auth.uid() AND atleta_id = profiles.user_id
     )
     OR role IN ('atleta', 'athlete')
@@ -104,13 +107,14 @@ CREATE POLICY "Trainers can view assigned athletes" ON profiles
 CREATE POLICY "Admins can view all" ON profiles
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM profiles 
+      SELECT 1 FROM profiles
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   );
 ```
 
 ### Tabella appointments
+
 ```sql
 -- Atleti vedono propri appuntamenti
 CREATE POLICY "Athletes view own appointments" ON appointments
@@ -137,6 +141,7 @@ CREATE POLICY "Staff view assigned appointments" ON appointments
 ## 📝 RPC FUNCTIONS
 
 ### get_clienti_stats
+
 ```sql
 CREATE OR REPLACE FUNCTION get_clienti_stats()
 RETURNS TABLE (
@@ -153,6 +158,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
 ### check_appointment_overlap
+
 ```sql
 CREATE OR REPLACE FUNCTION check_appointment_overlap(
   p_staff_id UUID,
@@ -168,11 +174,13 @@ $$ LANGUAGE plpgsql;
 ```
 
 ### get_analytics_distribution_data
+
 ```sql
 -- Distribuzione per tipo appuntamento
 ```
 
 ### get_analytics_performance_data
+
 ```sql
 -- Performance atleti
 ```
@@ -182,9 +190,10 @@ $$ LANGUAGE plpgsql;
 ## 👁️ VIEWS
 
 ### workout_completion_rate_view
+
 ```sql
 CREATE VIEW workout_completion_rate_view AS
-SELECT 
+SELECT
   athlete_id,
   nome_atleta,
   schede_assegnate,
@@ -199,6 +208,7 @@ FROM ...
 ## ⚠️ PROBLEMI RILEVATI
 
 ### Campi Duplicati
+
 ```
 profiles:
 ├── nome/cognome vs first_name/last_name
@@ -210,6 +220,7 @@ workout_logs:
 ```
 
 ### ID Confusion
+
 ```
 appointments:
 ├── trainer_id (legacy)
@@ -218,6 +229,7 @@ appointments:
 ```
 
 ### RPC Fallback
+
 ```
 Analytics usa mock data se RPC non disponibili:
 ├── get_analytics_distribution_data
@@ -228,12 +240,12 @@ Analytics usa mock data se RPC non disponibili:
 
 ## 📊 VALUTAZIONE
 
-| Aspetto | Rating | Note |
-|---------|--------|------|
-| Chiarezza logica | ★★★☆☆ | Campi duplicati confondono |
-| Robustezza | ★★★★☆ | RLS policies presenti |
-| Debito tecnico | **ALTO** | Naming inconsistente |
-| Rischio regressioni | **MEDIO** | RLS sensibili |
+| Aspetto             | Rating    | Note                       |
+| ------------------- | --------- | -------------------------- |
+| Chiarezza logica    | ★★★☆☆     | Campi duplicati confondono |
+| Robustezza          | ★★★★☆     | RLS policies presenti      |
+| Debito tecnico      | **ALTO**  | Naming inconsistente       |
+| Rischio regressioni | **MEDIO** | RLS sensibili              |
 
 ---
 

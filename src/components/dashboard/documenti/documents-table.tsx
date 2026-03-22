@@ -18,14 +18,24 @@ interface DocumentsTableProps {
   documents: Document[]
   onDocumentClick: (document: Document) => void
   onDownload: (document: Document) => void
+  /**
+   * Anteprima da aprire (es. Eye icon).
+   * Se non presente, ricade su onDocumentClick.
+   */
+  onPreview?: (document: Document) => void
 }
 
-export function DocumentsTable({ documents, onDocumentClick, onDownload }: DocumentsTableProps) {
+export function DocumentsTable({
+  documents,
+  onDocumentClick,
+  onDownload,
+  onPreview,
+}: DocumentsTableProps) {
   if (documents.length === 0) {
     return (
       <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
+        variant="default"
+        className="relative overflow-hidden border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200"
       >
         <CardContent className="relative py-12 text-center">
           <div className="mb-4 text-6xl opacity-50">📄</div>
@@ -38,8 +48,8 @@ export function DocumentsTable({ documents, onDocumentClick, onDownload }: Docum
 
   return (
     <Card
-      variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
+      variant="default"
+      className="relative overflow-hidden border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200"
     >
       <CardHeader className="relative">
         <CardTitle size="md">Documenti ({documents.length})</CardTitle>
@@ -117,7 +127,11 @@ export function DocumentsTable({ documents, onDocumentClick, onDownload }: Docum
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
-                          onDocumentClick(document)
+                          if (onPreview != null) {
+                            onPreview(document)
+                          } else {
+                            onDocumentClick(document)
+                          }
                         }}
                       >
                         <Eye className="h-4 w-4" />

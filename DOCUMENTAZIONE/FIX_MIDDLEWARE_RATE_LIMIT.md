@@ -9,6 +9,7 @@
 ## 🔴 Problema Identificato
 
 Il middleware stava facendo chiamate a Supabase per **ogni richiesta**, anche per:
+
 - Route pubbliche (`/login`, `/`, ecc.)
 - Asset statici (già filtrati ma Next.js fa comunque molte richieste)
 - Ogni navigazione tra pagine
@@ -60,6 +61,7 @@ if (sessionError?.code === 'over_request_rate_limit' || sessionError?.status ===
 ```
 
 **Comportamento**:
+
 - Quando viene rilevato rate limit, attiva backoff di 60 secondi
 - Durante il backoff, skippa tutte le chiamate Supabase
 - Usa valori di default sicuri durante il backoff
@@ -87,11 +89,13 @@ if (rateLimitActive && now < rateLimitUntil) {
 ## 📊 Risultati Attesi
 
 ### Prima del Fix
+
 - Chiamate Supabase: ~100-200 per minuto (ogni richiesta)
 - Rate limit raggiunto dopo pochi minuti
 - Errori 429 frequenti
 
 ### Dopo il Fix
+
 - Chiamate Supabase: ~20-40 per minuto (solo route protette)
 - Rate limit gestito automaticamente con backoff
 - Riduzione 70-80% delle chiamate API
@@ -101,10 +105,12 @@ if (rateLimitActive && now < rateLimitUntil) {
 ## 🔍 Monitoraggio
 
 I log di performance continuano a funzionare:
+
 - `[PERF] getSession (middleware): XXms`
 - `[PERF] fetch role (middleware): XXms`
 
 Se vedi rate limit, il sistema:
+
 1. Attiva automaticamente backoff 60s
 2. Logga warning: `Rate limit Supabase raggiunto, attivo backoff 60s`
 3. Skippa chiamate durante backoff

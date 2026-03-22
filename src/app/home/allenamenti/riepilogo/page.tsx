@@ -478,8 +478,13 @@ function RiepilogoPageContent() {
           <Card className="relative overflow-hidden border-red-500/30 bg-background-secondary/50 max-w-md w-full">
             <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
               <div className="mb-3 text-4xl opacity-50">🔒</div>
-              <p className="text-text-primary mb-4 text-sm min-[834px]:text-base font-medium">Accesso richiesto</p>
-              <Button onClick={() => router.push('/login')} className="min-h-[44px] h-9 rounded-lg bg-primary text-sm text-primary-foreground hover:bg-primary/90 sm:h-10">
+              <p className="text-text-primary mb-4 text-sm min-[834px]:text-base font-medium">
+                Accesso richiesto
+              </p>
+              <Button
+                onClick={() => router.push('/login')}
+                className="min-h-[44px] h-9 rounded-lg bg-primary text-sm text-primary-foreground hover:bg-primary/90 sm:h-10"
+              >
                 Vai al login
               </Button>
             </CardContent>
@@ -522,9 +527,16 @@ function RiepilogoPageContent() {
           <Card className="border border-state-error/50 bg-background-secondary/50">
             <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
               <div className="mb-3 text-4xl opacity-50">❌</div>
-              <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">{error || 'Nessun allenamento completato trovato'}</h3>
-              <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-2">Completa un allenamento per vedere il riepilogo</p>
-              <Button onClick={() => router.push('/home/allenamenti')} className="min-h-[44px] h-9 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10">
+              <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
+                {error || 'Nessun allenamento completato trovato'}
+              </h3>
+              <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-2">
+                Completa un allenamento per vedere il riepilogo
+              </p>
+              <Button
+                onClick={() => router.push('/home/allenamenti')}
+                className="min-h-[44px] h-9 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10"
+              >
                 Vai agli Allenamenti
               </Button>
             </CardContent>
@@ -541,10 +553,16 @@ function RiepilogoPageContent() {
           <Card className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="relative z-10 p-6 text-center sm:p-8">
               <div className="mb-3 text-5xl">🎉</div>
-              <h1 className="mb-2 text-lg font-bold text-text-primary sm:text-xl">Allenamento completato!</h1>
-              <p className="mb-4 text-sm text-text-secondary sm:text-base">I tuoi risultati sono stati inviati al tuo trainer.</p>
+              <h1 className="mb-2 text-lg font-bold text-text-primary sm:text-xl">
+                Allenamento completato!
+              </h1>
+              <p className="mb-4 text-sm text-text-secondary sm:text-base">
+                I tuoi risultati sono stati inviati al tuo trainer.
+              </p>
               <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-cyan-400" />
-              <p className="text-text-tertiary mt-3 text-xs min-[834px]:text-sm">Reindirizzamento alla home...</p>
+              <p className="text-text-tertiary mt-3 text-xs min-[834px]:text-sm">
+                Reindirizzamento alla home...
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -587,8 +605,12 @@ function RiepilogoPageContent() {
                   <Activity className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Esercizi</div>
-                  <div className="text-lg font-bold text-text-primary sm:text-xl">{summary.completed_exercises}/{summary.total_exercises}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Esercizi
+                  </div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">
+                    {summary.completed_exercises}/{summary.total_exercises}
+                  </div>
                 </div>
               </div>
               <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
@@ -597,7 +619,9 @@ function RiepilogoPageContent() {
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Set</div>
-                  <div className="text-lg font-bold text-text-primary sm:text-xl">{summary.completed_sets}/{summary.total_sets}</div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">
+                    {summary.completed_sets}/{summary.total_sets}
+                  </div>
                 </div>
               </div>
               <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
@@ -605,8 +629,12 @@ function RiepilogoPageContent() {
                   <Clock className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Durata</div>
-                  <div className="text-lg font-bold text-text-primary sm:text-xl">{formatTime(summary.total_time)}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Durata
+                  </div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">
+                    {formatTime(summary.total_time)}
+                  </div>
                 </div>
               </div>
               <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 sm:p-3.5">
@@ -614,8 +642,12 @@ function RiepilogoPageContent() {
                   <TrendingUp className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Consistenza</div>
-                  <div className="text-lg font-bold text-text-primary sm:text-xl">{summary.performance_stats.consistency_score}%</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Consistenza
+                  </div>
+                  <div className="text-lg font-bold text-text-primary sm:text-xl">
+                    {summary.performance_stats.consistency_score}%
+                  </div>
                 </div>
               </div>
             </div>
@@ -640,7 +672,10 @@ function RiepilogoPageContent() {
         {/* Esercizi eseguiti — CARD_DS, card esercizio neutre + icon box cyan */}
         <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <CardHeader className="relative z-10 py-3 min-[834px]:py-4 border-b border-white/10">
-            <CardTitle size="md" className="flex items-center gap-2 text-sm min-[834px]:text-base font-semibold text-text-primary">
+            <CardTitle
+              size="md"
+              className="flex items-center gap-2 text-sm min-[834px]:text-base font-semibold text-text-primary"
+            >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg">
                 💪
               </span>
@@ -686,7 +721,11 @@ function RiepilogoPageContent() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="success" size="sm" className="rounded-full text-[10px] shrink-0">
+                    <Badge
+                      variant="success"
+                      size="sm"
+                      className="rounded-full text-[10px] shrink-0"
+                    >
                       <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                       Completato
                     </Badge>
@@ -697,21 +736,27 @@ function RiepilogoPageContent() {
                         key={setIndex}
                         className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 p-2"
                       >
-                        <span className="text-xs font-medium text-text-tertiary shrink-0">Set {set.set_number}</span>
+                        <span className="text-xs font-medium text-text-tertiary shrink-0">
+                          Set {set.set_number}
+                        </span>
                         <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                           {set.performed_weight > 0 && (
                             <div className="flex items-center gap-1">
                               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5">
                                 <Weight className="h-3 w-3 text-cyan-400" />
                               </div>
-                              <span className="text-xs font-semibold text-text-primary">{set.performed_weight}kg</span>
+                              <span className="text-xs font-semibold text-text-primary">
+                                {set.performed_weight}kg
+                              </span>
                             </div>
                           )}
                           <div className="flex items-center gap-1">
                             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5">
                               <Target className="h-3 w-3 text-cyan-400" />
                             </div>
-                            <span className="text-xs font-semibold text-text-primary">{set.performed_reps} reps</span>
+                            <span className="text-xs font-semibold text-text-primary">
+                              {set.performed_reps} reps
+                            </span>
                           </div>
                           <Badge variant="success" size="sm" className="rounded-full shrink-0">
                             <CheckCircle2 className="h-2.5 w-2.5" />
@@ -729,7 +774,10 @@ function RiepilogoPageContent() {
         {/* Statistiche performance — CARD_DS, stat box neutri + icone cyan */}
         <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <CardHeader className="relative z-10 py-3 border-b border-white/10">
-            <CardTitle size="md" className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+            <CardTitle
+              size="md"
+              className="flex items-center gap-2 text-sm font-semibold text-text-primary"
+            >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Activity className="h-4 w-4 text-cyan-400" />
               </span>
@@ -743,8 +791,12 @@ function RiepilogoPageContent() {
                   <TrendingUp className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Aumento peso medio</div>
-                  <div className="text-base font-bold text-text-primary sm:text-lg">+{summary.performance_stats.average_weight_increase}kg</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Aumento peso medio
+                  </div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">
+                    +{summary.performance_stats.average_weight_increase}kg
+                  </div>
                 </div>
               </div>
               <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
@@ -752,8 +804,12 @@ function RiepilogoPageContent() {
                   <Weight className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Volume totale</div>
-                  <div className="text-base font-bold text-text-primary sm:text-lg">{summary.performance_stats.total_volume}kg</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Volume totale
+                  </div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">
+                    {summary.performance_stats.total_volume}kg
+                  </div>
                 </div>
               </div>
               <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
@@ -761,8 +817,12 @@ function RiepilogoPageContent() {
                   <Activity className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Consistenza</div>
-                  <div className="text-base font-bold text-text-primary sm:text-lg">{summary.performance_stats.consistency_score}%</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Consistenza
+                  </div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">
+                    {summary.performance_stats.consistency_score}%
+                  </div>
                 </div>
               </div>
               <div className="relative flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
@@ -770,8 +830,12 @@ function RiepilogoPageContent() {
                   <Trophy className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Nuovi PR</div>
-                  <div className="text-base font-bold text-text-primary sm:text-lg">{summary.performance_stats.personal_records}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Nuovi PR
+                  </div>
+                  <div className="text-base font-bold text-text-primary sm:text-lg">
+                    {summary.performance_stats.personal_records}
+                  </div>
                 </div>
               </div>
             </div>
@@ -786,7 +850,8 @@ function RiepilogoPageContent() {
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-text-primary">Ottimo lavoro!</h3>
             <p className="text-xs text-text-secondary mt-0.5">
-              Hai completato tutti gli esercizi con successo. Continua così per raggiungere i tuoi obiettivi.
+              Hai completato tutti gli esercizi con successo. Continua così per raggiungere i tuoi
+              obiettivi.
             </p>
             <p className="text-[10px] text-text-tertiary italic mt-1.5">
               &ldquo;Il successo è la somma di piccoli sforzi ripetuti giorno dopo giorno.&rdquo;

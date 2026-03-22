@@ -54,10 +54,7 @@ export function NutritionGoalsSection({
   onFormDataChange,
 }: NutritionGoalsSectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-text-primary flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
@@ -66,7 +63,9 @@ export function NutritionGoalsSection({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="obiettivo_nutrizionale" className="text-text-tertiary">Obiettivo</Label>
+          <Label htmlFor="obiettivo_nutrizionale" className="text-text-tertiary">
+            Obiettivo
+          </Label>
           {isEditing ? (
             <SimpleSelect
               value={formData.obiettivo_nutrizionale || ''}
@@ -123,7 +122,9 @@ export function NutritionGoalsSection({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="dieta_seguita" className="text-text-tertiary">Dieta Seguita</Label>
+          <Label htmlFor="dieta_seguita" className="text-text-tertiary">
+            Dieta Seguita
+          </Label>
           {isEditing ? (
             <SimpleSelect
               value={formData.dieta_seguita || ''}

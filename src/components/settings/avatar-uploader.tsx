@@ -263,7 +263,7 @@ export function AvatarUploader({
           className="flex-1 sm:flex-initial min-w-[160px] justify-center gap-2"
         >
           <Upload className="h-4 w-4 shrink-0" />
-          <span className="truncate">{file ? 'Scegli un\'altra' : 'Seleziona immagine'}</span>
+          <span className="truncate">{file ? "Scegli un'altra" : 'Seleziona immagine'}</span>
         </Button>
 
         {file && (
@@ -308,7 +308,9 @@ export function AvatarUploader({
       {file && !error && !preview && (
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background-tertiary/30 border border-primary/10">
           <p className="text-xs text-text-secondary truncate flex-1 min-w-0">{file.name}</p>
-          <p className="text-xs text-text-tertiary shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+          <p className="text-xs text-text-tertiary shrink-0">
+            {(file.size / (1024 * 1024)).toFixed(2)} MB
+          </p>
         </div>
       )}
     </div>

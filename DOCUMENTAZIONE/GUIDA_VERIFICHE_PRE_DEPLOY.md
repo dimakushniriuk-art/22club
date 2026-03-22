@@ -12,7 +12,7 @@
 - ✅ TypeScript verificato
 - ✅ Linting verificato
 - ✅ Build produzione verificato
-- ✅ File sensibili esclusi (.auth/*.json)
+- ✅ File sensibili esclusi (.auth/\*.json)
 
 ---
 
@@ -68,35 +68,35 @@ npm run db:verify-data-deep
 
 Queste variabili DEVONO essere configurate in Vercel:
 
-| Variabile | Descrizione | Dove Trovarla |
-|-----------|-------------|---------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL progetto Supabase | Supabase Dashboard → Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chiave anonima Supabase | Supabase Dashboard → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Chiave servizio (server-side) | Supabase Dashboard → Settings → API |
-| `NEXT_PUBLIC_APP_URL` | URL produzione Vercel | Vercel Dashboard → Domains |
-| `NODE_ENV` | Ambiente | Impostare a `production` |
+| Variabile                       | Descrizione                   | Dove Trovarla                       |
+| ------------------------------- | ----------------------------- | ----------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | URL progetto Supabase         | Supabase Dashboard → Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chiave anonima Supabase       | Supabase Dashboard → Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Chiave servizio (server-side) | Supabase Dashboard → Settings → API |
+| `NEXT_PUBLIC_APP_URL`           | URL produzione Vercel         | Vercel Dashboard → Domains          |
+| `NODE_ENV`                      | Ambiente                      | Impostare a `production`            |
 
 #### Variabili OBBLIGATORIE per Comunicazioni
 
-| Variabile | Descrizione | Dove Trovarla |
-|-----------|-------------|---------------|
-| `RESEND_API_KEY` | API key Resend | Resend Dashboard → API Keys |
-| `RESEND_FROM_EMAIL` | Email mittente verificata | Resend Dashboard → Domains |
-| `RESEND_FROM_NAME` | Nome mittente | Opzionale (default: "22Club") |
+| Variabile           | Descrizione               | Dove Trovarla                 |
+| ------------------- | ------------------------- | ----------------------------- |
+| `RESEND_API_KEY`    | API key Resend            | Resend Dashboard → API Keys   |
+| `RESEND_FROM_EMAIL` | Email mittente verificata | Resend Dashboard → Domains    |
+| `RESEND_FROM_NAME`  | Nome mittente             | Opzionale (default: "22Club") |
 
 #### Variabili OPZIONALI
 
-| Variabile | Descrizione | Quando Usare |
-|-----------|-------------|--------------|
-| `NEXT_PUBLIC_VAPID_KEY` | VAPID public key | Se usi push notifications |
-| `VAPID_PRIVATE_KEY` | VAPID private key | Se usi push notifications |
-| `VAPID_EMAIL` | Email VAPID | Se usi push notifications |
-| `TWILIO_ACCOUNT_SID` | Account SID Twilio | Se usi SMS |
-| `TWILIO_AUTH_TOKEN` | Auth token Twilio | Se usi SMS |
-| `TWILIO_PHONE_NUMBER` | Numero telefono Twilio | Se usi SMS |
-| `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN client | Se usi Sentry |
-| `SENTRY_DSN` | Sentry DSN server | Se usi Sentry |
-| `CRON_SECRET` | Secret per cron jobs | Se usi cron jobs |
+| Variabile                | Descrizione            | Quando Usare              |
+| ------------------------ | ---------------------- | ------------------------- |
+| `NEXT_PUBLIC_VAPID_KEY`  | VAPID public key       | Se usi push notifications |
+| `VAPID_PRIVATE_KEY`      | VAPID private key      | Se usi push notifications |
+| `VAPID_EMAIL`            | Email VAPID            | Se usi push notifications |
+| `TWILIO_ACCOUNT_SID`     | Account SID Twilio     | Se usi SMS                |
+| `TWILIO_AUTH_TOKEN`      | Auth token Twilio      | Se usi SMS                |
+| `TWILIO_PHONE_NUMBER`    | Numero telefono Twilio | Se usi SMS                |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN client      | Se usi Sentry             |
+| `SENTRY_DSN`             | Sentry DSN server      | Se usi Sentry             |
+| `CRON_SECRET`            | Secret per cron jobs   | Se usi cron jobs          |
 
 #### Come Configurare in Vercel
 
@@ -121,13 +121,13 @@ Queste variabili DEVONO essere configurate in Vercel:
 
 #### Secrets Necessari
 
-| Secret | Descrizione | Dove Trovarlo |
-|--------|-------------|---------------|
-| `VERCEL_TOKEN` | Token Vercel | Vercel Dashboard → Settings → Tokens |
-| `VERCEL_ORG_ID` | ID organizzazione | Vercel Dashboard → Settings → General |
-| `VERCEL_PROJECT_ID` | ID progetto | Vercel Dashboard → Settings → General |
-| `SUPABASE_ACCESS_TOKEN` | Token Supabase | Supabase Dashboard → Settings → Access Tokens |
-| `SUPABASE_PROJECT_REF` | Reference progetto | Supabase Dashboard → Settings → General |
+| Secret                  | Descrizione        | Dove Trovarlo                                 |
+| ----------------------- | ------------------ | --------------------------------------------- |
+| `VERCEL_TOKEN`          | Token Vercel       | Vercel Dashboard → Settings → Tokens          |
+| `VERCEL_ORG_ID`         | ID organizzazione  | Vercel Dashboard → Settings → General         |
+| `VERCEL_PROJECT_ID`     | ID progetto        | Vercel Dashboard → Settings → General         |
+| `SUPABASE_ACCESS_TOKEN` | Token Supabase     | Supabase Dashboard → Settings → Access Tokens |
+| `SUPABASE_PROJECT_REF`  | Reference progetto | Supabase Dashboard → Settings → General       |
 
 #### Come Configurare in GitHub
 
@@ -150,10 +150,11 @@ Queste variabili DEVONO essere configurate in Vercel:
 ### Opzione A: Deploy via GitHub Actions (Consigliato)
 
 1. **Push su branch main**
+
    ```bash
    git push origin main
    ```
-   
+
    **Nota**: Ci sono ~40 commit locali da pushare. Vedi `ISTRUZIONI_PUSH_GITHUB.md` per dettagli.
 
 2. **Monitorare Workflow**
@@ -212,10 +213,12 @@ curl https://[your-domain]/api/health
 ### 4.3 Monitoraggio
 
 #### Vercel Logs
+
 - Vai su: Vercel Dashboard → Deployments → [Latest] → Logs
 - Verifica errori o warning
 
 #### Sentry (se configurato)
+
 - Vai su: Sentry Dashboard
 - Verifica errori in produzione
 - Controlla performance
@@ -243,11 +246,13 @@ curl https://[your-domain]/api/health
 ### Se Qualcosa Va Male
 
 #### Via Vercel CLI
+
 ```bash
 vercel rollback
 ```
 
 #### Via Vercel Dashboard
+
 1. Vai su: Deployments
 2. Seleziona deployment precedente
 3. Clicca "Promote to Production"
@@ -257,6 +262,7 @@ vercel rollback
 ## 📊 Checklist Finale
 
 ### Pre-Deploy ✅
+
 - [x] Build produzione: OK
 - [x] TypeScript: OK
 - [x] Linting: OK
@@ -264,12 +270,14 @@ vercel rollback
 - [x] File Git committati
 
 ### Pre-Deploy ⚠️ (Manuale)
+
 - [ ] Variabili d'ambiente Vercel configurate
 - [ ] Database migrazioni applicate
 - [ ] RLS policies verificate
 - [ ] GitHub Secrets configurati
 
 ### Post-Deploy ✅
+
 - [ ] Health endpoint funziona
 - [ ] Login funziona
 - [ ] Dashboard accessibile
@@ -283,11 +291,13 @@ vercel rollback
 ### Problema: Build Fallisce in Vercel
 
 **Possibili Cause**:
+
 - Variabili d'ambiente mancanti
 - Errori TypeScript
 - Dipendenze mancanti
 
 **Soluzione**:
+
 1. Verifica logs Vercel
 2. Verifica variabili d'ambiente
 3. Testa build locale: `npm run build:prod`
@@ -295,11 +305,13 @@ vercel rollback
 ### Problema: Database Non Connesso
 
 **Possibili Cause**:
+
 - `NEXT_PUBLIC_SUPABASE_URL` errato
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` errato
 - RLS policies troppo restrittive
 
 **Soluzione**:
+
 1. Verifica variabili d'ambiente
 2. Verifica RLS policies
 3. Testa connessione manualmente
@@ -307,11 +319,13 @@ vercel rollback
 ### Problema: Pagine Non Caricano
 
 **Possibili Cause**:
+
 - Errori runtime
 - Variabili d'ambiente mancanti
 - Problemi di routing
 
 **Soluzione**:
+
 1. Verifica logs Vercel
 2. Verifica console browser
 3. Verifica routing Next.js

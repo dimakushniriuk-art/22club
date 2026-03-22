@@ -9,25 +9,31 @@
 ## 🎯 Cosa fa questo SQL
 
 ### 1. **Crea tabella `workouts`**
+
 Schede allenamento create dai trainer:
+
 - `id`, `athlete_id`, `created_by_trainer_id`
 - `titolo`, `descrizione`, `difficulty`, `status`
 - Indici per performance
 - RLS policies per isolamento dati trainer
 
 ### 2. **Crea/Ripara tabella `workout_logs`**
+
 Log degli allenamenti completati:
+
 - `id`, `workout_id`, `user_id`
 - `started_at`, `completed_at`, `duration_minutes`, `notes`
 - Supporta anche aggiunta colonne se tabella esiste già
 - RLS policies per isolamento dati
 
 ### 3. **RLS Policies**
+
 - **Trainer**: Vede solo dati dei propri atleti
 - **Atleti**: Vedono solo i propri dati
 - **Admin**: Vede tutto
 
 ### 4. **Trigger automatici**
+
 - `updated_at` si aggiorna automaticamente
 
 ---
@@ -64,6 +70,7 @@ supabase db execute -f supabase/migrations/FIX_WORKOUT_LOGS_STORICO.sql
 Dopo l'esecuzione, dovresti vedere:
 
 ### 1. **Output Verifica Struttura `workouts`**
+
 ```
 column_name              | data_type           | is_nullable
 -------------------------|---------------------|------------
@@ -79,6 +86,7 @@ updated_at               | timestamp with...   | YES
 ```
 
 ### 2. **Output Verifica Struttura `workout_logs`**
+
 ```
 column_name       | data_type           | is_nullable
 ------------------|---------------------|------------
@@ -94,7 +102,9 @@ updated_at        | timestamp with...   | YES
 ```
 
 ### 3. **Output Verifica Policies**
+
 Dovresti vedere 8 policies (4 per `workouts`, 4 per `workout_logs`):
+
 - `workouts_select_policy`
 - `workouts_insert_policy`
 - `workouts_update_policy`
@@ -118,6 +128,7 @@ Se vuoi testare subito la pagina, **decommenta la sezione STEP 7** nel file SQL:
 ```
 
 Questo inserirà:
+
 - 1 scheda "Scheda Forza Base"
 - 3 allenamenti completati (2, 5, 7 giorni fa)
 
@@ -128,18 +139,23 @@ Questo inserirà:
 ## 🔧 Problemi Comuni
 
 ### Errore: "relation workouts already exists"
+
 ✅ **Normale!** La tabella esiste già, il SQL la salta e aggiunge solo colonne mancanti.
 
 ### Errore: "foreign key violation"
+
 ❌ Verifica che:
+
 1. La tabella `profiles` esista
 2. La colonna `profiles.user_id` esista
 3. Ci sia almeno un utente nella tabella `profiles`
 
 ### Errore: "policy already exists"
+
 ✅ **Normale!** Il SQL fa DROP prima di CREATE, quindi è safe.
 
 ### Nessun dato nella pagina Storico
+
 1. Verifica che l'atleta abbia un `user_id` valido in `profiles`
 2. Verifica che ci siano workout_logs con quel `user_id`
 3. Controlla console browser per errori (F12)
@@ -150,13 +166,14 @@ Questo inserirà:
 ## 📊 Query Utili Post-Esecuzione
 
 ### Verifica atleti e i loro user_id
+
 ```sql
-SELECT 
-  id, 
-  user_id, 
-  nome, 
-  cognome, 
-  email, 
+SELECT
+  id,
+  user_id,
+  nome,
+  cognome,
+  email,
   role
 FROM profiles
 WHERE role IN ('atleta', 'athlete')
@@ -164,8 +181,9 @@ ORDER BY cognome, nome;
 ```
 
 ### Verifica schede create
+
 ```sql
-SELECT 
+SELECT
   w.id,
   w.titolo,
   w.status,
@@ -179,8 +197,9 @@ ORDER BY w.created_at DESC;
 ```
 
 ### Verifica workout logs
+
 ```sql
-SELECT 
+SELECT
   wl.id,
   w.titolo AS scheda,
   p.nome || ' ' || p.cognome AS atleta,
@@ -196,8 +215,9 @@ LIMIT 20;
 ```
 
 ### Verifica connessione trainer-atleta
+
 ```sql
-SELECT 
+SELECT
   t.nome || ' ' || t.cognome AS trainer,
   a.nome || ' ' || a.cognome AS atleta,
   a.id AS atleta_id,

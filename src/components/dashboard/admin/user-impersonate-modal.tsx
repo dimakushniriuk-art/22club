@@ -28,7 +28,12 @@ interface UserImpersonateModalProps {
   onSuccess: () => void
 }
 
-export function UserImpersonateModal({ user, open, onClose, onSuccess }: UserImpersonateModalProps) {
+export function UserImpersonateModal({
+  user,
+  open,
+  onClose,
+  onSuccess,
+}: UserImpersonateModalProps) {
   const [password, setPassword] = useState('')
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
@@ -61,9 +66,17 @@ export function UserImpersonateModal({ user, open, onClose, onSuccess }: UserImp
         notifyError('Impersonation', data?.error || 'Avvio impersonation fallito')
         return
       }
-      notifySuccess('Impersonation avviata', `Stai entrando come ${displayName}. Reindirizzamento...`)
+      notifySuccess(
+        'Impersonation avviata',
+        `Stai entrando come ${displayName}. Reindirizzamento...`,
+      )
       onSuccess()
-      window.location.href = user.role === 'athlete' ? '/home' : user.role === 'marketing' ? '/dashboard/marketing' : '/dashboard'
+      window.location.href =
+        user.role === 'athlete'
+          ? '/home'
+          : user.role === 'marketing'
+            ? '/dashboard/marketing'
+            : '/dashboard'
     } catch (err) {
       notifyError('Errore', err instanceof Error ? err.message : 'Errore di rete')
     } finally {
@@ -83,7 +96,8 @@ export function UserImpersonateModal({ user, open, onClose, onSuccess }: UserImp
         <DialogHeader>
           <DialogTitle>Impersona utente</DialogTitle>
           <DialogDescription>
-            Inserisci la tua password admin per entrare come <strong>{displayName}</strong> ({user.role}
+            Inserisci la tua password admin per entrare come <strong>{displayName}</strong> (
+            {user.role}
             ). L&apos;azione sarà registrata in audit.
           </DialogDescription>
         </DialogHeader>

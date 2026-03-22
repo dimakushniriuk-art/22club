@@ -39,17 +39,17 @@ test.describe('Flusso Pagamento e Contatore Lezioni', () => {
     // Naviga alla pagina pagamenti
     await page.goto('/dashboard/pagamenti', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle').catch(() => {})
-    
+
     // Attendi che la pagina carichi (heading o loading skeleton)
     const heading = page.getByRole('heading', { name: /Pagamenti|Gestione Pagamenti/i })
     const hasHeading = await heading.isVisible({ timeout: 15000 }).catch(() => false)
-    
+
     if (!hasHeading) {
       // La pagina potrebbe non essere accessibile per questo ruolo o avere un errore
       console.log('Pagina pagamenti non accessibile o in loading perpetuo')
       return // Skip test gracefully
     }
-    
+
     await expect(heading).toBeVisible()
 
     // Clicca su "Nuovo Pagamento"
@@ -58,11 +58,13 @@ test.describe('Flusso Pagamento e Contatore Lezioni', () => {
     })
     const hasButton = await newPaymentButton.isVisible({ timeout: 5000 }).catch(() => false)
     if (!hasButton) return // Skip if button not found
-    
+
     await newPaymentButton.click()
 
     // Verifica che il form si apra
-    await expect(page.getByText(/Nuovo.*[Pp]agamento|Crea.*[Pp]agamento/i)).toBeVisible({ timeout: 8000 })
+    await expect(page.getByText(/Nuovo.*[Pp]agamento|Crea.*[Pp]agamento/i)).toBeVisible({
+      timeout: 8000,
+    })
   })
 
   test('dovrebbe registrare un pagamento e aggiornare contatore lezioni', async ({ page }) => {
@@ -230,7 +232,7 @@ test.describe('Flusso Pagamento e Contatore Lezioni', () => {
     // Attendi che la pagina carichi
     const heading = page.getByRole('heading', { name: /Pagamenti|Gestione Pagamenti/i })
     const hasHeading = await heading.isVisible({ timeout: 15000 }).catch(() => false)
-    
+
     if (!hasHeading) {
       console.log('Pagina pagamenti non accessibile - skip test')
       return

@@ -15,6 +15,7 @@ Se stai usando Supabase locale, le email **NON vengono inviate realmente** ma ve
 #### Come verificare le email in sviluppo:
 
 1. **Apri Inbucket nel browser:**
+
    ```
    http://localhost:54324
    ```
@@ -86,8 +87,8 @@ From Name: 22Club
 
 ```sql
 -- Esegui questa query in Supabase SQL Editor
-SELECT email, email_confirmed_at, created_at 
-FROM auth.users 
+SELECT email, email_confirmed_at, created_at
+FROM auth.users
 WHERE email = 'tua@email.com';
 ```
 
@@ -99,6 +100,7 @@ WHERE email = 'tua@email.com';
 ### 3. Test manuale
 
 Puoi testare l'invio email direttamente dal dashboard:
+
 - Authentication → Users
 - Seleziona un utente
 - Clicca "Send password reset email"
@@ -136,9 +138,11 @@ Puoi testare l'invio email direttamente dal dashboard:
 ## 📝 Template Email Personalizzati
 
 Puoi personalizzare i template email in:
+
 - Settings → Authentication → Email Templates
 
 Template disponibili:
+
 - **Reset Password** (`reset_password`)
 - **Magic Link** (`magic_link`)
 - **Email Change** (`email_change`)
@@ -151,6 +155,7 @@ Template disponibili:
 Per testare il reset password in sviluppo:
 
 1. **Avvia Supabase locale:**
+
    ```bash
    supabase start
    ```
@@ -158,6 +163,7 @@ Per testare il reset password in sviluppo:
 2. **Richiedi reset password** dalla pagina `/forgot-password`
 
 3. **Apri Inbucket:**
+
    ```
    http://localhost:54324
    ```

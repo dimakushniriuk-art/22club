@@ -3,7 +3,7 @@
  * lesson_counters.count è aggiornato da trigger DB.
  */
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { ServiceType } from '@/lib/abbonamenti-service-type'
 
 /** Payload minimo dopo insert su payments (con lessons_purchased). */

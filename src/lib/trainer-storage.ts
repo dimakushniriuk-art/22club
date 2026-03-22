@@ -29,7 +29,9 @@ function normalizeStorageError(message: string): string {
 
 export async function uploadTrainerCertificate(file: File): Promise<{ url: string }> {
   if (!supabase.storage) {
-    throw new Error('Storage non disponibile. Configura NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+    throw new Error(
+      'Storage non disponibile. Configura NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.',
+    )
   }
   if (!CERT_MIMES.includes(file.type)) {
     throw new Error('Tipo file non ammesso. Usa PDF o immagini (JPG, PNG, WebP).')
@@ -37,7 +39,9 @@ export async function uploadTrainerCertificate(file: File): Promise<{ url: strin
   if (file.size > CERT_MAX_BYTES) {
     throw new Error('File troppo grande. Massimo 5 MB.')
   }
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user?.id) throw new Error('Utente non autenticato.')
   const path = `${user.id}/certificati/${crypto.randomUUID()}_${sanitizeFilename(file.name)}`
   const { error: upErr } = await supabase.storage.from(CERT_BUCKET).upload(path, file, {
@@ -55,11 +59,18 @@ export async function uploadTrainerCertificate(file: File): Promise<{ url: strin
 
 export type TrainerMediaTipo = 'galleria' | 'video'
 
-export async function uploadTrainerMedia(file: File, tipo: TrainerMediaTipo): Promise<{ url: string }> {
+export async function uploadTrainerMedia(
+  file: File,
+  tipo: TrainerMediaTipo,
+): Promise<{ url: string }> {
   if (!supabase.storage) {
-    throw new Error('Storage non disponibile. Configura NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+    throw new Error(
+      'Storage non disponibile. Configura NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.',
+    )
   }
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user?.id) throw new Error('Utente non autenticato.')
   if (tipo === 'video') {
     if (!VIDEO_MIMES.includes(file.type)) throw new Error('Usa video MP4 o WebM.')

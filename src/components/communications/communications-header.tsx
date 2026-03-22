@@ -21,9 +21,7 @@ export function CommunicationsHeader({ onNewCommunication }: CommunicationsHeade
         <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
           Comunicazioni
         </h1>
-        <p className="text-text-secondary text-sm sm:text-base">
-          Invia email ai tuoi atleti
-        </p>
+        <p className="text-text-secondary text-sm sm:text-base">Invia email ai tuoi atleti</p>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" asChild>

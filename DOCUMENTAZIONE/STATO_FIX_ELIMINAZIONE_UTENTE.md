@@ -15,6 +15,7 @@
 - **Sicurezza**: `SECURITY DEFINER` per garantire che funzioni anche con service role key
 
 **Esempio Risultato**:
+
 ```json
 // Successo:
 {"success": true, "deleted_count": 1, "profile_id": "..."}
@@ -27,10 +28,10 @@
 
 Due policy DELETE configurate:
 
-| Policy | Ruolo | Condizione | Stato |
-|--------|-------|------------|-------|
-| "Only admins can delete profiles" | `authenticated` | `is_admin()` | ✅ OK |
-| "Service role can delete profiles" | `service_role` | `true` | ✅ OK (opzionale) |
+| Policy                             | Ruolo           | Condizione   | Stato             |
+| ---------------------------------- | --------------- | ------------ | ----------------- |
+| "Only admins can delete profiles"  | `authenticated` | `is_admin()` | ✅ OK             |
+| "Service role can delete profiles" | `service_role`  | `true`       | ✅ OK (opzionale) |
 
 **Nota**: La policy per `service_role` è tecnicamente ridondante (service role bypassa RLS automaticamente), ma serve come fallback.
 
@@ -82,6 +83,7 @@ docs/VERIFICA_FIX_COMPLETO.sql
 ```
 
 **Risultati Attesi**:
+
 - ✅ Funzione `delete_profile_bypass_rls()` esiste e ritorna `JSONB`
 - ✅ Policy DELETE: 2 policy configurate correttamente
 - ✅ Constraint `profiles_role_fkey`: RIMOSSO
@@ -133,6 +135,7 @@ SELECT delete_profile_bypass_rls('ID_TEST'::UUID);
    - Aggiunge policy DELETE per `service_role`
 
 **Oppure**:
+
 - ✅ `docs/FIX_COMPLETO_ELIMINAZIONE_UTENTE.sql` (script completo)
 
 ---
@@ -142,6 +145,7 @@ SELECT delete_profile_bypass_rls('ID_TEST'::UUID);
 **Tutto configurato correttamente!** ✅
 
 Ora l'admin dovrebbe essere in grado di:
+
 - ✅ Vedere tutti gli utenti (usando `supabaseAdmin` con service role key)
 - ✅ Eliminare qualsiasi utente (bypassando RLS con funzione SQL o service role key)
 - ✅ Gestire tutte le dipendenze automaticamente (eliminate manualmente prima dell'utente)

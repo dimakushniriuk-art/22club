@@ -10,11 +10,13 @@
 **Stato**: ✅ **MERGE COMPLETATO CON SUCCESSO**
 
 **Azione Eseguita**:
+
 ```bash
 git merge origin/main --allow-unrelated-histories
 ```
 
 **Risultato**:
+
 - ✅ Merge commit creato: `345f05a`
 - ✅ Storia locale e remota unite
 - ✅ Nessun conflitto rilevato
@@ -27,11 +29,13 @@ git merge origin/main --allow-unrelated-histories
 **Stato**: ⚠️ **TIMEOUT HTTP 408**
 
 **Errore**:
+
 ```
 error: RPC failed; HTTP 408 curl 22 The requested URL returned error: 408
 ```
 
 **Causa Probabile**:
+
 - Repository grande (~40+ commit da pushare)
 - Timeout di connessione GitHub
 - Possibile problema temporaneo di rete
@@ -70,6 +74,7 @@ Se il push continua a fallire, puoi provare a pushare in batch più piccoli, ma 
 **Commit Locali da Pushare**: ~40+ commit
 
 **Commit Recenti**:
+
 - `345f05a` - Merge remote-tracking branch 'origin/main'
 - `9ede265` - docs: aggiunto riepilogo finale preparazione deploy
 - `ab9c17c` - docs: aggiornata guida con istruzioni push GitHub
@@ -80,6 +85,7 @@ Se il push continua a fallire, puoi provare a pushare in batch più piccoli, ma 
 ## ✅ Prossimi Passi
 
 1. **Riprovare Push**
+
    ```bash
    git push origin main
    ```

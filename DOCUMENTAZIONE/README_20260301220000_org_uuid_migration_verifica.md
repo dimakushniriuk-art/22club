@@ -55,25 +55,25 @@ SELECT pg_get_function_result(oid) FROM pg_proc WHERE proname = 'get_org_id_for_
 
 ## Tabelle migrate + tipo finale org_id
 
-| Tabella                         | org_id (dopo) | org_id_text (legacy) |
-|---------------------------------|---------------|------------------------|
-| profiles                        | uuid NOT NULL | sì                     |
-| payments                        | uuid NOT NULL | sì                     |
-| documents                       | uuid NOT NULL | sì                     |
-| appointments                    | uuid NOT NULL | sì                     |
-| exercises                       | uuid NOT NULL | sì                     |
-| workouts                        | uuid NOT NULL | sì (se esiste)         |
-| marketing_leads                 | uuid NOT NULL | sì                     |
-| marketing_lead_notes            | uuid NOT NULL | sì                     |
-| marketing_campaigns             | uuid NOT NULL | sì                     |
-| marketing_events                | uuid NOT NULL | sì                     |
-| marketing_segments              | uuid NOT NULL | sì                     |
-| marketing_automations           | uuid NOT NULL | sì                     |
-| marketing_lead_status_history   | uuid NOT NULL | sì                     |
-| athlete_marketing_kpis          | uuid NOT NULL | sì                     |
-| athlete_trainer_assignments     | uuid NOT NULL | sì                     |
-| profile_tombstones              | uuid NOT NULL | sì                     |
-| audit_logs                      | uuid (già)    | no                     |
+| Tabella                       | org_id (dopo) | org_id_text (legacy) |
+| ----------------------------- | ------------- | -------------------- |
+| profiles                      | uuid NOT NULL | sì                   |
+| payments                      | uuid NOT NULL | sì                   |
+| documents                     | uuid NOT NULL | sì                   |
+| appointments                  | uuid NOT NULL | sì                   |
+| exercises                     | uuid NOT NULL | sì                   |
+| workouts                      | uuid NOT NULL | sì (se esiste)       |
+| marketing_leads               | uuid NOT NULL | sì                   |
+| marketing_lead_notes          | uuid NOT NULL | sì                   |
+| marketing_campaigns           | uuid NOT NULL | sì                   |
+| marketing_events              | uuid NOT NULL | sì                   |
+| marketing_segments            | uuid NOT NULL | sì                   |
+| marketing_automations         | uuid NOT NULL | sì                   |
+| marketing_lead_status_history | uuid NOT NULL | sì                   |
+| athlete_marketing_kpis        | uuid NOT NULL | sì                   |
+| athlete_trainer_assignments   | uuid NOT NULL | sì                   |
+| profile_tombstones            | uuid NOT NULL | sì                   |
+| audit_logs                    | uuid (già)    | no                   |
 
 ## Funzioni aggiornate
 

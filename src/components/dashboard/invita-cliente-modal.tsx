@@ -89,17 +89,21 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
           p_email: formData.email.trim(),
         })
         if (error) {
-          setSubmitError(error.message ?? 'Errore durante l\'invito')
+          setSubmitError(error.message ?? "Errore durante l'invito")
           return
         }
         const res = result as { success?: boolean; error?: string } | null
         if (res?.success) {
-          notify('Invito inviato. Il cliente vedrà "Nuovo invito" nella sua Home.', 'success', 'Invito inviato')
+          notify(
+            'Invito inviato. Il cliente vedrà "Nuovo invito" nella sua Home.',
+            'success',
+            'Invito inviato',
+          )
           setFormData({ nome: '', cognome: '', email: '', telefono: '' })
           onOpenChange(false)
           onSuccess?.()
         } else {
-          setSubmitError(res?.error ?? 'Errore durante l\'invito')
+          setSubmitError(res?.error ?? "Errore durante l'invito")
         }
       } else {
         const { data: result, error } = await supabase.rpc('crea_invito_cliente_esterno', {
@@ -109,17 +113,21 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
           p_telefono: formData.telefono.trim(),
         })
         if (error) {
-          setSubmitError(error.message ?? 'Errore durante l\'invito')
+          setSubmitError(error.message ?? "Errore durante l'invito")
           return
         }
         const res = result as { success?: boolean; error?: string } | null
         if (res?.success) {
-          notify('Cliente esterno aggiunto. Puoi gestirlo come un cliente normale (piani, progressi, profilo). Visibile solo a te e al Marketing.', 'success', 'Cliente aggiunto')
+          notify(
+            'Cliente esterno aggiunto. Puoi gestirlo come un cliente normale (piani, progressi, profilo). Visibile solo a te e al Marketing.',
+            'success',
+            'Cliente aggiunto',
+          )
           setFormData({ nome: '', cognome: '', email: '', telefono: '' })
           onOpenChange(false)
           onSuccess?.()
         } else {
-          setSubmitError(res?.error ?? 'Errore durante l\'invito')
+          setSubmitError(res?.error ?? "Errore durante l'invito")
         }
       }
     } catch (err) {
@@ -154,8 +162,8 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-text-secondary text-sm">
                   {tipoCliente === 'palestra'
-                    ? "Inserisci nome, cognome e email del cliente già registrato nella tua organizzazione. Riceverà un invito nella sua Home."
-                    : "Inserisci i dati del cliente esterno (non ancora in palestra). Richiedi anche il numero di cellulare."}
+                    ? 'Inserisci nome, cognome e email del cliente già registrato nella tua organizzazione. Riceverà un invito nella sua Home.'
+                    : 'Inserisci i dati del cliente esterno (non ancora in palestra). Richiedi anche il numero di cellulare.'}
                 </DialogDescription>
               </div>
             </div>

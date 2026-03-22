@@ -28,10 +28,7 @@ export function NutritionMacronutrientsSection({
   onMacronutrientiUpdate,
 }: NutritionMacronutrientsSectionProps) {
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-text-primary flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />

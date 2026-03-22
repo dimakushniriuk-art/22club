@@ -43,12 +43,18 @@ test.describe('Allenamenti Page', () => {
   test('should filter by tabs', async ({ page }) => {
     const completed = page.getByRole('tab', { name: /Completati/i })
     if (await completed.count()) {
-      await completed.first().click().catch(() => {})
+      await completed
+        .first()
+        .click()
+        .catch(() => {})
       await softVisible(page.getByText(/Completato/i), 5000)
     }
     const inCorso = page.getByRole('tab', { name: /In corso/i })
     if (await inCorso.count()) {
-      await inCorso.first().click().catch(() => {})
+      await inCorso
+        .first()
+        .click()
+        .catch(() => {})
       await softVisible(page.getByText(/In corso/i), 5000)
     }
   })
@@ -102,7 +108,10 @@ test.describe('Allenamenti Page', () => {
   test('should open dettagli modal', async ({ page }) => {
     const dettagli = page.getByRole('button', { name: /Dettagli/i })
     if (await dettagli.count()) {
-      await dettagli.first().click().catch(() => {})
+      await dettagli
+        .first()
+        .click()
+        .catch(() => {})
       await softVisible(page.getByRole('heading', { name: /Dettagli Allenamento/i }), 5000)
       await softVisible(page.getByText(/Informazioni complete/i), 5000)
       const close = page.getByRole('button', { name: /Chiudi dialog/i })
@@ -135,7 +144,10 @@ test.describe('Allenamenti Page', () => {
   test('should display progress bar for in-progress workouts', async ({ page }) => {
     const inCorso = page.getByRole('tab', { name: /In corso/i })
     if (await inCorso.count()) {
-      await inCorso.first().click().catch(() => {})
+      await inCorso
+        .first()
+        .click()
+        .catch(() => {})
     }
     await softVisible(page.getByText(/Progresso/i), 5000)
     await softVisible(page.getByText('%'), 5000)

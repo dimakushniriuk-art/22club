@@ -65,7 +65,10 @@ export const SkeletonClientiList: React.FC<{ cards?: number; className?: string 
     aria-label="Caricamento elenco clienti"
   >
     {Array.from({ length: cards }).map((_, i) => (
-      <div key={i} className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+      <div
+        key={i}
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
+      >
         <div className="flex items-center gap-3 mb-3">
           <Skeleton height={48} width={48} className="shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-1">
@@ -87,7 +90,10 @@ export const SkeletonAppointmentsList: React.FC<{ rows?: number; className?: str
 }) => (
   <div className={`space-y-2 ${className}`} role="status" aria-label="Caricamento appuntamenti">
     {Array.from({ length: rows }).map((_, i) => (
-      <div key={i} className="flex items-center gap-4 rounded-lg p-4 bg-surface-200/80 border border-white/5">
+      <div
+        key={i}
+        className="flex items-center gap-4 rounded-lg p-4 bg-surface-200/80 border border-white/5"
+      >
         <div className="min-w-[120px] space-y-1">
           <Skeleton height={12} width={80} className="rounded" />
           <Skeleton height={18} width={100} className="rounded" />
@@ -120,7 +126,10 @@ export const SkeletonWorkoutList: React.FC<{ cards?: number; className?: string 
     aria-label="Caricamento schede"
   >
     {Array.from({ length: cards }).map((_, i) => (
-      <div key={i} className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] flex flex-col">
+      <div
+        key={i}
+        className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] flex flex-col"
+      >
         <div className="flex items-start justify-between mb-3">
           <Skeleton height={20} width="70%" className="rounded" />
           <Skeleton height={20} width={56} className="rounded-full shrink-0" />

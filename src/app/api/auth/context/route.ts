@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 import { UserRole } from '@/types/user'
 import type { Tables } from '@/types/supabase'
-import type { Database } from '@/lib/supabase/types'
-
 const logger = createLogger('api:auth:context')
 
 const COOKIE_IMPERSONATE_PROFILE = 'impersonate_profile_id'
@@ -23,7 +21,15 @@ function toAuthProfile(p: {
   const firstName = p.nome ?? p.first_name ?? ''
   const lastName = p.cognome ?? p.last_name ?? ''
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || null
-  const role = (p.role === 'pt' || p.role === 'staff' ? 'trainer' : p.role === 'atleta' ? 'athlete' : p.role === 'owner' ? 'admin' : p.role) as UserRole
+  const role = (
+    p.role === 'pt' || p.role === 'staff'
+      ? 'trainer'
+      : p.role === 'atleta'
+        ? 'athlete'
+        : p.role === 'owner'
+          ? 'admin'
+          : p.role
+  ) as UserRole
   return {
     id: p.id,
     user_id: p.user_id ?? undefined,
@@ -49,10 +55,24 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getSession()
 
     if (sessionError || !session) {
-      return NextResponse.json({ role: null, org_id: null, isImpersonating: false }, { status: 200 })
+      return NextResponse.json(
+        { role: null, org_id: null, isImpersonating: false },
+        { status: 200 },
+      )
     }
 
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'user_id' | 'role' | 'org_id' | 'nome' | 'cognome' | 'first_name' | 'last_name' | 'email'>
+    type ProfileRow = Pick<
+      Tables<'profiles'>,
+      | 'id'
+      | 'user_id'
+      | 'role'
+      | 'org_id'
+      | 'nome'
+      | 'cognome'
+      | 'first_name'
+      | 'last_name'
+      | 'email'
+    >
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, user_id, role, org_id, nome, cognome, first_name, last_name, email')
@@ -61,17 +81,30 @@ export async function GET(request: NextRequest) {
 
     if (profileError || !profile) {
       logger.warn('Profilo non trovato', profileError, { userId: session.user.id })
-      return NextResponse.json({ role: null, org_id: null, isImpersonating: false }, { status: 200 })
+      return NextResponse.json(
+        { role: null, org_id: null, isImpersonating: false },
+        { status: 200 },
+      )
     }
     const profileTyped = profile as ProfileRow
     const actorProfilePayload = toAuthProfile(profileTyped)
-    const normalizedRole = (profileTyped.role === 'pt' || profileTyped.role === 'staff' ? 'trainer' : profileTyped.role === 'atleta' ? 'athlete' : profileTyped.role === 'owner' ? 'admin' : profileTyped.role) as UserRole
+    const normalizedRole = (
+      profileTyped.role === 'pt' || profileTyped.role === 'staff'
+        ? 'trainer'
+        : profileTyped.role === 'atleta'
+          ? 'athlete'
+          : profileTyped.role === 'owner'
+            ? 'admin'
+            : profileTyped.role
+    ) as UserRole
     const impersonateProfileId = request.cookies.get(COOKIE_IMPERSONATE_PROFILE)?.value
     if (impersonateProfileId && normalizedRole === 'admin') {
       type TargetRow = ProfileRow & { is_deleted?: boolean }
       const { data: targetProfile, error: targetError } = await supabase
         .from('profiles')
-        .select('id, user_id, role, org_id, nome, cognome, first_name, last_name, email, is_deleted')
+        .select(
+          'id, user_id, role, org_id, nome, cognome, first_name, last_name, email, is_deleted',
+        )
         .eq('id', impersonateProfileId)
         .single()
 
@@ -82,7 +115,11 @@ export async function GET(request: NextRequest) {
         const res = NextResponse.json({
           role: normalizedRole,
           org_id: profileTyped.org_id,
-          full_name: actorProfilePayload.full_name ?? (actorProfilePayload.first_name && actorProfilePayload.last_name ? `${actorProfilePayload.first_name} ${actorProfilePayload.last_name}` : null),
+          full_name:
+            actorProfilePayload.full_name ??
+            (actorProfilePayload.first_name && actorProfilePayload.last_name
+              ? `${actorProfilePayload.first_name} ${actorProfilePayload.last_name}`
+              : null),
           email: profileTyped.email,
           actorProfile: null,
           effectiveProfile: null,
@@ -104,7 +141,11 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const fullName = actorProfilePayload.full_name ?? (actorProfilePayload.first_name && actorProfilePayload.last_name ? `${actorProfilePayload.first_name} ${actorProfilePayload.last_name}` : null)
+    const fullName =
+      actorProfilePayload.full_name ??
+      (actorProfilePayload.first_name && actorProfilePayload.last_name
+        ? `${actorProfilePayload.first_name} ${actorProfilePayload.last_name}`
+        : null)
     return NextResponse.json({
       role: normalizedRole,
       org_id: profileTyped.org_id,
@@ -122,10 +163,9 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/auth/context
- * Aggiorna il contesto Supabase con role e org_id
- * Usato per sincronizzare i custom claims del JWT
+ * Verifica sessione. Role/org_id sul profilo non sono aggiornabili da header/body (solo server/DB).
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const supabase = await createClient()
     const {
@@ -135,38 +175,6 @@ export async function POST(request: NextRequest) {
 
     if (sessionError || !session) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
-    }
-
-    // Leggi headers personalizzati
-    const role = request.headers.get('x-user-role') as UserRole | null
-    const orgId = request.headers.get('x-org-id')
-
-    // Valida role
-    const validRoles: UserRole[] = ['admin', 'trainer', 'athlete', 'marketing', 'nutrizionista', 'massaggiatore']
-    if (role && !validRoles.includes(role)) {
-      logger.warn('Role non valido', undefined, { role, userId: session.user.id })
-      return NextResponse.json({ error: 'Role non valido' }, { status: 400 })
-    }
-
-    // Aggiorna il profilo se necessario
-    if (role || orgId) {
-      type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
-      const updateData: ProfileUpdate = {}
-      if (role) updateData.role = role
-      if (orgId) updateData.org_id = orgId
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(updateData as Database['public']['Tables']['profiles']['Update'])
-        .eq('user_id', session.user.id)
-
-      if (updateError) {
-        logger.error('Errore durante aggiornamento profilo', updateError, {
-          userId: session.user.id,
-          updateData,
-        })
-        return NextResponse.json({ error: 'Errore durante aggiornamento' }, { status: 500 })
-      }
     }
 
     return NextResponse.json({ success: true })

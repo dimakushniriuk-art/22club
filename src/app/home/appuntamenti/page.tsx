@@ -11,9 +11,9 @@ import { notifyError } from '@/lib/notifications'
 import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useAuth } from '@/providers/auth-provider'
-import { useAppointments } from '@/hooks/use-appointments'
+import { useAthleteAppointments } from '@/hooks/useAthleteAppointments'
 import { useAthleteCalendarPage } from '@/hooks/calendar/use-athlete-calendar-page'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { AppuntamentiPageHeader } from './AppuntamentiPageHeader'
 import { AppuntamentiListView } from './AppuntamentiListView'
@@ -97,7 +97,7 @@ function AppuntamentiPageContent() {
     updateAppointment,
     cancelAppointment,
     deleteAppointment,
-  } = useAppointments({
+  } = useAthleteAppointments({
     userId: profileId ?? undefined,
     role: normalizedRole ?? undefined,
   })
@@ -230,7 +230,7 @@ function AppuntamentiPageContent() {
         profileId: user?.id,
         userId: user?.user_id,
       })
-      // error è di tipo string | null da useAppointments
+      // error è di tipo string | null da useAthleteAppointments
       const errorMessage =
         typeof error === 'string' ? error : 'Errore sconosciuto nel caricamento degli appuntamenti'
       notifyError('Errore nel caricamento appuntamenti', errorMessage)

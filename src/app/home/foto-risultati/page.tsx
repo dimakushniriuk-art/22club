@@ -5,7 +5,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react'
 import { PageHeaderFixed } from '@/components/layout'
-import { ProgressPhotoImage, getStoragePathFromProgressPhotoUrl } from '@/components/progress-photo-image'
+import {
+  ProgressPhotoImage,
+  getStoragePathFromProgressPhotoUrl,
+} from '@/components/progress-photo-image'
 import { Button } from '@/components/ui'
 import { useAuth } from '@/providers/auth-provider'
 import { useProgressPhotos } from '@/hooks/use-progress-photos'
@@ -45,12 +48,7 @@ export default function FotoRisultatiPage() {
 
   const handleDelete = useCallback(
     async (photo: ProgressPhoto) => {
-      if (
-        !window.confirm(
-          'Eliminare questa foto? L\'operazione non può essere annullata.',
-        )
-      )
-        return
+      if (!window.confirm("Eliminare questa foto? L'operazione non può essere annullata.")) return
       setDeletingId(photo.id)
       const path = getStoragePathFromProgressPhotoUrl(photo.image_url)
       try {
@@ -65,10 +63,7 @@ export default function FotoRisultatiPage() {
         notify('Foto eliminata', 'success')
         await refresh()
       } catch (e) {
-        notify(
-          e instanceof Error ? e.message : 'Errore durante l\'eliminazione',
-          'error',
-        )
+        notify(e instanceof Error ? e.message : "Errore durante l'eliminazione", 'error')
       } finally {
         setDeletingId(null)
       }
@@ -144,9 +139,7 @@ export default function FotoRisultatiPage() {
             </span>
             Galleria per data
           </h2>
-          {error && (
-            <p className="text-xs text-state-error sm:text-sm">{error}</p>
-          )}
+          {error && <p className="text-xs text-state-error sm:text-sm">{error}</p>}
           {loading && photos.length === 0 ? (
             <div className="flex items-center justify-center gap-2 py-8 text-sm text-text-secondary sm:text-base">
               <Loader2 className="h-5 w-5 animate-spin" />

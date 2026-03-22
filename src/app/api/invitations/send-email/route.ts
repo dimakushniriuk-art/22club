@@ -36,22 +36,13 @@ export async function POST(request: NextRequest) {
       typeof registrationLink === 'string' && registrationLink.trim() ? registrationLink.trim() : ''
 
     if (!email || typeof email !== 'string' || !email.trim()) {
-      return NextResponse.json(
-        { error: 'Email obbligatoria per l\'invio' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: "Email obbligatoria per l'invio" }, { status: 400 })
     }
     if (!nomeAtleta || typeof nomeAtleta !== 'string' || !nomeAtleta.trim()) {
-      return NextResponse.json(
-        { error: 'Nome atleta obbligatorio' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Nome atleta obbligatorio' }, { status: 400 })
     }
     if (!codiceInvito || typeof codiceInvito !== 'string' || !codiceInvito.trim()) {
-      return NextResponse.json(
-        { error: 'Codice invito obbligatorio' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Codice invito obbligatorio' }, { status: 400 })
     }
 
     const baseUrl =
@@ -92,9 +83,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     logger.error('Errore API send invitation email', error)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

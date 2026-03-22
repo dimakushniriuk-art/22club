@@ -9,14 +9,14 @@ const logger = createLogger('post-login')
 
 /**
  * Route client-side per gestire redirect dopo login
- * 
+ *
  * Questa route:
  * 1. Usa AuthProvider per ottenere ruolo e stato utente
  * 2. Esegue redirect basato sul ruolo:
  *    - admin → /dashboard/admin
  *    - trainer → /dashboard
  *    - athlete → /home
- * 
+ *
  * Compatibile con Capacitor (Client Component)
  */
 export default function PostLoginPage() {
@@ -39,13 +39,19 @@ export default function PostLoginPage() {
     // Normalizza il ruolo (pt -> trainer, atleta -> athlete); nutrizionista/massaggiatore invariati
     const roleStr = role as string | null
     const normalizedRole =
-      roleStr === 'trainer' ? 'trainer'
-        : roleStr === 'athlete' ? 'athlete'
-        : roleStr === 'marketing' ? 'marketing'
-        : roleStr === 'admin' ? 'admin'
-        : roleStr === 'nutrizionista' ? 'nutrizionista'
-        : roleStr === 'massaggiatore' ? 'massaggiatore'
-        : role || null
+      roleStr === 'trainer'
+        ? 'trainer'
+        : roleStr === 'athlete'
+          ? 'athlete'
+          : roleStr === 'marketing'
+            ? 'marketing'
+            : roleStr === 'admin'
+              ? 'admin'
+              : roleStr === 'nutrizionista'
+                ? 'nutrizionista'
+                : roleStr === 'massaggiatore'
+                  ? 'massaggiatore'
+                  : role || null
 
     // Debug solo in sviluppo
     if (process.env.NODE_ENV !== 'production') {
@@ -94,7 +100,10 @@ export default function PostLoginPage() {
   // Mostra loading durante il redirect (stile trainer: sfondo #0d0d0d)
   return (
     <div className="flex items-center justify-center min-h-screen min-h-dvh bg-background text-text-primary">
-      <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-primary" aria-hidden />
+      <div
+        className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-primary"
+        aria-hidden
+      />
     </div>
   )
 }

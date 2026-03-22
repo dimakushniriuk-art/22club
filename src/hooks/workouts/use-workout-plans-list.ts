@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { Workout } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 import { getDifficultyFromDb } from '@/lib/workouts/workout-transformers'
@@ -35,7 +35,10 @@ export function useWorkoutPlansList() {
       if (isAthlete) {
         logger.debug('Fetch workout_plans per atleta via API', undefined, { userId })
         const res = await fetch('/api/athlete/workout-plans')
-        const json = await res.json().catch(() => ({})) as { workouts?: Workout[]; error?: string }
+        const json = (await res.json().catch(() => ({}))) as {
+          workouts?: Workout[]
+          error?: string
+        }
         if (!res.ok) {
           throw new Error(json.error ?? 'Errore nel caricamento delle schede')
         }
@@ -102,7 +105,9 @@ export function useWorkoutPlansList() {
 
       // Profili creatori (created_by_profile_id = profiles.id)
       const createdByProfileIds =
-        data?.map((w: { created_by_profile_id?: string | null }) => w.created_by_profile_id).filter((id: string | null | undefined): id is string => !!id) || []
+        data
+          ?.map((w: { created_by_profile_id?: string | null }) => w.created_by_profile_id)
+          .filter((id: string | null | undefined): id is string => !!id) || []
 
       const createdByProfiles: Record<string, { nome?: string | null; cognome?: string | null }> =
         {}
@@ -129,7 +134,9 @@ export function useWorkoutPlansList() {
         data?.map((workout: WorkoutPlanRow) => {
           const typedWorkout = workout
           const athlete = typedWorkout.athlete
-          const createdByProfile = workout.created_by_profile_id ? createdByProfiles[workout.created_by_profile_id] : null
+          const createdByProfile = workout.created_by_profile_id
+            ? createdByProfiles[workout.created_by_profile_id]
+            : null
 
           return {
             id: typedWorkout.id ?? '',

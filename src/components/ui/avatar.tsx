@@ -79,11 +79,7 @@ export function Avatar({
 }
 
 // Hook per generare initials da nome, cognome, o email come fallback
-export function useAvatarInitials(
-  nome?: string,
-  cognome?: string,
-  email?: string,
-): string {
+export function useAvatarInitials(nome?: string, cognome?: string, email?: string): string {
   // Usa nome/cognome se disponibili
   if (nome || cognome) {
     const firstInitial = nome?.charAt(0)?.toUpperCase() || ''

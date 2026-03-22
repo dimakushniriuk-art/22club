@@ -75,7 +75,8 @@ export default function EditSegmentPage() {
   const setRule = <K extends keyof SegmentRules>(key: K, value: SegmentRules[K]) => {
     setRules((prev) => {
       const next = { ...prev }
-      const isEmpty = value === undefined || value === null || (typeof value === 'string' && value === '')
+      const isEmpty =
+        value === undefined || value === null || (typeof value === 'string' && value === '')
       if (isEmpty) {
         delete next[key]
       } else {
@@ -182,7 +183,10 @@ export default function EditSegmentPage() {
                   min={0}
                   value={rules.inactivity_days ?? ''}
                   onChange={(e) =>
-                    setRule('inactivity_days', e.target.value === '' ? undefined : Number(e.target.value))
+                    setRule(
+                      'inactivity_days',
+                      e.target.value === '' ? undefined : Number(e.target.value),
+                    )
                   }
                   className="border-border bg-background"
                 />
@@ -194,7 +198,12 @@ export default function EditSegmentPage() {
                     type="button"
                     variant={rules.last_workout_exists === true ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setRule('last_workout_exists', rules.last_workout_exists === true ? undefined : true)}
+                    onClick={() =>
+                      setRule(
+                        'last_workout_exists',
+                        rules.last_workout_exists === true ? undefined : true,
+                      )
+                    }
                   >
                     Deve esistere
                   </Button>
@@ -202,7 +211,12 @@ export default function EditSegmentPage() {
                     type="button"
                     variant={rules.last_workout_exists === false ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setRule('last_workout_exists', rules.last_workout_exists === false ? undefined : false)}
+                    onClick={() =>
+                      setRule(
+                        'last_workout_exists',
+                        rules.last_workout_exists === false ? undefined : false,
+                      )
+                    }
                   >
                     Non deve esistere
                   </Button>
@@ -216,7 +230,10 @@ export default function EditSegmentPage() {
                   min={0}
                   value={rules.min_workouts_coached_7d ?? ''}
                   onChange={(e) =>
-                    setRule('min_workouts_coached_7d', e.target.value === '' ? undefined : Number(e.target.value))
+                    setRule(
+                      'min_workouts_coached_7d',
+                      e.target.value === '' ? undefined : Number(e.target.value),
+                    )
                   }
                   className="border-border bg-background"
                 />
@@ -229,7 +246,10 @@ export default function EditSegmentPage() {
                   min={0}
                   value={rules.min_workouts_solo_7d ?? ''}
                   onChange={(e) =>
-                    setRule('min_workouts_solo_7d', e.target.value === '' ? undefined : Number(e.target.value))
+                    setRule(
+                      'min_workouts_solo_7d',
+                      e.target.value === '' ? undefined : Number(e.target.value),
+                    )
                   }
                   className="border-border bg-background"
                 />
@@ -242,7 +262,10 @@ export default function EditSegmentPage() {
                   min={0}
                   value={rules.min_workouts_coached_30d ?? ''}
                   onChange={(e) =>
-                    setRule('min_workouts_coached_30d', e.target.value === '' ? undefined : Number(e.target.value))
+                    setRule(
+                      'min_workouts_coached_30d',
+                      e.target.value === '' ? undefined : Number(e.target.value),
+                    )
                   }
                   className="border-border bg-background"
                 />
@@ -255,7 +278,10 @@ export default function EditSegmentPage() {
                   min={0}
                   value={rules.min_workouts_solo_30d ?? ''}
                   onChange={(e) =>
-                    setRule('min_workouts_solo_30d', e.target.value === '' ? undefined : Number(e.target.value))
+                    setRule(
+                      'min_workouts_solo_30d',
+                      e.target.value === '' ? undefined : Number(e.target.value),
+                    )
                   }
                   className="border-border bg-background"
                 />
@@ -266,7 +292,13 @@ export default function EditSegmentPage() {
 
         <div className="mt-6 flex gap-2">
           <Button type="submit" disabled={saving}>
-            {saving ? 'Salvataggio...' : <><Save className="mr-2 h-4 w-4" /> Salva</>}
+            {saving ? (
+              'Salvataggio...'
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Salva
+              </>
+            )}
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href={`/dashboard/marketing/segments/${id}`}>Annulla</Link>

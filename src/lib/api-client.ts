@@ -1,6 +1,6 @@
 /**
  * Helper per gestire chiamate API con fallback automatico
- * 
+ *
  * Strategia:
  * - Web: Usa API routes quando disponibili (migliore sicurezza, validazione server-side)
  * - Mobile (Capacitor): Usa Supabase client direttamente (API routes non disponibili)
@@ -21,7 +21,7 @@ export function isNativePlatform(): boolean {
 
 /**
  * Verifica se le API routes sono disponibili
- * 
+ *
  * Su web: sempre disponibili
  * Su mobile: non disponibili (spostate durante build)
  */
@@ -30,18 +30,18 @@ export function isApiAvailable(): boolean {
   if (isNativePlatform()) {
     return false
   }
-  
+
   // Su web, le API routes sono disponibili
   return true
 }
 
 /**
  * Esegue una chiamata API con fallback automatico a Supabase
- * 
+ *
  * @param endpoint - Endpoint API (es. '/api/communications/list')
  * @param options - Opzioni fetch
  * @param fallbackFn - Funzione fallback da eseguire se API non disponibile (mobile)
- * 
+ *
  * @example
  * ```typescript
  * const data = await apiCall(
@@ -94,7 +94,7 @@ export async function apiCall<T>(
     }
 
     const data = JSON.parse(text)
-    
+
     // Gestisci risposte con struttura { data, error }
     if (data.error) {
       logger.warn('API returned error, using fallback', {
@@ -132,7 +132,10 @@ export async function apiGet<T>(
   if (!fallbackFn) {
     throw new Error('fallbackFn è richiesto')
   }
-  const url = new URL(endpoint, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+  const url = new URL(
+    endpoint,
+    typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
+  )
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, String(value))
@@ -205,9 +208,6 @@ export async function apiPut<T>(
 /**
  * Helper per chiamate DELETE
  */
-export async function apiDelete<T>(
-  endpoint: string,
-  fallbackFn: () => Promise<T>,
-): Promise<T> {
+export async function apiDelete<T>(endpoint: string, fallbackFn: () => Promise<T>): Promise<T> {
   return apiCall<T>(endpoint, { method: 'DELETE' }, fallbackFn)
 }

@@ -11,10 +11,12 @@ export function useClientiFilters() {
 
   // State per filtri e ricerca (iniziale da URL)
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '')
-  const [statoFilter, setStatoFilter] = useState<'tutti' | 'attivo' | 'inattivo' | 'sospeso'>(() => {
-    const s = searchParams.get('stato') as 'tutti' | 'attivo' | 'inattivo' | 'sospeso' | null
-    return (s && ['tutti', 'attivo', 'inattivo', 'sospeso'].includes(s)) ? s : DEFAULT_STATO
-  })
+  const [statoFilter, setStatoFilter] = useState<'tutti' | 'attivo' | 'inattivo' | 'sospeso'>(
+    () => {
+      const s = searchParams.get('stato') as 'tutti' | 'attivo' | 'inattivo' | 'sospeso' | null
+      return s && ['tutti', 'attivo', 'inattivo', 'sospeso'].includes(s) ? s : DEFAULT_STATO
+    },
+  )
   const [page, setPage] = useState(() => {
     const p = Number(searchParams.get('page'))
     return Number.isFinite(p) && p >= 1 ? p : 1
@@ -24,7 +26,7 @@ export function useClientiFilters() {
   useEffect(() => {
     setSearchTerm(searchParams.get('search') || '')
     const s = searchParams.get('stato') as 'tutti' | 'attivo' | 'inattivo' | 'sospeso' | null
-    setStatoFilter((s && ['tutti', 'attivo', 'inattivo', 'sospeso'].includes(s)) ? s : DEFAULT_STATO)
+    setStatoFilter(s && ['tutti', 'attivo', 'inattivo', 'sospeso'].includes(s) ? s : DEFAULT_STATO)
     const p = Number(searchParams.get('page'))
     setPage(Number.isFinite(p) && p >= 1 ? p : 1)
   }, [searchParams])

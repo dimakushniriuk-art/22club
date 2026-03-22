@@ -43,8 +43,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
           'flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium transition-all duration-200',
         active: 'bg-primary text-primary-foreground shadow-sm',
         completed: 'bg-primary text-primary-foreground',
-        pending:
-          'bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-text-tertiary',
+        pending: 'bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-text-tertiary',
         content: 'ml-3 flex-1',
         label: 'text-sm font-medium text-text-primary',
         description: 'text-xs text-text-secondary mt-0.5',

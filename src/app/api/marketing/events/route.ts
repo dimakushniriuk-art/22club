@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Profilo senza org_id' }, { status: 400 })
     }
 
-    const body = await request.json() as Record<string, unknown>
+    const body = (await request.json()) as Record<string, unknown>
     const { type, campaign_id, lead_id, source, medium, utm_campaign, payload } = body
 
     if (typeof type !== 'string' || !type.trim()) {
@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
       org_id: prof.org_id,
       org_id_text: prof.org_id,
       type: type.trim(),
-      campaign_id: typeof campaign_id === 'string' && campaign_id.trim() ? campaign_id.trim() : null,
+      campaign_id:
+        typeof campaign_id === 'string' && campaign_id.trim() ? campaign_id.trim() : null,
       lead_id: typeof lead_id === 'string' && lead_id.trim() ? lead_id.trim() : null,
       actor_profile_id: prof.id ?? null,
       source: typeof source === 'string' ? source : null,
@@ -57,11 +58,18 @@ export async function POST(request: NextRequest) {
       payload: (payload != null && typeof payload === 'object' ? payload : {}) as Json,
     }
 
-    const { data: row, error } = await supabase.from('marketing_events').insert(insert).select('id, type, occurred_at').single()
+    const { data: row, error } = await supabase
+      .from('marketing_events')
+      .insert(insert)
+      .select('id, type, occurred_at')
+      .single()
 
     if (error) {
       logger.warn('Errore POST marketing/events', error)
-      return NextResponse.json({ error: error.message ?? 'Errore inserimento evento' }, { status: 500 })
+      return NextResponse.json(
+        { error: error.message ?? 'Errore inserimento evento' },
+        { status: 500 },
+      )
     }
 
     return NextResponse.json({ data: row })

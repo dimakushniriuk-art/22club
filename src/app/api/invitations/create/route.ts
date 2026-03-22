@@ -54,7 +54,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nome atleta obbligatorio' }, { status: 400 })
     }
     if (!email) {
-      return NextResponse.json({ error: 'Email obbligatoria per collegare l\'atleta al trainer dopo la registrazione' }, { status: 400 })
+      return NextResponse.json(
+        { error: "Email obbligatoria per collegare l'atleta al trainer dopo la registrazione" },
+        { status: 400 },
+      )
     }
 
     const inviteCode = generateInviteCode()
@@ -90,9 +93,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(invitation as Tables<'inviti_atleti'>)
   } catch (error) {
     logger.error('Errore API create invitation', error)
-    return NextResponse.json(
-      { error: 'Errore interno del server' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }

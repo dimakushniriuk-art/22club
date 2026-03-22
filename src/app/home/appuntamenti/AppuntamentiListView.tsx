@@ -62,7 +62,9 @@ export function AppuntamentiListView({
   formPreviousFocusRef: _formPreviousFocusRef,
 }: AppuntamentiListViewProps) {
   const emptyTitle =
-    normalizedRole === 'athlete' ? 'Nessun appuntamento programmato' : 'Nessun appuntamento per i tuoi atleti'
+    normalizedRole === 'athlete'
+      ? 'Nessun appuntamento programmato'
+      : 'Nessun appuntamento per i tuoi atleti'
   const emptySubtitle =
     normalizedRole === 'athlete'
       ? 'Controlla più tardi o contatta il tuo trainer'
@@ -73,8 +75,8 @@ export function AppuntamentiListView({
         {
           id: editingAppointment.athlete_id,
           name:
-            (appointments.find((a) => a.id === editingAppointment?.id) as AppointmentUI | undefined)?.athlete_name ||
-            'Atleta',
+            (appointments.find((a) => a.id === editingAppointment?.id) as AppointmentUI | undefined)
+              ?.athlete_name || 'Atleta',
           email: '',
         },
       ]
@@ -91,7 +93,10 @@ export function AppuntamentiListView({
 
         <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <CardHeader className="pb-2.5 border-b border-white/10">
-            <CardTitle size="sm" className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+            <CardTitle
+              size="sm"
+              className="flex items-center gap-2 text-sm font-semibold text-text-primary"
+            >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Calendar className="h-4 w-4 text-cyan-400" />
               </div>
@@ -102,7 +107,9 @@ export function AppuntamentiListView({
             {futureAppointments.length === 0 ? (
               <div className="py-6 text-center px-2">
                 <div className="mb-3 text-4xl opacity-50">📅</div>
-                <h3 className="text-text-primary mb-2 text-base font-semibold line-clamp-2">{emptyTitle}</h3>
+                <h3 className="text-text-primary mb-2 text-base font-semibold line-clamp-2">
+                  {emptyTitle}
+                </h3>
                 <p className="text-text-secondary text-xs mb-4 line-clamp-2">{emptySubtitle}</p>
                 <RefreshButton
                   onRefresh={() => refetch()}
@@ -130,7 +137,10 @@ export function AppuntamentiListView({
         {pastAppointments.length > 0 && (
           <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardHeader className="pb-2.5 border-b border-white/10">
-              <CardTitle size="sm" className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+              <CardTitle
+                size="sm"
+                className="flex items-center gap-2 text-sm font-semibold text-text-primary"
+              >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                   <Clock className="h-4 w-4 text-cyan-400" />
                 </div>

@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-  useMemo,
-  memo,
-} from 'react'
+import { useCallback, useEffect, useState, useMemo, memo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -228,7 +222,9 @@ export default function NutrizionistaPianiPage() {
   const [searchInput, setSearchInput] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('updated')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [kpiFilter, setKpiFilter] = useState<string | null>(() => filterParam === 'scadenza' ? 'scadenza' : null)
+  const [kpiFilter, setKpiFilter] = useState<string | null>(() =>
+    filterParam === 'scadenza' ? 'scadenza' : null,
+  )
   const [filterStato, setFilterStato] = useState<'all' | 'draft' | 'active' | 'archived'>('all')
   const [filterScadenza, setFilterScadenza] = useState<'all' | '7' | '30' | 'scaduto'>('all')
   const [filterAuto, setFilterAuto] = useState<'all' | 'si' | 'no'>('all')
@@ -273,7 +269,9 @@ export default function NutrizionistaPianiPage() {
         .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
         .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
       if (staffErr) throw staffErr
-      const athleteIds = (staffData ?? []).map((r) => (r as { atleta_id: string }).atleta_id).filter(Boolean)
+      const athleteIds = (staffData ?? [])
+        .map((r) => (r as { atleta_id: string }).atleta_id)
+        .filter(Boolean)
 
       const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
         .select('id, athlete_id')
@@ -288,13 +286,20 @@ export default function NutrizionistaPianiPage() {
         .select('id, nome, cognome, email')
         .in('id', allAthleteIds)
       const profilesMap = new Map(
-        (profilesData ?? []).map((p: { id: string; nome: string | null; cognome: string | null; email: string | null }) => [
-          p.id,
-          {
-            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-            email: p.email ?? null,
-          },
-        ]),
+        (profilesData ?? []).map(
+          (p: {
+            id: string
+            nome: string | null
+            cognome: string | null
+            email: string | null
+          }) => [
+            p.id,
+            {
+              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+              email: p.email ?? null,
+            },
+          ],
+        ),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({ id, name: profilesMap.get(id)?.name ?? id.slice(0, 8) })),
@@ -302,64 +307,69 @@ export default function NutrizionistaPianiPage() {
 
       let list: VersionRow[] = []
       if (groupIds.length > 0) {
-      const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-        .select(
-          'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
-        )
-        .in('plan_id', groupIds)
-        .order('created_at', { ascending: false })
+        const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+          .select(
+            'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
+          )
+          .in('plan_id', groupIds)
+          .order('created_at', { ascending: false })
 
-      type Ver = {
-        id: string
-        plan_id?: string
-        version_number: number | null
-        status: string
-        start_date: string | null
-        end_date: string | null
-        created_at: string | null
-        calories_target?: number | null
-        protein_target?: number | null
-        carb_target?: number | null
-        fat_target?: number | null
-        pdf_file_path?: string | null
-        auto_generated?: boolean | null
-        auto_adjustment_reason?: string | null
-      }
-      const versions = (verRes.data ?? []) as Ver[]
-      const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
-      list = versions.map((v) => {
-        const gid = v.plan_id ?? ''
-        const aid = athleteByGroupId.get(gid) ?? ''
-        const prof = profilesMap.get(aid)
-        return {
-          groupId: gid,
-          athleteId: aid,
-          athleteName: prof?.name ?? aid.slice(0, 8),
-          athleteEmail: prof?.email ?? null,
-          versionId: v.id,
-          versionNumber: v.version_number,
-          status: v.status,
-          startDate: v.start_date,
-          endDate: v.end_date,
-          createdAt: v.created_at,
-          caloriesTarget: v.calories_target ?? null,
-          proteinTarget: v.protein_target ?? null,
-          carbTarget: v.carb_target ?? null,
-          fatTarget: v.fat_target ?? null,
-          pdfFilePath: v.pdf_file_path ?? null,
-          autoGenerated: v.auto_generated ?? null,
-          autoAdjustmentReason: v.auto_adjustment_reason ?? null,
+        type Ver = {
+          id: string
+          plan_id?: string
+          version_number: number | null
+          status: string
+          start_date: string | null
+          end_date: string | null
+          created_at: string | null
+          calories_target?: number | null
+          protein_target?: number | null
+          carb_target?: number | null
+          fat_target?: number | null
+          pdf_file_path?: string | null
+          auto_generated?: boolean | null
+          auto_adjustment_reason?: string | null
         }
-      })
+        const versions = (verRes.data ?? []) as Ver[]
+        const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
+        list = versions.map((v) => {
+          const gid = v.plan_id ?? ''
+          const aid = athleteByGroupId.get(gid) ?? ''
+          const prof = profilesMap.get(aid)
+          return {
+            groupId: gid,
+            athleteId: aid,
+            athleteName: prof?.name ?? aid.slice(0, 8),
+            athleteEmail: prof?.email ?? null,
+            versionId: v.id,
+            versionNumber: v.version_number,
+            status: v.status,
+            startDate: v.start_date,
+            endDate: v.end_date,
+            createdAt: v.created_at,
+            caloriesTarget: v.calories_target ?? null,
+            proteinTarget: v.protein_target ?? null,
+            carbTarget: v.carb_target ?? null,
+            fatTarget: v.fat_target ?? null,
+            pdfFilePath: v.pdf_file_path ?? null,
+            autoGenerated: v.auto_generated ?? null,
+            autoAdjustmentReason: v.auto_adjustment_reason ?? null,
+          }
+        })
       }
 
       const unassignedPath = `nutrition-plans/_unassigned/${profileId}`
       const { data: storageFiles } = await supabase.storage.from('documents').list(unassignedPath)
       const storageRows: VersionRow[] = (storageFiles ?? [])
-        .filter((f) => (f as { name?: string }).name && (f as { name: string }).name.toLowerCase().endsWith('.pdf'))
+        .filter(
+          (f) =>
+            (f as { name?: string }).name &&
+            (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
+        )
         .map((f) => {
           const name = (f as { name: string }).name
-          const updated = (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
+          const updated =
+            (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
           const path = `${unassignedPath}/${name}`
           return {
             groupId: '',
@@ -386,7 +396,9 @@ export default function NutrizionistaPianiPage() {
         })
 
       const nutritionPlansPrefix = 'nutrition-plans'
-      const { data: planFolders } = await supabase.storage.from('documents').list(nutritionPlansPrefix)
+      const { data: planFolders } = await supabase.storage
+        .from('documents')
+        .list(nutritionPlansPrefix)
       const assignedStorageRows: VersionRow[] = []
       const folderNames = (planFolders ?? [])
         .map((f) => (f as { name?: string }).name)
@@ -397,24 +409,34 @@ export default function NutrizionistaPianiPage() {
           .select('id, nome, cognome, email')
           .in('id', folderNames)
         const athleteNameById = new Map(
-          (athleteProfiles ?? []).map((p: { id: string; nome: string | null; cognome: string | null; email: string | null }) => [
-            p.id,
-            [p.nome, p.cognome].filter(Boolean).join(' ').trim() || p.id.slice(0, 8),
-          ]),
+          (athleteProfiles ?? []).map(
+            (p: {
+              id: string
+              nome: string | null
+              cognome: string | null
+              email: string | null
+            }) => [p.id, [p.nome, p.cognome].filter(Boolean).join(' ').trim() || p.id.slice(0, 8)],
+          ),
         )
         const athleteEmailById = new Map(
-          (athleteProfiles ?? []).map((p: { id: string; email: string | null }) => [p.id, p.email ?? null]),
+          (athleteProfiles ?? []).map((p: { id: string; email: string | null }) => [
+            p.id,
+            p.email ?? null,
+          ]),
         )
         for (const athleteId of folderNames) {
           const { data: files } = await supabase.storage
             .from('documents')
             .list(`${nutritionPlansPrefix}/${athleteId}`)
           const pdfs = (files ?? []).filter(
-            (f) => (f as { name?: string }).name && (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
+            (f) =>
+              (f as { name?: string }).name &&
+              (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
           )
           for (const f of pdfs) {
             const name = (f as { name: string }).name
-            const updated = (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
+            const updated =
+              (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
             const path = `${nutritionPlansPrefix}/${athleteId}/${name}`
             assignedStorageRows.push({
               groupId: '',
@@ -473,7 +495,10 @@ export default function NutrizionistaPianiPage() {
     return d.toISOString().slice(0, 10)
   }, [today])
 
-  const isRowActive = useCallback((r: VersionRow) => isPlanVersionActive(r.status) || !!r.storagePath, [])
+  const isRowActive = useCallback(
+    (r: VersionRow) => isPlanVersionActive(r.status) || !!r.storagePath,
+    [],
+  )
   const kpiCounts = useMemo(() => {
     const attivi = rows.filter((r) => isRowActive(r)).length
     const bozze = rows.filter((r) => r.status === PLAN_VERSION_STATUS_DRAFT).length
@@ -499,7 +524,8 @@ export default function NutrizionistaPianiPage() {
     }
 
     if (kpiFilter === 'attivi') list = list.filter((r) => isRowActive(r))
-    else if (kpiFilter === 'bozze') list = list.filter((r) => r.status === PLAN_VERSION_STATUS_DRAFT)
+    else if (kpiFilter === 'bozze')
+      list = list.filter((r) => r.status === PLAN_VERSION_STATUS_DRAFT)
     else if (kpiFilter === 'scadenza') {
       list = list.filter((r) => r.endDate && r.endDate >= todayStr && r.endDate <= in7)
     } else if (kpiFilter === 'scaduti') {
@@ -539,7 +565,19 @@ export default function NutrizionistaPianiPage() {
       return cb.localeCompare(ca)
     })
     return sorted
-  }, [rows, debouncedSearch, kpiFilter, filterStato, filterScadenza, filterAuto, sortBy, todayStr, in7, in30, isRowActive])
+  }, [
+    rows,
+    debouncedSearch,
+    kpiFilter,
+    filterStato,
+    filterScadenza,
+    filterAuto,
+    sortBy,
+    todayStr,
+    in7,
+    in30,
+    isRowActive,
+  ])
 
   const hasActiveFilters =
     kpiFilter ||
@@ -586,7 +624,10 @@ export default function NutrizionistaPianiPage() {
         if (groupRow?.id) {
           groupId = groupRow.id
         } else {
-          const { data: newGroup, error: groupErr } = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+          const { data: newGroup, error: groupErr } = await nutritionFrom(
+            supabase,
+            NUTRITION_TABLES.planGroups,
+          )
             .insert({
               athlete_id: caricaPianoAthleteId,
               org_id: orgId,
@@ -603,9 +644,13 @@ export default function NutrizionistaPianiPage() {
           .order('version_number', { ascending: false })
           .limit(1)
           .maybeSingle()
-        const nextVersion = (maxVer as { version_number: number | null } | null)?.version_number ?? 0
+        const nextVersion =
+          (maxVer as { version_number: number | null } | null)?.version_number ?? 0
         const today = new Date().toISOString().slice(0, 10)
-        const { error: versionErr } = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions).insert({
+        const { error: versionErr } = await nutritionFrom(
+          supabase,
+          NUTRITION_TABLES.planVersions,
+        ).insert({
           plan_id: groupId,
           org_id: orgId,
           version_number: nextVersion + 1,
@@ -632,11 +677,17 @@ export default function NutrizionistaPianiPage() {
   const handleUnassignedRename = useCallback(async () => {
     if (!unassignedRenameRow?.storagePath || !unassignedRenameValue.trim()) return
     const base = unassignedRenameRow.storagePath.replace(/\/[^/]+$/, '')
-    const newName = unassignedRenameValue.trim().replace(/\.pdf$/i, '').replace(/[/\\]/g, '-') + '.pdf'
+    const newName =
+      unassignedRenameValue
+        .trim()
+        .replace(/\.pdf$/i, '')
+        .replace(/[/\\]/g, '-') + '.pdf'
     const toPath = `${base}/${newName}`
     setUnassignedRenameLoading(true)
     try {
-      const { error: copyErr } = await supabase.storage.from('documents').copy(unassignedRenameRow.storagePath, toPath)
+      const { error: copyErr } = await supabase.storage
+        .from('documents')
+        .copy(unassignedRenameRow.storagePath, toPath)
       if (copyErr) throw copyErr
       await supabase.storage.from('documents').remove([unassignedRenameRow.storagePath])
       setUnassignedRenameRow(null)
@@ -649,20 +700,29 @@ export default function NutrizionistaPianiPage() {
   }, [unassignedRenameRow, unassignedRenameValue, supabase, loadData])
 
   const handleUnassignedAssign = useCallback(async () => {
-    if (!unassignedAssignRow?.storagePath || !unassignedAssignAthleteId || !orgId || !profileId) return
+    if (!unassignedAssignRow?.storagePath || !unassignedAssignAthleteId || !orgId || !profileId)
+      return
     setUnassignedAssignError(null)
-    const fileName = unassignedAssignRow.fileName ?? unassignedAssignRow.storagePath.split('/').pop() ?? 'piano.pdf'
+    const fileName =
+      unassignedAssignRow.fileName ??
+      unassignedAssignRow.storagePath.split('/').pop() ??
+      'piano.pdf'
     const toPath = `nutrition-plans/${unassignedAssignAthleteId}/${fileName}`
     setUnassignedAssignLoading(true)
     try {
-      const { error: copyErr } = await supabase.storage.from('documents').copy(unassignedAssignRow.storagePath, toPath)
+      const { error: copyErr } = await supabase.storage
+        .from('documents')
+        .copy(unassignedAssignRow.storagePath, toPath)
       if (copyErr) {
         logger.error('Assegna documento: copy storage', copyErr)
         throw new Error(copyErr.message ?? 'Copia file non riuscita')
       }
       const pdfUrl = supabase.storage.from('documents').getPublicUrl(toPath).data.publicUrl
       let groupId: string
-      const { data: existingGroup, error: groupSelectErr } = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+      const { data: existingGroup, error: groupSelectErr } = await nutritionFrom(
+        supabase,
+        NUTRITION_TABLES.planGroups,
+      )
         .select('id')
         .eq('athlete_id', unassignedAssignAthleteId)
         .limit(1)
@@ -675,7 +735,10 @@ export default function NutrizionistaPianiPage() {
       if (groupRow?.id) {
         groupId = groupRow.id
       } else {
-        const { data: newGroup, error: groupErr } = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+        const { data: newGroup, error: groupErr } = await nutritionFrom(
+          supabase,
+          NUTRITION_TABLES.planGroups,
+        )
           .insert({
             athlete_id: unassignedAssignAthleteId,
             org_id: orgId,
@@ -698,7 +761,10 @@ export default function NutrizionistaPianiPage() {
         .maybeSingle()
       const nextVersion = (maxVer as { version_number: number | null } | null)?.version_number ?? 0
       const today = new Date().toISOString().slice(0, 10)
-      const { error: versionErr } = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions).insert({
+      const { error: versionErr } = await nutritionFrom(
+        supabase,
+        NUTRITION_TABLES.planVersions,
+      ).insert({
         plan_id: groupId,
         org_id: orgId,
         version_number: nextVersion + 1,
@@ -718,7 +784,7 @@ export default function NutrizionistaPianiPage() {
       setUnassignedAssignError(null)
       void loadData()
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Errore durante l\'assegnazione'
+      const msg = e instanceof Error ? e.message : "Errore durante l'assegnazione"
       setUnassignedAssignError(msg)
       logger.error('Assegna documento', e)
     } finally {
@@ -730,7 +796,9 @@ export default function NutrizionistaPianiPage() {
     if (!unassignedDeleteRow?.storagePath) return
     setUnassignedDeleteLoading(true)
     try {
-      const { error } = await supabase.storage.from('documents').remove([unassignedDeleteRow.storagePath])
+      const { error } = await supabase.storage
+        .from('documents')
+        .remove([unassignedDeleteRow.storagePath])
       if (error) throw error
       setUnassignedDeleteRow(null)
       void loadData()
@@ -741,7 +809,10 @@ export default function NutrizionistaPianiPage() {
     }
   }, [unassignedDeleteRow, supabase, loadData])
 
-  const canEditValidity = useCallback((r: VersionRow) => !!r.versionId && !r.versionId.startsWith('storage-'), [])
+  const canEditValidity = useCallback(
+    (r: VersionRow) => !!r.versionId && !r.versionId.startsWith('storage-'),
+    [],
+  )
   const openValidityEdit = useCallback((r: VersionRow) => {
     const today = new Date().toISOString().slice(0, 10)
     setValidityEditRow(r)
@@ -749,7 +820,13 @@ export default function NutrizionistaPianiPage() {
     setValidityEditEnd(r.endDate ?? today)
   }, [])
   const handleValiditySave = useCallback(async () => {
-    if (!validityEditRow || !canEditValidity(validityEditRow) || !validityEditStart || !validityEditEnd) return
+    if (
+      !validityEditRow ||
+      !canEditValidity(validityEditRow) ||
+      !validityEditStart ||
+      !validityEditEnd
+    )
+      return
     setValidityEditLoading(true)
     try {
       const { error } = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
@@ -802,10 +879,11 @@ export default function NutrizionistaPianiPage() {
 
   const athleteOptionsForNuovo = assignedAthletes
   const athleteOptionsForVersione = useMemo(
-    () => [...new Set(rows.map((r) => r.athleteId))].map((id) => {
-      const r = rows.find((x) => x.athleteId === id)
-      return r ? { id: r.athleteId, name: r.athleteName } : { id, name: id.slice(0, 8) }
-    }),
+    () =>
+      [...new Set(rows.map((r) => r.athleteId))].map((id) => {
+        const r = rows.find((x) => x.athleteId === id)
+        return r ? { id: r.athleteId, name: r.athleteName } : { id, name: id.slice(0, 8) }
+      }),
     [rows],
   )
 
@@ -840,22 +918,40 @@ export default function NutrizionistaPianiPage() {
           </Button>
           <Button variant="outline" size="sm" onClick={() => setNuovaVersioneOpen(true)}>
             <Copy className="mr-1.5 h-4 w-4" />
-              Crea nuova versione
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filteredAndSorted.length === 0}>
-              <Download className="mr-1.5 h-4 w-4" />
-              Esporta
-            </Button>
-            <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setFiltersOpen(true)} aria-label="Filtri">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </>
-        }
-      >
+            Crea nuova versione
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={filteredAndSorted.length === 0}
+          >
+            <Download className="mr-1.5 h-4 w-4" />
+            Esporta
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setFiltersOpen(true)}
+            aria-label="Filtri"
+          >
+            <Filter className="h-4 w-4" />
+          </Button>
+        </>
+      }
+    >
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
-          <Button variant="outline" size="sm" className="min-h-[44px] touch-manipulation" onClick={() => void loadData()}>Riprova</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px] touch-manipulation"
+            onClick={() => void loadData()}
+          >
+            Riprova
+          </Button>
         </div>
       )}
 
@@ -919,10 +1015,17 @@ export default function NutrizionistaPianiPage() {
             className="min-h-[44px] rounded-lg bg-background-secondary border border-border text-sm text-text-primary px-3 min-w-[180px]"
           >
             {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
-          <Button variant="outline" size="sm" className="hidden lg:inline-flex" onClick={() => setFiltersOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden lg:inline-flex"
+            onClick={() => setFiltersOpen(true)}
+          >
             <Filter className="mr-1.5 h-4 w-4" /> Filtri
           </Button>
           {hasActiveFilters && (
@@ -935,16 +1038,26 @@ export default function NutrizionistaPianiPage() {
 
       {/* Filters Drawer */}
       <Drawer open={filtersOpen} onOpenChange={setFiltersOpen} side="right" size="md">
-        <DrawerContent className="bg-background border-l border-border" onClose={() => setFiltersOpen(false)}>
+        <DrawerContent
+          className="bg-background border-l border-border"
+          onClose={() => setFiltersOpen(false)}
+        >
           <DrawerHeader className="border-b border-border p-5 flex items-center justify-between">
             <span className="font-semibold">Filtri</span>
-            <Button variant="ghost" size="icon" onClick={() => setFiltersOpen(false)} aria-label="Chiudi">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setFiltersOpen(false)}
+              aria-label="Chiudi"
+            >
               <X className="h-5 w-5" />
             </Button>
           </DrawerHeader>
           <DrawerBody className="p-5 space-y-6">
             <div>
-              <Label className="text-text-secondary text-xs uppercase tracking-wider">Stato versione</Label>
+              <Label className="text-text-secondary text-xs uppercase tracking-wider">
+                Stato versione
+              </Label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {(['all', 'draft', 'active', 'archived'] as const).map((v) => (
                   <button
@@ -952,16 +1065,26 @@ export default function NutrizionistaPianiPage() {
                     type="button"
                     onClick={() => setFilterStato(v)}
                     className={`rounded-full px-3 py-1.5 text-sm ${
-                      filterStato === v ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-background-secondary text-text-muted border border-border'
+                      filterStato === v
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-background-secondary text-text-muted border border-border'
                     }`}
                   >
-                    {v === 'all' ? 'Tutti' : v === 'draft' ? 'Bozze' : v === 'active' ? 'Attivi' : 'Archiviati'}
+                    {v === 'all'
+                      ? 'Tutti'
+                      : v === 'draft'
+                        ? 'Bozze'
+                        : v === 'active'
+                          ? 'Attivi'
+                          : 'Archiviati'}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <Label className="text-text-secondary text-xs uppercase tracking-wider">Scadenza</Label>
+              <Label className="text-text-secondary text-xs uppercase tracking-wider">
+                Scadenza
+              </Label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {(['all', '7', '30', 'scaduto'] as const).map((v) => (
                   <button
@@ -969,7 +1092,9 @@ export default function NutrizionistaPianiPage() {
                     type="button"
                     onClick={() => setFilterScadenza(v)}
                     className={`rounded-full px-3 py-1.5 text-sm ${
-                      filterScadenza === v ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-background-secondary text-text-muted border border-border'
+                      filterScadenza === v
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-background-secondary text-text-muted border border-border'
                     }`}
                   >
                     {v === 'all' ? 'Tutti' : v === '7' ? '7 gg' : v === '30' ? '30 gg' : 'Scaduto'}
@@ -978,7 +1103,9 @@ export default function NutrizionistaPianiPage() {
               </div>
             </div>
             <div>
-              <Label className="text-text-secondary text-xs uppercase tracking-wider">Auto-generato</Label>
+              <Label className="text-text-secondary text-xs uppercase tracking-wider">
+                Auto-generato
+              </Label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {(['all', 'si', 'no'] as const).map((v) => (
                   <button
@@ -986,7 +1113,9 @@ export default function NutrizionistaPianiPage() {
                     type="button"
                     onClick={() => setFilterAuto(v)}
                     className={`rounded-full px-3 py-1.5 text-sm ${
-                      filterAuto === v ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-background-secondary text-text-muted border border-border'
+                      filterAuto === v
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-background-secondary text-text-muted border border-border'
                     }`}
                   >
                     {v === 'all' ? 'Tutti' : v === 'si' ? 'Sì' : 'No'}
@@ -994,7 +1123,9 @@ export default function NutrizionistaPianiPage() {
                 ))}
               </div>
             </div>
-            <Button variant="outline" className="w-full" onClick={clearFilters}>Azzera filtri</Button>
+            <Button variant="outline" className="w-full" onClick={clearFilters}>
+              Azzera filtri
+            </Button>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
@@ -1014,14 +1145,18 @@ export default function NutrizionistaPianiPage() {
               Nuovo piano
             </Button>
             <Link href="/dashboard/nutrizionista/atleti">
-              <Button variant="outline" size="sm">Vai a Atleti</Button>
+              <Button variant="outline" size="sm">
+                Vai a Atleti
+              </Button>
             </Link>
           </div>
         </div>
       ) : filteredAndSorted.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center">
           <p className="text-text-secondary text-sm">Nessun risultato per i filtri selezionati.</p>
-          <Button variant="outline" size="sm" className="mt-3" onClick={clearFilters}>Reset filtri</Button>
+          <Button variant="outline" size="sm" className="mt-3" onClick={clearFilters}>
+            Reset filtri
+          </Button>
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -1045,15 +1180,24 @@ export default function NutrizionistaPianiPage() {
                   const isScaduto = r.endDate && r.endDate < todayStr
                   const scadeIn7 = r.endDate && r.endDate >= todayStr && r.endDate <= in7
                   return (
-                    <tr key={r.versionId} className="border-b border-border/50 hover:bg-background-tertiary/30">
+                    <tr
+                      key={r.versionId}
+                      className="border-b border-border/50 hover:bg-background-tertiary/30"
+                    >
                       <td className="p-3">
                         <div>
-                          <p className={`font-medium ${r.isUnassigned ? 'text-text-muted' : 'text-text-primary'}`}>
+                          <p
+                            className={`font-medium ${r.isUnassigned ? 'text-text-muted' : 'text-text-primary'}`}
+                          >
                             {r.athleteName}
                           </p>
                           {!r.isUnassigned && r.athleteEmail && (
-                            <a href={`mailto:${r.athleteEmail}`} className="text-xs text-text-muted hover:text-emerald-400 inline-flex items-center gap-1">
-                              <Mail className="h-3 w-3" />{r.athleteEmail}
+                            <a
+                              href={`mailto:${r.athleteEmail}`}
+                              className="text-xs text-text-muted hover:text-emerald-400 inline-flex items-center gap-1"
+                            >
+                              <Mail className="h-3 w-3" />
+                              {r.athleteEmail}
                             </a>
                           )}
                         </div>
@@ -1061,7 +1205,11 @@ export default function NutrizionistaPianiPage() {
                       <td className="p-3 text-text-muted font-mono text-xs">
                         {r.fileName ?? (r.groupId ? `${r.groupId.slice(0, 8)}…` : '—')}
                       </td>
-                      <td className="p-3 font-medium text-text-primary">{r.storagePath && r.versionNumber == null ? 'Documento' : `v${r.versionNumber ?? '—'}`}</td>
+                      <td className="p-3 font-medium text-text-primary">
+                        {r.storagePath && r.versionNumber == null
+                          ? 'Documento'
+                          : `v${r.versionNumber ?? '—'}`}
+                      </td>
                       <td className="p-3">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs ${
@@ -1072,12 +1220,22 @@ export default function NutrizionistaPianiPage() {
                                 : 'bg-background-elevated text-text-muted'
                           }`}
                         >
-                          {isRowActive(r) ? (r.storagePath ? 'Documento' : 'Attivo') : r.status === PLAN_VERSION_STATUS_DRAFT ? 'Bozza' : r.status}
+                          {isRowActive(r)
+                            ? r.storagePath
+                              ? 'Documento'
+                              : 'Attivo'
+                            : r.status === PLAN_VERSION_STATUS_DRAFT
+                              ? 'Bozza'
+                              : r.status}
                         </span>
                       </td>
                       <td className="p-3 text-text-muted">
                         <div className="flex items-center gap-1.5">
-                          <span className={isScaduto ? 'text-red-400' : scadeIn7 ? 'text-amber-400' : ''}>
+                          <span
+                            className={
+                              isScaduto ? 'text-red-400' : scadeIn7 ? 'text-amber-400' : ''
+                            }
+                          >
                             {r.startDate && r.endDate
                               ? `${new Date(r.startDate).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })} → ${new Date(r.endDate).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}`
                               : '—'}
@@ -1097,7 +1255,9 @@ export default function NutrizionistaPianiPage() {
                       </td>
                       <td className="p-3 text-text-muted text-xs">
                         {r.caloriesTarget != null ? `${r.caloriesTarget} kcal` : '—'}
-                        {(r.proteinTarget != null || r.carbTarget != null || r.fatTarget != null) && (
+                        {(r.proteinTarget != null ||
+                          r.carbTarget != null ||
+                          r.fatTarget != null) && (
                           <span className="block text-text-tertiary">
                             P{r.proteinTarget ?? '—'} C{r.carbTarget ?? '—'} F{r.fatTarget ?? '—'}
                           </span>
@@ -1112,10 +1272,18 @@ export default function NutrizionistaPianiPage() {
                               : r.pdfFilePath && r.pdfFilePath.startsWith('nutrition-plans/')
                                 ? r.pdfFilePath
                                 : null)
-                          const fileName = r.fileName ?? (storagePath?.split('/').pop() ?? 'piano.pdf')
-                          const hasFullUrl = r.pdfFilePath && (r.pdfFilePath.startsWith('http://') || r.pdfFilePath.startsWith('https://'))
+                          const fileName =
+                            r.fileName ?? storagePath?.split('/').pop() ?? 'piano.pdf'
+                          const hasFullUrl =
+                            r.pdfFilePath &&
+                            (r.pdfFilePath.startsWith('http://') ||
+                              r.pdfFilePath.startsWith('https://'))
                           if (!storagePath && !hasFullUrl) {
-                            return <span className="text-text-tertiary" title="Nessun PDF">—</span>
+                            return (
+                              <span className="text-text-tertiary" title="Nessun PDF">
+                                —
+                              </span>
+                            )
                           }
                           if (storagePath) {
                             return (
@@ -1135,7 +1303,8 @@ export default function NutrizionistaPianiPage() {
                                       const { data, error } = await supabase.storage
                                         .from('documents')
                                         .createSignedUrl(storagePath, 3600)
-                                      if (!error && data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+                                      if (!error && data?.signedUrl)
+                                        window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
                                     }}
                                   >
                                     <FileText className="h-4 w-4 mr-2" />
@@ -1181,12 +1350,18 @@ export default function NutrizionistaPianiPage() {
                               </a>
                             )
                           }
-                          return <span className="text-text-tertiary" title="Nessun PDF">—</span>
+                          return (
+                            <span className="text-text-tertiary" title="Nessun PDF">
+                              —
+                            </span>
+                          )
                         })()}
                       </td>
                       <td className="p-3">
                         {r.autoGenerated ? (
-                          <span className="rounded px-1.5 py-0.5 text-xs bg-purple-500/20 text-purple-400">AUTO</span>
+                          <span className="rounded px-1.5 py-0.5 text-xs bg-purple-500/20 text-purple-400">
+                            AUTO
+                          </span>
                         ) : (
                           '—'
                         )}
@@ -1196,23 +1371,34 @@ export default function NutrizionistaPianiPage() {
                           {r.isUnassigned ? (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Azioni documento">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 shrink-0"
+                                  aria-label="Azioni documento"
+                                >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => {
-                                  setUnassignedRenameRow(r)
-                                  setUnassignedRenameValue((r.fileName ?? '').replace(/\.pdf$/i, ''))
-                                }}>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setUnassignedRenameRow(r)
+                                    setUnassignedRenameValue(
+                                      (r.fileName ?? '').replace(/\.pdf$/i, ''),
+                                    )
+                                  }}
+                                >
                                   <Pencil className="h-4 w-4 mr-2" />
                                   Rinomina
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                  setUnassignedAssignRow(r)
-                                  setUnassignedAssignAthleteId('')
-                                  setUnassignedAssignError(null)
-                                }}>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setUnassignedAssignRow(r)
+                                    setUnassignedAssignAthleteId('')
+                                    setUnassignedAssignError(null)
+                                  }}
+                                >
                                   <User className="h-4 w-4 mr-2" />
                                   Assegna a cliente
                                 </DropdownMenuItem>
@@ -1255,7 +1441,9 @@ export default function NutrizionistaPianiPage() {
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto space-y-1 py-2">
             {athleteOptionsForNuovo.length === 0 ? (
-              <p className="text-text-muted text-sm">Nessun atleta assegnato. Gestisci le assegnazioni da Atleti.</p>
+              <p className="text-text-muted text-sm">
+                Nessun atleta assegnato. Gestisci le assegnazioni da Atleti.
+              </p>
             ) : (
               athleteOptionsForNuovo.map((a) => (
                 <button
@@ -1271,9 +1459,13 @@ export default function NutrizionistaPianiPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setNuovoPianoOpen(false)}>Annulla</Button>
+            <Button variant="outline" onClick={() => setNuovoPianoOpen(false)}>
+              Annulla
+            </Button>
             <Button asChild>
-              <Link href="/dashboard/nutrizionista/piani/nuovo">Crea senza atleta (assegna dopo)</Link>
+              <Link href="/dashboard/nutrizionista/piani/nuovo">
+                Crea senza atleta (assegna dopo)
+              </Link>
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1287,7 +1479,9 @@ export default function NutrizionistaPianiPage() {
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto space-y-1 py-2">
             {athleteOptionsForVersione.length === 0 ? (
-              <p className="text-text-muted text-sm">Nessun atleta con piani. Crea prima un piano.</p>
+              <p className="text-text-muted text-sm">
+                Nessun atleta con piani. Crea prima un piano.
+              </p>
             ) : (
               athleteOptionsForVersione.map((a) => (
                 <button
@@ -1306,7 +1500,9 @@ export default function NutrizionistaPianiPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setNuovaVersioneOpen(false)}>Annulla</Button>
+            <Button variant="outline" onClick={() => setNuovaVersioneOpen(false)}>
+              Annulla
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1332,7 +1528,8 @@ export default function NutrizionistaPianiPage() {
               Carica piano
             </DialogTitle>
             <p className="text-sm text-text-muted">
-              Carica un PDF come piano nutrizionale. Puoi assegnarlo subito a un atleta o in seguito.
+              Carica un PDF come piano nutrizionale. Puoi assegnarlo subito a un atleta o in
+              seguito.
             </p>
           </DialogHeader>
           <div className="space-y-5 py-2">
@@ -1353,11 +1550,15 @@ export default function NutrizionistaPianiPage() {
               >
                 <option value="">Nessuno — salva solo il PDF</option>
                 {athleteOptionsForNuovo.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
                 ))}
               </select>
               {athleteOptionsForNuovo.length === 0 && (
-                <p className="text-xs text-text-muted">Nessun atleta assegnato. Il PDF verrà comunque salvato.</p>
+                <p className="text-xs text-text-muted">
+                  Nessun atleta assegnato. Il PDF verrà comunque salvato.
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -1370,7 +1571,9 @@ export default function NutrizionistaPianiPage() {
                   <div className="min-w-0 flex-1">
                     {caricaPianoFile ? (
                       <>
-                        <p className="text-sm font-medium text-text-primary truncate">{caricaPianoFile.name}</p>
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {caricaPianoFile.name}
+                        </p>
                         <p className="text-xs text-text-muted">Clicca per cambiare file</p>
                       </>
                     ) : (
@@ -1391,7 +1594,12 @@ export default function NutrizionistaPianiPage() {
             </div>
           </div>
           <DialogFooter className="gap-2 pt-4 border-t border-border">
-            <Button variant="outline" onClick={() => setCaricaPianoOpen(false)} disabled={caricaPianoLoading} className="min-h-[44px]">
+            <Button
+              variant="outline"
+              onClick={() => setCaricaPianoOpen(false)}
+              disabled={caricaPianoLoading}
+              className="min-h-[44px]"
+            >
               Annulla
             </Button>
             <Button
@@ -1399,7 +1607,11 @@ export default function NutrizionistaPianiPage() {
               disabled={caricaPianoLoading || !caricaPianoFile}
               className="min-h-[44px] bg-teal-600 hover:bg-teal-500"
             >
-              {caricaPianoLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Upload className="h-4 w-4 mr-1.5" />}
+              {caricaPianoLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+              ) : (
+                <Upload className="h-4 w-4 mr-1.5" />
+              )}
               {caricaPianoLoading ? 'Caricamento...' : 'Carica piano'}
             </Button>
           </DialogFooter>
@@ -1407,13 +1619,18 @@ export default function NutrizionistaPianiPage() {
       </Dialog>
 
       {/* Modal Rinomina documento non assegnato */}
-      <Dialog open={!!unassignedRenameRow} onOpenChange={(open) => !open && setUnassignedRenameRow(null)}>
+      <Dialog
+        open={!!unassignedRenameRow}
+        onOpenChange={(open) => !open && setUnassignedRenameRow(null)}
+      >
         <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Rinomina documento</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            <Label className="text-sm font-medium text-text-primary">Nuovo nome file (senza .pdf)</Label>
+            <Label className="text-sm font-medium text-text-primary">
+              Nuovo nome file (senza .pdf)
+            </Label>
             <Input
               value={unassignedRenameValue}
               onChange={(e) => setUnassignedRenameValue(e.target.value)}
@@ -1423,7 +1640,11 @@ export default function NutrizionistaPianiPage() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUnassignedRenameRow(null)} disabled={unassignedRenameLoading}>
+            <Button
+              variant="outline"
+              onClick={() => setUnassignedRenameRow(null)}
+              disabled={unassignedRenameLoading}
+            >
               Annulla
             </Button>
             <Button
@@ -1439,7 +1660,15 @@ export default function NutrizionistaPianiPage() {
       </Dialog>
 
       {/* Modal Assegna documento a cliente */}
-      <Dialog open={!!unassignedAssignRow} onOpenChange={(open) => !open && (setUnassignedAssignRow(null), setUnassignedAssignAthleteId(''), setUnassignedAssignError(null))}>
+      <Dialog
+        open={!!unassignedAssignRow}
+        onOpenChange={(open) =>
+          !open &&
+          (setUnassignedAssignRow(null),
+          setUnassignedAssignAthleteId(''),
+          setUnassignedAssignError(null))
+        }
+      >
         <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Assegna a cliente</DialogTitle>
@@ -1462,15 +1691,26 @@ export default function NutrizionistaPianiPage() {
             >
               <option value="">Seleziona cliente</option>
               {assignedAthletes.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
               ))}
             </select>
             {assignedAthletes.length === 0 && (
-              <p className="text-xs text-text-muted">Nessun atleta assegnato. Gestisci le assegnazioni da Atleti.</p>
+              <p className="text-xs text-text-muted">
+                Nessun atleta assegnato. Gestisci le assegnazioni da Atleti.
+              </p>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setUnassignedAssignRow(null); setUnassignedAssignAthleteId('') }} disabled={unassignedAssignLoading}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setUnassignedAssignRow(null)
+                setUnassignedAssignAthleteId('')
+              }}
+              disabled={unassignedAssignLoading}
+            >
               Annulla
             </Button>
             <Button
@@ -1486,16 +1726,24 @@ export default function NutrizionistaPianiPage() {
       </Dialog>
 
       {/* Modal Elimina documento non assegnato */}
-      <Dialog open={!!unassignedDeleteRow} onOpenChange={(open) => !open && setUnassignedDeleteRow(null)}>
+      <Dialog
+        open={!!unassignedDeleteRow}
+        onOpenChange={(open) => !open && setUnassignedDeleteRow(null)}
+      >
         <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Elimina documento</DialogTitle>
             <p className="text-sm text-text-muted">
-              Il file &quot;{unassignedDeleteRow?.fileName ?? 'documento'}&quot; verrà eliminato definitivamente dallo storage. Questa azione non si può annullare.
+              Il file &quot;{unassignedDeleteRow?.fileName ?? 'documento'}&quot; verrà eliminato
+              definitivamente dallo storage. Questa azione non si può annullare.
             </p>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUnassignedDeleteRow(null)} disabled={unassignedDeleteLoading}>
+            <Button
+              variant="outline"
+              onClick={() => setUnassignedDeleteRow(null)}
+              disabled={unassignedDeleteLoading}
+            >
               Annulla
             </Button>
             <Button
@@ -1504,7 +1752,11 @@ export default function NutrizionistaPianiPage() {
               disabled={unassignedDeleteLoading}
               className="min-h-[44px]"
             >
-              {unassignedDeleteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
+              {unassignedDeleteLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-1.5" />
+              )}
               {unassignedDeleteLoading ? 'Eliminazione...' : 'Elimina'}
             </Button>
           </DialogFooter>
@@ -1545,7 +1797,11 @@ export default function NutrizionistaPianiPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setValidityEditRow(null)} disabled={validityEditLoading}>
+            <Button
+              variant="outline"
+              onClick={() => setValidityEditRow(null)}
+              disabled={validityEditLoading}
+            >
               Annulla
             </Button>
             <Button
@@ -1567,10 +1823,14 @@ export default function NutrizionistaPianiPage() {
             <DialogTitle>Motivo auto-aggiustamento</DialogTitle>
           </DialogHeader>
           {reasonModalRow && (
-            <p className="text-text-secondary text-sm whitespace-pre-wrap">{reasonModalRow.autoAdjustmentReason ?? '—'}</p>
+            <p className="text-text-secondary text-sm whitespace-pre-wrap">
+              {reasonModalRow.autoAdjustmentReason ?? '—'}
+            </p>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReasonModalRow(null)}>Chiudi</Button>
+            <Button variant="outline" onClick={() => setReasonModalRow(null)}>
+              Chiudi
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -101,10 +101,7 @@ export function PTProfileTab({
   return (
     <div className="space-y-6">
       {/* Header con avatar */}
-      <Card
-        variant="default"
-        className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}
-      >
+      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
         <CardContent className="p-6 relative">
           <div className="flex items-center justify-between">
@@ -117,7 +114,9 @@ export function PTProfileTab({
                 className={`shadow-lg ring-2 ${t.ring}`}
               />
               <div>
-                <h2 className={`text-text-primary text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}>
+                <h2
+                  className={`text-text-primary text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
+                >
                   {profile.nome} {profile.cognome}
                 </h2>
                 <p className="text-text-secondary flex items-center gap-2">
@@ -188,10 +187,7 @@ export function PTProfileTab({
       </div>
 
       {/* Informazioni personali */}
-      <Card
-        variant="default"
-        className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}
-      >
+      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
         <CardHeader className="relative">
           <div className="flex items-center justify-between">
@@ -302,17 +298,16 @@ export function PTProfileTab({
       </Card>
 
       {/* KPI Performance */}
-      <Card
-        variant="default"
-        className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}
-      >
+      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
         <CardHeader className="relative">
           <CardTitle
             size="md"
             className={`bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
           >
-            <Users className={`mr-2 inline h-5 w-5 ${themeKey === 'teal' ? 'text-teal-400' : 'text-amber-400'}`} />
+            <Users
+              className={`mr-2 inline h-5 w-5 ${themeKey === 'teal' ? 'text-teal-400' : 'text-amber-400'}`}
+            />
             Performance Professionale
           </CardTitle>
         </CardHeader>
@@ -320,13 +315,17 @@ export function PTProfileTab({
           <div className="grid grid-cols-2 gap-6">
             <div className="text-center">
               <p className="text-text-secondary text-sm">Anni di Esperienza</p>
-              <p className={`text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}>
+              <p
+                className={`text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
+              >
                 {profile.stats.anni_esperienza}
               </p>
             </div>
             <div className="text-center">
               <p className="text-text-secondary text-sm">Revenue Mensile</p>
-              <p className={`text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}>
+              <p
+                className={`text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
+              >
                 €{profile.stats.revenue_mensile.toLocaleString()}
               </p>
             </div>
@@ -335,7 +334,9 @@ export function PTProfileTab({
           <div className="space-y-2 bg-background-tertiary/50 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <span className="text-text-secondary text-sm">Soddisfazione Clienti</span>
-              <span className={`text-sm font-medium bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}>
+              <span
+                className={`text-sm font-medium bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
+              >
                 {profile.stats.valutazione_media}/5.0 ⭐
               </span>
             </div>
@@ -352,17 +353,16 @@ export function PTProfileTab({
       </Card>
 
       {/* Badge */}
-      <Card
-        variant="default"
-        className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}
-      >
+      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
         <CardHeader className="relative">
           <CardTitle
             size="md"
             className={`bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
           >
-            <Award className={`mr-2 inline h-5 w-5 ${themeKey === 'teal' ? 'text-teal-400' : 'text-amber-400'}`} />
+            <Award
+              className={`mr-2 inline h-5 w-5 ${themeKey === 'teal' ? 'text-teal-400' : 'text-amber-400'}`}
+            />
             Badge e Riconoscimenti
           </CardTitle>
         </CardHeader>
@@ -401,10 +401,7 @@ export function PTProfileTab({
       </Card>
 
       {/* Azioni rapide */}
-      <Card
-        variant="default"
-        className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}
-      >
+      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
         <CardHeader className="relative">
           <CardTitle

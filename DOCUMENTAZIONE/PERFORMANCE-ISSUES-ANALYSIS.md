@@ -21,6 +21,7 @@
 **Problema**: Next.js compila ogni pagina al primo accesso (2-10 secondi)
 
 **Causa**:
+
 - Next.js 15 in dev mode compila on-demand
 - 2400+ moduli da compilare per `/login`
 - 3200+ moduli per `/home`
@@ -29,6 +30,7 @@
 **Impatto**: +2-10 secondi al primo accesso
 
 **Soluzione Immediata**:
+
 ```bash
 # Pre-compila le route principali
 npm run build
@@ -37,6 +39,7 @@ npm run start:prod
 ```
 
 **Soluzione a Lungo Termine**:
+
 - Usa Turbopack (già configurato ma non attivo)
 - Considera ISR (Incremental Static Regeneration) per pagine statiche
 
@@ -47,6 +50,7 @@ npm run start:prod
 **Problema**: Multiple query al database in sequenza invece che in parallelo
 
 **Esempi trovati**:
+
 - `post-login` fa query multiple sequenziali
 - Middleware fa query ad ogni richiesta (anche se c'è cache)
 - Alcuni hook fanno waterfall di query
@@ -54,6 +58,7 @@ npm run start:prod
 **Impatto**: +500-2000ms per pagina
 
 **Soluzione**:
+
 ```typescript
 // ❌ SBAGLIATO - Sequenziale
 const data1 = await query1()
@@ -72,16 +77,19 @@ const data3 = await query3(data1, data2)
 **Problema**: Uso di `getSession()` che è più veloce ma meno sicuro
 
 **Warning nel terminale**:
+
 ```
-Using the user object as returned from supabase.auth.getSession() 
+Using the user object as returned from supabase.auth.getSession()
 could be insecure! Use supabase.auth.getUser() instead
 ```
 
-**Impatto**: 
+**Impatto**:
+
 - `getSession()`: ~50ms (da cookie)
 - `getUser()`: ~200ms (verifica server)
 
 **Soluzione**:
+
 - Middleware: OK usare `getSession()` (già fatto)
 - API Routes: Usare `getUser()` per sicurezza
 - Client Components: Usare `getUser()` quando necessario
@@ -93,11 +101,13 @@ could be insecure! Use supabase.auth.getUser() instead
 **Problema**: Alcuni hook non hanno cache configurata correttamente
 
 **Trovato**:
+
 - Alcuni hook hanno `staleTime: 0` (refetch sempre)
 - Alcuni hook non hanno `refetchOnMount: false`
 - Cache non sfruttata al massimo
 
 **Soluzione**:
+
 ```typescript
 // ✅ Config ottimale
 useQuery({
@@ -119,9 +129,10 @@ useQuery({
 **Impatto**: +300-500ms navigazione
 
 **Soluzione**:
+
 ```tsx
 // ✅ Prefetch automatico
-<Link href="/home/allenamenti" prefetch={true}>
+;<Link href="/home/allenamenti" prefetch={true}>
   Allenamenti
 </Link>
 
@@ -136,16 +147,18 @@ router.prefetch('/home/allenamenti')
 **Problema**: Bundle JavaScript grande causa download lento
 
 **Trovato**:
+
 - 2400+ moduli per `/login`
 - 3200+ moduli per `/home`
 - Recharts, FullCalendar, Lucide non sempre lazy loaded
 
 **Soluzione**:
+
 ```tsx
 // ✅ Lazy load componenti pesanti
 const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
   loading: () => <Skeleton />,
-  ssr: false
+  ssr: false,
 })
 ```
 
@@ -210,7 +223,7 @@ useEffect(() => {
 ```tsx
 const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
   loading: () => <div>Caricamento...</div>,
-  ssr: false
+  ssr: false,
 })
 ```
 
@@ -221,6 +234,7 @@ const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
 ### 5. Ottimizza Query Database
 
 **Cerca e sostituisci**:
+
 ```typescript
 // ❌ select('*')
 .select('*')
@@ -237,7 +251,8 @@ const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
 
 ### 1. Migra a Server Components (Next.js 15)
 
-**Beneficio**: 
+**Beneficio**:
+
 - Fetch dati sul server (più veloce)
 - Meno JavaScript al client
 - Miglior SEO
@@ -248,7 +263,8 @@ const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
 
 ### 2. Implementa ISR per Pagine Statiche
 
-**Beneficio**: 
+**Beneficio**:
+
 - Pagine pre-generate
 - Aggiornamento incrementale
 - Caricamento istantaneo
@@ -260,6 +276,7 @@ const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
 ### 3. Ottimizza Database
 
 **Azioni**:
+
 - Verifica indici mancanti
 - Ottimizza query lente
 - Aggiungi materialized views per analytics
@@ -271,18 +288,21 @@ const ProgressCharts = dynamic(() => import('./ProgressCharts'), {
 ## 📋 Checklist Ottimizzazione
 
 ### Immediate (Oggi)
+
 - [ ] Abilita Turbopack
 - [ ] Ottimizza React Query config globale
 - [ ] Aggiungi prefetching route principali
 - [ ] Lazy load componenti pesanti (Recharts, FullCalendar)
 
 ### Questa Settimana
+
 - [ ] Sostituisci `select('*')` con select esplicito
 - [ ] Parallelizza query sequenziali
 - [ ] Aggiungi loading states migliori
 - [ ] Ottimizza immagini (Next.js Image)
 
 ### Questo Mese
+
 - [ ] Migra pagine statiche a Server Components
 - [ ] Implementa ISR
 - [ ] Ottimizza database (indici, query)
@@ -311,12 +331,14 @@ npm run build && npm run start:prod
 ## 📊 Metriche Target
 
 **Dopo Ottimizzazioni**:
+
 - First Contentful Paint: < 1.5s
 - Time to Interactive: < 3s
 - Largest Contentful Paint: < 2.5s
 - Total Blocking Time: < 300ms
 
 **Attuali** (stimati):
+
 - First Contentful Paint: ~4-12s 🔴
 - Time to Interactive: ~5-15s 🔴
 - Largest Contentful Paint: ~4-12s 🔴
@@ -326,6 +348,7 @@ npm run build && npm run start:prod
 ## ✅ Conclusione
 
 **Problemi principali**:
+
 1. Compilazione lenta in dev (normale, ma migliorabile)
 2. Query database non ottimizzate
 3. Nessun prefetching

@@ -121,6 +121,7 @@ src/
 ## 🔀 PATTERN ARCHITETTURALI
 
 ### 1. Server vs Client Components
+
 ```
 Server Components (Default):
 ├── Data fetching diretto
@@ -136,6 +137,7 @@ Client Components ('use client'):
 ```
 
 ### 2. Data Fetching Pattern
+
 ```
 Server Component Flow:
 ┌─────────────────────────────────────┐
@@ -155,6 +157,7 @@ Client Component Flow:
 ```
 
 ### 3. Authentication Flow
+
 ```
 ┌──────┐    ┌────────────┐    ┌────────────┐    ┌──────────┐
 │Login │ -> │Supabase    │ -> │post-login  │ -> │Dashboard/│
@@ -173,24 +176,24 @@ Client Component Flow:
 
 ## 📊 VALUTAZIONE
 
-| Aspetto | Rating | Note |
-|---------|--------|------|
-| Chiarezza logica | ★★★★☆ | Struttura chiara, alcuni file troppo grandi |
-| Robustezza | ★★★☆☆ | Debug code in prod, cache non distribuita |
-| Debito tecnico | **MEDIO** | Migrazione React Query incompleta |
-| Rischio regressioni | **MEDIO** | Test E2E non coprono tutti i browser |
+| Aspetto             | Rating    | Note                                        |
+| ------------------- | --------- | ------------------------------------------- |
+| Chiarezza logica    | ★★★★☆     | Struttura chiara, alcuni file troppo grandi |
+| Robustezza          | ★★★☆☆     | Debug code in prod, cache non distribuita   |
+| Debito tecnico      | **MEDIO** | Migrazione React Query incompleta           |
+| Rischio regressioni | **MEDIO** | Test E2E non coprono tutti i browser        |
 
 ---
 
 ## 🔗 DIPENDENZE CHIAVE
 
-| Componente | Dipende da |
-|------------|------------|
-| Middleware | Supabase SSR, profiles table |
-| AuthProvider | Supabase browser client |
-| Dashboard | AuthProvider, RLS policies |
-| Home | AuthProvider, middleware |
-| useClienti | Supabase, RLS, localStorage |
+| Componente      | Dipende da                      |
+| --------------- | ------------------------------- |
+| Middleware      | Supabase SSR, profiles table    |
+| AuthProvider    | Supabase browser client         |
+| Dashboard       | AuthProvider, RLS policies      |
+| Home            | AuthProvider, middleware        |
+| useClienti      | Supabase, RLS, localStorage     |
 | useAppointments | Supabase, React Query, Realtime |
 
 ---

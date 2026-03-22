@@ -5,7 +5,14 @@ import { designSystem } from '@/config/design-system'
 import { colors } from '@/lib/design-tokens'
 import { Card, CardTitle } from '@/components/ui'
 import { RUOLI_CARD } from '@/lib/design-system-data'
-import { ColorSwatch, DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS, DS_LABEL_CLASS } from './helpers'
+import {
+  ColorSwatch,
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+  DS_LABEL_CLASS,
+} from './helpers'
 
 export function FoundationsColors() {
   const borderInput = {
@@ -28,7 +35,8 @@ export function FoundationsColors() {
         Colori
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Token da <code className={DS_CODE_CLASS}>@/lib/design-tokens</code> e UI (border/input da Tailwind).
+        Token da <code className={DS_CODE_CLASS}>@/lib/design-tokens</code> e UI (border/input da
+        Tailwind).
       </p>
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
         <Card variant="default" className={DS_CARD_FRAME_CLASS}>
@@ -119,9 +127,7 @@ export function FoundationsColors() {
           <CardTitle className="mb-3 text-sm font-medium text-text-secondary">
             Accenti atleta (blocchi Home / card)
           </CardTitle>
-          <p className={DS_LABEL_CLASS}>
-            Border e barra laterale per card blocchi home.
-          </p>
+          <p className={DS_LABEL_CLASS}>Border e barra laterale per card blocchi home.</p>
           <div className="flex flex-wrap gap-3">
             {(
               Object.entries(colors.athleteAccents) as [

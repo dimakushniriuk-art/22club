@@ -54,7 +54,9 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('marketing_leads')
-      .select('id, org_id, first_name, last_name, email, phone, source, utm_source, utm_medium, utm_campaign, status, created_at, updated_at, converted_athlete_profile_id')
+      .select(
+        'id, org_id, first_name, last_name, email, phone, source, utm_source, utm_medium, utm_campaign, status, created_at, updated_at, converted_athlete_profile_id',
+      )
       .order('created_at', { ascending: false })
 
     if (status) query = query.eq('status', status)
@@ -105,7 +107,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { first_name, last_name, email, phone, source, utm_source, utm_medium, utm_campaign, status, campaign_id: bodyCampaignId } = body as Record<string, unknown>
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      source,
+      utm_source,
+      utm_medium,
+      utm_campaign,
+      status,
+      campaign_id: bodyCampaignId,
+    } = body as Record<string, unknown>
 
     const insert = {
       org_id: prof.org_id,
@@ -118,10 +131,18 @@ export async function POST(request: NextRequest) {
       utm_source: typeof utm_source === 'string' ? utm_source : null,
       utm_medium: typeof utm_medium === 'string' ? utm_medium : null,
       utm_campaign: typeof utm_campaign === 'string' ? utm_campaign : null,
-      status: typeof status === 'string' && ['new', 'contacted', 'trial', 'converted', 'lost'].includes(status) ? status : 'new',
+      status:
+        typeof status === 'string' &&
+        ['new', 'contacted', 'trial', 'converted', 'lost'].includes(status)
+          ? status
+          : 'new',
     }
 
-    const { data: row, error } = await supabase.from('marketing_leads').insert(insert).select().single()
+    const { data: row, error } = await supabase
+      .from('marketing_leads')
+      .insert(insert)
+      .select()
+      .single()
 
     if (error) {
       logger.warn('Errore POST marketing/leads', error)
@@ -129,7 +150,8 @@ export async function POST(request: NextRequest) {
     }
 
     const leadId = (row as { id?: string })?.id
-    const campaignId = typeof bodyCampaignId === 'string' && bodyCampaignId.trim() ? bodyCampaignId.trim() : null
+    const campaignId =
+      typeof bodyCampaignId === 'string' && bodyCampaignId.trim() ? bodyCampaignId.trim() : null
     if (leadId && prof.org_id) {
       await supabase.from('marketing_events').insert({
         org_id: prof.org_id,

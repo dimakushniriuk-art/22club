@@ -51,7 +51,9 @@ export function AthleteProgressTab({ athleteId, stats }: AthleteProgressTabProps
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
                 <TrendingUp className="h-5 w-5" />
               </div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary">Peso Attuale</p>
+              <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary">
+                Peso Attuale
+              </p>
             </div>
             <p className="mt-2 text-4xl md:text-5xl font-extrabold tracking-tight text-text-primary">
               {stats.peso_attuale != null ? `${stats.peso_attuale} kg` : 'N/A'}
@@ -62,7 +64,9 @@ export function AthleteProgressTab({ athleteId, stats }: AthleteProgressTabProps
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
                 <Activity className="h-5 w-5" />
               </div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary">Allenamenti Totali</p>
+              <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary">
+                Allenamenti Totali
+              </p>
             </div>
             <p className="mt-2 text-4xl md:text-5xl font-extrabold tracking-tight text-text-primary">
               {stats.allenamenti_totali}
@@ -73,7 +77,9 @@ export function AthleteProgressTab({ athleteId, stats }: AthleteProgressTabProps
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-amber-400">
                 <Award className="h-5 w-5" />
               </div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary">Questo Mese</p>
+              <p className="text-[11px] uppercase tracking-[0.12em] text-text-tertiary">
+                Questo Mese
+              </p>
             </div>
             <p className="mt-2 text-4xl md:text-5xl font-extrabold tracking-tight text-text-primary">
               {stats.allenamenti_mese}

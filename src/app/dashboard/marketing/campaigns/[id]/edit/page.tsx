@@ -86,7 +86,9 @@ export default function EditCampaignPage() {
       setLoading(false)
     }
     fetchCampaign()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [id, supabase])
 
   const allowed = role != null && ['admin', 'marketing'].includes(role as string)
@@ -118,10 +120,7 @@ export default function EditCampaignPage() {
       end_at: endAt || null,
       status: status as 'draft' | 'active' | 'paused' | 'ended',
     }
-    const { error: err } = await supabase
-      .from('marketing_campaigns')
-      .update(payload)
-      .eq('id', id)
+    const { error: err } = await supabase.from('marketing_campaigns').update(payload).eq('id', id)
     setSaving(false)
     if (err) {
       setError(err.message)
@@ -142,9 +141,13 @@ export default function EditCampaignPage() {
     return (
       <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/marketing/campaigns"><ArrowLeft className="h-4 w-4" /></Link>
+          <Link href="/dashboard/marketing/campaigns">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
         </Button>
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {error}
+        </div>
       </div>
     )
   }
@@ -172,7 +175,9 @@ export default function EditCampaignPage() {
               </div>
             )}
             <div>
-              <Label htmlFor="name" className="text-text-secondary">Nome *</Label>
+              <Label htmlFor="name" className="text-text-secondary">
+                Nome *
+              </Label>
               <Input
                 id="name"
                 value={name}
@@ -183,7 +188,9 @@ export default function EditCampaignPage() {
               />
             </div>
             <div>
-              <Label htmlFor="channel" className="text-text-secondary">Canale</Label>
+              <Label htmlFor="channel" className="text-text-secondary">
+                Canale
+              </Label>
               <select
                 id="channel"
                 value={channel}
@@ -191,12 +198,16 @@ export default function EditCampaignPage() {
                 className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-text-primary"
               >
                 {CHANNELS.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <Label htmlFor="budget" className="text-text-secondary">Budget (€)</Label>
+              <Label htmlFor="budget" className="text-text-secondary">
+                Budget (€)
+              </Label>
               <Input
                 id="budget"
                 type="number"
@@ -210,7 +221,9 @@ export default function EditCampaignPage() {
             </div>
             <div className="grid gap-4 min-[834px]:grid-cols-2">
               <div>
-                <Label htmlFor="start_at" className="text-text-secondary">Data inizio</Label>
+                <Label htmlFor="start_at" className="text-text-secondary">
+                  Data inizio
+                </Label>
                 <Input
                   id="start_at"
                   type="datetime-local"
@@ -220,7 +233,9 @@ export default function EditCampaignPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="end_at" className="text-text-secondary">Data fine</Label>
+                <Label htmlFor="end_at" className="text-text-secondary">
+                  Data fine
+                </Label>
                 <Input
                   id="end_at"
                   type="datetime-local"
@@ -231,7 +246,9 @@ export default function EditCampaignPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="status" className="text-text-secondary">Stato</Label>
+              <Label htmlFor="status" className="text-text-secondary">
+                Stato
+              </Label>
               <select
                 id="status"
                 value={status}
@@ -239,13 +256,22 @@ export default function EditCampaignPage() {
                 className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-text-primary"
               >
                 {STATUSES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={saving}>
-                {saving ? 'Salvataggio...' : <><Save className="mr-2 h-4 w-4" />Salva</>}
+                {saving ? (
+                  'Salvataggio...'
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Salva
+                  </>
+                )}
               </Button>
               <Button type="button" variant="outline" asChild>
                 <Link href={`/dashboard/marketing/campaigns/${id}`}>Annulla</Link>

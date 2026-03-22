@@ -3,7 +3,13 @@
 import { Type } from 'lucide-react'
 import { designSystem } from '@/config/design-system'
 import { Card, CardTitle } from '@/components/ui'
-import { TypographySample, DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS } from './helpers'
+import {
+  TypographySample,
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+} from './helpers'
 
 export function FoundationsTypography() {
   return (
@@ -13,7 +19,8 @@ export function FoundationsTypography() {
         Tipografia
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Scala dimensioni e font da Tailwind (fontSize, fontFamily). Token in <code className={DS_CODE_CLASS}>design-system</code>.
+        Scala dimensioni e font da Tailwind (fontSize, fontFamily). Token in{' '}
+        <code className={DS_CODE_CLASS}>design-system</code>.
       </p>
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
         <Card variant="default" className={DS_CARD_FRAME_CLASS}>

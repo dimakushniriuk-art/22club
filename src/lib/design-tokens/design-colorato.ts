@@ -66,18 +66,22 @@ export const designColorato = {
   /** Card grafici (teal/cyan) */
   chartCard:
     'relative overflow-hidden rounded-xl border-2 border-teal-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary backdrop-blur-xl shadow-lg shadow-teal-500/10 hover:shadow-xl hover:shadow-teal-500/20 transition-all duration-300',
-  chartCardOverlay: 'absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5',
+  chartCardOverlay:
+    'absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5',
   chartCardIconBox:
     'flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border border-teal-500/30',
-  chartCardTitle: 'text-lg font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent',
+  chartCardTitle:
+    'text-lg font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent',
 
   /** Card Performance / Dettagli (blue-indigo) */
   performanceCard:
     'relative overflow-hidden rounded-xl border-2 border-blue-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary backdrop-blur-xl shadow-lg shadow-blue-500/10 hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300',
-  performanceCardOverlay: 'absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-indigo-500/5',
+  performanceCardOverlay:
+    'absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-indigo-500/5',
   performanceCardIconBox:
     'flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/30',
-  performanceCardTitle: 'text-lg font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent',
+  performanceCardTitle:
+    'text-lg font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent',
   performanceRow:
     'flex justify-between items-center p-4 rounded-lg border border-blue-500/30 bg-gradient-to-r from-blue-500/10 via-transparent to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20 transition-all duration-200',
 

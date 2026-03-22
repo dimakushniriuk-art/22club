@@ -20,7 +20,7 @@ function loadEnv() {
     const envPath = join(projectRoot, 'env.local')
     const envContent = readFileSync(envPath, 'utf-8')
     const env: Record<string, string> = {}
-    
+
     envContent.split('\n').forEach((line) => {
       const trimmed = line.trim()
       if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
@@ -29,7 +29,7 @@ function loadEnv() {
         env[key.trim()] = value.trim()
       }
     })
-    
+
     return env
   } catch (error) {
     console.error('Errore nel caricamento env.local:', error)
@@ -43,7 +43,7 @@ const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('❌ Variabili d\'ambiente mancanti!')
+  console.error("❌ Variabili d'ambiente mancanti!")
   console.error('Richiesto: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
   process.exit(1)
 }
@@ -164,7 +164,7 @@ async function querySQL<T>(_sql: string): Promise<T[]> {
 async function getTables(): Promise<TableInfo[]> {
   // SQL query commentata (non usata al momento)
   // const sql = `
-  //   SELECT 
+  //   SELECT
   //     table_name,
   //     table_schema,
   //     table_type
@@ -173,7 +173,7 @@ async function getTables(): Promise<TableInfo[]> {
   //     AND table_schema NOT LIKE 'pg_%'
   //   ORDER BY table_schema, table_name;
   // `
-  
+
   // Usiamo una query diretta tramite REST API se possibile
   // Altrimenti usiamo le funzioni helper del database
   try {
@@ -182,7 +182,7 @@ async function getTables(): Promise<TableInfo[]> {
       .select('table_name, table_schema, table_type')
       .neq('table_schema', 'pg_catalog')
       .neq('table_schema', 'information_schema')
-    
+
     if (!error && data) {
       return data as TableInfo[]
     }
@@ -600,14 +600,10 @@ async function createHelperFunctions(): Promise<void> {
   console.log('📝 Funzioni helper SQL da creare:')
   console.log('   Le funzioni helper devono essere create manualmente nel database.')
   console.log('   Salvo il SQL in supabase-config-helper-functions.sql')
-  
+
   const outputDir = join(projectRoot, 'supabase-config-export')
   mkdirSync(outputDir, { recursive: true })
-  writeFileSync(
-    join(outputDir, 'helper-functions.sql'),
-    helperSQL,
-    'utf-8'
-  )
+  writeFileSync(join(outputDir, 'helper-functions.sql'), helperSQL, 'utf-8')
 }
 
 /**
@@ -660,11 +656,7 @@ async function exportConfigAlternative(): Promise<void> {
   console.log(`   ✓ Trovati ${buckets.length} bucket\n`)
 
   // Salva configurazione JSON
-  writeFileSync(
-    join(outputDir, 'config.json'),
-    JSON.stringify(config, null, 2),
-    'utf-8'
-  )
+  writeFileSync(join(outputDir, 'config.json'), JSON.stringify(config, null, 2), 'utf-8')
 
   // Genera report markdown
   let markdown = `# 📊 Report Configurazione Supabase - 22Club\n\n`
@@ -703,7 +695,9 @@ async function exportConfigAlternative(): Promise<void> {
   console.log('   - config.json (JSON completo)')
   console.log('   - REPORT.md (Report markdown)')
   console.log('   - helper-functions.sql (Funzioni SQL helper)')
-  console.log('\n⚠️  Per ottenere lo schema completo del database, esegui prima le funzioni helper SQL.')
+  console.log(
+    '\n⚠️  Per ottenere lo schema completo del database, esegui prima le funzioni helper SQL.',
+  )
 }
 
 /**
@@ -722,7 +716,7 @@ async function main() {
 
     console.log('\n✅ Esportazione completata!')
   } catch (error) {
-    console.error('\n❌ Errore durante l\'esportazione:', error)
+    console.error("\n❌ Errore durante l'esportazione:", error)
     process.exit(1)
   }
 }

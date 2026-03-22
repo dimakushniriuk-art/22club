@@ -47,10 +47,7 @@ export function FitnessActivitiesZonesSection({
   if (isEditing) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg">Attività Precedenti</CardTitle>
           </CardHeader>
@@ -81,10 +78,7 @@ export function FitnessActivitiesZonesSection({
           </CardContent>
         </Card>
 
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg">Zone Problematiche</CardTitle>
           </CardHeader>
@@ -120,10 +114,7 @@ export function FitnessActivitiesZonesSection({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Attività Precedenti</CardTitle>
         </CardHeader>
@@ -142,10 +133,7 @@ export function FitnessActivitiesZonesSection({
         </CardContent>
       </Card>
 
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg">Zone Problematiche</CardTitle>
         </CardHeader>

@@ -4,8 +4,9 @@
 // Gestisce CRUD operations per communications e recipients
 // ============================================================
 
-import { createClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 import type { Json } from '@/lib/supabase/types'
 
@@ -53,27 +54,11 @@ export type CommunicationWithStats = CommunicationRow & {
   recipients?: CommunicationRecipientRow[]
 }
 
-let serviceClient: ReturnType<typeof createClient<Database>> | null = null
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`)
-  }
-  return value
-}
+let serviceClient: SupabaseClient<Database> | null = null
 
 function getSupabaseClient() {
   if (!serviceClient) {
-    serviceClient = createClient<Database>(
-      requiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-      requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
+    serviceClient = createAdminClient() as unknown as SupabaseClient<Database>
   }
   return serviceClient
 }
@@ -416,7 +401,9 @@ export async function createCommunicationRecipients(
       status: 'pending',
     }))
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('communication_recipients') as any).insert(rows).select()
+    const { data, error } = await (supabase.from('communication_recipients') as any)
+      .insert(rows)
+      .select()
 
     if (error) {
       return { data: null, error: new Error(error.message) }

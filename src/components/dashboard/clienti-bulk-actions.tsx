@@ -44,15 +44,15 @@ export function ClientiBulkActions({
               <span className="hidden sm:inline">Email</span>
             </Button>
             {onDelete && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onDelete}
-              className="gap-2 border-red-500/30 text-state-error hover:bg-state-error/10 hover:border-red-500/50"
-            >
-              <Trash className="h-4 w-4" />
-              <span className="hidden sm:inline">Elimina</span>
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onDelete}
+                className="gap-2 border-red-500/30 text-state-error hover:bg-state-error/10 hover:border-red-500/50"
+              >
+                <Trash className="h-4 w-4" />
+                <span className="hidden sm:inline">Elimina</span>
+              </Button>
             )}
             <Button
               size="sm"

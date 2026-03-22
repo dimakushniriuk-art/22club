@@ -74,16 +74,15 @@ Ripeti questa procedura **3 volte** (una per Trainer, una per Admin, una per Ath
 1. **Trainer:**
    - Email: `b.francesco@22club.it`
    - Password: `FrancescoB`
-   
 2. **Admin:**
    - Email: `admin@22club.it`
    - Password: `adminadmin`
-   
 3. **Athlete:**
    - Email: `dima.kushniriuk@gmail.com`
    - Password: `Ivan123`
 
 Clicca **"Login"** e attendi il redirect completo:
+
 - Trainer → `/dashboard`
 - Admin → `/dashboard/admin`
 - Athlete → `/home`
@@ -156,7 +155,6 @@ Ripeti questa procedura per ogni ruolo (Trainer, Admin, Athlete) se possibile, a
 1. **Apri Tab A e Tab B** nella stessa finestra del browser (NON finestre separate)
    - Tab A: nuova tab (`Ctrl+T` / `Cmd+T`)
    - Tab B: nuova tab (`Ctrl+T` / `Cmd+T`)
-   
 2. **Tab A:**
    - Vai su `/login`
    - Nel DevTools → Network, clicca **"Clear"**
@@ -174,7 +172,6 @@ Ripeti questa procedura per ogni ruolo (Trainer, Admin, Athlete) se possibile, a
    - Vai direttamente su `/dashboard` o `/home` (dovrebbe essere già autenticato perché condividono cookie sessione)
    - Nel DevTools → Network (Tab B), clicca **"Clear"**
    - Assicurati che il filtro `profiles` sia attivo
-   
 2. Premi **F5** (refresh) in Tab B
 3. Attendi caricamento completo
 
@@ -185,12 +182,10 @@ Ripeti questa procedura per ogni ruolo (Trainer, Admin, Athlete) se possibile, a
 
 1. In **Tab A:**
    - Fai logout (clicca su logout/profilo → logout)
-   
 2. In **Tab B:**
    - Nel DevTools → Network (Tab B), **NON fare Clear** (mantieni log precedente)
    - Osserva se compaiono nuove richieste `profiles` dopo il logout di Tab A
    - **Dovrebbe essere 0** (solo pulizia cache, no query extra)
-   
 3. **Conta quante richieste "profiles" extra** in Tab B dopo logout Tab A (dovrebbe essere 0)
 4. **Copia URL delle richieste** (se ce ne sono)
 
@@ -211,89 +206,96 @@ SCENARIO A — LOGIN COMPLETO
 ─────────────────────────────────────────
 
 TRAINER:
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
   3. [incolla URL 3]
-  ...
+     ...
 - Log Console [profiles] (se presenti):
   [incolla log qui]
 - Screenshot: [allegato / non disponibile]
 
 ADMIN:
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
   3. [incolla URL 3]
-  ...
+     ...
 - Log Console [profiles] (se presenti):
   [incolla log qui]
 - Screenshot: [allegato / non disponibile]
 
 ATHLETE:
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
   3. [incolla URL 3]
-  ...
+     ...
 - Log Console [profiles] (se presenti):
   [incolla log qui]
 - Screenshot: [allegato / non disponibile]
-
 
 ─────────────────────────────────────────
 SCENARIO B — REFRESH PAGINA (F5)
 ─────────────────────────────────────────
 
 TRAINER:
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
-  ...
+     ...
 - Screenshot: [allegato / non disponibile]
 
 ADMIN:
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
-  ...
+     ...
 - Screenshot: [allegato / non disponibile]
 
 ATHLETE:
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
-  ...
+     ...
 - Screenshot: [allegato / non disponibile]
-
 
 ─────────────────────────────────────────
 SCENARIO C — MULTI-TAB
 ─────────────────────────────────────────
 
 TAB A (Login):
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Ruolo testato: [Trainer / Admin / Athlete]
 - Lista URL richieste (opzionale, se raccolti):
   1. [incolla URL 1]
   2. [incolla URL 2]
-  ...
+     ...
 
 TAB B (Refresh su pagina protetta):
-- Query totali profiles: __
+
+- Query totali profiles: \_\_
 - Lista URL richieste (copiate da Network):
   1. [incolla URL 1]
   2. [incolla URL 2]
-  ...
+     ...
 
 TAB B (Dopo logout Tab A):
-- Query totali profiles extra: __ (dovrebbe essere 0)
+
+- Query totali profiles extra: \_\_ (dovrebbe essere 0)
 - Lista URL richieste extra (se presenti):
   [se 0, scrivi "Nessuna query extra (comportamento corretto)"]
   [se >0, incolla URL]
@@ -303,7 +305,6 @@ NOTE AGGIUNTIVE (Opzionale)
 ─────────────────────────────────────────
 
 [Eventuali osservazioni, anomalie, o note aggiuntive]
-
 
 ─────────────────────────────────────────
 SCREENSHOT ALLEGATI (Opzionale)
@@ -333,6 +334,7 @@ SCREENSHOT ALLEGATI (Opzionale)
 6. Incolla nel report
 
 **Esempio URL atteso:**
+
 ```
 https://[tuo-progetto].supabase.co/rest/v1/profiles?user_id=eq.[uuid]&select=role
 https://[tuo-progetto].supabase.co/rest/v1/profiles?user_id=eq.[uuid]&select=id,user_id,role,org_id,email,nome,cognome,avatar,avatar_url,created_at,updated_at,first_name,last_name,phone
@@ -343,17 +345,21 @@ https://[tuo-progetto].supabase.co/rest/v1/profiles?user_id=eq.[uuid]&select=id,
 ## 📸 COME FARE SCREENSHOT
 
 ### Windows:
+
 - **Screenshot intera schermata:** `Windows+PrintScreen`
 - **Screenshot area selezionata:** `Windows+Shift+S` (seleziona area)
 - **Screenshot finestra attiva:** `Alt+PrintScreen`
 
 ### Mac:
+
 - **Screenshot intera schermata:** `Cmd+Shift+3`
 - **Screenshot area selezionata:** `Cmd+Shift+4` (seleziona area)
 - **Screenshot finestra attiva:** `Cmd+Shift+4` poi `Space`
 
 ### Dove Salvare:
+
 Salva gli screenshot nella cartella del progetto o sul Desktop con nomi:
+
 - `scenario-a-trainer.png`
 - `scenario-a-admin.png`
 - `scenario-a-athlete.png`
@@ -399,26 +405,27 @@ Dopo aver completato tutti e 3 gli scenari:
 === RISULTATI TEST MANUALE ===
 
 SCENARIO A (Login):
-Trainer: __ query profiles
-Admin: __ query profiles
-Athlete: __ query profiles
+Trainer: ** query profiles
+Admin: ** query profiles
+Athlete: \_\_ query profiles
 [+ lista URL richieste profiles]
 
 SCENARIO B (F5):
-Trainer: __ query profiles
-Admin: __ query profiles
-Athlete: __ query profiles
+Trainer: ** query profiles
+Admin: ** query profiles
+Athlete: \_\_ query profiles
 [+ lista URL richieste profiles]
 
 SCENARIO C (Multi-tab):
-Tab A: __ query profiles
-Tab B: __ query profiles
-Dopo logout Tab A, Tab B: __ query profiles extra
+Tab A: ** query profiles
+Tab B: ** query profiles
+Dopo logout Tab A, Tab B: \_\_ query profiles extra
 [+ lista URL richieste profiles]
 
 [Opzionale: screenshot Network filtrato profiles]
 ```
 
 **Con quei numeri ti dirò subito:**
+
 - ✅ Se sei già "perfetto" (query minimizzate correttamente)
 - ❌ Oppure qual è l'ultima query extra da tagliare (di solito `useAppointments.getProfileId`)

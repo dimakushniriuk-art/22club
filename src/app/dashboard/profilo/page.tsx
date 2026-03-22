@@ -4,15 +4,7 @@ import { useState, useMemo, useCallback, lazy, Suspense, memo, useEffect } from 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
-import {
-  Card,
-  CardContent,
-  Badge,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@/components/ui'
+import { Card, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 import { useToast } from '@/components/ui/toast'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ProfiloPageHeader } from '@/components/dashboard/profilo-page-header'
@@ -181,10 +173,7 @@ export default function ProfiloPTPage() {
     setActiveTab('impostazioni')
     router.replace('/dashboard/profilo?tab=impostazioni', { scroll: false })
   }, [router])
-  const handleViewStats = useCallback(
-    () => router.push('/dashboard/statistiche'),
-    [router],
-  )
+  const handleViewStats = useCallback(() => router.push('/dashboard/statistiche'), [router])
 
   const setEditingTrue = useCallback(() => setIsEditing(true), [])
   const setEditingFalse = useCallback(() => setIsEditing(false), [])
@@ -222,7 +211,11 @@ export default function ProfiloPTPage() {
       await markAllAsRead()
     } catch (err) {
       logger.error('Mark all as read failed', err)
-      addToast({ title: 'Errore', message: 'Impossibile marcare tutte come lette', variant: 'error' })
+      addToast({
+        title: 'Errore',
+        message: 'Impossibile marcare tutte come lette',
+        variant: 'error',
+      })
     }
   }, [markAllAsRead, addToast])
   const handleDeleteNotification = useCallback(
@@ -231,7 +224,11 @@ export default function ProfiloPTPage() {
         await deleteNotification(id)
       } catch (err) {
         logger.error('Delete notification failed', err, { notificationId: id })
-        addToast({ title: 'Errore', message: 'Impossibile eliminare la notifica', variant: 'error' })
+        addToast({
+          title: 'Errore',
+          message: 'Impossibile eliminare la notifica',
+          variant: 'error',
+        })
       }
     },
     [deleteNotification, addToast],

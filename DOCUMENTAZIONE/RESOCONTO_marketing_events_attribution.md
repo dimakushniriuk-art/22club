@@ -2,19 +2,20 @@
 
 ## File modificati/creati
 
-| File | Azione |
-|------|--------|
-| `supabase/migrations/20260228234000_marketing_events_attribution.sql` | Creato: ALTER marketing_events, backfill, indici |
-| `src/app/api/marketing/leads/route.ts` | Dopo creazione lead: insert marketing_events (type=lead_created, lead_id, campaign_id opzionale, source/medium/utm_campaign, payload raw) |
-| `src/app/api/marketing/events/route.ts` | Creato: POST body type, campaign_id?, lead_id?, source?, medium?, utm_campaign?, payload?; org_id e occurred_at=now() dal profilo |
-| `src/app/api/marketing/analytics/route.ts` | Eventi 7d: select solo campaign_id, occurred_at; filtro .gte('occurred_at', iso7); conteggio per campagna da campaign_id (non payload) |
-| `src/lib/supabase/types.ts` | marketing_events: Row/Insert/Update con campaign_id, lead_id, actor_profile_id, occurred_at, source, medium, utm_campaign |
+| File                                                                  | Azione                                                                                                                                    |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260228234000_marketing_events_attribution.sql` | Creato: ALTER marketing_events, backfill, indici                                                                                          |
+| `src/app/api/marketing/leads/route.ts`                                | Dopo creazione lead: insert marketing_events (type=lead_created, lead_id, campaign_id opzionale, source/medium/utm_campaign, payload raw) |
+| `src/app/api/marketing/events/route.ts`                               | Creato: POST body type, campaign_id?, lead_id?, source?, medium?, utm_campaign?, payload?; org_id e occurred_at=now() dal profilo         |
+| `src/app/api/marketing/analytics/route.ts`                            | Eventi 7d: select solo campaign_id, occurred_at; filtro .gte('occurred_at', iso7); conteggio per campagna da campaign_id (non payload)    |
+| `src/lib/supabase/types.ts`                                           | marketing_events: Row/Insert/Update con campaign_id, lead_id, actor_profile_id, occurred_at, source, medium, utm_campaign                 |
 
 ---
 
 ## Migration (20260228234000_marketing_events_attribution.sql)
 
 **A) ALTER marketing_events**
+
 - campaign_id uuid NULL FK marketing_campaigns(id) ON DELETE SET NULL
 - lead_id uuid NULL FK marketing_leads(id) ON DELETE SET NULL
 - actor_profile_id uuid NULL FK profiles(id) ON DELETE SET NULL
@@ -22,6 +23,7 @@
 - source text NULL, medium text NULL, utm_campaign text NULL
 
 **B) Backfill**
+
 - occurred_at = created_at dove NULL
 - campaign_id da payload->>'campaign_id' se formato UUID valido
 - lead_id da payload->>'lead_id' se formato UUID valido
@@ -29,6 +31,7 @@
 - ALTER occurred_at SET NOT NULL, SET DEFAULT now()
 
 **C) Indici**
+
 - idx_marketing_events_org_occurred_at (org_id, occurred_at DESC)
 - idx_marketing_events_org_campaign_occurred (org_id, campaign_id, occurred_at DESC) WHERE campaign_id IS NOT NULL
 - idx_marketing_events_org_lead_occurred (org_id, lead_id, occurred_at DESC) WHERE lead_id IS NOT NULL

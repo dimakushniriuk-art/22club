@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Database, Json } from '@/lib/supabase/types'
 import type {
@@ -26,7 +26,9 @@ const DEFAULT_RECURRENCE_OPTIONS: RecurrenceOption[] = [
 ]
 
 function mapRowToSettings(row: Record<string, unknown>): StaffCalendarSettings {
-  const custom = row.custom_appointment_types as StaffCalendarSettings['custom_appointment_types'] | undefined
+  const custom = row.custom_appointment_types as
+    | StaffCalendarSettings['custom_appointment_types']
+    | undefined
   return {
     id: row.id as string,
     staff_id: row.staff_id as string,
@@ -39,7 +41,8 @@ function mapRowToSettings(row: Record<string, unknown>): StaffCalendarSettings {
     default_week_start: (row.default_week_start as WeekStartType) ?? DEFAULT_WEEK_START,
     show_free_pass_calendar: (row.show_free_pass_calendar as boolean) ?? true,
     show_collaborators_calendars: (row.show_collaborators_calendars as boolean) ?? true,
-    recurrence_options: (row.recurrence_options as RecurrenceOption[]) ?? DEFAULT_RECURRENCE_OPTIONS,
+    recurrence_options:
+      (row.recurrence_options as RecurrenceOption[]) ?? DEFAULT_RECURRENCE_OPTIONS,
     work_hours: (row.work_hours as StaffCalendarSettings['work_hours']) ?? null,
     grid_min_time: (row.grid_min_time as string | null) ?? null,
     grid_max_time: (row.grid_max_time as string | null) ?? null,
@@ -150,7 +153,8 @@ export function useStaffCalendarSettings() {
             ? (value as unknown as Json)
             : value
         }
-        type StaffCalendarSettingsInsert = Database['public']['Tables']['staff_calendar_settings']['Insert']
+        type StaffCalendarSettingsInsert =
+          Database['public']['Tables']['staff_calendar_settings']['Insert']
         const { data, error } = await supabase
           .from('staff_calendar_settings')
           .upsert(rowForDb as StaffCalendarSettingsInsert, { onConflict: 'staff_id' })

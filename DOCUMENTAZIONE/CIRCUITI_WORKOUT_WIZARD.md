@@ -55,8 +55,8 @@ Un **circuito** è un blocco di esercizi da eseguire in sequenza (es. Esercizio 
 
 ### 3.2 Persistenza Supabase
 
-- **workout_day_exercises.circuit_block_id** (UUID, nullable)  
-  - `NULL`: esercizio singolo.  
+- **workout_day_exercises.circuit_block_id** (UUID, nullable)
+  - `NULL`: esercizio singolo.
   - Stesso UUID su più righe dello stesso `workout_day_id`: quelle righe formano un unico circuito; l’ordine è dato da `order_index` (e dalla posizione nella risposta).
 
 - Non esiste una tabella separata "circuiti": un circuito è identificato dall’insieme delle righe `workout_day_exercises` con lo stesso `(workout_day_id, circuit_block_id)`.
@@ -65,7 +65,7 @@ Un **circuito** è un blocco di esercizi da eseguire in sequenza (es. Esercizio 
 
 ## 4. Salvataggio (creazione scheda)
 
-1. **Nuova scheda** (`/dashboard/schede/nuova`)  
+1. **Nuova scheda** (`/dashboard/schede/nuova`)
    - `onSave(workoutData, circuitList)` → `handleCreateWorkout(workoutData, circuitList)`.
 
 2. **handleCreateWorkout** (in `use-workout-plans.ts`):
@@ -80,7 +80,7 @@ Un **circuito** è un blocco di esercizi da eseguire in sequenza (es. Esercizio 
 
 ## 5. Salvataggio (modifica scheda)
 
-1. **Modifica scheda** (`/dashboard/schede/[id]/modifica`)  
+1. **Modifica scheda** (`/dashboard/schede/[id]/modifica`)
    - Caricamento: `useWorkoutDetail(workoutId)` restituisce la scheda con `days[].items` e `circuitList` ricostruiti da `circuit_block_id` (vedi sotto).
    - Salvataggio: `handleUpdateWorkout(workoutId, workoutData, circuitList)`.
 
@@ -104,14 +104,14 @@ Un **circuito** è un blocco di esercizi da eseguire in sequenza (es. Esercizio 
 
 ## 7. Riepilogo punti chiave
 
-| Aspetto | Dettaglio |
-|--------|-----------|
-| Dove si configurano i circuiti | Step 3, sezione "Circuito" → "Aggiungi esercizi per il circuito" (modal). |
-| Dove si assegnano al giorno | Step 3: card "Circuito configurato" → click = toggle sul Giorno 1. |
-| Persistenza DB | Solo `workout_day_exercises.circuit_block_id`; stesso UUID = stesso circuito nel giorno. |
-| Creazione | Id circuito `circuit-${Date.now()}`; in salvataggio si genera un UUID per `circuit_block_id`. |
-| Modifica | Id circuito = UUID da DB; in salvataggio si riusa come `circuit_block_id`. |
-| Step 4 | Blocchi circuito in sola lettura; esercizi singoli modificabili; drag-and-drop per riordinare. |
+| Aspetto                        | Dettaglio                                                                                      |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Dove si configurano i circuiti | Step 3, sezione "Circuito" → "Aggiungi esercizi per il circuito" (modal).                      |
+| Dove si assegnano al giorno    | Step 3: card "Circuito configurato" → click = toggle sul Giorno 1.                             |
+| Persistenza DB                 | Solo `workout_day_exercises.circuit_block_id`; stesso UUID = stesso circuito nel giorno.       |
+| Creazione                      | Id circuito `circuit-${Date.now()}`; in salvataggio si genera un UUID per `circuit_block_id`.  |
+| Modifica                       | Id circuito = UUID da DB; in salvataggio si riusa come `circuit_block_id`.                     |
+| Step 4                         | Blocchi circuito in sola lettura; esercizi singoli modificabili; drag-and-drop per riordinare. |
 
 ---
 
@@ -173,25 +173,25 @@ Quando l’atleta avvia un giorno dalla scheda, la pagina “oggi” carica la s
 
 ### 10.4 Riepilogo file e concetti (pagina oggi)
 
-| Elemento | Dettaglio |
-|----------|-----------|
-| Stato blocchi | `blocks` (useMemo da `workoutSession.exercises` + `circuit_block_id`), `currentBlockIndex`. |
-| Indice esercizio per vista | `currentExerciseIndex = blocks[currentBlockIndex].startIndex`. |
-| `circuitGroup` | Esercizi del circuito corrente (stesso `circuit_block_id` dell’esercizio alla `currentExerciseIndex`). |
+| Elemento                    | Dettaglio                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Stato blocchi               | `blocks` (useMemo da `workoutSession.exercises` + `circuit_block_id`), `currentBlockIndex`.                        |
+| Indice esercizio per vista  | `currentExerciseIndex = blocks[currentBlockIndex].startIndex`.                                                     |
+| `circuitGroup`              | Esercizi del circuito corrente (stesso `circuit_block_id` dell’esercizio alla `currentExerciseIndex`).             |
 | `completeBlock(blockIndex)` | Segna come completati (o toglie il completamento) tutti gli esercizi del blocco; usato per circuito e per singolo. |
-| Dialog video ingrandito | Stato `enlargedCircuitVideo`; click su una cella della griglia 3×3 apre il dialog con video/immagine e nome. |
+| Dialog video ingrandito     | Stato `enlargedCircuitVideo`; click su una cella della griglia 3×3 apre il dialog con video/immagine e nome.       |
 
 ---
 
 ## 11. Riepilogo funzionalità circuito (end-to-end)
 
-| Fase | Cosa fa |
-|------|---------|
-| **Wizard (PT)** | Crea/modifica circuiti (step 3), assegna al giorno, salva `circuit_block_id` in `workout_day_exercises`. |
-| **Dettaglio scheda** | Mostra “N a circuito, M singoli”, card circuito espandibile, “Inizia questo giorno” → oggi. |
-| **Sessione (use-workout-session)** | Carica esercizi con `circuit_block_id`; lista piatta di righe. |
-| **Pagina oggi** | Raggruppa per blocco; circuito = 1 blocco; griglia 3×3 video, lista esercizi sotto, timer esecuzione, video ingrandito; navigazione e “Completa” a livello blocco. |
+| Fase                               | Cosa fa                                                                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Wizard (PT)**                    | Crea/modifica circuiti (step 3), assegna al giorno, salva `circuit_block_id` in `workout_day_exercises`.                                                           |
+| **Dettaglio scheda**               | Mostra “N a circuito, M singoli”, card circuito espandibile, “Inizia questo giorno” → oggi.                                                                        |
+| **Sessione (use-workout-session)** | Carica esercizi con `circuit_block_id`; lista piatta di righe.                                                                                                     |
+| **Pagina oggi**                    | Raggruppa per blocco; circuito = 1 blocco; griglia 3×3 video, lista esercizi sotto, timer esecuzione, video ingrandito; navigazione e “Completa” a livello blocco. |
 
 ---
 
-*Ultimo aggiornamento: febbraio 2026.*
+_Ultimo aggiornamento: febbraio 2026._

@@ -15,26 +15,26 @@
 
 ### Prima Ottimizzazioni
 
-| Pagina | Prima Compilazione | Navigazione Successiva |
-|--------|-------------------|----------------------|
-| `/home` | 4007ms (4.0s) | 145ms |
-| `/home/allenamenti` | 3102ms (3.1s) | 89ms |
-| `/home/progressi` | - | - |
-| `/home/appuntamenti` | - | - |
+| Pagina               | Prima Compilazione | Navigazione Successiva |
+| -------------------- | ------------------ | ---------------------- |
+| `/home`              | 4007ms (4.0s)      | 145ms                  |
+| `/home/allenamenti`  | 3102ms (3.1s)      | 89ms                   |
+| `/home/progressi`    | -                  | -                      |
+| `/home/appuntamenti` | -                  | -                      |
 
 ### Dopo Ottimizzazioni (Con Turbopack + React Query)
 
-| Pagina | Prima Compilazione | Navigazione Successiva | Miglioramento |
-|--------|-------------------|----------------------|---------------|
-| `/home` | 7412ms (7.4s) | **231ms** | ✅ **-84%** |
-| `/home/allenamenti` | 1587ms (1.6s) | **196ms** | ✅ **-88%** |
-| `/home/progressi` | 1591ms (1.6s) | **306ms** | ✅ **-81%** |
-| `/home/appuntamenti` | 1723ms (1.7s) | - | ✅ **-57%** |
-| `/home/chat` | 1612ms (1.6s) | - | ✅ **-48%** |
-| `/home/nutrizionista` | 2271ms (2.3s) | - | ✅ **-43%** |
-| `/home/massaggiatore` | 2076ms (2.1s) | - | ✅ **-33%** |
-| `/home/documenti` | 1726ms (1.7s) | - | ✅ **-44%** |
-| `/home/profilo` | 2558ms (2.6s) | - | ✅ **-36%** |
+| Pagina                | Prima Compilazione | Navigazione Successiva | Miglioramento |
+| --------------------- | ------------------ | ---------------------- | ------------- |
+| `/home`               | 7412ms (7.4s)      | **231ms**              | ✅ **-84%**   |
+| `/home/allenamenti`   | 1587ms (1.6s)      | **196ms**              | ✅ **-88%**   |
+| `/home/progressi`     | 1591ms (1.6s)      | **306ms**              | ✅ **-81%**   |
+| `/home/appuntamenti`  | 1723ms (1.7s)      | -                      | ✅ **-57%**   |
+| `/home/chat`          | 1612ms (1.6s)      | -                      | ✅ **-48%**   |
+| `/home/nutrizionista` | 2271ms (2.3s)      | -                      | ✅ **-43%**   |
+| `/home/massaggiatore` | 2076ms (2.1s)      | -                      | ✅ **-33%**   |
+| `/home/documenti`     | 1726ms (1.7s)      | -                      | ✅ **-44%**   |
+| `/home/profilo`       | 2558ms (2.6s)      | -                      | ✅ **-36%**   |
 
 ---
 
@@ -71,26 +71,28 @@
 
 ### Tempi di Compilazione (Turbopack)
 
-| Route | Tempo Compilazione | Moduli |
-|-------|-------------------|--------|
-| `/home` | 6.5s | - |
-| `/home/progressi` | 1.4s | ✅ Veloce |
-| `/home/allenamenti` | 1.3s | ✅ Veloce |
-| `/home/appuntamenti` | 1.5s | ✅ Veloce |
-| `/home/chat` | 1.4s | ✅ Veloce |
-| `/home/nutrizionista` | 1.9s | ✅ Veloce |
-| `/home/massaggiatore` | 1.7s | ✅ Veloce |
-| `/home/documenti` | 1.4s | ✅ Veloce |
-| `/home/profilo` | 2.3s | ✅ Veloce |
+| Route                 | Tempo Compilazione | Moduli    |
+| --------------------- | ------------------ | --------- |
+| `/home`               | 6.5s               | -         |
+| `/home/progressi`     | 1.4s               | ✅ Veloce |
+| `/home/allenamenti`   | 1.3s               | ✅ Veloce |
+| `/home/appuntamenti`  | 1.5s               | ✅ Veloce |
+| `/home/chat`          | 1.4s               | ✅ Veloce |
+| `/home/nutrizionista` | 1.9s               | ✅ Veloce |
+| `/home/massaggiatore` | 1.7s               | ✅ Veloce |
+| `/home/documenti`     | 1.4s               | ✅ Veloce |
+| `/home/profilo`       | 2.3s               | ✅ Veloce |
 
 **Media compilazione**: ~1.5-2s (ottimo per dev mode)
 
 ### Tempi di Risposta GET
 
 **Prima compilazione** (dati freschi):
+
 - Range: 1.5-2.5s (accettabile per dev)
 
 **Navigazione successiva** (dati in cache):
+
 - Range: **200-300ms** 🚀
 - **Miglioramento**: 80-90% più veloce
 
@@ -100,12 +102,12 @@
 
 ### Target vs Risultati
 
-| Obiettivo | Target | Risultato | Stato |
-|----------|--------|-----------|-------|
-| Navigazione tra pagine | < 1s | **200-300ms** | ✅ **Superato** |
-| Prima compilazione | < 3s | 1.5-2.5s | ✅ **Raggiunto** |
-| Cache funzionante | Sì | ✅ Sì | ✅ **Raggiunto** |
-| Query duplicate | -70% | ✅ Ridotte | ✅ **Raggiunto** |
+| Obiettivo              | Target | Risultato     | Stato            |
+| ---------------------- | ------ | ------------- | ---------------- |
+| Navigazione tra pagine | < 1s   | **200-300ms** | ✅ **Superato**  |
+| Prima compilazione     | < 3s   | 1.5-2.5s      | ✅ **Raggiunto** |
+| Cache funzionante      | Sì     | ✅ Sì         | ✅ **Raggiunto** |
+| Query duplicate        | -70%   | ✅ Ridotte    | ✅ **Raggiunto** |
 
 ---
 
@@ -152,10 +154,12 @@ Se vuoi migliorare ulteriormente:
 ## 🎯 Metriche Finali
 
 **Prima**:
+
 - Navigazione: 3-4 secondi 🔴
 - Reattività: Bassa 🔴
 
 **Dopo**:
+
 - Navigazione: **200-300ms** 🟢
 - Reattività: **Alta** 🟢
 - **Miglioramento**: **80-90%** 🚀

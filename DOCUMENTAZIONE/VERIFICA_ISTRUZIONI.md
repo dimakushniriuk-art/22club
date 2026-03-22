@@ -34,15 +34,18 @@ supabase db execute -f supabase/migrations/VERIFICA_WORKOUT_LOGS_PRE_FIX.sql
 Il SQL controlla **12 aspetti** del database:
 
 ### 1. ✅ Tabelle Esistenti
+
 - `workouts`
 - `workout_logs`
 - `workout_plans` (alternativa)
 
 ### 2. 📋 Struttura Tabelle
+
 - Tutte le colonne di `workouts`
 - Tutte le colonne di `workout_logs`
 
 ### 3. 🎯 Colonne Necessarie per Storico
+
 - `workout_id` ✅
 - `user_id` ✅
 - `started_at` ✅
@@ -51,30 +54,39 @@ Il SQL controlla **12 aspetti** del database:
 - `notes` ✅
 
 ### 4. 🔗 Foreign Keys
+
 - Relazioni tra tabelle
 
 ### 5. 📇 Indici
+
 - Indici per performance
 
 ### 6. 🔒 RLS Policies
+
 - Policies di sicurezza
 
 ### 7. 🛡️ RLS Abilitato
+
 - Verifica se RLS è attivo
 
 ### 8. 📊 Conta Dati
+
 - Numero di righe in ogni tabella
 
 ### 9. 👤 Verifica Atleta Specifico
+
 - Atleta dalla tua URL (`25b279e7-6b70-47b6-973b-1ee1f98ed02d`)
 
 ### 10. 🤝 Relazione Trainer-Atleta
+
 - Connessione nella tabella `pt_atleti`
 
 ### 11. 📄 Sample Dati
+
 - Ultimi 5 workout_logs
 
 ### 12. ✅ Riepilogo Decisione
+
 - Verdetto finale: serve il fix o no?
 
 ---
@@ -84,6 +96,7 @@ Il SQL controlla **12 aspetti** del database:
 ### ✅ Scenario 1: Tabelle NON esistono
 
 **Output**:
+
 ```
 === TABELLE ESISTENTI ===
 (nessuna riga)
@@ -100,6 +113,7 @@ Il SQL controlla **12 aspetti** del database:
 ### ✅ Scenario 2: Tabelle esistono, colonne MANCANTI
 
 **Output**:
+
 ```
 === TABELLE ESISTENTI ===
 workout_logs | ✅ Tabella workout_logs esiste
@@ -118,6 +132,7 @@ completed_at   | ✅ Esiste
 ### ✅ Scenario 3: Tutto OK
 
 **Output**:
+
 ```
 === TABELLE ESISTENTI ===
 workouts      | ✅ Tabella workouts esiste
@@ -143,6 +158,7 @@ completed_at   | ✅ Esiste
 ### ⚠️ Scenario 4: Atleta senza user_id
 
 **Output**:
+
 ```
 === VERIFICA ATLETA ===
 id    | user_id | nome | cognome
@@ -154,7 +170,7 @@ xxx   | NULL    | John | Doe
 
 ```sql
 -- Fix manuale
-UPDATE profiles 
+UPDATE profiles
 SET user_id = (
   SELECT id FROM auth.users WHERE email = 'atleta@email.com'
 )
@@ -166,6 +182,7 @@ WHERE id = '25b279e7-6b70-47b6-973b-1ee1f98ed02d';
 ### ⚠️ Scenario 5: Atleta senza trainer
 
 **Output**:
+
 ```
 === RELAZIONE PT-ATLETA ===
 (nessuna riga)
@@ -187,14 +204,18 @@ VALUES (
 ## 🎯 Sezioni Chiave da Controllare
 
 ### 1. **COLONNE NECESSARIE**
+
 Questa sezione è **CRITICA**:
+
 - Se tutte ✅ → pagina storico funzionerà
 - Se qualche ❌ → serve FIX
 
 ### 2. **VERIFICA ATLETA**
+
 Controlla che l'atleta dalla URL esista e abbia `user_id`
 
 ### 3. **RIEPILOGO DECISIONE**
+
 Il verdetto finale su cosa fare
 
 ---
@@ -202,15 +223,19 @@ Il verdetto finale su cosa fare
 ## 🚨 Errori Comuni
 
 ### Errore: "relation workout_logs does not exist"
+
 ✅ **NORMALE** - tabella non esiste, serve FIX completo
 
 ### Errore: "column workout_logs.workout_id does not exist"
+
 ✅ **NORMALE** - colonna mancante, STEP 3 del FIX la aggiungerà
 
 ### Nessun output nella sezione "TABELLE ESISTENTI"
+
 ❌ Le tabelle NON esistono → ESEGUI FIX completo
 
 ### Output "0 righe" in CONTA DATI
+
 ℹ️ Tabelle esistono ma sono vuote (normale se app nuova)
 
 ---
@@ -231,12 +256,14 @@ Dopo aver eseguito la verifica:
 ## 📞 Prossimi Passi
 
 ### Se SERVE FIX:
+
 1. ✅ Esegui `VERIFICA_WORKOUT_LOGS_PRE_FIX.sql`
 2. ✅ Leggi risultati
 3. ➡️ **Esegui `FIX_WORKOUT_LOGS_STORICO.sql`**
 4. ✅ Refresh pagina storico
 
 ### Se NON SERVE FIX:
+
 1. ✅ Verifica solo RLS policies
 2. ✅ Testa pagina storico
 3. ✅ Se funziona, tutto OK!

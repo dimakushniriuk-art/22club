@@ -28,15 +28,24 @@ const FORBIDDEN_PATTERNS = [
   { pattern: /['"]atleta['"]\s*\|/g, name: "union type 'atleta' |" },
   { pattern: /\|\s*['"]atleta['"]/g, name: "union type | 'atleta'" },
   { pattern: /\.eq\s*\(\s*['"]role['"]\s*,\s*['"]atleta['"]\s*\)/g, name: ".eq('role', 'atleta')" },
-  { pattern: /\.in\s*\(\s*['"]role['"]\s*,\s*\[\s*['"]atleta['"]/g, name: ".in('role', ['atleta']" },
+  {
+    pattern: /\.in\s*\(\s*['"]role['"]\s*,\s*\[\s*['"]atleta['"]/g,
+    name: ".in('role', ['atleta']",
+  },
   { pattern: /value=["']atleta["']/g, name: 'value="atleta" (role select)' },
   { pattern: /option\s+value=["']atleta["']/g, name: 'option value="atleta"' },
   { pattern: /z\.enum\s*\([^)]*['"]pt['"]/g, name: "z.enum(..., 'pt')" },
   { pattern: /z\.enum\s*\([^)]*['"]atleta['"]/g, name: "z.enum(..., 'atleta')" },
   { pattern: /role\s*[=:]\s*['"]nutrizionista['"]/g, name: "role = 'nutrizionista'" },
   { pattern: /role\s*[=:]\s*['"]massaggiatore['"]/g, name: "role = 'massaggiatore'" },
-  { pattern: /\.in\s*\(\s*['"]role['"]\s*,\s*\[\s*['"]nutrizionista['"]/g, name: ".in('role', ['nutrizionista']" },
-  { pattern: /\.in\s*\(\s*['"]role['"]\s*,\s*\[\s*['"]massaggiatore['"]/g, name: ".in('role', ['massaggiatore']" },
+  {
+    pattern: /\.in\s*\(\s*['"]role['"]\s*,\s*\[\s*['"]nutrizionista['"]/g,
+    name: ".in('role', ['nutrizionista']",
+  },
+  {
+    pattern: /\.in\s*\(\s*['"]role['"]\s*,\s*\[\s*['"]massaggiatore['"]/g,
+    name: ".in('role', ['massaggiatore']",
+  },
   { pattern: /z\.enum\s*\([^)]*['"]nutrizionista['"]/g, name: "z.enum(..., 'nutrizionista')" },
   { pattern: /z\.enum\s*\([^)]*['"]massaggiatore['"]/g, name: "z.enum(..., 'massaggiatore')" },
 ]
@@ -73,10 +82,12 @@ const EXCLUDE_FILES = new Set([
   'src/app/post-login/page.tsx',
   'src/lib/validations/appointment.ts',
 ])
-const files = ALL_FILES.filter((f) => !EXCLUDE_FILES.has(path.relative(ROOT, f).replace(/\\/g, '/')))
+const files = ALL_FILES.filter(
+  (f) => !EXCLUDE_FILES.has(path.relative(ROOT, f).replace(/\\/g, '/')),
+)
 // Migrations: solo la nuova (dopo normalizzazione) non deve contenere pt/atleta come valori ammessi
 const _migrationFiles = walkDir(SUPABASE_MIGRATIONS, ['.sql']).filter(
-  (f) => path.basename(f) >= '20260301130000_profiles_role_normalization.sql'
+  (f) => path.basename(f) >= '20260301130000_profiles_role_normalization.sql',
 )
 
 let failed = false
@@ -93,7 +104,12 @@ for (const file of files) {
       const lineNum = content.slice(0, m.index).split('\n').length
       const line = lines[lineNum - 1]?.trim() || ''
       if (line.startsWith('//') || line.startsWith('*') || line.startsWith('/*')) continue
-      errors.push({ file: path.relative(ROOT, file), line: lineNum, match: name, snippet: line.slice(0, 80) })
+      errors.push({
+        file: path.relative(ROOT, file),
+        line: lineNum,
+        match: name,
+        snippet: line.slice(0, 80),
+      })
       failed = true
     }
   }
@@ -113,7 +129,9 @@ if (failed) {
       console.error(`    L${line}: ${match}  → ${snippet}...`)
     }
   }
-  console.error('\nRimuovi ruoli legacy (pt, atleta, nutrizionista, massaggiatore). Ruoli ammessi: admin, trainer, athlete, marketing.')
+  console.error(
+    '\nRimuovi ruoli legacy (pt, atleta, nutrizionista, massaggiatore). Ruoli ammessi: admin, trainer, athlete, marketing.',
+  )
   process.exit(1)
 }
 

@@ -60,7 +60,11 @@ function getGreeting() {
 function isToday(iso: string): boolean {
   const d = new Date(iso)
   const today = new Date()
-  return d.getUTCFullYear() === today.getUTCFullYear() && d.getUTCMonth() === today.getUTCMonth() && d.getUTCDate() === today.getUTCDate()
+  return (
+    d.getUTCFullYear() === today.getUTCFullYear() &&
+    d.getUTCMonth() === today.getUTCMonth() &&
+    d.getUTCDate() === today.getUTCDate()
+  )
 }
 
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -140,10 +144,15 @@ export default function MassaggiatorePage() {
       const athleteIds = [...new Set(aptData.map((a) => a.athlete_id).filter(Boolean))] as string[]
       const profilesMap = new Map<string, { nome: string | null; cognome: string | null }>()
       if (athleteIds.length > 0) {
-        const { data: profiles } = await supabase.from('profiles').select('id, nome, cognome').in('id', athleteIds)
-        ;(profiles ?? []).forEach((p: { id: string; nome: string | null; cognome: string | null }) => {
-          profilesMap.set(p.id, { nome: p.nome, cognome: p.cognome })
-        })
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome')
+          .in('id', athleteIds)
+        ;(profiles ?? []).forEach(
+          (p: { id: string; nome: string | null; cognome: string | null }) => {
+            profilesMap.set(p.id, { nome: p.nome, cognome: p.cognome })
+          },
+        )
       }
       const prossimiAppuntamenti: UpcomingAppointment[] = aptData.map((apt) => {
         const p = apt.athlete_id != null ? profilesMap.get(apt.athlete_id) : undefined
@@ -196,7 +205,12 @@ export default function MassaggiatorePage() {
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
-          <Button variant="outline" size="sm" className="min-h-[44px] touch-manipulation" onClick={() => void loadData()}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px] touch-manipulation"
+            onClick={() => void loadData()}
+          >
             Riprova
           </Button>
         </div>
@@ -225,7 +239,8 @@ export default function MassaggiatorePage() {
           <>
             <div>
               <p className="text-amber-400 text-xs sm:text-sm font-medium">
-                {getGreeting()}{staffDisplayName ? `, ${staffDisplayName}` : ''}!
+                {getGreeting()}
+                {staffDisplayName ? `, ${staffDisplayName}` : ''}!
               </p>
               <div className="flex items-center gap-2.5 mt-0.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
@@ -243,35 +258,66 @@ export default function MassaggiatorePage() {
             </div>
 
             <div>
-              <h3 className="text-xs sm:text-sm font-semibold text-text-primary mb-2">Azioni Rapide</h3>
+              <h3 className="text-xs sm:text-sm font-semibold text-text-primary mb-2">
+                Azioni Rapide
+              </h3>
               <div className="grid grid-cols-3 gap-2">
-                <Button asChild variant="default" size="sm" className="bg-amber-600 hover:bg-amber-500 min-h-[48px] touch-manipulation flex flex-col gap-0.5 text-xs">
-                  <Link href="/dashboard/massaggiatore/calendario" className="flex flex-col items-center justify-center gap-0.5 py-2.5">
+                <Button
+                  asChild
+                  variant="default"
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-500 min-h-[48px] touch-manipulation flex flex-col gap-0.5 text-xs"
+                >
+                  <Link
+                    href="/dashboard/massaggiatore/calendario"
+                    className="flex flex-col items-center justify-center gap-0.5 py-2.5"
+                  >
                     <Calendar className="h-4 w-4 shrink-0" aria-hidden />
                     <span className="font-medium">Calendario</span>
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm" className="border-amber-500/40 min-h-[48px] touch-manipulation flex flex-col gap-0.5 text-xs">
-                  <Link href="/dashboard/massaggiatore/appuntamenti" className="flex flex-col items-center justify-center gap-0.5 py-2.5">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="border-amber-500/40 min-h-[48px] touch-manipulation flex flex-col gap-0.5 text-xs"
+                >
+                  <Link
+                    href="/dashboard/massaggiatore/appuntamenti"
+                    className="flex flex-col items-center justify-center gap-0.5 py-2.5"
+                  >
                     <CalendarCheck className="h-4 w-4 shrink-0" aria-hidden />
                     <span className="font-medium">Appuntamenti</span>
                   </Link>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="border-amber-500/40 min-h-[48px] w-full touch-manipulation flex flex-col gap-0.5 text-xs">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-amber-500/40 min-h-[48px] w-full touch-manipulation flex flex-col gap-0.5 text-xs"
+                    >
                       <ChevronDown className="h-4 w-4 shrink-0" aria-hidden />
                       <span className="font-medium">Azioni</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="min-w-[200px]">
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/massaggiatore/chat')} className="min-h-[44px] py-3 touch-manipulation text-sm">
+                    <DropdownMenuItem
+                      onClick={() => router.push('/dashboard/massaggiatore/chat')}
+                      className="min-h-[44px] py-3 touch-manipulation text-sm"
+                    >
                       <MessageSquare className="mr-2 h-4 w-4" /> Chat
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/massaggiatore/statistiche')} className="min-h-[44px] py-3 touch-manipulation text-sm">
+                    <DropdownMenuItem
+                      onClick={() => router.push('/dashboard/massaggiatore/statistiche')}
+                      className="min-h-[44px] py-3 touch-manipulation text-sm"
+                    >
                       <BarChart2 className="mr-2 h-4 w-4" /> Statistiche
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/massaggiatore/abbonamenti')} className="min-h-[44px] py-3 touch-manipulation text-sm">
+                    <DropdownMenuItem
+                      onClick={() => router.push('/dashboard/massaggiatore/abbonamenti')}
+                      className="min-h-[44px] py-3 touch-manipulation text-sm"
+                    >
                       <CreditCard className="mr-2 h-4 w-4" /> Abbonamenti
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -281,27 +327,58 @@ export default function MassaggiatorePage() {
 
             {data.lastUpdated && (
               <p className="text-text-muted text-[11px] sm:text-xs">
-                Aggiornato alle {new Date(data.lastUpdated).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                Aggiornato alle{' '}
+                {new Date(data.lastUpdated).toLocaleTimeString('it-IT', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </p>
             )}
 
             <div className="grid grid-cols-2 gap-2">
-              <Link href="/dashboard/massaggiatore/appuntamenti" className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation">
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">Clienti seguiti</p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">{data.clientiSeguiti}</p>
+              <Link
+                href="/dashboard/massaggiatore/appuntamenti"
+                className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation"
+              >
+                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
+                  Clienti seguiti
+                </p>
+                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
+                  {data.clientiSeguiti}
+                </p>
               </Link>
               <div className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3">
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">Massaggi eseguiti</p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">{data.massaggiEseguiti}</p>
-                <p className="text-[11px] sm:text-xs text-text-muted mt-0.5">di {data.massaggiTotali} totali</p>
+                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
+                  Massaggi eseguiti
+                </p>
+                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
+                  {data.massaggiEseguiti}
+                </p>
+                <p className="text-[11px] sm:text-xs text-text-muted mt-0.5">
+                  di {data.massaggiTotali} totali
+                </p>
               </div>
-              <Link href="/dashboard/massaggiatore/abbonamenti" className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation">
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">Fatture emesse</p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">{data.fattureEmesse}</p>
+              <Link
+                href="/dashboard/massaggiatore/abbonamenti"
+                className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation"
+              >
+                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
+                  Fatture emesse
+                </p>
+                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
+                  {data.fattureEmesse}
+                </p>
               </Link>
-              <Link href="/dashboard/massaggiatore/calendario" className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation">
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">Prossimi 7 giorni</p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">{data.appuntamentiSettimana}</p>
+              <Link
+                href="/dashboard/massaggiatore/calendario"
+                className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation"
+              >
+                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
+                  Prossimi 7 giorni
+                </p>
+                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
+                  {data.appuntamentiSettimana}
+                </p>
                 <p className="text-[11px] sm:text-xs text-amber-400 mt-0.5">appuntamenti</p>
               </Link>
             </div>
@@ -346,14 +423,18 @@ export default function MassaggiatorePage() {
                   <Users className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
                   Clienti seguiti
                 </div>
-                <p className="text-2xl font-bold text-amber-400 tabular-nums">{data.clientiSeguiti}</p>
+                <p className="text-2xl font-bold text-amber-400 tabular-nums">
+                  {data.clientiSeguiti}
+                </p>
               </Link>
               <div className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-5 min-h-[7.5rem] flex flex-col justify-between">
                 <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
                   <Hand className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
                   Massaggi eseguiti
                 </div>
-                <p className="text-2xl font-bold text-text-primary tabular-nums">{data.massaggiEseguiti}</p>
+                <p className="text-2xl font-bold text-text-primary tabular-nums">
+                  {data.massaggiEseguiti}
+                </p>
                 <p className="text-xs text-text-muted mt-0.5">di {data.massaggiTotali} totali</p>
               </div>
               <Link
@@ -364,7 +445,9 @@ export default function MassaggiatorePage() {
                   <FileText className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
                   Fatture emesse
                 </div>
-                <p className="text-2xl font-bold text-text-primary tabular-nums">{data.fattureEmesse}</p>
+                <p className="text-2xl font-bold text-text-primary tabular-nums">
+                  {data.fattureEmesse}
+                </p>
               </Link>
               <Link
                 href="/dashboard/massaggiatore/calendario"
@@ -374,7 +457,9 @@ export default function MassaggiatorePage() {
                   <CalendarCheck className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
                   Prossimi 7 giorni
                 </div>
-                <p className="text-2xl font-bold text-text-primary tabular-nums">{data.appuntamentiSettimana}</p>
+                <p className="text-2xl font-bold text-text-primary tabular-nums">
+                  {data.appuntamentiSettimana}
+                </p>
               </Link>
             </div>
 
@@ -384,16 +469,21 @@ export default function MassaggiatorePage() {
                 <h2 className="text-sm font-semibold text-amber-400 mb-3">Prossimo appuntamento</h2>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-lg font-bold text-text-primary">{data.prossimiAppuntamenti[0].athlete_name}</p>
+                    <p className="text-lg font-bold text-text-primary">
+                      {data.prossimiAppuntamenti[0].athlete_name}
+                    </p>
                     <p className="text-text-secondary text-sm">
                       Massaggio ·{' '}
-                      {new Date(data.prossimiAppuntamenti[0].starts_at).toLocaleDateString('it-IT', {
-                        weekday: 'long',
-                        day: '2-digit',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {new Date(data.prossimiAppuntamenti[0].starts_at).toLocaleDateString(
+                        'it-IT',
+                        {
+                          weekday: 'long',
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        },
+                      )}
                     </p>
                   </div>
                   <Link
@@ -435,7 +525,10 @@ export default function MassaggiatorePage() {
               ) : (
                 <ul className="divide-y divide-border/50">
                   {data.prossimiAppuntamenti.map((apt) => (
-                    <li key={apt.id} className="flex items-center gap-3 px-5 py-4 min-h-[44px] hover:bg-background-tertiary/30 transition-colors touch-manipulation">
+                    <li
+                      key={apt.id}
+                      className="flex items-center gap-3 px-5 py-4 min-h-[44px] hover:bg-background-tertiary/30 transition-colors touch-manipulation"
+                    >
                       <Calendar className="h-5 w-5 text-amber-400 shrink-0" aria-hidden />
                       <div className="flex-1 min-w-0">
                         <span className="text-text-primary font-medium">{apt.athlete_name}</span>
@@ -457,19 +550,34 @@ export default function MassaggiatorePage() {
             </section>
 
             <div className="flex flex-wrap gap-2">
-              <Link href="/dashboard/massaggiatore/calendario" className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation">
+              <Link
+                href="/dashboard/massaggiatore/calendario"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+              >
                 <Calendar className="h-4 w-4" /> Calendario
               </Link>
-              <Link href="/dashboard/massaggiatore/appuntamenti" className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation">
+              <Link
+                href="/dashboard/massaggiatore/appuntamenti"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+              >
                 <CalendarCheck className="h-4 w-4" /> Appuntamenti
               </Link>
-              <Link href="/dashboard/massaggiatore/chat" className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation">
+              <Link
+                href="/dashboard/massaggiatore/chat"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+              >
                 <MessageSquare className="h-4 w-4" /> Chat
               </Link>
-              <Link href="/dashboard/massaggiatore/statistiche" className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation">
+              <Link
+                href="/dashboard/massaggiatore/statistiche"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+              >
                 <BarChart2 className="h-4 w-4" /> Statistiche
               </Link>
-              <Link href="/dashboard/massaggiatore/abbonamenti" className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation">
+              <Link
+                href="/dashboard/massaggiatore/abbonamenti"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+              >
                 <CreditCard className="h-4 w-4" /> Abbonamenti
               </Link>
             </div>

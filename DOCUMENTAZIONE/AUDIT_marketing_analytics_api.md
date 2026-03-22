@@ -35,7 +35,7 @@
 
 ### marketing_athletes (view)
 
-- Fetch completo di tutte le righe della view (colonne workouts_* e last_workout_at). Somme (coached/solo 7d e 30d) e conteggio inattivi **in JS**.
+- Fetch completo di tutte le righe della view (colonne workouts\_\* e last_workout_at). Somme (coached/solo 7d e 30d) e conteggio inattivi **in JS**.
 - **Aggregazioni in JS.** Rischio: **medio** con 10k atleti, **alto** con 50k (fetch completo della view per org).
 
 ---
@@ -50,7 +50,7 @@
 
 - **Metodo:** Il campo `payload` (jsonb) non è filtrato in DB. L’API esegue:
   - `.select('type, created_at, payload').gte('created_at', iso7)`
-  quindi nessun filtro su `payload` (né `.contains()`, né `.eq('payload->>campaign_id', ...)`, né RPC). Tutte le righe eventi degli ultimi 7 giorni (rispettando RLS) vengono recuperate; in JS si legge `e.payload?.campaign_id` e si aggrega per campagna.
+    quindi nessun filtro su `payload` (né `.contains()`, né `.eq('payload->>campaign_id', ...)`, né RPC). Tutte le righe eventi degli ultimi 7 giorni (rispettando RLS) vengono recuperate; in JS si legge `e.payload?.campaign_id` e si aggrega per campagna.
 - **Indice:** Nelle migration non risulta alcun indice su `marketing_events.payload` (es. GIN per jsonb o espressione su `(payload->>'campaign_id')`). Esistono indici su `org_id`, `type`, `created_at`.
 - **Full table scan:** No su tutta la tabella: il filtro `.gte('created_at', iso7)` usa l’indice su `created_at`. Resta però uno scan su tutte le righe che soddisfano la data (ultimi 7 giorni) e caricamento del jsonb `payload` per ognuna.
 - **Performance risk:** **Medio** (pochi eventi in 7d) a **Alto** (molti eventi in 7d e payload grandi). Il collo di bottiglia è il volume di dati trasferiti e l’elaborazione in JS, non un full table scan completo.

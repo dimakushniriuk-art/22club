@@ -7,6 +7,7 @@ bash supabase-config-export/pg-dump-completo.sh
 ```
 
 **Oppure comando completo:**
+
 ```bash
 pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.pooler.supabase.com:5432/postgres" \
   --schema=public \
@@ -23,6 +24,7 @@ postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.pooler.su
 ```
 
 **Componenti:**
+
 - User: `postgres.icibqnmtacibgnhaidlz`
 - Password: `22Club-NEW`
 - Host: `aws-1-eu-north-1.pooler.supabase.com`
@@ -37,6 +39,7 @@ postgresql://postgres.icibqnmtacibgnhaidlz:22Club-NEW@aws-1-eu-north-1.pooler.su
 ## 🔄 Aggiorna Password
 
 Se la password cambia, modifica:
+
 1. `supabase-config-export/pg-dump-completo.sh`
 2. `supabase-config-export/pg-dump-con-dati.sh`
 

@@ -1,8 +1,21 @@
 'use client'
 
 import { ChevronRight, LayoutGrid } from 'lucide-react'
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui'
-import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS } from './helpers'
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+} from './helpers'
 
 export function SectionModuli() {
   return (
@@ -12,7 +25,10 @@ export function SectionModuli() {
         Moduli (Card)
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Componente <code className={DS_CODE_CLASS}>Card</code> e sotto-componenti (Header, Title, Description, Content, Footer). Riempimento unico e bordo con sfumatura. Varianti: default, elevated, outlined, athlete, trainer, admin, glass. Prop <code className={DS_CODE_CLASS}>hoverable</code>.
+        Componente <code className={DS_CODE_CLASS}>Card</code> e sotto-componenti (Header, Title,
+        Description, Content, Footer). Riempimento unico e bordo con sfumatura. Varianti: default,
+        elevated, outlined, athlete, trainer, admin, glass. Prop{' '}
+        <code className={DS_CODE_CLASS}>hoverable</code>.
       </p>
       <div className="space-y-6 sm:space-y-8">
         <div>
@@ -71,13 +87,17 @@ export function SectionModuli() {
                 <CardTitle>glass</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-text-secondary">Header / overlay. Sfondo unico + bordo.</p>
+                <p className="text-sm text-text-secondary">
+                  Header / overlay. Sfondo unico + bordo.
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
         <div>
-          <h3 className="mb-3 text-sm font-medium text-text-secondary">CardHeader, CardTitle, CardDescription</h3>
+          <h3 className="mb-3 text-sm font-medium text-text-secondary">
+            CardHeader, CardTitle, CardDescription
+          </h3>
           <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
             <Card variant="default" className={DS_CARD_FRAME_CLASS}>
               <CardHeader padding="sm">
@@ -105,8 +125,12 @@ export function SectionModuli() {
               <p className="text-sm text-text-secondary">Contenuto.</p>
             </CardContent>
             <CardFooter justify="between">
-              <Button variant="ghost" size="sm">Annulla</Button>
-              <Button variant="primary" size="sm">Salva</Button>
+              <Button variant="ghost" size="sm">
+                Annulla
+              </Button>
+              <Button variant="primary" size="sm">
+                Salva
+              </Button>
             </CardFooter>
           </Card>
         </div>

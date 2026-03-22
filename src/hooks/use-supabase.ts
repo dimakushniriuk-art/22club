@@ -23,12 +23,12 @@ export function useSupabase() {
     const checkLocalStorageSession = () => {
       try {
         if (typeof window === 'undefined') return null
-        
+
         // Supabase salva la sessione in localStorage con chiavi che iniziano con 'sb-'
-        const supabaseKeys = Object.keys(localStorage).filter(key => key.startsWith('sb-'))
+        const supabaseKeys = Object.keys(localStorage).filter((key) => key.startsWith('sb-'))
         if (supabaseKeys.length > 0) {
-          console.log('[useSupabase] Trovate chiavi Supabase nel localStorage', { 
-            keys: supabaseKeys.map(k => k.substring(0, 20)) // Primi 20 caratteri per privacy
+          console.log('[useSupabase] Trovate chiavi Supabase nel localStorage', {
+            keys: supabaseKeys.map((k) => k.substring(0, 20)), // Primi 20 caratteri per privacy
           })
           return true // C'è almeno una chiave Supabase, potrebbe esserci una sessione
         }
@@ -44,19 +44,22 @@ export function useSupabase() {
         console.log(`[useSupabase] getSession già eseguito, skip (${context})`)
         return null
       }
-      
+
       getSessionExecuted = true
       try {
-        const { data: { session }, error: sessionError } = await stableSupabase.auth.getSession()
-        
+        const {
+          data: { session },
+          error: sessionError,
+        } = await stableSupabase.auth.getSession()
+
         if (!isMounted) return null
-        
+
         console.log(`[useSupabase] getSession completato (${context})`, {
           hasSession: !!session,
           hasUser: !!session?.user,
           hasError: !!sessionError,
         })
-        
+
         if (!sessionError && session?.user) {
           if (loadingTimeout) {
             clearTimeout(loadingTimeout)
@@ -86,11 +89,14 @@ export function useSupabase() {
     loadingTimeout = setTimeout(() => {
       if (isMounted && loading) {
         const hasLocalKeys = checkLocalStorageSession()
-        console.warn('[useSupabase] Timeout di sicurezza: impostando loading = false dopo 3 secondi', {
-          hasLocalKeys,
-          authStateChangeCalled,
-          getSessionExecuted,
-        })
+        console.warn(
+          '[useSupabase] Timeout di sicurezza: impostando loading = false dopo 3 secondi',
+          {
+            hasLocalKeys,
+            authStateChangeCalled,
+            getSessionExecuted,
+          },
+        )
         setLoading(false)
         // FIX #4: Se authStateChange non è stato chiamato ma ci sono chiavi localStorage,
         // esegui getSession() solo se non è già stato eseguito
@@ -103,32 +109,34 @@ export function useSupabase() {
 
     // FIX #4: onAuthStateChange viene chiamato immediatamente con la sessione corrente se esiste
     // Questo è più veloce di getSession() perché non fa una chiamata di rete
-    const authStateChangeResult = stableSupabase.auth.onAuthStateChange((_event: string, session: unknown) => {
-      const sess = session as { user?: unknown } | null
-      authStateChangeCalled = true
-      // FIX #4: Marca getSession come eseguito per evitare chiamate duplicate
-      if (sess?.user) {
-        getSessionExecuted = true
-      }
-      
-      console.log('[useSupabase] onAuthStateChange', { 
-        event: _event,
-        hasSession: !!session,
-        hasUser: !!sess?.user,
-        userEmail: (sess?.user as { email?: string })?.email,
-      })
-      
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout)
-        loadingTimeout = null
-      }
-      
-      if (!isMounted) return
-      
-      setUser((sess?.user ?? null) as User | null)
-      setLoading(false)
-    })
-    
+    const authStateChangeResult = stableSupabase.auth.onAuthStateChange(
+      (_event: string, session: unknown) => {
+        const sess = session as { user?: unknown } | null
+        authStateChangeCalled = true
+        // FIX #4: Marca getSession come eseguito per evitare chiamate duplicate
+        if (sess?.user) {
+          getSessionExecuted = true
+        }
+
+        console.log('[useSupabase] onAuthStateChange', {
+          event: _event,
+          hasSession: !!session,
+          hasUser: !!sess?.user,
+          userEmail: (sess?.user as { email?: string })?.email,
+        })
+
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout)
+          loadingTimeout = null
+        }
+
+        if (!isMounted) return
+
+        setUser((sess?.user ?? null) as User | null)
+        setLoading(false)
+      },
+    )
+
     subscription = authStateChangeResult.data.subscription
 
     // FIX #4: Fallback: esegui getSession() solo se onAuthStateChange non viene chiamato immediatamente
@@ -139,45 +147,45 @@ export function useSupabase() {
         console.log('[useSupabase] getSession skip: già eseguito o authStateChange chiamato')
         return
       }
-      
+
       try {
         // FIX #4: Usa timeout breve per evitare blocking, ma non chiamare multiple volte
         const sessionPromise = stableSupabase.auth.getSession()
         const timeoutPromise = new Promise<null>((resolve) => {
           setTimeout(() => resolve(null), 1500)
         })
-        
+
         const result = await Promise.race([sessionPromise, timeoutPromise])
-        
+
         if (!isMounted) return
-        
+
         if (result === null) {
           console.log('[useSupabase] getSession timeout 1.5s (non critico)')
           // FIX #4: Non chiamare getSession() di nuovo qui - aspetta onAuthStateChange o timeout finale
           return
         }
-        
+
         const {
           data: { session },
           error: sessionError,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = result as { data: { session: any }; error: any }
-        
+
         if (!isMounted) return
-        
+
         // FIX #4: Marca come eseguito prima di aggiornare lo stato
         getSessionExecuted = true
-        
+
         if (loadingTimeout) {
           clearTimeout(loadingTimeout)
           loadingTimeout = null
         }
-        
+
         // Solo aggiorna se onAuthStateChange non ha già impostato l'utente
         if (!sessionError && session?.user && !authStateChangeCalled) {
-          console.log('[useSupabase] getSession completato (fallback)', { 
-            userId: session.user.id, 
-            email: session.user.email 
+          console.log('[useSupabase] getSession completato (fallback)', {
+            userId: session.user.id,
+            email: session.user.email,
           })
           setUser(session.user)
           setLoading(false)

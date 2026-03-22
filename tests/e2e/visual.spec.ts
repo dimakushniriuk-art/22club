@@ -19,7 +19,7 @@ test.describe('Visual Regression Tests', () => {
     })
     await loginAsPT(page)
     await page.waitForURL(/post-login|dashboard|home/, { timeout: 30000 }).catch(() => {})
-    
+
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle').catch(() => {})
 

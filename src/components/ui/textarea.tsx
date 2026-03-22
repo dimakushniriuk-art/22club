@@ -17,7 +17,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const variants = {
       default:
         'border-white/10 bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:outline-none disabled:from-zinc-900/80 disabled:to-zinc-900/80 disabled:shadow-none',
-      outline: 'bg-transparent border-white/10 text-text-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25',
+      outline:
+        'bg-transparent border-white/10 text-text-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25',
       ghost: 'bg-transparent border-transparent text-text-primary',
     }
 

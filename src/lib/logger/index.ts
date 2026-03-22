@@ -143,11 +143,7 @@ class Logger {
 
     if (entry.data) {
       // Serializza sempre i data per errori, così in console non appare {} (oggetti con getter/non enumerabili)
-      args.push(
-        entry.level === 'error'
-          ? JSON.stringify(entry.data, null, 2)
-          : entry.data,
-      )
+      args.push(entry.level === 'error' ? JSON.stringify(entry.data, null, 2) : entry.data)
     }
 
     if (entry.error) {

@@ -3,7 +3,12 @@
 import { Zap } from 'lucide-react'
 import { motion } from '@/lib/design-tokens'
 import { Card, CardTitle } from '@/components/ui'
-import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS } from './helpers'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+} from './helpers'
 
 const chipFrameClass =
   'flex flex-col gap-0.5 rounded-md border border-white/10 bg-zinc-800/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]'
@@ -16,7 +21,9 @@ export function FoundationsMotion() {
         Motion
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Duration, easing e keyframes da <code className={DS_CODE_CLASS}>@/lib/design-tokens/motion</code>. Tailwind espone <code className={DS_CODE_CLASS}>animate-*</code>.
+        Duration, easing e keyframes da{' '}
+        <code className={DS_CODE_CLASS}>@/lib/design-tokens/motion</code>. Tailwind espone{' '}
+        <code className={DS_CODE_CLASS}>animate-*</code>.
       </p>
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
         <Card variant="default" className={DS_CARD_FRAME_CLASS}>

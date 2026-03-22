@@ -41,7 +41,11 @@ interface AthleteOverviewTabProps {
   calculateProgress: () => number
 }
 
-export function AthleteOverviewTab({ user: _user, stats, calculateProgress }: AthleteOverviewTabProps) {
+export function AthleteOverviewTab({
+  user: _user,
+  stats,
+  calculateProgress,
+}: AthleteOverviewTabProps) {
   const supabase = useSupabaseClient()
   const [trainer, setTrainer] = useState<TrainerProfile | null>(null)
   const [trainerLoading, setTrainerLoading] = useState(true)
@@ -49,19 +53,17 @@ export function AthleteOverviewTab({ user: _user, stats, calculateProgress }: At
   useEffect(() => {
     let cancelled = false
     setTrainerLoading(true)
-    supabase
-      .rpc('get_my_trainer_profile')
-      .then((res: { data: unknown; error: unknown }) => {
-        const { data, error } = res
-        if (cancelled) return
-        setTrainerLoading(false)
-        if (error || !Array.isArray(data) || data.length === 0) {
-          setTrainer(null)
-          return
-        }
-        const row = data[0] as TrainerProfile
-        setTrainer(row)
-      })
+    supabase.rpc('get_my_trainer_profile').then((res: { data: unknown; error: unknown }) => {
+      const { data, error } = res
+      if (cancelled) return
+      setTrainerLoading(false)
+      if (error || !Array.isArray(data) || data.length === 0) {
+        setTrainer(null)
+        return
+      }
+      const row = data[0] as TrainerProfile
+      setTrainer(row)
+    })
     return () => {
       cancelled = true
     }
@@ -119,7 +121,9 @@ export function AthleteOverviewTab({ user: _user, stats, calculateProgress }: At
                     <Mail className="h-4 w-4 shrink-0 text-text-tertiary" />
                     <div className="min-w-0">
                       <p className="text-xs text-text-secondary">Email</p>
-                      <p className="truncate text-sm font-medium text-text-primary">{trainer.pt_email}</p>
+                      <p className="truncate text-sm font-medium text-text-primary">
+                        {trainer.pt_email}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -163,7 +167,9 @@ export function AthleteOverviewTab({ user: _user, stats, calculateProgress }: At
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
                   <p className="text-[11px] text-text-secondary">Partenza</p>
-                  <p className="text-lg font-bold tabular-nums text-text-primary">{stats.peso_iniziale} kg</p>
+                  <p className="text-lg font-bold tabular-nums text-text-primary">
+                    {stats.peso_iniziale} kg
+                  </p>
                 </div>
                 <div>
                   <p className="text-[11px] text-text-secondary">Attuale</p>
@@ -173,7 +179,9 @@ export function AthleteOverviewTab({ user: _user, stats, calculateProgress }: At
                 </div>
                 <div>
                   <p className="text-[11px] text-text-secondary">Obiettivo</p>
-                  <p className="text-lg font-bold tabular-nums text-text-primary">{stats.obiettivo_peso} kg</p>
+                  <p className="text-lg font-bold tabular-nums text-text-primary">
+                    {stats.obiettivo_peso} kg
+                  </p>
                 </div>
               </div>
               {stats.peso_attuale != null && (

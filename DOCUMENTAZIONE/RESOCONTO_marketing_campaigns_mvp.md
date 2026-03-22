@@ -2,14 +2,14 @@
 
 ## File modificati/creati
 
-| File | Azione |
-|------|--------|
-| `supabase/migrations/20260228232000_marketing_campaigns_hardening.sql` | Creato: trigger org_id, updated_at, RLS con funzioni DEFINER, policy DELETE |
-| `src/lib/supabase/types.ts` | Aggiunta tabella `marketing_campaigns` (Row, Insert con org_id opzionale, Update) |
-| `src/app/dashboard/marketing/campaigns/page.tsx` | Sostituito stub: lista, filtri status/channel, search, KPI, pulsante Nuova campagna |
-| `src/app/dashboard/marketing/campaigns/new/page.tsx` | Creato: form name/channel/budget/start_at/end_at/status, INSERT senza org_id |
-| `src/app/dashboard/marketing/campaigns/[id]/page.tsx` | Creato: dettaglio, azioni rapide Attiva/Pausa/Termina, pulsante Modifica |
-| `src/app/dashboard/marketing/campaigns/[id]/edit/page.tsx` | Creato: form modifica (name, channel, budget, start_at, end_at, status), UPDATE senza org_id |
+| File                                                                   | Azione                                                                                       |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260228232000_marketing_campaigns_hardening.sql` | Creato: trigger org_id, updated_at, RLS con funzioni DEFINER, policy DELETE                  |
+| `src/lib/supabase/types.ts`                                            | Aggiunta tabella `marketing_campaigns` (Row, Insert con org_id opzionale, Update)            |
+| `src/app/dashboard/marketing/campaigns/page.tsx`                       | Sostituito stub: lista, filtri status/channel, search, KPI, pulsante Nuova campagna          |
+| `src/app/dashboard/marketing/campaigns/new/page.tsx`                   | Creato: form name/channel/budget/start_at/end_at/status, INSERT senza org_id                 |
+| `src/app/dashboard/marketing/campaigns/[id]/page.tsx`                  | Creato: dettaglio, azioni rapide Attiva/Pausa/Termina, pulsante Modifica                     |
+| `src/app/dashboard/marketing/campaigns/[id]/edit/page.tsx`             | Creato: form modifica (name, channel, budget, start_at, end_at, status), UPDATE senza org_id |
 
 Nav e middleware: voce "Campagne" già presente in sidebar/mobile; allowlist `/dashboard/marketing/campaigns` già presente (subpath consentiti con `pathname.startsWith`). Nessuna modifica.
 

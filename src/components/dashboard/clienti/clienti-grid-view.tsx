@@ -38,7 +38,9 @@ export function ClientiGridView({
   return (
     <div className="relative p-4 sm:p-5 md:p-6">
       <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-        <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">Lista Clienti ({total})</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">
+          Lista Clienti ({total})
+        </h3>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
         {clienti.map((cliente, index) => (
@@ -60,8 +62,15 @@ export function ClientiGridView({
 
       {/* FIX: Paginazione con aria-label per accessibilità (consistente con table view) */}
       {totalPages > 1 && (
-        <nav className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" aria-label="Paginazione clienti">
-          <p className="text-text-secondary text-sm order-2 sm:order-1" role="status" aria-live="polite">
+        <nav
+          className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+          aria-label="Paginazione clienti"
+        >
+          <p
+            className="text-text-secondary text-sm order-2 sm:order-1"
+            role="status"
+            aria-live="polite"
+          >
             Pagina {page} di {totalPages} ({total} totali)
           </p>
           <div className="flex gap-2 order-1 sm:order-2">

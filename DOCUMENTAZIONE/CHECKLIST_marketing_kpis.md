@@ -107,7 +107,7 @@ npx playwright test
 - **Opzionali (per test marketing sicurezza):** `MARKETING_TEST_EMAIL`, `MARKETING_TEST_PASSWORD`  
   (oppure `PLAYWRIGHT_MARKETING_EMAIL`, `PLAYWRIGHT_MARKETING_PASSWORD`)
 
-Se le credenziali marketing non sono impostate, i test che richiedono l’utente marketing vengono skippati con messaggio: *Missing marketing test account*.
+Se le credenziali marketing non sono impostate, i test che richiedono l’utente marketing vengono skippati con messaggio: _Missing marketing test account_.
 
 ### Come creare l’account marketing di test
 

@@ -128,21 +128,25 @@ Database Schema Changes
 ## 📋 QUERY PRONTE
 
 ### Trova tutti i debug log
+
 ```bash
 rg "#region agent log" src/
 ```
 
 ### Trova TODO in hooks
+
 ```bash
 rg "TODO" src/hooks/
 ```
 
 ### Verifica import Supabase
+
 ```bash
 rg "from '@/lib/supabase" src/
 ```
 
 ### Trova componenti senza test
+
 ```bash
 # Confronta file in src/components con tests/
 ```
@@ -152,6 +156,7 @@ rg "from '@/lib/supabase" src/
 ## 🗂️ CONTESTO PER PROMPT
 
 ### Stack Tecnico
+
 ```
 Frontend: Next.js 15 App Router, React 18, TypeScript strict
 Styling: Tailwind CSS, Radix UI, dark mode
@@ -162,6 +167,7 @@ Deploy: Vercel, GitHub Actions
 ```
 
 ### Ruoli Utente
+
 ```
 admin    → /dashboard/admin (gestione globale)
 trainer  → /dashboard (gestione clienti, schede)
@@ -169,6 +175,7 @@ athlete  → /home (fruizione contenuti)
 ```
 
 ### Convenzioni Codice
+
 ```
 semi = false (no semicolon)
 File components: kebab-case.tsx
@@ -178,6 +185,7 @@ API routes: route.ts
 ```
 
 ### Pattern Comuni
+
 ```
 Client Component: 'use client' + hooks
 Server Component: async function + createClient()
@@ -190,15 +198,15 @@ Hook con query: useQuery + queryKeys
 
 ## 📊 METRICHE QUICK REFERENCE
 
-| Metrica | Valore | Note |
-|---------|--------|------|
-| LOC totali src/ | ~25,000 | Stima |
-| Componenti React | ~200 | tsx files |
-| Hooks custom | 89 | in src/hooks |
-| API endpoints | 29 | route.ts files |
-| Tabelle DB | ~15 | In types/supabase |
-| Test E2E | 38 | spec files |
-| Test pass rate | ~85% | Variabile per browser |
+| Metrica          | Valore  | Note                  |
+| ---------------- | ------- | --------------------- |
+| LOC totali src/  | ~25,000 | Stima                 |
+| Componenti React | ~200    | tsx files             |
+| Hooks custom     | 89      | in src/hooks          |
+| API endpoints    | 29      | route.ts files        |
+| Tabelle DB       | ~15     | In types/supabase     |
+| Test E2E         | 38      | spec files            |
+| Test pass rate   | ~85%    | Variabile per browser |
 
 ---
 

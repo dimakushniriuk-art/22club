@@ -2,7 +2,17 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Card, CardContent, Button, Input, SimpleSelect, Drawer, DrawerContent, DrawerHeader, DrawerBody } from '@/components/ui'
+import {
+  Card,
+  CardContent,
+  Button,
+  Input,
+  SimpleSelect,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+} from '@/components/ui'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
@@ -107,18 +117,15 @@ function InvoiceViewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-      <div className={`relative w-full h-full max-w-4xl max-h-[90vh] m-4 bg-background-secondary rounded-lg border shadow-xl ${m.modalBorder}`}>
+      <div
+        className={`relative w-full h-full max-w-4xl max-h-[90vh] m-4 bg-background-secondary rounded-lg border shadow-xl ${m.modalBorder}`}
+      >
         <div className={`flex items-center justify-between p-4 border-b ${m.modalHeader}`}>
           <h3 className="text-text-primary text-lg font-semibold flex items-center gap-2">
             <FileText className={`h-5 w-5 ${m.modalIcon}`} />
             Fattura - {athlete}
           </h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            className={m.modalButton}
-          >
+          <Button variant="outline" size="sm" onClick={onClose} className={m.modalButton}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -143,11 +150,7 @@ function InvoiceViewModal({
               />
               <div className="flex justify-end shrink-0">
                 <Button asChild variant="outline" size="sm">
-                  <a
-                    href={signedUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={signedUrl} target="_blank" rel="noopener noreferrer">
                     Apri in nuova scheda
                   </a>
                 </Button>
@@ -186,7 +189,10 @@ function invoiceUrlToStoragePath(invoiceUrl: string): string {
 }
 
 /** Nome documento fattura per visualizzazione in tabella (filename da path o "Fattura DD/MM/YYYY"). */
-function getInvoiceDocumentName(abb: { invoice_url: string | null; payment_date?: string }): string | null {
+function getInvoiceDocumentName(abb: {
+  invoice_url: string | null
+  payment_date?: string
+}): string | null {
   if (!abb.invoice_url) return null
   const path = abb.invoice_url.trim()
   const segment = path.split('/').filter(Boolean).pop()
@@ -252,7 +258,8 @@ const ABBONAMENTI_THEME = {
     tabActive: 'bg-primary text-white',
     inputBorder: 'border-primary/30 focus:border-primary/50',
     buttonOutline: 'border-primary/30 text-white hover:bg-primary/10 hover:border-primary/50',
-    buttonPrimary: 'bg-gradient-to-r from-primary to-primary hover:from-primary-hover hover:to-primary-hover text-white font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/40',
+    buttonPrimary:
+      'bg-gradient-to-r from-primary to-primary hover:from-primary-hover hover:to-primary-hover text-white font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/40',
     kpiAccent: 'text-primary',
     cardBorder: 'border-primary/30',
     tableBorder: 'border-primary/20',
@@ -270,7 +277,8 @@ const ABBONAMENTI_THEME = {
     tabActive: 'bg-teal-600 text-white',
     inputBorder: 'border-teal-500/30 focus:border-teal-500/50',
     buttonOutline: 'border-teal-500/30 text-white hover:bg-teal-500/10 hover:border-teal-500/50',
-    buttonPrimary: 'bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40',
+    buttonPrimary:
+      'bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40',
     kpiAccent: 'text-teal-400',
     cardBorder: 'border-teal-500/30',
     tableBorder: 'border-teal-500/20',
@@ -288,7 +296,8 @@ const ABBONAMENTI_THEME = {
     tabActive: 'bg-amber-600 text-white',
     inputBorder: 'border-amber-500/30 focus:border-amber-500/50',
     buttonOutline: 'border-amber-500/30 text-white hover:bg-amber-500/10 hover:border-amber-500/50',
-    buttonPrimary: 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-semibold shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40',
+    buttonPrimary:
+      'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-semibold shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40',
     kpiAccent: 'text-amber-400',
     cardBorder: 'border-amber-500/30',
     tableBorder: 'border-amber-500/20',
@@ -398,7 +407,9 @@ export default function AbbonamentiPage() {
   const [invoiceOnly, setInvoiceOnly] = useState(false)
   const [kpiDebitsInMonth, setKpiDebitsInMonth] = useState<number>(0)
   const [drilldownRow, setDrilldownRow] = useState<Abbonamento | null>(null)
-  const [ledgerHistory, setLedgerHistory] = useState<Array<{ entry_type: string; qty: number; created_at: string; reason?: string | null }>>([])
+  const [ledgerHistory, setLedgerHistory] = useState<
+    Array<{ entry_type: string; qty: number; created_at: string; reason?: string | null }>
+  >([])
   const [drilldownLoading, setDrilldownLoading] = useState(false)
 
   const urlServiceParam = searchParams.get('service')
@@ -406,7 +417,11 @@ export default function AbbonamentiPage() {
   const defaultService = defaultServiceForRole(role)
   const currentServiceType: ServiceType = urlService ?? defaultService
   const abbonamentiTheme: AbbonamentiTheme =
-    currentServiceType === 'massage' ? 'amber' : currentServiceType === 'nutrition' ? 'teal' : 'default'
+    currentServiceType === 'massage'
+      ? 'amber'
+      : currentServiceType === 'nutrition'
+        ? 'teal'
+        : 'default'
   const t = ABBONAMENTI_THEME[abbonamentiTheme]
 
   // Se manca ?service=, applica default e sostituisci URL
@@ -458,7 +473,9 @@ export default function AbbonamentiPage() {
         else params.delete('date')
       }
       const q = params.toString()
-      router.replace(q ? `/dashboard/abbonamenti?${q}` : '/dashboard/abbonamenti', { scroll: false })
+      router.replace(q ? `/dashboard/abbonamenti?${q}` : '/dashboard/abbonamenti', {
+        scroll: false,
+      })
     },
     [router],
   )
@@ -542,7 +559,9 @@ export default function AbbonamentiPage() {
             }>
 
             // Usufruiti/Rimasti sempre da ledger+counter (ignora colonne RPC per coerenza)
-            const rpcAthleteIds = [...new Set(typedRpcData.map((r) => r.athlete_id).filter(Boolean))]
+            const rpcAthleteIds = [
+              ...new Set(typedRpcData.map((r) => r.athlete_id).filter(Boolean)),
+            ]
             const [countersRes, ledgerDebitRes, ledgerCreditRes] = await Promise.all([
               rpcAthleteIds.length > 0
                 ? supabaseClient
@@ -573,8 +592,8 @@ export default function AbbonamentiPage() {
             const usedMap = new Map<string, number>()
             const creditedMap = new Map<string, number>()
             if (countersRes.data) {
-              ;(countersRes.data as { athlete_id: string; count: number | null }[]).forEach(
-                (row) => remainingMap.set(row.athlete_id, row.count ?? 0),
+              ;(countersRes.data as { athlete_id: string; count: number | null }[]).forEach((row) =>
+                remainingMap.set(row.athlete_id, row.count ?? 0),
               )
             }
             if (ledgerDebitRes.data) {
@@ -587,10 +606,7 @@ export default function AbbonamentiPage() {
             }
             if (ledgerCreditRes.data) {
               ;(ledgerCreditRes.data as { athlete_id: string; qty: number }[]).forEach((row) => {
-                creditedMap.set(
-                  row.athlete_id,
-                  (creditedMap.get(row.athlete_id) ?? 0) + row.qty,
-                )
+                creditedMap.set(row.athlete_id, (creditedMap.get(row.athlete_id) ?? 0) + row.qty)
               })
             }
 
@@ -677,7 +693,10 @@ export default function AbbonamentiPage() {
             supabaseClient
               .from('payments')
               .select('id, payment_date, status, invoice_url, lessons_purchased')
-              .in('id', payments.map((p) => p.id)),
+              .in(
+                'id',
+                payments.map((p) => p.id),
+              ),
             athleteIds.length > 0
               ? supabaseClient.from('profiles').select('id, nome, cognome').in('id', athleteIds)
               : Promise.resolve({ data: [], error: null }),
@@ -751,7 +770,11 @@ export default function AbbonamentiPage() {
         const lessonsUsedMap = new Map<string, number>()
         const lessonsCreditedMap = new Map<string, number>()
         if (ledgerResult.data) {
-          const rows = ledgerResult.data as { athlete_id: string; entry_type: string; qty: number }[]
+          const rows = ledgerResult.data as {
+            athlete_id: string
+            entry_type: string
+            qty: number
+          }[]
           rows.forEach((row) => {
             const aid = String(row.athlete_id)
             if (row.entry_type === 'DEBIT') {
@@ -772,8 +795,8 @@ export default function AbbonamentiPage() {
 
           const lessonsUsed =
             lessonsUsedMap instanceof Map
-              ? lessonsUsedMap.get(athleteIdKey) ?? 0
-              : (lessonsUsedMap as Record<string, number>)[athleteIdKey] ?? 0
+              ? (lessonsUsedMap.get(athleteIdKey) ?? 0)
+              : ((lessonsUsedMap as Record<string, number>)[athleteIdKey] ?? 0)
           const fromCounter =
             lessonsRemainingMap instanceof Map
               ? lessonsRemainingMap.get(athleteIdKey)
@@ -842,52 +865,52 @@ export default function AbbonamentiPage() {
 
   const _handleInvoiceUpload = useCallback(
     async (paymentId: string, file: File) => {
-    try {
-      setUploadingInvoice(paymentId)
+      try {
+        setUploadingInvoice(paymentId)
 
-      const payment = abbonamenti.find((a) => a.id === paymentId)
-      if (!payment) throw new Error('Pagamento non trovato')
+        const payment = abbonamenti.find((a) => a.id === paymentId)
+        if (!payment) throw new Error('Pagamento non trovato')
 
-      const fileExt = file.name.split('.').pop() || 'pdf'
-      const storagePath = `fatture/${currentServiceType}/${payment.athlete_id}/${paymentId}.${fileExt}`
+        const fileExt = file.name.split('.').pop() || 'pdf'
+        const storagePath = `fatture/${currentServiceType}/${payment.athlete_id}/${paymentId}.${fileExt}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(storagePath, file, {
-          cacheControl: '3600',
-          upsert: true,
+        const { error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(storagePath, file, {
+            cacheControl: '3600',
+            upsert: true,
+          })
+
+        if (uploadError) throw uploadError
+
+        // Salva solo il path in DB (signed URL generato on-demand in anteprima/download)
+        const { error: updateError } = await supabase
+          .from('payments')
+          .update({ invoice_url: storagePath })
+          .eq('id', paymentId)
+
+        if (updateError) throw updateError
+
+        addToast({
+          title: 'Successo',
+          message: 'Fattura caricata con successo',
+          variant: 'success',
         })
 
-      if (uploadError) throw uploadError
-
-      // Salva solo il path in DB (signed URL generato on-demand in anteprima/download)
-      const { error: updateError } = await supabase
-        .from('payments')
-        .update({ invoice_url: storagePath })
-        .eq('id', paymentId)
-
-      if (updateError) throw updateError
-
-      addToast({
-        title: 'Successo',
-        message: 'Fattura caricata con successo',
-        variant: 'success',
-      })
-
-      frequentQueryCache.invalidate(
-        getCacheKey(currentServiceType, currentPage, enablePagination, role, userId),
-      )
-      loadAbbonamenti()
-    } catch (err) {
-      logger.error('Errore upload fattura', err, { paymentId })
-      addToast({
-        title: 'Errore',
-        message: err instanceof Error ? err.message : 'Errore nel caricamento della fattura',
-        variant: 'error',
-      })
-    } finally {
-      setUploadingInvoice(null)
-    }
+        frequentQueryCache.invalidate(
+          getCacheKey(currentServiceType, currentPage, enablePagination, role, userId),
+        )
+        loadAbbonamenti()
+      } catch (err) {
+        logger.error('Errore upload fattura', err, { paymentId })
+        addToast({
+          title: 'Errore',
+          message: err instanceof Error ? err.message : 'Errore nel caricamento della fattura',
+          variant: 'error',
+        })
+      } finally {
+        setUploadingInvoice(null)
+      }
     },
     [
       abbonamenti,
@@ -904,34 +927,34 @@ export default function AbbonamentiPage() {
 
   const handleDownloadInvoice = useCallback(
     async (invoiceUrl: string) => {
-    try {
-      const filePath = invoiceUrlToStoragePath(invoiceUrl)
-      const { data, error: signedError } = await supabase.storage
-        .from('documents')
-        .createSignedUrl(filePath, 3600)
+      try {
+        const filePath = invoiceUrlToStoragePath(invoiceUrl)
+        const { data, error: signedError } = await supabase.storage
+          .from('documents')
+          .createSignedUrl(filePath, 3600)
 
-      if (signedError) {
-        logger.error('Errore creazione signed URL per download', signedError, {
-          invoiceUrl,
-          filePath,
-        })
+        if (signedError) {
+          logger.error('Errore creazione signed URL per download', signedError, {
+            invoiceUrl,
+            filePath,
+          })
+          addToast({
+            title: 'Errore',
+            message: 'Impossibile scaricare la fattura. Riprova più tardi.',
+            variant: 'error',
+          })
+          return
+        }
+
+        window.open(data.signedUrl, '_blank')
+      } catch (err) {
+        logger.error('Errore download fattura', err, { invoiceUrl })
         addToast({
           title: 'Errore',
-          message: 'Impossibile scaricare la fattura. Riprova più tardi.',
+          message: err instanceof Error ? err.message : 'Errore nel download della fattura',
           variant: 'error',
         })
-        return
       }
-
-      window.open(data.signedUrl, '_blank')
-    } catch (err) {
-      logger.error('Errore download fattura', err, { invoiceUrl })
-      addToast({
-        title: 'Errore',
-        message: err instanceof Error ? err.message : 'Errore nel download della fattura',
-        variant: 'error',
-      })
-    }
     },
     [supabase, addToast],
   )
@@ -1153,7 +1176,9 @@ export default function AbbonamentiPage() {
       const t = new Date(d).getTime()
       return t >= new Date(monthStart).getTime() && t <= new Date(monthEnd).getTime()
     }
-    const inMonthList = filteredAbbonamenti.filter((abb) => abb.status !== 'cancelled' && inMonth(abb.payment_date))
+    const inMonthList = filteredAbbonamenti.filter(
+      (abb) => abb.status !== 'cancelled' && inMonth(abb.payment_date),
+    )
     const incassoMese = inMonthList.reduce((s, abb) => s + abb.amount, 0)
     const pacchettiMese = inMonthList.length
     const seen = new Set<string>()
@@ -1168,7 +1193,9 @@ export default function AbbonamentiPage() {
   }, [filteredAbbonamenti, monthStart, monthEnd])
 
   useEffect(() => {
-    const ids = [...new Set(filteredAbbonamenti.map((a) => a.athlete_id).filter(Boolean))] as string[]
+    const ids = [
+      ...new Set(filteredAbbonamenti.map((a) => a.athlete_id).filter(Boolean)),
+    ] as string[]
     if (ids.length === 0) {
       setKpiDebitsInMonth(0)
       return
@@ -1221,7 +1248,14 @@ export default function AbbonamentiPage() {
         .eq('service_type', currentServiceType)
         .order('created_at', { ascending: false })
         .limit(20)
-      setLedgerHistory((data ?? []) as Array<{ entry_type: string; qty: number; created_at: string; reason?: string | null }>)
+      setLedgerHistory(
+        (data ?? []) as Array<{
+          entry_type: string
+          qty: number
+          created_at: string
+          reason?: string | null
+        }>,
+      )
     } finally {
       setDrilldownLoading(false)
     }
@@ -1284,14 +1318,18 @@ export default function AbbonamentiPage() {
 
         {/* Tab servizio: Allenamenti | Nutrizione | Massaggi (nascosti al trainer) */}
         {role !== 'trainer' && (
-          <div className={`flex gap-1 p-1 rounded-lg bg-background-tertiary/50 border w-fit ${t.tabContainer}`}>
+          <div
+            className={`flex gap-1 p-1 rounded-lg bg-background-tertiary/50 border w-fit ${t.tabContainer}`}
+          >
             {SERVICE_TYPES.map(({ value, label }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => updateUrlFilters({ service: value })}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  currentServiceType === value ? t.tabActive : 'text-text-secondary hover:text-text-primary hover:bg-background-secondary/50'
+                  currentServiceType === value
+                    ? t.tabActive
+                    : 'text-text-secondary hover:text-text-primary hover:bg-background-secondary/50'
                 }`}
               >
                 {label}
@@ -1302,38 +1340,38 @@ export default function AbbonamentiPage() {
 
         {/* KPI bar (service corrente) - nascosta al trainer */}
         {role !== 'trainer' && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
-            <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-              <Euro className="w-3.5 h-3.5" />
-              Incasso mese
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
+                <Euro className="w-3.5 h-3.5" />
+                Incasso mese
+              </div>
+              <p className={`text-lg font-bold ${t.kpiAccent}`}>
+                {formatCurrency(kpiFromFiltered.incassoMese)}
+              </p>
             </div>
-            <p className={`text-lg font-bold ${t.kpiAccent}`}>
-              {formatCurrency(kpiFromFiltered.incassoMese)}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
-            <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-              <Package className="w-3.5 h-3.5" />
-              Pacchetti venduti mese
+            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
+                <Package className="w-3.5 h-3.5" />
+                Pacchetti venduti mese
+              </div>
+              <p className="text-lg font-bold text-text-primary">{kpiFromFiltered.pacchettiMese}</p>
             </div>
-            <p className="text-lg font-bold text-text-primary">{kpiFromFiltered.pacchettiMese}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
-            <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-              <CreditCard className="w-3.5 h-3.5" />
-              Crediti rimanenti totali
+            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
+                <CreditCard className="w-3.5 h-3.5" />
+                Crediti rimanenti totali
+              </div>
+              <p className="text-lg font-bold text-text-primary">{kpiFromFiltered.creditiTotali}</p>
             </div>
-            <p className="text-lg font-bold text-text-primary">{kpiFromFiltered.creditiTotali}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
-            <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-              <CalendarCheck className="w-3.5 h-3.5" />
-              Sedute completate mese
+            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
+                <CalendarCheck className="w-3.5 h-3.5" />
+                Sedute completate mese
+              </div>
+              <p className="text-lg font-bold text-text-primary">{kpiDebitsInMonth}</p>
             </div>
-            <p className="text-lg font-bold text-text-primary">{kpiDebitsInMonth}</p>
           </div>
-        </div>
         )}
 
         {/* Filtri */}
@@ -1502,7 +1540,9 @@ export default function AbbonamentiPage() {
                     <tr>
                       <td colSpan={8} className="px-4 py-12 text-center text-text-secondary">
                         <div className="flex flex-col items-center gap-3">
-                          <div className={`rounded-full p-6 animate-[pulse_2s_ease-in-out_infinite] ${t.emptyIcon}`}>
+                          <div
+                            className={`rounded-full p-6 animate-[pulse_2s_ease-in-out_infinite] ${t.emptyIcon}`}
+                          >
                             {abbonamenti.length === 0 ? (
                               <Euro className="h-12 w-12" />
                             ) : (
@@ -1520,10 +1560,7 @@ export default function AbbonamentiPage() {
                               : 'Prova a modificare i filtri di ricerca'}
                           </p>
                           {abbonamenti.length === 0 ? (
-                            <Button
-                              onClick={() => setShowModal(true)}
-                              className={t.buttonPrimary}
-                            >
+                            <Button onClick={() => setShowModal(true)} className={t.buttonPrimary}>
                               <Plus className="mr-2 h-4 w-4" />
                               Crea primo abbonamento
                             </Button>
@@ -1687,7 +1724,6 @@ export default function AbbonamentiPage() {
             </div>
           </div>
         )}
-
       </div>
 
       {/* Modal Nuovo Pagamento - Lazy loaded solo quando aperto */}
@@ -1721,7 +1757,12 @@ export default function AbbonamentiPage() {
       )}
 
       {/* Drawer drilldown atleta: storico movimenti + contatore */}
-      <Drawer open={!!drilldownRow} onOpenChange={(open) => !open && setDrilldownRow(null)} side="right" size="md">
+      <Drawer
+        open={!!drilldownRow}
+        onOpenChange={(open) => !open && setDrilldownRow(null)}
+        side="right"
+        size="md"
+      >
         <DrawerContent showCloseButton onClose={() => setDrilldownRow(null)}>
           {drilldownRow && (
             <>
@@ -1732,7 +1773,9 @@ export default function AbbonamentiPage() {
               <DrawerBody className="space-y-4">
                 <div className="rounded-lg border border-border bg-background-tertiary/30 p-3">
                   <p className="text-text-secondary text-sm mb-1">Contatore attuale</p>
-                  <p className="text-xl font-bold text-text-primary">{drilldownRow.lessons_remaining}</p>
+                  <p className="text-xl font-bold text-text-primary">
+                    {drilldownRow.lessons_remaining}
+                  </p>
                 </div>
                 <div>
                   <p className="text-text-secondary text-sm mb-2">Storico movimenti (ultimi 20)</p>
@@ -1747,9 +1790,15 @@ export default function AbbonamentiPage() {
                       <table className="w-full text-sm">
                         <thead className="bg-background-tertiary/50 border-b border-border">
                           <tr>
-                            <th className="px-3 py-2 text-left text-text-secondary font-medium">Tipo</th>
-                            <th className="px-3 py-2 text-right text-text-secondary font-medium">Qty</th>
-                            <th className="px-3 py-2 text-left text-text-secondary font-medium">Data</th>
+                            <th className="px-3 py-2 text-left text-text-secondary font-medium">
+                              Tipo
+                            </th>
+                            <th className="px-3 py-2 text-right text-text-secondary font-medium">
+                              Qty
+                            </th>
+                            <th className="px-3 py-2 text-left text-text-secondary font-medium">
+                              Data
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1774,26 +1823,27 @@ export default function AbbonamentiPage() {
       </Drawer>
 
       {/* Dialog conferma storno pagamento */}
-      {paymentToDelete && (() => {
-        const paymentForDialog = abbonamenti.find((a) => a.id === paymentToDelete)
-        const credits = paymentForDialog?.lessons_purchased ?? 0
-        return (
-          <ConfirmDialog
-            open={deleteDialogOpen}
-            onOpenChange={(open) => {
-              setDeleteDialogOpen(open)
-              if (!open) setPaymentToDelete(null)
-            }}
-            title="Storna pagamento"
-            description={`Vuoi stornare questo pagamento? Verranno rimossi ${credits} crediti.`}
-            confirmText="Storna"
-            cancelText="Annulla"
-            variant="destructive"
-            onConfirm={handleStornoConfirm}
-            loading={isDeleting}
-          />
-        )
-      })()}
+      {paymentToDelete &&
+        (() => {
+          const paymentForDialog = abbonamenti.find((a) => a.id === paymentToDelete)
+          const credits = paymentForDialog?.lessons_purchased ?? 0
+          return (
+            <ConfirmDialog
+              open={deleteDialogOpen}
+              onOpenChange={(open) => {
+                setDeleteDialogOpen(open)
+                if (!open) setPaymentToDelete(null)
+              }}
+              title="Storna pagamento"
+              description={`Vuoi stornare questo pagamento? Verranno rimossi ${credits} crediti.`}
+              confirmText="Storna"
+              cancelText="Annulla"
+              variant="destructive"
+              onConfirm={handleStornoConfirm}
+              loading={isDeleting}
+            />
+          )
+        })()}
     </StaffContentLayout>
   )
 }

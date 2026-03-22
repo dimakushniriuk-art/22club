@@ -48,12 +48,11 @@ export function NutritionFoodPreferencesSection({
   if (isEditing) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">Alimenti Preferiti</CardTitle>
+            <CardTitle className="text-lg font-bold text-text-primary">
+              Alimenti Preferiti
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
@@ -93,10 +92,7 @@ export function NutritionFoodPreferencesSection({
           </CardContent>
         </Card>
 
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-text-primary">Alimenti Evitati</CardTitle>
           </CardHeader>
@@ -143,10 +139,7 @@ export function NutritionFoodPreferencesSection({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold text-text-primary">Alimenti Preferiti</CardTitle>
         </CardHeader>
@@ -165,10 +158,7 @@ export function NutritionFoodPreferencesSection({
         </CardContent>
       </Card>
 
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold text-text-primary">Alimenti Evitati</CardTitle>
         </CardHeader>

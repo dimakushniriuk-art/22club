@@ -19,10 +19,7 @@ export function AIDataPredictionsSection({ predizioniPerformance }: AIDataPredic
   if (predizioniPerformance.length === 0) return null
 
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
@@ -32,10 +29,7 @@ export function AIDataPredictionsSection({ predizioniPerformance }: AIDataPredic
       <CardContent>
         <div className="space-y-3">
           {predizioniPerformance.map((predizione, index) => (
-            <div
-              key={index}
-              className="p-4 rounded-lg border border-white/10 bg-white/[0.02]"
-            >
+            <div key={index} className="p-4 rounded-lg border border-white/10 bg-white/[0.02]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-text-primary font-semibold">{predizione.metrica}</span>
                 <div className="flex items-center gap-2">

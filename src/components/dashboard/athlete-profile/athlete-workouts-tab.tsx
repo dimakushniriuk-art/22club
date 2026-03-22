@@ -12,7 +12,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, Button } from '@/components/ui'
 import { Dumbbell, ArrowLeft, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react'
 
-const DS_LIST_ITEM = 'flex items-center justify-between gap-2 p-3 rounded-lg border border-white/10 bg-white/[0.02]'
+const DS_LIST_ITEM =
+  'flex items-center justify-between gap-2 p-3 rounded-lg border border-white/10 bg-white/[0.02]'
 
 interface AthleteWorkoutsTabProps {
   athleteId: string
@@ -172,7 +173,9 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
               Crea una nuova scheda di allenamento per questo atleta
             </p>
             <Link href={`/dashboard/schede?athlete_id=${athleteId}&new=true`}>
-              <Button variant="default" size="sm">Crea Prima Scheda</Button>
+              <Button variant="default" size="sm">
+                Crea Prima Scheda
+              </Button>
             </Link>
           </div>
         ) : (

@@ -34,7 +34,9 @@ export function useProfiloPageGuard(): { showLoader: boolean } {
   }, [role, loading, router])
 
   const showLoader =
-    loading || (role !== null && !ALLOWED_PROFILO_ROLES.includes(role as (typeof ALLOWED_PROFILO_ROLES)[number]))
+    loading ||
+    (role !== null &&
+      !ALLOWED_PROFILO_ROLES.includes(role as (typeof ALLOWED_PROFILO_ROLES)[number]))
 
   return { showLoader }
 }

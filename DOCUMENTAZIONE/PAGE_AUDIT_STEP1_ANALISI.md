@@ -1,4 +1,5 @@
 # 📋 STEP 1 — ANALISI PROFONDA PAGINA DASHBOARD
+
 **Data**: 2025-01-27  
 **Pagina**: `/dashboard` (`src/app/dashboard/page.tsx`)  
 **Metodo**: Analisi codice sorgente (TypeScript/React/Next.js)
@@ -8,6 +9,7 @@
 ## 🗺️ MAPPA COMPONENTI E LAYOUT
 
 ### Struttura Pagina
+
 ```
 DashboardPage (Server Component)
 ├── Quick Actions Section
@@ -32,6 +34,7 @@ DashboardPage (Server Component)
 ```
 
 ### Layout Generale
+
 - **Container**: `flex flex-col h-full space-y-6 px-6 py-6 overflow-y-auto`
 - **Sections**: 2 sezioni principali (Quick Actions + Agenda)
 - **Responsive**: Grid responsive (`grid-cols-2 sm:grid-cols-3 lg:grid-cols-5`)
@@ -41,21 +44,26 @@ DashboardPage (Server Component)
 ## 🔍 ANALISI COMPONENTI DETTAGLIATA
 
 ### 1. Quick Actions Section
+
 **Componenti**:
+
 - 5 bottoni di azione rapida
 - Stile: gradient backgrounds, hover effects, scale animations
 - Tutti usano `Link` di Next.js (client-side navigation)
 
 **Problemi individuati**:
+
 - ❌ **MED**: I bottoni non hanno `aria-label` descrittivi (solo testo visibile)
 - ❌ **LOW**: Hover effects potrebbero essere troppo invasivi per utenti sensibili
 - ⚠️ **INFO**: `NewAppointmentButton` ha fallback a navigazione se modal non disponibile
 
 ### 2. Agenda Timeline
+
 **Query Server-Side**:
+
 ```typescript
 // Query per appuntamenti oggi del staff corrente
-SELECT 
+SELECT
   id, starts_at, ends_at, type, status, athlete_id,
   athlete:profiles!athlete_id(avatar, avatar_url, nome, cognome)
 FROM appointments
@@ -67,11 +75,13 @@ ORDER BY starts_at ASC
 ```
 
 **Filtri applicati lato codice**:
+
 - Esclude `status === 'completato' || 'completed'`
 - Esclude `status === 'cancelled' || 'annullato'`
 - Esclude appuntamenti passati > 1 ora (tranne se in corso)
 
 **Problemi individuati**:
+
 - ⚠️ **HIGH**: Logica filtro duplicata (DB + codice) → rischio inconsistenze
 - ❌ **MED**: Nessun limite alla query (potrebbe caricare 100+ appuntamenti)
 - ❌ **MED**: Gestione errori silenziosa (solo logger, agendaData rimane vuoto)
@@ -81,6 +91,7 @@ ORDER BY starts_at ASC
 ## ♿ ANALISI ACCESSIBILITÀ (A11y)
 
 ### Problemi Critici
+
 1. **BLOCKER**: Alert nativi (`alert()`, `confirm()`) in `AgendaClient`
    - File: `src/app/dashboard/_components/agenda-client.tsx:89, 99, 120, 134`
    - Impatto: Blocca interazione, non screen-reader friendly
@@ -105,15 +116,17 @@ ORDER BY starts_at ASC
    - Fix: Verificare `tabindex` e ordine logico
 
 ### Punti Positivi
+
 ✅ Uso di `Button` component con varianti semantiche  
 ✅ Avatar con `alt` text via `fallbackText`  
-✅ Heading hierarchy (`h2`, `h3`) corretta  
+✅ Heading hierarchy (`h2`, `h3`) corretta
 
 ---
 
 ## 🔍 ANALISI SEO BASE
 
 ### Problemi
+
 - ❌ **LOW**: Nessun `<title>` specifico (usa default Next.js)
 - ❌ **LOW**: Nessuna `<meta>` description per dashboard
 - ❌ **INFO**: Pagina server-side (OK per SEO, ma non pubblica)
@@ -127,9 +140,11 @@ ORDER BY starts_at ASC
 ### Problemi Critici
 
 1. **HIGH**: Fetch esterno in Server Component (agent log)
+
    ```typescript
    fetch('http://127.0.0.1:7242/ingest/...', { method: 'POST', ... })
    ```
+
    - File: `src/app/dashboard/page.tsx:57-71, 283-315`
    - Problema: Richiesta sincrona che può bloccare render se endpoint non disponibile
    - Impatto: Aumenta TTFB (Time To First Byte)
@@ -158,9 +173,10 @@ ORDER BY starts_at ASC
    - Fix: Usare `will-change` o `transform` per GPU acceleration
 
 ### Performance Positivi
+
 ✅ Server Component per data fetching (riduce bundle client)  
 ✅ Lazy loading modali (`Suspense`)  
-✅ `useMemo` per statistiche (linee 188-197, 199-234)  
+✅ `useMemo` per statistiche (linee 188-197, 199-234)
 
 ---
 
@@ -169,19 +185,21 @@ ORDER BY starts_at ASC
 ### Problemi Critici
 
 1. **BLOCKER**: RLS Policy troppo permissiva
+
    ```sql
    -- File: supabase/migrations/20250110_034_calendar_complete.sql:574-585
    CREATE POLICY "Users can view appointments"
      ON appointments FOR SELECT
      TO authenticated
      USING (true);  -- ❌ Tutti gli authenticated vedono TUTTI gli appuntamenti
-   
+
    CREATE POLICY "Users can manage appointments"
      ON appointments FOR ALL
      TO authenticated
      USING (true)   -- ❌ Tutti possono modificare/eliminare qualsiasi appuntamento
      WITH CHECK (true);
    ```
+
    - Impatto: Nessun isolamento dati tra organizzazioni/staff
    - Rischio: Violazione privacy, accesso non autorizzato
    - Fix: Aggiungere filtri `org_id` e `staff_id` nelle policy
@@ -210,6 +228,7 @@ ORDER BY starts_at ASC
    - Fix: Implementare rate limiting middleware
 
 ### XSS Surface
+
 ✅ Nessun `dangerouslySetInnerHTML`  
 ✅ Dati sanitizzati via Supabase client  
 ⚠️ **ATTENZIONE**: `event.athlete` viene renderizzato direttamente (ma è da DB, quindi OK se DB sicuro)
@@ -246,15 +265,17 @@ ORDER BY starts_at ASC
    - Fix: Ridurre delay o animare solo scroll viewport
 
 ### Punti Positivi
+
 ✅ Design coerente con gradient e colori  
 ✅ Feedback visivo chiaro per stati temporali  
-✅ Empty state con CTA primario  
+✅ Empty state con CTA primario
 
 ---
 
 ## 📊 DATA-FLOW IPOTIZZATO
 
 ### Flow Server-Side
+
 ```
 1. DashboardPage (Server Component) render
 2. createClient() → Supabase server client
@@ -270,6 +291,7 @@ ORDER BY starts_at ASC
 ```
 
 ### Flow Client-Side
+
 ```
 1. AgendaClient riceve initialEvents
 2. useState(initialEvents) → Local state
@@ -282,12 +304,14 @@ ORDER BY starts_at ASC
 ```
 
 ### Tabelle Coinvolte
+
 - `appointments` (tabella principale)
   - Colonne usate: `id`, `starts_at`, `ends_at`, `type`, `status`, `athlete_id`, `staff_id`, `cancelled_at`
 - `profiles` (FK e join per nome/avatar)
   - Colonne usate: `id`, `avatar`, `avatar_url`, `nome`, `cognome`
 
 ### Endpoint API Coinvolti
+
 - ❌ Nessun endpoint API custom utilizzato (solo Supabase client diretto)
 - ⚠️ **POSSIBILE MIGLIORAMENTO**: Endpoint API per operazioni complesse (es. bulk delete)
 
@@ -296,6 +320,7 @@ ORDER BY starts_at ASC
 ## 🐛 PROBLEMI IDENTIFICATI - RIEPILOGO
 
 ### BLOCKER (Critici - Risolvere immediatamente)
+
 1. **RLS Policy permissiva**: Tutti gli utenti vedono tutti gli appuntamenti
    - Gravità: BLOCKER
    - Impatto: Violazione privacy, sicurezza
@@ -311,6 +336,7 @@ ORDER BY starts_at ASC
    - Fix: Dialog component accessibile (shadcn/ui Dialog)
 
 ### HIGH (Alti - Risolvere presto)
+
 3. **Fetch esterno bloccante**: Agent log in Server Component
    - Gravità: HIGH
    - Impatto: Aumenta TTFB, potenziale blocco render
@@ -336,6 +362,7 @@ ORDER BY starts_at ASC
    - Fix: Aggiungere link a calendario o suggerimenti
 
 ### MED (Medi - Risolvere in seguito)
+
 7. **Bottoni senza aria-label**: Alcuni bottoni icon-only senza label
 8. **Gestione errori silenziosa**: Errori loggati ma utente non informato
 9. **Logica filtro duplicata**: DB + codice → rischio inconsistenze
@@ -343,6 +370,7 @@ ORDER BY starts_at ASC
 11. **Stati loading generici**: Skeleton non specifico per agenda
 
 ### LOW (Bassi - Miglioramenti futuri)
+
 12. **SEO meta tags**: Nessun title/description specifico (OK per area privata)
 13. **Animazioni potenzialmente pesanti**: Potrebbe creare jank
 14. **Focus management**: Verificare tab order

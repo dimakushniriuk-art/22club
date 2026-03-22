@@ -15,7 +15,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Variabili d\'ambiente mancanti!')
+  console.error("❌ Variabili d'ambiente mancanti!")
   console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✅' : '❌')
   console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✅' : '❌')
   process.exit(1)
@@ -32,7 +32,7 @@ const usersToCheck = [
 
 async function main() {
   console.log('🔍 Verifica Utenti e Fix Login\n')
-  console.log('=' .repeat(50))
+  console.log('='.repeat(50))
 
   for (const user of usersToCheck) {
     console.log(`\n📧 Verifica: ${user.email}`)
@@ -40,7 +40,7 @@ async function main() {
 
     // 1. Verifica se l'utente esiste in auth.users
     const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
-    
+
     if (authError) {
       console.error('❌ Errore recupero utenti auth:', authError.message)
       continue

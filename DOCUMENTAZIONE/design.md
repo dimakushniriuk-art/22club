@@ -15,12 +15,12 @@ Documento di riferimento per il design dell’app. I token vivono nel codice; qu
 
 ## 2. Fonte dei token
 
-| Categoria | Dove | Note |
-|-----------|------|------|
-| Colori (base, text, primary, surface, state) | `src/config/design-system.ts` + `tailwind.config.ts` | Tailwind espone `background-*`, `text-*`, `primary`, `border-*`, `state-*`, `card`, ecc. |
-| Spacing, radius, z-index, componenti (card, button, input, nav) | `src/styles/design-tokens.css` | Variabili CSS `--spacing-*`, `--radius-*`, `--z-*`, `--card-*`, `--button-*`, `--input-*`, `--nav-height`, `--tab-bar-height` |
-| Breakpoint, grid, gap, fontSize, boxShadow | `tailwind.config.ts` | `screens`, `gridTemplateColumns`, `gap`, `fontSize`, `boxShadow` |
-| Tipografia, colori testo, formattazione numeri/date | **Questo file, sez. 9** | Scala tipografica, colori testo per posizione, `@/lib/format` |
+| Categoria                                                       | Dove                                                 | Note                                                                                                                          |
+| --------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Colori (base, text, primary, surface, state)                    | `src/config/design-system.ts` + `tailwind.config.ts` | Tailwind espone `background-*`, `text-*`, `primary`, `border-*`, `state-*`, `card`, ecc.                                      |
+| Spacing, radius, z-index, componenti (card, button, input, nav) | `src/styles/design-tokens.css`                       | Variabili CSS `--spacing-*`, `--radius-*`, `--z-*`, `--card-*`, `--button-*`, `--input-*`, `--nav-height`, `--tab-bar-height` |
+| Breakpoint, grid, gap, fontSize, boxShadow                      | `tailwind.config.ts`                                 | `screens`, `gridTemplateColumns`, `gap`, `fontSize`, `boxShadow`                                                              |
+| Tipografia, colori testo, formattazione numeri/date             | **Questo file, sez. 9**                              | Scala tipografica, colori testo per posizione, `@/lib/format`                                                                 |
 
 ---
 
@@ -28,36 +28,36 @@ Documento di riferimento per il design dell’app. I token vivono nel codice; qu
 
 Usare **solo classi Tailwind** sotto. Nessun hex o `bg-[#...]` / `text-[#...]` nel codice.
 
-| Ruolo | Classe | Uso |
-|-------|--------|-----|
-| **Background** | | |
-| Pagina / base | `bg-background` | Sfondo principale **#101012** |
-| Card / pannelli | `bg-background-secondary` | Surface 200 (#1A1A1E) |
-| Livello superiore | `bg-background-elevated` | #16161A |
-| Altro livello | `bg-background-tertiary` | Surface 300 (#222228) |
-| **Testo** | | |
-| Primario | `text-text-primary` | #EAF0F2 |
-| Secondario | `text-text-secondary` | #A5AFB4 |
-| Terziario / label | `text-text-tertiary` | Muted #6C757D |
-| Disabilitato | `text-text-disabled` | #4B5563 |
-| **Brand / Primary** | | |
-| Principale | `text-primary`, `bg-primary` | #02B3BF (teal) |
-| Hover | `hover:bg-primary-hover`, `hover:text-primary` | #03C9D5 |
-| Active | `bg-primary-active` | #019AA6 |
-| Accento (icone, KPI) | `text-teal-400`, `text-teal-300` | Per numeri in evidenza, icone |
+| Ruolo                                   | Classe                                                                 | Uso                                                                                                                                                 |
+| --------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Background**                          |                                                                        |                                                                                                                                                     |
+| Pagina / base                           | `bg-background`                                                        | Sfondo principale **#101012**                                                                                                                       |
+| Card / pannelli                         | `bg-background-secondary`                                              | Surface 200 (#1A1A1E)                                                                                                                               |
+| Livello superiore                       | `bg-background-elevated`                                               | #16161A                                                                                                                                             |
+| Altro livello                           | `bg-background-tertiary`                                               | Surface 300 (#222228)                                                                                                                               |
+| **Testo**                               |                                                                        |                                                                                                                                                     |
+| Primario                                | `text-text-primary`                                                    | #EAF0F2                                                                                                                                             |
+| Secondario                              | `text-text-secondary`                                                  | #A5AFB4                                                                                                                                             |
+| Terziario / label                       | `text-text-tertiary`                                                   | Muted #6C757D                                                                                                                                       |
+| Disabilitato                            | `text-text-disabled`                                                   | #4B5563                                                                                                                                             |
+| **Brand / Primary**                     |                                                                        |                                                                                                                                                     |
+| Principale                              | `text-primary`, `bg-primary`                                           | #02B3BF (teal)                                                                                                                                      |
+| Hover                                   | `hover:bg-primary-hover`, `hover:text-primary`                         | #03C9D5                                                                                                                                             |
+| Active                                  | `bg-primary-active`                                                    | #019AA6                                                                                                                                             |
+| Accento (icone, KPI)                    | `text-teal-400`, `text-teal-300`                                       | Per numeri in evidenza, icone                                                                                                                       |
 | **Accento cyan** (stats, bottoni, chip) | `text-cyan-400`, `border-cyan-400/40`, `bg-cyan-400/20`, `bg-cyan-500` | Pagine tipo Massaggiatore: numeri stats, bottoni outline/CTA, chip selezionati, input focus. CTA pieni: `bg-cyan-500 text-white hover:bg-cyan-400`. |
-| **Stati** | | |
-| Successo | `text-state-valid`, `bg-state-valid` | #00C781 |
-| Attenzione | `text-state-warn`, `bg-state-warn` | #FFC107 |
-| Errore | `text-state-error`, `bg-state-error` | #FF3B30 |
-| Info | `text-state-info` | #3498DB |
-| **Superfici / bordi** | | |
-| Bordo default | `border-border` | Surface 300 |
-| Bordo leggero | `border-border-light` | Background elevated |
-| Input / focus | `bg-input`, `focus:border-input-focus` | Surface 200 / 300 |
-| Card | `bg-card`, `hover:bg-card-hover` | Surface 200 / 300 |
-| **Accent (gold)** | | |
-| Oro (accenti secondari) | `accent-gold`, `accent-glow` | design-system.accent (C9A227, E0B23E) |
+| **Stati**                               |                                                                        |                                                                                                                                                     |
+| Successo                                | `text-state-valid`, `bg-state-valid`                                   | #00C781                                                                                                                                             |
+| Attenzione                              | `text-state-warn`, `bg-state-warn`                                     | #FFC107                                                                                                                                             |
+| Errore                                  | `text-state-error`, `bg-state-error`                                   | #FF3B30                                                                                                                                             |
+| Info                                    | `text-state-info`                                                      | #3498DB                                                                                                                                             |
+| **Superfici / bordi**                   |                                                                        |                                                                                                                                                     |
+| Bordo default                           | `border-border`                                                        | Surface 300                                                                                                                                         |
+| Bordo leggero                           | `border-border-light`                                                  | Background elevated                                                                                                                                 |
+| Input / focus                           | `bg-input`, `focus:border-input-focus`                                 | Surface 200 / 300                                                                                                                                   |
+| Card                                    | `bg-card`, `hover:bg-card-hover`                                       | Surface 200 / 300                                                                                                                                   |
+| **Accent (gold)**                       |                                                                        |                                                                                                                                                     |
+| Oro (accenti secondari)                 | `accent-gold`, `accent-glow`                                           | design-system.accent (C9A227, E0B23E)                                                                                                               |
 
 Colori testo in base alla **posizione** (titolo, body, label, metadati, ecc.): vedi **sez. 9.3**.
 
@@ -73,15 +73,15 @@ Colori testo in base alla **posizione** (titolo, body, label, metadati, ecc.): v
 
 ## 5. Componenti UI
 
-| Componente | Token / Regola | Note |
-|------------|----------------|------|
-| **Button** | Altezze min: sm 32px, md 40px, lg 48px | Touch: **min 44px** su mobile/tablet (`min-h-[44px]`). |
-| **Input / Textarea** | Altezza input 40px; **font-size ≥ 16px** (`text-base`) | Evita zoom iOS. |
-| **Card** | Padding: sm 16px, md 24px, lg 32px; radius `rounded-lg` o `rounded-xl` | `design-tokens.css`: `--card-padding-*`, `--card-radius`. Pattern glass: sez. 7. |
-| **Select (tendine / menu a tendina)** | **Sempre SimpleSelect** (`@/components/ui`) | In **tutte** le pagine e sezioni (Massaggiatore, Nutrizionista, Obiettivo/Dieta in nutrizione, form ovunque): usare solo SimpleSelect; **non** usare `<select>` nativo (lo stile del menu aperto non è controllabile). Trigger e pannello: bordo `border-primary/35`, sfondo scuro; opzione selezionata `bg-primary/25 text-primary`, hover `bg-primary/15`; `min-h-[44px]`, `rounded-xl`. Dettaglio sez. 7.1. |
-| **Chip (selezione multipla)** | Pulsanti toggle con stati distinti | **Variante primary**: selezionato `border-primary bg-primary/20 text-primary`; non selezionato `hover:border-primary/40 hover:text-text-primary`. **Variante cyan** (es. Massaggiatore): selezionato `border-cyan-400 bg-cyan-400/20 text-cyan-400`; non selezionato `hover:border-cyan-400/40 hover:text-cyan-400`. Base: `rounded-xl min-h-[44px] px-4 py-2.5 text-sm font-medium`, `focus-visible:ring-cyan-400/50` (o `ring-primary/50`). |
-| **Nav** | Altezza 64px | `--nav-height`. |
-| **Tab bar (mobile)** | Altezza 80px | `--tab-bar-height`. |
+| Componente                            | Token / Regola                                                         | Note                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Button**                            | Altezze min: sm 32px, md 40px, lg 48px                                 | Touch: **min 44px** su mobile/tablet (`min-h-[44px]`).                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Input / Textarea**                  | Altezza input 40px; **font-size ≥ 16px** (`text-base`)                 | Evita zoom iOS.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Card**                              | Padding: sm 16px, md 24px, lg 32px; radius `rounded-lg` o `rounded-xl` | `design-tokens.css`: `--card-padding-*`, `--card-radius`. Pattern glass: sez. 7.                                                                                                                                                                                                                                                                                                                                                              |
+| **Select (tendine / menu a tendina)** | **Sempre SimpleSelect** (`@/components/ui`)                            | In **tutte** le pagine e sezioni (Massaggiatore, Nutrizionista, Obiettivo/Dieta in nutrizione, form ovunque): usare solo SimpleSelect; **non** usare `<select>` nativo (lo stile del menu aperto non è controllabile). Trigger e pannello: bordo `border-primary/35`, sfondo scuro; opzione selezionata `bg-primary/25 text-primary`, hover `bg-primary/15`; `min-h-[44px]`, `rounded-xl`. Dettaglio sez. 7.1.                                |
+| **Chip (selezione multipla)**         | Pulsanti toggle con stati distinti                                     | **Variante primary**: selezionato `border-primary bg-primary/20 text-primary`; non selezionato `hover:border-primary/40 hover:text-text-primary`. **Variante cyan** (es. Massaggiatore): selezionato `border-cyan-400 bg-cyan-400/20 text-cyan-400`; non selezionato `hover:border-cyan-400/40 hover:text-cyan-400`. Base: `rounded-xl min-h-[44px] px-4 py-2.5 text-sm font-medium`, `focus-visible:ring-cyan-400/50` (o `ring-primary/50`). |
+| **Nav**                               | Altezza 64px                                                           | `--nav-height`.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Tab bar (mobile)**                  | Altezza 80px                                                           | `--tab-bar-height`.                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 Rispetto accessibilità: target cliccabili ≥ 44px; input con `text-base`. Dettaglio in **sez. 9.6**.
 
@@ -89,20 +89,21 @@ Rispetto accessibilità: target cliccabili ≥ 44px; input con `text-base`. Dett
 
 ## 6. Breakpoint e layout
 
-| Breakpoint | px | Uso |
-|------------|-----|-----|
-| (default) | < 640 | Mobile |
-| `sm` | 640 | Mobile large |
-| `md` | 768 | Tablet portrait |
-| `tablet-landscape` | 1024 | Tablet 10+ landscape |
-| `lg` | 1280 | Desktop |
-| `xl` | 1536 | Desktop large |
-| `2xl` | 1920 | Desktop wide |
+| Breakpoint         | px    | Uso                  |
+| ------------------ | ----- | -------------------- |
+| (default)          | < 640 | Mobile               |
+| `sm`               | 640   | Mobile large         |
+| `md`               | 768   | Tablet portrait      |
+| `tablet-landscape` | 1024  | Tablet 10+ landscape |
+| `lg`               | 1280  | Desktop              |
+| `xl`               | 1536  | Desktop large        |
+| `2xl`              | 1920  | Desktop wide         |
 
 **Grid**: `grid-cols-mobile` (4), `grid-cols-tablet` (8), `grid-cols-tablet-landscape` (12), `grid-cols-desktop` (16).  
 **Gap**: `gap-mobile` (16px), `gap-tablet` (20px), `gap-tablet-landscape` (24px), `gap-desktop` (32px).
 
 **Layout pagine atleta (area min 393×852px)**:
+
 - Contenitore app: `flex min-h-dvh flex-col overflow-hidden`; header `sticky top-0 shrink-0`; main `flex min-h-0 flex-1 flex-col`.
 - Pagina: un solo blocco scrollabile (`flex-1 min-h-0 overflow-auto`) con header pagina, stats, card contenuto. Nessuno scroll interno alla card contenuto: il blocco si estende e scrolla tutta la pagina.
 - Padding area scroll: `px-4 pt-5 pb-24 safe-area-inset-bottom`; card senza `max-h` né `overflow-y-auto` sul contenuto.
@@ -138,6 +139,7 @@ Pattern usati su **Home** e **pagine atleta** (es. Nutrizionista) per card e hea
 - Hover (opzionale): `hover:-translate-y-0.5 hover:shadow-lg`, `transition-all duration-200`.
 
 **Card stats compatte** (es. Trattamenti / Preferenze su Massaggiatore):
+
 - Layout orizzontale: icona (box `h-9 w-9` con `border-cyan-400/40 bg-cyan-500/20`) + blocco (label `text-xs uppercase text-text-tertiary` + numero `text-xl font-bold text-cyan-400`).
 - Sfondo colorato trasparente: `linear-gradient(145deg, rgba(6,182,212,0.16) 0%, rgba(2,179,191,0.05) 50%, rgba(22,22,26,0.85) 100%)`; bordo `border-cyan-400/50`; barra laterale `bg-cyan-400`; shadow `0 2px 12px`, inset cyan leggero.
 - Padding `p-3` / `p-3.5`; nessun overlay radiale; `rounded-xl backdrop-blur-md`.
@@ -219,15 +221,15 @@ Documento unificato per uniformare **testi e numeri** su smartphone, tablet e PC
 
 Usare **solo** le classi sotto. Evitare `text-[Npx]` per testi UI.
 
-| Ruolo              | Classe Tailwind   | Uso                          |
-|--------------------|-------------------|------------------------------|
-| Caption / label    | `text-xs`         | Etichette secondarie         |
-| Body (mobile)      | `text-sm`         | Testo principale su mobile   |
-| Body (tablet/PC)   | `text-base`       | Testo principale da md      |
-| Body evidenziato   | `text-lg`         | Sottotitoli, lead            |
-| Titolo card        | `text-xl` / `text-2xl` | Titoli di card/sezione |
-| Titolo pagina      | `text-2xl` mobile, `text-3xl` da md | Pagine       |
-| Hero / display     | `text-4xl` / `text-5xl` | Landing, numeri grandi  |
+| Ruolo            | Classe Tailwind                     | Uso                        |
+| ---------------- | ----------------------------------- | -------------------------- |
+| Caption / label  | `text-xs`                           | Etichette secondarie       |
+| Body (mobile)    | `text-sm`                           | Testo principale su mobile |
+| Body (tablet/PC) | `text-base`                         | Testo principale da md     |
+| Body evidenziato | `text-lg`                           | Sottotitoli, lead          |
+| Titolo card      | `text-xl` / `text-2xl`              | Titoli di card/sezione     |
+| Titolo pagina    | `text-2xl` mobile, `text-3xl` da md | Pagine                     |
+| Hero / display   | `text-4xl` / `text-5xl`             | Landing, numeri grandi     |
 
 **Convenzione responsive** (esempio titolo pagina):
 
@@ -241,20 +243,20 @@ Usare **solo** le classi sotto. Evitare `text-[Npx]` per testi UI.
 
 Usare le classi colore sotto in base al **ruolo** del testo. Tutte mappano i token del design system (dark mode).
 
-| Posizione / Ruolo        | Classe colore        | Uso |
-|--------------------------|----------------------|-----|
-| Titolo pagina, titolo card, titolo sezione | `text-text-primary` | Titoli principali |
-| Body, paragrafo, contenuto | `text-text-primary` | Testo principale lettura |
-| Sottotitolo, lead        | `text-text-primary` o `text-text-secondary` | Sotto il titolo, intro |
-| Label, caption, didascalia | `text-text-tertiary` | Etichette sopra campi, caption immagini, uppercase |
-| Metadati, descrizione secondaria | `text-text-secondary` | Date secondarie, note meno in evidenza |
-| Placeholder, helper, hint | `text-text-tertiary` | placeholder, helperText sotto input |
-| Disabled                 | `text-text-disabled`  | Testo disabilitato (form, tab) |
-| Link, CTA testuale, accent | `text-primary` o `text-teal-400` | Link e accenti brand (teal) |
-| Successo                 | `text-state-valid` / `text-green-400` | Messaggi positivi |
-| Attenzione               | `text-state-warn` / `text-amber-400` | Warning |
-| Errore                   | `text-state-error` / `text-red-400` | Errori, validazione |
-| Numeri/KPI in evidenza   | `text-teal-300` / `text-teal-400` / `text-cyan-400` | Numeri nelle card, stats |
+| Posizione / Ruolo                          | Classe colore                                       | Uso                                                |
+| ------------------------------------------ | --------------------------------------------------- | -------------------------------------------------- |
+| Titolo pagina, titolo card, titolo sezione | `text-text-primary`                                 | Titoli principali                                  |
+| Body, paragrafo, contenuto                 | `text-text-primary`                                 | Testo principale lettura                           |
+| Sottotitolo, lead                          | `text-text-primary` o `text-text-secondary`         | Sotto il titolo, intro                             |
+| Label, caption, didascalia                 | `text-text-tertiary`                                | Etichette sopra campi, caption immagini, uppercase |
+| Metadati, descrizione secondaria           | `text-text-secondary`                               | Date secondarie, note meno in evidenza             |
+| Placeholder, helper, hint                  | `text-text-tertiary`                                | placeholder, helperText sotto input                |
+| Disabled                                   | `text-text-disabled`                                | Testo disabilitato (form, tab)                     |
+| Link, CTA testuale, accent                 | `text-primary` o `text-teal-400`                    | Link e accenti brand (teal)                        |
+| Successo                                   | `text-state-valid` / `text-green-400`               | Messaggi positivi                                  |
+| Attenzione                                 | `text-state-warn` / `text-amber-400`                | Warning                                            |
+| Errore                                     | `text-state-error` / `text-red-400`                 | Errori, validazione                                |
+| Numeri/KPI in evidenza                     | `text-teal-300` / `text-teal-400` / `text-cyan-400` | Numeri nelle card, stats                           |
 
 **Regola**: evitare colori hex o `text-[#...]`; usare solo le classi semantiche sopra.
 
@@ -262,28 +264,28 @@ Usare le classi colore sotto in base al **ruolo** del testo. Tutte mappano i tok
 
 **Locale**: sempre **it-IT**. Importare da `@/lib/format`:
 
-| Funzione           | Esempio output           | Uso                    |
-|--------------------|--------------------------|------------------------|
-| `formatCurrency(n)`| `12,50 €`                | Importi, pagamenti     |
-| `formatDate(s)`    | `12/02/2025`             | Tabelle, liste         |
-| `formatDateShort(s)`| `12 feb 2025`           | Card, header           |
-| `formatDateLong(s)` | `mercoledì 12 febbraio 2025` | Dettaglio, appuntamenti |
-| `formatDateTime(s)` | `12/02/2025, 14:30`     | Log, pagamenti, appuntamenti |
-| `formatTime(s)`     | `14:30`                  | Solo ora               |
-| `formatNumber(n)`   | `1.234`                  | Passi, kcal, quantità  |
+| Funzione             | Esempio output               | Uso                          |
+| -------------------- | ---------------------------- | ---------------------------- |
+| `formatCurrency(n)`  | `12,50 €`                    | Importi, pagamenti           |
+| `formatDate(s)`      | `12/02/2025`                 | Tabelle, liste               |
+| `formatDateShort(s)` | `12 feb 2025`                | Card, header                 |
+| `formatDateLong(s)`  | `mercoledì 12 febbraio 2025` | Dettaglio, appuntamenti      |
+| `formatDateTime(s)`  | `12/02/2025, 14:30`          | Log, pagamenti, appuntamenti |
+| `formatTime(s)`      | `14:30`                      | Solo ora                     |
+| `formatNumber(n)`    | `1.234`                      | Passi, kcal, quantità        |
 
 **Regole**: non concatenare "€" a mano; usare `formatCurrency`. Per date/uscite a schermo usare solo le funzioni sopra (non `toLocaleString` / `toLocaleDateString` inline con opzioni diverse).
 
 ### 9.5 Breakpoint testi e dispositivi
 
-| Breakpoint          | px       | Uso                    |
-|---------------------|----------|------------------------|
-| (default)           | < 640    | Mobile                 |
-| `sm`                | 640      | Mobile large           |
-| `md`                | 768      | Tablet portrait        |
-| `tablet-landscape`  | 1024     | Tablet 10+ landscape   |
-| `lg`                | 1280     | Desktop                |
-| `xl` / `2xl`        | 1536+    | Desktop large          |
+| Breakpoint         | px    | Uso                  |
+| ------------------ | ----- | -------------------- |
+| (default)          | < 640 | Mobile               |
+| `sm`               | 640   | Mobile large         |
+| `md`               | 768   | Tablet portrait      |
+| `tablet-landscape` | 1024  | Tablet 10+ landscape |
+| `lg`               | 1280  | Desktop              |
+| `xl` / `2xl`       | 1536+ | Desktop large        |
 
 Tipografia responsive: preferire `text-base md:text-lg` (e simili) invece di CSS custom.
 
@@ -304,13 +306,13 @@ Tipografia responsive: preferire `text-base md:text-lg` (e simili) invece di CSS
 
 ## 11. Riferimenti in progetto
 
-| File | Contenuto |
-|------|-----------|
-| `src/config/design-system.ts` | Token colore, font, radius, spacing, shadows, gradients |
-| `src/styles/design-tokens.css` | Variabili CSS spacing, radius, z-index, componenti, breakpoint, transition |
-| `tailwind.config.ts` | Theme esteso (colori, screen, grid, gap, fontSize, shadow, animazioni) |
-| `src/components/ui/simple-select.tsx` | Select (menu a tendina) con stile teal, pannello custom |
-| `src/lib/format.ts` | Funzioni formattazione date/valute/numeri (it-IT); regole in sez. 9 |
+| File                                  | Contenuto                                                                  |
+| ------------------------------------- | -------------------------------------------------------------------------- |
+| `src/config/design-system.ts`         | Token colore, font, radius, spacing, shadows, gradients                    |
+| `src/styles/design-tokens.css`        | Variabili CSS spacing, radius, z-index, componenti, breakpoint, transition |
+| `tailwind.config.ts`                  | Theme esteso (colori, screen, grid, gap, fontSize, shadow, animazioni)     |
+| `src/components/ui/simple-select.tsx` | Select (menu a tendina) con stile teal, pannello custom                    |
+| `src/lib/format.ts`                   | Funzioni formattazione date/valute/numeri (it-IT); regole in sez. 9        |
 
 **Pagine atleta con layout e design allineati** (layout sez. 6, header 7.3, card glass, stats compatte, chip/pulsanti cyan): Massaggiatore, Nutrizionista, Documenti, Foto/Risultati (e Aggiungi foto), Progressi/Foto, Chat, Appuntamenti, **Allenamenti**, **Allenamenti – Dettaglio scheda** (`/home/allenamenti/[id]`), **Allenamenti – Dettaglio esercizio** (`/home/allenamenti/esercizio/[exerciseId]`), **Allenamenti – Sessione oggi** (`/home/allenamenti/oggi`), **Allenamenti – Riepilogo** (`/home/allenamenti/riepilogo`). La pagina Chat usa layout a tre zone fisse: header glass (indietro + avatar/icona + nome/ruolo), area messaggi scrollabile, footer glass con input; stile cyan per bolle messaggi inviati, bordi e pulsanti.
 

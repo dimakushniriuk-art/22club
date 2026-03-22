@@ -5,7 +5,13 @@
 
 export type CalendarViewType = 'month' | 'week' | 'day' | 'agenda'
 export type WeekStartType = 'monday' | 'sunday'
-export type RecurrenceOption = 'none' | '2_weeks' | '1_month' | '6_months' | '1_year' | 'until_lessons'
+export type RecurrenceOption =
+  | 'none'
+  | '2_weeks'
+  | '1_month'
+  | '6_months'
+  | '1_year'
+  | 'until_lessons'
 export type ViewDensity = 'compact' | 'comfort' | 'spacious'
 
 /** Larghezza evento in calendario (time grid): mezza cella (50%, affiancabili) o intera. */
@@ -47,10 +53,15 @@ export interface StaffCalendarSettings {
   updated_at?: string
 }
 
-export type StaffCalendarSettingsInsert = Omit<StaffCalendarSettings, 'id' | 'created_at' | 'updated_at'> & {
+export type StaffCalendarSettingsInsert = Omit<
+  StaffCalendarSettings,
+  'id' | 'created_at' | 'updated_at'
+> & {
   id?: string
   created_at?: string
   updated_at?: string
 }
 
-export type StaffCalendarSettingsUpdate = Partial<Omit<StaffCalendarSettings, 'id' | 'staff_id' | 'created_at'>>
+export type StaffCalendarSettingsUpdate = Partial<
+  Omit<StaffCalendarSettings, 'id' | 'staff_id' | 'created_at'>
+>

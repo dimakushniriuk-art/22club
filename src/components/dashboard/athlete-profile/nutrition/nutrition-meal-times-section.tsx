@@ -43,10 +43,7 @@ export function NutritionMealTimesSection({
   const spuntiniList = formData.preferenze_orari_pasti?.spuntini || []
 
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-text-primary flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
@@ -139,7 +136,10 @@ export function NutritionMealTimesSection({
                   }}
                   className="text-base min-h-[44px]"
                 />
-                <Button onClick={() => newSpuntino && onSpuntinoAdd(newSpuntino)} className="min-h-[44px] min-w-[44px]">
+                <Button
+                  onClick={() => newSpuntino && onSpuntinoAdd(newSpuntino)}
+                  className="min-h-[44px] min-w-[44px]"
+                >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -164,7 +164,9 @@ export function NutritionMealTimesSection({
                   </Badge>
                 ))
               ) : (
-                <p className="text-text-secondary text-sm md:text-base">Nessuno spuntino programmato</p>
+                <p className="text-text-secondary text-sm md:text-base">
+                  Nessuno spuntino programmato
+                </p>
               )}
             </div>
           )}

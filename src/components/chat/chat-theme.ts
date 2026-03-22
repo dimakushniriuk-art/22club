@@ -5,8 +5,10 @@
 
 export type ChatTheme = 'default' | 'teal' | 'amber'
 
-const GLASS = 'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-cyan-950/22 backdrop-blur-xl'
-const GLASS_AMBER = 'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-amber-950/22 backdrop-blur-xl'
+const GLASS =
+  'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-cyan-950/22 backdrop-blur-xl'
+const GLASS_AMBER =
+  'bg-gradient-to-br from-background-secondary/38 via-background-secondary/18 to-amber-950/22 backdrop-blur-xl'
 
 export const CHAT_THEME_CLASSES = {
   default: {

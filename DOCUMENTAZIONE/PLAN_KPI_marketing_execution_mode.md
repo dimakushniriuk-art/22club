@@ -6,12 +6,12 @@
 
 ## (1) Dove l’atleta completa il workout log
 
-| Percorso / file | Ruolo |
-|-----------------|--------|
-| **`/home/allenamenti/oggi`** | Pagina allenamento “oggi”: pulsante “Completa allenamento” → apre modale → atleta sceglie “Con Personal Trainer” o “Da Solo” → `handleTrainerSessionConfirm(withTrainer)` inserisce in `workout_logs`. |
-| `src/app/home/allenamenti/oggi/page.tsx` | Logica completamento: ~righe 734–991 (`finishWorkout`, `handleTrainerSessionConfirm`). Insert ~889–916. |
-| `src/components/workout/trainer-session-modal.tsx` | Modale con due pulsanti: “Con Personal Trainer” (`withTrainer=true`) e “Da Solo” (`withTrainer=false`). |
-| `/home/allenamenti/riepilogo` | Solo lettura: mostra riepilogo dopo completamento (nessuna scelta execution_mode qui). |
+| Percorso / file                                    | Ruolo                                                                                                                                                                                                  |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`/home/allenamenti/oggi`**                       | Pagina allenamento “oggi”: pulsante “Completa allenamento” → apre modale → atleta sceglie “Con Personal Trainer” o “Da Solo” → `handleTrainerSessionConfirm(withTrainer)` inserisce in `workout_logs`. |
+| `src/app/home/allenamenti/oggi/page.tsx`           | Logica completamento: ~righe 734–991 (`finishWorkout`, `handleTrainerSessionConfirm`). Insert ~889–916.                                                                                                |
+| `src/components/workout/trainer-session-modal.tsx` | Modale con due pulsanti: “Con Personal Trainer” (`withTrainer=true`) e “Da Solo” (`withTrainer=false`).                                                                                                |
+| `/home/allenamenti/riepilogo`                      | Solo lettura: mostra riepilogo dopo completamento (nessuna scelta execution_mode qui).                                                                                                                 |
 
 La scelta “solo/coached” è già in uso; oggi viene solo messa in `note`. Si aggiunge il campo DB `execution_mode` e si invia in insert.
 
@@ -119,11 +119,11 @@ GRANT SELECT ON public.athlete_marketing_metrics TO authenticated;
 
 ## (4) File TS/React toccati e patch
 
-| File | Modifica |
-|------|----------|
-| `src/app/home/allenamenti/oggi/page.tsx` | In `handleTrainerSessionConfirm`, nell’oggetto passato a `.from('workout_logs').insert(...)` aggiungere `execution_mode: withTrainer ? 'coached' : 'solo'`. |
-| `src/lib/supabase/types.ts` | In `workout_logs` Row/Insert/Update aggiungere `execution_mode: 'solo' | 'coached' | null` (Insert con default `'solo'` se omesso). |
-| `src/components/workout/trainer-session-modal.tsx` | (Opzionale) Testi pulsanti: "Con trainer" al posto di "Con Personal Trainer", "Eseguito da solo" al posto di "Da Solo". |
+| File                                               | Modifica                                                                                                                                                    |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------- |
+| `src/app/home/allenamenti/oggi/page.tsx`           | In `handleTrainerSessionConfirm`, nell’oggetto passato a `.from('workout_logs').insert(...)` aggiungere `execution_mode: withTrainer ? 'coached' : 'solo'`. |
+| `src/lib/supabase/types.ts`                        | In `workout_logs` Row/Insert/Update aggiungere `execution_mode: 'solo'                                                                                      | 'coached' | null`(Insert con default`'solo'` se omesso). |
+| `src/components/workout/trainer-session-modal.tsx` | (Opzionale) Testi pulsanti: "Con trainer" al posto di "Con Personal Trainer", "Eseguito da solo" al posto di "Da Solo".                                     |
 
 Patch applicate sotto.
 
@@ -131,11 +131,11 @@ Patch applicate sotto.
 
 ## (5) Riepilogo policy/funzioni (DB)
 
-| Oggetto | Azione |
-|--------|--------|
-| `workout_logs` | Aggiunta colonna `execution_mode` + CHECK. Nessuna nuova policy per marketing (marketing non deve vedere workout_logs). |
-| `athlete_marketing_metrics` (VIEW) | Creata; aggregati da workout_logs; SELECT solo per chi in app è admin o marketing (gestito in app o con RLS su view se supportato). |
-| Ruolo `marketing` | Se non esiste in `roles`/`profiles`, va aggiunto separatamente; le policy della view (o l’RPC che legge la view) filtrano per `get_current_user_role() = 'marketing'` o `is_admin()`. |
+| Oggetto                            | Azione                                                                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workout_logs`                     | Aggiunta colonna `execution_mode` + CHECK. Nessuna nuova policy per marketing (marketing non deve vedere workout_logs).                                                               |
+| `athlete_marketing_metrics` (VIEW) | Creata; aggregati da workout_logs; SELECT solo per chi in app è admin o marketing (gestito in app o con RLS su view se supportato).                                                   |
+| Ruolo `marketing`                  | Se non esiste in `roles`/`profiles`, va aggiunto separatamente; le policy della view (o l’RPC che legge la view) filtrano per `get_current_user_role() = 'marketing'` o `is_admin()`. |
 
 ---
 
@@ -164,12 +164,12 @@ WHERE athlete_id = (SELECT id FROM public.profiles WHERE role IN ('atleta','athl
 
 ## (7) Resoconto prima/dopo
 
-| Aspetto | Prima | Dopo |
-|--------|--------|------|
-| Modalità esecuzione | Solo in `note` (“Completato con trainer” / “Completato da solo”) | Campo `workout_logs.execution_mode` ('solo' | 'coached') |
-| KPI marketing | Non presenti | Vista `athlete_marketing_metrics`: workouts_total_count, workouts_solo_count, workouts_coached_count, last_workout_at |
-| Privacy marketing | N/A | Marketing non accede a workout_logs/workout_plans/dettagli; solo aggregati in vista |
-| UX completamento | Modale “Con PT” / “Da Solo” già presente | Invariata; valore salvato anche in `execution_mode` |
+| Aspetto             | Prima                                                            | Dopo                                                                                                                  |
+| ------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Modalità esecuzione | Solo in `note` (“Completato con trainer” / “Completato da solo”) | Campo `workout_logs.execution_mode` ('solo'                                                                           | 'coached') |
+| KPI marketing       | Non presenti                                                     | Vista `athlete_marketing_metrics`: workouts_total_count, workouts_solo_count, workouts_coached_count, last_workout_at |
+| Privacy marketing   | N/A                                                              | Marketing non accede a workout_logs/workout_plans/dettagli; solo aggregati in vista                                   |
+| UX completamento    | Modale “Con PT” / “Da Solo” già presente                         | Invariata; valore salvato anche in `execution_mode`                                                                   |
 
 ---
 

@@ -80,7 +80,9 @@ export default function CampaignDetailPage() {
       setLoading(false)
     }
     fetchData()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [id, role, authLoading, router, supabase])
 
   const setStatus = async (newStatus: 'active' | 'paused' | 'ended') => {
@@ -114,7 +116,9 @@ export default function CampaignDetailPage() {
     return (
       <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/marketing/campaigns"><ArrowLeft className="h-4 w-4" /></Link>
+          <Link href="/dashboard/marketing/campaigns">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
         </Button>
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           {error ?? 'Campagna non trovata'}
@@ -135,7 +139,8 @@ export default function CampaignDetailPage() {
           <div>
             <h1 className="text-xl font-bold min-[834px]:text-2xl">{campaign.name}</h1>
             <p className="text-sm text-text-secondary">
-              {CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'} · {STATUS_LABELS[campaign.status]}
+              {CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'} ·{' '}
+              {STATUS_LABELS[campaign.status]}
             </p>
           </div>
         </div>
@@ -153,12 +158,28 @@ export default function CampaignDetailPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 text-sm min-[834px]:grid-cols-2">
-            <div><span className="text-text-muted">Canale:</span> {CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'}</div>
-            <div><span className="text-text-muted">Budget:</span> {campaign.budget != null ? `€ ${Number(campaign.budget).toLocaleString('it-IT')}` : '–'}</div>
-            <div><span className="text-text-muted">Inizio:</span> {formatDate(campaign.start_at)}</div>
-            <div><span className="text-text-muted">Fine:</span> {formatDate(campaign.end_at)}</div>
-            <div><span className="text-text-muted">Stato:</span> {STATUS_LABELS[campaign.status]}</div>
-            <div><span className="text-text-muted">Aggiornato:</span> {formatDate(campaign.updated_at)}</div>
+            <div>
+              <span className="text-text-muted">Canale:</span>{' '}
+              {CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'}
+            </div>
+            <div>
+              <span className="text-text-muted">Budget:</span>{' '}
+              {campaign.budget != null
+                ? `€ ${Number(campaign.budget).toLocaleString('it-IT')}`
+                : '–'}
+            </div>
+            <div>
+              <span className="text-text-muted">Inizio:</span> {formatDate(campaign.start_at)}
+            </div>
+            <div>
+              <span className="text-text-muted">Fine:</span> {formatDate(campaign.end_at)}
+            </div>
+            <div>
+              <span className="text-text-muted">Stato:</span> {STATUS_LABELS[campaign.status]}
+            </div>
+            <div>
+              <span className="text-text-muted">Aggiornato:</span> {formatDate(campaign.updated_at)}
+            </div>
           </div>
         </CardContent>
       </Card>

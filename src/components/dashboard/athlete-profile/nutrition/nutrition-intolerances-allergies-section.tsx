@@ -48,12 +48,11 @@ export function NutritionIntolerancesAllergiesSection({
   if (isEditing) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">Intolleranze Alimentari</CardTitle>
+            <CardTitle className="text-lg font-bold text-text-primary">
+              Intolleranze Alimentari
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
@@ -72,7 +71,10 @@ export function NutritionIntolerancesAllergiesSection({
                 }}
                 className="text-base"
               />
-              <Button onClick={() => newIntolleranza && onIntolleranzaAdd(newIntolleranza)} className="min-h-[44px] min-w-[44px]">
+              <Button
+                onClick={() => newIntolleranza && onIntolleranzaAdd(newIntolleranza)}
+                className="min-h-[44px] min-w-[44px]"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -90,12 +92,11 @@ export function NutritionIntolerancesAllergiesSection({
           </CardContent>
         </Card>
 
-        <Card
-          variant="default"
-        className="overflow-hidden"
-        >
+        <Card variant="default" className="overflow-hidden">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">Allergie Alimentari</CardTitle>
+            <CardTitle className="text-lg font-bold text-text-primary">
+              Allergie Alimentari
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
@@ -114,7 +115,10 @@ export function NutritionIntolerancesAllergiesSection({
                 }}
                 className="text-base"
               />
-              <Button onClick={() => newAllergia && onAllergiaAdd(newAllergia)} className="min-h-[44px] min-w-[44px]">
+              <Button
+                onClick={() => newAllergia && onAllergiaAdd(newAllergia)}
+                className="min-h-[44px] min-w-[44px]"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -134,12 +138,11 @@ export function NutritionIntolerancesAllergiesSection({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="text-lg font-bold text-text-primary">Intolleranze Alimentari</CardTitle>
+          <CardTitle className="text-lg font-bold text-text-primary">
+            Intolleranze Alimentari
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {nutrition?.intolleranze_alimentari && nutrition.intolleranze_alimentari.length > 0 ? (
@@ -151,15 +154,14 @@ export function NutritionIntolerancesAllergiesSection({
               ))}
             </div>
           ) : (
-            <p className="text-text-secondary text-sm md:text-base">Nessuna intolleranza alimentare</p>
+            <p className="text-text-secondary text-sm md:text-base">
+              Nessuna intolleranza alimentare
+            </p>
           )}
         </CardContent>
       </Card>
 
-      <Card
-        variant="default"
-        className="overflow-hidden"
-      >
+      <Card variant="default" className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-bold text-text-primary">Allergie Alimentari</CardTitle>
         </CardHeader>

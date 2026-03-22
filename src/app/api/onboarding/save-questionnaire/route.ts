@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const athleteId = profileRow.id as string
-    const body = await request.json().catch(() => ({})) as {
+    const body = (await request.json().catch(() => ({}))) as {
       anamnesi?: Record<string, unknown>
       manleva?: Record<string, unknown>
       liberatoria_media?: Record<string, unknown>
@@ -51,9 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const admin = createAdminClient()
-    const { error } = await admin
-      .from('athlete_questionnaires')
-      .upsert(
+    const { error } = await admin.from('athlete_questionnaires').upsert(
       {
         ...fullPayload,
         anamnesi: fullPayload.anamnesi as import('@/lib/supabase/types').Json,

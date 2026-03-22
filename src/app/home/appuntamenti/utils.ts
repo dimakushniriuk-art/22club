@@ -2,7 +2,15 @@ import { validateDate } from '@/lib/utils/validation'
 
 export type AppointmentStatus = 'attivo' | 'completato' | 'annullato' | 'in_corso'
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'outline' | 'secondary' | 'primary'
+type BadgeVariant =
+  | 'default'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'outline'
+  | 'secondary'
+  | 'primary'
 
 export function getStatusColor(status: AppointmentStatus): BadgeVariant {
   switch (status) {

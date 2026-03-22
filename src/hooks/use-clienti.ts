@@ -103,6 +103,8 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
     documenti_scadenza: 0,
   })
   const [total, setTotal] = useState(0)
+  const totalRef = useRef(0)
+  totalRef.current = total
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const fetchingRef = useRef(false)
@@ -714,7 +716,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         }, 100) // Piccolo delay per non interferire con il rendering
       }
 
-      const count = queryCount || total
+      const count = queryCount || totalRef.current
 
       // Mappare i profili a clienti
       const clientiWithStats = data.map((profile): Cliente => {
@@ -791,10 +793,8 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
       setLoading(false)
       fetchingRef.current = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supabase, user?.id, filters, sort, page, pageSize, fetchStats])
-  // RIMOSSO: total dalle dipendenze per evitare loop infinito
-  // total viene aggiornato da fetchClienti stesso, quindi non deve essere nelle dipendenze
+  }, [supabase, user, userId, authLoading, filters, sort, page, pageSize, fetchStats])
+  // total: fallback count via totalRef per non mettere total nelle dipendenze (evita loop con setTotal)
 
   const updateCliente = useCallback(
     async (id: string, updates: Partial<Cliente>) => {

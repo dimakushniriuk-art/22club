@@ -20,7 +20,7 @@ function loadEnv() {
     const envPath = join(projectRoot, 'env.local')
     const envContent = readFileSync(envPath, 'utf-8')
     const env: Record<string, string> = {}
-    
+
     envContent.split('\n').forEach((line) => {
       const trimmed = line.trim()
       if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
@@ -29,7 +29,7 @@ function loadEnv() {
         env[key.trim()] = value.trim()
       }
     })
-    
+
     return env
   } catch (error) {
     console.error('Errore nel caricamento env.local:', error)
@@ -42,7 +42,7 @@ const env = loadEnv()
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL
 
 if (!SUPABASE_URL) {
-  console.error('❌ Variabili d\'ambiente mancanti!')
+  console.error("❌ Variabili d'ambiente mancanti!")
   console.error('Richiesto: NEXT_PUBLIC_SUPABASE_URL')
   process.exit(1)
 }
@@ -52,7 +52,7 @@ if (!SUPABASE_URL) {
  */
 function generatePgDumpCommand(): string {
   const projectId = SUPABASE_URL.split('//')[1]?.split('.')[0] || 'icibqnmtacibgnhaidlz'
-  
+
   return `# =====================================================
 # Comando pg_dump per esportare schema completo
 # =====================================================
@@ -129,8 +129,12 @@ async function tryPgDump(): Promise<boolean> {
 
   // Verifica se abbiamo DATABASE_URL o DIRECT_URL configurati
   const databaseUrl = env.DATABASE_URL || env.DIRECT_URL
-  
-  if (!databaseUrl || databaseUrl.includes('your-project') || databaseUrl.includes('your-password')) {
+
+  if (
+    !databaseUrl ||
+    databaseUrl.includes('your-project') ||
+    databaseUrl.includes('your-password')
+  ) {
     console.log('⚠️  Connection string non configurata in env.local\n')
     console.log('Per esportare automaticamente, configura DATABASE_URL o DIRECT_URL in env.local')
     console.log('Oppure usa il comando manuale generato in pg-dump-command.sh\n')
@@ -142,17 +146,17 @@ async function tryPgDump(): Promise<boolean> {
     mkdirSync(outputDir, { recursive: true })
 
     const schemaFile = join(outputDir, 'schema-only.sql')
-    
+
     console.log('📦 Esecuzione pg_dump (solo schema, senza dati)...\n')
-    
+
     // Esegui pg_dump
     execSync(
       `pg_dump "${databaseUrl}" --schema=public --schema-only --no-owner --no-acl -f "${schemaFile}"`,
       {
         stdio: 'inherit',
         cwd: projectRoot,
-        env: { ...process.env }
-      }
+        env: { ...process.env },
+      },
     )
 
     console.log(`\n✅ Schema esportato in: ${schemaFile}\n`)
@@ -192,10 +196,12 @@ async function main() {
     console.log('📋 ISTRUZIONI MANUALI:\n')
     console.log('1. Apri il file: supabase-config-export/pg-dump-command.sh')
     console.log('2. Ottieni la connection string da:')
-    console.log(`   https://supabase.com/dashboard/project/${SUPABASE_URL.split('//')[1]?.split('.')[0]}/settings/database`)
+    console.log(
+      `   https://supabase.com/dashboard/project/${SUPABASE_URL.split('//')[1]?.split('.')[0]}/settings/database`,
+    )
     console.log('3. Sostituisci [PASSWORD] e [REGION] nel comando')
     console.log('4. Esegui il comando\n')
-    
+
     console.log('OPPURE configura DATABASE_URL in env.local e riesegui questo script.\n')
   }
 

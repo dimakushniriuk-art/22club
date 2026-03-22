@@ -140,8 +140,12 @@ export async function updateSingleAppointment(
 ): Promise<boolean> {
   const supabase = createClient()
 
-  type AppointmentUpdate = import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Update']
-  const { error } = await supabase.from('appointments').update(updates as AppointmentUpdate).eq('id', appointmentId)
+  type AppointmentUpdate =
+    import('@/lib/supabase/types').Database['public']['Tables']['appointments']['Update']
+  const { error } = await supabase
+    .from('appointments')
+    .update(updates as AppointmentUpdate)
+    .eq('id', appointmentId)
 
   return !error
 }

@@ -493,8 +493,7 @@ export default function InvitaAtletaPage() {
     })
   }, [])
 
-  const isFormDirty =
-    formData.nome_atleta.trim() !== '' || (formData.email ?? '').trim() !== ''
+  const isFormDirty = formData.nome_atleta.trim() !== '' || (formData.email ?? '').trim() !== ''
 
   const handleRequestCloseCreateForm = useCallback(
     (open: boolean) => {
@@ -637,11 +636,7 @@ export default function InvitaAtletaPage() {
                 variant={statoFilter === 'tutti' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setStatoFilter('tutti')}
-                className={
-                  statoFilter === 'tutti'
-                    ? ''
-                    : 'border-white/10 hover:border-primary/20'
-                }
+                className={statoFilter === 'tutti' ? '' : 'border-white/10 hover:border-primary/20'}
               >
                 Tutti
               </Button>
@@ -650,9 +645,7 @@ export default function InvitaAtletaPage() {
                 size="sm"
                 onClick={() => setStatoFilter('inviato')}
                 className={
-                  statoFilter === 'inviato'
-                    ? ''
-                    : 'border-white/10 hover:border-primary/20'
+                  statoFilter === 'inviato' ? '' : 'border-white/10 hover:border-primary/20'
                 }
               >
                 Inviati
@@ -662,9 +655,7 @@ export default function InvitaAtletaPage() {
                 size="sm"
                 onClick={() => setStatoFilter('registrato')}
                 className={
-                  statoFilter === 'registrato'
-                    ? ''
-                    : 'border-white/10 hover:border-primary/20'
+                  statoFilter === 'registrato' ? '' : 'border-white/10 hover:border-primary/20'
                 }
               >
                 Registrati
@@ -674,9 +665,7 @@ export default function InvitaAtletaPage() {
                 size="sm"
                 onClick={() => setStatoFilter('scaduto')}
                 className={
-                  statoFilter === 'scaduto'
-                    ? ''
-                    : 'border-white/10 hover:border-primary/20'
+                  statoFilter === 'scaduto' ? '' : 'border-white/10 hover:border-primary/20'
                 }
               >
                 Scaduti
@@ -696,97 +685,100 @@ export default function InvitaAtletaPage() {
         </CardContent>
       </Card>
 
-        {/* Sort & Select */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-text-secondary text-sm">Ordina per:</span>
-            <SimpleSelect
-              value={sortBy}
-              onValueChange={(value) => setSortBy(value as InvitoSort)}
-              options={SORT_OPTIONS}
-              className="w-[180px]"
-            />
-          </div>
-          {selectedIds.size > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-text-secondary text-sm">{selectedIds.size} selezionati</span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
-                onClick={handleBulkDelete}
-              >
-                <Trash2 className="mr-1 h-4 w-4" />
-                Elimina
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-text-secondary hover:text-primary hover:bg-white/[0.04]"
-                onClick={() => setSelectedIds(new Set())}
-                aria-label="Deseleziona tutti"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Screen reader announce */}
-        <div role="status" aria-live="polite" className="sr-only">
-          {filteredInvitations.length === 0 &&
-          (debouncedSearch || statoFilter !== 'tutti')
-            ? 'Nessun invito trovato con i filtri attuali.'
-            : `${filteredInvitations.length} ${filteredInvitations.length === 1 ? 'invito trovato' : 'inviti trovati'}`}
-        </div>
-
-        {/* Invitations List: skeleton in caricamento, empty state o griglia */}
-        {loading && invitations.length === 0 ? (
-          <InvitationsListSkeleton />
-        ) : filteredInvitations.length === 0 ? (
-          <Card variant="default" className="relative overflow-hidden">
-            <CardContent className="p-12 text-center relative">
-              <Users className="text-text-tertiary mx-auto mb-4 h-16 w-16" />
-              <h3 className="text-text-primary mb-2 text-lg font-medium">
-                {debouncedSearch || statoFilter !== 'tutti'
-                  ? 'Nessun invito trovato'
-                  : 'Nessun invito ancora'}
-              </h3>
-              <p className="text-text-secondary mb-4 text-sm">
-                {debouncedSearch || statoFilter !== 'tutti'
-                  ? 'Prova a modificare i filtri di ricerca o azzerare i filtri.'
-                  : 'Crea il tuo primo invito per iniziare a lavorare con i tuoi atleti'}
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {debouncedSearch || statoFilter !== 'tutti' ? (
-                  <Button variant="outline" onClick={handleClearFilters} className="border-white/10 hover:border-primary/20">
-                    Azzera filtri
-                  </Button>
-                ) : (
-                  <Button onClick={() => setShowCreateForm(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Crea Primo Invito
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <InvitationsGrid
-            invitations={filteredInvitations}
-            selectedIds={selectedIds}
-            copiedText={copiedText}
-            getStatusIcon={getStatusIcon}
-            getStatusBadge={getStatusBadge}
-            onToggleSelect={toggleSelectId}
-            onCopyCode={handleCopyCode}
-            onCopyLink={handleCopyLink}
-            onShowQR={handleShowQR}
-            onDelete={handleDeleteInvitation}
+      {/* Sort & Select */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-text-secondary text-sm">Ordina per:</span>
+          <SimpleSelect
+            value={sortBy}
+            onValueChange={(value) => setSortBy(value as InvitoSort)}
+            options={SORT_OPTIONS}
+            className="w-[180px]"
           />
+        </div>
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-text-secondary text-sm">{selectedIds.size} selezionati</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              Elimina
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-text-secondary hover:text-primary hover:bg-white/[0.04]"
+              onClick={() => setSelectedIds(new Set())}
+              aria-label="Deseleziona tutti"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         )}
+      </div>
 
-        {/* Paginazione */}
+      {/* Screen reader announce */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {filteredInvitations.length === 0 && (debouncedSearch || statoFilter !== 'tutti')
+          ? 'Nessun invito trovato con i filtri attuali.'
+          : `${filteredInvitations.length} ${filteredInvitations.length === 1 ? 'invito trovato' : 'inviti trovati'}`}
+      </div>
+
+      {/* Invitations List: skeleton in caricamento, empty state o griglia */}
+      {loading && invitations.length === 0 ? (
+        <InvitationsListSkeleton />
+      ) : filteredInvitations.length === 0 ? (
+        <Card variant="default" className="relative overflow-hidden">
+          <CardContent className="p-12 text-center relative">
+            <Users className="text-text-tertiary mx-auto mb-4 h-16 w-16" />
+            <h3 className="text-text-primary mb-2 text-lg font-medium">
+              {debouncedSearch || statoFilter !== 'tutti'
+                ? 'Nessun invito trovato'
+                : 'Nessun invito ancora'}
+            </h3>
+            <p className="text-text-secondary mb-4 text-sm">
+              {debouncedSearch || statoFilter !== 'tutti'
+                ? 'Prova a modificare i filtri di ricerca o azzerare i filtri.'
+                : 'Crea il tuo primo invito per iniziare a lavorare con i tuoi atleti'}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {debouncedSearch || statoFilter !== 'tutti' ? (
+                <Button
+                  variant="outline"
+                  onClick={handleClearFilters}
+                  className="border-white/10 hover:border-primary/20"
+                >
+                  Azzera filtri
+                </Button>
+              ) : (
+                <Button onClick={() => setShowCreateForm(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Crea Primo Invito
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <InvitationsGrid
+          invitations={filteredInvitations}
+          selectedIds={selectedIds}
+          copiedText={copiedText}
+          getStatusIcon={getStatusIcon}
+          getStatusBadge={getStatusBadge}
+          onToggleSelect={toggleSelectId}
+          onCopyCode={handleCopyCode}
+          onCopyLink={handleCopyLink}
+          onShowQR={handleShowQR}
+          onDelete={handleDeleteInvitation}
+        />
+      )}
+
+      {/* Paginazione */}
       {enablePagination && totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-white/10 pt-4">
           <div className="text-text-secondary text-sm">
@@ -851,9 +843,7 @@ export default function InvitaAtletaPage() {
             </div>
 
             <div>
-              <label className="text-text-primary mb-2 block text-sm font-medium">
-                Email
-              </label>
+              <label className="text-text-primary mb-2 block text-sm font-medium">Email</label>
               <Input
                 type="email"
                 value={formData.email}
@@ -924,8 +914,10 @@ export default function InvitaAtletaPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={submitting || !formData.nome_atleta.trim() || !(formData.email ?? '').trim()}
-                              >
+                disabled={
+                  submitting || !formData.nome_atleta.trim() || !(formData.email ?? '').trim()
+                }
+              >
                 {submitting ? (
                   <>
                     <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -999,9 +991,7 @@ export default function InvitaAtletaPage() {
               </div>
 
               <DialogFooter>
-                <Button onClick={() => setShowQRModal(false)}>
-                  Chiudi
-                </Button>
+                <Button onClick={() => setShowQRModal(false)}>Chiudi</Button>
               </DialogFooter>
             </>
           )}
@@ -1046,9 +1036,7 @@ export default function InvitaAtletaPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmExitCreateForm}>
-              Esci
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmExitCreateForm}>Esci</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

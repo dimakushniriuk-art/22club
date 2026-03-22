@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
 
     const profileRow = profile as { id?: string; role?: string } | null
     const role = profileRow?.role
-    const canSend = role && ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing'].includes(role)
+    const canSend =
+      role && ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing'].includes(role)
     if (!canSend) {
       return NextResponse.json({ success: false, error: 'Non autorizzato' }, { status: 403 })
     }
@@ -43,9 +44,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Body JSON non valido' }, { status: 400 })
     }
 
-    const communicationId = typeof body.communicationId === 'string' ? body.communicationId.trim() : ''
+    const communicationId =
+      typeof body.communicationId === 'string' ? body.communicationId.trim() : ''
     if (!communicationId) {
-      return NextResponse.json({ success: false, error: 'communicationId obbligatorio' }, { status: 400 })
+      return NextResponse.json(
+        { success: false, error: 'communicationId obbligatorio' },
+        { status: 400 },
+      )
     }
 
     const { data: communication, error: commError } = await supabase
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
     const comm = communication as { type: string; recipient_filter: unknown }
     if (comm.type !== 'email' && comm.type !== 'all') {
       return NextResponse.json(
-        { success: false, error: 'Tipo comunicazione non supportato per l\'invio' },
+        { success: false, error: "Tipo comunicazione non supportato per l'invio" },
         { status: 400 },
       )
     }
@@ -72,7 +77,8 @@ export async function POST(request: NextRequest) {
     await ensureRecipientsCreated(communicationId, {
       type: comm.type,
       recipient_filter: comm.recipient_filter,
-      created_by_profile_id: (communication as { created_by_profile_id?: string }).created_by_profile_id,
+      created_by_profile_id: (communication as { created_by_profile_id?: string })
+        .created_by_profile_id,
     })
 
     const result = await sendCommunicationEmail(communicationId)

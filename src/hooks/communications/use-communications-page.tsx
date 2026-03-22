@@ -15,15 +15,7 @@ import {
 } from '@/hooks/use-communications'
 import { useToast } from '@/components/ui/toast'
 import { useNotify } from '@/lib/ui/notify'
-import {
-  Mail,
-  Send,
-  CheckCircle,
-  Clock,
-  Calendar,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react'
+import { Mail, Send, CheckCircle, Clock, Calendar, AlertCircle, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui'
 
 const ITEMS_PER_PAGE = 10 // Numero di comunicazioni per pagina
@@ -33,7 +25,9 @@ export function useCommunicationsPage() {
   const { notify } = useNotify()
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(ITEMS_PER_PAGE)
-  const [activeTab, setActiveTab] = useState<'tutte' | 'sent' | 'delivered' | 'pending' | 'failed'>('tutte')
+  const [activeTab, setActiveTab] = useState<'tutte' | 'sent' | 'delivered' | 'pending' | 'failed'>(
+    'tutte',
+  )
   const [searchTerm, setSearchTerm] = useState('')
 
   // Determina il filtro per stato (Tutti, Inviati, Consegnati, In attesa, Falliti)
@@ -72,7 +66,9 @@ export function useCommunicationsPage() {
   const [formType, setFormType] = useState<'email' | 'all'>('email')
   const [formTitle, setFormTitle] = useState('')
   const [formMessage, setFormMessage] = useState('')
-  const [formRecipientFilter, setFormRecipientFilter] = useState<'all' | 'atleti' | 'custom'>('atleti')
+  const [formRecipientFilter, setFormRecipientFilter] = useState<'all' | 'atleti' | 'custom'>(
+    'atleti',
+  )
   const [formSelectedAthletes, setFormSelectedAthletes] = useState<string[]>([]) // athlete_ids selezionati
   const [formScheduled, setFormScheduled] = useState(false)
   const [formScheduledDate, setFormScheduledDate] = useState('')
@@ -380,7 +376,11 @@ export function useCommunicationsPage() {
     async (id: string) => {
       const result = await sendCommunication(id)
       if (!result.success && result.error) {
-        notify(`Errore durante l'invio della comunicazione: ${result.error}`, 'error', 'Errore invio')
+        notify(
+          `Errore durante l'invio della comunicazione: ${result.error}`,
+          'error',
+          'Errore invio',
+        )
       } else if (result.success && result.message) {
         // Opzionale: mostra messaggio di successo
         logger.info('Invio comunicazione completato', undefined, {
@@ -573,7 +573,11 @@ export function useCommunicationsPage() {
         logger.error('Error updating communication', err, {
           communicationId: editingCommunicationId,
         })
-        notify('Si è verificato un errore durante l\'aggiornamento della comunicazione. Riprova.', 'error', 'Errore aggiornamento')
+        notify(
+          "Si è verificato un errore durante l'aggiornamento della comunicazione. Riprova.",
+          'error',
+          'Errore aggiornamento',
+        )
       } finally {
         setFormLoading(false)
       }

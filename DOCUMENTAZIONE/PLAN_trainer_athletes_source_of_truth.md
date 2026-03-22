@@ -8,45 +8,45 @@
 
 ### pt_atleti – per file e riga
 
-| File | Righe | Uso |
-|------|--------|-----|
-| **Migrations SQL** | | |
-| `supabase/migrations/20260246_workout_plans_staff_condition_security_definer.sql` | 3, 17, 25 | Commenti + JOIN in `workout_plans_staff_assigned_condition` |
-| `supabase/migrations/20260245_workout_plans_rls_created_by_visibility.sql` | 3, 7–8, 19, 27, 30, 42, 82 | Stessa funzione + policy workout_plans |
-| `supabase/migrations/20260241_appointments_staff_insert_policy.sql` | 5 | Solo commento |
-| `supabase/migrations/20260235_get_my_trainer_profile_profile_id_fallback.sql` | 49 | `FROM pt_atleti pa` in get_my_trainer_profile |
-| `supabase/migrations/20260234_get_my_trainer_profile_pt_id.sql` | 52 | Idem |
-| `supabase/migrations/20260233_get_trainer_profile_full.sql` | 3, 32, 80 | Accesso atleta assegnato + EXISTS pt_atleti |
-| `supabase/migrations/20260227_get_my_trainer_profile_return_text.sql` | 42 | FROM pt_atleti in get_my_trainer_profile |
-| `supabase/migrations/20260223_chat_messages_insert_allow_pt_athlete.sql` | 5, 8, 17, 23, 43 | `chat_receiver_is_assigned_pt` + policy INSERT |
-| `supabase/migrations/20260222_profiles_athlete_view_trainer_restore.sql` | 9, 17 | Policy “Athletes can view assigned trainer” (pt_id da pt_atleti) |
-| `supabase/migrations/20260220_progress_photos_rls_athlete_trainer.sql` | 3, 42–43, 48, 58, 68, 75, 85 | Policy trainer su progress_photos (EXISTS pt_atleti) |
-| `supabase/migrations/20260213_fix_profiles_recursion_use_rpc.sql` | 49 | FROM pt_atleti in funzione |
-| `supabase/migrations/20260213_profiles_athlete_view_trainer.sql` | 5, 14 | Policy atleta vede PT (pt_atleti) |
-| `supabase/migrations/20260110_fix_trainer_view_athletes_rls.sql` | 99, 164–172 | `is_athlete_assigned_to_current_trainer` + policy pt_atleti |
-| `supabase/migrations/20260108_trainer_data_isolation_rls_03_pt_atleti.sql` | 4–62 | Policy SELECT/INSERT/UPDATE/DELETE su pt_atleti |
-| `supabase/migrations/20260108_complete_storage_buckets.sql` | 133, 168, 203, 278, 313, 348 | Policy storage con EXISTS pt_atleti |
-| `supabase/migrations/20260109_*` (3 file) | varie | Funzione is_athlete_assigned + pt_atleti |
-| `supabase/migrations/20260122_*` (fix/diagnose/verify) | varie | Policy profiles + verifiche pt_atleti |
-| `supabase/migrations/20260126_delete_*` (3 file) | varie | DISABLE RLS + DELETE da pt_atleti |
-| `supabase/migrations/FIX_FINALE_RLS_POLICIES.sql` | 94, 138, 190 | Policy workouts/workout_logs (JOIN pt_atleti) |
-| `supabase/migrations/FIX_WORKOUT_LOGS_MIRATO.sql` | 241, 248, 255, 262, 335, 342, 349 | Policy workout_logs (pt_atleti) |
-| `supabase/migrations/20260207_payments_update_policy_created_by.sql` | 25, 36 | Policy payments con `is_athlete_assigned_to_trainer` |
-| `supabase-config-export/schema-with-data.sql` | 3028–3106, 6577–6586, 7162–8398, 9386–9819 | Funzioni is_athlete_*, pt_atleti table, policy workout_plans/workout_logs, viste |
-| **Codice TS/Next** | | |
-| `src/lib/supabase/types.ts` | 1982–2031 | Tipo `pt_atleti` (Row/Insert/Update/Relationships) |
-| `src/app/home/chat/page.tsx` | 243 | `.from('pt_atleti').select('pt_id').eq('atleta_id', …)` |
-| `src/hooks/chat/use-chat-conversations.ts` | 330–331 | `.from('pt_atleti').select('pt_id, pt:profiles!...')` |
-| `src/hooks/use-clienti.ts` | 459, 844 | Commenti (pt_atleti) |
-| `src/app/api/admin/users/route.ts` | 92–93, 457–458 | Select pt_atleti per trainer; safeDelete pt_atleti |
-| `src/app/api/athletes/[id]/route.ts` | 79, 152, 268, 303–304 | Select/verifica relazione; safeDelete pt_atleti |
-| `src/app/api/register/complete-profile/route.ts` | 25, 154–159 | INSERT pt_atleti su invito accettato |
-| `src/app/api/athletes/create/route.ts` | 147, 159–170 | INSERT pt_atleti quando staff è trainer/pt |
-| **Docs** | | |
-| `docs/sql/assign_aaa_athletes_to_trainer.sql` | 8 | INSERT pt_atleti |
-| `docs/sql/delete_two_profiles_complete.sql` | 21–22 | DELETE pt_atleti |
-| `docs/sql/fix_pt_atleti_assign_and_trainer_permissions.sql` | 7–59 | Policy + INSERT pt_atleti |
-| `docs/TRAINER_PROFILE_DB_STATE.md` | 40, 50, 161–165, 224–230, 295, 339 | Documentazione trainer_athletes vs pt_atleti |
+| File                                                                              | Righe                                      | Uso                                                                               |
+| --------------------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
+| **Migrations SQL**                                                                |                                            |                                                                                   |
+| `supabase/migrations/20260246_workout_plans_staff_condition_security_definer.sql` | 3, 17, 25                                  | Commenti + JOIN in `workout_plans_staff_assigned_condition`                       |
+| `supabase/migrations/20260245_workout_plans_rls_created_by_visibility.sql`        | 3, 7–8, 19, 27, 30, 42, 82                 | Stessa funzione + policy workout_plans                                            |
+| `supabase/migrations/20260241_appointments_staff_insert_policy.sql`               | 5                                          | Solo commento                                                                     |
+| `supabase/migrations/20260235_get_my_trainer_profile_profile_id_fallback.sql`     | 49                                         | `FROM pt_atleti pa` in get_my_trainer_profile                                     |
+| `supabase/migrations/20260234_get_my_trainer_profile_pt_id.sql`                   | 52                                         | Idem                                                                              |
+| `supabase/migrations/20260233_get_trainer_profile_full.sql`                       | 3, 32, 80                                  | Accesso atleta assegnato + EXISTS pt_atleti                                       |
+| `supabase/migrations/20260227_get_my_trainer_profile_return_text.sql`             | 42                                         | FROM pt_atleti in get_my_trainer_profile                                          |
+| `supabase/migrations/20260223_chat_messages_insert_allow_pt_athlete.sql`          | 5, 8, 17, 23, 43                           | `chat_receiver_is_assigned_pt` + policy INSERT                                    |
+| `supabase/migrations/20260222_profiles_athlete_view_trainer_restore.sql`          | 9, 17                                      | Policy “Athletes can view assigned trainer” (pt_id da pt_atleti)                  |
+| `supabase/migrations/20260220_progress_photos_rls_athlete_trainer.sql`            | 3, 42–43, 48, 58, 68, 75, 85               | Policy trainer su progress_photos (EXISTS pt_atleti)                              |
+| `supabase/migrations/20260213_fix_profiles_recursion_use_rpc.sql`                 | 49                                         | FROM pt_atleti in funzione                                                        |
+| `supabase/migrations/20260213_profiles_athlete_view_trainer.sql`                  | 5, 14                                      | Policy atleta vede PT (pt_atleti)                                                 |
+| `supabase/migrations/20260110_fix_trainer_view_athletes_rls.sql`                  | 99, 164–172                                | `is_athlete_assigned_to_current_trainer` + policy pt_atleti                       |
+| `supabase/migrations/20260108_trainer_data_isolation_rls_03_pt_atleti.sql`        | 4–62                                       | Policy SELECT/INSERT/UPDATE/DELETE su pt_atleti                                   |
+| `supabase/migrations/20260108_complete_storage_buckets.sql`                       | 133, 168, 203, 278, 313, 348               | Policy storage con EXISTS pt_atleti                                               |
+| `supabase/migrations/20260109_*` (3 file)                                         | varie                                      | Funzione is_athlete_assigned + pt_atleti                                          |
+| `supabase/migrations/20260122_*` (fix/diagnose/verify)                            | varie                                      | Policy profiles + verifiche pt_atleti                                             |
+| `supabase/migrations/20260126_delete_*` (3 file)                                  | varie                                      | DISABLE RLS + DELETE da pt_atleti                                                 |
+| `supabase/migrations/FIX_FINALE_RLS_POLICIES.sql`                                 | 94, 138, 190                               | Policy workouts/workout_logs (JOIN pt_atleti)                                     |
+| `supabase/migrations/FIX_WORKOUT_LOGS_MIRATO.sql`                                 | 241, 248, 255, 262, 335, 342, 349          | Policy workout_logs (pt_atleti)                                                   |
+| `supabase/migrations/20260207_payments_update_policy_created_by.sql`              | 25, 36                                     | Policy payments con `is_athlete_assigned_to_trainer`                              |
+| `supabase-config-export/schema-with-data.sql`                                     | 3028–3106, 6577–6586, 7162–8398, 9386–9819 | Funzioni is*athlete*\*, pt_atleti table, policy workout_plans/workout_logs, viste |
+| **Codice TS/Next**                                                                |                                            |                                                                                   |
+| `src/lib/supabase/types.ts`                                                       | 1982–2031                                  | Tipo `pt_atleti` (Row/Insert/Update/Relationships)                                |
+| `src/app/home/chat/page.tsx`                                                      | 243                                        | `.from('pt_atleti').select('pt_id').eq('atleta_id', …)`                           |
+| `src/hooks/chat/use-chat-conversations.ts`                                        | 330–331                                    | `.from('pt_atleti').select('pt_id, pt:profiles!...')`                             |
+| `src/hooks/use-clienti.ts`                                                        | 459, 844                                   | Commenti (pt_atleti)                                                              |
+| `src/app/api/admin/users/route.ts`                                                | 92–93, 457–458                             | Select pt_atleti per trainer; safeDelete pt_atleti                                |
+| `src/app/api/athletes/[id]/route.ts`                                              | 79, 152, 268, 303–304                      | Select/verifica relazione; safeDelete pt_atleti                                   |
+| `src/app/api/register/complete-profile/route.ts`                                  | 25, 154–159                                | INSERT pt_atleti su invito accettato                                              |
+| `src/app/api/athletes/create/route.ts`                                            | 147, 159–170                               | INSERT pt_atleti quando staff è trainer/pt                                        |
+| **Docs**                                                                          |                                            |                                                                                   |
+| `docs/sql/assign_aaa_athletes_to_trainer.sql`                                     | 8                                          | INSERT pt_atleti                                                                  |
+| `docs/sql/delete_two_profiles_complete.sql`                                       | 21–22                                      | DELETE pt_atleti                                                                  |
+| `docs/sql/fix_pt_atleti_assign_and_trainer_permissions.sql`                       | 7–59                                       | Policy + INSERT pt_atleti                                                         |
+| `docs/TRAINER_PROFILE_DB_STATE.md`                                                | 40, 50, 161–165, 224–230, 295, 339         | Documentazione trainer_athletes vs pt_atleti                                      |
 
 ### trainer_athletes – riferimenti in repo
 
@@ -453,23 +453,23 @@ Oppure lasciare le policy attuali e limitarsi a non scrivere più su pt_atleti d
 
 ## (3) Policy e funzioni toccate + motivo
 
-| Oggetto | Tipo | Motivo |
-|---------|------|--------|
-| `is_athlete_assigned_to_current_trainer` | Funzione | Usata da RLS profiles; deve leggere solo trainer_athletes, status=active |
-| `is_athlete_assigned_to_trainer` | Funzione | Usata da payments (e altro); stessa logica trainer_athletes+active |
-| `workout_plans_staff_assigned_condition` | Funzione | Usata da policy workout_plans; da pt_atleti → trainer_athletes+active |
-| `chat_receiver_is_assigned_pt` | Funzione | RLS INSERT chat_messages; da pt_atleti → trainer_athletes+active |
-| `get_my_trainer_profile` | Funzione | Atleta vede il suo trainer; da pt_atleti → trainer_athletes+active |
-| `get_trainer_profile_full` | Funzione | Accesso atleta assegnato; da pt_atleti → trainer_athletes+active |
-| profiles “Athletes can view assigned trainer profile” | Policy | Atleta vede PT; da pt_atleti.pt_id → trainer_athletes.trainer_id + active |
-| profiles “Trainers can view assigned athletes” | Policy | Già usa is_athlete_assigned_to_current_trainer → OK dopo D.1 |
-| progress_photos (trainer select/insert/update/delete) | Policy | Da EXISTS pt_atleti → EXISTS trainer_athletes + active |
-| workout_plans (select/update/delete assigned) | Policy | Usano workout_plans_staff_assigned_condition → OK dopo D.3 |
-| workout_plans “Staff can create…” / “Staff can delete…” | Policy | Se contengono sottoquery su pt_atleti → sostituire con trainer_athletes+active |
-| workouts (select/update) | Policy | Da JOIN pt_atleti → EXISTS trainer_athletes+active |
-| workout_logs (select/update/delete staff) | Policy | Da JOIN pt_atleti → EXISTS trainer_athletes+active |
-| payments “Trainers can update assigned…” | Policy | Usa is_athlete_assigned_to_trainer → OK dopo D.2 |
-| pt_atleti (tutte le policy) | Policy | Opzionale: lasciare o rendere read-only (Step F) |
+| Oggetto                                                 | Tipo     | Motivo                                                                         |
+| ------------------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
+| `is_athlete_assigned_to_current_trainer`                | Funzione | Usata da RLS profiles; deve leggere solo trainer_athletes, status=active       |
+| `is_athlete_assigned_to_trainer`                        | Funzione | Usata da payments (e altro); stessa logica trainer_athletes+active             |
+| `workout_plans_staff_assigned_condition`                | Funzione | Usata da policy workout_plans; da pt_atleti → trainer_athletes+active          |
+| `chat_receiver_is_assigned_pt`                          | Funzione | RLS INSERT chat_messages; da pt_atleti → trainer_athletes+active               |
+| `get_my_trainer_profile`                                | Funzione | Atleta vede il suo trainer; da pt_atleti → trainer_athletes+active             |
+| `get_trainer_profile_full`                              | Funzione | Accesso atleta assegnato; da pt_atleti → trainer_athletes+active               |
+| profiles “Athletes can view assigned trainer profile”   | Policy   | Atleta vede PT; da pt_atleti.pt_id → trainer_athletes.trainer_id + active      |
+| profiles “Trainers can view assigned athletes”          | Policy   | Già usa is_athlete_assigned_to_current_trainer → OK dopo D.1                   |
+| progress_photos (trainer select/insert/update/delete)   | Policy   | Da EXISTS pt_atleti → EXISTS trainer_athletes + active                         |
+| workout_plans (select/update/delete assigned)           | Policy   | Usano workout_plans_staff_assigned_condition → OK dopo D.3                     |
+| workout_plans “Staff can create…” / “Staff can delete…” | Policy   | Se contengono sottoquery su pt_atleti → sostituire con trainer_athletes+active |
+| workouts (select/update)                                | Policy   | Da JOIN pt_atleti → EXISTS trainer_athletes+active                             |
+| workout_logs (select/update/delete staff)               | Policy   | Da JOIN pt_atleti → EXISTS trainer_athletes+active                             |
+| payments “Trainers can update assigned…”                | Policy   | Usa is_athlete_assigned_to_trainer → OK dopo D.2                               |
+| pt_atleti (tutte le policy)                             | Policy   | Opzionale: lasciare o rendere read-only (Step F)                               |
 
 Eventuali **viste** (es. athlete_fitness_data, athlete_massage_data, athlete_nutrition_data) che in schema-with-data.sql filtrano con pt_atleti vanno aggiornate a usare trainer_athletes con status = 'active'.
 
@@ -531,14 +531,14 @@ WHERE ta.trainer_id = 'TRAINER_PROFILE_ID_QUI' AND ta.status = 'active';
 
 ## (8) Modifiche codice TypeScript/Next (da fare dopo DB)
 
-| File | Modifica |
-|------|----------|
-| `src/lib/supabase/types.ts` | Aggiungere tipo `trainer_athletes` (trainer_id, athlete_id, status, activated_at, deactivated_at, …). Opzionale: mantenere pt_atleti per compatibilità lettura fino a rimozione. |
-| `src/app/home/chat/page.tsx` | Sostituire query su `pt_atleti` con `trainer_athletes` filtrando `status = 'active'` e colonna `trainer_id` (pt_id → trainer_id). |
-| `src/hooks/chat/use-chat-conversations.ts` | Idem: da `pt_atleti` a `trainer_athletes`, `pt_id` → `trainer_id`, aggiungere `.eq('status','active')`. |
-| `src/app/api/admin/users/route.ts` | Leggere trainer da `trainer_athletes` (active); safeDelete su `trainer_athletes` dove oggi su pt_atleti. |
-| `src/app/api/athletes/[id]/route.ts` | Verifica relazione con `trainer_athletes` (trainer_id, athlete_id, status=active); safeDelete su trainer_athletes. |
+| File                                             | Modifica                                                                                                                                                                          |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/supabase/types.ts`                      | Aggiungere tipo `trainer_athletes` (trainer_id, athlete_id, status, activated_at, deactivated_at, …). Opzionale: mantenere pt_atleti per compatibilità lettura fino a rimozione.  |
+| `src/app/home/chat/page.tsx`                     | Sostituire query su `pt_atleti` con `trainer_athletes` filtrando `status = 'active'` e colonna `trainer_id` (pt_id → trainer_id).                                                 |
+| `src/hooks/chat/use-chat-conversations.ts`       | Idem: da `pt_atleti` a `trainer_athletes`, `pt_id` → `trainer_id`, aggiungere `.eq('status','active')`.                                                                           |
+| `src/app/api/admin/users/route.ts`               | Leggere trainer da `trainer_athletes` (active); safeDelete su `trainer_athletes` dove oggi su pt_atleti.                                                                          |
+| `src/app/api/athletes/[id]/route.ts`             | Verifica relazione con `trainer_athletes` (trainer_id, athlete_id, status=active); safeDelete su trainer_athletes.                                                                |
 | `src/app/api/register/complete-profile/route.ts` | INSERT in `trainer_athletes` (trainer_id, athlete_id, status='active') invece di pt_atleti; se l’atleta aveva già un trainer, disattivare la riga precedente e inserire la nuova. |
-| `src/app/api/athletes/create/route.ts` | INSERT in `trainer_athletes` invece di pt_atleti (stessa logica “solo active” e disattiva precedente se necessario). |
+| `src/app/api/athletes/create/route.ts`           | INSERT in `trainer_athletes` invece di pt_atleti (stessa logica “solo active” e disattiva precedente se necessario).                                                              |
 
 Fine piano.

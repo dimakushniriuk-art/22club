@@ -92,9 +92,7 @@ export default function SegmentDetailPage() {
     }
   }, [id, role, authLoading, router, supabase])
 
-  const filteredAthletes = segment
-    ? applySegmentRules(athletes, segment.rules as SegmentRules)
-    : []
+  const filteredAthletes = segment ? applySegmentRules(athletes, segment.rules as SegmentRules) : []
 
   const handleDisattiva = async () => {
     if (!segment?.id) return
@@ -221,12 +219,16 @@ export default function SegmentDetailPage() {
                         {row.email ?? '–'}
                       </TableCell>
                       <TableCell className="tabular-nums">
-                        {Number(row.workouts_coached_7d ?? 0)} coach / {Number(row.workouts_solo_7d ?? 0)} solo
+                        {Number(row.workouts_coached_7d ?? 0)} coach /{' '}
+                        {Number(row.workouts_solo_7d ?? 0)} solo
                       </TableCell>
                       <TableCell className="tabular-nums">
-                        {Number(row.workouts_coached_30d ?? 0)} coach / {Number(row.workouts_solo_30d ?? 0)} solo
+                        {Number(row.workouts_coached_30d ?? 0)} coach /{' '}
+                        {Number(row.workouts_solo_30d ?? 0)} solo
                       </TableCell>
-                      <TableCell className="text-text-muted">{formatDate(row.last_workout_at)}</TableCell>
+                      <TableCell className="text-text-muted">
+                        {formatDate(row.last_workout_at)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

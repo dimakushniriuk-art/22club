@@ -72,7 +72,9 @@ export function useSettingsProfile(
           return
         }
 
-        const { data: { user: sessionUser } } = await supabase.auth.getUser()
+        const {
+          data: { user: sessionUser },
+        } = await supabase.auth.getUser()
         if (!sessionUser) {
           setProfileLoading(false)
           return

@@ -12,6 +12,7 @@
 **File**: `docs/VERIFICA_SUPABASE_EXERCISES_COMPLETA.sql`
 
 **Come eseguire**:
+
 1. Aprire Supabase Dashboard
 2. Andare su **SQL Editor**
 3. Copiare e incollare tutto il contenuto del file
@@ -19,6 +20,7 @@
 5. Analizzare i risultati
 
 **Cosa verifica**:
+
 - ✅ Struttura tabella `exercises` (colonne video_url, thumb_url, thumbnail_url)
 - ✅ Esistenza bucket `exercise-videos` e `exercise-thumbs`
 - ✅ Configurazione bucket (pubblico/privato, limiti dimensione, MIME types)
@@ -32,6 +34,7 @@
 **File**: `docs/VERIFICA_BUCKET_PUBLIC_PRIVATE.sql`
 
 **Come eseguire**:
+
 1. Aprire Supabase Dashboard
 2. Andare su **SQL Editor**
 3. Copiare e incollare tutto il contenuto del file
@@ -39,6 +42,7 @@
 5. Analizzare i risultati
 
 **Cosa verifica**:
+
 - ✅ Se i bucket sono pubblici o privati
 - ✅ Impatto sulla visualizzazione video/thumbnail
 - ✅ Raccomandazioni per configurazione corretta
@@ -50,6 +54,7 @@
 ### ✅ Stato OK
 
 Se tutti i controlli mostrano **✅ OK**, significa:
+
 - La struttura database è corretta
 - I bucket esistono e sono configurati
 - Le RLS policies sono presenti
@@ -60,6 +65,7 @@ Se tutti i controlli mostrano **✅ OK**, significa:
 ### ⚠️ Avvisi (Warning)
 
 Se compaiono **⚠️**, significa:
+
 - C'è qualcosa da verificare o migliorare
 - Non è bloccante ma potrebbe causare problemi
 - Esempi:
@@ -72,6 +78,7 @@ Se compaiono **⚠️**, significa:
 ### ❌ Errori (Critical)
 
 Se compaiono **❌**, significa:
+
 - C'è un problema critico che deve essere risolto
 - Le modifiche al codice potrebbero non funzionare
 - Esempi:
@@ -95,11 +102,13 @@ Se compaiono **❌**, significa:
 
 **Sintomo**: Script mostra `🔒 PRIVATO` per `exercise-videos` o `exercise-thumbs`
 
-**Soluzione**: 
+**Soluzione**:
+
 1. Aprire Supabase Dashboard → Storage → Buckets
 2. Cliccare sul bucket
 3. Modificare impostazione "Public" a `true`
 4. Oppure eseguire:
+
 ```sql
 UPDATE storage.buckets SET public = true WHERE id IN ('exercise-videos', 'exercise-thumbs');
 ```
@@ -108,7 +117,8 @@ UPDATE storage.buckets SET public = true WHERE id IN ('exercise-videos', 'exerci
 
 **Sintomo**: Script mostra `⚠️ INCONSISTENZA: Esistono sia thumbnail_url che thumb_url`
 
-**Soluzione**: 
+**Soluzione**:
+
 1. Verificare se ci sono dati in `thumbnail_url` da migrare
 2. Eseguire migration per copiare dati da `thumbnail_url` a `thumb_url`
 3. Rimuovere colonna `thumbnail_url` se non più necessaria

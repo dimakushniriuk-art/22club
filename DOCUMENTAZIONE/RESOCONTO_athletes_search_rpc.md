@@ -2,10 +2,10 @@
 
 ## File toccati
 
-| File | Modifica |
-|------|----------|
+| File                                                   | Modifica                                                                                                                                              |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/api/marketing/leads/athletes-search/route.ts` | Sostituita query su `profiles` con `supabase.rpc('search_athletes_for_marketing', { q })`; risposta mappata con `id: athlete_id` per compatibilità UI |
-| `docs/RESOCONTO_athletes_search_rpc.md` | Creato (questo file) |
+| `docs/RESOCONTO_athletes_search_rpc.md`                | Creato (questo file)                                                                                                                                  |
 
 La pagina `/dashboard/marketing/leads/[id]` e il blocco "Converti in atleta" non sono stati modificati: continuano a chiamare `GET /api/marketing/leads/athletes-search?q=...` e a usare `id`, `first_name`, `last_name`, `email` nella select e in `athlete_profile_id`.
 

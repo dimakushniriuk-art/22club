@@ -3,7 +3,12 @@
 import { Square } from 'lucide-react'
 import { designSystem } from '@/config/design-system'
 import { Card, CardTitle } from '@/components/ui'
-import { DS_CARD_FRAME_CLASS, DS_CODE_CLASS, DS_SECTION_TITLE_CLASS, DS_SECTION_INTRO_CLASS } from './helpers'
+import {
+  DS_CARD_FRAME_CLASS,
+  DS_CODE_CLASS,
+  DS_SECTION_TITLE_CLASS,
+  DS_SECTION_INTRO_CLASS,
+} from './helpers'
 
 export function FoundationsSpacingRadius() {
   return (
@@ -13,7 +18,8 @@ export function FoundationsSpacingRadius() {
         Radius & Spacing
       </h2>
       <p className={DS_SECTION_INTRO_CLASS}>
-        Token da <code className={DS_CODE_CLASS}>@/config/design-system</code>. Tailwind aggiunge <code className={DS_CODE_CLASS}>rounded-full</code> e spacing estesi (18, 88, 128).
+        Token da <code className={DS_CODE_CLASS}>@/config/design-system</code>. Tailwind aggiunge{' '}
+        <code className={DS_CODE_CLASS}>rounded-full</code> e spacing estesi (18, 88, 128).
       </p>
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
         <Card variant="default" className={DS_CARD_FRAME_CLASS}>

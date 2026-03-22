@@ -8,7 +8,8 @@ import { PrivacyAccordion } from './_components/privacy-accordion'
 
 export const metadata: Metadata = {
   title: 'Privacy, Termini e Cookie | 22Club',
-  description: 'Privacy Policy, Termini e Condizioni e Cookie Policy di 22Club. Documenti legali GDPR-compliant.',
+  description:
+    'Privacy Policy, Termini e Condizioni e Cookie Policy di 22Club. Documenti legali GDPR-compliant.',
 }
 
 export default function PrivacyPolicyPage() {

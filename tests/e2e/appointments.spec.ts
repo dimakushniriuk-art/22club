@@ -43,13 +43,15 @@ test.describe('Appointments Flow', () => {
     const projectName = test.info().project.name
     const isSlow = isWebkitOrMobile(projectName)
     const timeout = isSlow ? 20000 : 10000
-    
+
     // Attendi elemento chiave prima di verificare
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
     await expect(page.getByRole('heading', { name: /Appuntamenti/i })).toBeVisible({
       timeout,
     })
-    await expect(page.getByText(/Nuovo appuntamento/i)).toBeVisible({ timeout: timeout / 2 }).catch(() => {})
+    await expect(page.getByText(/Nuovo appuntamento/i))
+      .toBeVisible({ timeout: timeout / 2 })
+      .catch(() => {})
   })
 
   test('should create a new appointment', async ({ page, browserName }) => {
@@ -57,7 +59,7 @@ test.describe('Appointments Flow', () => {
     const projectName = test.info().project.name
     const isSlow = isWebkitOrMobile(projectName)
     const timeout = isSlow ? 20000 : 10000
-    
+
     await page.goto('/dashboard/appuntamenti', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {})
 
@@ -77,15 +79,15 @@ test.describe('Appointments Flow', () => {
     const clientInput = page.locator('input[name="client"]')
     await clientInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
     await clientInput.fill('Mario Rossi')
-    
+
     const dateInput = page.locator('input[name="date"]')
     await dateInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
     await dateInput.fill('2026-12-25')
-    
+
     const timeInput = page.locator('input[name="time"]')
     await timeInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
     await timeInput.fill('10:00')
-    
+
     const notesTextarea = page.locator('textarea[name="notes"]')
     await notesTextarea.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
     await notesTextarea.fill('Allenamento personalizzato')
@@ -96,7 +98,9 @@ test.describe('Appointments Flow', () => {
     await submitBtn.click({ timeout: 5000 })
 
     // Verify success message
-    await expect(page.getByText(/Appuntamento creato/i)).toBeVisible({ timeout }).catch(() => {})
+    await expect(page.getByText(/Appuntamento creato/i))
+      .toBeVisible({ timeout })
+      .catch(() => {})
   })
 
   test('should view appointment calendar', async ({ page, browserName }) => {
@@ -104,11 +108,11 @@ test.describe('Appointments Flow', () => {
     const projectName = test.info().project.name
     const isSlow = isWebkitOrMobile(projectName)
     const timeout = isSlow ? 20000 : 15000
-    
+
     // Naviga alla pagina calendario (non appuntamenti)
     await page.goto('/dashboard/calendario', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {})
-    
+
     // Attendi che la pagina sia caricata - usa selector più robusto
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
 
@@ -116,17 +120,17 @@ test.describe('Appointments Flow', () => {
     // FullCalendar renderizza sempre con classi .fc, .fc-view, e celle del calendario
     const calendarRoot = page.locator('.fc, .fc-view, .fc-daygrid, .fc-timegrid').first()
     const calendarDay = page.locator('.fc-day, .fc-daygrid-day, .fc-timegrid-day').first()
-    
+
     // Attendi che il calendario sia renderizzato (almeno il root o una cella giorno)
     await Promise.race([
       calendarRoot.waitFor({ state: 'visible', timeout }).catch(() => {}),
       calendarDay.waitFor({ state: 'visible', timeout }).catch(() => {}),
     ])
-    
+
     // Verifica che il calendario sia presente - almeno root o cella giorno visibile
     const hasCalendarRoot = await calendarRoot.isVisible().catch(() => false)
     const hasCalendarDay = await calendarDay.isVisible().catch(() => false)
-    
+
     expect(hasCalendarRoot || hasCalendarDay).toBeTruthy()
   })
 
@@ -135,7 +139,7 @@ test.describe('Appointments Flow', () => {
     const projectName = test.info().project.name
     const isSlow = isWebkitOrMobile(projectName)
     const timeout = isSlow ? 20000 : 10000
-    
+
     await page.goto('/dashboard/appuntamenti', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {})
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
@@ -147,7 +151,9 @@ test.describe('Appointments Flow', () => {
     await editButton.click({ timeout })
 
     // Wait for edit modal - attesa più robusta
-    await expect(page.getByText(/Modifica appuntamento/i)).toBeVisible({ timeout }).catch(() => {})
+    await expect(page.getByText(/Modifica appuntamento/i))
+      .toBeVisible({ timeout })
+      .catch(() => {})
 
     // Update appointment details - attendi che il campo sia pronto
     const notesInput = page.locator('input[name="notes"]')
@@ -160,7 +166,9 @@ test.describe('Appointments Flow', () => {
     await saveBtn.click({ timeout: 5000 })
 
     // Verify success message
-    await expect(page.getByText(/Appuntamento aggiornato/i)).toBeVisible({ timeout }).catch(() => {})
+    await expect(page.getByText(/Appuntamento aggiornato/i))
+      .toBeVisible({ timeout })
+      .catch(() => {})
   })
 
   test('should cancel an appointment', async ({ page, browserName }) => {
@@ -168,7 +176,7 @@ test.describe('Appointments Flow', () => {
     const projectName = test.info().project.name
     const isSlow = isWebkitOrMobile(projectName)
     const timeout = isSlow ? 20000 : 10000
-    
+
     await page.goto('/dashboard/appuntamenti', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {})
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
@@ -185,7 +193,9 @@ test.describe('Appointments Flow', () => {
     await confirmBtn.click({ timeout: 5000 }).catch(() => {})
 
     // Verify success message
-    await expect(page.getByText(/Appuntamento cancellato/i)).toBeVisible({ timeout }).catch(() => {})
+    await expect(page.getByText(/Appuntamento cancellato/i))
+      .toBeVisible({ timeout })
+      .catch(() => {})
   })
 })
 
@@ -220,12 +230,24 @@ test.describe('Appointments - Vista atleta (home)', () => {
     const timeout = isSlow ? 20000 : 10000
 
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
-    await expect(page.getByRole('heading', { name: /I miei Appuntamenti/i })).toBeVisible({ timeout })
+    await expect(page.getByRole('heading', { name: /I miei Appuntamenti/i })).toBeVisible({
+      timeout,
+    })
 
     const hasCalendar =
-      (await page.getByText('Mese').isVisible().catch(() => false)) ||
-      (await page.getByText('Settimana').isVisible().catch(() => false)) ||
-      (await page.locator('.fc, .fc-view').first().isVisible().catch(() => false))
+      (await page
+        .getByText('Mese')
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .getByText('Settimana')
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .locator('.fc, .fc-view')
+        .first()
+        .isVisible()
+        .catch(() => false))
     expect(hasCalendar).toBeTruthy()
   })
 
@@ -237,8 +259,14 @@ test.describe('Appointments - Vista atleta (home)', () => {
 
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
     const hasLegend =
-      (await page.getByText(/max 6 posti/i).isVisible().catch(() => false)) ||
-      (await page.getByText(/Libera prenotazione/i).isVisible().catch(() => false))
+      (await page
+        .getByText(/max 6 posti/i)
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .getByText(/Libera prenotazione/i)
+        .isVisible()
+        .catch(() => false))
     expect(hasLegend).toBeTruthy()
   })
 })

@@ -10,10 +10,7 @@ const logger = createLogger('api:athletes:[id]')
  * GET /api/athletes/[id]
  * Ottiene i dettagli di un atleta
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient()
     const {
@@ -43,7 +40,9 @@ export async function GET(
     // Ottieni il profilo atleta
     const { data: athleteProfile, error: fetchError } = await supabase
       .from('profiles')
-      .select('id, org_id, user_id, nome, cognome, email, phone, role, stato, data_iscrizione, note, created_at, updated_at')
+      .select(
+        'id, org_id, user_id, nome, cognome, email, phone, role, stato, data_iscrizione, note, created_at, updated_at',
+      )
       .eq('id', id)
       .single()
 
@@ -90,7 +89,7 @@ export async function GET(
 
     return NextResponse.json({ data: athleteProfile })
   } catch (error) {
-    logger.error('Errore durante il recupero dell\'atleta', error)
+    logger.error("Errore durante il recupero dell'atleta", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }
@@ -99,10 +98,7 @@ export async function GET(
  * PUT /api/athletes/[id]
  * Aggiorna un atleta
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient()
     const {
@@ -192,15 +188,17 @@ export async function PUT(
       .from('profiles')
       .update(updateData as Database['public']['Tables']['profiles']['Update'])
       .eq('id', id)
-      .select('id, org_id, user_id, nome, cognome, email, phone, role, stato, data_iscrizione, note, created_at, updated_at')
+      .select(
+        'id, org_id, user_id, nome, cognome, email, phone, role, stato, data_iscrizione, note, created_at, updated_at',
+      )
       .single()
 
     if (error) {
-      logger.error('Errore durante l\'aggiornamento dell\'atleta', error, {
+      logger.error("Errore durante l'aggiornamento dell'atleta", error, {
         athleteId: id,
         updateData,
       })
-      return NextResponse.json({ error: 'Errore durante l\'aggiornamento' }, { status: 500 })
+      return NextResponse.json({ error: "Errore durante l'aggiornamento" }, { status: 500 })
     }
 
     if (!athleteProfile) {
@@ -209,7 +207,7 @@ export async function PUT(
 
     return NextResponse.json({ data: athleteProfile })
   } catch (error) {
-    logger.error('Errore durante l\'aggiornamento dell\'atleta', error)
+    logger.error("Errore durante l'aggiornamento dell'atleta", error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
   }
 }
@@ -290,7 +288,18 @@ export async function DELETE(
     const safeDelete = async (table: string, filter: { column: string; value: string | null }) => {
       if (!filter.value) return
       try {
-        const { error } = await (adminClient as unknown as { from: (t: string) => { delete: () => { eq: (c: string, v: string | null) => Promise<{ error: { code?: string } | null }> } } }).from(table).delete().eq(filter.column, filter.value)
+        const { error } = await (
+          adminClient as unknown as {
+            from: (t: string) => {
+              delete: () => {
+                eq: (c: string, v: string | null) => Promise<{ error: { code?: string } | null }>
+              }
+            }
+          }
+        )
+          .from(table)
+          .delete()
+          .eq(filter.column, filter.value)
         if (error && error.code !== 'PGRST116') {
           // PGRST116 = tabella non trovata, ignoriamo
           logger.warn(`Errore eliminazione ${table}`, error, { filter })
@@ -323,7 +332,8 @@ export async function DELETE(
         p_profile_id: id,
         p_actor_profile_id: profileTyped.id,
       })
-      if (paymentsSoftErr) logger.warn('Soft delete payments per profile', paymentsSoftErr, { athleteId: id })
+      if (paymentsSoftErr)
+        logger.warn('Soft delete payments per profile', paymentsSoftErr, { athleteId: id })
 
       // 4. Appuntamenti
       await safeDelete('appointments', { column: 'athlete_id', value: id })
@@ -362,7 +372,10 @@ export async function DELETE(
 
       // 12. Notifications
       if (existingAthleteTyped.user_id) {
-        await safeDelete('notifications', { column: 'user_id', value: existingAthleteTyped.user_id })
+        await safeDelete('notifications', {
+          column: 'user_id',
+          value: existingAthleteTyped.user_id,
+        })
       }
 
       logger.debug('Dipendenze eliminate con successo', { athleteId: id })
@@ -390,12 +403,15 @@ export async function DELETE(
     // Elimina il profilo tramite RPC che disabilita il trigger check_expired_invites_trigger
     // per evitare "stack depth limit exceeded" (ricorsione su inviti_atleti)
     try {
-      const { data: deletedCount, error: rpcError } = await adminClient.rpc('delete_athlete_profile_safe', {
-        p_profile_id: id,
-      })
+      const { data: deletedCount, error: rpcError } = await adminClient.rpc(
+        'delete_athlete_profile_safe',
+        {
+          p_profile_id: id,
+        },
+      )
 
       if (rpcError) {
-        logger.error('Errore durante l\'eliminazione del profilo (RPC)', rpcError, {
+        logger.error("Errore durante l'eliminazione del profilo (RPC)", rpcError, {
           athleteId: id,
           errorCode: rpcError.code,
           errorMessage: rpcError.message,
@@ -413,7 +429,9 @@ export async function DELETE(
       }
 
       if (deletedCount === 0) {
-        logger.warn('Nessun profilo eliminato (potrebbe essere già stato eliminato)', { athleteId: id })
+        logger.warn('Nessun profilo eliminato (potrebbe essere già stato eliminato)', {
+          athleteId: id,
+        })
         const { data: checkProfile } = await adminClient
           .from('profiles')
           .select('id')
@@ -424,7 +442,7 @@ export async function DELETE(
           logger.error('Profilo ancora presente dopo RPC eliminazione', { athleteId: id })
           return NextResponse.json(
             {
-              error: 'Errore durante l\'eliminazione del profilo',
+              error: "Errore durante l'eliminazione del profilo",
               details: 'Il profilo non è stato eliminato (nessuna riga eliminata)',
             },
             { status: 500 },
@@ -436,12 +454,15 @@ export async function DELETE(
     } catch (profileDeleteError) {
       logger.error('Eccezione durante eliminazione profilo', profileDeleteError, {
         athleteId: id,
-        errorMessage: profileDeleteError instanceof Error ? profileDeleteError.message : String(profileDeleteError),
+        errorMessage:
+          profileDeleteError instanceof Error
+            ? profileDeleteError.message
+            : String(profileDeleteError),
         errorStack: profileDeleteError instanceof Error ? profileDeleteError.stack : undefined,
       })
       return NextResponse.json(
         {
-          error: 'Errore durante l\'eliminazione del profilo',
+          error: "Errore durante l'eliminazione del profilo",
           details:
             profileDeleteError instanceof Error
               ? profileDeleteError.message
@@ -451,17 +472,20 @@ export async function DELETE(
       )
     }
 
-    logger.info('Atleta eliminato con successo', { athleteId: id, userId: existingAthleteTyped.user_id })
+    logger.info('Atleta eliminato con successo', {
+      athleteId: id,
+      userId: existingAthleteTyped.user_id,
+    })
     return NextResponse.json({ success: true })
   } catch (error) {
-    logger.error('Errore durante l\'eliminazione dell\'atleta', error, {
+    logger.error("Errore durante l'eliminazione dell'atleta", error, {
       athleteId: id,
       errorMessage: error instanceof Error ? error.message : String(error),
       errorStack: error instanceof Error ? error.stack : undefined,
     })
     return NextResponse.json(
       {
-        error: 'Errore durante l\'eliminazione dell\'atleta',
+        error: "Errore durante l'eliminazione dell'atleta",
         details: error instanceof Error ? error.message : 'Errore sconosciuto',
       },
       { status: 500 },

@@ -1,4 +1,5 @@
 # 🔧 FIX RIMANENTI - Alert/Confirm Nativi in Altre Pagine
+
 **Data**: 2025-01-27  
 **Status**: ⚠️ **DA IMPLEMENTARE**
 
@@ -46,11 +47,13 @@ Durante l'audit della dashboard principale (`/dashboard`), abbiamo risolto tutti
 ## ✅ SOLUZIONE
 
 ### Strategia:
+
 1. **Riutilizzare `ConfirmDialog`** già creato (`src/components/shared/ui/confirm-dialog.tsx`)
 2. **Sostituire `alert()`** con toast (già disponibile via `useToast`)
 3. **Sostituire `confirm()`** con `ConfirmDialog`
 
 ### Componenti Disponibili:
+
 - ✅ `ConfirmDialog` - Già creato e testato
 - ✅ `useToast` - Già disponibile in tutto il progetto
 
@@ -59,16 +62,19 @@ Durante l'audit della dashboard principale (`/dashboard`), abbiamo risolto tutti
 ## 📝 CHECKLIST FIX
 
 ### Priorità Alta (Pagine più usate):
+
 - [ ] ⏳ `src/app/dashboard/pagamenti/page.tsx` - 3 occorrenze
 - [ ] ⏳ `src/app/dashboard/impostazioni/page.tsx` - 5 occorrenze
 - [ ] ⏳ `src/app/dashboard/invita-atleta/page.tsx` - 4 occorrenze
 
 ### Priorità Media:
+
 - [ ] ⏳ `src/app/dashboard/esercizi/page.tsx` - 1 occorrenza
 - [ ] ⏳ `src/app/dashboard/abbonamenti/page.tsx` - 1 occorrenza
 - [ ] ⏳ `src/app/dashboard/profilo/page.tsx` - 1 occorrenza
 
 ### Priorità Bassa (Componenti):
+
 - [ ] ⏳ `src/components/dashboard/pagamenti/new-payment-modal.tsx` - 1 occorrenza
 - [ ] ⏳ `src/components/dashboard/export-report-button.tsx` - 1 occorrenza
 
@@ -79,6 +85,7 @@ Durante l'audit della dashboard principale (`/dashboard`), abbiamo risolto tutti
 ## 🎯 ESEMPIO FIX
 
 ### Prima (❌):
+
 ```typescript
 const handleDelete = () => {
   if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
@@ -88,6 +95,7 @@ const handleDelete = () => {
 ```
 
 ### Dopo (✅):
+
 ```typescript
 const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -122,10 +130,12 @@ return (
 ## 📊 STIMA
 
 ### Complessità:
+
 - **Piccola**: 1-2 occorrenze per file
 - **Media**: 3-5 occorrenze per file
 
 ### Tempo Stimato:
+
 - **Priorità Alta**: ~2-3 ore
 - **Priorità Media**: ~1-2 ore
 - **Priorità Bassa**: ~30 minuti
@@ -137,6 +147,7 @@ return (
 ## ✅ CRITERI DI ACCETTAZIONE
 
 ### Fix Completato se:
+
 - ✅ Nessun `alert()` o `confirm()` nativo rimasto in dashboard
 - ✅ Tutti i `confirm()` sostituiti con `ConfirmDialog`
 - ✅ Tutti gli `alert()` sostituiti con toast
@@ -148,10 +159,12 @@ return (
 ## 🎯 PRIORITÀ
 
 ### Implementare Subito:
+
 1. **Pagine più usate** (pagamenti, impostazioni, invita-atleta)
 2. **Pagine critiche** (esercizi, abbonamenti)
 
 ### Implementare in Seguito:
+
 1. **Componenti riusabili** (new-payment-modal, export-report-button)
 
 ---
@@ -159,11 +172,13 @@ return (
 ## 📝 NOTE
 
 ### Vantaggi:
+
 - ✅ Accessibilità migliorata (WCAG AA)
 - ✅ UX migliorata (Dialog più belli e accessibili)
 - ✅ Coerenza con resto dell'app (stesso pattern usato in dashboard principale)
 
 ### Rischi:
+
 - ⚠️ Basso rischio (solo sostituzione UI, logica invariata)
 - ⚠️ Test necessario per verificare che tutto funzioni
 

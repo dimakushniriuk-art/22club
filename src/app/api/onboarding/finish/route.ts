@@ -19,17 +19,26 @@ type AthleteQuestionnaireRow = {
 type QuestionnaireQueryResult = Promise<{ data: AthleteQuestionnaireRow | null; error: unknown }>
 type SupabaseQuestionnaireClient = {
   from: (r: string) => {
-    select: (s: string) => { eq: (a: string, b: string) => { eq: (a: string, b: string) => { maybeSingle: () => QuestionnaireQueryResult } } }
+    select: (s: string) => {
+      eq: (
+        a: string,
+        b: string,
+      ) => { eq: (a: string, b: string) => { maybeSingle: () => QuestionnaireQueryResult } }
+    }
   }
 }
 
 type AdminQuestionnaireClient = {
-  from: (r: string) => { update: (u: object) => { eq: (a: string, b: string) => { eq: (a: string, b: string) => Promise<unknown> } } }
+  from: (r: string) => {
+    update: (u: object) => {
+      eq: (a: string, b: string) => { eq: (a: string, b: string) => Promise<unknown> }
+    }
+  }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({})) as { version?: string }
+    const body = (await request.json().catch(() => ({}))) as { version?: string }
     const version = body.version ?? QUESTIONNAIRE_VERSION
 
     const supabase = await createClient()
@@ -56,7 +65,10 @@ export async function POST(request: Request) {
 
     const role = (profileRow as { role?: string }).role
     if (role !== 'athlete') {
-      return NextResponse.json({ error: 'Solo gli atleti possono completare l\'onboarding' }, { status: 403 })
+      return NextResponse.json(
+        { error: "Solo gli atleti possono completare l'onboarding" },
+        { status: 403 },
+      )
     }
 
     const athleteId = profileRow.id as string
@@ -125,11 +137,13 @@ export async function POST(request: Request) {
     const storagePath = `dossier/${athleteId}/${fileName}`
 
     const admin = createAdminClient()
-    const { error: uploadError } = await admin.storage.from('documents').upload(storagePath, pdfBytes, {
-      contentType: 'application/pdf',
-      cacheControl: '3600',
-      upsert: false,
-    })
+    const { error: uploadError } = await admin.storage
+      .from('documents')
+      .upload(storagePath, pdfBytes, {
+        contentType: 'application/pdf',
+        cacheControl: '3600',
+        upsert: false,
+      })
 
     if (uploadError) {
       logger.error('Errore upload PDF dossier', uploadError, { athleteId, storagePath })
@@ -156,7 +170,11 @@ export async function POST(request: Request) {
     }
 
     const nowIso = new Date().toISOString()
-    await (admin as unknown as AdminQuestionnaireClient).from('athlete_questionnaires').update({ signed_at: nowIso, updated_at: nowIso }).eq('athlete_id', athleteId).eq('version', version)
+    await (admin as unknown as AdminQuestionnaireClient)
+      .from('athlete_questionnaires')
+      .update({ signed_at: nowIso, updated_at: nowIso })
+      .eq('athlete_id', athleteId)
+      .eq('version', version)
 
     const { error: profileUpdateError } = await supabase
       .from('profiles')
@@ -171,7 +189,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Errore aggiornamento profilo' }, { status: 500 })
     }
 
-    const { data: signed } = await admin.storage.from('documents').createSignedUrl(storagePath, 3600)
+    const { data: signed } = await admin.storage
+      .from('documents')
+      .createSignedUrl(storagePath, 3600)
     const downloadUrl = signed?.signedUrl ?? fileUrl
 
     return NextResponse.json({ success: true, downloadUrl })

@@ -27,10 +27,7 @@ export function AIDataRecommendationsSection({
   if (raccomandazioni.length === 0) return null
 
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-primary" />
@@ -42,10 +39,7 @@ export function AIDataRecommendationsSection({
           {raccomandazioni.map((raccomandazione, index) => {
             const prioritaBadge = getPrioritaBadge(raccomandazione.priorita)
             return (
-              <div
-                key={index}
-                className="p-4 rounded-lg border border-white/10 bg-white/[0.02]"
-              >
+              <div key={index} className="p-4 rounded-lg border border-white/10 bg-white/[0.02]">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Badge variant={prioritaBadge.color as BadgeProps['variant']} size="sm">

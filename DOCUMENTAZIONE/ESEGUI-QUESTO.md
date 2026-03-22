@@ -30,12 +30,14 @@ pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:[PASSWORD]@aws-0-eu-central-
 ```
 
 **Sostituisci:**
+
 - `[PASSWORD]` con la tua password del database
 - `eu-central-1` con la tua regione (se diversa)
 
 ### Passo 3: Verifica
 
 Dopo l'esecuzione, dovresti avere:
+
 - ✅ File `supabase-config-export/schema-complete.sql` creato
 - ✅ File con tutti i CREATE TABLE, INDEX, FUNCTION, etc.
 
@@ -71,8 +73,9 @@ pg_dump "postgresql://postgres.icibqnmtacibgnhaidlz:miapassword123@aws-0-eu-cent
 ## ✅ Risultato
 
 Dopo l'esecuzione avrai `schema-complete.sql` che contiene:
+
 - CREATE TABLE statements
-- CREATE INDEX statements  
+- CREATE INDEX statements
 - CREATE FUNCTION statements
 - CREATE TRIGGER statements
 - CREATE VIEW statements
@@ -82,6 +85,7 @@ Dopo l'esecuzione avrai `schema-complete.sql` che contiene:
 - COMMENT statements
 
 Questo file può essere usato come base per:
+
 - ✅ Importare modifiche
 - ✅ Ricreare il database
 - ✅ Versioning dello schema

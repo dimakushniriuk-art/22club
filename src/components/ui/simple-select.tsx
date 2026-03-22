@@ -214,7 +214,9 @@ export function SimpleSelect({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
         >
-          <span className={cn('truncate', selectedOption ? 'text-text-primary' : 'text-text-tertiary')}>
+          <span
+            className={cn('truncate', selectedOption ? 'text-text-primary' : 'text-text-tertiary')}
+          >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           <ChevronDown

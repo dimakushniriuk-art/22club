@@ -164,23 +164,23 @@ END $$;
 
 ### 1) File creati/modificati
 
-| File | Azione |
-|------|--------|
-| `supabase/migrations/20260301240000_staff_requests_hardening.sql` | **Creato** — validazione org_id, RPC (2 arg), trigger con check attore, drop policy UPDATE staff/athlete |
-| `supabase/migrations/README_20260301240000_staff_requests_hardening_verifica.md` | **Creato** — query verifica org_id, RPC vs UPDATE, workout_logs pre-conferma, audit |
-| `supabase/migrations/RESOCONTO_STAFF_REQUESTS_3.2_3.3.md` | **Creato** — questo resoconto (FASE 1 + output) |
+| File                                                                             | Azione                                                                                                   |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260301240000_staff_requests_hardening.sql`                | **Creato** — validazione org_id, RPC (2 arg), trigger con check attore, drop policy UPDATE staff/athlete |
+| `supabase/migrations/README_20260301240000_staff_requests_hardening_verifica.md` | **Creato** — query verifica org_id, RPC vs UPDATE, workout_logs pre-conferma, audit                      |
+| `supabase/migrations/RESOCONTO_STAFF_REQUESTS_3.2_3.3.md`                        | **Creato** — questo resoconto (FASE 1 + output)                                                          |
 
 Nessuna modifica alla migration originale `20260301230000`: il fallback org_id resta in quella migration; la hardening **valida** i dati esistenti e **corregge** i mismatch (org_id = athlete.org_id) e **fallisce** se restano incoerenze o athlete con org_id NULL.
 
 ### 2) Diff sintetico DB (hardening)
 
-| Oggetto | Prima | Dopo |
-|--------|--------|------|
-| **Backfill org_id** | Fallback su “prima org” se NULL | Validazione: org_id deve coincidere con athlete; correzione mismatch; RAISE se incoerenze o athlete.org_id NULL |
-| **staff_requests_apply_transition** | (p_request_id, **p_actor_profile_id**, p_new_status); solo UPDATE | (p_request_id, p_new_status); actor da auth.uid(); validazione transizioni (chi può fare cosa); validazione staff_type/role; UPDATE |
-| **staff_requests_after_status_change** | v_actor da get_actor_profile_id_from_jwt() / auth.uid() | v_actor solo da auth.uid() → profiles; per staff_confirmed: RAISE se attore non è staff della richiesta o admin stessa org |
-| **RLS staff_requests UPDATE** | Policy per staff (confirmed/cancelled) e athlete (accept/reject) | Policy UPDATE per staff e athlete **rimosse**; transizioni solo via RPC (DEFINER bypassa RLS); admin mantiene FOR ALL |
-| **Invited athletes** | Già solo staff_atleti con status='active' (profiles, appointments, workout_logs) | Nessun cambio; confermato nessun accesso su staff_requests |
+| Oggetto                                | Prima                                                                            | Dopo                                                                                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Backfill org_id**                    | Fallback su “prima org” se NULL                                                  | Validazione: org_id deve coincidere con athlete; correzione mismatch; RAISE se incoerenze o athlete.org_id NULL                     |
+| **staff_requests_apply_transition**    | (p_request_id, **p_actor_profile_id**, p_new_status); solo UPDATE                | (p_request_id, p_new_status); actor da auth.uid(); validazione transizioni (chi può fare cosa); validazione staff_type/role; UPDATE |
+| **staff_requests_after_status_change** | v_actor da get_actor_profile_id_from_jwt() / auth.uid()                          | v_actor solo da auth.uid() → profiles; per staff_confirmed: RAISE se attore non è staff della richiesta o admin stessa org          |
+| **RLS staff_requests UPDATE**          | Policy per staff (confirmed/cancelled) e athlete (accept/reject)                 | Policy UPDATE per staff e athlete **rimosse**; transizioni solo via RPC (DEFINER bypassa RLS); admin mantiene FOR ALL               |
+| **Invited athletes**                   | Già solo staff_atleti con status='active' (profiles, appointments, workout_logs) | Nessun cambio; confermato nessun accesso su staff_requests                                                                          |
 
 ### 3) Query di verifica (dal README hardening)
 
@@ -194,6 +194,6 @@ Nessuna modifica alla migration originale `20260301230000`: il fallback org_id r
 
 - **Righe già con org_id da fallback:** la hardening allinea org_id ad athlete.org_id dove l’atleta ha org_id NOT NULL; se esistono atleti con org_id NULL in staff_atleti la migration fa RAISE e non assegna org arbitrari.
 - **Chiamata RPC senza auth:** auth.uid() NULL → RPC ritorna `{ok: false, error: 'not_authenticated'}`.
-- **Admin conferma al posto dello staff:** la RPC non permette staff_confirmed se v_actor_profile_id <> r.staff_id (solo staff può confermare). Per permettere anche admin bisogna estendere la RPC (es. se v_actor_role = 'admin' e org_id = r.org_id allora consentire staff_confirmed). *Nota: nella hardening attuale staff_confirmed è consentito solo allo staff; per “admin può cancellare” abbiamo cancellato; per “admin può confermare” andrebbe aggiunta la stessa logica della cancellazione.*
+- **Admin conferma al posto dello staff:** la RPC non permette staff_confirmed se v_actor_profile_id <> r.staff_id (solo staff può confermare). Per permettere anche admin bisogna estendere la RPC (es. se v_actor_role = 'admin' e org_id = r.org_id allora consentire staff_confirmed). _Nota: nella hardening attuale staff_confirmed è consentito solo allo staff; per “admin può cancellare” abbiamo cancellato; per “admin può confermare” andrebbe aggiunta la stessa logica della cancellazione._
 - **Trigger e RPC:** l’UPDATE fatto dalla RPC attiva il trigger; il trigger verifica che per staff_confirmed l’attore sia staff o admin stessa org — quindi se in futuro si aggiunge la possibilità che admin confermi dalla RPC, il trigger deve accettare anche actor = admin con stessa org (già fatto nel trigger hardening).
 - **App deve usare RPC:** l’app non deve più fare UPDATE su staff_requests per cambiare status; deve chiamare `staff_requests_apply_transition(request_id, new_status)`.

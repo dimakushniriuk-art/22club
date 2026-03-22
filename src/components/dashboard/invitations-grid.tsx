@@ -4,13 +4,7 @@ import type { ReactNode } from 'react'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Checkbox } from '@/components/ui'
-import {
-  Copy,
-  Trash2,
-  QrCode,
-  CheckCircle,
-  Share2,
-} from 'lucide-react'
+import { Copy, Trash2, QrCode, CheckCircle, Share2 } from 'lucide-react'
 import type { Invitation } from '@/types/invitation'
 
 export interface InvitationsGridProps {
@@ -65,9 +59,7 @@ export function InvitationsGrid({
 
               <div className="rounded border border-white/10 bg-white/[0.04] p-3">
                 <p className="text-text-secondary mb-1 text-xs font-medium">Codice invito:</p>
-                <p className="text-text-primary font-mono text-sm font-bold">
-                  {invitation.codice}
-                </p>
+                <p className="text-text-primary font-mono text-sm font-bold">{invitation.codice}</p>
               </div>
 
               <div className="rounded border border-white/10 bg-white/[0.04] p-2">

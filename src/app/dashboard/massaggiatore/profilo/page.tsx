@@ -4,15 +4,7 @@ import { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
-import {
-  Card,
-  CardContent,
-  Badge,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@/components/ui'
+import { Card, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 import { useToast } from '@/components/ui/toast'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -183,7 +175,10 @@ export default function MassaggiatoreProfiloPage() {
     (value: string) => {
       const tab = isTabValue(value) ? value : 'profilo'
       setActiveTab(tab)
-      const url = tab === 'profilo' ? '/dashboard/massaggiatore/profilo' : `/dashboard/massaggiatore/profilo?tab=${tab}`
+      const url =
+        tab === 'profilo'
+          ? '/dashboard/massaggiatore/profilo'
+          : `/dashboard/massaggiatore/profilo?tab=${tab}`
       router.replace(url, { scroll: false })
     },
     [router],
@@ -206,7 +201,11 @@ export default function MassaggiatoreProfiloPage() {
       await markAllAsRead()
     } catch (err) {
       logger.error('Mark all as read failed', err)
-      addToast({ title: 'Errore', message: 'Impossibile marcare tutte come lette', variant: 'error' })
+      addToast({
+        title: 'Errore',
+        message: 'Impossibile marcare tutte come lette',
+        variant: 'error',
+      })
     }
   }, [markAllAsRead, addToast])
 

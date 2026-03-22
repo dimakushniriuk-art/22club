@@ -18,10 +18,7 @@ export function CustomMetricsSection({ metricaCustom }: CustomMetricsSectionProp
   }
 
   return (
-    <Card
-      variant="default"
-      className="overflow-hidden"
-    >
+    <Card variant="default" className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg">Metriche Custom</CardTitle>
       </CardHeader>
