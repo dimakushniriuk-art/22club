@@ -12,6 +12,8 @@ import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useToast } from '@/components/ui/toast'
 import type { WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
+import { WORKOUT_PLAN_NO_ATHLETE_VALUE } from '@/lib/constants/workout-plan-wizard'
+import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizard'
 
 function workoutDetailToWizardData(detail: {
   name: string
@@ -78,7 +80,10 @@ function workoutDetailToWizardData(detail: {
     title: detail.name,
     notes: detail.description ?? undefined,
     difficulty: 'media',
-    athlete_id: detail.athlete_id ?? undefined,
+    athlete_id:
+      detail.athlete_id == null || detail.athlete_id === ''
+        ? WORKOUT_PLAN_NO_ATHLETE_VALUE
+        : detail.athlete_id,
     objective: detail.objective ?? undefined,
     days: detail.days.map((day) => {
       const items = (day as { items?: DayItem[] }).items
@@ -117,7 +122,13 @@ function ModificaSchedaContent() {
   const workoutId = typeof params?.id === 'string' ? params.id : null
 
   const { workout, loading: detailLoading, error: detailError } = useWorkoutDetail(workoutId, true)
-  const { athletes, exercises, loading: plansLoading, handleUpdateWorkout } = useWorkoutPlans()
+  const {
+    athletes,
+    exercises,
+    loading: plansLoading,
+    exercisesLoadError,
+    handleUpdateWorkout,
+  } = useWorkoutPlans()
   const { addToast } = useToast()
 
   const initialData = useMemo(
@@ -128,16 +139,21 @@ function ModificaSchedaContent() {
   const handleSave = async (
     workoutData: WorkoutWizardData,
     circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
+    options?: WorkoutWizardSaveOptions,
   ) => {
     if (!workoutId) return
     try {
-      await handleUpdateWorkout(workoutId, workoutData, circuitList)
+      await handleUpdateWorkout(workoutId, workoutData, circuitList, options)
       addToast({
-        title: 'Scheda aggiornata',
-        message: 'La scheda di allenamento è stata aggiornata con successo.',
+        title: options?.draft ? 'Bozza salvata' : 'Scheda aggiornata',
+        message: options?.draft
+          ? 'Le modifiche sono state salvate come bozza.'
+          : 'La scheda di allenamento è stata aggiornata con successo.',
         variant: 'success',
       })
-      router.push('/dashboard/schede')
+      if (!options?.draft) {
+        router.push('/dashboard/schede')
+      }
     } catch (error) {
       logger.error('Errore aggiornamento scheda', error)
       addToast({
@@ -176,6 +192,14 @@ function ModificaSchedaContent() {
     return (
       <div className="relative min-h-screen flex flex-col">
         <ErrorState message={detailError.message} onRetry={() => router.refresh()} />
+      </div>
+    )
+  }
+
+  if (exercisesLoadError) {
+    return (
+      <div className="relative min-h-screen flex flex-col">
+        <ErrorState message={exercisesLoadError} onRetry={() => router.refresh()} />
       </div>
     )
   }

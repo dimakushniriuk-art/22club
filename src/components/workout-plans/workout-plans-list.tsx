@@ -18,6 +18,7 @@ interface WorkoutPlansListProps {
   onWorkoutClick: (workout: Workout) => void
   onViewClick: (workout: Workout) => void
   onDeleteClick?: (workout: Workout) => void
+  onDuplicateClick?: (workout: Workout) => void | Promise<void>
   getStatusColor: (status: string) => string
   getStatusText: (status: string) => string
   formatDate: (dateString: string) => string
@@ -31,6 +32,7 @@ export function WorkoutPlansList({
   onWorkoutClick,
   onViewClick,
   onDeleteClick,
+  onDuplicateClick,
   getStatusColor,
   getStatusText,
   formatDate,
@@ -48,7 +50,7 @@ export function WorkoutPlansList({
       )}
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
           {workouts.map((workout) => (
             <WorkoutCard
               key={workout.id}
@@ -57,6 +59,7 @@ export function WorkoutPlansList({
               onWorkoutClick={onWorkoutClick}
               onViewClick={onViewClick}
               onDeleteClick={onDeleteClick}
+              onDuplicateClick={onDuplicateClick}
               getStatusColor={getStatusColor}
               getStatusText={getStatusText}
               formatDate={formatDate}
@@ -73,6 +76,7 @@ export function WorkoutPlansList({
               onWorkoutClick={onWorkoutClick}
               onViewClick={onViewClick}
               onDeleteClick={onDeleteClick}
+              onDuplicateClick={onDuplicateClick}
               getStatusColor={getStatusColor}
               getStatusText={getStatusText}
               formatDate={formatDate}

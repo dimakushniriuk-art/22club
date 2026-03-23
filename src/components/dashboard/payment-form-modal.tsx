@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { queryKeys } from '@/lib/query-keys'
-
-const logger = createLogger('components:dashboard:payment-form-modal')
+import { addCreditFromPayment } from '@/lib/credits/ledger'
+import { defaultServiceForRole } from '@/lib/abbonamenti-service-type'
 import { useClienti } from '@/hooks/use-clienti'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/toast'
 import { CreditCard, Euro, Calendar, BookOpen, X, Loader2 } from 'lucide-react'
+
+const logger = createLogger('components:dashboard:payment-form-modal')
 
 interface PaymentFormData {
   athlete_id: string
@@ -40,7 +42,6 @@ export function PaymentFormModal({ open, onOpenChange, onSuccess }: PaymentFormM
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const queryClient = useQueryClient()
-  const supabase = createClient()
   const { clienti } = useClienti()
   const toast = useToast()
 
@@ -56,7 +57,6 @@ export function PaymentFormModal({ open, onOpenChange, onSuccess }: PaymentFormM
         return
       }
 
-      // Get current user
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -65,43 +65,71 @@ export function PaymentFormModal({ open, onOpenChange, onSuccess }: PaymentFormM
         return
       }
 
-      // 1. Insert payment
-      // Workaround necessario per inferenza tipo Supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: paymentError } = await (supabase.from('payments') as any).insert([
-        {
+      const { data: staffProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, user_id, role, org_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (profileError) {
+        throw profileError
+      }
+      if (!staffProfile) {
+        setError('Profilo staff non trovato.')
+        return
+      }
+
+      const orgIdRaw = staffProfile.org_id
+      let orgId: string | undefined =
+        orgIdRaw && String(orgIdRaw).trim() ? String(orgIdRaw).trim() : undefined
+      if (!orgId) {
+        const { data: firstOrg } = await supabase
+          .from('organizations')
+          .select('id')
+          .limit(1)
+          .maybeSingle()
+        orgId = firstOrg?.id ?? undefined
+      }
+      if (!orgId || orgId.trim() === '') {
+        throw new Error('Organizzazione non configurata. Impossibile creare il pagamento.')
+      }
+
+      const serviceType = defaultServiceForRole(staffProfile.role)
+
+      const { data: paymentRecord, error: paymentInsertError } = await supabase
+        .from('payments')
+        .insert({
           athlete_id: formData.athlete_id,
           amount: formData.amount,
           payment_date: new Date().toISOString(),
           payment_method: formData.payment_method,
           lessons_purchased: formData.lessons_purchased,
-          notes: formData.notes || null,
-        },
-      ])
-
-      if (paymentError) {
-        throw paymentError
-      }
-
-      // 2. Update lesson_counters (solo UPDATE: record garantito da bootstrap, no insert)
-      const { data: existingCounter } = await supabase
-        .from('lesson_counters')
-        .select('count')
-        .eq('athlete_id', formData.athlete_id)
+          notes: formData.notes?.trim() ? formData.notes : null,
+          status: 'completed',
+          created_by_staff_id: staffProfile.id,
+          created_by_profile_id: staffProfile.id,
+          org_id: orgId,
+          service_type: serviceType,
+        })
+        .select('id')
         .single()
 
-      if (existingCounter) {
-        const newCount = (existingCounter.count ?? 0) + formData.lessons_purchased
-        const { error: updateError } = await supabase
-          .from('lesson_counters')
-          .update({ count: newCount, updated_at: new Date().toISOString() })
-          .eq('athlete_id', formData.athlete_id)
-
-        if (updateError) {
-          throw updateError
-        }
+      if (paymentInsertError) {
+        throw paymentInsertError
       }
-      // Se contatore assente (bootstrap non eseguito): pagamento comunque registrato; non creare riga dal codice.
+
+      const paymentId = paymentRecord?.id
+      if (!paymentId) {
+        throw new Error('Pagamento creato ma ID non disponibile')
+      }
+
+      await addCreditFromPayment({
+        id: paymentId,
+        athlete_id: formData.athlete_id,
+        lessons_purchased: formData.lessons_purchased,
+        created_by_staff_id: staffProfile.id,
+        serviceType,
+      })
 
       // Invalida query payments per refresh automatico
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.all })

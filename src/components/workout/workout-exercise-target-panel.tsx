@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { X, Plus, Trash2, AlertCircle, ChevronDown } from 'lucide-react'
 import { Button, SimpleSelect } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -129,6 +129,7 @@ function PresetComboField({
   placeholder: string
   ariaLabel: string
 }) {
+  const listboxId = useId()
   const inputStr = value != null && Number.isFinite(value) ? String(value) : ''
 
   const [isOpen, setIsOpen] = useState(false)
@@ -262,13 +263,14 @@ function PresetComboField({
             'min-w-0 flex-1 bg-transparent px-3.5 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary',
             NUMBER_INPUT_NO_SPINNER,
           )}
-          aria-expanded={isOpen}
-          aria-haspopup="listbox"
         />
         <button
           type="button"
           className="flex shrink-0 items-center justify-center border-l border-white/10 px-2.5 text-text-tertiary transition-colors hover:bg-white/[0.04] hover:text-text-secondary"
           aria-label={ariaLabel}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-controls={isOpen ? listboxId : undefined}
           onClick={() => setIsOpen((o) => !o)}
         >
           <ChevronDown
@@ -291,6 +293,7 @@ function PresetComboField({
                 left: `${dropdownPosition.left}px`,
                 width: `${dropdownPosition.width}px`,
               }}
+              id={listboxId}
               role="listbox"
             >
               <div ref={scrollContainerRef} className="max-h-60 overflow-auto py-1.5">

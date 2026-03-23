@@ -191,7 +191,9 @@ export function NewCommunicationModal({
                   <UserCheck className="mr-2 h-4 w-4 shrink-0" />
                   Atleta specifico
                   {formRecipientFilter === 'custom' && formSelectedAthletes.length > 0
-                    ? ` (${formSelectedAthletes.length})`
+                    ? recipientCount !== null
+                      ? ` (${recipientCount})`
+                      : ''
                     : ''}
                 </Button>
               </div>

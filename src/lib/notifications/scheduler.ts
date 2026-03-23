@@ -4,11 +4,46 @@
 
 import { createLogger } from '@/lib/logger'
 import { createAdminClient } from '@/lib/supabase/server'
+import { NOTIFICATION_TYPES } from '@/lib/notifications/types'
 
 const logger = createLogger('lib:notifications:scheduler')
 
 function supabase(): ReturnType<typeof createAdminClient> {
   return createAdminClient()
+}
+
+async function hasRecentReminderNotification(params: {
+  userId: string
+  type: string
+  link: string
+  actionText: string
+  lookbackHours?: number
+}) {
+  const { userId, type, link, actionText, lookbackHours = 24 } = params
+  const windowStart = new Date(Date.now() - lookbackHours * 60 * 60 * 1000).toISOString()
+
+  const { data, error } = await supabase()
+    .from('notifications')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('type', type)
+    .eq('link', link)
+    .eq('action_text', actionText)
+    .gte('sent_at', windowStart)
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    logger.error('Error checking existing reminder notification', error, {
+      userId,
+      type,
+      link,
+      actionText,
+    })
+    return false
+  }
+
+  return Boolean(data)
 }
 
 // =====================================================
@@ -156,24 +191,21 @@ export async function notifySkippedWorkouts() {
     let notificationCount = 0
 
     for (const athlete of athletes || []) {
-      // Verifica che non abbia già ricevuto questa notifica di recente
-      const { data: existingNotification } = await supabase()
-        .from('notifications')
-        .select('id')
-        .eq('user_id', athlete.user_id!)
-        .eq('type', 'allenamento')
-        .like('body', '%Hai saltato gli allenamenti%')
-        .gte('sent_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .single()
+      const hasRecentReminder = await hasRecentReminderNotification({
+        userId: athlete.user_id!,
+        type: NOTIFICATION_TYPES.WORKOUT,
+        link: '/home/allenamenti',
+        actionText: 'Vai agli allenamenti',
+      })
 
-      if (existingNotification) continue
+      if (hasRecentReminder) continue
 
       // Crea notifica
       const { error: insertError } = await supabase().from('notifications').insert({
         user_id: athlete.user_id!,
         title: 'Hai saltato gli allenamenti da 3 giorni • Torna a muoverti!',
         body: 'La costanza è la chiave del successo. Riprendi il tuo percorso oggi!',
-        type: 'allenamento',
+        type: NOTIFICATION_TYPES.WORKOUT,
         link: '/home/allenamenti',
         action_text: 'Vai agli allenamenti',
       })
@@ -236,24 +268,21 @@ export async function notifyMissingProgressPhotos() {
     let notificationCount = 0
 
     for (const athlete of athletes || []) {
-      // Verifica che non abbia già ricevuto questa notifica di recente
-      const { data: existingNotification } = await supabase()
-        .from('notifications')
-        .select('id')
-        .eq('user_id', athlete.user_id!)
-        .eq('type', 'progressi')
-        .like('body', '%Carica nuove foto%')
-        .gte('sent_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .single()
+      const hasRecentReminder = await hasRecentReminderNotification({
+        userId: athlete.user_id!,
+        type: NOTIFICATION_TYPES.PROGRESS,
+        link: '/home/progressi',
+        actionText: 'Aggiungi foto',
+      })
 
-      if (existingNotification) continue
+      if (hasRecentReminder) continue
 
       // Crea notifica
       const { error: insertError } = await supabase().from('notifications').insert({
         user_id: athlete.user_id!,
         title: 'Carica nuove foto per vedere il tuo cambiamento 📸',
         body: 'Non carichi foto di progresso da 14 giorni • Mostra i tuoi risultati!',
-        type: 'progressi',
+        type: NOTIFICATION_TYPES.PROGRESS,
         link: '/home/progressi',
         action_text: 'Aggiungi foto',
       })
@@ -350,7 +379,7 @@ export async function testNotifications() {
         user_id: adminProfile.user_id,
         title: 'Test Notifiche 🧪',
         body: 'Questo è un test del sistema di notifiche automatiche',
-        type: 'sistema',
+        type: NOTIFICATION_TYPES.SYSTEM,
         link: '/dashboard/statistiche',
         action_text: 'Vai alle statistiche',
       })

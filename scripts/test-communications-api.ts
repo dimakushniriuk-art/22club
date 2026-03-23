@@ -57,8 +57,8 @@ async function testListCommunications() {
   const response = await fetch(`${API_BASE_URL}/api/communications/list?limit=10&offset=0`)
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`)
   const data = await response.json()
-  if (!data.communications) throw new Error('Risposta non valida')
-  return { count: data.communications.length, total: data.total }
+  if (!Array.isArray(data.communications)) throw new Error('Risposta non valida')
+  return { count: data.communications.length, total: data.count }
 }
 
 // Test 3: Verifica conteggio destinatari

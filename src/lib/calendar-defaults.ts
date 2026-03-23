@@ -46,6 +46,9 @@ export const DEFAULT_DURATIONS_COLLABORATOR: Record<string, number> = {
 /** Durata fissa slot Free Pass (minuti). */
 export const FREE_PASS_DURATION_MINUTES = 90
 
+/** Fallback max atleti per slot Free Pass. */
+export const DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT = 4
+
 /** Colori default per tipo (chiavi APPOINTMENT_COLORS). */
 export const DEFAULT_TYPE_COLORS: Record<string, AppointmentColor> = {
   allenamento_doppio: 'viola_scuro',

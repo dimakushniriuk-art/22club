@@ -17,7 +17,6 @@ type CommunicationRecipientRow = Tables<'communication_recipients'>
 
 type _CommunicationInsert = TablesInsert<'communications'>
 type CommunicationUpdate = TablesUpdate<'communications'>
-type CommunicationRecipientInsert = TablesInsert<'communication_recipients'>
 type CommunicationRecipientUpdate = TablesUpdate<'communication_recipients'>
 
 // Tipi per filtri destinatari
@@ -119,6 +118,8 @@ export async function createCommunication(
  */
 export async function getCommunications(options?: {
   status?: CommunicationRow['status']
+  /** Se valorizzato (non vuoto), filtra con IN (ha priorità su `status` singolo) */
+  statuses?: CommunicationRow['status'][]
   type?: CommunicationRow['type']
   created_by_profile_id?: string
   limit?: number
@@ -133,12 +134,17 @@ export async function getCommunications(options?: {
 
     let countQuery = supabase.from('communications').select('*', { count: 'estimated', head: true })
 
-    if (options?.status) {
+    const statusList =
+      options?.statuses && options.statuses.length > 0 ? options.statuses : undefined
+    if (statusList) {
+      countQuery = countQuery.in('status', statusList)
+    } else if (options?.status) {
       countQuery = countQuery.eq('status', options.status as CommunicationRow['status'])
     }
 
-    if (options?.type) {
-      countQuery = countQuery.eq('type', options.type as CommunicationRow['type'])
+    const typeFilter = options?.type && options.type !== 'all' ? options.type : undefined
+    if (typeFilter) {
+      countQuery = countQuery.eq('type', typeFilter as CommunicationRow['type'])
     }
 
     if (options?.created_by_profile_id) {
@@ -158,12 +164,14 @@ export async function getCommunications(options?: {
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (options?.status) {
+    if (statusList) {
+      query = query.in('status', statusList)
+    } else if (options?.status) {
       query = query.eq('status', options.status as CommunicationRow['status'])
     }
 
-    if (options?.type) {
-      query = query.eq('type', options.type as CommunicationRow['type'])
+    if (typeFilter) {
+      query = query.eq('type', typeFilter as CommunicationRow['type'])
     }
 
     if (options?.created_by_profile_id) {
@@ -386,13 +394,6 @@ export async function createCommunicationRecipients(
 ): Promise<{ data: CommunicationRecipientRow[] | null; error: Error | null }> {
   try {
     const supabase = getSupabaseClient()
-
-    const _recipientsData: CommunicationRecipientInsert[] = recipients.map((r) => ({
-      communication_id: communicationId,
-      recipient_profile_id: r.user_id,
-      recipient_type: r.recipient_type,
-      status: 'pending',
-    }))
 
     const rows = recipients.map((r) => ({
       communication_id: communicationId,

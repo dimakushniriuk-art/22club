@@ -15,6 +15,11 @@ import { useLessonCounters } from '@/hooks/use-lesson-counters'
 import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { Button } from '@/components/ui'
+import {
+  formatStaffDayAthleteDisplayName,
+  getStaffLocalDayBoundsISO,
+  STAFF_TODAY_APPOINTMENTS_SELECT,
+} from '@/lib/appointments/staff-today-appointments-query'
 
 const logger = createLogger('DashboardPage')
 
@@ -122,31 +127,15 @@ type AthleteProfile = {
 
 async function fetchTodayAgenda(
   supabaseClient: ReturnType<typeof createClient>,
+  staffProfileId: string,
 ): Promise<AgendaEvent[]> {
   const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
-  const todayLocalStr = `${y}-${m}-${d}`
-
-  const queryStart = new Date(y, now.getMonth(), d ? Number(d) - 1 : 0)
-  const queryEnd = new Date(y, now.getMonth(), Number(d) + 2)
-  const todayStart = queryStart.toISOString()
-  const todayEnd = queryEnd.toISOString()
+  const { dayStart: todayStart, dayEnd: todayEnd } = getStaffLocalDayBoundsISO(now)
 
   const { data: todayAppointments, error } = await supabaseClient
     .from('appointments')
-    .select(
-      `
-      id,
-      starts_at,
-      ends_at,
-      type,
-      status,
-      athlete_id,
-      athlete:profiles!athlete_id(avatar, avatar_url, nome, cognome)
-    `,
-    )
+    .select(STAFF_TODAY_APPOINTMENTS_SELECT)
+    .eq('staff_id', staffProfileId)
     .gte('starts_at', todayStart)
     .lt('starts_at', todayEnd)
     .is('cancelled_at', null)
@@ -159,23 +148,10 @@ async function fetchTodayAgenda(
 
   if (!Array.isArray(todayAppointments)) return []
 
-  const todayOnly = (todayAppointments as unknown as TodayAppointment[]).filter(
-    (apt) =>
-      apt.starts_at &&
-      new Date(apt.starts_at).toLocaleDateString('sv-SE').slice(0, 10) === todayLocalStr,
-  )
-
-  if (todayAppointments.length > 0 && todayOnly.length === 0) {
-    logger.warn('Agenda: query ha restituito appuntamenti ma nessuno con data oggi', {
-      todayLocalStr,
-      count: todayAppointments.length,
-      firstStartsAt: (todayAppointments[0] as { starts_at?: string })?.starts_at,
-    })
-  }
-
+  const rows = todayAppointments as unknown as TodayAppointment[]
   const currentTime = now.getTime()
 
-  const agendaCandidates = todayOnly.reduce<AgendaEvent[]>((acc, apt) => {
+  const agendaCandidates = rows.reduce<AgendaEvent[]>((acc, apt) => {
     const startTime = new Date(apt.starts_at)
     const endTime = apt.ends_at ? new Date(apt.ends_at) : null
     const startTimeMs = startTime.getTime()
@@ -225,10 +201,7 @@ async function fetchTodayAgenda(
     const athleteRecord = isSupabaseRelationError(apt.athlete) ? null : apt.athlete
     const athleteProfile = athleteRecord as AthleteProfile | null
     const athleteAvatar = athleteProfile?.avatar_url ?? athleteProfile?.avatar ?? null
-    const athleteName =
-      athleteProfile && athleteProfile.nome && athleteProfile.cognome
-        ? `${athleteProfile.nome} ${athleteProfile.cognome}`.trim()
-        : athleteProfile?.nome || athleteProfile?.cognome || 'Atleta'
+    const athleteName = formatStaffDayAthleteDisplayName(apt.athlete)
 
     const startsAtStr =
       apt.starts_at && typeof apt.starts_at === 'object' && 'getTime' in apt.starts_at
@@ -278,7 +251,7 @@ export default function DashboardPage() {
     setLoadError(null)
     setLoading(true)
     try {
-      const data = await fetchTodayAgenda(supabase)
+      const data = await fetchTodayAgenda(supabase, user.id)
       if (mountedRef.current) setAgendaData(data)
     } catch (error) {
       logger.error('Error loading today appointments', error)

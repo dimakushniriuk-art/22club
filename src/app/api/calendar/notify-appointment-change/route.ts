@@ -1,22 +1,43 @@
 /**
  * POST /api/calendar/notify-appointment-change
- * Invia email all'atleta quando un appuntamento è annullato, modificato o eliminato.
- * Chiede di aggiornare/rimuovere l'evento nel Google Calendar.
+ * Comunicazione all'atleta (email + notifica in-app + push se previste dalle preferenze).
  * Body: { appointmentId, action: 'cancelled'|'modified'|'deleted', snapshot?, previous?, new? }
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
 import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
 import {
   sendAppointmentChangeEmail,
   type AppointmentChangeAction,
 } from '@/lib/calendar/appointment-reminder-email'
+import { NOTIFICATION_TYPES } from '@/lib/notifications/types'
+import { sendPushNotification } from '@/lib/notifications/push'
 
 const logger = createLogger('api:calendar:notify-appointment-change')
 
+const DEDUP_MODIFIED_WINDOW_MS = 3 * 60 * 1000
+
 type CustomType = { key: string; label: string }
+
+type AppointmentNotifPrefs = {
+  email: boolean
+  push: boolean
+  appointments: boolean
+}
+
+function mergeAppointmentNotifPrefs(raw: unknown): AppointmentNotifPrefs {
+  const d: AppointmentNotifPrefs = { email: true, push: true, appointments: true }
+  if (!raw || typeof raw !== 'object') return d
+  const o = raw as Record<string, unknown>
+  return {
+    email: typeof o.email === 'boolean' ? o.email : d.email,
+    push: typeof o.push === 'boolean' ? o.push : d.push,
+    appointments: typeof o.appointments === 'boolean' ? o.appointments : d.appointments,
+  }
+}
 
 function getTypeLabel(type: string, customTypes: CustomType[]): string {
   const custom = customTypes?.find((c) => c.key === type)
@@ -46,14 +67,45 @@ function formatTimeRange(startsAt: string, endsAt: string): string {
   return `${s} – ${e}`
 }
 
+async function isDuplicateModifiedNotification(params: {
+  appointmentId: string
+  athleteAuthUserId: string
+  newStartsAt: string
+}): Promise<boolean> {
+  const admin = createAdminClient()
+  const since = new Date(Date.now() - DEDUP_MODIFIED_WINDOW_MS).toISOString()
+  const { data: rows, error } = await admin
+    .from('notifications')
+    .select('message')
+    .eq('appointment_id', params.appointmentId)
+    .eq('user_id', params.athleteAuthUserId)
+    .eq('type', NOTIFICATION_TYPES.APPOINTMENTS)
+    .gte('created_at', since)
+
+  if (error) {
+    logger.warn('Dedup notifiche: lettura fallita', undefined, { err: error.message })
+    return false
+  }
+
+  for (const row of rows ?? []) {
+    try {
+      const j = JSON.parse((row as { message: string | null }).message || '{}') as {
+        kind?: string
+        newStartsAt?: string
+      }
+      if (j.kind === 'appointment_change' && j.newStartsAt === params.newStartsAt) return true
+    } catch {
+      /* ignore */
+    }
+  }
+  return false
+}
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-    if (sessionError || !session) {
+    const { user } = await getServerAuthUser(supabase)
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
@@ -105,6 +157,8 @@ export async function POST(request: Request) {
     let newTimeFormatted: string | undefined
     let newTypeStr: string | undefined
     let newLocation: string | undefined
+    /** ISO `starts_at` dopo modifica (drag/form); serve dedup e push */
+    let modifiedNewStartsAt: string | undefined
 
     if (action === 'deleted' && snapshot) {
       athleteId = snapshot.athlete_id
@@ -155,6 +209,7 @@ export async function POST(request: Request) {
           type: row.type,
           location: row.location,
         }
+        modifiedNewStartsAt = nu.starts_at
         newDateFormatted = formatDate(nu.starts_at)
         newTimeFormatted = formatTimeRange(nu.starts_at, nu.ends_at)
         newTypeStr = nu.type
@@ -163,14 +218,14 @@ export async function POST(request: Request) {
     }
 
     if (!athleteId) {
-      return NextResponse.json(
-        { error: 'Appuntamento senza atleta; email non inviata' },
-        { status: 200 },
-      )
+      return NextResponse.json({ ok: true, skipped: true, reason: 'no_athlete' }, { status: 200 })
     }
 
     const [profileRes, settingsRes] = await Promise.all([
-      supabase.from('profiles').select('id, email, nome, cognome').in('id', [athleteId, staffId!]),
+      supabase
+        .from('profiles')
+        .select('id, email, nome, cognome, user_id')
+        .in('id', [athleteId, staffId!]),
       staffId
         ? supabase
             .from('staff_calendar_settings')
@@ -185,14 +240,45 @@ export async function POST(request: Request) {
       email: string | null
       nome: string | null
       cognome: string | null
+      user_id: string | null
     }[]
     const athleteProfile = profiles.find((p) => p.id === athleteId)
     const staffProfile = profiles.find((p) => p.id === staffId)
-    const email = athleteProfile?.email?.trim()
-    if (!email) {
-      logger.debug('Atleta senza email, skip', undefined, { appointmentId, athleteId })
-      return NextResponse.json({ sent: false, reason: 'no_email' })
+    const athleteAuthUserId = athleteProfile?.user_id?.trim() || null
+
+    let notifPrefs: AppointmentNotifPrefs = mergeAppointmentNotifPrefs(null)
+    if (athleteAuthUserId) {
+      const { data: usRow } = await supabase
+        .from('user_settings')
+        .select('notification_settings')
+        .eq('user_id', athleteAuthUserId)
+        .maybeSingle()
+      notifPrefs = mergeAppointmentNotifPrefs(usRow?.notification_settings)
     }
+
+    if (!notifPrefs.appointments) {
+      return NextResponse.json(
+        { ok: true, skipped: true, reason: 'appointments_disabled' },
+        {
+          status: 200,
+        },
+      )
+    }
+
+    if (
+      action === 'modified' &&
+      modifiedNewStartsAt &&
+      athleteAuthUserId &&
+      (await isDuplicateModifiedNotification({
+        appointmentId,
+        athleteAuthUserId,
+        newStartsAt: modifiedNewStartsAt,
+      }))
+    ) {
+      return NextResponse.json({ ok: true, deduped: true }, { status: 200 })
+    }
+
+    const email = athleteProfile?.email?.trim() ?? ''
 
     const rawCustomTypes = (settingsRes.data as { custom_appointment_types?: unknown } | null)
       ?.custom_appointment_types
@@ -222,6 +308,7 @@ export async function POST(request: Request) {
           type: string
           location: string | null
         }
+        modifiedNewStartsAt = a.starts_at
         newDateFormatted = formatDate(a.starts_at)
         newTimeFormatted = formatTimeRange(a.starts_at, a.ends_at)
         newTypeStr = a.type
@@ -230,25 +317,93 @@ export async function POST(request: Request) {
       }
     }
 
-    const result = await sendAppointmentChangeEmail({
-      athleteEmail: email,
-      athleteName,
-      staffName,
-      action,
-      dateFormatted,
-      timeFormatted,
-      typeLabel: typeLabelResolved,
-      location,
-      newDateFormatted,
-      newTimeFormatted,
-      newTypeLabel: newTypeLabelResolved,
-      newLocation,
-    })
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
+    let emailSent = false
+    if (notifPrefs.email && email) {
+      const result = await sendAppointmentChangeEmail({
+        athleteEmail: email,
+        athleteName,
+        staffName,
+        action,
+        dateFormatted,
+        timeFormatted,
+        typeLabel: typeLabelResolved,
+        location,
+        newDateFormatted,
+        newTimeFormatted,
+        newTypeLabel: newTypeLabelResolved,
+        newLocation,
+      })
+      if (!result.success) {
+        logger.error('Email notifica appuntamento fallita', undefined, {
+          appointmentId,
+          error: result.error,
+        })
+      } else {
+        emailSent = true
+      }
+    } else if (notifPrefs.email && !email) {
+      logger.debug('Email abilitata ma atleta senza indirizzo', undefined, {
+        appointmentId,
+        athleteId,
+      })
     }
-    return NextResponse.json({ sent: true })
+
+    let inAppCreated = false
+    if (
+      action === 'modified' &&
+      notifPrefs.push &&
+      athleteAuthUserId &&
+      modifiedNewStartsAt &&
+      newDateFormatted &&
+      newTimeFormatted
+    ) {
+      const admin = createAdminClient()
+      const metaJson = JSON.stringify({
+        kind: 'appointment_change',
+        action: 'modified',
+        newStartsAt: modifiedNewStartsAt,
+      })
+      const notifTitle = 'Appuntamento aggiornato'
+      const notifText = `Nuovo orario: ${newDateFormatted}, ${newTimeFormatted}`
+
+      const { data: inserted, error: insErr } = await admin
+        .from('notifications')
+        .insert({
+          user_id: athleteAuthUserId,
+          title: notifTitle,
+          body: notifText,
+          message: metaJson,
+          type: NOTIFICATION_TYPES.APPOINTMENTS,
+          link: '/home/appuntamenti',
+          action_text: 'Apri appuntamenti',
+          appointment_id: appointmentId,
+          sent_at: new Date().toISOString(),
+        })
+        .select('id')
+        .single()
+
+      if (insErr) {
+        logger.error('Inserimento notifica appuntamento fallito', insErr, { appointmentId })
+      } else {
+        inAppCreated = true
+        const nid = (inserted as { id?: string } | null)?.id
+        await sendPushNotification(
+          athleteAuthUserId,
+          notifTitle,
+          notifText,
+          undefined,
+          undefined,
+          { appointmentId, action: 'modified' },
+          nid,
+        )
+      }
+    }
+
+    return NextResponse.json({
+      ok: true,
+      emailSent,
+      inAppNotification: inAppCreated,
+    })
   } catch (err) {
     logger.error('Errore notify-appointment-change', err)
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 })

@@ -109,26 +109,26 @@ function WelcomeHeader({
 }: WelcomeHeaderProps) {
   return (
     <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 min-[834px]:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] animate-fade-in">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="mb-1 text-lg font-bold tracking-tight text-cyan-400 min-[834px]:text-xl">
-            Benvenuto{nome?.trim() ? `, ${nome.trim()}` : ''}
-          </h1>
-          <p className="text-xs text-text-secondary min-[834px]:text-sm">
-            Gestisci i tuoi allenamenti, progressi e molto altro
-          </p>
-        </div>
+      <div
+        className={`relative text-center${isAtleta && invitiCount > 0 ? ' pr-11 min-[834px]:pr-12' : ''}`}
+      >
         {isAtleta && invitiCount > 0 && (
           <button
             type="button"
             onClick={onOpenWizard}
-            className="flex shrink-0 items-center justify-center rounded-lg w-10 h-10 border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+            className="absolute right-0 top-0 z-10 flex shrink-0 items-center justify-center rounded-lg w-10 h-10 border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
             aria-label="Nuovo invito da un professionista"
           >
             <Mail className="h-5 w-5 shrink-0" aria-hidden />
             {invitiCount > 1 && <span className="sr-only">({invitiCount})</span>}
           </button>
         )}
+        <h1 className="mb-1 text-lg font-bold tracking-tight text-cyan-400 min-[834px]:text-xl">
+          Ciao! 👋{nome?.trim() ? ` ${nome.trim()}` : ''}
+        </h1>
+        <p className="text-xs text-text-secondary min-[834px]:text-sm">
+          Gestisci i tuoi allenamenti, progressi e molto altro
+        </p>
       </div>
     </div>
   )

@@ -2,6 +2,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getAuditContext } from './lib/audit-middleware'
 import { createClient } from './lib/supabase/middleware'
 import { createLogger } from './lib/logger'
+import { normalizeRole } from './lib/utils/role-normalizer'
+import {
+  getDashboardEntryPathForNonAthleteRole,
+  getDefaultAppPathForRole,
+  getPostLoginRedirectPath,
+} from './lib/utils/role-redirect-paths'
 
 const logger = createLogger('middleware')
 
@@ -196,15 +202,7 @@ export async function middleware(request: NextRequest) {
         // Usa ruolo dalla cache
         const rawRole = cached.role
         firstLogin = cached.first_login ?? null
-        // Ruoli canonici: dopo migration DB non ci sono più pt/atleta/owner/staff
-        normalizedRole =
-          rawRole === 'pt' || rawRole === 'staff'
-            ? 'trainer'
-            : rawRole === 'atleta'
-              ? 'athlete'
-              : rawRole === 'owner'
-                ? 'admin'
-                : rawRole
+        normalizedRole = normalizeRole(rawRole) ?? rawRole
         logger.debug('Ruolo utente da cache middleware', { userId, role: normalizedRole })
       } else {
         // Query al database solo se non in cache o scaduta
@@ -235,14 +233,7 @@ export async function middleware(request: NextRequest) {
 
         const { role, first_login: profileFirstLogin } = profile
         firstLogin = profileFirstLogin ?? null
-        normalizedRole =
-          role === 'pt' || role === 'staff'
-            ? 'trainer'
-            : role === 'atleta'
-              ? 'athlete'
-              : role === 'owner'
-                ? 'admin'
-                : role
+        normalizedRole = normalizeRole(role) ?? role
 
         // Salva in cache (1 minuto)
         roleCache.set(userId, { role, first_login: firstLogin, expires: Date.now() + 60 * 1000 })
@@ -266,20 +257,8 @@ export async function middleware(request: NextRequest) {
 
       // Redirect da /login: usa solo ruolo actor (normalizedRole), non cookie
       if (pathname === '/login') {
-        const redirectUrl =
-          normalizedRole === 'admin'
-            ? new URL('/dashboard/admin', request.url)
-            : normalizedRole === 'trainer'
-              ? new URL('/dashboard', request.url)
-              : normalizedRole === 'athlete'
-                ? new URL(firstLogin === true ? '/welcome' : '/home', request.url)
-                : normalizedRole === 'marketing'
-                  ? new URL('/dashboard/marketing', request.url)
-                  : normalizedRole === 'nutrizionista'
-                    ? new URL('/dashboard/nutrizionista', request.url)
-                    : normalizedRole === 'massaggiatore'
-                      ? new URL('/dashboard/massaggiatore', request.url)
-                      : null
+        const path = getPostLoginRedirectPath(normalizedRole, firstLogin)
+        const redirectUrl = path ? new URL(path, request.url) : null
         if (redirectUrl) {
           return applyImpersonationToResponse(
             NextResponse.redirect(redirectUrl),
@@ -304,15 +283,11 @@ export async function middleware(request: NextRequest) {
       if (!isPublicRoute) {
         if (pathname === '/welcome') {
           if (normalizedRole !== 'athlete') {
+            const path = getDashboardEntryPathForNonAthleteRole(normalizedRole)
             const redirectUrl = request.nextUrl.clone()
-            if (normalizedRole === 'admin') redirectUrl.pathname = '/dashboard/admin'
-            else if (normalizedRole === 'trainer') redirectUrl.pathname = '/dashboard'
-            else if (normalizedRole === 'marketing') redirectUrl.pathname = '/dashboard/marketing'
-            else if (normalizedRole === 'nutrizionista')
-              redirectUrl.pathname = '/dashboard/nutrizionista'
-            else if (normalizedRole === 'massaggiatore')
-              redirectUrl.pathname = '/dashboard/massaggiatore'
-            else {
+            if (path) {
+              redirectUrl.pathname = path
+            } else {
               redirectUrl.pathname = '/login'
               redirectUrl.searchParams.set('error', 'accesso_negato')
             }
@@ -330,6 +305,14 @@ export async function middleware(request: NextRequest) {
             redirectUrl.pathname = '/home'
             return applyImpersonationToResponse(
               NextResponse.redirect(redirectUrl),
+              clearImpersonationCookies,
+              isImpersonating,
+            )
+          }
+          if (pathname.startsWith('/dashboard/admin') && normalizedRole !== 'admin') {
+            const path = getDefaultAppPathForRole(normalizedRole) ?? '/dashboard'
+            return applyImpersonationToResponse(
+              NextResponse.redirect(new URL(path, request.url)),
               clearImpersonationCookies,
               isImpersonating,
             )
@@ -400,15 +383,11 @@ export async function middleware(request: NextRequest) {
 
         if (pathname.startsWith('/home')) {
           if (normalizedRole !== 'athlete') {
+            const path = getDashboardEntryPathForNonAthleteRole(normalizedRole)
             const redirectUrl = request.nextUrl.clone()
-            if (normalizedRole === 'admin') redirectUrl.pathname = '/dashboard/admin'
-            else if (normalizedRole === 'trainer') redirectUrl.pathname = '/dashboard'
-            else if (normalizedRole === 'marketing') redirectUrl.pathname = '/dashboard/marketing'
-            else if (normalizedRole === 'nutrizionista')
-              redirectUrl.pathname = '/dashboard/nutrizionista'
-            else if (normalizedRole === 'massaggiatore')
-              redirectUrl.pathname = '/dashboard/massaggiatore'
-            else {
+            if (path) {
+              redirectUrl.pathname = path
+            } else {
               redirectUrl.pathname = '/login'
               redirectUrl.searchParams.set('error', 'accesso_negato')
             }

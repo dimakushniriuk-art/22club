@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
+import { buildLegacyOrgWriteContext, requireCurrentOrgId } from '@/lib/organizations/current-org'
 import { z } from 'zod'
 
 const logger = createLogger('api:admin:athletes:assign-trainer')
@@ -92,7 +93,19 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       )
     }
-    const orgId = aOrg ?? tOrg ?? 'default-org'
+    let orgWriteContext: { org_id: string; org_id_text: string }
+    try {
+      const orgId = requireCurrentOrgId(
+        aOrg ?? tOrg,
+        'Organizzazione non disponibile per assegnazione trainer',
+      )
+      orgWriteContext = buildLegacyOrgWriteContext({ profile: { org_id: orgId } })
+    } catch {
+      return NextResponse.json(
+        { error: 'Organizzazione non disponibile per assegnazione trainer' },
+        { status: 400 },
+      )
+    }
 
     // Idempotenza: se già assegnato a questo trainer (active), no-op
     const { data: existing } = await adminClient
@@ -120,8 +133,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { error: insertErr } = await adminClient.from('athlete_trainer_assignments').insert({
-      org_id: orgId,
-      org_id_text: orgId,
+      ...orgWriteContext,
       athlete_id: athleteId,
       trainer_id: trainerId,
       status: 'active',

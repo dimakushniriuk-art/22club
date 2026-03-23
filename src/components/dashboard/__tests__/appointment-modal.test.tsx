@@ -5,9 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactNode } from 'react'
 import { AppointmentModal } from '../appointment-modal'
 
-// Mock dependencies
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: vi.fn(() => ({
+const { mockAppointmentSupabase } = vi.hoisted(() => {
+  const mockAppointmentSupabase = {
     auth: {
       getUser: vi.fn().mockResolvedValue({
         data: { user: { id: 'test-user-id' } },
@@ -25,7 +24,15 @@ vi.mock('@/lib/supabase/client', () => ({
       })),
       insert: vi.fn().mockResolvedValue({ error: null }),
     })),
-  })),
+  }
+  return { mockAppointmentSupabase }
+})
+
+// Mock dependencies
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: vi.fn(() => mockAppointmentSupabase),
+  supabase: mockAppointmentSupabase,
+  handleRefreshTokenError: vi.fn(() => false),
 }))
 
 vi.mock('@/hooks/use-clienti', () => ({

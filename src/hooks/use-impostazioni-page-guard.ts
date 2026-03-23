@@ -3,17 +3,8 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
-
-const REDIRECT_PATH_BY_ROLE: Record<string, string> = {
-  admin: '/dashboard/admin',
-  trainer: '/dashboard',
-  marketing: '/dashboard/marketing',
-  athlete: '/home',
-} as const
-
-const DEFAULT_REDIRECT = '/dashboard'
-
-const ALLOWED_IMPOSTAZIONI_ROLES = ['trainer', 'admin'] as const
+import { requirePermission } from '@/lib/auth/guards'
+import { getRedirectPath } from '@/lib/auth/redirect'
 
 /**
  * Guard per la pagina impostazioni dashboard.
@@ -23,22 +14,17 @@ const ALLOWED_IMPOSTAZIONI_ROLES = ['trainer', 'admin'] as const
 export function useImpostazioniPageGuard(): { showLoader: boolean } {
   const router = useRouter()
   const { role, loading } = useAuth()
+  const allowed = requirePermission('staff_dashboard_home', role)
 
   useEffect(() => {
     if (loading || role === null) return
-    const allowed = ALLOWED_IMPOSTAZIONI_ROLES.includes(
-      role as (typeof ALLOWED_IMPOSTAZIONI_ROLES)[number],
-    )
     if (!allowed) {
-      const path = REDIRECT_PATH_BY_ROLE[role] ?? DEFAULT_REDIRECT
+      const path = getRedirectPath(role, { kind: 'guard_staff_wrong_area' })
       router.replace(path)
     }
-  }, [role, loading, router])
+  }, [allowed, role, loading, router])
 
-  const showLoader =
-    loading ||
-    (role !== null &&
-      !ALLOWED_IMPOSTAZIONI_ROLES.includes(role as (typeof ALLOWED_IMPOSTAZIONI_ROLES)[number]))
+  const showLoader = loading || (role !== null && !allowed)
 
   return { showLoader }
 }

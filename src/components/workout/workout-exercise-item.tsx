@@ -7,6 +7,7 @@
 'use client'
 
 import { Clock } from 'lucide-react'
+import { formatWorkoutRepsLabel } from '@/lib/constants/workout-reps-select'
 
 interface WorkoutExerciseItemProps {
   exercise: {
@@ -47,7 +48,9 @@ export function WorkoutExerciseItem({ exercise, index }: WorkoutExerciseItemProp
           <p className="text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wide">
             Ripetizioni
           </p>
-          <p className="text-text-primary font-bold text-xl">{exercise.target_reps}</p>
+          <p className="text-text-primary font-bold text-xl">
+            {formatWorkoutRepsLabel(exercise.target_reps)}
+          </p>
         </div>
         {exercise.target_weight && exercise.target_weight > 0 ? (
           <div className="bg-background-tertiary/60 rounded-md p-3 border border-surface-300/20">

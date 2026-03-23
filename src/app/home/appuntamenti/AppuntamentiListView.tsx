@@ -178,7 +178,10 @@ export function AppuntamentiListView({
         )}
 
         {showForm && editingAppointment && (
-          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 backdrop-blur-sm p-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:p-4">
+          <div
+            data-testid="appointment-form-overlay"
+            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 backdrop-blur-sm p-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:p-4"
+          >
             <Suspense fallback={<LoadingState message="Caricamento form..." />}>
               <AppointmentForm
                 appointment={editingAppointment}

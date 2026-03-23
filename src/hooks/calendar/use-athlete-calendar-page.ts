@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useNotify } from '@/lib/ui/notify'
+import { DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT } from '@/lib/calendar-defaults'
 import type {
   AppointmentUI,
   CreateAppointmentData,
@@ -14,26 +15,24 @@ import type {
   AppointmentColor,
 } from '@/types/appointment'
 import type { Tables } from '@/types/supabase'
+import { normalizeAppointmentStatus } from '@/lib/appointment-utils'
 
 const logger = createLogger('hooks:calendar:use-athlete-calendar-page')
 
 type AppointmentRow = Tables<'appointments'>
 
-const normalizeStatus = (status?: string | null): AppointmentUI['status'] => {
-  switch (status) {
-    case 'completato':
-    case 'completed':
-      return 'completato'
-    case 'annullato':
-    case 'cancelled':
-      return 'annullato'
-    case 'in_corso':
-    case 'in-progress':
-    case 'in_progress':
-      return 'in_corso'
-    default:
-      return 'attivo'
-  }
+/** Stesso criterio della selezione slot in handleFormSubmit (intervallo prenotazione ⊆ intervallo slot). */
+function isAthleteBookingInsideOpenSlot(
+  bookingStart: string,
+  bookingEnd: string,
+  slotStart: string,
+  slotEnd: string,
+): boolean {
+  const bs = new Date(bookingStart).getTime()
+  const be = new Date(bookingEnd).getTime()
+  const ss = new Date(slotStart).getTime()
+  const se = new Date(slotEnd).getTime()
+  return ss <= bs && be <= se
 }
 
 /** Colore evento creato dall'atleta vs dal trainer */
@@ -50,6 +49,10 @@ export function useAthleteCalendarPage(profileId: string | null) {
   const [trainerName, setTrainerName] = useState<string | null>(null)
   const [trainerLoading, setTrainerLoading] = useState(true)
   const [loading, setLoading] = useState(false)
+  /** Allineato a staff_calendar_settings / trigger check_open_slot_capacity (default 4) */
+  const [openBookingSlotMax, setOpenBookingSlotMax] = useState(
+    DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
+  )
 
   // org_id del profilo atleta (per insert appuntamenti)
   useEffect(() => {
@@ -90,6 +93,30 @@ export function useAthleteCalendarPage(profileId: string | null) {
     }
   }, [])
 
+  useEffect(() => {
+    if (!staffId) {
+      setOpenBookingSlotMax(DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT)
+      return
+    }
+    let cancelled = false
+    void supabase
+      .from('staff_calendar_settings')
+      .select('max_free_pass_athletes_per_slot')
+      .eq('staff_id', staffId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return
+        const n = (data as { max_free_pass_athletes_per_slot?: number } | null)
+          ?.max_free_pass_athletes_per_slot
+        setOpenBookingSlotMax(
+          typeof n === 'number' && n > 0 ? n : DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
+        )
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [staffId])
+
   const fetchAppointments = useCallback(async () => {
     if (!profileId) return
     try {
@@ -126,7 +153,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
       type Row = AppointmentRow & { created_by_role?: string | null; is_open_booking_day?: boolean }
       const rows = (data ?? []) as unknown as Row[]
 
-      // Conteggio prenotazioni per slot Libera (starts_at|ends_at) per UI "x/6"
+      // Conteggio prenotazioni per slot Libera (chiave = marker slot) per UI "x/N" — allineato al matching per contenimento
       const slotBookingCounts: Record<string, number> = {}
       const openSlotKeys = new Set(
         rows
@@ -137,11 +164,12 @@ export function useAthleteCalendarPage(profileId: string | null) {
         const [s, e] = key.split('|')
         slotBookingCounts[key] = rows.filter(
           (r) =>
-            r.starts_at === s &&
-            r.ends_at === e &&
+            r.starts_at &&
+            r.ends_at &&
             r.athlete_id != null &&
             r.cancelled_at == null &&
-            r.status !== 'annullato',
+            r.status !== 'annullato' &&
+            isAthleteBookingInsideOpenSlot(r.starts_at, r.ends_at, s, e),
         ).length
       }
       setSlotBookingCounts(slotBookingCounts)
@@ -203,7 +231,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
           starts_at: apt.starts_at,
           ends_at: apt.ends_at,
           type: (apt.type as AppointmentUI['type']) || 'allenamento',
-          status: normalizeStatus(apt.status),
+          status: normalizeAppointmentStatus(apt.status),
           color: displayColor,
           location: apt.location,
           notes: apt.notes,
@@ -232,6 +260,28 @@ export function useAthleteCalendarPage(profileId: string | null) {
   useEffect(() => {
     void fetchAppointments()
   }, [fetchAppointments])
+
+  /** Stessa regola della creazione: intervallo ⊆ slot Libera del trainer (pre-check prima del write). */
+  const assertAthleteMoveInsideOpenSlot = useCallback(
+    (newStartIso: string, newEndIso: string) => {
+      if (!staffId) return
+      const openSlots = appointments.filter(
+        (a) => a.is_open_booking_day && a.staff_id === staffId && !a.cancelled_at,
+      )
+      const matchingSlot = openSlots.find((s) =>
+        isAthleteBookingInsideOpenSlot(newStartIso, newEndIso, s.starts_at, s.ends_at),
+      )
+      if (!matchingSlot) {
+        notify(
+          'L’orario deve essere compreso in uno slot "Libera prenotazione" del tuo trainer.',
+          'warning',
+          'Attenzione',
+        )
+        throw new Error('ATHLETE_BOOKING_OUTSIDE_OPEN_SLOT')
+      }
+    },
+    [appointments, staffId, notify],
+  )
 
   const handleFormSubmit = useCallback(
     async (data: CreateAppointmentData, editing: EditAppointmentData | null) => {
@@ -271,14 +321,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
           }
           const slotKey = `${matchingSlot.starts_at}|${matchingSlot.ends_at}`
           const currentCount = slotBookingCounts[slotKey] ?? 0
-          const { data: settingsRow } = await supabase
-            .from('staff_calendar_settings')
-            .select('max_free_pass_athletes_per_slot')
-            .eq('staff_id', staffId)
-            .maybeSingle()
-          const maxPerSlot =
-            (settingsRow as { max_free_pass_athletes_per_slot?: number } | null)
-              ?.max_free_pass_athletes_per_slot ?? 4
+          const maxPerSlot = openBookingSlotMax
           if (currentCount >= maxPerSlot) {
             notify(
               `Questo slot è al completo (${maxPerSlot}/${maxPerSlot}). Scegli un altro orario.`,
@@ -304,9 +347,19 @@ export function useAthleteCalendarPage(profileId: string | null) {
             .eq('id', editing.id)
           if (error) throw error
         } else {
+          const insertOrgId = orgId ?? data.org_id ?? null
+          if (!insertOrgId) {
+            notify(
+              'Organizzazione non disponibile. Riprova dopo il login.',
+              'error',
+              'Errore creazione appuntamento',
+            )
+            setLoading(false)
+            return
+          }
           const insertPayload = {
-            org_id: orgId ?? data.org_id ?? '',
-            org_id_text: orgId ?? data.org_id ?? null,
+            org_id: insertOrgId,
+            org_id_text: insertOrgId,
             athlete_id: profileId,
             staff_id: staffId,
             starts_at: startsAt,
@@ -332,9 +385,14 @@ export function useAthleteCalendarPage(profileId: string | null) {
               : ''
         const isSlotFull =
           typeof msg === 'string' && (msg.includes('SLOT_FULL') || msg.includes('al completo'))
+        const slotFullUserMsg =
+          typeof msg === 'string' && msg.includes('SLOT_FULL:')
+            ? (msg.split('SLOT_FULL:')[1] ?? msg)
+            : msg
         notify(
           isSlotFull
-            ? 'Questo orario è al completo (6/6). Scegli un altro slot tra quelli disponibili.'
+            ? slotFullUserMsg ||
+                `Questo orario è al completo (${openBookingSlotMax}/${openBookingSlotMax}). Scegli un altro orario.`
             : msg || "Errore durante il salvataggio dell'appuntamento",
           'error',
           isSlotFull ? 'Slot pieno' : 'Errore',
@@ -344,7 +402,16 @@ export function useAthleteCalendarPage(profileId: string | null) {
         setLoading(false)
       }
     },
-    [profileId, staffId, orgId, appointments, slotBookingCounts, fetchAppointments, notify],
+    [
+      profileId,
+      staffId,
+      orgId,
+      appointments,
+      slotBookingCounts,
+      fetchAppointments,
+      notify,
+      openBookingSlotMax,
+    ],
   )
 
   const handleCancel = useCallback(
@@ -389,6 +456,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
       const apt = appointments.find((a) => a.id === appointmentId)
       if (apt?.created_by_role !== 'athlete') return
       try {
+        assertAthleteMoveInsideOpenSlot(newStart.toISOString(), newEnd.toISOString())
         const { error } = await supabase
           .from('appointments')
           .update({
@@ -410,7 +478,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
         throw err
       }
     },
-    [appointments, fetchAppointments],
+    [appointments, fetchAppointments, assertAthleteMoveInsideOpenSlot],
   )
 
   const handleEventResize = useCallback(
@@ -418,6 +486,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
       const apt = appointments.find((a) => a.id === appointmentId)
       if (apt?.created_by_role !== 'athlete') return
       try {
+        assertAthleteMoveInsideOpenSlot(newStart.toISOString(), newEnd.toISOString())
         const { error } = await supabase
           .from('appointments')
           .update({
@@ -439,12 +508,13 @@ export function useAthleteCalendarPage(profileId: string | null) {
         throw err
       }
     },
-    [appointments, fetchAppointments],
+    [appointments, fetchAppointments, assertAthleteMoveInsideOpenSlot],
   )
 
   return {
     appointments,
     slotBookingCounts,
+    openBookingSlotMax,
     appointmentsLoading,
     staffId,
     trainerName,

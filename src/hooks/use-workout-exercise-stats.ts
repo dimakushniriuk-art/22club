@@ -182,13 +182,18 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
         type ExRow = { id: string; name: string; category?: string | null }
         const exercisesMap = new Map(
-          ((exercisesData as ExRow[] | null) ?? []).map((e) => [e.id, { name: e.name, category: e.category }]),
+          ((exercisesData as ExRow[] | null) ?? []).map((e) => [
+            e.id,
+            { name: e.name, category: e.category },
+          ]),
         )
 
         // STEP 6: Recupera tutti i workout_sets completati (con almeno completed_at; includiamo anche set senza peso per reps/tempo)
         const { data: workoutSets, error: setsError } = await supabase
           .from('workout_sets')
-          .select('id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, execution_time_sec')
+          .select(
+            'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, execution_time_sec',
+          )
           .in('workout_day_exercise_id', workoutDayExerciseIds)
           .not('completed_at', 'is', null)
           .order('completed_at', { ascending: true })
@@ -298,7 +303,9 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             stat.min_weight = Math.min(...weights)
           }
 
-          const repsList = stat.dataPoints.map((dp) => dp.reps).filter((r): r is number => r != null && r > 0)
+          const repsList = stat.dataPoints
+            .map((dp) => dp.reps)
+            .filter((r): r is number => r != null && r > 0)
           if (repsList.length > 0) {
             stat.average_reps = repsList.reduce((a, b) => a + b, 0) / repsList.length
           }

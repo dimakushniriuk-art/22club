@@ -6,6 +6,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api:onboarding:save-step')
@@ -13,12 +14,9 @@ const logger = createLogger('api:onboarding:save-step')
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
@@ -83,13 +81,10 @@ export async function POST(request: NextRequest) {
     }
 
     const admin = createAdminClient()
-    const { error } = await admin
-      .from('profiles')
-      .update(safePayload)
-      .eq('user_id', session.user.id)
+    const { error } = await admin.from('profiles').update(safePayload).eq('user_id', user.id)
 
     if (error) {
-      logger.error('Save step failed', error, { step, userId: session.user.id })
+      logger.error('Save step failed', error, { step, userId: user.id })
       return NextResponse.json({ error: error.message || 'Errore salvataggio' }, { status: 502 })
     }
 

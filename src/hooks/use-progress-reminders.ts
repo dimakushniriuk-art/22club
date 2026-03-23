@@ -28,52 +28,6 @@ export function useProgressReminders({ userId, role }: UseProgressRemindersProps
     daysSincePhoto: null,
   })
 
-  const sendReminderNotification = useCallback(
-    async (needsMeasurement: boolean, needsPhoto: boolean) => {
-      if (!userId) return
-
-      try {
-        const notifications = []
-
-        if (needsMeasurement) {
-          notifications.push({
-            user_id: userId,
-            title: 'È ora di aggiornare i tuoi progressi 💪',
-            body: "Sono passati 7 giorni dall'ultima misurazione. Registra peso, circonferenze e forza!",
-            link: '/home/progressi',
-            type: 'progress_reminder',
-          })
-        }
-
-        if (needsPhoto) {
-          notifications.push({
-            user_id: userId,
-            title: 'Carica nuove foto per vedere il tuo cambiamento 📸',
-            body: "Sono passati 14 giorni dall'ultima foto. Scatta nuove foto per monitorare i progressi!",
-            link: '/home/progressi/foto',
-            type: 'photo_reminder',
-          })
-        }
-
-        // Inserisci le notifiche
-        for (const notification of notifications) {
-          const { error } = await supabase.from('notifications').insert(notification)
-
-          if (error) {
-            logger.error('Error creating notification', error, { userId, type: notification.type })
-          }
-        }
-      } catch (error) {
-        logger.error('Error sending reminder notification', error, {
-          userId,
-          needsMeasurement,
-          needsPhoto,
-        })
-      }
-    },
-    [userId],
-  )
-
   const checkReminders = useCallback(async () => {
     if (!userId || role !== 'atleta') return
 
@@ -132,15 +86,10 @@ export function useProgressReminders({ userId, role }: UseProgressRemindersProps
         daysSinceMeasurement,
         daysSincePhoto,
       })
-
-      // Invia notifiche se necessario
-      if (needsMeasurement || needsPhoto) {
-        await sendReminderNotification(needsMeasurement, needsPhoto)
-      }
     } catch (error) {
       logger.error('Error checking reminders', error, { userId, role })
     }
-  }, [userId, role, sendReminderNotification])
+  }, [userId, role])
 
   const markReminderAsSent = async (type: 'measurement' | 'photo') => {
     try {

@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
 import { buildDossierPdf } from '@/lib/dossier-pdf'
 import type { DossierProfile, DossierQuestionnaire } from '@/lib/dossier-pdf'
+import { requireCurrentOrgId } from '@/lib/organizations/current-org'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 
 const logger = createLogger('api:onboarding:finish')
 const QUESTIONNAIRE_VERSION = 'intake-v1-2026-02-08'
+
+const DOSSIER_PROFILE_COLUMNS =
+  'id, role, nome, cognome, email, phone, data_nascita, sesso, indirizzo_residenza, provincia, cap, citta, nazione, codice_fiscale, professione, altezza_cm, peso_corrente_kg, bmi, livello_esperienza, tipo_atleta, obiettivi_fitness, livello_motivazione, note, certificato_medico_tipo, limitazioni, allergie, obiettivo_nutrizionale, org_id'
 
 /** Row shape per athlete_questionnaires (tabella non presente nei tipi generati Supabase) */
 type AthleteQuestionnaireRow = {
@@ -42,28 +48,20 @@ export async function POST(request: Request) {
     const version = body.version ?? QUESTIONNAIRE_VERSION
 
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user?.id) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profileRow, error: profileError } = await supabase
-      .from('profiles')
-      .select(
-        'id, role, nome, cognome, email, phone, data_nascita, sesso, indirizzo_residenza, provincia, cap, citta, nazione, codice_fiscale, professione, altezza_cm, peso_corrente_kg, bmi, livello_esperienza, tipo_atleta, obiettivi_fitness, livello_motivazione, note, certificato_medico_tipo, limitazioni, allergie, obiettivo_nutrizionale, org_id',
-      )
-      .eq('user_id', session.user.id)
-      .single()
+    const profileRow = await resolveProfileByIdentifier(supabase, user.id, DOSSIER_PROFILE_COLUMNS)
 
-    if (profileError || !profileRow) {
+    if (!profileRow) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
 
-    const role = (profileRow as { role?: string }).role
+    const row = profileRow as unknown as DossierProfile & { role?: string | null }
+    const role = row.role
     if (role !== 'athlete') {
       return NextResponse.json(
         { error: "Solo gli atleti possono completare l'onboarding" },
@@ -71,7 +69,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const athleteId = profileRow.id as string
+    const athleteId = row.id
 
     const qRes = await (supabase as unknown as SupabaseQuestionnaireClient)
       .from('athlete_questionnaires')
@@ -95,33 +93,33 @@ export async function POST(request: Request) {
     }
 
     const profileForPdf: DossierProfile = {
-      id: profileRow.id,
-      nome: profileRow.nome ?? null,
-      cognome: profileRow.cognome ?? null,
-      email: profileRow.email,
-      phone: profileRow.phone ?? null,
-      data_nascita: profileRow.data_nascita ?? null,
-      sesso: profileRow.sesso ?? null,
-      indirizzo_residenza: profileRow.indirizzo_residenza ?? null,
-      provincia: profileRow.provincia ?? null,
-      cap: profileRow.cap ?? null,
-      citta: profileRow.citta ?? null,
-      nazione: profileRow.nazione ?? null,
-      codice_fiscale: profileRow.codice_fiscale ?? null,
-      professione: profileRow.professione ?? null,
-      altezza_cm: profileRow.altezza_cm ?? null,
-      peso_corrente_kg: profileRow.peso_corrente_kg ?? null,
-      bmi: profileRow.bmi ?? null,
-      livello_esperienza: profileRow.livello_esperienza ?? null,
-      tipo_atleta: profileRow.tipo_atleta ?? null,
-      obiettivi_fitness: profileRow.obiettivi_fitness ?? null,
-      livello_motivazione: profileRow.livello_motivazione ?? null,
-      note: profileRow.note ?? null,
-      certificato_medico_tipo: profileRow.certificato_medico_tipo ?? null,
-      limitazioni: profileRow.limitazioni ?? null,
-      allergie: profileRow.allergie ?? null,
-      obiettivo_nutrizionale: profileRow.obiettivo_nutrizionale ?? null,
-      org_id: profileRow.org_id ?? null,
+      id: row.id,
+      nome: row.nome ?? null,
+      cognome: row.cognome ?? null,
+      email: row.email,
+      phone: row.phone ?? null,
+      data_nascita: row.data_nascita ?? null,
+      sesso: row.sesso ?? null,
+      indirizzo_residenza: row.indirizzo_residenza ?? null,
+      provincia: row.provincia ?? null,
+      cap: row.cap ?? null,
+      citta: row.citta ?? null,
+      nazione: row.nazione ?? null,
+      codice_fiscale: row.codice_fiscale ?? null,
+      professione: row.professione ?? null,
+      altezza_cm: row.altezza_cm ?? null,
+      peso_corrente_kg: row.peso_corrente_kg ?? null,
+      bmi: row.bmi ?? null,
+      livello_esperienza: row.livello_esperienza ?? null,
+      tipo_atleta: row.tipo_atleta ?? null,
+      obiettivi_fitness: row.obiettivi_fitness ?? null,
+      livello_motivazione: row.livello_motivazione ?? null,
+      note: row.note ?? null,
+      certificato_medico_tipo: row.certificato_medico_tipo ?? null,
+      limitazioni: row.limitazioni ?? null,
+      allergie: row.allergie ?? null,
+      obiettivo_nutrizionale: row.obiettivo_nutrizionale ?? null,
+      org_id: row.org_id ?? null,
     }
 
     const questionnaireForPdf: DossierQuestionnaire = {
@@ -153,7 +151,10 @@ export async function POST(request: Request) {
     const { data: urlData } = admin.storage.from('documents').getPublicUrl(storagePath)
     const fileUrl = urlData.publicUrl
 
-    const orgId = (profileRow as { org_id?: string | null }).org_id ?? ''
+    const orgId = requireCurrentOrgId(
+      row.org_id,
+      'Organizzazione non disponibile per salvataggio dossier onboarding',
+    )
     const { error: docError } = await admin.from('documents').insert({
       athlete_id: athleteId,
       uploaded_by_profile_id: athleteId,
@@ -182,10 +183,10 @@ export async function POST(request: Request) {
         first_login: false,
         ultimo_accesso: nowIso,
       })
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
 
     if (profileUpdateError) {
-      logger.error('Errore update first_login', profileUpdateError, { userId: session.user.id })
+      logger.error('Errore update first_login', profileUpdateError, { userId: user.id })
       return NextResponse.json({ error: 'Errore aggiornamento profilo' }, { status: 500 })
     }
 

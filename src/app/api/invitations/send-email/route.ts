@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { sendInvitationEmail } from '@/lib/invitations/send-invitation-email'
 import { createLogger } from '@/lib/logger'
 
@@ -10,22 +12,14 @@ const ALLOWED_ROLES = ['admin', 'trainer']
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .single()
-
-    const role = (profile as { role?: string } | null)?.role
+    const profile = await resolveProfileByIdentifier(supabase, user.id, 'role')
+    const role = profile?.role as string | undefined
     if (!role || !ALLOWED_ROLES.includes(role)) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
     }

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase'
 import { createLogger } from '@/lib/logger'
+import { NOTIFICATION_TYPES } from '@/lib/notifications/types'
 
 const supabase = createClient()
 const logger = createLogger('lib:notifications:athlete-registration')
@@ -28,7 +29,7 @@ export async function sendAthleteRegistrationNotification(
       title: '🎉 Nuovo atleta registrato',
       body: `${athleteName} ha completato la registrazione ed è stato assegnato a te`,
       link: `/dashboard/clienti/${athleteId}`,
-      type: 'athlete_registration',
+      type: NOTIFICATION_TYPES.ATHLETE_REGISTRATION,
       sent_at: new Date().toISOString(),
     })
 
@@ -57,7 +58,7 @@ export async function sendAthleteRegistrationNotification(
         title: '🎉 Nuovo atleta registrato',
         body: `${athleteName} ha completato la registrazione`,
         data: {
-          type: 'athlete_registration',
+          type: NOTIFICATION_TYPES.ATHLETE_REGISTRATION,
           athlete_id: athleteId,
           link: `/dashboard/clienti/${athleteId}`,
         },
@@ -137,7 +138,7 @@ export async function sendAthleteWelcomeNotification(
       title: '🎉 Benvenuto in 22Club!',
       body: `Ciao ${athleteName}! Il tuo PT ${ptName} ti ha preparato un percorso personalizzato. Inizia subito!`,
       link: '/home',
-      type: 'welcome',
+      type: NOTIFICATION_TYPES.WELCOME,
       sent_at: new Date().toISOString(),
     })
 

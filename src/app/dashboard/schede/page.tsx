@@ -42,6 +42,7 @@ export default function SchedePage() {
     setObjectiveFilter,
     athletes,
     handleDeleteWorkout,
+    handleDuplicateWorkout,
     getStatusColor,
     getStatusText,
     formatDate,
@@ -75,6 +76,28 @@ export default function SchedePage() {
       }
     },
     [handleDeleteWorkout, addToast],
+  )
+
+  const handleDuplicateClick = useCallback(
+    async (workout: Workout) => {
+      try {
+        await handleDuplicateWorkout(workout.id)
+        addToast({
+          title: 'Scheda duplicata',
+          message: `È stata creata una bozza con il contenuto di "${workout.name}". Puoi assegnarla e modificarla.`,
+          variant: 'success',
+        })
+      } catch (error) {
+        logger.error('Errore duplicazione scheda', error, { workoutId: workout.id })
+        addToast({
+          title: 'Errore',
+          message:
+            error instanceof Error ? error.message : 'Errore nella duplicazione della scheda',
+          variant: 'error',
+        })
+      }
+    },
+    [handleDuplicateWorkout, addToast],
   )
 
   const handleRetry = useCallback(() => router.refresh(), [router])
@@ -158,6 +181,7 @@ export default function SchedePage() {
         onWorkoutClick={handleWorkoutClick}
         onViewClick={handleWorkoutClick}
         onDeleteClick={handleDeleteClick}
+        onDuplicateClick={handleDuplicateClick}
         getStatusColor={getStatusColor}
         getStatusText={getStatusText}
         formatDate={formatDate}

@@ -1,6 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
+import { getCurrentOrgIdFromProfile, isLegacyOrgText } from '@/lib/organizations/current-org'
 import type { UserRole } from '@/types/user'
 import { Database } from './types'
 
@@ -119,6 +120,15 @@ export function handleRefreshTokenError(error: unknown): boolean {
 
 // 🔐 Imposta headers personalizzati con ruolo e organizzazione
 export async function setSupabaseContext(role: UserRole, org_id: string) {
+  const normalizedOrgId = getCurrentOrgIdFromProfile({ org_id })
+  if (!normalizedOrgId || isLegacyOrgText(normalizedOrgId)) {
+    logger.warn('Org non valido/legacy: skip sincronizzazione contesto', undefined, {
+      role,
+      org_id,
+    })
+    return
+  }
+
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -138,7 +148,7 @@ export async function setSupabaseContext(role: UserRole, org_id: string) {
       headers: {
         Authorization: `Bearer ${access_token}`,
         'x-user-role': role,
-        'x-org-id': org_id,
+        'x-org-id': normalizedOrgId,
         'Content-Type': 'application/json',
       },
     })
@@ -146,12 +156,15 @@ export async function setSupabaseContext(role: UserRole, org_id: string) {
     if (!response.ok) {
       logger.warn('Impossibile sincronizzare il contesto Supabase', undefined, {
         role,
-        org_id,
+        org_id: normalizedOrgId,
         status: response.status,
       })
     }
   } catch (error) {
-    logger.warn('Errore durante la sincronizzazione del contesto', error, { role, org_id })
+    logger.warn('Errore durante la sincronizzazione del contesto', error, {
+      role,
+      org_id: normalizedOrgId,
+    })
   }
 }
 
@@ -171,9 +184,12 @@ export async function getSupabaseContext(): Promise<{
   try {
     // Decodifica il JWT per estrarre i claims
     const payload = JSON.parse(atob(session.access_token.split('.')[1]))
+    const normalizedOrgId = getCurrentOrgIdFromProfile({
+      org_id: (payload as { org_id?: string | null }).org_id ?? null,
+    })
     return {
       role: payload.role || null,
-      org_id: payload.org_id || null,
+      org_id: normalizedOrgId,
     }
   } catch (error) {
     logger.warn('Errore durante la decodifica del JWT', error)

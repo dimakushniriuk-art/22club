@@ -623,18 +623,16 @@ export function AdminRolesContent() {
       })
 
       if (!response.ok) {
-        const error = await response
-          .json()
-          .catch(
-            () =>
-              ({}) as {
-                error?: string
-                details?: string
-                code?: string
-                hint?: string
-                errorDetails?: string
-              },
-          )
+        const error = await response.json().catch(
+          () =>
+            ({}) as {
+              error?: string
+              details?: string
+              code?: string
+              hint?: string
+              errorDetails?: string
+            },
+        )
         const messageParts = [
           error?.error || "Errore nell'eliminazione utente",
           error?.details ? String(error.details) : null,

@@ -1,4 +1,4 @@
-# Script PowerShell per rigenerare tipi TypeScript da Supabase remoto
+﻿# Script PowerShell per rigenerare tipi TypeScript da Supabase remoto
 # Uso: .\scripts\regenerate-types-remote.ps1
 
 Write-Host "🔄 Rigenerazione tipi TypeScript da Supabase remoto..." -ForegroundColor Cyan

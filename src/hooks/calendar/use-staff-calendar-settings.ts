@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import { getCurrentStaffProfileClient } from '@/lib/supabase/get-current-staff-profile-client'
+import { DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT } from '@/lib/calendar-defaults'
 import type { Database, Json } from '@/lib/supabase/types'
 import type {
   StaffCalendarSettings,
@@ -47,7 +49,8 @@ function mapRowToSettings(row: Record<string, unknown>): StaffCalendarSettings {
     grid_min_time: (row.grid_min_time as string | null) ?? null,
     grid_max_time: (row.grid_max_time as string | null) ?? null,
     slot_duration_minutes: (row.slot_duration_minutes as number) ?? 15,
-    max_free_pass_athletes_per_slot: (row.max_free_pass_athletes_per_slot as number) ?? 4,
+    max_free_pass_athletes_per_slot:
+      (row.max_free_pass_athletes_per_slot as number) ?? DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
     view_density: (row.view_density as StaffCalendarSettings['view_density']) ?? 'comfort',
     type_cell_width: (row.type_cell_width as StaffCalendarSettings['type_cell_width']) ?? undefined,
     created_at: row.created_at as string | undefined,
@@ -66,29 +69,21 @@ export function useStaffCalendarSettings() {
     let cancelled = false
     async function load() {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (!user) {
+        const profile = await getCurrentStaffProfileClient()
+        if (!profile) {
           setLoading(false)
           return
         }
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, org_id')
-          .eq('user_id', user.id)
-          .single()
         if (cancelled || !profile) {
           setLoading(false)
           return
         }
-        const p = profile as { id: string; org_id: string | null }
-        setStaffProfileId(p.id)
-        setOrgId(p.org_id ?? null)
+        setStaffProfileId(profile.id)
+        setOrgId(profile.org_id ?? null)
         const { data: row, error } = await supabase
           .from('staff_calendar_settings')
           .select('*')
-          .eq('staff_id', p.id)
+          .eq('staff_id', profile.id)
           .maybeSingle()
         if (cancelled) return
         if (error) {

@@ -12,11 +12,13 @@ import { ErrorState } from '@/components/dashboard/error-state'
 import { useToast } from '@/components/ui/toast'
 import { useSearchParams } from 'next/navigation'
 import type { WorkoutWizardData, WorkoutDayExerciseData } from '@/types/workout'
+import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizard'
 
 function NuovaSchedaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { athletes, exercises, loading, error, handleCreateWorkout } = useWorkoutPlans()
+  const { athletes, exercises, loading, error, exercisesLoadError, handleCreateWorkout } =
+    useWorkoutPlans()
   const { addToast } = useToast()
 
   const initialAthleteId = searchParams.get('athlete_id') || undefined
@@ -24,15 +26,22 @@ function NuovaSchedaContent() {
   const handleSave = async (
     workoutData: WorkoutWizardData,
     circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
+    options?: WorkoutWizardSaveOptions,
   ) => {
     try {
-      await handleCreateWorkout(workoutData, circuitList)
+      const newId = await handleCreateWorkout(workoutData, circuitList, options)
       addToast({
-        title: 'Scheda creata',
-        message: 'La scheda di allenamento è stata creata con successo.',
+        title: options?.draft ? 'Bozza salvata' : 'Scheda creata',
+        message: options?.draft
+          ? 'Puoi continuare a modificare qui; i prossimi salvataggi aggiornano questa scheda.'
+          : 'La scheda di allenamento è stata creata con successo.',
         variant: 'success',
       })
-      router.push('/dashboard/schede')
+      if (options?.draft && newId) {
+        router.replace(`/dashboard/schede/${newId}/modifica`)
+      } else {
+        router.push('/dashboard/schede')
+      }
     } catch (error) {
       logger.error('Errore creazione scheda', error)
       addToast({
@@ -56,10 +65,10 @@ function NuovaSchedaContent() {
     )
   }
 
-  if (error) {
+  if (error || exercisesLoadError) {
     return (
       <div className="relative min-h-screen flex flex-col">
-        <ErrorState message={error} onRetry={() => router.refresh()} />
+        <ErrorState message={error || exercisesLoadError || ''} onRetry={() => router.refresh()} />
       </div>
     )
   }

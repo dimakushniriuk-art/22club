@@ -31,7 +31,7 @@ export const createAppointmentSchema = z
       .default('attivo'), // Aggiunto 'cancelled'
     notes: z.string().max(1000, 'Note troppo lunghe').optional().nullable(), // Aumentato da 500 a 1000
     location: z.string().max(255, 'Luogo troppo lungo').optional().nullable(), // Aumentato da 200 a 255 (standard VARCHAR)
-    org_id: z.string().optional().default('default-org'),
+    org_id: z.string().optional(),
   })
   .refine((data) => new Date(data.ends_at) > new Date(data.starts_at), {
     message: 'La data di fine deve essere successiva alla data di inizio',

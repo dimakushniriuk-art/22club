@@ -6,6 +6,7 @@ import { createLogger } from '@/lib/logger'
 import { createAdminClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
+import type { NotificationType } from '@/lib/notifications/types'
 
 const logger = createLogger('lib:notifications:push')
 
@@ -222,6 +223,7 @@ export async function sendPushNotification(
   icon?: string,
   badge?: string,
   data?: Record<string, unknown>,
+  notificationId?: string,
 ): Promise<PushResult> {
   try {
     // Ottieni token attivi per l'utente
@@ -254,15 +256,16 @@ export async function sendPushNotification(
       }
     }
 
-    // Aggiorna lo stato della notifica
-    const supabase = getSupabaseClient()
-    // Workaround necessario per inferenza tipo Supabase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('notifications') as any)
-      .update({ is_push_sent: true } as Record<string, unknown>)
-      .eq('user_id', userId)
-      .eq('title', title)
-      .eq('is_push_sent', false)
+    // Aggiorna lo stato solo della riga notifica specifica (quando disponibile)
+    if (notificationId) {
+      const supabase = getSupabaseClient()
+      // Workaround necessario per inferenza tipo Supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from('notifications') as any)
+        .update({ is_push_sent: true } as Record<string, unknown>)
+        .eq('id', notificationId)
+        .eq('is_push_sent', false)
+    }
 
     logger.info('Push notification sent', undefined, {
       userId,
@@ -315,8 +318,13 @@ async function sendWebPushNotification(
       return { success: true }
     }
 
-    // Import dinamico di web-push (solo quando necessario, server-side)
-    const webpush = await import('web-push')
+    // Import dinamico opzionale: senza webpackIgnore il bundler tenta di risolvere
+    // il modulo anche se non è in package.json → warning "Can't resolve 'web-push'".
+    // A runtime Node carica il modulo se presente; altrimenti il catch usa il fallback.
+    const webpush = await import(
+      /* webpackIgnore: true */
+      'web-push'
+    )
 
     // Configura VAPID details
     webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
@@ -526,11 +534,12 @@ export async function processUnsentNotifications() {
 
     // Type assertion per notifications
     type NotificationRow = {
+      id?: string | null
       user_id?: string | null
       title?: string | null
       body?: string | null
       link?: string | null
-      type?: string | null
+      type?: NotificationType | null
       action_text?: string | null
       [key: string]: unknown
     }
@@ -551,6 +560,7 @@ export async function processUnsentNotifications() {
             type: notification.type || undefined,
             actionText: notification.action_text || undefined,
           },
+          notification.id || undefined,
         )
 
         if (result.success) {

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api:communications:check-stuck')
@@ -12,22 +14,14 @@ const logger = createLogger('api:communications:check-stuck')
 export async function POST() {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ reset: 0 }, { status: 200 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
-
-    const profileId = (profile as { id?: string } | null)?.id
+    const profile = await resolveProfileByIdentifier(supabase, user.id, 'id')
+    const profileId = profile?.id as string | undefined
     if (!profileId) {
       return NextResponse.json({ reset: 0 }, { status: 200 })
     }

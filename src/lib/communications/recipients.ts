@@ -6,6 +6,7 @@
 
 import { createLogger } from '@/lib/logger'
 import { createAdminClient } from '@/lib/supabase/server'
+import { getCurrentOrgIdFromProfile } from '@/lib/organizations/current-org'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import type { RecipientFilter } from './service'
@@ -29,6 +30,12 @@ function getSupabaseClient() {
   return serviceClient
 }
 
+function resolveFilterOrgId(filter: RecipientFilter): string | null {
+  return getCurrentOrgIdFromProfile({
+    org_id: (filter as { org_id?: string | null }).org_id ?? null,
+  })
+}
+
 /**
  * Ottiene i destinatari in base ai filtri specificati
  */
@@ -44,7 +51,7 @@ export async function getRecipientsByFilter(
       .eq('stato', 'attivo') // Filtra solo utenti attivi
 
     // Filtro per org (stessa organizzazione del creatore)
-    const orgId = (filter as { org_id?: string }).org_id
+    const orgId = resolveFilterOrgId(filter)
     if (orgId) {
       query = query.eq('org_id', orgId)
     }
@@ -223,6 +230,7 @@ setInterval(
  */
 function getCacheKey(filter: RecipientFilter): string {
   return JSON.stringify({
+    org_id: resolveFilterOrgId(filter),
     role: filter.role || null,
     athlete_ids: filter.athlete_ids?.sort().join(',') || null,
     all_users: filter.all_users || false,
@@ -231,10 +239,24 @@ function getCacheKey(filter: RecipientFilter): string {
 
 export async function countRecipientsByFilter(
   filter: RecipientFilter,
+  communicationType: string,
 ): Promise<{ count: number; error: Error | null }> {
   try {
+    // Allineato a generateRecipientTypes(): per push/sms (legacy) nessun recipient_type email.
+    if (communicationType !== 'email' && communicationType !== 'all') {
+      return { count: 0, error: null }
+    }
+
+    const orgId = resolveFilterOrgId(filter)
+
+    // Se stiamo contando per ruolo o "tutti" ma manca org_id,
+    // seguiamo la stessa regola di getRecipientsByFilter.
+    if ((filter.role || filter.all_users) && !orgId) {
+      return { count: 0, error: null }
+    }
+
     // Controlla cache (TTL 60 secondi)
-    const cacheKey = getCacheKey(filter)
+    const cacheKey = JSON.stringify({ ...JSON.parse(getCacheKey(filter)), communicationType })
     const cached = countCache.get(cacheKey)
     if (cached && cached.expires > Date.now()) {
       logger.debug('Count destinatari da cache', { filter, count: cached.count })
@@ -245,9 +267,13 @@ export async function countRecipientsByFilter(
 
     let query = supabase
       .from('profiles')
-      // Usa 'estimated' invece di 'exact' per velocità (accettabile per count destinatari)
-      .select('user_id', { count: 'estimated', head: true })
+      // Count esatto per allineare la UI ai recipients effettivamente creati
+      .select('user_id', { count: 'exact', head: true })
       .eq('stato', 'attivo') // Filtra solo utenti attivi
+
+    if (orgId) {
+      query = query.eq('org_id', orgId)
+    }
 
     // Filtro per ruolo (gestisce atleta/athlete come sinonimi)
     if (filter.role) {
@@ -258,8 +284,9 @@ export async function countRecipientsByFilter(
       }
     }
 
+    // Allineato a getRecipientsByFilter e list-athletes: athlete_ids = profiles.id
     if (filter.athlete_ids && filter.athlete_ids.length > 0) {
-      query = query.in('user_id', filter.athlete_ids)
+      query = query.in('id', filter.athlete_ids)
     }
 
     if (
@@ -269,6 +296,10 @@ export async function countRecipientsByFilter(
     ) {
       return { count: 0, error: null }
     }
+
+    // Allineato a generateRecipientTypes(): conta solo chi è email-ready.
+    // generateRecipientTypes usa `if (recipient.email)`; getRecipientsByFilter mappa email vuota/null -> null.
+    query = query.neq('email', '')
 
     const { count, error } = await query
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
+import { buildLegacyOrgWriteContext, requireCurrentOrgId } from '@/lib/organizations/current-org'
 import type { Tables } from '@/types/supabase'
 import type { Database } from '@/lib/supabase/types'
 import { z } from 'zod'
@@ -392,14 +393,18 @@ export async function PUT(request: NextRequest) {
           { status: 400 },
         )
       }
-      let orgId: string = athleteRow.org_id ?? trainerRow.org_id ?? ''
-      if (!orgId) {
-        const { data: defaultOrg } = await adminClient
-          .from('organizations')
-          .select('id')
-          .eq('slug', 'default-org')
-          .maybeSingle()
-        orgId = defaultOrg?.id ?? 'default-org'
+      let orgWriteContext: { org_id: string; org_id_text: string }
+      try {
+        const orgId = requireCurrentOrgId(
+          athleteRow.org_id ?? trainerRow.org_id,
+          'Organizzazione non disponibile per assegnazione trainer',
+        )
+        orgWriteContext = buildLegacyOrgWriteContext({ profile: { org_id: orgId } })
+      } catch {
+        return NextResponse.json(
+          { error: 'Organizzazione non disponibile per assegnazione trainer' },
+          { status: 400 },
+        )
       }
       if (
         athleteRow.org_id != null &&
@@ -417,8 +422,7 @@ export async function PUT(request: NextRequest) {
         .eq('athlete_id', athleteId)
         .eq('status', 'active')
       const { error: insErr } = await adminClient.from('athlete_trainer_assignments').insert({
-        org_id: orgId,
-        org_id_text: orgId,
+        ...orgWriteContext,
         athlete_id: athleteId,
         trainer_id: trainerId,
         status: 'active',

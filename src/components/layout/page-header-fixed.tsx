@@ -54,7 +54,7 @@ export function PageHeaderFixed({
         aria-label="Indietro"
         asChild
       >
-        <Link href={backHref} className="flex h-full w-full items-center justify-center">
+        <Link href={backHref} className="inline-flex shrink-0 items-center justify-center">
           <BackIcon />
         </Link>
       </Button>

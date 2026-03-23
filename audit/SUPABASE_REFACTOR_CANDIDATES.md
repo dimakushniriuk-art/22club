@@ -24,4 +24,4 @@ Ordine indicativo per impatto/chiarezza architetturale.
 
 ---
 
-*Lista descrittiva — nessuna implementazione richiesta in questa fase.*
+_Lista descrittiva — nessuna implementazione richiesta in questa fase._

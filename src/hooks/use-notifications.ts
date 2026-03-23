@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import type { NotificationType } from '@/lib/notifications/types'
 
 const logger = createLogger('hooks:use-notifications')
 
@@ -12,7 +13,7 @@ export interface Notification {
   title: string
   body: string
   link?: string | null
-  type: string
+  type: NotificationType
   sent_at: string | null
   read_at?: string | null
   action_text?: string | null

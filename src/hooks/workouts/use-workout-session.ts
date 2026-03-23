@@ -62,9 +62,14 @@ export function useWorkoutSession() {
           return
         }
 
-        type WorkoutPlanRow = Pick<Tables<'workout_plans'>, 'id' | 'created_at'>
+        type WorkoutPlanRow = Pick<
+          Tables<'workout_plans'>,
+          'id' | 'created_at' | 'name' | 'description'
+        >
         const typedPlanData = planData as WorkoutPlanRow
         const planId = typedPlanData.id
+        const planName = typedPlanData.name ?? null
+        const planDescription = typedPlanData.description ?? null
 
         // STEP 2: Recupera workout_days per questa scheda
         let daysQuery = supabase.from('workout_days').select('*').eq('workout_plan_id', planId)
@@ -88,6 +93,8 @@ export function useWorkoutSession() {
           setCurrentWorkout({
             id: planId,
             workout_id: planId,
+            plan_name: planName,
+            plan_description: planDescription,
             date: typedPlanData.created_at || new Date().toISOString(),
             exercises: [],
             total_exercises: 0,
@@ -104,6 +111,8 @@ export function useWorkoutSession() {
           setCurrentWorkout({
             id: planId,
             workout_id: planId,
+            plan_name: planName,
+            plan_description: planDescription,
             date: typedPlanData.created_at || new Date().toISOString(),
             exercises: [],
             total_exercises: 0,
@@ -134,6 +143,8 @@ export function useWorkoutSession() {
             id: selectedDay.id,
             workout_id: planId,
             workout_day_id: selectedDay.id,
+            plan_name: planName,
+            plan_description: planDescription,
             day_title: selectedDay.day_name || selectedDay.title || '',
             date: typedPlanData.created_at || new Date().toISOString(),
             exercises: [],
@@ -162,6 +173,8 @@ export function useWorkoutSession() {
             id: selectedDay.id,
             workout_id: planId,
             workout_day_id: selectedDay.id,
+            plan_name: planName,
+            plan_description: planDescription,
             day_title: selectedDay.day_name || selectedDay.title || '',
             date: typedPlanData.created_at || new Date().toISOString(),
             exercises: [],
@@ -382,6 +395,8 @@ export function useWorkoutSession() {
           id: selectedDay.id ?? planId ?? generateTempId('session'),
           workout_id: planId,
           workout_day_id: selectedDay.id ?? '',
+          plan_name: planName,
+          plan_description: planDescription,
           day_title: selectedDay.day_name || selectedDay.title || '',
           date: typedPlanData.created_at || new Date().toISOString(),
           total_exercises: totalExercises,

@@ -17,6 +17,7 @@ const { mockSupabaseClient } = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => mockSupabaseClient,
   supabase: mockSupabaseClient,
+  handleRefreshTokenError: vi.fn(() => false),
 }))
 
 // Mock API route

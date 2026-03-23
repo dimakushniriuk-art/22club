@@ -78,10 +78,25 @@ const checkBuildFiles = () => {
   return nextConfig && tailwindConfig && tsConfig
 }
 
+const checkDocPath = (primaryPath, fallbackPath, description) => {
+  const primaryFull = path.resolve(projectRoot, primaryPath)
+  if (fs.existsSync(primaryFull)) {
+    console.log(`✅ ${description} - EXISTS (${primaryPath})`)
+    return true
+  }
+  const fallbackFull = path.resolve(projectRoot, fallbackPath)
+  if (fs.existsSync(fallbackFull)) {
+    console.log(`✅ ${description} - EXISTS (${fallbackPath})`)
+    return true
+  }
+  console.error(`❌ ${description} - MISSING (tried ${primaryPath}, ${fallbackPath})`)
+  return false
+}
+
 const checkDocumentation = () => {
   console.log('📚 Checking documentation...')
-  const readme = checkFileExists('README.md', 'README file')
-  const changelog = checkFileExists('CHANGELOG.md', 'CHANGELOG file')
+  const readme = checkDocPath('README.md', 'DOCUMENTAZIONE/README.md', 'README file')
+  const changelog = checkDocPath('CHANGELOG.md', 'DOCUMENTAZIONE/CHANGELOG.md', 'CHANGELOG file')
   const docsIndex = checkFileExists('docs/index.html', 'Docsify index')
   const storybookConfig = checkFileExists('.storybook/main.ts', 'Storybook config')
 

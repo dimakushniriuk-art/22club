@@ -79,14 +79,14 @@ export default function DocumentiPage() {
     })
   }, [addToast, error])
 
-  const handleDocumentClick = (document: Document) => {
-    setSelectedDocument(document)
+  const handleDocumentClick = (doc: Document) => {
+    setSelectedDocument(doc)
     setShowDrawer(true)
   }
 
-  const handlePreview = (document: Document) => {
-    if (!document.file_url) return
-    window.open(document.file_url, '_blank', 'noopener,noreferrer')
+  const handlePreview = (doc: Document) => {
+    if (!doc.file_url) return
+    window.open(doc.file_url, '_blank', 'noopener,noreferrer')
   }
 
   const handleMarkInvalid = () => {

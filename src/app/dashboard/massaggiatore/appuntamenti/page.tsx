@@ -319,7 +319,10 @@ export default function MassaggiatoreAppuntamentiPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+        <div
+          data-testid="appointment-form-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+        >
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
             <Suspense fallback={<LoadingState message="Caricamento form..." />}>
               <AppointmentForm
@@ -334,7 +337,10 @@ export default function MassaggiatoreAppuntamentiPage() {
         </div>
       )}
       {showDetail && selectedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+        <div
+          data-testid="appointment-detail-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+        >
           <div className="w-full max-w-md">
             <Suspense fallback={<LoadingState message="Caricamento dettagli..." />}>
               <AppointmentDetail
@@ -364,6 +370,8 @@ export default function MassaggiatoreAppuntamentiPage() {
           variant={confirmState.action === 'delete' ? 'destructive' : 'default'}
           loading={loading}
           onConfirm={handleConfirmDialogConfirm}
+          confirmTestId="appointment-confirm-dialog-confirm"
+          cancelTestId="appointment-confirm-dialog-cancel"
         />
       )}
     </StaffContentLayout>

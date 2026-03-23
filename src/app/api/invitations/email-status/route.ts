@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { isResendConfigured } from '@/lib/communications/email-resend-client'
 
 const ALLOWED_ROLES = ['admin', 'trainer']
@@ -11,22 +13,14 @@ const ALLOWED_ROLES = ['admin', 'trainer']
 export async function GET() {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ configured: false }, { status: 200 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .single()
-
-    const role = (profile as { role?: string } | null)?.role
+    const profile = await resolveProfileByIdentifier(supabase, user.id, 'role')
+    const role = profile?.role as string | undefined
     if (!role || !ALLOWED_ROLES.includes(role)) {
       return NextResponse.json({ configured: false }, { status: 200 })
     }

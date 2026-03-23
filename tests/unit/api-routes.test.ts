@@ -28,9 +28,8 @@ describe('API Routes', () => {
     it('should handle successful context update', async () => {
       const mockSupabase = {
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: 'test-user-id' } } },
-            error: null,
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: { id: 'test-user-id' } },
           }),
         },
         from: vi.fn().mockReturnValue({
@@ -66,9 +65,8 @@ describe('API Routes', () => {
     it('should handle missing headers', async () => {
       const mockSupabase = {
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: 'test-user-id' } } },
-            error: null,
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: { id: 'test-user-id' } },
           }),
         },
       }
@@ -89,9 +87,8 @@ describe('API Routes', () => {
     it('should handle invalid role', async () => {
       const mockSupabase = {
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: 'test-user-id' } } },
-            error: null,
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: { id: 'test-user-id' } },
           }),
         },
       }
@@ -117,9 +114,8 @@ describe('API Routes', () => {
     it('should handle successful context retrieval', async () => {
       const mockSupabase = {
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: 'test-user-id' } } },
-            error: null,
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: { id: 'test-user-id' } },
           }),
         },
         from: vi.fn().mockReturnValue({
@@ -149,9 +145,8 @@ describe('API Routes', () => {
     it('should handle missing session', async () => {
       const mockSupabase = {
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: null },
-            error: null,
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: null },
           }),
         },
       }
@@ -166,9 +161,8 @@ describe('API Routes', () => {
     it('should handle profile not found', async () => {
       const mockSupabase = {
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: 'test-user-id' } } },
-            error: null,
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: { id: 'test-user-id' } },
           }),
         },
         from: vi.fn().mockReturnValue({

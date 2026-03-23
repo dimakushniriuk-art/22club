@@ -16,6 +16,10 @@ import { RecurrenceSelector } from '@/components/appointments/recurrence-selecto
 import type { RecurrenceConfig } from '@/lib/recurrence-utils'
 import { serializeRecurrence, generateRecurringAppointments } from '@/lib/recurrence-utils'
 import { createLogger } from '@/lib/logger'
+import {
+  requireCurrentOrgId,
+  resolveOrgIdForAppointmentWrite,
+} from '@/lib/organizations/current-org'
 
 const logger = createLogger('components:dashboard:appointment-modal')
 // Validazione sovrapposizione rimossa per permettere più atleti nello stesso orario
@@ -104,6 +108,34 @@ export function AppointmentModal({ open, onOpenChange, onSuccess }: AppointmentM
       }
       const typedProfile = profile as ProfileRow
 
+      const { data: staffOrgRow, error: staffOrgError } = await supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('id', typedProfile.id)
+        .single()
+
+      if (staffOrgError) {
+        logger.error('Errore lettura org_id profilo staff', staffOrgError, {
+          profileId: typedProfile.id,
+        })
+        setError('Impossibile verificare l’organizzazione. Riprova.')
+        setLoading(false)
+        return
+      }
+
+      let resolvedOrgId: string
+      try {
+        resolvedOrgId = requireCurrentOrgId(
+          resolveOrgIdForAppointmentWrite({
+            profileOrgId: staffOrgRow?.org_id ?? null,
+          }),
+        )
+      } catch {
+        setError('Organizzazione non configurata sul profilo. Contatta un amministratore.')
+        setLoading(false)
+        return
+      }
+
       // Validazione sovrapposizione rimossa: permette più atleti nello stesso orario
       // (utile per allenamenti di gruppo o più atleti contemporaneamente)
 
@@ -117,7 +149,8 @@ export function AppointmentModal({ open, onOpenChange, onSuccess }: AppointmentM
         status: 'attivo',
         notes: formData.notes || null,
         location: formData.location || null,
-        org_id: 'default-org',
+        org_id: resolvedOrgId,
+        org_id_text: resolvedOrgId,
       }
 
       // Genera appuntamenti ricorrenti se necessario

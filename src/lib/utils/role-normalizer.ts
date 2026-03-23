@@ -1,7 +1,4 @@
-'use client'
-
 import { createLogger } from '@/lib/logger'
-import { useMemo } from 'react'
 
 const logger = createLogger('utils:role-normalizer')
 
@@ -19,7 +16,7 @@ export type NormalizedRole =
   | null
 
 /**
- * Normalizza un ruolo in formato canonico.
+ * Normalizza un ruolo DB → ruolo app canonico.
  * pt → trainer, atleta → athlete, owner → admin, staff → trainer.
  */
 export function normalizeRole(role: string | null | undefined): NormalizedRole {
@@ -52,10 +49,6 @@ export function normalizeRole(role: string | null | undefined): NormalizedRole {
   return null
 }
 
-export function useNormalizedRole(role: string | null | undefined): NormalizedRole {
-  return useMemo(() => normalizeRole(role), [role])
-}
-
 /** Tipo legacy mantenuto per compatibilità; valori canonici. */
 export type LegacyRole = NormalizedRole
 
@@ -86,8 +79,4 @@ export function fromLegacyRole(legacyRole: LegacyRole): NormalizedRole {
  */
 export function normalizeRoleToLegacy(role: string | null | undefined): LegacyRole {
   return normalizeRole(role)
-}
-
-export function useNormalizedRoleToLegacy(role: string | null | undefined): LegacyRole {
-  return useMemo(() => normalizeRoleToLegacy(role), [role])
 }

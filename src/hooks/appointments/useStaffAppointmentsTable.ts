@@ -13,31 +13,33 @@ import type {
   CreateAppointmentData,
   EditAppointmentData,
 } from '@/types/appointment'
+import {
+  appointmentSlotOverlapsAnyCalendarBlock,
+  CALENDAR_BLOCK_CONFLICT_UI,
+  checkStaffCalendarSlotOverlap,
+  fetchStaffCalendarBlocksForUiValidation,
+  normalizeAppointmentStatus,
+} from '@/lib/appointment-utils'
+import type { CalendarBlock } from '@/types/calendar-block'
+import { useNotify } from '@/lib/ui/notify'
+import { listStaffAppointmentsForTable } from '@/lib/appointments/queries'
+import {
+  requireCurrentOrgId,
+  resolveOrgIdForAppointmentWrite,
+} from '@/lib/organizations/current-org'
 
 const logger = createLogger('hooks:appointments:useStaffAppointmentsTable')
-// Validazione sovrapposizione rimossa per permettere più atleti nello stesso orario
-// import { checkAppointmentOverlap } from '@/lib/appointment-utils'
-
-const normalizeAppointmentStatus = (status?: string | null): AppointmentTable['status'] => {
-  switch (status) {
-    case 'completato':
-    case 'completed':
-      return 'completato'
-    case 'annullato':
-    case 'cancelled':
-      return 'annullato'
-    default:
-      return 'attivo'
-  }
-}
-
 export function useStaffAppointmentsTable() {
   const [appointments, setAppointments] = useState<AppointmentTable[]>([])
   const [appointmentsLoading, setAppointmentsLoading] = useState(true)
   const [athletes, setAthletes] = useState<Array<{ id: string; name: string; email: string }>>([])
   const [athletesLoading, setAthletesLoading] = useState(true)
   const [staffId, setStaffId] = useState<string | null>(null)
+  const [staffOrgId, setStaffOrgId] = useState<string | null>(null)
+  const [calendarBlocks, setCalendarBlocks] = useState<CalendarBlock[]>([])
   const [staffName, setStaffName] = useState<string | null>(null)
+  const [staffRole, setStaffRole] = useState<string | null>(null)
+  const { notify } = useNotify()
 
   // Carica il profilo dello staff corrente
   useEffect(() => {
@@ -50,12 +52,14 @@ export function useStaffAppointmentsTable() {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, nome, cognome')
+          .select('id, nome, cognome, role, org_id')
           .eq('user_id', user.id)
           .single()
 
         if (profile) {
           setStaffId(profile.id)
+          setStaffOrgId(profile.org_id ?? null)
+          setStaffRole(profile.role ?? null)
           const fullName = `${profile.nome || ''} ${profile.cognome || ''}`.trim()
           setStaffName(fullName || null)
         }
@@ -73,27 +77,8 @@ export function useStaffAppointmentsTable() {
 
     try {
       setAppointmentsLoading(true)
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select(
-          `
-            id,
-            org_id,
-            athlete_id,
-            staff_id,
-            starts_at,
-            ends_at,
-            type,
-            status,
-            location,
-            notes,
-            cancelled_at,
-            created_at,
-            updated_at
-          `,
-        )
-        .eq('staff_id', staffId)
-        .order('starts_at', { ascending: true })
+      const { data: appointmentsData, error: appointmentsError } =
+        await listStaffAppointmentsForTable(supabase, staffId)
 
       if (appointmentsError) throw appointmentsError
 
@@ -154,7 +139,7 @@ export function useStaffAppointmentsTable() {
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, nome, cognome, email')
-        .eq('role', 'athlete')
+        .in('role', ['athlete', 'atleta'])
         .order('nome', { ascending: true })
 
       if (error) throw error
@@ -189,6 +174,18 @@ export function useStaffAppointmentsTable() {
     }
   }, [staffId, fetchAppointments, fetchAthletes])
 
+  /** Stessa fonte di blocchi del calendario staff (`use-calendar-page`), solo per validazione UI. */
+  useEffect(() => {
+    if (!staffOrgId || !staffId) return
+    let cancelled = false
+    void fetchStaffCalendarBlocksForUiValidation(supabase, staffOrgId, staffId).then((blocks) => {
+      if (!cancelled) setCalendarBlocks(blocks)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [staffOrgId, staffId])
+
   const handleFormSubmit = useCallback(
     async (
       data: CreateAppointmentData,
@@ -208,50 +205,92 @@ export function useStaffAppointmentsTable() {
           throw new Error('La data di fine deve essere successiva alla data di inizio')
         }
 
-        // Validazione sovrapposizione rimossa: permette più atleti nello stesso orario
-        // (utile per allenamenti di gruppo o più atleti contemporaneamente)
+        const startsAt = new Date(data.starts_at).toISOString()
+        const endsAt = new Date(data.ends_at).toISOString()
+        if (isNaN(new Date(startsAt).getTime()) || isNaN(new Date(endsAt).getTime())) {
+          throw new Error('Date non valide')
+        }
 
-        // Assicurati che org_id sia presente (usa default-org se non specificato)
-        if (!data.org_id) {
-          // Prova a recuperare org_id dal profilo staff
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
-          if (user) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('org_id')
-              .eq('user_id', user.id)
-              .single()
-
-            if (profile?.org_id) {
-              data.org_id = profile.org_id
-            }
+        // Stessa semantica di use-calendar-page: blocchi calendario poi overlap (Libera prenotazione = senza blocchi UI, come calendario)
+        if (data.is_open_booking_day !== true) {
+          if (appointmentSlotOverlapsAnyCalendarBlock(startsAt, endsAt, calendarBlocks)) {
+            notify(CALENDAR_BLOCK_CONFLICT_UI.message, 'error', CALENDAR_BLOCK_CONFLICT_UI.title)
+            throw new Error(CALENDAR_BLOCK_CONFLICT_UI.message)
           }
-
-          // Se ancora non c'è org_id, usa 'default-org' (valore di default del database)
-          if (!data.org_id) {
-            data.org_id = 'default-org'
+          const hasOverlap = await checkStaffCalendarSlotOverlap(
+            supabase,
+            staffId,
+            startsAt,
+            endsAt,
+            {
+              excludeAppointmentId: editingAppointment?.id,
+              appointmentType: data.type,
+            },
+          )
+          if (hasOverlap) {
+            const isCollaborator = staffRole === 'nutrizionista' || staffRole === 'massaggiatore'
+            let msg: string
+            if (editingAppointment?.id) {
+              msg = isCollaborator
+                ? 'Questo slot è già occupato.'
+                : 'Questo slot è già occupato. Non è disponibile.'
+            } else {
+              msg =
+                data.type === 'allenamento_doppio'
+                  ? 'Questo slot ha già due allenamenti doppi. Non è disponibile per un nuovo allenamento.'
+                  : isCollaborator
+                    ? 'Questo slot è già occupato.'
+                    : 'Questo slot è già occupato. Non è disponibile per un nuovo allenamento.'
+            }
+            notify(msg, 'warning', 'Slot occupato')
+            throw new Error(msg)
           }
         }
 
+        // org_id: fonte canonica profiles.org_id + eventuale form (senza fallback implicito a default-org)
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        let profileOrgId: string | null = null
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('org_id')
+            .eq('user_id', user.id)
+            .single()
+          profileOrgId = profile?.org_id ?? null
+        }
+        const resolvedOrgId = requireCurrentOrgId(
+          resolveOrgIdForAppointmentWrite({
+            profileOrgId,
+            formOrgId: data.org_id,
+          }),
+        )
+        data.org_id = resolvedOrgId
+
         if (editingAppointment && editingAppointment.id) {
           // Modifica appuntamento esistente
-          const { error } = await supabase
+          const { data: updatedRows, error } = await supabase
             .from('appointments')
             .update({
               athlete_id: data.athlete_id,
-              starts_at: data.starts_at,
-              ends_at: data.ends_at,
+              starts_at: startsAt,
+              ends_at: endsAt,
               type: data.type || 'allenamento',
               status: data.status || 'attivo',
               notes: data.notes,
               location: data.location,
-              org_id: data.org_id, // Aggiorna anche org_id se necessario
+              org_id: resolvedOrgId,
             })
             .eq('id', editingAppointment.id)
+            .select('id')
 
           if (error) throw error
+          if (!updatedRows?.length) {
+            throw new Error(
+              'Aggiornamento appuntamento: nessuna riga modificata (permessi o id errato)',
+            )
+          }
         } else {
           // Verifica che staffId sia presente
           if (!staffId) {
@@ -260,11 +299,11 @@ export function useStaffAppointmentsTable() {
 
           // Crea nuovo appuntamento
           const insertData = {
-            org_id: data.org_id || 'default-org',
+            org_id: resolvedOrgId,
             athlete_id: data.athlete_id,
             staff_id: staffId,
-            starts_at: data.starts_at,
-            ends_at: data.ends_at,
+            starts_at: startsAt,
+            ends_at: endsAt,
             type: data.type || 'allenamento',
             status: data.status || 'attivo',
             notes: data.notes || null,
@@ -359,7 +398,7 @@ export function useStaffAppointmentsTable() {
         throw err
       }
     },
-    [staffId, fetchAppointments],
+    [staffId, staffRole, calendarBlocks, fetchAppointments, notify],
   )
 
   const handleDelete = useCallback(

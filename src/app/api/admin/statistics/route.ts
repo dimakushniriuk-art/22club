@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 
@@ -12,12 +13,9 @@ const logger = createLogger('api:admin:statistics')
 export async function GET(_request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
@@ -26,7 +24,7 @@ export async function GET(_request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, org_id, role')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (profileError || !profile) {

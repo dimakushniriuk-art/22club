@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { cn } from '@/lib/utils'
 import { masterAnimations } from '@/config/master-design.config'
 
@@ -141,14 +142,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
 
     if (asChild) {
+      // Slot fondere classi/ref sul figlio (es. Link): uno span wrapper rompe flex e allineamento icona/testo.
       return (
-        <span
+        <Slot
           ref={ref}
           className={cn(baseClasses, variants[variant], sizes[size], className)}
           {...props}
         >
-          {buttonContent}
-        </span>
+          {children}
+        </Slot>
       )
     }
 

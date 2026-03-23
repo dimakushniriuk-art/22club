@@ -4,6 +4,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import { requireCurrentOrgId } from '@/lib/organizations/current-org'
 import type { Tables, TablesUpdate } from '@/types/supabase'
 import type { Document as DocumentDTO } from '@/types/document'
 
@@ -123,7 +124,10 @@ export async function uploadDocument(
         .select('org_id')
         .eq('id', athleteId)
         .single()
-      org_id = (athleteProfile as { org_id?: string | null } | null)?.org_id ?? ''
+      org_id = requireCurrentOrgId(
+        (athleteProfile as { org_id?: string | null } | null)?.org_id,
+        'Organizzazione non disponibile per upload documento',
+      )
     }
 
     // 3. Save document record to database

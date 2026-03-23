@@ -6,6 +6,7 @@ import { useAuth } from '@/providers/auth-provider'
 import { HomeLayoutClient } from './home-layout-client'
 import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
 import { createLogger } from '@/lib/logger'
+import { getDashboardEntryPathForNonAthleteRole } from '@/lib/utils/role-redirect-paths'
 
 const logger = createLogger('home:layout:auth')
 
@@ -37,18 +38,8 @@ export default function HomeLayoutAuth({ children }: HomeLayoutAuthProps) {
     // Verifica ruolo - solo atleti possono accedere a /home
     if (role && role !== 'athlete') {
       logger.warn('Ruolo non autorizzato, redirect', { role, userId: user.id })
-      // Redirect in base al ruolo
-      if (role === 'admin') {
-        router.push('/dashboard/admin')
-      } else if (role === 'trainer') {
-        router.push('/dashboard')
-      } else if (role === 'nutrizionista') {
-        router.push('/dashboard/nutrizionista')
-      } else if (role === 'massaggiatore') {
-        router.push('/dashboard/massaggiatore')
-      } else {
-        router.push('/login?error=accesso_negato')
-      }
+      const path = getDashboardEntryPathForNonAthleteRole(role)
+      router.push(path ?? '/login?error=accesso_negato')
       return
     }
   }, [user, role, loading, router])

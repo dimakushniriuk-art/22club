@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoginCard } from '@/components/auth/LoginCard'
+import { getPostLoginRedirectPath } from '@/lib/utils/role-redirect-paths'
 
 const logger = createLogger('LoginPage')
 
@@ -24,47 +25,14 @@ function performPostLoginRedirect(
   setLoading: (b: boolean) => void,
 ): boolean {
   const userRole = profileData.role
-  const normalizedRole =
-    userRole === 'pt' || userRole === 'staff'
-      ? 'trainer'
-      : userRole === 'atleta'
-        ? 'athlete'
-        : userRole === 'owner'
-          ? 'admin'
-          : userRole
-
-  if (normalizedRole === 'admin') {
-    router.replace('/dashboard/admin')
-    return true
+  const path = getPostLoginRedirectPath(userRole, profileData.first_login)
+  if (!path) {
+    setError(`Ruolo non riconosciuto: ${userRole}. Contatta l'amministratore.`)
+    setLoading(false)
+    return false
   }
-  if (normalizedRole === 'trainer') {
-    router.replace('/dashboard')
-    return true
-  }
-  if (normalizedRole === 'marketing') {
-    router.replace('/dashboard/marketing')
-    return true
-  }
-  if (normalizedRole === 'nutrizionista') {
-    router.replace('/dashboard/nutrizionista')
-    return true
-  }
-  if (normalizedRole === 'massaggiatore') {
-    router.replace('/dashboard/massaggiatore')
-    return true
-  }
-  if (normalizedRole === 'athlete') {
-    if (profileData.first_login === true) {
-      router.replace('/welcome')
-    } else {
-      router.replace('/home')
-    }
-    return true
-  }
-
-  setError(`Ruolo non riconosciuto: ${userRole}. Contatta l'amministratore.`)
-  setLoading(false)
-  return false
+  router.replace(path)
+  return true
 }
 
 const LOGIN_ERROR_ID = 'login-error'
@@ -176,6 +144,20 @@ function LoginContent() {
           return
         }
 
+        // Allinea sessione JWT al client prima della query RLS su profiles (evita race post sign-in)
+        if (data.session) {
+          await supabase.auth.setSession(data.session)
+        }
+        const {
+          data: { session: sessionAfterLogin },
+        } = await supabase.auth.getSession()
+        if (!sessionAfterLogin?.access_token) {
+          setError(
+            'Sessione non disponibile dopo il login. Chiudi e riprova, o svuota cookie del sito.',
+          )
+          return
+        }
+
         try {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
@@ -204,6 +186,17 @@ function LoginContent() {
                 ? `/welcome?codice=${encodeURIComponent(codice)}`
                 : '/welcome'
               router.replace(welcomePath)
+              return
+            }
+            if (code === '42501') {
+              logger.warn(
+                'RLS profiles: SELECT negato al login. Eseguire supabase/fix_profiles_rls_select_own.sql in Supabase SQL Editor.',
+                profileError,
+                { userId: data.user.id, code: err?.code },
+              )
+              setError(
+                'Accesso al profilo bloccato dalla sicurezza del database. Contatta un amministratore.',
+              )
               return
             }
             logger.error('Errore caricamento profilo', profileError, {

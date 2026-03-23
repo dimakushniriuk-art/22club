@@ -1,5 +1,9 @@
 import { Page, BrowserContext, expect } from '@playwright/test'
 
+/** Allineato a `LoginCard` (`login-email` / `login-password`) + fallback legacy `#email` / `#password`. */
+export const LOGIN_EMAIL_FIELD = '#login-email, #email'
+export const LOGIN_PASSWORD_FIELD = '#login-password, #password'
+
 const getEnvOrThrow = (key: string): string => {
   const value = process.env[key]?.trim()
   if (!value) {
@@ -105,12 +109,11 @@ export async function loginAsAthlete(page: Page): Promise<void> {
   // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
 
-  const emailInput = page.locator('#email')
-  const passwordInput = page.locator('#password')
+  const emailInput = page.locator(LOGIN_EMAIL_FIELD)
+  const passwordInput = page.locator(LOGIN_PASSWORD_FIELD)
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
   await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 
-  // I campi hanno id="email" e id="password"
   // WebKit: usa click + clear + type per compilazione più robusta
   await emailInput.click({ force: true })
   await emailInput.fill('')
@@ -193,12 +196,11 @@ export async function loginAsPT(page: Page): Promise<void> {
   // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
 
-  const emailInput = page.locator('#email')
-  const passwordInput = page.locator('#password')
+  const emailInput = page.locator(LOGIN_EMAIL_FIELD)
+  const passwordInput = page.locator(LOGIN_PASSWORD_FIELD)
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
   await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 
-  // I campi hanno id="email" e id="password"
   // WebKit: usa click + clear + type per compilazione più robusta
   await emailInput.click({ force: true })
   await emailInput.fill('')
@@ -281,12 +283,11 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   // Chiudi il cookie banner se presente (critico per Mobile Chrome/Safari)
   await dismissCookieBanner(page)
 
-  const emailInput = page.locator('#email')
-  const passwordInput = page.locator('#password')
+  const emailInput = page.locator(LOGIN_EMAIL_FIELD)
+  const passwordInput = page.locator(LOGIN_PASSWORD_FIELD)
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
   await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 
-  // I campi hanno id="email" e id="password"
   // WebKit: usa click + clear + type per compilazione più robusta
   await emailInput.click({ force: true })
   await emailInput.fill('')

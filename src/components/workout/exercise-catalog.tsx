@@ -14,7 +14,8 @@ import { useIcon } from '@/components/ui/professional-icons'
 import {
   MuscleGroupFilter,
   muscleGroupFilterToDbValue,
-  dbValueMatchesFilter,
+  exerciseMatchesMuscleGroupFilter,
+  countSelectionByMuscleGroupFilter,
   type MuscleGroupFilterType,
 } from '@/components/dashboard/muscle-group-filter'
 import type { Exercise, ExerciseFilter, MuscleGroup, Equipment } from '@/types/workout'
@@ -320,9 +321,10 @@ export function ExerciseCatalog({
         exercise.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         exercise.description?.toLowerCase().includes(filters.search.toLowerCase())
 
-      const matchesMuscleGroup = muscleGroupFilterId
-        ? dbValueMatchesFilter(exercise.muscle_group ?? '', muscleGroupFilterId)
-        : true
+      const matchesMuscleGroup = exerciseMatchesMuscleGroupFilter(
+        exercise.muscle_group ?? '',
+        muscleGroupFilterId,
+      )
 
       const matchesEquipment =
         filters.equipment === 'all' || !filters.equipment
@@ -337,6 +339,11 @@ export function ExerciseCatalog({
       return matchesSearch && matchesMuscleGroup && matchesEquipment && matchesDifficulty
     })
   }, [exercises, filters, muscleGroupFilterId])
+
+  const { byGroup: muscleGroupSelectionCounts } = useMemo(
+    () => countSelectionByMuscleGroupFilter(selectedExercises, exercises),
+    [selectedExercises, exercises],
+  )
 
   const handleFilterChange = (key: keyof ExerciseFilter, value: string) => {
     setFilters((prev: ExerciseFilter) => ({ ...prev, [key]: value }))
@@ -573,18 +580,17 @@ export function ExerciseCatalog({
             </div>
           </div>
 
-          {/* Riga 2: Gruppi muscolari in un'unica riga (si adattano o scroll orizzontale) */}
+          {/* Riga 2: filtri gruppo muscolare (una riga, scroll orizzontale se serve) */}
           <div className="min-w-0">
-            <label className="text-text-secondary text-xs font-medium mb-1.5 block">
-              Gruppi muscolari
-            </label>
-            <div className="overflow-x-auto pb-1 scrollbar-thin -mx-0.5">
+            <div className="overflow-x-auto py-1 scrollbar-thin -mx-0.5">
               <MuscleGroupFilter
                 selectedGroup={
                   muscleGroupFilterId ? muscleGroupFilterToDbValue(muscleGroupFilterId) : ''
                 }
                 onSelect={setMuscleGroupFilterId}
                 responsive
+                selectionCountsByGroup={muscleGroupSelectionCounts}
+                totalSelectedCount={selectedExercises.length}
               />
             </div>
           </div>

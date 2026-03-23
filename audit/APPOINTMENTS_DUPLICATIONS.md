@@ -6,10 +6,10 @@
 
 ### 1.1 Due hook `useAppointments` (nome identico, API diversa)
 
-| Path | Firma | Consumatori tipici |
-|------|-------|-------------------|
-| `src/hooks/use-appointments.ts` | `useAppointments({ userId, role })` | Home atleta `/home/appuntamenti` |
-| `src/hooks/appointments/use-appointments.ts` | `useAppointments()` | Dashboard staff `/dashboard/appuntamenti` |
+| Path                                         | Firma                               | Consumatori tipici                        |
+| -------------------------------------------- | ----------------------------------- | ----------------------------------------- |
+| `src/hooks/use-appointments.ts`              | `useAppointments({ userId, role })` | Home atleta `/home/appuntamenti`          |
+| `src/hooks/appointments/use-appointments.ts` | `useAppointments()`                 | Dashboard staff `/dashboard/appuntamenti` |
 
 **Effetto:** stesso nome simbolo, comportamento e cache (React Query vs useState) incomparabili.
 
@@ -37,11 +37,11 @@ Logica equivalente ma non centralizzata.
 
 ### 1.4 Controllo sovrapposizione (tre vie)
 
-| Implementazione | Meccanismo | Note |
-|-----------------|------------|------|
-| `use-appointments.ts` (root) | RPC `check_appointment_overlap` | Usato dal hook React Query |
-| `use-calendar-page.ts` | Funzione locale `checkAppointmentOverlap`: select su `appointments` | Regole extra: `allenamento_doppio`, collaboratori |
-| `appointment-utils.ts` | Query `appointments` + filtri `cancelled_at`, `status != annullato` | Non allineata 1:1 alla logica calendario |
+| Implementazione              | Meccanismo                                                          | Note                                              |
+| ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------------- |
+| `use-appointments.ts` (root) | RPC `check_appointment_overlap`                                     | Usato dal hook React Query                        |
+| `use-calendar-page.ts`       | Funzione locale `checkAppointmentOverlap`: select su `appointments` | Regole extra: `allenamento_doppio`, collaboratori |
+| `appointment-utils.ts`       | Query `appointments` + filtri `cancelled_at`, `status != annullato` | Non allineata 1:1 alla logica calendario          |
 
 `appointment-utils.checkAppointmentOverlap` è **commentato** nei punti che un tempo lo usavano; rischio drift tra RPC e query inline.
 
@@ -81,14 +81,14 @@ Duplicata in `notify-appointment-change` e `send-appointment-reminder` (`getType
 
 ## 2. Conflitti hook / lib / API
 
-| Area | Conflitto |
-|------|-----------|
-| **Nome hook** | Import errato possibile tra `@/hooks/use-appointments` e `@/hooks/appointments/use-appointments`. |
-| **Atleta: lista** | Root hook filtra **futuri** + `cancelled_at` null; calendario atleta affida molto a **RLS** (set potenzialmente più ampio). |
-| **Overlap** | RPC vs query client vs lib: esiti diversi se DB e client applicano filtri diversi (es. `cancelled_at`, tipi doppio). |
-| **Completamento** | Solo un ramo esegue ledger debit; incoerenza crediti tra pagina appuntamenti staff e calendario. |
-| **React Query** | Root hook invalida `queryKeys.appointments.all`; calendario e hook staff **non** usano quella cache → UI può divergere dopo mutazioni altrove. |
-| **API reminder** | Conteggio lezioni (`lesson_counters` + `appointments` completati + `payments`): logica duplicata concettualmente con altre parti dashboard. |
+| Area              | Conflitto                                                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Nome hook**     | Import errato possibile tra `@/hooks/use-appointments` e `@/hooks/appointments/use-appointments`.                                              |
+| **Atleta: lista** | Root hook filtra **futuri** + `cancelled_at` null; calendario atleta affida molto a **RLS** (set potenzialmente più ampio).                    |
+| **Overlap**       | RPC vs query client vs lib: esiti diversi se DB e client applicano filtri diversi (es. `cancelled_at`, tipi doppio).                           |
+| **Completamento** | Solo un ramo esegue ledger debit; incoerenza crediti tra pagina appuntamenti staff e calendario.                                               |
+| **React Query**   | Root hook invalida `queryKeys.appointments.all`; calendario e hook staff **non** usano quella cache → UI può divergere dopo mutazioni altrove. |
+| **API reminder**  | Conteggio lezioni (`lesson_counters` + `appointments` completati + `payments`): logica duplicata concettualmente con altre parti dashboard.    |
 
 ---
 
@@ -101,4 +101,4 @@ Duplicata in `notify-appointment-change` e `send-appointment-reminder` (`getType
 
 ---
 
-*Riferimento indice feature:* `docs/indexes/03_FEATURES_INDEX.md` — Calendario → `dashboard/calendario/page.tsx`, appointments, calendar notify.
+_Riferimento indice feature:_ `docs/indexes/03_FEATURES_INDEX.md` — Calendario → `dashboard/calendario/page.tsx`, appointments, calendar notify.

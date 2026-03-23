@@ -75,7 +75,7 @@ Tabelle con **org_id** (tipicamente DEFAULT `'default-org'`):
 - documents
 - payments
 
-Altre tabelle (es. pt*atleti, staff_atleti, workout_plans, chat_messages, inviti*_, athlete\__, notifications, …) non hanno colonna org_id; l’isolamento è per relazione (pt_atleti, staff_atleti) o per created_by/athlete_id.
+Altre tabelle (es. pt*atleti, staff_atleti, workout_plans, chat_messages, inviti*\_, athlete\_\_, notifications, …) non hanno colonna org_id; l’isolamento è per relazione (pt_atleti, staff_atleti) o per created_by/athlete_id.
 
 ### 1.4 Relazioni trainer ↔ atleta
 

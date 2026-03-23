@@ -175,25 +175,23 @@ export function useCommunicationsPage() {
   useEffect(() => {
     const calculateRecipientCount = async () => {
       try {
-        let _filter: { all_users?: boolean; role?: string; athlete_ids?: string[] } | null = null
-
-        if (formRecipientFilter === 'all') {
-          _filter = { all_users: true }
-        } else if (formRecipientFilter === 'atleti') {
-          _filter = { role: 'athlete' }
-        } else if (formRecipientFilter === 'custom') {
-          // Per atleti specifici, il count è il numero di atleti selezionati
-          setRecipientCount(formSelectedAthletes.length)
-          return
-        } else {
-          setRecipientCount(null)
+        if (formRecipientFilter === 'custom' && formSelectedAthletes.length === 0) {
+          setRecipientCount(0)
           return
         }
 
-        const countUrl =
-          formRecipientFilter === 'atleti'
-            ? '/api/communications/recipients/count?role=athlete'
-            : '/api/communications/recipients/count'
+        const params = new URLSearchParams()
+        params.set('type', formType)
+
+        if (formRecipientFilter === 'all') {
+          params.set('all_users', '1')
+        } else if (formRecipientFilter === 'atleti') {
+          params.set('role', 'athlete')
+        } else if (formRecipientFilter === 'custom') {
+          params.set('athlete_ids', formSelectedAthletes.join(','))
+        }
+
+        const countUrl = `/api/communications/recipients/count?${params.toString()}`
         const response = await fetch(countUrl, { method: 'GET' })
 
         if (response.status === 404 || !response.ok) {
@@ -214,7 +212,7 @@ export function useCommunicationsPage() {
     }
 
     calculateRecipientCount()
-  }, [formRecipientFilter, formSelectedAthletes])
+  }, [formRecipientFilter, formSelectedAthletes, formType])
 
   const getTipoIcon = useCallback((tipo: string) => {
     switch (tipo) {

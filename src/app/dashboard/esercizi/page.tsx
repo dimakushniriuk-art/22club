@@ -28,7 +28,7 @@ import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import {
   MuscleGroupFilter,
   muscleGroupFilterToDbValue,
-  dbValueMatchesFilter,
+  exerciseMatchesMuscleGroupFilter,
   type MuscleGroupFilterType,
 } from '@/components/dashboard/muscle-group-filter'
 import { EQUIPMENT } from '@/lib/exercises-data'
@@ -216,7 +216,6 @@ export default function EserciziPage() {
 
   // Filtri a pill
   const [difficultyFilter, setDifficultyFilter] = useState<Exercise['difficulty'] | ''>('')
-  const [groupFilter, setGroupFilter] = useState<string>('multipli')
   const [equipmentFilter, setEquipmentFilter] = useState<string>('')
   const [muscleGroupFilter, setMuscleGroupFilter] = useState<MuscleGroupFilterType | null>(
     'multipli',
@@ -241,9 +240,7 @@ export default function EserciziPage() {
       if (difficultyFilter && e.difficulty !== difficultyFilter) return false
       if (equipmentFilter && (e.equipment || '').toLowerCase() !== equipmentFilter.toLowerCase())
         return false
-      // Filtro visuale gruppi muscolari (supporta valori multipli es. "Glutei, Femorali")
-      if (muscleGroupFilter && !dbValueMatchesFilter(e.muscle_group || '', muscleGroupFilter))
-        return false
+      if (!exerciseMatchesMuscleGroupFilter(e.muscle_group || '', muscleGroupFilter)) return false
       if (!q) return true
       // Ricerca per parole: ogni parola deve essere contenuta in nome, gruppo o attrezzo
       const words = q.split(/\s+/).filter(Boolean)
@@ -422,17 +419,20 @@ export default function EserciziPage() {
   // Verifica se ci sono filtri attivi
   const hasActiveFilters = useMemo(() => {
     return Boolean(
-      query.trim() || difficultyFilter || equipmentFilter || muscleGroupFilter || groupFilter,
+      query.trim() ||
+      difficultyFilter ||
+      equipmentFilter ||
+      muscleGroupFilter == null ||
+      muscleGroupFilter !== 'multipli',
     )
-  }, [query, difficultyFilter, equipmentFilter, muscleGroupFilter, groupFilter])
+  }, [query, difficultyFilter, equipmentFilter, muscleGroupFilter])
 
   // Reset di tutti i filtri
   const handleResetFilters = useCallback(() => {
     setQuery('')
     setDifficultyFilter('')
     setEquipmentFilter('')
-    setMuscleGroupFilter(null)
-    setGroupFilter('')
+    setMuscleGroupFilter('multipli')
   }, [])
 
   useEffect(() => {
@@ -588,18 +588,13 @@ export default function EserciziPage() {
                 <label className="text-text-secondary text-xs font-medium mb-1.5 block">
                   Gruppi muscolari
                 </label>
-                <div className="overflow-x-auto pb-1 scrollbar-thin -mx-0.5">
+                <div className="overflow-x-auto py-1 scrollbar-thin -mx-0.5">
                   <MuscleGroupFilter
                     selectedGroup={
                       muscleGroupFilter ? muscleGroupFilterToDbValue(muscleGroupFilter) : ''
                     }
                     onSelect={(filterId) => {
                       setMuscleGroupFilter(filterId)
-                      if (filterId) {
-                        setGroupFilter(muscleGroupFilterToDbValue(filterId))
-                      } else {
-                        setGroupFilter('')
-                      }
                     }}
                     responsive
                   />

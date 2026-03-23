@@ -72,6 +72,8 @@ export interface CreateAppointmentData {
   notes?: string | null
   location?: string | null
   org_id?: string
+  /** Eco `org_id` per policy/schema legacy; stesso valore di `org_id` dove richiesto dal DB */
+  org_id_text?: string | null
   recurrence_rule?: string | null
   created_by_role?: 'athlete' | 'trainer' | 'admin'
   /** true per creare uno slot "Libera prenotazione" (solo trainer/admin) */

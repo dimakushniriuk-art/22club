@@ -111,6 +111,7 @@ export function AppointmentsTable({
                   {filteredAppointments.map((appointment) => (
                     <TableRow
                       key={appointment.id}
+                      data-testid={`appointment-row-${appointment.id}`}
                       className="hover:bg-background-tertiary/50 cursor-pointer transition-colors"
                       onClick={() => onView?.(appointment)}
                     >
@@ -200,6 +201,7 @@ export function AppointmentsTable({
                                 e.stopPropagation()
                                 onView(appointment)
                               }}
+                              data-testid={`appointment-open-detail-${appointment.id}`}
                               className="h-8 w-8 text-text-secondary hover:text-teal-400 hover:bg-teal-500/10"
                             >
                               <Eye className="h-4 w-4" />
@@ -213,6 +215,7 @@ export function AppointmentsTable({
                                 e.stopPropagation()
                                 onEdit(appointment)
                               }}
+                              data-testid={`appointment-open-edit-${appointment.id}`}
                               className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                             >
                               <Edit className="h-4 w-4" />

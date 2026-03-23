@@ -46,6 +46,11 @@ DATABASE
   - deve produrre SQL esplicito
   - NON va eseguita automaticamente
   - attendere conferma dell’utente
+- Modifiche al progetto che implicano aggiornamento del DB (schema, RLS/policy, funzioni DB, ecc.):
+  1. Eseguire nel terminale il dump dello schema `public` verso `backup_supabase.sql` (PowerShell):
+     `& "C:\Program Files\PostgreSQL\17\bin\pg_dump.exe" "postgresql://postgres:22Club-NEW@db.icibqnmtacibgnhaidlz.supabase.co:5432/postgres" --schema=public -f backup_supabase.sql`
+  2. Analizzare `backup_supabase.sql` per lo stato attuale di schema e policy (RLS).
+  3. Redigere l’SQL corretto da applicare in Supabase e fornirlo in chat per applicazione manuale (nessuna esecuzione automatica sul DB remoto).
 
 SVILUPPO
 - Un file alla volta se possibile.

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
+import { fetchCurrentProfileForAuthUserId } from '@/lib/supabase/get-current-profile'
 import { createLogger } from '@/lib/logger'
-import type { Tables } from '@/types/supabase'
 
 const logger = createLogger('api:admin:impersonation:stop')
 
@@ -14,26 +15,17 @@ const COOKIE_PROFILE = 'impersonate_profile_id'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'role'>
-    const { data: actorProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (profileError || !actorProfile) {
+    const actorProfile = await fetchCurrentProfileForAuthUserId(supabase, user.id)
+    if (!actorProfile) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
-    const actor = actorProfile as ProfileRow
+    const actor = { id: actorProfile.profileId, role: actorProfile.role }
     if (actor.role !== 'admin') {
       return NextResponse.json({ error: 'Solo admin può terminare impersonation' }, { status: 403 })
     }

@@ -83,6 +83,7 @@
    - ✅ Nessun errore in console (F12 > Console)
 
 3. **Pagina Registrazione**:
+
    ```
    https://club1225.vercel.app/registrati
    ```
@@ -105,6 +106,7 @@
    - ✅ Verificare che il JSON contenga informazioni sullo stato
 
 2. **Auth Context**:
+
    ```
    https://club1225.vercel.app/api/auth/context
    ```

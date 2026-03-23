@@ -2,26 +2,9 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { requirePermission } from '@/lib/auth/guards'
+import { getRedirectPath } from '@/lib/auth/redirect'
 import { useAuth } from '@/providers/auth-provider'
-
-const REDIRECT_PATH_BY_ROLE: Record<string, string> = {
-  admin: '/dashboard/admin',
-  trainer: '/dashboard',
-  marketing: '/dashboard/marketing',
-  athlete: '/home',
-} as const
-
-const DEFAULT_REDIRECT = '/dashboard'
-
-const ALLOWED_CALENDAR_ROLES = ['trainer', 'admin'] as const
-
-/** Ruoli che possono accedere al calendario e alla pagina Impostazioni calendario. */
-export const ALLOWED_CALENDAR_SETTINGS_ROLES = [
-  'trainer',
-  'admin',
-  'nutrizionista',
-  'massaggiatore',
-] as const
 
 /**
  * Guard per la pagina calendario dashboard.
@@ -31,20 +14,17 @@ export const ALLOWED_CALENDAR_SETTINGS_ROLES = [
 export function useCalendarPageGuard(): { showLoader: boolean } {
   const router = useRouter()
   const { role, loading } = useAuth()
+  const isAllowed = requirePermission('staff_dashboard_home', role)
 
   useEffect(() => {
     if (loading || role === null) return
-    const allowed = ALLOWED_CALENDAR_ROLES.includes(role as (typeof ALLOWED_CALENDAR_ROLES)[number])
-    if (!allowed) {
-      const path = REDIRECT_PATH_BY_ROLE[role] ?? DEFAULT_REDIRECT
+    if (!isAllowed) {
+      const path = getRedirectPath(role, { kind: 'guard_staff_wrong_area' })
       router.replace(path)
     }
-  }, [role, loading, router])
+  }, [role, loading, router, isAllowed])
 
-  const showLoader =
-    loading ||
-    (role !== null &&
-      !ALLOWED_CALENDAR_ROLES.includes(role as (typeof ALLOWED_CALENDAR_ROLES)[number]))
+  const showLoader = loading || (role !== null && !isAllowed)
 
   return { showLoader }
 }
@@ -56,24 +36,17 @@ export function useCalendarPageGuard(): { showLoader: boolean } {
 export function useCalendarSettingsPageGuard(): { showLoader: boolean } {
   const router = useRouter()
   const { role, loading } = useAuth()
+  const isAllowed = requirePermission('calendar_settings_staff', role)
 
   useEffect(() => {
     if (loading || role === null) return
-    const allowed = ALLOWED_CALENDAR_SETTINGS_ROLES.includes(
-      role as (typeof ALLOWED_CALENDAR_SETTINGS_ROLES)[number],
-    )
-    if (!allowed) {
-      const path = REDIRECT_PATH_BY_ROLE[role] ?? DEFAULT_REDIRECT
+    if (!isAllowed) {
+      const path = getRedirectPath(role, { kind: 'guard_staff_wrong_area' })
       router.replace(path)
     }
-  }, [role, loading, router])
+  }, [role, loading, router, isAllowed])
 
-  const showLoader =
-    loading ||
-    (role !== null &&
-      !ALLOWED_CALENDAR_SETTINGS_ROLES.includes(
-        role as (typeof ALLOWED_CALENDAR_SETTINGS_ROLES)[number],
-      ))
+  const showLoader = loading || (role !== null && !isAllowed)
 
   return { showLoader }
 }

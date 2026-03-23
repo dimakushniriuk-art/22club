@@ -149,14 +149,22 @@ export function useWorkoutPlansList() {
             difficulty: getDifficultyFromDb(typedWorkout.difficulty),
             video_url: typedWorkout.video_url ?? null,
             image_url: typedWorkout.image_url ?? null,
-            status: workout.is_active ? 'attivo' : 'completato',
+            status: (workout as { is_draft?: boolean | null }).is_draft
+              ? 'bozza'
+              : workout.is_active
+                ? 'attivo'
+                : 'completato',
             exercises: [],
             sessions: [],
             stats: undefined,
             created_at: workout.created_at ?? new Date().toISOString(),
             updated_at: workout.updated_at ?? undefined,
             created_by_staff_id: workout.created_by_profile_id ?? undefined,
-            athlete_name: athlete ? `${athlete.nome ?? ''} ${athlete.cognome ?? ''}`.trim() : '',
+            athlete_name: typedWorkout.athlete_id
+              ? athlete
+                ? `${athlete.nome ?? ''} ${athlete.cognome ?? ''}`.trim()
+                : 'Sconosciuto'
+              : 'Nessun atleta',
             staff_name: createdByProfile
               ? `${createdByProfile.nome ?? ''} ${createdByProfile.cognome ?? ''}`.trim()
               : '',

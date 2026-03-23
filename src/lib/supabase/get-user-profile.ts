@@ -2,7 +2,10 @@
 // Evita query duplicate al database per verificare ruolo/permessi
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
+import { normalizeRole } from '@/lib/utils/role-normalizer'
+import { fetchCurrentProfileForAuthUserId } from '@/lib/supabase/get-current-profile'
 
 const logger = createLogger('lib:supabase:get-user-profile')
 
@@ -44,12 +47,8 @@ export async function getUserProfile(
   supabase: SupabaseClient,
 ): Promise<{ role: string; id: string } | null> {
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const { user } = await getServerAuthUser(supabase)
+    if (!user) {
       return null
     }
 
@@ -61,39 +60,31 @@ export async function getUserProfile(
       return cached
     }
 
-    // Query al database solo se non in cache o scaduta
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role, id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (profileError || !profile) {
-      logger.warn('Errore query profilo utente', profileError, { userId: user.id })
+    const full = await fetchCurrentProfileForAuthUserId(supabase, user.id)
+    if (!full) {
+      logger.warn('Errore query profilo utente', undefined, { userId: user.id })
       return null
     }
 
-    const profileData = profile as { role?: string; id: string } | null
-    if (!profileData || !profileData.role) {
+    if (!full.role) {
       logger.warn('Profilo utente senza ruolo', undefined, {
         userId: user.id,
-        profileId: profileData?.id,
+        profileId: full.profileId,
       })
       return null
     }
 
-    // Salva in cache (30 secondi)
     const profileResult: CachedProfile = {
-      role: profileData.role,
-      id: profileData.id,
+      role: full.role,
+      id: full.profileId,
       expires: Date.now() + 30 * 1000,
     }
     requestProfileCache.set(cacheKey, profileResult)
 
     logger.debug('Profilo utente caricato da database', {
       userId: user.id,
-      profileId: profileData.id,
-      role: profileData.role,
+      profileId: full.profileId,
+      role: full.role,
     })
 
     return profileResult
@@ -116,9 +107,6 @@ export async function hasRole(supabase: SupabaseClient, allowedRoles: string[]):
     return false
   }
 
-  // Normalizza ruolo (pt -> trainer, atleta -> athlete)
-  const normalizedRole =
-    profile.role === 'pt' ? 'trainer' : profile.role === 'atleta' ? 'athlete' : profile.role
-
+  const normalizedRole = normalizeRole(profile.role) ?? profile.role
   return allowedRoles.includes(normalizedRole)
 }

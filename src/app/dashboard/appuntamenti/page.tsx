@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react'
+import { AppointmentForm } from '@/components/calendar/appointment-form'
 import { createLogger } from '@/lib/logger'
 import type {
   AppointmentTable,
@@ -15,17 +16,13 @@ import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useAuth } from '@/providers/auth-provider'
+import { resolveOrgIdForAppointmentWrite } from '@/lib/organizations/current-org'
 import { Button } from '@/components/ui'
 import { CalendarPlus } from 'lucide-react'
 
 const logger = createLogger('app:dashboard:appuntamenti:page')
 
-// Lazy load dei modali per migliorare performance iniziale
-const AppointmentForm = lazy(() =>
-  import('@/components/calendar').then((mod) => ({
-    default: mod.AppointmentForm,
-  })),
-)
+// Detail resta lazy; form appuntamenti è statico per affidabilità E2E / primo paint del modal
 const AppointmentDetail = lazy(() =>
   import('@/components/calendar').then((mod) => ({
     default: mod.AppointmentDetail,
@@ -226,9 +223,13 @@ export default function AppuntamentiPage() {
     async (data: CreateAppointmentData) => {
       setLoading(true)
       try {
+        const mergedOrg = resolveOrgIdForAppointmentWrite({
+          profileOrgId: org_id,
+          formOrgId: data.org_id,
+        })
         const appointmentData: CreateAppointmentData = {
           ...data,
-          org_id: org_id || data.org_id || 'default-org',
+          org_id: mergedOrg ?? undefined,
         }
         await handleFormSubmitHook(appointmentData, editingAppointment, athletes)
         setShowForm(false)
@@ -325,7 +326,12 @@ export default function AppuntamentiPage() {
       description={`Tutti i tuoi appuntamenti e sessioni (${filteredAppointments.length})`}
       theme="teal"
       actions={
-        <Button onClick={handleNewAppointment} size="sm" className="gap-2">
+        <Button
+          onClick={handleNewAppointment}
+          size="sm"
+          className="gap-2"
+          data-testid="appointment-open-new"
+        >
           <CalendarPlus className="h-4 w-4" />
           Nuovo appuntamento
         </Button>
@@ -371,23 +377,27 @@ export default function AppuntamentiPage() {
 
       {/* Modals/Drawers - Lazy loaded solo quando aperti */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+        <div
+          data-testid="appointment-form-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+        >
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
-            <Suspense fallback={<LoadingState message="Caricamento form appuntamento..." />}>
-              <AppointmentForm
-                appointment={editingAppointment || undefined}
-                athletes={athletes}
-                onSubmit={handleFormSubmit}
-                onCancel={handleCloseForm}
-                loading={loading || athletesLoading}
-              />
-            </Suspense>
+            <AppointmentForm
+              appointment={editingAppointment || undefined}
+              athletes={athletes}
+              onSubmit={handleFormSubmit}
+              onCancel={handleCloseForm}
+              loading={loading || athletesLoading}
+            />
           </div>
         </div>
       )}
 
       {showDetail && selectedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+        <div
+          data-testid="appointment-detail-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+        >
           <div className="w-full max-w-md">
             <Suspense fallback={<LoadingState message="Caricamento dettagli appuntamento..." />}>
               <AppointmentDetail
@@ -418,6 +428,8 @@ export default function AppuntamentiPage() {
           variant={confirmState.action === 'delete' ? 'destructive' : 'default'}
           loading={loading}
           onConfirm={handleConfirmDialogConfirm}
+          confirmTestId="appointment-confirm-dialog-confirm"
+          cancelTestId="appointment-confirm-dialog-cancel"
         />
       )}
     </StaffContentLayout>

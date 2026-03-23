@@ -3,6 +3,7 @@ import { supabase, handleRefreshTokenError } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type { AuthContext as AuthContextType, UserProfile, UserRole } from '@/types/user'
+import { normalizeRole } from '@/lib/utils/role-normalizer'
 import { useRouter } from 'next/navigation'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -23,6 +24,9 @@ function profileErrorMessage(result: FetchProfileResult): string {
   if (result.errorCode === 'PGRST116') {
     return "Profilo non trovato. Contatta l'amministratore per completare la registrazione."
   }
+  if (result.errorCode === '42501') {
+    return 'Accesso al profilo bloccato (sicurezza database). Contatta un amministratore.'
+  }
   if (result.errorCode === 'over_request_rate_limit' || result.errorStatus === 429) {
     return 'Troppe richieste. Riprova tra qualche secondo.'
   }
@@ -35,40 +39,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 interface CachedProfile {
   profile: ProfileRow
   expires: number
-}
-
-function mapRole(rawRole: string | null | undefined): UserRole | null {
-  if (!rawRole) {
-    return null
-  }
-  const trimmedRole = rawRole.trim()
-  // Guardrail: ruoli legacy non devono più esistere dopo migration; log se arrivano
-  if (
-    trimmedRole === 'pt' ||
-    trimmedRole === 'atleta' ||
-    trimmedRole === 'owner' ||
-    trimmedRole === 'staff'
-  ) {
-    if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[auth] Ruolo legacy ricevuto, normalizzazione runtime:', trimmedRole)
-    }
-  }
-  const canonical: UserRole | null =
-    trimmedRole === 'pt' || trimmedRole === 'staff'
-      ? 'trainer'
-      : trimmedRole === 'atleta'
-        ? 'athlete'
-        : trimmedRole === 'owner'
-          ? 'admin'
-          : trimmedRole === 'trainer' ||
-              trimmedRole === 'admin' ||
-              trimmedRole === 'athlete' ||
-              trimmedRole === 'marketing' ||
-              trimmedRole === 'nutrizionista' ||
-              trimmedRole === 'massaggiatore'
-            ? (trimmedRole as UserRole)
-            : null
-  return canonical
 }
 
 /** Normalizza errore Supabase/Postgrest in oggetto serializzabile per log (evita {} in console). */
@@ -100,8 +70,8 @@ function mapProfileToUser(profile: ProfileRow): UserProfile {
   const legacyProfile = profile as { first_name?: string | null; last_name?: string | null }
   const firstName = profile.nome ?? legacyProfile.first_name ?? ''
   const lastName = profile.cognome ?? legacyProfile.last_name ?? ''
-  const mappedRole = mapRole(profile.role)
-  const role = mappedRole ?? 'athlete'
+  const mappedRole = normalizeRole(profile.role)
+  const role = (mappedRole ?? 'athlete') as UserRole
 
   return {
     id: profile.id, // profiles.id
@@ -309,6 +279,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
           if (errPayload.code === 'over_request_rate_limit' || errPayload.status === 429) {
             logger.debug('Rate limit auth: profilo non caricato', logData)
+            return {
+              profile: null,
+              errorCode: errPayload.code,
+              errorStatus: errPayload.status,
+              errorMessage: errPayload.message,
+            }
+          }
+          if (errPayload.code === '42501') {
+            logger.warn(
+              'RLS profiles: SELECT negato. Serve policy SELECT su public.profiles per user_id = auth.uid() (vedi supabase/fix_profiles_rls_select_own.sql).',
+              undefined,
+              logData,
+            )
             return {
               profile: null,
               errorCode: errPayload.code,

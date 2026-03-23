@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { fetchCurrentProfileForAuthUserId } from '@/lib/supabase/get-current-profile'
 import { createLogger } from '@/lib/logger'
-import type { Tables } from '@/types/supabase'
 
 const logger = createLogger('api:admin:impersonation:start')
 
@@ -30,17 +30,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'role' | 'email'> & { email?: string | null }
-    const { data: actorProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, role, email')
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (profileError || !actorProfile) {
+    const actorProfile = await fetchCurrentProfileForAuthUserId(supabase, session.user.id)
+    if (!actorProfile) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
-    const actor = actorProfile as ProfileRow
+    const actor = {
+      id: actorProfile.profileId,
+      role: actorProfile.role,
+      email: actorProfile.email,
+    }
     if (actor.role !== 'admin') {
       return NextResponse.json({ error: 'Solo admin può avviare impersonation' }, { status: 403 })
     }

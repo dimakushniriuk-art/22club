@@ -1,6 +1,7 @@
 /**
  * Credit ledger: unica fonte per variazioni crediti.
- * lesson_counters.count è aggiornato da trigger DB.
+ * Dopo ogni insert su `payments` che accredita lezioni, chiamare `addCreditFromPayment`
+ * (non aggiornare `lesson_counters` dal client: è coerente con il trigger DB sul ledger).
  */
 
 import { supabase } from '@/lib/supabase/client'

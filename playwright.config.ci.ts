@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
+import { config } from 'dotenv'
+
+config({ path: '.env.local' })
 
 /**
  * Configurazione Playwright per CI/CD
@@ -13,7 +16,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 2, // Retry automatico su CI
-  workers: 2, // Parallelismo limitato per CI
+  workers: 1, // Allineato a playwright.config.ts su CI (storageState condiviso / stabilità auth)
   reporter: [
     ['html'],
     ['json', { outputFile: 'test-results/results.json' }],
@@ -24,6 +27,9 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    extraHTTPHeaders: {
+      'X-Test-Mode': 'true',
+    },
   },
 
   /* Solo Chromium su CI per velocità */
@@ -34,7 +40,7 @@ export default defineConfig({
     },
   ],
 
-  globalSetup: require.resolve('./tests/e2e/global-setup.ts'),
+  globalSetup: require.resolve('./tests/e2e/global-setup-auth.ts'),
 
   webServer: {
     command: 'npm run start',

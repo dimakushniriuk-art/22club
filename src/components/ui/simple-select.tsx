@@ -5,15 +5,34 @@ import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 
+export type SimpleSelectOption = {
+  value: string
+  label: string
+  /** Evidenziazione gialla/ambra (es. opzione BOZZA senza atleta) */
+  tone?: 'default' | 'amber'
+  /** Classi extra per la riga nel menu (solo stato non selezionato, se tone non basta) */
+  optionClassName?: string
+  /** Classi per l’etichetta sul trigger quando questa opzione è selezionata */
+  selectedDisplayClassName?: string
+}
+
 export interface SimpleSelectProps {
   value?: string
   onValueChange?: (value: string) => void
   placeholder?: string
-  options: Array<{ value: string; label: string }>
+  options: SimpleSelectOption[]
   className?: string
   disabled?: boolean
   /** Rimuove lo styling del button interno (per uso in contenitori custom) */
   unstyled?: boolean
+  /** Hook E2E: pulsante che apre il menu */
+  triggerTestId?: string
+  /** Hook E2E: pannello opzioni (portal) */
+  dropdownTestId?: string
+  /** Hook E2E: backdrop full-screen che chiude il menu al click */
+  backdropTestId?: string
+  /** Hook E2E: data-testid per ogni opzione = `${prefix}-${value || 'empty'}` */
+  optionTestIdPrefix?: string
 }
 
 export function SimpleSelect({
@@ -24,6 +43,10 @@ export function SimpleSelect({
   className,
   disabled = false,
   unstyled = false,
+  triggerTestId,
+  dropdownTestId,
+  backdropTestId,
+  optionTestIdPrefix,
 }: SimpleSelectProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [selectedOption, setSelectedOption] = React.useState(
@@ -155,16 +178,29 @@ export function SimpleSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
-  const handleSelect = (option: { value: string; label: string }) => {
+  React.useEffect(() => {
+    if (!isOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isOpen])
+
+  const handleSelect = (option: SimpleSelectOption) => {
     setSelectedOption(option)
     onValueChange?.(option.value)
     setIsOpen(false)
   }
 
+  const optionTestId = (optionValue: string) =>
+    optionTestIdPrefix ? `${optionTestIdPrefix}-${optionValue || 'empty'}` : undefined
+
   const dropdownContent =
     isOpen && dropdownPosition ? (
       <div
         ref={dropdownRef}
+        data-testid={dropdownTestId}
         className="fixed z-[9999] overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl"
         style={{
           top: `${dropdownPosition.top}px`,
@@ -177,16 +213,24 @@ export function SimpleSelect({
         <div ref={scrollContainerRef} className="max-h-60 overflow-auto py-1.5">
           {options.map((option) => {
             const isSelected = selectedOption?.value === option.value
+            const optTestId = optionTestId(option.value)
             return (
               <button
                 key={option.value}
                 ref={isSelected ? selectedOptionRef : null}
                 type="button"
+                data-testid={optTestId}
                 className={cn(
                   'flex min-h-[44px] w-full cursor-pointer items-center px-4 py-2.5 text-left text-base outline-none transition-colors duration-150',
-                  isSelected
-                    ? 'bg-primary/25 text-primary font-medium'
-                    : 'text-text-primary hover:bg-primary/15 focus:bg-primary/20',
+                  option.tone === 'amber' &&
+                    (isSelected
+                      ? 'bg-amber-500/15 text-amber-300 font-semibold'
+                      : 'text-amber-400 font-semibold hover:bg-amber-500/10 hover:text-amber-300 focus:bg-amber-500/15'),
+                  option.tone !== 'amber' &&
+                    (isSelected
+                      ? 'bg-primary/25 text-primary font-medium'
+                      : 'text-text-primary hover:bg-primary/15 focus:bg-primary/20'),
+                  option.optionClassName,
                 )}
                 onClick={() => handleSelect(option)}
               >
@@ -204,6 +248,7 @@ export function SimpleSelect({
         <button
           ref={buttonRef}
           type="button"
+          data-testid={triggerTestId}
           className={cn(
             'flex w-full items-center justify-between text-sm disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200',
             unstyled
@@ -215,7 +260,15 @@ export function SimpleSelect({
           disabled={disabled}
         >
           <span
-            className={cn('truncate', selectedOption ? 'text-text-primary' : 'text-text-tertiary')}
+            className={cn(
+              'truncate',
+              selectedOption
+                ? (selectedOption.selectedDisplayClassName ??
+                    (selectedOption.tone === 'amber'
+                      ? 'text-amber-400 font-semibold'
+                      : 'text-text-primary'))
+                : 'text-text-tertiary',
+            )}
           >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
@@ -238,6 +291,7 @@ export function SimpleSelect({
         typeof window !== 'undefined' &&
         createPortal(
           <div
+            data-testid={backdropTestId}
             className="fixed inset-0 z-[9998]"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"

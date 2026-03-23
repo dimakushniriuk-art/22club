@@ -4,6 +4,9 @@
 // Valida che i target (serie, ripetizioni, peso) siano ragionevoli
 // ============================================================
 
+import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
+import type { WorkoutDayExerciseData } from '@/types/workout'
+
 export interface WorkoutTargetValidation {
   isValid: boolean
   errors: string[]
@@ -37,9 +40,11 @@ export function validateWorkoutTarget(target: WorkoutTarget): WorkoutTargetValid
     }
   }
 
-  // Validazione ripetizioni
+  // Validazione ripetizioni (MAX = sentinel -1)
   if (target.target_reps !== undefined && target.target_reps !== null) {
-    if (target.target_reps < 1) {
+    if (target.target_reps === WORKOUT_REPS_MAX_SENTINEL) {
+      // ok
+    } else if (target.target_reps < 1) {
       errors.push('Il numero di ripetizioni deve essere almeno 1')
     } else if (target.target_reps > 100) {
       warnings.push('Numero di ripetizioni molto elevato (>100). Verifica che sia corretto.')
@@ -88,7 +93,7 @@ export function validateWorkoutTarget(target: WorkoutTarget): WorkoutTargetValid
   if (
     target.target_reps !== undefined &&
     target.target_reps !== null &&
-    target.target_reps > 0 &&
+    (target.target_reps > 0 || target.target_reps === WORKOUT_REPS_MAX_SENTINEL) &&
     (target.target_sets === undefined || target.target_sets === null || target.target_sets === 0)
   ) {
     warnings.push(
@@ -127,4 +132,24 @@ export function validateWorkoutTargets(targets: WorkoutTarget[]): WorkoutTargetV
     errors: allErrors,
     warnings: allWarnings,
   }
+}
+
+/** Valori di default alla creazione esercizio nel wizard (use-workout-wizard addExerciseToDay). */
+const WIZARD_NEW_EXERCISE_DEFAULT_SETS = 1
+const WIZARD_NEW_EXERCISE_DEFAULT_REPS = 10
+const WIZARD_NEW_EXERCISE_DEFAULT_REST_SEC = 60
+
+/** True se l’utente ha personalizzato target o note rispetto ai default del wizard. */
+export function isWorkoutExerciseConfigured(ex: WorkoutDayExerciseData): boolean {
+  if (ex.note?.trim()) return true
+  if (ex.sets_detail && ex.sets_detail.length > 0) return true
+  if ((ex.target_sets ?? WIZARD_NEW_EXERCISE_DEFAULT_SETS) !== WIZARD_NEW_EXERCISE_DEFAULT_SETS)
+    return true
+  if ((ex.target_reps ?? WIZARD_NEW_EXERCISE_DEFAULT_REPS) !== WIZARD_NEW_EXERCISE_DEFAULT_REPS)
+    return true
+  if ((ex.target_weight ?? 0) > 0) return true
+  if ((ex.execution_time_sec ?? 0) > 0) return true
+  const rest = ex.rest_timer_sec
+  if (rest != null && rest !== WIZARD_NEW_EXERCISE_DEFAULT_REST_SEC) return true
+  return false
 }

@@ -6,6 +6,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api:onboarding:save-questionnaire')
@@ -14,22 +16,14 @@ const QUESTIONNAIRE_VERSION = 'intake-v1-2026-02-08'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profileRow } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
-
-    if (!profileRow || (profileRow as { role?: string }).role !== 'athlete') {
+    const profileRow = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
+    if (!profileRow || (profileRow.role as string | undefined) !== 'athlete') {
       return NextResponse.json({ error: 'Profilo atleta non trovato' }, { status: 403 })
     }
 

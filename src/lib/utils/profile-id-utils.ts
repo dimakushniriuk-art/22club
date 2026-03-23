@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -29,24 +30,14 @@ export async function getProfileIdFromUserId(userId: string): Promise<string | n
 
   try {
     const supabase = createClient()
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle()
-
-    if (error) {
-      logger.error('Errore recupero profile_id da user_id', error, { userId })
+    const row = await resolveProfileByIdentifier(supabase, userId, 'id')
+    const profileId = row && typeof row.id === 'string' ? row.id : null
+    if (!profileId) {
+      logger.warn('Profilo non trovato (id o user_id)', undefined, { userId })
       return null
     }
-
-    if (!profile?.id) {
-      logger.warn('Profilo non trovato per user_id', undefined, { userId })
-      return null
-    }
-
-    logger.debug('Profile_id recuperato da user_id', { userId, profileId: profile.id })
-    return profile.id
+    logger.debug('Profile_id risolto', { userId, profileId })
+    return profileId
   } catch (error) {
     logger.error('Errore inatteso in getProfileIdFromUserId', error, { userId })
     return null
@@ -66,28 +57,16 @@ export async function getUserIdFromProfileId(profileId: string): Promise<string 
 
   try {
     const supabase = createClient()
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .eq('id', profileId)
-      .maybeSingle()
+    const row = await resolveProfileByIdentifier(supabase, profileId, 'user_id')
+    const uid = row && typeof row.user_id === 'string' ? row.user_id : null
 
-    if (error) {
-      logger.error('Errore recupero user_id da profile_id', error, { profileId })
-      return null
-    }
-
-    // Tipizza esplicitamente per evitare problemi di inferenza TypeScript
-    type ProfileSelect = { user_id: string | null } | null
-    const typedProfile = profile as ProfileSelect
-
-    if (!typedProfile || !typedProfile.user_id) {
+    if (!uid) {
       logger.warn('Profilo non trovato per profile_id', undefined, { profileId })
       return null
     }
 
-    logger.debug('User_id recuperato da profile_id', { profileId, userId: typedProfile.user_id })
-    return typedProfile.user_id
+    logger.debug('User_id recuperato da profile_id', { profileId, userId: uid })
+    return uid
   } catch (error) {
     logger.error('Errore inatteso in getUserIdFromProfileId', error, { profileId })
     return null

@@ -140,7 +140,7 @@ function ExerciseMediaDisplay({
           <video
             ref={videoRef}
             key={videoUrl}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain"
             src={videoUrl}
             poster={isValidThumbUrl && thumbUrl ? thumbUrl : undefined}
             muted
@@ -267,7 +267,7 @@ function ExerciseMediaDisplay({
           src={thumbUrl}
           alt={(exercise.name as string) || 'Esercizio'}
           fill
-          className="object-cover"
+          className="object-contain"
           unoptimized={thumbUrl.startsWith('http')}
           onError={() => {
             logger.warn('Errore caricamento immagine esercizio', undefined, {
@@ -310,6 +310,10 @@ function AllenamentiOggiPageContent() {
   const workoutPlanId = searchParams?.get('workout_plan_id')
   const workoutDayId = searchParams?.get('workout_day_id')
   const exerciseId = searchParams?.get('exercise_id')
+  const allenamentiHeaderBackHref = useMemo(
+    () => (workoutPlanId ? `/home/allenamenti/${workoutPlanId}` : '/home/allenamenti'),
+    [workoutPlanId],
+  )
 
   // Recupera workout session reale dal database
   const { currentWorkout, fetchCurrentWorkout } = useWorkoutSession()
@@ -1246,8 +1250,13 @@ function AllenamentiOggiPageContent() {
         <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
           <PageHeaderFixed
             variant="chat"
-            title="Allenamento"
-            onBack={() => router.back()}
+            title={workoutSession?.plan_name?.trim() || 'Allenamento'}
+            subtitle={
+              workoutSession?.day_title?.trim() ||
+              workoutSession?.plan_description?.trim() ||
+              undefined
+            }
+            backHref={allenamentiHeaderBackHref}
             icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
           />
           <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
@@ -1295,7 +1304,7 @@ function AllenamentiOggiPageContent() {
           <PageHeaderFixed
             variant="chat"
             title="Allenamento di Oggi"
-            onBack={() => router.back()}
+            backHref={allenamentiHeaderBackHref}
             icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
           />
           <Card className="relative overflow-hidden border border-state-error/50 bg-background-secondary/50">
@@ -1337,8 +1346,13 @@ function AllenamentiOggiPageContent() {
         {showHeaderScroll && (
           <PageHeaderFixed
             variant="chat"
-            title={workoutSession.day_title ?? 'Allenamento'}
-            onBack={() => router.back()}
+            title={workoutSession.plan_name?.trim() || 'Allenamento'}
+            subtitle={
+              workoutSession.day_title?.trim() ||
+              workoutSession.plan_description?.trim() ||
+              undefined
+            }
+            backHref={allenamentiHeaderBackHref}
             icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
           />
         )}

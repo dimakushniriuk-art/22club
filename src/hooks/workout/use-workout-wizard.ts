@@ -26,11 +26,13 @@ const STEPS = [
   { id: 5, title: 'Riepilogo', description: 'Verifica e conferma la scheda' },
 ]
 
+export type WorkoutWizardSaveOptions = { draft?: boolean }
+
 interface UseWorkoutWizardProps {
   isOpen: boolean
   initialAthleteId?: string
   initialData?: WorkoutWizardData
-  onSave: (workoutData: WorkoutWizardData) => Promise<void>
+  onSave: (workoutData: WorkoutWizardData, options?: WorkoutWizardSaveOptions) => Promise<void>
 }
 
 export function useWorkoutWizard({
@@ -85,6 +87,15 @@ export function useWorkoutWizard({
     setIsLoading(true)
     try {
       await onSave(wizardData)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [wizardData, onSave])
+
+  const handleSaveDraft = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      await onSave(wizardData, { draft: true })
     } finally {
       setIsLoading(false)
     }
@@ -242,6 +253,41 @@ export function useWorkoutWizard({
     }))
   }, [])
 
+  /** Riordina solo gli esercizi “liberi” del giorno (esclusi quelli usati nei circuiti). */
+  const reorderStandaloneExercisesInDay = useCallback(
+    (dayIndex: number, circuitExerciseIds: Set<string>, fromIndex: number, toIndex: number) => {
+      if (fromIndex === toIndex) return
+      setWizardData((prev) => ({
+        ...prev,
+        days: prev.days.map((day, dIndex) => {
+          if (dIndex !== dayIndex) return day
+          const items = [...getDayItems(day)]
+          const isStandalone = (item: DayItem) =>
+            item.type === 'exercise' && !circuitExerciseIds.has(item.exercise.exercise_id)
+          const standaloneSnapshot = items.filter(isStandalone)
+          if (
+            fromIndex < 0 ||
+            fromIndex >= standaloneSnapshot.length ||
+            toIndex < 0 ||
+            toIndex >= standaloneSnapshot.length
+          ) {
+            return day
+          }
+          const reordered = [...standaloneSnapshot]
+          const [removed] = reordered.splice(fromIndex, 1)
+          reordered.splice(toIndex, 0, removed)
+          let si = 0
+          const newItems = items.map((item) => (isStandalone(item) ? reordered[si++]! : item))
+          const exercises = newItems
+            .filter((i): i is DayItem & { type: 'exercise' } => i.type === 'exercise')
+            .map((i) => i.exercise)
+          return { ...day, items: newItems, exercises }
+        }),
+      }))
+    },
+    [],
+  )
+
   const canProceed = useCallback(() => {
     switch (currentStep) {
       case 1:
@@ -265,6 +311,7 @@ export function useWorkoutWizard({
 
   return {
     currentStep,
+    setCurrentStep,
     progress,
     wizardData,
     setWizardData,
@@ -272,6 +319,7 @@ export function useWorkoutWizard({
     handleNext,
     handlePrevious,
     handleSave,
+    handleSaveDraft,
     addDay,
     updateDay,
     addExerciseToDay,
@@ -280,6 +328,7 @@ export function useWorkoutWizard({
     updateExercise,
     removeExercise,
     reorderDayItems,
+    reorderStandaloneExercisesInDay,
     canProceed,
     getDayItems,
     STEPS,

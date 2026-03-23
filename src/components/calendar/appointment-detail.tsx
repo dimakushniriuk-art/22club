@@ -104,6 +104,7 @@ export function AppointmentDetail({
   return (
     <Card
       variant="trainer"
+      data-testid="appointment-detail"
       className="relative w-full max-w-md overflow-hidden bg-primary/10 border-primary/30 shadow-[0_0_10px_rgba(2,179,191,0.3)] backdrop-blur-xl"
     >
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-primary/5 z-0" />
@@ -119,6 +120,7 @@ export function AppointmentDetail({
               variant="ghost"
               size="icon"
               onClick={onClose}
+              data-testid="appointment-detail-close"
               className="h-8 w-8 text-text-secondary hover:text-text-primary"
             >
               <X className="h-4 w-4" />
@@ -273,6 +275,7 @@ export function AppointmentDetail({
                 variant="primary"
                 onClick={onEdit}
                 disabled={loading}
+                data-testid="appointment-detail-edit"
                 className="w-full bg-primary/20 text-primary font-medium hover:bg-primary/30 shadow-[0_0_10px_rgba(2,179,191,0.3)]"
               >
                 <Edit className="mr-2 h-4 w-4" />
@@ -283,6 +286,7 @@ export function AppointmentDetail({
                   variant="outline"
                   onClick={onCancel}
                   disabled={loading}
+                  data-testid="appointment-detail-cancel"
                   className="flex-1 border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
                 >
                   <Ban className="mr-2 h-4 w-4" />
@@ -292,6 +296,7 @@ export function AppointmentDetail({
                   variant="outline"
                   onClick={onDelete}
                   disabled={loading}
+                  data-testid="appointment-detail-delete"
                   className="flex-1 border-error/30 text-state-error hover:bg-error/10"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />

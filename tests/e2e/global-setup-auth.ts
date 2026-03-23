@@ -1,7 +1,12 @@
 import { existsSync, mkdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium, type FullConfig, type Page } from '@playwright/test'
-import { TEST_CREDENTIALS, MARKETING_CREDENTIALS } from './helpers/auth'
+import {
+  TEST_CREDENTIALS,
+  MARKETING_CREDENTIALS,
+  LOGIN_EMAIL_FIELD,
+  LOGIN_PASSWORD_FIELD,
+} from './helpers/auth'
 
 /**
  * Setup globale per l'autenticazione.
@@ -19,7 +24,11 @@ async function globalSetupAuth(_config: FullConfig) {
     mkdirSync(storageDir, { recursive: true })
   }
 
-  // Se gli storage esistono già (da meno di 24h), riusali per velocità
+  // In CI (e opzionalmente con PLAYWRIGHT_FORCE_AUTH_REFRESH=1) non riusare file .auth:
+  // runner puliti o env diversa richiedono login reale ogni volta.
+  const skipAuthCache = !!process.env.CI || process.env.PLAYWRIGHT_FORCE_AUTH_REFRESH === '1'
+
+  // Se gli storage esistono già (da meno di 24h), riusali per velocità (solo fuori CI)
   const athleteStatePath = join(storageDir, 'athlete-auth.json')
   const ptStatePath = join(storageDir, 'pt-auth.json')
   const adminStatePath = join(storageDir, 'admin-auth.json')
@@ -32,8 +41,9 @@ async function globalSetupAuth(_config: FullConfig) {
     return stats.size > 100 && hoursSinceMod < 24
   }
 
-  const needMarketing = MARKETING_CREDENTIALS && !isRecent(marketingStatePath)
+  const needMarketing = !!MARKETING_CREDENTIALS && (skipAuthCache || !isRecent(marketingStatePath))
   if (
+    !skipAuthCache &&
     isRecent(athleteStatePath) &&
     isRecent(ptStatePath) &&
     isRecent(adminStatePath) &&
@@ -41,6 +51,11 @@ async function globalSetupAuth(_config: FullConfig) {
   ) {
     console.log('✅ Storage state validi trovati, riuso cache')
     return
+  }
+  if (skipAuthCache) {
+    console.log(
+      '🔁 Auth: refresh forzato (CI o PLAYWRIGHT_FORCE_AUTH_REFRESH), salto cache file .auth',
+    )
   }
 
   const browser = await chromium.launch({ headless: true })
@@ -90,14 +105,14 @@ async function globalSetupAuth(_config: FullConfig) {
       // Ignora errori cookie
     }
 
-    await targetPage.waitForSelector('#login-email, #email', { timeout: 20000, state: 'visible' })
-    await targetPage.waitForSelector('#login-password, #password', {
+    await targetPage.waitForSelector(LOGIN_EMAIL_FIELD, { timeout: 20000, state: 'visible' })
+    await targetPage.waitForSelector(LOGIN_PASSWORD_FIELD, {
       timeout: 20000,
       state: 'visible',
     })
 
-    const emailInput = targetPage.locator('#login-email, #email').first()
-    const passwordInput = targetPage.locator('#login-password, #password').first()
+    const emailInput = targetPage.locator(LOGIN_EMAIL_FIELD).first()
+    const passwordInput = targetPage.locator(LOGIN_PASSWORD_FIELD).first()
     const submitButton = targetPage.locator('button[type="submit"]').first()
 
     // Inserimento dati con retry e verifica

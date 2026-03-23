@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,12 +12,9 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 

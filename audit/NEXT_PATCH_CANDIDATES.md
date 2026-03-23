@@ -10,4 +10,4 @@ Ordine per impatto / rischio. Solo raccomandazioni.
 
 4. **`/api/debug-trainer-visibility`** — Oltre al gate dev: richiedere ruolo `trainer` (o rimuovere endpoint in favore di tool interno).
 
-5. **Matcher middleware opzionale** — Valutare inclusione selettiva di prefissi API critici *oppure* documentare che **tutte** le API sensibili devono autonomamente enforceare ruolo (checklist in review) — evitare doppio redirect su API pubbliche (`forgot-password`).
+5. **Matcher middleware opzionale** — Valutare inclusione selettiva di prefissi API critici _oppure_ documentare che **tutte** le API sensibili devono autonomamente enforceare ruolo (checklist in review) — evitare doppio redirect su API pubbliche (`forgot-password`).

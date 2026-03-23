@@ -15,7 +15,7 @@ import { useAllenamenti } from '@/hooks/use-allenamenti'
 import { useWorkouts } from '@/hooks/use-workouts'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
-import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer'
+import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer-client'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 

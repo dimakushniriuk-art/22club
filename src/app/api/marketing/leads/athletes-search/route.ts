@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 
@@ -19,19 +20,16 @@ type RpcRow = {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     const role = (profile as { role?: string } | null)?.role

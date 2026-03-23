@@ -8,16 +8,19 @@ import { CalendarView, AppointmentPopover } from '@/components/calendar'
 import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
-import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer'
+import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer-client'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useAuth } from '@/providers/auth-provider'
 import { useAthleteAppointments } from '@/hooks/useAthleteAppointments'
 import { useAthleteCalendarPage } from '@/hooks/calendar/use-athlete-calendar-page'
+import {
+  isAthleteAppointmentFutureLike,
+  isAthleteAppointmentPastLike,
+} from '@/lib/appointments/athlete-query-params'
 import { supabase } from '@/lib/supabase/client'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { AppuntamentiPageHeader } from './AppuntamentiPageHeader'
 import { AppuntamentiListView } from './AppuntamentiListView'
-import { isValidAppointmentDate } from './utils'
 
 const AppointmentForm = lazy(() =>
   import('@/components/calendar').then((mod) => ({ default: mod.AppointmentForm })),
@@ -113,19 +116,13 @@ function AppuntamentiPageContent() {
   const formPreviousFocusRef = useRef<HTMLElement | null>(null)
 
   const futureAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
-      if (!isValidAppointmentDate(apt.starts_at)) return false
-      const startDate = new Date(apt.starts_at)
-      return (apt.status || 'attivo') === 'attivo' && startDate >= new Date()
-    })
+    const now = new Date()
+    return appointments.filter((apt) => isAthleteAppointmentFutureLike(apt, now))
   }, [appointments])
 
   const pastAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
-      if (!isValidAppointmentDate(apt.starts_at)) return false
-      const startDate = new Date(apt.starts_at)
-      return (apt.status || 'attivo') === 'completato' || startDate < new Date()
-    })
+    const now = new Date()
+    return appointments.filter((apt) => isAthleteAppointmentPastLike(apt, now))
   }, [appointments])
 
   const handleBack = useCallback(() => router.push('/home'), [router])
@@ -295,6 +292,7 @@ function AppuntamentiPageContent() {
     const {
       appointments: calendarAppointments,
       slotBookingCounts,
+      openBookingSlotMax,
       staffId: trainerStaffId,
       trainerLoading,
       loading: submitLoading,
@@ -400,6 +398,7 @@ function AppuntamentiPageContent() {
                 }
                 openBookingAsBackground
                 slotBookingCounts={slotBookingCounts}
+                openBookingSlotMax={openBookingSlotMax}
                 compactToolbar
               />
             )}
@@ -407,6 +406,11 @@ function AppuntamentiPageContent() {
 
           {!athleteCalendar.appointmentsLoading && (
             <div className="mt-3 space-y-2">
+              {trainerStaffId && (
+                <p className="text-center text-xs text-text-secondary px-1">
+                  Libera prenotazione: max {openBookingSlotMax} prenotazioni per fascia oraria.
+                </p>
+              )}
               {!trainerStaffId && !athleteCalendar.trainerLoading && (
                 <p className="text-center text-sm text-text-secondary rounded-lg border border-white/10 bg-white/5 py-2.5 px-3">
                   Non hai ancora un trainer assegnato. Contatta l&apos;organizzazione per poter
@@ -417,7 +421,10 @@ function AppuntamentiPageContent() {
           )}
 
           {showForm && (
-            <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 backdrop-blur-sm p-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:p-4">
+            <div
+              data-testid="appointment-form-overlay"
+              className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 backdrop-blur-sm p-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:p-4"
+            >
               <Suspense fallback={<LoadingState message="Caricamento form..." />}>
                 <AppointmentForm
                   appointment={

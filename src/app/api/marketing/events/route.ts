@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 import type { Json } from '@/lib/supabase/types'
+import { buildLegacyOrgWriteContext } from '@/lib/organizations/current-org'
 
 const logger = createLogger('api:marketing:events')
 
@@ -14,19 +16,16 @@ const logger = createLogger('api:marketing:events')
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, org_id, id')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     const prof = profile as { role?: string; org_id?: string | null; id?: string } | null
@@ -44,9 +43,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'type obbligatorio' }, { status: 400 })
     }
 
+    const orgWriteContext = buildLegacyOrgWriteContext({
+      profile: prof,
+      message: 'Profilo senza org_id',
+    })
+
     const insert = {
-      org_id: prof.org_id,
-      org_id_text: prof.org_id,
+      ...orgWriteContext,
       type: type.trim(),
       campaign_id:
         typeof campaign_id === 'string' && campaign_id.trim() ? campaign_id.trim() : null,

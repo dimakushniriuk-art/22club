@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
+import { buildLegacyOrgWriteContext, requireCurrentOrgId } from '@/lib/organizations/current-org'
 import type { Tables } from '@/types/supabase'
 import type { Database } from '@/lib/supabase/types'
 
@@ -48,6 +49,21 @@ export async function POST(request: NextRequest) {
 
     if (profileTyped.role !== 'admin' && profileTyped.role !== 'trainer') {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    }
+
+    let trainerOrgId: string | null = null
+    if (profileTyped.role === 'trainer') {
+      try {
+        trainerOrgId = requireCurrentOrgId(
+          profileTyped.org_id,
+          'Organizzazione non disponibile per assegnazione trainer',
+        )
+      } catch {
+        return NextResponse.json(
+          { error: 'Organizzazione non disponibile per assegnazione trainer' },
+          { status: 400 },
+        )
+      }
     }
 
     // Usa admin client per operazioni auth.admin
@@ -152,15 +168,14 @@ export async function POST(request: NextRequest) {
 
     // Se lo staff è un trainer, crea l'assegnazione in athlete_trainer_assignments (bypassa RLS)
     if (profileTyped.role === 'trainer' && athleteProfileTyped) {
-      const orgId =
-        profileTyped.org_id ??
-        (athleteProfile as { org_id?: string | null })?.org_id ??
-        'default-org'
+      const orgWriteContext = buildLegacyOrgWriteContext({
+        profile: { org_id: trainerOrgId },
+        message: 'Organizzazione non disponibile per assegnazione trainer',
+      })
       const { error: relationError } = await adminClient
         .from('athlete_trainer_assignments')
         .insert({
-          org_id: orgId,
-          org_id_text: orgId,
+          ...orgWriteContext,
           athlete_id: athleteProfileTyped.id,
           trainer_id: profileTyped.id,
           status: 'active',

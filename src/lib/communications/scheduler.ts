@@ -6,6 +6,7 @@
 
 import { createLogger } from '@/lib/logger'
 import { createAdminClient } from '@/lib/supabase/server'
+import { getCurrentOrgIdFromProfile } from '@/lib/organizations/current-org'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import { sendCommunicationEmail } from './email'
@@ -223,7 +224,7 @@ export async function ensureRecipientsCreated(
       .select('org_id')
       .eq('id', commWithCreator.created_by_profile_id)
       .maybeSingle()
-    const orgId = (creatorProfile as { org_id?: string } | null)?.org_id
+    const orgId = getCurrentOrgIdFromProfile(creatorProfile as { org_id?: string | null } | null)
     if (orgId) {
       filterWithOrg = { ...recipientFilter, org_id: orgId }
     }

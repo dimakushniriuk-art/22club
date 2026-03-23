@@ -37,6 +37,8 @@ vi.mock('@/lib/supabase', () => ({
 // Mock per @/lib/supabase/client (usato da createClient)
 vi.mock('@/lib/supabase/client', () => ({
   createClient: vi.fn(() => mockSupabase),
+  supabase: mockSupabase,
+  handleRefreshTokenError: vi.fn(() => false),
 }))
 
 vi.mock('@/lib/error-handler', () => ({

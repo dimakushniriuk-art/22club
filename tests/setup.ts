@@ -117,6 +117,7 @@ vi.mock('framer-motion', async () => {
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => sharedSupabaseInstance,
   supabase: sharedSupabaseInstance,
+  handleRefreshTokenError: vi.fn(() => false),
 }))
 
 // Mock per barrel @/lib/supabase (createClient + supabase)
@@ -155,19 +156,21 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock per IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+// Mock per IntersectionObserver (Next use-intersection fa `new IntersectionObserver()`)
+class MockIntersectionObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver
 
-// Mock per ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+// Mock per ResizeObserver (stesso pattern costruttore)
+class MockResizeObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver
 
 // Cleanup dopo ogni test
 afterEach(() => {

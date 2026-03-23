@@ -106,6 +106,7 @@ export function WorkoutPlansFilters({
               { value: '', label: 'Tutti gli stati' },
               { value: 'archiviato', label: 'Archiviate' },
               { value: 'attivo', label: 'Attive' },
+              { value: 'bozza', label: 'Bozze' },
               { value: 'completato', label: 'Completate' },
             ].sort((a, b) =>
               a.value === '' ? -1 : b.value === '' ? 1 : a.label.localeCompare(b.label, 'it'),

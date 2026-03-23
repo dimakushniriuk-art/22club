@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { sendEmailViaResend } from '@/lib/communications/email-resend-client'
 import { createLogger } from '@/lib/logger'
 
@@ -8,24 +10,15 @@ const logger = createLogger('api:communications:send-email-to-athlete')
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', session.user.id)
-      .single()
-
-    const profileRow = profile as { id?: string; role?: string } | null
-    const role = profileRow?.role
-    const createdByProfileId = profileRow?.id
+    const profileRow = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
+    const role = profileRow?.role as string | undefined
+    const createdByProfileId = profileRow?.id as string | undefined
     const canSend =
       role && ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing'].includes(role)
     if (!canSend || !createdByProfileId) {
@@ -46,13 +39,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Messaggio obbligatorio' }, { status: 400 })
     }
 
-    const { data: athlete } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('id', athlete_id.trim())
-      .single()
+    const athlete = await resolveProfileByIdentifier(supabase, athlete_id.trim(), 'email')
 
-    const email = (athlete as { email?: string | null } | null)?.email
+    const email = athlete?.email as string | null | undefined
     if (!email || typeof email !== 'string' || !email.trim()) {
       return NextResponse.json(
         { error: 'Email atleta non trovata o non impostata' },

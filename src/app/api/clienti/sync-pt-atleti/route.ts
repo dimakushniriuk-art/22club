@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api:clienti:sync-pt-atleti')
@@ -15,23 +17,15 @@ const ALLOWED_ROLES = ['admin', 'pt', 'trainer']
 export async function POST() {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user?.id) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', session.user.id)
-      .single()
-
-    const profileId = (profile as { id?: string; role?: string } | null)?.id
-    const role = (profile as { id?: string; role?: string } | null)?.role
+    const profile = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
+    const profileId = profile?.id as string | undefined
+    const role = profile?.role as string | undefined
     if (!profileId || !role || !ALLOWED_ROLES.includes(role)) {
       return NextResponse.json({ ok: true, synced: 0 })
     }

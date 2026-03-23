@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 
 /** Risposta: oggetto con chiavi uguali al form progressi (stringhe per precompilazione). */
 export type ExtractProgressPdfResponse = Record<string, string>
@@ -53,25 +55,20 @@ function extractFromText(text: string): Record<string, string> {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
+    const { user } = await getServerAuthUser(supabase)
+    if (!user?.id) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (profile?.role !== 'nutrizionista') {
+    const profile = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
+    const staffRole = profile?.role as string | undefined
+    if (!profile || staffRole !== 'nutrizionista') {
       return NextResponse.json(
         { error: 'Solo il nutrizionista può usare questa funzione' },
         { status: 403 },
       )
     }
+    const staffProfileId = profile.id as string
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -85,7 +82,7 @@ export async function POST(request: NextRequest) {
       const { data: link } = await supabase
         .from('staff_atleti')
         .select('atleta_id')
-        .eq('staff_id', profile.id)
+        .eq('staff_id', staffProfileId)
         .eq('atleta_id', athleteProfileId)
         .eq('status', 'active')
         .eq('staff_type', 'nutrizionista')

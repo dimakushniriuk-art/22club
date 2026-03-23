@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 import { applySegmentRules, type SegmentRules } from '@/lib/marketing/segment-rules'
+import { buildLegacyOrgWriteContext } from '@/lib/organizations/current-org'
 
 const logger = createLogger('api:marketing:automations:run')
 
@@ -37,10 +38,14 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
     }
 
-    const orgId = (profile as { org_id?: string } | null)?.org_id
-    if (!orgId) {
+    const prof = profile as { org_id?: string } | null
+    if (!prof?.org_id) {
       return NextResponse.json({ error: 'Profilo senza org_id' }, { status: 400 })
     }
+    const orgWriteContext = buildLegacyOrgWriteContext({
+      profile: prof,
+      message: 'Profilo senza org_id',
+    })
 
     const { data: automation, error: autoErr } = await supabase
       .from('marketing_automations')
@@ -99,8 +104,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         `Suggerimento: ${(segment as { name?: string }).name ?? 'Segmento'}`
       const suggestedBudget = (actionPayload.suggested_budget as number) ?? null
       await supabase.from('marketing_events').insert({
-        org_id: orgId,
-        org_id_text: orgId,
+        ...orgWriteContext,
         type: 'campaign_suggestion',
         payload: {
           segment_id: segmentId,
@@ -113,8 +117,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     } else if (actionType === 'log_event') {
       const eventType = (actionPayload.event_type as string) ?? 'segment_audience'
       await supabase.from('marketing_events').insert({
-        org_id: orgId,
-        org_id_text: orgId,
+        ...orgWriteContext,
         type: eventType,
         payload: {
           segment_id: segmentId,

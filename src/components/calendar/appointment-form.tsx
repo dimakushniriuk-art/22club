@@ -552,7 +552,13 @@ export function AppointmentForm({
       </div>
 
       {/* Form compatto */}
-      <form ref={formContainerRef} onSubmit={handleSubmit} className="p-4 space-y-3">
+      <form
+        ref={formContainerRef}
+        onSubmit={handleSubmit}
+        className="p-4 space-y-3"
+        data-testid="appointment-form"
+        data-state={loading || isSubmitting ? 'submitting' : 'idle'}
+      >
         {showOpenBookingOption && !isEditing && (
           <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] p-3 gap-3">
             <label
@@ -610,6 +616,10 @@ export function AppointmentForm({
                 ]}
                 className="h-10 px-3"
                 unstyled
+                triggerTestId="appointment-athlete-trigger"
+                dropdownTestId="appointment-athlete-listbox"
+                backdropTestId="appointment-athlete-backdrop"
+                optionTestIdPrefix="appointment-athlete-option"
               />
             </div>
             {errors.athlete_id && (
@@ -675,6 +685,10 @@ export function AppointmentForm({
                       options={TIME_OPTIONS}
                       className="flex-1"
                       unstyled
+                      triggerTestId="appointment-start-time-trigger"
+                      dropdownTestId="appointment-start-time-listbox"
+                      backdropTestId="appointment-start-time-backdrop"
+                      optionTestIdPrefix="appointment-start-time-option"
                     />
                   </div>
                 </div>
@@ -687,6 +701,10 @@ export function AppointmentForm({
                       options={TIME_OPTIONS}
                       className="flex-1"
                       unstyled
+                      triggerTestId="appointment-end-time-trigger"
+                      dropdownTestId="appointment-end-time-listbox"
+                      backdropTestId="appointment-end-time-backdrop"
+                      optionTestIdPrefix="appointment-end-time-option"
                     />
                   </div>
                 </div>
@@ -863,6 +881,8 @@ export function AppointmentForm({
             type="submit"
             disabled={loading || isSubmitting}
             className="min-h-[44px] px-6 font-semibold text-xs touch-manipulation"
+            data-testid="appointment-form-submit"
+            data-state={loading || isSubmitting ? 'submitting' : 'idle'}
           >
             {loading || isSubmitting ? (
               <span className="flex items-center gap-1.5">

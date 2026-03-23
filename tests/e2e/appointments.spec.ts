@@ -260,7 +260,7 @@ test.describe('Appointments - Vista atleta (home)', () => {
     await page.waitForSelector('body', { state: 'visible', timeout: 5000 }).catch(() => {})
     const hasLegend =
       (await page
-        .getByText(/max 6 posti/i)
+        .getByText(/max \d+ prenotazioni per fascia oraria/i)
         .isVisible()
         .catch(() => false)) ||
       (await page

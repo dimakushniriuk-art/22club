@@ -5,91 +5,12 @@ import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { queryKeys } from '@/lib/query-keys'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
+import { normalizeAthleteAppointmentsQueryParams } from '@/lib/appointments/athlete-query-params'
 
 const logger = createLogger('useAthleteAppointments')
 
-// Cache in-memory per mapping userId -> profileId (evita lookup multipli)
-// La cache persiste per tutta la sessione del modulo
 const profileIdCache = new Map<string, string>()
-
-async function getProfileId(userId: string, client: typeof supabase): Promise<string | null> {
-  // Se già in cache, ritorna immediatamente
-  if (profileIdCache.has(userId)) {
-    const cached = profileIdCache.get(userId)!
-    if (process.env.NODE_ENV !== 'production') {
-      logger.debug('[profiles] useAthleteAppointments → profileId da cache', {
-        userId,
-        profileId: cached,
-        source: 'useAthleteAppointments',
-      })
-    }
-    return cached
-  }
-
-  // Prima verifica se userId è già profiles.id
-  if (process.env.NODE_ENV !== 'production') {
-    logger.debug('[profiles] useAthleteAppointments → query DB (lookup profile.id)', {
-      userId,
-      source: 'useAthleteAppointments',
-      reason: 'cache miss - verifica se userId è già profile.id',
-    })
-  }
-
-  const { data: profileCheck } = await client
-    .from('profiles')
-    .select('id')
-    .eq('id', userId)
-    .maybeSingle()
-
-  // Tipizza esplicitamente per evitare problemi di inferenza TypeScript
-  type ProfileSelect = { id: string } | null
-  const typedProfileCheck = profileCheck as ProfileSelect
-
-  if (typedProfileCheck?.id) {
-    // userId è già profiles.id, cache e ritorna
-    profileIdCache.set(userId, typedProfileCheck.id)
-    if (process.env.NODE_ENV !== 'production') {
-      logger.debug('[profiles] useAthleteAppointments → userId è già profile.id', {
-        userId,
-        profileId: typedProfileCheck.id,
-        source: 'useAthleteAppointments',
-      })
-    }
-    return typedProfileCheck.id
-  }
-
-  // Se non trovato, potrebbe essere user_id, quindi facciamo lookup
-  if (process.env.NODE_ENV !== 'production') {
-    logger.debug('[profiles] useAthleteAppointments → query DB (lookup user_id)', {
-      userId,
-      source: 'useAthleteAppointments',
-      reason: 'userId non è profile.id, lookup per user_id',
-    })
-  }
-
-  const { data: profileByUserId } = await client
-    .from('profiles')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  if (profileByUserId?.id) {
-    // Trovato per user_id, cache e ritorna
-    profileIdCache.set(userId, profileByUserId.id)
-    if (process.env.NODE_ENV !== 'production') {
-      logger.debug('[profiles] useAthleteAppointments → convertito user_id → profile.id', {
-        userId,
-        profileId: profileByUserId.id,
-        source: 'useAthleteAppointments',
-      })
-    }
-    return profileByUserId.id
-  }
-
-  // Non trovato né per id né per user_id
-  logger.warn('Profilo non trovato né per id né per user_id', undefined, { userId })
-  return null
-}
 
 interface Appointment {
   id: string
@@ -143,7 +64,10 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       let profileId: string | null = null
 
       if (userId) {
-        profileId = await getProfileId(userId, client)
+        const row = await resolveProfileByIdentifier(client, userId, 'id', {
+          profileIdCache,
+        })
+        profileId = row && typeof row.id === 'string' ? row.id : null
 
         if (!profileId) {
           logger.warn('Profilo non trovato né per id né per user_id', undefined, { userId, role })
@@ -160,15 +84,20 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
           staff:profiles!staff_id(id, nome, cognome, first_name, last_name, email)
         `)
 
-      if (role === 'athlete') {
-        // Atleti vedono solo i propri appuntamenti futuri
-        query = query
-          .eq('athlete_id', profileId)
-          .gte('starts_at', new Date().toISOString())
-          .is('cancelled_at', null)
-      } else if (role === 'trainer' || role === 'admin') {
-        // Staff vede tutti i propri appuntamenti (tramite staff_id o trainer_id)
-        query = query.or(`staff_id.eq.${profileId},trainer_id.eq.${profileId}`)
+      const queryParams = normalizeAthleteAppointmentsQueryParams(role)
+
+      if (queryParams.role === 'athlete') {
+        // TODO(DB/RLS): la visibilità slot open booking resta autoritativa lato RLS.
+        query = query.eq('athlete_id', profileId)
+        if (!queryParams.includePastAppointments) {
+          query = query.gte('starts_at', new Date().toISOString())
+        }
+        if (queryParams.excludeCancelledAppointments) {
+          query = query.is('cancelled_at', null)
+        }
+      } else if (queryParams.role === 'trainer' || queryParams.role === 'admin') {
+        // Viste staff: visibilità solo su staff_id (chiave operativa); trainer_id non amplia il set
+        query = query.eq('staff_id', profileId)
       }
 
       const { data, error: fetchError } = await query.order('starts_at', {

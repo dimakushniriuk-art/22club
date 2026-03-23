@@ -1,10 +1,12 @@
 /**
  * GET /api/athlete/workout-plans
  * Restituisce le schede allenamento (workout_plans) per l'atleta autenticato.
- * Usa service role per bypassare RLS.
+ * Usa il client di sessione (RLS): stesso modello degli hook atleta che leggono workout_plans dal browser.
  */
 import { NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
+import { createClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { getDifficultyFromDb } from '@/lib/workouts/workout-transformers'
 import type { Workout } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
@@ -21,22 +23,15 @@ type WorkoutPlanWithRelations = WorkoutPlanRow & {
 export async function GET() {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profileRow, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
+    const profileRow = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
 
-    if (profileError || !profileRow) {
+    if (!profileRow) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
 
@@ -46,9 +41,8 @@ export async function GET() {
     }
 
     const athleteId = profileRow.id as string
-    const admin = createAdminClient()
 
-    const { data, error } = await admin
+    const { data: rawData, error } = await supabase
       .from('workout_plans')
       .select(
         `*,
@@ -66,12 +60,14 @@ export async function GET() {
       )
     }
 
+    const data = (rawData ?? []).filter((w) => !(w as { is_draft?: boolean | null }).is_draft)
+
     const createdByProfileIds =
-      data?.map((w) => w.created_by_profile_id).filter((id): id is string => !!id) || []
+      data.map((w) => w.created_by_profile_id).filter((id): id is string => !!id) || []
     const createdByProfiles: Record<string, { nome?: string | null; cognome?: string | null }> = {}
 
     if (createdByProfileIds.length > 0) {
-      const { data: profilesData } = await admin
+      const { data: profilesData } = await supabase
         .from('profiles')
         .select('id, nome, cognome')
         .in('id', createdByProfileIds)

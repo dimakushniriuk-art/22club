@@ -16,6 +16,7 @@ import {
   DEFAULT_TYPE_COLORS,
   DEFAULT_DURATIONS_TRAINER,
   DEFAULT_DURATIONS_COLLABORATOR,
+  DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
 } from '@/lib/calendar-defaults'
 import type {
   CalendarViewType,
@@ -130,7 +131,9 @@ export default function CalendarioImpostazioniPage() {
   const [typeColors, setTypeColors] = useState<Record<string, string>>({})
   const [showFreePass, setShowFreePass] = useState(true)
   const [showCollaborators, setShowCollaborators] = useState(true)
-  const [maxFreePassAthletes, setMaxFreePassAthletes] = useState(4)
+  const [maxFreePassAthletes, setMaxFreePassAthletes] = useState(
+    DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
+  )
   const [recurrenceOptions, setRecurrenceOptions] = useState<RecurrenceOption[]>([
     'none',
     '2_weeks',
@@ -727,7 +730,11 @@ export default function CalendarioImpostazioniPage() {
                   min={1}
                   max={20}
                   value={maxFreePassAthletes}
-                  onChange={(e) => setMaxFreePassAthletes(Number(e.target.value) || 4)}
+                  onChange={(e) =>
+                    setMaxFreePassAthletes(
+                      Number(e.target.value) || DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
+                    )
+                  }
                   className={`w-24 ${inputClass}`}
                 />
               </div>

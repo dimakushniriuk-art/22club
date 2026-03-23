@@ -1,20 +1,19 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
-
-const REDIRECT_PATH_BY_ROLE: Record<string, string> = {
-  admin: '/dashboard/admin',
-  trainer: '/dashboard',
-  nutrizionista: '/dashboard/nutrizionista',
-  massaggiatore: '/dashboard/massaggiatore',
-  athlete: '/home',
-} as const
-
-const DEFAULT_REDIRECT = '/dashboard'
+import { requirePermission } from '@/lib/auth/guards'
+import { getRedirectPath } from '@/lib/auth/redirect'
+import type { AuthFeature } from '@/lib/auth/permissions'
 
 export type StaffRole = 'massaggiatore' | 'nutrizionista'
+
+function featureForStaffRole(allowedRole: StaffRole): AuthFeature {
+  return allowedRole === 'nutrizionista'
+    ? 'page_nutrizionista_dashboard'
+    : 'page_massaggiatore_dashboard'
+}
 
 /**
  * Guard per le dashboard staff (massaggiatore, nutrizionista).
@@ -25,16 +24,17 @@ export function useStaffDashboardGuard(allowedRole: StaffRole): {
 } {
   const router = useRouter()
   const { role, loading } = useAuth()
+  const feature = useMemo(() => featureForStaffRole(allowedRole), [allowedRole])
 
   useEffect(() => {
     if (loading || role === null) return
-    if (role !== allowedRole) {
-      const path = REDIRECT_PATH_BY_ROLE[role] ?? DEFAULT_REDIRECT
+    if (!requirePermission(feature, role)) {
+      const path = getRedirectPath(role, { kind: 'guard_staff_wrong_area' })
       router.replace(path)
     }
-  }, [role, loading, router, allowedRole])
+  }, [role, loading, router, feature])
 
-  const showLoader = loading || (role !== null && role !== allowedRole)
+  const showLoader = loading || (role !== null && !requirePermission(feature, role))
 
   return { showLoader }
 }

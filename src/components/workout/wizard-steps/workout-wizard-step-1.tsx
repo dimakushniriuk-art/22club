@@ -12,6 +12,7 @@ import { SimpleSelect } from '@/components/ui/simple-select'
 import { Card, CardContent } from '@/components/ui'
 import type { WorkoutWizardData } from '@/types/workout'
 import { WORKOUT_OBJECTIVES } from '@/lib/constants/workout-objectives'
+import { WORKOUT_PLAN_NO_ATHLETE_VALUE } from '@/lib/constants/workout-plan-wizard'
 
 interface WorkoutWizardStep1Props {
   wizardData: WorkoutWizardData
@@ -73,11 +74,14 @@ export function WorkoutWizardStep1({
             </div>
 
             <div className="space-y-2">
-              <label className="text-text-primary mb-2 block text-sm font-medium">Atleta *</label>
+              <label className="text-text-primary mb-2 block text-sm font-medium">Atleta</label>
               <SimpleSelect
-                value={wizardData.athlete_id}
-                onValueChange={(value) => onWizardDataChange({ athlete_id: value })}
+                value={wizardData.athlete_id ?? ''}
+                onValueChange={(value) =>
+                  onWizardDataChange({ athlete_id: value === '' ? undefined : value })
+                }
                 options={[
+                  { value: WORKOUT_PLAN_NO_ATHLETE_VALUE, label: 'BOZZA', tone: 'amber' },
                   { value: '', label: 'Seleziona un atleta' },
                   ...athletes
                     .map((athlete) => ({ value: athlete.id, label: athlete.name }))
@@ -86,7 +90,8 @@ export function WorkoutWizardStep1({
                 placeholder="Seleziona un atleta"
               />
               <p className="text-text-tertiary mt-2 text-sm leading-relaxed">
-                L&apos;atleta selezionato avrà accesso a questa scheda di allenamento
+                <span className="text-amber-400/90 font-medium">BOZZA</span>: salva la scheda senza
+                atleta (solo bozza). Per pubblicare la scheda serve un atleta reale.
               </p>
             </div>
 

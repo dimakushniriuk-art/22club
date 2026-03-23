@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
 import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
 import { sendAppointmentReminderEmail } from '@/lib/calendar/appointment-reminder-email'
@@ -35,11 +36,8 @@ function getTypeLabel(type: string, customTypes: CustomType[]): string {
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-    if (sessionError || !session) {
+    const { user } = await getServerAuthUser(supabase)
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 

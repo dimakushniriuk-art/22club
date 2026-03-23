@@ -87,9 +87,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
   } = options
 
   const isTestEnv =
-    process.env.NODE_ENV === 'test' ||
-    process.env.VITEST === 'true' ||
-    process.env.VITEST === '1'
+    process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST === '1'
 
   const { supabase, user, loading: authLoading } = useSupabase()
   const userId = user?.id || null
@@ -116,14 +114,14 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
       logger.debug('fetchStats già in corso, skip')
       return
     }
-    
+
     try {
       fetchingStatsRef.current = true
-      
+
       // NOTE #6: Le stats mostrano SEMPRE i totali globali, non i dati filtrati.
       // Questo è un design decision per mantenere le stats coerenti e significative.
       // Se necessario in futuro, si può aggiungere una funzione separata per stats filtrate.
-      
+
       // Controlla cache locale prima (TTL 2 minuti) - usa strategia stats
       const cachedStats = statsCache.get<ClienteStats>('clienti-stats')
       if (cachedStats) {
@@ -273,527 +271,530 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
     }
   }, [supabase])
 
-  const fetchClienti = useCallback(async (skipAuthCheck = false) => {
-    if (fetchingRef.current) {
-      return
-    }
-
-    try {
-      logger.debug('fetchClienti: verifica autenticazione', undefined, {
-        userId,
-        authLoading,
-        hasUser: !!user,
-        userEmail: user?.email,
-      })
-      
-      // Non ritornare immediatamente se userId è null - potrebbe essere ancora in caricamento
-      // Se authLoading è false e userId è ancora null, allora l'utente non è autenticato
-      if (!authLoading && !userId && !skipAuthCheck) {
-        logger.warn('Utente non autenticato - lista vuota', undefined, {
-          authLoading,
-          userId,
-          hasUser: !!user,
-        })
-        setClienti([])
-        setStats({
-          totali: 0,
-          attivi: 0,
-          inattivi: 0,
-          nuovi_mese: 0,
-          documenti_scadenza: 0,
-        })
-        setTotal(0)
-        setLoading(false)
+  const fetchClienti = useCallback(
+    async (skipAuthCheck = false) => {
+      if (fetchingRef.current) {
         return
       }
-      
-      // Se l'autenticazione è ancora in caricamento, aspetta
-      if (authLoading) {
-        logger.debug('Autenticazione in caricamento - attesa', undefined, {
-          authLoading,
-          userId,
-        })
-        return
-      }
-      
-      // Se userId è null anche dopo che authLoading è false, non fare fetch
-      if (!userId && !skipAuthCheck) {
-        logger.warn('userId è null dopo autenticazione completata', undefined, {
-          authLoading,
-          userId,
-          hasUser: !!user,
-        })
-        setClienti([])
-        setStats({
-          totali: 0,
-          attivi: 0,
-          inattivi: 0,
-          nuovi_mese: 0,
-          documenti_scadenza: 0,
-        })
-        setTotal(0)
-        setLoading(false)
-        return
-      }
-      fetchingRef.current = true
-      setLoading(true)
-      setError(null)
-
-      // Check if Supabase is properly configured
-      const isSupabaseConfigured =
-        process.env.NEXT_PUBLIC_SUPABASE_URL &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://mock-project.supabase.co' &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'mock-anon-key-for-development'
-
-      if (!isSupabaseConfigured) {
-        // Use mock data for development
-        // Logger sarà implementato in seguito
-        // logger.warn('src\hooks\use-clienti.ts', 'Supabase not configured, using mock data for clienti')
-
-        const mockClienti: Cliente[] = [
-          {
-            id: '1',
-            first_name: 'Mario',
-            last_name: 'Rossi',
-            nome: 'Mario',
-            cognome: 'Rossi',
-            email: 'mario.rossi@email.com',
-            phone: '+39 123 456 7890',
-            data_iscrizione: '2024-01-15T10:00:00Z',
-            stato: 'attivo',
-            note: 'Cliente dedicato e motivato',
-            tags: [] as ClienteTag[],
-            allenamenti_mese: 15,
-            ultimo_accesso: '2024-02-18T08:30:00Z',
-            scheda_attiva: 'Upper Body Pro',
-            documenti_scadenza: false,
-            avatar_url: null,
-            created_at: '2024-01-15T10:00:00Z',
-            updated_at: '2024-02-15T14:30:00Z',
-            role: 'athlete',
-          },
-          {
-            id: '2',
-            first_name: 'Giulia',
-            last_name: 'Bianchi',
-            nome: 'Giulia',
-            cognome: 'Bianchi',
-            email: 'giulia.bianchi@email.com',
-            phone: '+39 987 654 3210',
-            data_iscrizione: '2024-01-20T10:00:00Z',
-            stato: 'attivo',
-            note: 'Interessata al fitness funzionale',
-            tags: [] as ClienteTag[],
-            allenamenti_mese: 12,
-            ultimo_accesso: '2024-02-16T11:15:00Z',
-            scheda_attiva: 'Total Body Balance',
-            documenti_scadenza: true,
-            avatar_url: null,
-            created_at: '2024-01-20T10:00:00Z',
-            updated_at: '2024-02-10T16:45:00Z',
-            role: 'athlete',
-          },
-        ]
-
-        // Applica filtri ai dati mock
-        let filteredMockClienti = mockClienti
-
-        // Filtro per search
-        if (filters.search) {
-          const searchLower = filters.search.toLowerCase()
-          filteredMockClienti = filteredMockClienti.filter(
-            (c) =>
-              (c.nome || '').toLowerCase().includes(searchLower) ||
-              (c.cognome || '').toLowerCase().includes(searchLower) ||
-              c.email.toLowerCase().includes(searchLower),
-          )
-        }
-
-        // Filtro per stato
-        if (filters.stato && filters.stato !== 'tutti') {
-          filteredMockClienti = filteredMockClienti.filter((c) => c.stato === filters.stato)
-        }
-
-        // Filtro per data iscrizione
-        if (filters.dataIscrizioneDa) {
-          filteredMockClienti = filteredMockClienti.filter(
-            (c) => new Date(c.data_iscrizione) >= new Date(filters.dataIscrizioneDa!),
-          )
-        }
-
-        if (filters.dataIscrizioneA) {
-          filteredMockClienti = filteredMockClienti.filter(
-            (c) => new Date(c.data_iscrizione) <= new Date(filters.dataIscrizioneA!),
-          )
-        }
-
-        setClienti(filteredMockClienti)
-        setTotal(filteredMockClienti.length)
-
-        // Mock stats basate sui dati filtrati
-        setStats({
-          totali: mockClienti.length, // Stats totali sui dati non filtrati
-          attivi: mockClienti.filter((c) => c.stato === 'attivo').length,
-          inattivi: mockClienti.filter((c) => c.stato === 'inattivo').length,
-          nuovi_mese: 2,
-          documenti_scadenza: mockClienti.filter((c) => c.documenti_scadenza).length,
-        })
-
-        setLoading(false)
-        return
-      }
-
-      // Query base per atleti - strategia semplificata: carica tutti i dati e filtra client-side
-      // Questo evita query complesse e timeout, funziona bene per dataset piccoli/medi
-      let queryResult: ProfileSummary[] = []
 
       try {
-        // IMPORTANTE: Affidarsi completamente alle RLS policies invece di filtering manuale
-        // Le RLS policies su profiles automaticamente filtrano:
-        // - Admin: vede tutti gli atleti (policy "Admins can view all profiles")
-        // - Trainer: vede solo gli atleti assegnati (policy "Trainers can view assigned athletes")
-        // - Atleta: vede solo il proprio profilo (policy "Athletes can view own profile")
-        // 
-        // Questo è più sicuro e performante perché:
-        // 1. Il filtering avviene nel database, non nel client
-        // 2. Non c'è rischio di bypassare le RLS policies
-        // 3. Non serve recuperare manualmente trainer_athletes
-        // 
-        // FIX CRITICO #3: Rimossa verifica sessione esplicita (già gestita da useSupabase())
-        // Il client Supabase include automaticamente l'access token nelle richieste
-        // Se userId è disponibile, la sessione è disponibile e auth.uid() sarà disponibile nelle RLS policies
-
-        logger.debug('Query atleti con RLS automatico', undefined, {
+        logger.debug('fetchClienti: verifica autenticazione', undefined, {
           userId,
-          hasAuth: !!userId,
           authLoading,
+          hasUser: !!user,
+          userEmail: user?.email,
         })
 
-        // Query semplificata: le RLS policies applicano automaticamente il filtering corretto
-        // IMPORTANTE: La sessione è verificata sopra, quindi auth.uid() sarà disponibile nelle RLS policies
-        const simpleQuery = supabase
-          .from('profiles')
-          .select(
-            'id, user_id, nome, cognome, first_name, last_name, email, phone, data_iscrizione, stato, documenti_scadenza, created_at, updated_at, role, avatar, avatar_url, ultimo_accesso, note',
-          )
-          .eq('role', 'athlete')
-          .order('data_iscrizione', { ascending: sort.direction === 'asc' })
-          .limit(pageSize)
-
-        const simpleResponse = await Promise.race<PostgrestResponse<ProfileSummary>>([
-          Promise.resolve(simpleQuery),
-          new Promise<never>((_, reject) => {
-            setTimeout(() => {
-              reject(new Error('Query timeout'))
-            }, 30000) // Timeout a 30 secondi per query complesse
-          }),
-        ])
-
-        const { data: simpleData, error: simpleError } = simpleResponse
-
-        // Log dettagliato per debug
-        logger.debug('Query clienti risultato', {
-          dataLength: simpleData?.length ?? 0,
-          error: simpleError,
-          filters,
-        })
-
-        if (simpleError) {
-          logger.error('Errore query clienti', simpleError, {
-            code: simpleError.code,
-            message: simpleError.message,
-            details: simpleError.details,
-            hint: simpleError.hint,
+        // Non ritornare immediatamente se userId è null - potrebbe essere ancora in caricamento
+        // Se authLoading è false e userId è ancora null, allora l'utente non è autenticato
+        if (!authLoading && !userId && !skipAuthCheck) {
+          logger.warn('Utente non autenticato - lista vuota', undefined, {
+            authLoading,
+            userId,
+            hasUser: !!user,
           })
-          throw simpleError
+          setClienti([])
+          setStats({
+            totali: 0,
+            attivi: 0,
+            inattivi: 0,
+            nuovi_mese: 0,
+            documenti_scadenza: 0,
+          })
+          setTotal(0)
+          setLoading(false)
+          return
         }
 
-        if (!simpleData || simpleData.length === 0) {
-          logger.warn('Nessun dato restituito dalla query clienti', {
-            filters,
-            sort,
-            page,
+        // Se l'autenticazione è ancora in caricamento, aspetta
+        if (authLoading) {
+          logger.debug('Autenticazione in caricamento - attesa', undefined, {
+            authLoading,
+            userId,
           })
-          queryResult = []
-        } else {
-          logger.debug('Dati ricevuti dalla query', {
-            count: simpleData.length,
-            firstItem: simpleData[0],
-          })
-          // Applica tutti i filtri client-side
-          let filtered = [...simpleData]
+          return
+        }
 
-          // Filtro stato
+        // Se userId è null anche dopo che authLoading è false, non fare fetch
+        if (!userId && !skipAuthCheck) {
+          logger.warn('userId è null dopo autenticazione completata', undefined, {
+            authLoading,
+            userId,
+            hasUser: !!user,
+          })
+          setClienti([])
+          setStats({
+            totali: 0,
+            attivi: 0,
+            inattivi: 0,
+            nuovi_mese: 0,
+            documenti_scadenza: 0,
+          })
+          setTotal(0)
+          setLoading(false)
+          return
+        }
+        fetchingRef.current = true
+        setLoading(true)
+        setError(null)
+
+        // Check if Supabase is properly configured
+        const isSupabaseConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL &&
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://mock-project.supabase.co' &&
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'mock-anon-key-for-development'
+
+        if (!isSupabaseConfigured) {
+          // Use mock data for development
+          // Logger sarà implementato in seguito
+          // logger.warn('src\hooks\use-clienti.ts', 'Supabase not configured, using mock data for clienti')
+
+          const mockClienti: Cliente[] = [
+            {
+              id: '1',
+              first_name: 'Mario',
+              last_name: 'Rossi',
+              nome: 'Mario',
+              cognome: 'Rossi',
+              email: 'mario.rossi@email.com',
+              phone: '+39 123 456 7890',
+              data_iscrizione: '2024-01-15T10:00:00Z',
+              stato: 'attivo',
+              note: 'Cliente dedicato e motivato',
+              tags: [] as ClienteTag[],
+              allenamenti_mese: 15,
+              ultimo_accesso: '2024-02-18T08:30:00Z',
+              scheda_attiva: 'Upper Body Pro',
+              documenti_scadenza: false,
+              avatar_url: null,
+              created_at: '2024-01-15T10:00:00Z',
+              updated_at: '2024-02-15T14:30:00Z',
+              role: 'athlete',
+            },
+            {
+              id: '2',
+              first_name: 'Giulia',
+              last_name: 'Bianchi',
+              nome: 'Giulia',
+              cognome: 'Bianchi',
+              email: 'giulia.bianchi@email.com',
+              phone: '+39 987 654 3210',
+              data_iscrizione: '2024-01-20T10:00:00Z',
+              stato: 'attivo',
+              note: 'Interessata al fitness funzionale',
+              tags: [] as ClienteTag[],
+              allenamenti_mese: 12,
+              ultimo_accesso: '2024-02-16T11:15:00Z',
+              scheda_attiva: 'Total Body Balance',
+              documenti_scadenza: true,
+              avatar_url: null,
+              created_at: '2024-01-20T10:00:00Z',
+              updated_at: '2024-02-10T16:45:00Z',
+              role: 'athlete',
+            },
+          ]
+
+          // Applica filtri ai dati mock
+          let filteredMockClienti = mockClienti
+
+          // Filtro per search
+          if (filters.search) {
+            const searchLower = filters.search.toLowerCase()
+            filteredMockClienti = filteredMockClienti.filter(
+              (c) =>
+                (c.nome || '').toLowerCase().includes(searchLower) ||
+                (c.cognome || '').toLowerCase().includes(searchLower) ||
+                c.email.toLowerCase().includes(searchLower),
+            )
+          }
+
+          // Filtro per stato
           if (filters.stato && filters.stato !== 'tutti') {
-            filtered = filtered.filter((profile) => {
-              // Se lo stato è NULL o vuoto, considera come 'attivo' per default
-              const profileStato = profile.stato || 'attivo'
-              return profileStato === filters.stato
-            })
+            filteredMockClienti = filteredMockClienti.filter((c) => c.stato === filters.stato)
           }
 
-          // Filtro ricerca
-          if (filters.search && filters.search.trim().length > 0) {
-            const searchLower = filters.search.trim().toLowerCase()
-            filtered = filtered.filter((profile) => {
-              const nome = (profile.nome ?? '').toLowerCase()
-              const cognome = (profile.cognome ?? '').toLowerCase()
-              const email = (profile.email ?? '').toLowerCase()
-              return (
-                nome.includes(searchLower) ||
-                cognome.includes(searchLower) ||
-                email.includes(searchLower)
-              )
-            })
-          }
-
-          // Filtro documenti scadenza
-          if (filters.solo_documenti_scadenza) {
-            filtered = filtered.filter((profile) => profile.documenti_scadenza === true)
-          }
-
-          // Filtro date
+          // Filtro per data iscrizione
           if (filters.dataIscrizioneDa) {
-            filtered = filtered.filter((profile) => {
-              const dateValue = profile.data_iscrizione ?? profile.created_at
-              if (!dateValue) return false
-              const date = new Date(dateValue)
-              return date >= new Date(filters.dataIscrizioneDa!)
-            })
+            filteredMockClienti = filteredMockClienti.filter(
+              (c) => new Date(c.data_iscrizione) >= new Date(filters.dataIscrizioneDa!),
+            )
           }
+
           if (filters.dataIscrizioneA) {
-            filtered = filtered.filter((profile) => {
-              const dateValue = profile.data_iscrizione ?? profile.created_at
-              if (!dateValue) return false
-              const date = new Date(dateValue)
-              return date <= new Date(filters.dataIscrizioneA!)
-            })
+            filteredMockClienti = filteredMockClienti.filter(
+              (c) => new Date(c.data_iscrizione) <= new Date(filters.dataIscrizioneA!),
+            )
           }
 
-          // Applica sorting client-side se necessario (per campi diversi da data_iscrizione)
-          if (sort.field !== 'data_iscrizione') {
-            filtered.sort((a, b) => {
-              const aValue = a[sort.field]
-              const bValue = b[sort.field]
+          setClienti(filteredMockClienti)
+          setTotal(filteredMockClienti.length)
 
-              const normalize = (value: unknown) => {
-                if (typeof value === 'string') return value.toLowerCase()
-                if (typeof value === 'number') return value
-                return ''
-              }
+          // Mock stats basate sui dati filtrati
+          setStats({
+            totali: mockClienti.length, // Stats totali sui dati non filtrati
+            attivi: mockClienti.filter((c) => c.stato === 'attivo').length,
+            inattivi: mockClienti.filter((c) => c.stato === 'inattivo').length,
+            nuovi_mese: 2,
+            documenti_scadenza: mockClienti.filter((c) => c.documenti_scadenza).length,
+          })
 
-              const normalizedA = normalize(aValue)
-              const normalizedB = normalize(bValue)
+          setLoading(false)
+          return
+        }
 
-              if (normalizedA < normalizedB) return sort.direction === 'asc' ? -1 : 1
-              if (normalizedA > normalizedB) return sort.direction === 'asc' ? 1 : -1
-              return 0
-            })
-          }
+        // Query base per atleti - strategia semplificata: carica tutti i dati e filtra client-side
+        // Questo evita query complesse e timeout, funziona bene per dataset piccoli/medi
+        let queryResult: ProfileSummary[] = []
 
-          // Paginazione client-side
-          const from = (page - 1) * pageSize
-          const to = from + pageSize
-          queryResult = filtered.slice(from, to)
+        try {
+          // IMPORTANTE: Affidarsi completamente alle RLS policies invece di filtering manuale
+          // Le RLS policies su profiles automaticamente filtrano:
+          // - Admin: vede tutti gli atleti (policy "Admins can view all profiles")
+          // - Trainer: vede solo gli atleti assegnati (policy "Trainers can view assigned athletes")
+          // - Atleta: vede solo il proprio profilo (policy "Athletes can view own profile")
+          //
+          // Questo è più sicuro e performante perché:
+          // 1. Il filtering avviene nel database, non nel client
+          // 2. Non c'è rischio di bypassare le RLS policies
+          // 3. Non serve recuperare manualmente trainer_athletes
+          //
+          // FIX CRITICO #3: Rimossa verifica sessione esplicita (già gestita da useSupabase())
+          // Il client Supabase include automaticamente l'access token nelle richieste
+          // Se userId è disponibile, la sessione è disponibile e auth.uid() sarà disponibile nelle RLS policies
 
-          logger.debug('Clienti dopo filtri e paginazione', {
-            totalFiltered: filtered.length,
-            page,
-            pageSize,
-            resultCount: queryResult.length,
+          logger.debug('Query atleti con RLS automatico', undefined, {
+            userId,
+            hasAuth: !!userId,
+            authLoading,
+          })
+
+          // Query semplificata: le RLS policies applicano automaticamente il filtering corretto
+          // IMPORTANTE: La sessione è verificata sopra, quindi auth.uid() sarà disponibile nelle RLS policies
+          const simpleQuery = supabase
+            .from('profiles')
+            .select(
+              'id, user_id, nome, cognome, first_name, last_name, email, phone, data_iscrizione, stato, documenti_scadenza, created_at, updated_at, role, avatar, avatar_url, ultimo_accesso, note',
+            )
+            .eq('role', 'athlete')
+            .order('data_iscrizione', { ascending: sort.direction === 'asc' })
+            .limit(pageSize)
+
+          const simpleResponse = await Promise.race<PostgrestResponse<ProfileSummary>>([
+            Promise.resolve(simpleQuery),
+            new Promise<never>((_, reject) => {
+              setTimeout(() => {
+                reject(new Error('Query timeout'))
+              }, 30000) // Timeout a 30 secondi per query complesse
+            }),
+          ])
+
+          const { data: simpleData, error: simpleError } = simpleResponse
+
+          // Log dettagliato per debug
+          logger.debug('Query clienti risultato', {
+            dataLength: simpleData?.length ?? 0,
+            error: simpleError,
             filters,
           })
 
-          // Salva in cache usando strategia frequent-query (TTL gestito internamente)
-          frequentQueryCache.set('clienti-list', filtered)
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err)
-        const isTimeout = errorMessage.includes('timeout') || errorMessage === 'Query timeout'
+          if (simpleError) {
+            logger.error('Errore query clienti', simpleError, {
+              code: simpleError.code,
+              message: simpleError.message,
+              details: simpleError.details,
+              hint: simpleError.hint,
+            })
+            throw simpleError
+          }
 
-        // Se è un timeout, prova a usare i dati dalla cache
-        if (isTimeout) {
-          const cachedData = frequentQueryCache.get<ProfileSummary[]>('clienti-list')
-          if (cachedData && cachedData.length > 0) {
-            logger.warn('Query timeout, usando dati dalla cache', {
-              cachedCount: cachedData.length,
+          if (!simpleData || simpleData.length === 0) {
+            logger.warn('Nessun dato restituito dalla query clienti', {
+              filters,
+              sort,
+              page,
+            })
+            queryResult = []
+          } else {
+            logger.debug('Dati ricevuti dalla query', {
+              count: simpleData.length,
+              firstItem: simpleData[0],
+            })
+            // Applica tutti i filtri client-side
+            let filtered = [...simpleData]
+
+            // Filtro stato
+            if (filters.stato && filters.stato !== 'tutti') {
+              filtered = filtered.filter((profile) => {
+                // Se lo stato è NULL o vuoto, considera come 'attivo' per default
+                const profileStato = profile.stato || 'attivo'
+                return profileStato === filters.stato
+              })
+            }
+
+            // Filtro ricerca
+            if (filters.search && filters.search.trim().length > 0) {
+              const searchLower = filters.search.trim().toLowerCase()
+              filtered = filtered.filter((profile) => {
+                const nome = (profile.nome ?? '').toLowerCase()
+                const cognome = (profile.cognome ?? '').toLowerCase()
+                const email = (profile.email ?? '').toLowerCase()
+                return (
+                  nome.includes(searchLower) ||
+                  cognome.includes(searchLower) ||
+                  email.includes(searchLower)
+                )
+              })
+            }
+
+            // Filtro documenti scadenza
+            if (filters.solo_documenti_scadenza) {
+              filtered = filtered.filter((profile) => profile.documenti_scadenza === true)
+            }
+
+            // Filtro date
+            if (filters.dataIscrizioneDa) {
+              filtered = filtered.filter((profile) => {
+                const dateValue = profile.data_iscrizione ?? profile.created_at
+                if (!dateValue) return false
+                const date = new Date(dateValue)
+                return date >= new Date(filters.dataIscrizioneDa!)
+              })
+            }
+            if (filters.dataIscrizioneA) {
+              filtered = filtered.filter((profile) => {
+                const dateValue = profile.data_iscrizione ?? profile.created_at
+                if (!dateValue) return false
+                const date = new Date(dateValue)
+                return date <= new Date(filters.dataIscrizioneA!)
+              })
+            }
+
+            // Applica sorting client-side se necessario (per campi diversi da data_iscrizione)
+            if (sort.field !== 'data_iscrizione') {
+              filtered.sort((a, b) => {
+                const aValue = a[sort.field]
+                const bValue = b[sort.field]
+
+                const normalize = (value: unknown) => {
+                  if (typeof value === 'string') return value.toLowerCase()
+                  if (typeof value === 'number') return value
+                  return ''
+                }
+
+                const normalizedA = normalize(aValue)
+                const normalizedB = normalize(bValue)
+
+                if (normalizedA < normalizedB) return sort.direction === 'asc' ? -1 : 1
+                if (normalizedA > normalizedB) return sort.direction === 'asc' ? 1 : -1
+                return 0
+              })
+            }
+
+            // Paginazione client-side
+            const from = (page - 1) * pageSize
+            const to = from + pageSize
+            queryResult = filtered.slice(from, to)
+
+            logger.debug('Clienti dopo filtri e paginazione', {
+              totalFiltered: filtered.length,
+              page,
+              pageSize,
+              resultCount: queryResult.length,
               filters,
             })
-            queryResult = cachedData
+
+            // Salva in cache usando strategia frequent-query (TTL gestito internamente)
+            frequentQueryCache.set('clienti-list', filtered)
+          }
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : String(err)
+          const isTimeout = errorMessage.includes('timeout') || errorMessage === 'Query timeout'
+
+          // Se è un timeout, prova a usare i dati dalla cache
+          if (isTimeout) {
+            const cachedData = frequentQueryCache.get<ProfileSummary[]>('clienti-list')
+            if (cachedData && cachedData.length > 0) {
+              logger.warn('Query timeout, usando dati dalla cache', {
+                cachedCount: cachedData.length,
+                filters,
+              })
+              queryResult = cachedData
+            } else {
+              logger.error('Query timeout e nessun dato in cache disponibile', err, {
+                filters,
+                sort,
+                page,
+              })
+              queryResult = []
+            }
           } else {
-            logger.error('Query timeout e nessun dato in cache disponibile', err, {
+            // Log errore per debug
+            logger.error('Errore nel fetch clienti', err, {
               filters,
               sort,
               page,
             })
             queryResult = []
           }
-        } else {
-          // Log errore per debug
-          logger.error('Errore nel fetch clienti', err, {
-            filters,
-            sort,
-            page,
-          })
-          queryResult = []
+
+          // IMPORTANTE: Reset fetchingRef anche in caso di errore per permettere retry
+          fetchingRef.current = false
         }
 
-        // IMPORTANTE: Reset fetchingRef anche in caso di errore per permettere retry
+        // Stima count immediata basata sui risultati (non blocca il rendering)
+        const data = queryResult
+
+        logger.debug('Dati queryResult prima del mapping', {
+          queryResultLength: queryResult.length,
+          dataLength: data.length,
+          firstItem: data[0],
+        })
+
+        // Calcola stima immediata del count
+        let queryCount: number
+        if (data.length === pageSize) {
+          // Se abbiamo una pagina piena, probabilmente ce ne sono altre
+          queryCount = data.length * 5 // Stima conservativa
+        } else {
+          queryCount = data.length
+        }
+
+        // Per la prima pagina, cerca di ottenere il count preciso in background (non blocca)
+        if (page === 1 && data.length > 0) {
+          // Esegui count in background con timeout molto breve
+          setTimeout(async () => {
+            try {
+              // Usa estimated count che è molto più veloce di exact
+              let countQuery = supabase
+                .from('profiles')
+                .select('*', { count: 'estimated', head: true })
+                .eq('role', 'athlete')
+
+              // Applica solo filtri essenziali per il count
+              if (filters.stato && filters.stato !== 'tutti') {
+                countQuery = countQuery.eq('stato', filters.stato)
+              }
+
+              if (filters.dataIscrizioneDa) {
+                countQuery = countQuery.gte('data_iscrizione', filters.dataIscrizioneDa)
+              }
+
+              if (filters.dataIscrizioneA) {
+                countQuery = countQuery.lte('data_iscrizione', filters.dataIscrizioneA)
+              }
+
+              if (filters.solo_documenti_scadenza) {
+                countQuery = countQuery.eq('documenti_scadenza', true)
+              }
+
+              // Per la ricerca, evita count complessi (usa solo se necessario)
+              // Il count con ilike può essere molto lento
+              if (filters.search && filters.search.length > 2) {
+                const searchTerm = filters.search.trim().toLowerCase()
+                countQuery = countQuery.or(
+                  `nome.ilike.%${searchTerm}%,cognome.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`,
+                )
+              }
+
+              // Timeout molto breve per il count (3 secondi)
+              const countResult = await Promise.race([
+                countQuery,
+                new Promise<{ count: number | null; error: unknown }>((resolve) =>
+                  setTimeout(() => resolve({ count: null, error: null }), 3000),
+                ),
+              ])
+
+              if (!countResult.error && countResult.count !== null) {
+                setTotal(countResult.count) // Aggiorna il total quando disponibile
+              }
+            } catch {
+              // Ignora errori di count, mantieni la stima
+              // Count non disponibile, uso stima (logging gestito automaticamente)
+            }
+          }, 100) // Piccolo delay per non interferire con il rendering
+        }
+
+        const count = queryCount || totalRef.current
+
+        // Mappare i profili a clienti
+        const clientiWithStats = data.map((profile): Cliente => {
+          const nome = (profile.nome as string | null | undefined) ?? ''
+          const cognome = (profile.cognome as string | null | undefined) ?? ''
+          return {
+            id: (profile.id as string) || '',
+            first_name: nome,
+            last_name: cognome,
+            nome: nome || undefined,
+            cognome: cognome || undefined,
+            email: (profile.email as string | null | undefined) ?? '',
+            phone: (profile.phone as string | null | undefined) ?? null,
+            avatar_url:
+              (profile.avatar as string | null | undefined) ??
+              (profile.avatar_url as string | null | undefined) ??
+              null,
+            data_iscrizione:
+              (profile.data_iscrizione as string | null | undefined) ??
+              (profile.created_at as string | null | undefined) ??
+              '',
+            stato:
+              (profile.stato as 'attivo' | 'inattivo' | 'sospeso' | null | undefined) ?? 'attivo',
+            allenamenti_mese: 0, // Calcolo reale implementato in fetchClienti
+            ultimo_accesso: (profile.ultimo_accesso as string | null | undefined) ?? null,
+            scheda_attiva: null, // Query reale implementata in fetchClienti
+            documenti_scadenza: Boolean(profile.documenti_scadenza),
+            note: (profile.note as string | null | undefined) ?? null,
+            tags: [],
+            role: (profile.role as string | null | undefined) ?? '',
+            created_at: (profile.created_at as string | null | undefined) ?? '',
+            updated_at: (profile.updated_at as string | null | undefined) ?? '',
+          }
+        })
+
+        // Filtrare per allenamenti minimi se specificato
+        let filteredClienti = clientiWithStats
+        if (typeof filters?.allenamenti_min === 'number' && filters.allenamenti_min > 0) {
+          filteredClienti = clientiWithStats.filter(
+            (c) => c.allenamenti_mese >= filters.allenamenti_min!,
+          )
+        }
+
+        // Filtrare per tags se specificato
+        if (filters.tags && filters.tags.length > 0) {
+          filteredClienti = filteredClienti.filter((c) =>
+            c.tags?.some((tag) => (filters.tags ?? []).includes(tag.id)),
+          )
+        }
+
+        // Dati caricati e processati (logging disponibile tramite logger strutturato se necessario)
+
+        logger.debug('Impostazione clienti finali', {
+          count: filteredClienti.length,
+          total: count || 0,
+          filters,
+          firstCliente: filteredClienti[0],
+        })
+
+        setClienti(filteredClienti)
+        setTotal(count || 0)
+
+        // Carica le statistiche in background (non blocca il rendering dei dati)
+        // Usa setTimeout per non bloccare il rendering iniziale
+        setTimeout(() => {
+          fetchStats().catch(() => {
+            // Errore nel caricamento statistiche (logging gestito automaticamente)
+          })
+        }, 100)
+      } catch (err) {
+        logger.error('Errore nel caricamento clienti', err, { filters, sort })
+        setError(err instanceof Error ? err.message : 'Errore nel caricamento clienti')
+      } finally {
+        setLoading(false)
         fetchingRef.current = false
       }
-
-      // Stima count immediata basata sui risultati (non blocca il rendering)
-      const data = queryResult
-
-      logger.debug('Dati queryResult prima del mapping', {
-        queryResultLength: queryResult.length,
-        dataLength: data.length,
-        firstItem: data[0],
-      })
-
-      // Calcola stima immediata del count
-      let queryCount: number
-      if (data.length === pageSize) {
-        // Se abbiamo una pagina piena, probabilmente ce ne sono altre
-        queryCount = data.length * 5 // Stima conservativa
-      } else {
-        queryCount = data.length
-      }
-
-      // Per la prima pagina, cerca di ottenere il count preciso in background (non blocca)
-      if (page === 1 && data.length > 0) {
-        // Esegui count in background con timeout molto breve
-        setTimeout(async () => {
-          try {
-            // Usa estimated count che è molto più veloce di exact
-            let countQuery = supabase
-              .from('profiles')
-              .select('*', { count: 'estimated', head: true })
-              .eq('role', 'athlete')
-
-            // Applica solo filtri essenziali per il count
-            if (filters.stato && filters.stato !== 'tutti') {
-              countQuery = countQuery.eq('stato', filters.stato)
-            }
-
-            if (filters.dataIscrizioneDa) {
-              countQuery = countQuery.gte('data_iscrizione', filters.dataIscrizioneDa)
-            }
-
-            if (filters.dataIscrizioneA) {
-              countQuery = countQuery.lte('data_iscrizione', filters.dataIscrizioneA)
-            }
-
-            if (filters.solo_documenti_scadenza) {
-              countQuery = countQuery.eq('documenti_scadenza', true)
-            }
-
-            // Per la ricerca, evita count complessi (usa solo se necessario)
-            // Il count con ilike può essere molto lento
-            if (filters.search && filters.search.length > 2) {
-              const searchTerm = filters.search.trim().toLowerCase()
-              countQuery = countQuery.or(
-                `nome.ilike.%${searchTerm}%,cognome.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`,
-              )
-            }
-
-            // Timeout molto breve per il count (3 secondi)
-            const countResult = await Promise.race([
-              countQuery,
-              new Promise<{ count: number | null; error: unknown }>((resolve) =>
-                setTimeout(() => resolve({ count: null, error: null }), 3000),
-              ),
-            ])
-
-            if (!countResult.error && countResult.count !== null) {
-              setTotal(countResult.count) // Aggiorna il total quando disponibile
-            }
-          } catch {
-            // Ignora errori di count, mantieni la stima
-            // Count non disponibile, uso stima (logging gestito automaticamente)
-          }
-        }, 100) // Piccolo delay per non interferire con il rendering
-      }
-
-      const count = queryCount || totalRef.current
-
-      // Mappare i profili a clienti
-      const clientiWithStats = data.map((profile): Cliente => {
-        const nome = (profile.nome as string | null | undefined) ?? ''
-        const cognome = (profile.cognome as string | null | undefined) ?? ''
-        return {
-          id: (profile.id as string) || '',
-          first_name: nome,
-          last_name: cognome,
-          nome: nome || undefined,
-          cognome: cognome || undefined,
-          email: (profile.email as string | null | undefined) ?? '',
-          phone: (profile.phone as string | null | undefined) ?? null,
-          avatar_url:
-            (profile.avatar as string | null | undefined) ??
-            (profile.avatar_url as string | null | undefined) ??
-            null,
-          data_iscrizione:
-            (profile.data_iscrizione as string | null | undefined) ??
-            (profile.created_at as string | null | undefined) ??
-            '',
-          stato:
-            (profile.stato as 'attivo' | 'inattivo' | 'sospeso' | null | undefined) ?? 'attivo',
-          allenamenti_mese: 0, // Calcolo reale implementato in fetchClienti
-          ultimo_accesso: (profile.ultimo_accesso as string | null | undefined) ?? null,
-          scheda_attiva: null, // Query reale implementata in fetchClienti
-          documenti_scadenza: Boolean(profile.documenti_scadenza),
-          note: (profile.note as string | null | undefined) ?? null,
-          tags: [],
-          role: (profile.role as string | null | undefined) ?? '',
-          created_at: (profile.created_at as string | null | undefined) ?? '',
-          updated_at: (profile.updated_at as string | null | undefined) ?? '',
-        }
-      })
-
-      // Filtrare per allenamenti minimi se specificato
-      let filteredClienti = clientiWithStats
-      if (typeof filters?.allenamenti_min === 'number' && filters.allenamenti_min > 0) {
-        filteredClienti = clientiWithStats.filter(
-          (c) => c.allenamenti_mese >= filters.allenamenti_min!,
-        )
-      }
-
-      // Filtrare per tags se specificato
-      if (filters.tags && filters.tags.length > 0) {
-        filteredClienti = filteredClienti.filter((c) =>
-          c.tags?.some((tag) => (filters.tags ?? []).includes(tag.id)),
-        )
-      }
-
-      // Dati caricati e processati (logging disponibile tramite logger strutturato se necessario)
-
-      logger.debug('Impostazione clienti finali', {
-        count: filteredClienti.length,
-        total: count || 0,
-        filters,
-        firstCliente: filteredClienti[0],
-      })
-
-      setClienti(filteredClienti)
-      setTotal(count || 0)
-
-      // Carica le statistiche in background (non blocca il rendering dei dati)
-      // Usa setTimeout per non bloccare il rendering iniziale
-      setTimeout(() => {
-        fetchStats().catch(() => {
-          // Errore nel caricamento statistiche (logging gestito automaticamente)
-        })
-      }, 100)
-    } catch (err) {
-      logger.error('Errore nel caricamento clienti', err, { filters, sort })
-      setError(err instanceof Error ? err.message : 'Errore nel caricamento clienti')
-    } finally {
-      setLoading(false)
-      fetchingRef.current = false
-    }
-  }, [supabase, user, userId, authLoading, filters, sort, page, pageSize, fetchStats])
+    },
+    [supabase, user, userId, authLoading, filters, sort, page, pageSize, fetchStats],
+  )
   // total: fallback count via totalRef per non mettere total nelle dipendenze (evita loop con setTotal)
 
   const updateCliente = useCallback(
@@ -880,17 +881,17 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
     authLoading: true,
     userId: null,
   }) // Traccia lo stato autenticazione precedente per evitare chiamate duplicate
-  
+
   useEffect(() => {
     // FIX CRITICO #1: Verifica se lo stato autenticazione è cambiato rispetto all'ultima esecuzione
     // Se non è cambiato, non eseguire fetch (evita chiamate duplicate)
     const authStateChanged =
       lastAuthStateRef.current.authLoading !== authLoading ||
       lastAuthStateRef.current.userId !== userId
-    
+
     // Aggiorna lo stato di riferimento
     lastAuthStateRef.current = { authLoading, userId }
-    
+
     // Se lo stato non è cambiato e fetch è già stato eseguito, non fare nulla
     if (!authStateChanged && fetchExecutedRef.current) {
       logger.debug('useEffect fetch iniziale: stato autenticazione non cambiato, skip', undefined, {
@@ -927,18 +928,22 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
-      
+
       // Reset empty state se era stato impostato prima
       if (emptyStateSetRef.current) {
-        logger.debug('useEffect fetch iniziale: userId disponibile dopo empty state, reset', undefined, {
-          authLoading,
-          userId,
-          hasUser: !!user,
-          userEmail: user?.email,
-        })
+        logger.debug(
+          'useEffect fetch iniziale: userId disponibile dopo empty state, reset',
+          undefined,
+          {
+            authLoading,
+            userId,
+            hasUser: !!user,
+            userEmail: user?.email,
+          },
+        )
         emptyStateSetRef.current = false
       }
-      
+
       logger.debug('useEffect fetch iniziale: esecuzione fetchClienti', undefined, {
         authLoading,
         userId,
@@ -969,25 +974,33 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
     // (onAuthStateChange potrebbe essere in ritardo)
     // FIX CRITICO #1: Verifica che fetch non sia già stato eseguito o in corso
     if (!userId && !fetchExecutedRef.current && !emptyStateSetRef.current && !fetchingRef.current) {
-      logger.debug('useEffect fetch iniziale: authLoading = false ma userId è null, attesa breve', undefined, {
-        authLoading,
-        userId,
-        hasUser: !!user,
-        userEmail: user?.email,
-      })
-      
+      logger.debug(
+        'useEffect fetch iniziale: authLoading = false ma userId è null, attesa breve',
+        undefined,
+        {
+          authLoading,
+          userId,
+          hasUser: !!user,
+          userEmail: user?.email,
+        },
+      )
+
       // Aspetta ancora 3 secondi per vedere se userId diventa disponibile
       // (aumentato a 3 secondi per dare più tempo a onAuthStateChange)
       timeoutRef.current = setTimeout(() => {
         // Verifica di nuovo userId prima di impostare empty state
         // (potrebbe essere diventato disponibile durante il timeout)
         if (!userId && !fetchExecutedRef.current && !fetchingRef.current) {
-          logger.warn('useEffect fetch iniziale: userId ancora null dopo timeout, utente non autenticato', undefined, {
-            authLoading,
-            userId,
-            hasUser: !!user,
-            userEmail: user?.email,
-          })
+          logger.warn(
+            'useEffect fetch iniziale: userId ancora null dopo timeout, utente non autenticato',
+            undefined,
+            {
+              authLoading,
+              userId,
+              hasUser: !!user,
+              userEmail: user?.email,
+            },
+          )
           setClienti([])
           setStats({
             totali: 0,
@@ -1003,7 +1016,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         }
         timeoutRef.current = null
       }, 3000)
-      
+
       return () => {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current)
@@ -1011,7 +1024,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
         }
       }
     }
-    
+
     // Tutti gli altri percorsi ritornano undefined
     return undefined
     // eslint-disable-next-line react-hooks/exhaustive-deps

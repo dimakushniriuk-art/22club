@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Play, Image as ImageIcon } from 'lucide-react'
+import { formatWorkoutRepsLabel } from '@/lib/constants/workout-reps-select'
 import { cn } from '@/lib/utils'
 
 interface WorkoutDayCardProps {
@@ -206,7 +207,9 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
 
                     {/* Ripetizioni */}
                     <td className="py-4 px-4 text-center">
-                      <span className="text-text-primary font-semibold">{row.reps}</span>
+                      <span className="text-text-primary font-semibold">
+                        {formatWorkoutRepsLabel(row.reps)}
+                      </span>
                     </td>
 
                     {/* Peso */}

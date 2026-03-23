@@ -89,6 +89,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ci": "playwright test --config=playwright.config.ci.ts",
+    "e2e:seed:trainer-athlete": "npx tsx scripts/e2e-seed-trainer-athlete.ts",
     "test:all": "npm run test:run && npm run test:e2e",
     "test:ci": "npm run test:run -- --coverage && npm run test:e2e:ci",
     "test:isolation": "npx tsx scripts/test-trainer-isolation.ts",

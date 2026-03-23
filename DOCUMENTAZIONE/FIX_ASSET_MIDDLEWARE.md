@@ -118,6 +118,7 @@ Gli asset Next.js ora vengono esclusi sia dal matcher (prima fase) che da un con
    - ✅ Non deve essere redirectato a `/login`
 
 3. **Confronto con dominio funzionante**:
+
    ```
    https://app.22club.it/login
    ```

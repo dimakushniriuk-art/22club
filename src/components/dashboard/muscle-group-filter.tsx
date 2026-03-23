@@ -86,6 +86,13 @@ interface MuscleGroupFilterProps {
   className?: string
   /** Se true, i pulsanti si ridimensionano per restare in una riga entro il contenitore (nessuno scroll) */
   responsive?: boolean
+  /**
+   * Conteggio esercizi selezionati per ogni filtro (stessa logica di exerciseMatchesMuscleGroupFilter).
+   * Se assente, non vengono mostrati badge.
+   */
+  selectionCountsByGroup?: Record<MuscleGroupFilterType, number>
+  /** Totale esercizi selezionati, mostrato sul pulsante "Tutti" (solo se > 0). */
+  totalSelectedCount?: number
 }
 
 export function MuscleGroupFilter({
@@ -93,6 +100,8 @@ export function MuscleGroupFilter({
   onSelect,
   className,
   responsive,
+  selectionCountsByGroup,
+  totalSelectedCount,
 }: MuscleGroupFilterProps) {
   // Trova quale filtro è selezionato in base al valore del database
   const selectedFilterId = useMemo(() => {
@@ -129,13 +138,15 @@ export function MuscleGroupFilter({
       {MUSCLE_GROUP_OPTIONS.map((option) => {
         const isSelected = selectedFilterId === option.id
 
+        const selectionCount = selectionCountsByGroup?.[option.id] ?? 0
+
         return (
           <button
             key={option.id}
             type="button"
             onClick={() => handleClick(option)}
             className={cn(
-              'flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 transition-all duration-200 cursor-pointer',
+              'relative flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 transition-all duration-200 cursor-pointer',
               responsive
                 ? 'min-w-[56px] flex-1 max-w-[120px] basis-0 shrink'
                 : 'w-[90px] h-[92px] shrink-0',
@@ -143,9 +154,22 @@ export function MuscleGroupFilter({
               responsive && 'min-h-[72px] max-h-[92px]',
               isSelected
                 ? 'bg-gradient-to-r from-teal-500 to-cyan-500 border border-cyan-400/80 shadow-md shadow-teal-500/20 text-white'
-                : 'bg-background-secondary/25 border border-white/5 hover:bg-primary/8 hover:border-primary/20 hover:ring-1 hover:ring-primary/15',
+                : 'bg-background-secondary/25 border border-white/5 hover:bg-primary/8 hover:border-primary/20 hover:ring-inset hover:ring-1 hover:ring-primary/15',
             )}
           >
+            {selectionCount > 0 && (
+              <span
+                className={cn(
+                  'absolute top-1 right-1 z-10 inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-none tabular-nums',
+                  isSelected
+                    ? 'bg-white/25 text-white ring-1 ring-white/35'
+                    : 'bg-cyan-500/90 text-white ring-1 ring-cyan-400/40',
+                )}
+                aria-label={`${selectionCount} esercizi selezionati in ${option.label}`}
+              >
+                {selectionCount > 99 ? '99+' : selectionCount}
+              </span>
+            )}
             {/* Icona SVG o testo speciale per Multipli */}
             <div
               className={cn(
@@ -203,7 +227,7 @@ export function MuscleGroupFilter({
         type="button"
         onClick={() => onSelect(null)}
         className={cn(
-          'flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 transition-all duration-200 cursor-pointer',
+          'relative flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 transition-all duration-200 cursor-pointer',
           responsive
             ? 'min-w-[56px] flex-1 max-w-[120px] basis-0 shrink'
             : 'w-[90px] h-[92px] shrink-0',
@@ -211,9 +235,22 @@ export function MuscleGroupFilter({
           responsive && 'min-h-[72px] max-h-[92px]',
           selectedFilterId === null
             ? 'bg-gradient-to-r from-teal-500 to-cyan-500 border border-cyan-400/80 shadow-md shadow-teal-500/20 text-white'
-            : 'bg-background-secondary/25 border border-white/5 hover:bg-primary/8 hover:border-primary/20 hover:ring-1 hover:ring-primary/15',
+            : 'bg-background-secondary/25 border border-white/5 hover:bg-primary/8 hover:border-primary/20 hover:ring-inset hover:ring-1 hover:ring-primary/15',
         )}
       >
+        {totalSelectedCount != null && totalSelectedCount > 0 && (
+          <span
+            className={cn(
+              'absolute top-1 right-1 z-10 inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-none tabular-nums',
+              selectedFilterId === null
+                ? 'bg-white/25 text-white ring-1 ring-white/35'
+                : 'bg-cyan-500/90 text-white ring-1 ring-cyan-400/40',
+            )}
+            aria-label={`${totalSelectedCount} esercizi selezionati in totale`}
+          >
+            {totalSelectedCount > 99 ? '99+' : totalSelectedCount}
+          </span>
+        )}
         <div
           className={cn(
             'flex items-center justify-center rounded-lg overflow-hidden relative shrink-0',
@@ -268,4 +305,59 @@ export function dbValueMatchesFilter(
   const mappingLower = mapping.map((v) => v.toLowerCase())
 
   return tokens.some((token) => mappingLower.includes(token))
+}
+
+/** Token muscolari normalizzati (split su virgola / punto e virgola). */
+export function parseMuscleGroupTokens(dbValue: string): string[] {
+  return dbValue
+    .split(/[,;]/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+/** True se l’esercizio ha più di un gruppo muscolare nel campo (es. "Spalle, Schiena"). */
+export function exerciseHasMultipleMuscleGroups(dbValue: string): boolean {
+  return parseMuscleGroupTokens(dbValue).length > 1
+}
+
+/**
+ * Filtro catalogo: Tutti (null) = nessun filtro; Multipli = solo esercizi con 2+ gruppi;
+ * altrimenti match solo sul gruppo principale (primo token).
+ */
+export function exerciseMatchesMuscleGroupFilter(
+  dbValue: string,
+  filterId: MuscleGroupFilterType | null,
+): boolean {
+  if (filterId == null) return true
+  if (filterId === 'multipli') return exerciseHasMultipleMuscleGroups(dbValue)
+
+  const tokens = parseMuscleGroupTokens(dbValue)
+  const primary = tokens[0]
+  if (!primary) return false
+
+  const mapping = MUSCLE_GROUP_MAPPING[filterId]
+  const mappingLower = mapping.map((v) => v.toLowerCase())
+  return mappingLower.includes(primary)
+}
+
+/** Conta gli esercizi selezionati per ogni filtro gruppo (allineato a exerciseMatchesMuscleGroupFilter). */
+export function countSelectionByMuscleGroupFilter(
+  selectedIds: readonly string[],
+  exercises: readonly { id: string; muscle_group?: string | null }[],
+): {
+  byGroup: Record<MuscleGroupFilterType, number>
+  total: number
+} {
+  const idSet = new Set(selectedIds)
+  const selected = exercises.filter((e) => idSet.has(e.id))
+  const total = selected.length
+
+  const byGroup = {} as Record<MuscleGroupFilterType, number>
+  for (const opt of MUSCLE_GROUP_OPTIONS) {
+    byGroup[opt.id] = selected.filter((e) =>
+      exerciseMatchesMuscleGroupFilter(e.muscle_group ?? '', opt.id),
+    ).length
+  }
+
+  return { byGroup, total }
 }

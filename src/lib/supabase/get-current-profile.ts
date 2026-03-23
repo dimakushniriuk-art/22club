@@ -1,47 +1,89 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createClient } from '@/lib/supabase/server'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
+
+const PROFILE_SELECT =
+  'id, user_id, role, org_id, nome, cognome, first_name, last_name, email' as const
+
+/** Fallback se la SELECT estesa fallisce (es. schema diverso da types/generato). */
+const PROFILE_SELECT_MINIMAL = 'id, user_id, role, org_id, nome, cognome, email' as const
 
 export type CurrentProfile = {
+  authUserId: string
   profileId: string
   orgId: string | null
   role: string | null
+  user_id: string | null
+  email: string | null
+  nome: string | null
+  cognome: string | null
+  first_name: string | null
+  last_name: string | null
+}
+
+type ProfileRow = {
+  id: string
+  user_id: string | null
+  role: string | null
+  org_id: string | null
+  nome: string | null
+  cognome: string | null
+  first_name: string | null
+  last_name: string | null
+  email: string | null
 }
 
 /**
- * Restituisce il profilo corrente (profiles.id, org_id, role) per la sessione Supabase.
- * Da usare solo server-side (API routes, Server Components).
- * Legge auth session e poi profiles tramite user_id (legame auth → profilo).
+ * Riga profilo per identificatore sessione (auth.users.id o, se coerente col DB, profiles.id).
+ * Allineato a `resolveProfileByIdentifier` (match su id, poi user_id). Condiviso da getCurrentProfile e getUserProfile.
  */
-export async function getCurrentProfile(): Promise<CurrentProfile | null> {
-  const supabase = await createClient()
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession()
-
-  if (sessionError || !session?.user?.id) {
+export async function fetchCurrentProfileForAuthUserId(
+  supabase: SupabaseClient,
+  authUserId: string,
+): Promise<CurrentProfile | null> {
+  let row = await resolveProfileByIdentifier(supabase, authUserId, PROFILE_SELECT)
+  if (!row || typeof row.id !== 'string') {
+    row = await resolveProfileByIdentifier(supabase, authUserId, PROFILE_SELECT_MINIMAL)
+  }
+  if (!row || typeof row.id !== 'string') {
     return null
   }
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('id, org_id, role')
-    .eq('user_id', session.user.id)
-    .single()
-
-  if (error || !profile) {
-    return null
-  }
-
-  const row = profile as { id: string; org_id: string | null; role: string | null }
+  const profile = row as unknown as ProfileRow
   return {
-    profileId: row.id,
-    orgId: row.org_id ?? null,
-    role: row.role ?? null,
+    authUserId,
+    profileId: profile.id,
+    orgId: profile.org_id ?? null,
+    role: profile.role ?? null,
+    user_id: profile.user_id ?? null,
+    email: profile.email ?? null,
+    nome: profile.nome ?? null,
+    cognome: profile.cognome ?? null,
+    first_name: profile.first_name ?? null,
+    last_name: profile.last_name ?? null,
   }
 }
 
 /**
- * Restituisce solo l'id profilo (profiles.id) per la sessione corrente.
+ * Profilo corrente: stessa fonte auth di `getUserProfile` / `getServerAuthUser` (getUser),
+ * poi row profilo via `fetchCurrentProfileForAuthUserId`.
+ * Opzionale `supabase` per riusare lo stesso client (es. API route con query successive).
+ */
+export async function getCurrentProfile(
+  supabaseArg?: SupabaseClient,
+): Promise<CurrentProfile | null> {
+  const supabase = supabaseArg ?? (await createClient())
+  const { user } = await getServerAuthUser(supabase)
+  if (!user?.id) {
+    return null
+  }
+
+  return fetchCurrentProfileForAuthUserId(supabase, user.id)
+}
+
+/**
+ * Solo profiles.id per la sessione corrente.
  */
 export async function getCurrentProfileId(): Promise<string | null> {
   const profile = await getCurrentProfile()

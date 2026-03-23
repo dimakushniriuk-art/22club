@@ -25,6 +25,12 @@ vi.mock('@/lib/supabase', () => ({
   supabase: mockSupabase,
 }))
 
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: createClientMock,
+  supabase: mockSupabase,
+  handleRefreshTokenError: vi.fn(() => false),
+}))
+
 vi.mock('@/hooks/useRealtimeChannel', () => ({
   useRealtimeChannel: vi.fn(), // Mock vuoto, non necessario per i test
 }))

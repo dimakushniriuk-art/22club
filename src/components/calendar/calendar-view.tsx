@@ -37,8 +37,10 @@ interface CalendarViewProps {
   isEventEditable?: (appointment: AppointmentUI) => boolean
   /** Se true, slot Libera prenotazione sono mostrati come sfondo cyan (vista atleta) */
   openBookingAsBackground?: boolean
-  /** Mappa slotKey (starts_at|ends_at) -> numero prenotazioni, per mostrare "x/6" sugli slot Libera */
+  /** Mappa slotKey (starts_at|ends_at) -> numero prenotazioni, per mostrare "x/N" sugli slot Libera */
   slotBookingCounts?: Record<string, number>
+  /** Max prenotazioni per slot Libera (staff_calendar_settings); default 4 */
+  openBookingSlotMax?: number
   /** Contenuto opzionale da mostrare all'inizio della toolbar (es. pulsante Mostra pannello) */
   toolbarLeftContent?: ReactNode
   /** Vista iniziale (da impostazioni calendario) */
@@ -83,6 +85,7 @@ export function CalendarView({
   isEventEditable,
   openBookingAsBackground = false,
   slotBookingCounts,
+  openBookingSlotMax = 4,
   toolbarLeftContent,
   initialView,
   initialWeekStart = 1,
@@ -232,22 +235,6 @@ export function CalendarView({
     }
   }, [isLoaded, view])
 
-  // Mobile (< 852px): vista default agenda per leggibilità (dopo mount calendario)
-  useEffect(() => {
-    if (!isLoaded) return
-    const t = setTimeout(() => {
-      const api = calendarRef.current?.getApi()
-      if (!api || window.innerWidth >= 852) return
-      const currentView = api.view.type as ViewType
-      if (currentView === 'dayGridMonth') {
-        setView('listWeek')
-        api.changeView('listWeek')
-        setCurrentTitle(api.view.title)
-      }
-    }, 100)
-    return () => clearTimeout(t)
-  }, [isLoaded])
-
   // Naviga a una data specifica quando richiesto (vista giorno)
   useEffect(() => {
     if (navigateToDate && calendarRef.current && isLoaded) {
@@ -313,7 +300,7 @@ export function CalendarView({
         const count = slotBookingCounts?.[slotKey] ?? 0
         result.push({
           id: appointment.id,
-          title: slotBookingCounts ? `${count}/6` : '',
+          title: slotBookingCounts ? `${count}/${openBookingSlotMax}` : '',
           start: appointment.starts_at,
           end: appointment.ends_at,
           display: 'background' as const,
@@ -433,6 +420,7 @@ export function CalendarView({
     openBookingAsBackground,
     view,
     slotBookingCounts,
+    openBookingSlotMax,
     typeLabelMap,
     REASON_LABELS,
     settings?.type_cell_width,

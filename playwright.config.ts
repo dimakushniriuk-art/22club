@@ -6,6 +6,8 @@ config({ path: '.env.local' })
 
 /**
  * Configurazione Playwright per test E2E
+ * In locale, per stabilità e tempi: `npx playwright test --project=chromium` (o path file + stesso flag).
+ * WebKit / Mobile Safari: limiti cookie Secure su HTTP — vedi commento sul progetto `webkit`.
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({

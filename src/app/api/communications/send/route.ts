@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { ensureRecipientsCreated } from '@/lib/communications/scheduler'
 import { sendCommunicationEmail } from '@/lib/communications/email'
 import { createLogger } from '@/lib/logger'
@@ -14,23 +16,14 @@ const logger = createLogger('api:communications:send')
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ success: false, error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
-
-    const profileRow = profile as { id?: string; role?: string } | null
-    const role = profileRow?.role
+    const profileRow = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
+    const role = profileRow?.role as string | undefined
     const canSend =
       role && ['admin', 'trainer', 'nutrizionista', 'massaggiatore', 'marketing'].includes(role)
     if (!canSend) {

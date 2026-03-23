@@ -23,6 +23,9 @@ interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>
   loading?: boolean
   disabled?: boolean
+  /** Opzionale: solo E2E (appuntamenti e altri flussi che richiedono hook stabili) */
+  confirmTestId?: string
+  cancelTestId?: string
 }
 
 export function ConfirmDialog({
@@ -36,6 +39,8 @@ export function ConfirmDialog({
   onConfirm,
   loading = false,
   disabled = false,
+  confirmTestId,
+  cancelTestId,
 }: ConfirmDialogProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const cancelButtonRef = React.useRef<HTMLButtonElement>(null)
@@ -146,6 +151,7 @@ export function ConfirmDialog({
               disabled={isDisabled}
               className="border-border/30 text-text-secondary hover:bg-background-tertiary/50 hover:border-border/50 hover:text-text-primary transition-all duration-200"
               aria-label={cancelText}
+              data-testid={cancelTestId}
             >
               {cancelText}
             </Button>
@@ -154,6 +160,7 @@ export function ConfirmDialog({
               variant={variant === 'destructive' ? 'destructive' : 'default'}
               onClick={handleConfirm}
               disabled={isDisabled}
+              data-testid={confirmTestId}
               className={
                 variant === 'destructive'
                   ? 'bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg shadow-red-500/30 hover:shadow-red-500/40 transition-all duration-200'

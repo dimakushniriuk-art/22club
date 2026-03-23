@@ -44,6 +44,7 @@ function AppointmentListCardComponent({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      data-testid={`appointment-row-${appointment.id}`}
       className="rounded-lg border border-white/10 bg-white/[0.04] space-y-2 p-3 hover:border-white/20 transition-colors cursor-pointer"
     >
       <div className="flex items-center justify-between gap-2">

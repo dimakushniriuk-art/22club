@@ -217,7 +217,7 @@ export function usePayments({
     const currentYear = new Date().getFullYear()
 
     const monthlyPayments = payments.filter((payment) => {
-      const paymentDate = new Date(payment.created_at)
+      const paymentDate = new Date(payment.created_at || payment.payment_date || 0)
       return (
         !payment.is_reversal &&
         paymentDate.getMonth() === currentMonth &&

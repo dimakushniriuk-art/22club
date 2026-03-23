@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
+import { buildLegacyOrgWriteContext } from '@/lib/organizations/current-org'
 
 const logger = createLogger('api:marketing:leads:[id]')
 
@@ -123,9 +124,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (typeof note === 'string' && note.trim()) {
       const orgId = (lead as { org_id?: string }).org_id
       if (orgId && prof?.id) {
+        const orgWriteContext = buildLegacyOrgWriteContext({
+          profile: { org_id: orgId },
+          message: 'Lead senza org_id',
+        })
         await supabase.from('marketing_lead_notes').insert({
-          org_id: orgId,
-          org_id_text: orgId,
+          ...orgWriteContext,
           lead_id: id,
           author_id: prof.id,
           note: note.trim(),

@@ -158,14 +158,14 @@ describe('Zod Schema Validation - Test Restrittività', () => {
   })
 
   describe('Invito Schema', () => {
-    it('should accept invito without email', () => {
+    it('should reject invito without email', () => {
       const data = {
         nome_atleta: 'Test Atleta',
         giorni_validita: 7,
       }
 
       const result = createInvitoSchema.safeParse(data)
-      expect(result.success).toBe(true)
+      expect(result.success).toBe(false)
     })
 
     it('should accept invito with giorni_validita up to 365', () => {

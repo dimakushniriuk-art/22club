@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
+import { getCurrentOrgIdFromProfile } from '@/lib/organizations/current-org'
+import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 
 type ProfileRow = {
   id: string
@@ -18,39 +21,19 @@ function displayName(row: ProfileRow): string {
 
 /**
  * GET /api/communications/list-athletes
- * Lista atleti (profili) della stessa org per il selettore nella modal comunicazioni.
+ * Lista atleti attivi (stato=attivo) della stessa org, allineata ai destinatari comunicazioni.
  */
 export async function GET() {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ athletes: [] }, { status: 200 })
     }
 
-    // Profilo utente: prima per user_id (auth.uid()), fallback su id per compatibilità
-    let myProfile: { org_id?: string } | null = null
-    const { data: byUserId } = await supabase
-      .from('profiles')
-      .select('org_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (byUserId) {
-      myProfile = byUserId as { org_id?: string }
-    } else {
-      const { data: byId } = await supabase
-        .from('profiles')
-        .select('org_id')
-        .eq('id', user.id)
-        .maybeSingle()
-      myProfile = byId as { org_id?: string } | null
-    }
-
-    const orgId = myProfile?.org_id
+    const myProfile = await resolveProfileByIdentifier(supabase, user.id, 'org_id')
+    const orgId = getCurrentOrgIdFromProfile(myProfile as { org_id?: string | null } | null)
     if (!orgId) {
       return NextResponse.json({ athletes: [] }, { status: 200 })
     }
@@ -60,6 +43,7 @@ export async function GET() {
       .select('id, nome, cognome, first_name, last_name, email')
       .eq('org_id', orgId)
       .eq('role', 'athlete')
+      .eq('stato', 'attivo')
 
     if (error) {
       return NextResponse.json({ athletes: [] }, { status: 200 })

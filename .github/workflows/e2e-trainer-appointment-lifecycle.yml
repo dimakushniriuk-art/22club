@@ -1,0 +1,93 @@
+# E2E ridotto: ciclo vita appuntamenti trainer (solo Chromium, 1 worker, auth CI).
+# Richiede segreti repository (lista in fondo).
+name: E2E Trainer appointment lifecycle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+env:
+  CI: true
+  NODE_VERSION: '20'
+  PORT: '3001'
+  PLAYWRIGHT_BASE_URL: 'http://localhost:3001'
+
+jobs:
+  trainer-appointment-lifecycle:
+    name: Trainer appointment lifecycle (E2E)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium only
+        run: npx playwright install chromium --with-deps
+
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Seed trainer-athlete link (E2E DB)
+        run: npm run e2e:seed:trainer-athlete
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PLAYWRIGHT_TRAINER_EMAIL: ${{ secrets.PLAYWRIGHT_TRAINER_EMAIL }}
+          PLAYWRIGHT_ATHLETE_EMAIL: ${{ secrets.PLAYWRIGHT_ATHLETE_EMAIL }}
+
+      - name: Run Playwright (stabilized trainer lifecycle only)
+        run: >
+          npx playwright test
+          --config=playwright.config.ci.ts
+          tests/e2e/stabilized-core-flows.spec.ts
+          --grep "Trainer appointment lifecycle"
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          PLAYWRIGHT_ATHLETE_EMAIL: ${{ secrets.PLAYWRIGHT_ATHLETE_EMAIL }}
+          PLAYWRIGHT_ATHLETE_PASSWORD: ${{ secrets.PLAYWRIGHT_ATHLETE_PASSWORD }}
+          PLAYWRIGHT_TRAINER_EMAIL: ${{ secrets.PLAYWRIGHT_TRAINER_EMAIL }}
+          PLAYWRIGHT_TRAINER_PASSWORD: ${{ secrets.PLAYWRIGHT_TRAINER_PASSWORD }}
+          PLAYWRIGHT_ADMIN_EMAIL: ${{ secrets.PLAYWRIGHT_ADMIN_EMAIL }}
+          PLAYWRIGHT_ADMIN_PASSWORD: ${{ secrets.PLAYWRIGHT_ADMIN_PASSWORD }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-trainer-lifecycle
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (junit / traces)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results-trainer-lifecycle
+          path: test-results/
+          retention-days: 7
+
+# Secrets (Settings - Secrets and variables - Actions):
+# NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+# PLAYWRIGHT_ATHLETE_EMAIL, PLAYWRIGHT_ATHLETE_PASSWORD,
+# PLAYWRIGHT_TRAINER_EMAIL, PLAYWRIGHT_TRAINER_PASSWORD,
+# PLAYWRIGHT_ADMIN_EMAIL, PLAYWRIGHT_ADMIN_PASSWORD
+#
+# Supabase: utenti Auth + profiles per atleta/trainer/admin con le mail sopra; lo seed crea il link trainer-atleta.

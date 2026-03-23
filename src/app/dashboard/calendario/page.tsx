@@ -1167,7 +1167,10 @@ export function CalendarPageContent({
 
       {/* Modal Form */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
+        <div
+          data-testid="appointment-form-overlay"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
+        >
           <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
             <Suspense fallback={<LoadingState message="Caricamento form..." />}>
               <AppointmentForm
@@ -1250,6 +1253,8 @@ export function CalendarPageContent({
           variant={confirmState.action === 'complete' ? 'default' : 'destructive'}
           onConfirm={handleConfirmDialogConfirm}
           loading={loading}
+          confirmTestId="appointment-confirm-dialog-confirm"
+          cancelTestId="appointment-confirm-dialog-cancel"
         />
       )}
 
@@ -1295,6 +1300,7 @@ export function CalendarPageContent({
                     variant="destructive"
                     onClick={() => handleCancelWithChoice(true, false)}
                     disabled={loading}
+                    data-testid="appointment-cancel-choice-debit"
                   >
                     Annulla e scala lezione
                   </Button>
@@ -1302,6 +1308,7 @@ export function CalendarPageContent({
                     variant="outline"
                     onClick={() => handleCancelWithChoice(false, true)}
                     disabled={loading}
+                    data-testid="appointment-cancel-choice-no-debit"
                   >
                     Annulla senza scalare
                   </Button>
@@ -1312,10 +1319,15 @@ export function CalendarPageContent({
                     variant="destructive"
                     onClick={() => handleCancelWithChoice(false, false)}
                     disabled={loading}
+                    data-testid="appointment-cancel-choice-confirm"
                   >
                     Annulla
                   </Button>
-                  <Button variant="ghost" onClick={() => setCancelChoiceAppointment(null)}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setCancelChoiceAppointment(null)}
+                    data-testid="appointment-confirm-dialog-cancel"
+                  >
                     Indietro
                   </Button>
                 </>

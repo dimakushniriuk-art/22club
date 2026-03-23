@@ -19,9 +19,13 @@ const mockChannel = {
 } as unknown as RealtimeChannel
 
 vi.mock('@/lib/supabase/client', () => ({
+  createClient: vi.fn(() => ({
+    channel: vi.fn(() => mockChannel),
+  })),
   supabase: {
     channel: vi.fn(() => mockChannel),
   },
+  handleRefreshTokenError: vi.fn(() => false),
 }))
 
 describe('Realtime Memory Leak Prevention', () => {

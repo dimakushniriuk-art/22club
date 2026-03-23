@@ -127,6 +127,7 @@ export function AppointmentPopover({
   const content = (
     <div
       ref={popoverRef}
+      data-testid="appointment-popover"
       className={cn(
         'z-[100] max-w-[calc(100vw-2rem)] bg-[#202124] rounded-lg shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150',
         asModal
@@ -153,6 +154,7 @@ export function AppointmentPopover({
               <button
                 onClick={() => restoreFocusAndClose(onEdit)}
                 disabled={loading}
+                data-testid="appointment-popover-edit"
                 className="min-h-[44px] min-w-[44px] p-2 rounded-full hover:bg-black/20 transition-colors flex items-center justify-center"
                 title="Modifica"
               >
@@ -163,6 +165,7 @@ export function AppointmentPopover({
               <button
                 onClick={() => restoreFocusAndClose(onDelete)}
                 disabled={loading}
+                data-testid="appointment-popover-header-delete"
                 className="min-h-[44px] min-w-[44px] p-2 rounded-full hover:bg-black/20 transition-colors flex items-center justify-center"
                 title="Elimina"
               >
@@ -171,6 +174,7 @@ export function AppointmentPopover({
             )}
             <button
               onClick={() => restoreFocusAndClose(onClose)}
+              data-testid="appointment-popover-close"
               className="min-h-[44px] min-w-[44px] p-2 rounded-full hover:bg-black/20 transition-colors flex items-center justify-center"
             >
               <X className="h-4 w-4 text-white" />
@@ -180,6 +184,7 @@ export function AppointmentPopover({
         {!showEditDelete && (
           <button
             onClick={() => restoreFocusAndClose(onClose)}
+            data-testid="appointment-popover-close"
             className="min-h-[44px] min-w-[44px] p-2 rounded-full hover:bg-black/20 transition-colors flex items-center justify-center"
           >
             <X className="h-4 w-4 text-white" />
@@ -282,6 +287,7 @@ export function AppointmentPopover({
                 variant="ghost"
                 onClick={() => restoreFocusAndClose(onCancel)}
                 disabled={loading}
+                data-testid="appointment-popover-cancel"
                 className="w-full h-9 text-[#F28B82] hover:bg-[#F28B82]/10 font-medium justify-center"
               >
                 Annulla appuntamento
@@ -292,6 +298,7 @@ export function AppointmentPopover({
                 variant="ghost"
                 onClick={() => restoreFocusAndClose(onDelete)}
                 disabled={loading}
+                data-testid="appointment-popover-delete"
                 className="w-full h-9 text-[#9AA0A6] hover:bg-[#5F6368]/30 font-medium justify-center gap-2"
               >
                 <Trash2 className="h-4 w-4" />
@@ -308,6 +315,7 @@ export function AppointmentPopover({
     return (
       <div
         className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+        data-testid="appointment-popover-overlay"
         onClick={(e) => e.target === e.currentTarget && restoreFocusAndClose(onClose)}
         aria-modal="true"
       >
@@ -321,5 +329,12 @@ export function AppointmentPopover({
     )
   }
 
-  return <div className="fixed inset-0 z-[100] flex items-center justify-center">{content}</div>
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      data-testid="appointment-popover-overlay"
+    >
+      {content}
+    </div>
+  )
 }

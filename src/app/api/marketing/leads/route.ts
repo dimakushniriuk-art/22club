@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
+import { buildLegacyOrgWriteContext } from '@/lib/organizations/current-org'
 
 const logger = createLogger('api:marketing:leads')
 
@@ -105,6 +106,10 @@ export async function POST(request: NextRequest) {
     if (!prof?.org_id) {
       return NextResponse.json({ error: 'Profilo senza org_id' }, { status: 400 })
     }
+    const orgWriteContext = buildLegacyOrgWriteContext({
+      profile: prof,
+      message: 'Profilo senza org_id',
+    })
 
     const body = await request.json()
     const {
@@ -121,8 +126,7 @@ export async function POST(request: NextRequest) {
     } = body as Record<string, unknown>
 
     const insert = {
-      org_id: prof.org_id,
-      org_id_text: prof.org_id,
+      ...orgWriteContext,
       email: typeof email === 'string' ? email : '',
       first_name: typeof first_name === 'string' ? first_name : null,
       last_name: typeof last_name === 'string' ? last_name : null,
@@ -152,10 +156,9 @@ export async function POST(request: NextRequest) {
     const leadId = (row as { id?: string })?.id
     const campaignId =
       typeof bodyCampaignId === 'string' && bodyCampaignId.trim() ? bodyCampaignId.trim() : null
-    if (leadId && prof.org_id) {
+    if (leadId) {
       await supabase.from('marketing_events').insert({
-        org_id: prof.org_id,
-        org_id_text: prof.org_id,
+        ...orgWriteContext,
         type: 'lead_created',
         lead_id: leadId,
         campaign_id: campaignId || null,

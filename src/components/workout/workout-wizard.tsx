@@ -49,7 +49,11 @@ export function WorkoutWizard({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="relative flex max-h-[95vh] max-w-5xl flex-col overflow-hidden bg-black border-teal-500/30 shadow-2xl p-0">
         <WorkoutWizardContent
-          onSave={onSave}
+          onSave={async (data, circuitList, options) => {
+            await onSave(data)
+            void circuitList
+            void options
+          }}
           athletes={athletes}
           exercises={exercises}
           initialAthleteId={initialAthleteId}

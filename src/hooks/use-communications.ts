@@ -68,11 +68,11 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
       if (options.limit) queryParams.limit = options.limit.toString()
       if (options.offset !== undefined) queryParams.offset = options.offset.toString()
 
-      const result = await apiGet<{ data: Communication[]; count: number }>(
+      const result = await apiGet<{ communications: Communication[]; count: number }>(
         '/api/communications/list',
         queryParams,
         // Fallback Supabase (usato su mobile o se API fallisce)
-        async (): Promise<{ data: Communication[]; count: number }> => {
+        async (): Promise<{ communications: Communication[]; count: number }> => {
           let query = supabase
             .from('communications')
             .select('*', { count: 'exact' })
@@ -101,20 +101,25 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
           const { data, error: fetchError, count } = await query
 
           if (fetchError) {
-            throw fetchError
+            throw new Error(fetchError.message || String(fetchError))
           }
 
           return {
-            data: (data || []) as Communication[],
+            communications: (data || []) as Communication[],
             count: count ?? 0,
           }
         },
       )
 
-      setCommunications(result.data || [])
+      setCommunications(result.communications || [])
       setTotalCount(result.count ?? null)
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error')
+      const error =
+        err instanceof Error
+          ? err
+          : err && typeof err === 'object' && 'message' in err
+            ? new Error(String((err as { message: unknown }).message))
+            : new Error(String(err))
       setError(error)
       logger.error('Error fetching communications', error)
       setCommunications([])

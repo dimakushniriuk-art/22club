@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServerAuthUser } from '@/lib/auth/server-user'
+import { fetchCurrentProfileForAuthUserId } from '@/lib/supabase/get-current-profile'
 import { createLogger } from '@/lib/logger'
-import type { Tables } from '@/types/supabase'
+import {
+  formatStaffDayAthleteDisplayName,
+  getStaffLocalDayBoundsISO,
+  STAFF_TODAY_APPOINTMENTS_SELECT,
+} from '@/lib/appointments/staff-today-appointments-query'
 
 const logger = createLogger('api:dashboard:appointments')
 
@@ -12,53 +18,25 @@ const logger = createLogger('api:dashboard:appointments')
 export async function GET() {
   try {
     const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const { user } = await getServerAuthUser(supabase)
 
-    if (sessionError || !session) {
+    if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    // Ottieni il profilo dello staff corrente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id'>
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (profileError || !profile) {
-      logger.warn('Profilo non trovato', profileError, { userId: session.user.id })
+    const current = await fetchCurrentProfileForAuthUserId(supabase, user.id)
+    if (!current) {
+      logger.warn('Profilo non trovato', undefined, { userId: user.id })
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
-    const profileTyped = profile as ProfileRow
+    const staffProfileId = current.profileId
 
-    // Data di oggi (inizio e fine giornata)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const todayStart = today.toISOString()
+    const { dayStart: todayStart, dayEnd: todayEnd } = getStaffLocalDayBoundsISO()
 
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const todayEnd = tomorrow.toISOString()
-
-    // Query per appuntamenti del giorno corrente dello staff corrente
     const { data: appointments, error } = await supabase
       .from('appointments')
-      .select(
-        `
-        id,
-        starts_at,
-        ends_at,
-        type,
-        status,
-        athlete_id,
-        athlete:profiles!athlete_id(avatar, avatar_url, nome, cognome)
-      `,
-      )
-      .eq('staff_id', profileTyped.id)
+      .select(STAFF_TODAY_APPOINTMENTS_SELECT)
+      .eq('staff_id', staffProfileId)
       .gte('starts_at', todayStart)
       .lt('starts_at', todayEnd)
       .is('cancelled_at', null)
@@ -66,7 +44,7 @@ export async function GET() {
 
     if (error) {
       logger.error('Errore durante il recupero degli appuntamenti', error, {
-        staffId: profileTyped.id,
+        staffId: staffProfileId,
       })
       return NextResponse.json({ error: 'Errore durante il recupero' }, { status: 500 })
     }
@@ -127,21 +105,7 @@ export async function GET() {
         const minutes = String(startTime.getMinutes()).padStart(2, '0')
         const time = `${hours}:${minutes}`
 
-        const athleteRecord = apt.athlete
-        const athleteProfile =
-          athleteRecord && typeof athleteRecord === 'object' && !('message' in athleteRecord)
-            ? (athleteRecord as {
-                avatar?: string | null
-                avatar_url?: string | null
-                nome?: string | null
-                cognome?: string | null
-              })
-            : null
-
-        const athleteName =
-          athleteProfile && athleteProfile.nome && athleteProfile.cognome
-            ? `${athleteProfile.nome} ${athleteProfile.cognome}`.trim()
-            : athleteProfile?.nome || athleteProfile?.cognome || 'Atleta'
+        const athleteName = formatStaffDayAthleteDisplayName(apt.athlete)
 
         return {
           id: apt.id,

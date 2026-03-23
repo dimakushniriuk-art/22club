@@ -76,6 +76,7 @@ export function AppointmentItem({
   return (
     <div
       key={appointment.id}
+      data-testid={`appointment-row-${appointment.id}`}
       className={cn(
         'group relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-300 hover:border-white/20',
         getStatusColorClasses(appointment.status),
@@ -175,6 +176,7 @@ export function AppointmentItem({
                 onCancel(appointment)
               }
             }}
+            data-testid={`appointment-open-cancel-${appointment.id}`}
             className="rounded-full p-3 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Annulla appuntamento"
             disabled={isLocked}
@@ -237,6 +239,11 @@ export function AppointmentItem({
                 onView(appointment)
               }
             }}
+            data-testid={
+              appointment.athlete_id
+                ? `appointment-open-athlete-profile-${appointment.id}`
+                : `appointment-open-detail-${appointment.id}`
+            }
             className="rounded-full p-3 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Visualizza profilo atleta"
             disabled={isLocked}
@@ -263,6 +270,7 @@ export function AppointmentItem({
               e.stopPropagation()
               onEdit(appointment)
             }}
+            data-testid={`appointment-open-edit-${appointment.id}`}
             className="rounded-full p-3 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             title="Modifica appuntamento"
             disabled={isLocked}

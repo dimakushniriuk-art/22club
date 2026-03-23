@@ -5,6 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
 import { apiGet } from '@/lib/api-client'
 import { supabase } from '@/lib/supabase/client'
+import {
+  formatStaffDayAthleteDisplayName,
+  getStaffLocalDayBoundsISO,
+  STAFF_TODAY_APPOINTMENTS_SELECT,
+} from '@/lib/appointments/staff-today-appointments-query'
 
 const logger = createLogger('app:dashboard:_components:upcoming-appointments-client')
 
@@ -48,24 +53,11 @@ export function UpcomingAppointmentsClient({ initialData }: UpcomingAppointments
 
             if (!profile) return []
 
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-            const todayStart = today.toISOString()
-
-            const tomorrow = new Date(today)
-            tomorrow.setDate(tomorrow.getDate() + 1)
-            const todayEnd = tomorrow.toISOString()
+            const { dayStart: todayStart, dayEnd: todayEnd } = getStaffLocalDayBoundsISO()
 
             const { data: appointments } = await supabase
               .from('appointments')
-              .select(
-                `
-                id,
-                starts_at,
-                type,
-                athlete:profiles!athlete_id(nome, cognome)
-              `,
-              )
+              .select(STAFF_TODAY_APPOINTMENTS_SELECT)
               .eq('staff_id', profile.id)
               .gte('starts_at', todayStart)
               .lt('starts_at', todayEnd)
@@ -76,41 +68,19 @@ export function UpcomingAppointmentsClient({ initialData }: UpcomingAppointments
               id: string
               starts_at: string
               type?: string | null
-              athlete?: {
-                nome?: string
-                cognome?: string
-                first_name?: string
-                last_name?: string
-              } | null
+              athlete?: unknown
             }
-            type AppointmentRaw = {
-              id: unknown
-              starts_at: unknown
-              type?: unknown
-              athlete?: {
-                nome?: unknown
-                cognome?: unknown
-                first_name?: unknown
-                last_name?: unknown
-              } | null
-            }
-            return ((appointments || []) as AppointmentRaw[]).map((apt) => {
-              const aptTyped = apt as AppointmentWithAthlete
-              const startTime = new Date(aptTyped.starts_at)
+            return ((appointments || []) as AppointmentWithAthlete[]).map((apt) => {
+              const startTime = new Date(apt.starts_at)
               const hours = String(startTime.getHours()).padStart(2, '0')
               const minutes = String(startTime.getMinutes()).padStart(2, '0')
-              const athlete = aptTyped.athlete
-              const athleteName =
-                athlete && athlete.nome && athlete.cognome
-                  ? `${athlete.nome} ${athlete.cognome}`
-                  : athlete?.nome || athlete?.cognome || 'Atleta'
 
               return {
-                id: aptTyped.id,
+                id: apt.id,
                 date: startTime.toISOString().split('T')[0],
                 time: `${hours}:${minutes}`,
-                athlete_name: athleteName,
-                type: aptTyped.type || 'appuntamento',
+                athlete_name: formatStaffDayAthleteDisplayName(apt.athlete),
+                type: apt.type || 'appuntamento',
               }
             })
           },
