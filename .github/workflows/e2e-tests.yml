@@ -49,14 +49,14 @@ jobs:
         run: npx playwright test tests/e2e/core-flows.spec.ts --project=chromium
 
       - name: Upload playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report
           path: playwright-report/
 
       - name: Upload test results on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: test-results
