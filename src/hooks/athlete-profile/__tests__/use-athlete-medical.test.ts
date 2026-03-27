@@ -26,6 +26,7 @@ const { mockSupabase } = vi.hoisted(() => ({
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
 const mockSingle = vi.fn()
+const mockMaybeSingle = vi.fn()
 const mockUpdate = vi.fn()
 const mockInsert = vi.fn()
 const mockStorageBucket = {
@@ -46,9 +47,12 @@ vi.mock('@/lib/supabase/client', () => ({
 }))
 
 vi.mock('@/lib/error-handler', () => ({
-  handleApiError: vi.fn((error) => {
-    throw error
-  }),
+  handleApiError: vi.fn((error: unknown) => ({
+    message:
+      error && typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message: unknown }).message)
+        : 'Errore sconosciuto',
+  })),
 }))
 
 vi.mock('@/lib/logger', () => ({
@@ -103,6 +107,7 @@ describe('useAthleteMedical', () => {
 
     mockEq.mockReturnValue({
       single: mockSingle,
+      maybeSingle: mockMaybeSingle,
     })
 
     mockUpdate.mockReturnValue({
@@ -177,7 +182,7 @@ describe('useAthleteMedical', () => {
         updated_at: '2025-01-01T00:00:00Z',
       }
 
-      mockSingle.mockResolvedValue({
+      mockMaybeSingle.mockResolvedValue({
         data: mockData,
         error: null,
       })
@@ -196,12 +201,10 @@ describe('useAthleteMedical', () => {
       expect(mockSupabase.from).toHaveBeenCalledWith('athlete_medical_data')
     })
 
-    it('should handle error when fetching fails', async () => {
-      const mockError = { message: 'Database error', code: 'PGRST116' }
-
-      mockSingle.mockResolvedValue({
+    it('should return null when no medical row exists', async () => {
+      mockMaybeSingle.mockResolvedValue({
         data: null,
-        error: mockError,
+        error: null,
       })
 
       const { result } = renderHook(() => useAthleteMedical('test-athlete-id'), {
@@ -212,7 +215,6 @@ describe('useAthleteMedical', () => {
         expect(result.current.isSuccess).toBe(true)
       })
 
-      // PGRST116 significa "no rows returned", quindi ritorna null (non errore)
       expect(result.current.data).toBeNull()
     })
   })

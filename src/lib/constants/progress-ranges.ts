@@ -26,6 +26,7 @@ export interface ProgressRanges {
     torace_inspirazione_cm: ValueRange
     braccio_rilassato_cm: ValueRange
     braccio_contratto_cm: ValueRange
+    biceps_cm: ValueRange
     avambraccio_cm: ValueRange
     polso_cm: ValueRange
     vita_alta_cm: ValueRange
@@ -106,6 +107,7 @@ export const PROGRESS_RANGES: ProgressRanges = {
     torace_inspirazione_cm: { min: 3, max: 10, unit: 'cm', note: '+3 a +10 rispetto a torace' },
     braccio_rilassato_cm: { min: 26, max: 45, unit: 'cm' },
     braccio_contratto_cm: { min: 30, max: 50, unit: 'cm' },
+    biceps_cm: { min: 30, max: 50, unit: 'cm', note: 'Campo legacy chest/biceps' },
     avambraccio_cm: { min: 24, max: 36, unit: 'cm' },
     polso_cm: { min: 15, max: 21, unit: 'cm' },
     vita_alta_cm: { min: 65, max: 110, unit: 'cm' },

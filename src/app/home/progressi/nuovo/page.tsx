@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
-import { validateWeight, validateNumberRange, validateDate } from '@/lib/utils/validation'
+import { validateDate } from '@/lib/utils/validation'
 import { notifyError } from '@/lib/notifications'
-import { getValueRange, type ProgressRanges } from '@/lib/constants/progress-ranges'
 
 const logger = createLogger('app:home:progressi:nuovo:page')
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -23,7 +22,6 @@ import {
   Layers,
   Target,
   AlertTriangle,
-  CheckCircle2,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -129,11 +127,6 @@ export default function NuovoProgressoPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [loadingLastMeasurement, setLoadingLastMeasurement] = useState(true)
-
-  // Stato per tracciare gli errori di validazione range per ogni campo
-  const [fieldValidation, setFieldValidation] = useState<
-    Record<string, { status: 'valid' | 'warning' | 'error' | null; message?: string }>
-  >({})
 
   // Inizializza formData con tutti i campi vuoti
   const [formData, setFormData] = useState<FormData>({
@@ -250,130 +243,164 @@ export default function NuovoProgressoPage() {
           return
         }
 
-        // progress_logs.athlete_id è FK a profiles.user_id; usare auth.users.id
-        const { data: lastMeasurement, error: fetchError } = await supabase
-          .from('progress_logs')
-          .select('*')
-          .eq('athlete_id', authUser.id)
-          .order('date', { ascending: false })
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-
-        if (fetchError) {
-          logger.warn('Errore nel caricare ultima misurazione', fetchError, {
+        // Stesso filtro RLS del client: se la policy SELECT usa profiles.id = athlete_id invece di athlete_id = auth.uid(), la lista è vuota finché non si applica la migrazione progress_logs SELECT.
+        const res = await fetch('/api/athlete/progress-logs?limit=50', { credentials: 'same-origin' })
+        if (!res.ok) {
+          const errBody = (await res.json().catch(() => ({}))) as { error?: string; code?: string }
+          logger.warn('Errore nel caricare ultima misurazione', errBody, {
             authUserId: authUser.id,
+            status: res.status,
           })
           setLoadingLastMeasurement(false)
           return
         }
 
-        if (!lastMeasurement) {
+        const json = (await res.json()) as { data?: unknown[] }
+        const measurementHistory = json.data
+
+        if (!measurementHistory || measurementHistory.length === 0) {
           logger.debug('Nessuna misurazione precedente trovata, form vuoto')
           setLoadingLastMeasurement(false)
           return
         }
 
+        const firstRow = measurementHistory[0] as Record<string, unknown>
+        const mergedMeasurement = measurementHistory.reduce<Record<string, unknown>>(
+          (acc, current) => {
+            const result = { ...acc }
+            for (const [key, value] of Object.entries(current as Record<string, unknown>)) {
+              if ((result[key] === null || result[key] === undefined) && value !== null && value !== undefined) {
+                result[key] = value
+              }
+            }
+            return result
+          },
+          { ...firstRow },
+        )
+
         logger.debug('Ultima misurazione caricata con successo', undefined, {
-          measurementId: lastMeasurement.id,
-          date: lastMeasurement.date,
+          measurementId: firstRow.id,
+          date: firstRow.date,
+          historyCount: measurementHistory.length,
           authUserId: authUser.id,
         })
 
         // Mappa i dati dal database al formato del form
         setFormData({
           // Valori principali
-          peso_kg: numberToString(lastMeasurement.weight_kg),
-          massa_grassa_percentuale: numberToString(lastMeasurement.massa_grassa_percentuale),
-          massa_grassa_kg: numberToString(lastMeasurement.massa_grassa_kg),
-          massa_magra_kg: numberToString(lastMeasurement.massa_magra_kg),
-          massa_muscolare_kg: numberToString(lastMeasurement.massa_muscolare_kg),
+          peso_kg: numberToString(mergedMeasurement.weight_kg as number | null | undefined),
+          massa_grassa_percentuale: numberToString(
+            mergedMeasurement.massa_grassa_percentuale as number | null | undefined,
+          ),
+          massa_grassa_kg: numberToString(mergedMeasurement.massa_grassa_kg as number | null | undefined),
+          massa_magra_kg: numberToString(mergedMeasurement.massa_magra_kg as number | null | undefined),
+          massa_muscolare_kg: numberToString(mergedMeasurement.massa_muscolare_kg as number | null | undefined),
           massa_muscolare_scheletrica_kg: numberToString(
-            lastMeasurement.massa_muscolare_scheletrica_kg,
+            mergedMeasurement.massa_muscolare_scheletrica_kg as number | null | undefined,
           ),
 
           // Misure antropometriche aggiuntive
-          statura_allungata_cm: numberToString(lastMeasurement.statura_allungata_cm),
-          statura_seduto_cm: numberToString(lastMeasurement.statura_seduto_cm),
-          apertura_braccia_cm: numberToString(lastMeasurement.apertura_braccia_cm),
+          statura_allungata_cm: numberToString(mergedMeasurement.statura_allungata_cm as number | null | undefined),
+          statura_seduto_cm: numberToString(mergedMeasurement.statura_seduto_cm as number | null | undefined),
+          apertura_braccia_cm: numberToString(mergedMeasurement.apertura_braccia_cm as number | null | undefined),
 
           // Composizione corporea aggiuntiva
-          massa_ossea_kg: numberToString(lastMeasurement.massa_ossea_kg),
-          massa_residuale_kg: numberToString(lastMeasurement.massa_residuale_kg),
+          massa_ossea_kg: numberToString(mergedMeasurement.massa_ossea_kg as number | null | undefined),
+          massa_residuale_kg: numberToString(mergedMeasurement.massa_residuale_kg as number | null | undefined),
 
           // Circonferenze
-          collo_cm: numberToString(lastMeasurement.collo_cm),
-          spalle_cm: numberToString(lastMeasurement.spalle_cm),
-          torace_cm: numberToString(lastMeasurement.chest_cm),
-          torace_inspirazione_cm: numberToString(lastMeasurement.torace_inspirazione_cm),
-          braccio_rilassato_cm: numberToString(lastMeasurement.braccio_rilassato_cm),
-          braccio_contratto_cm: numberToString(lastMeasurement.braccio_contratto_cm),
-          avambraccio_cm: numberToString(lastMeasurement.avambraccio_cm),
-          polso_cm: numberToString(lastMeasurement.polso_cm),
-          vita_alta_cm: numberToString(lastMeasurement.vita_alta_cm),
-          vita_cm: numberToString(lastMeasurement.waist_cm),
-          addome_basso_cm: numberToString(lastMeasurement.addome_basso_cm),
-          fianchi_cm: numberToString(lastMeasurement.hips_cm),
-          glutei_cm: numberToString(lastMeasurement.glutei_cm),
-          coscia_alta_cm: numberToString(lastMeasurement.coscia_alta_cm),
-          coscia_media_cm: numberToString(
-            lastMeasurement.coscia_media_cm || lastMeasurement.thighs_cm,
+          collo_cm: numberToString(mergedMeasurement.collo_cm as number | null | undefined),
+          spalle_cm: numberToString(mergedMeasurement.spalle_cm as number | null | undefined),
+          torace_cm: numberToString(mergedMeasurement.chest_cm as number | null | undefined),
+          torace_inspirazione_cm: numberToString(
+            mergedMeasurement.torace_inspirazione_cm as number | null | undefined,
           ),
-          coscia_bassa_cm: numberToString(lastMeasurement.coscia_bassa_cm),
-          ginocchio_cm: numberToString(lastMeasurement.ginocchio_cm),
-          polpaccio_cm: numberToString(lastMeasurement.polpaccio_cm),
-          caviglia_cm: numberToString(lastMeasurement.caviglia_cm),
+          braccio_rilassato_cm: numberToString(mergedMeasurement.braccio_rilassato_cm as number | null | undefined),
+          braccio_contratto_cm: numberToString(mergedMeasurement.braccio_contratto_cm as number | null | undefined),
+          avambraccio_cm: numberToString(mergedMeasurement.avambraccio_cm as number | null | undefined),
+          polso_cm: numberToString(mergedMeasurement.polso_cm as number | null | undefined),
+          vita_alta_cm: numberToString(mergedMeasurement.vita_alta_cm as number | null | undefined),
+          vita_cm: numberToString(mergedMeasurement.waist_cm as number | null | undefined),
+          addome_basso_cm: numberToString(mergedMeasurement.addome_basso_cm as number | null | undefined),
+          fianchi_cm: numberToString(mergedMeasurement.hips_cm as number | null | undefined),
+          glutei_cm: numberToString(mergedMeasurement.glutei_cm as number | null | undefined),
+          coscia_alta_cm: numberToString(mergedMeasurement.coscia_alta_cm as number | null | undefined),
+          coscia_media_cm: numberToString(
+            (mergedMeasurement.coscia_media_cm as number | null | undefined) ||
+              (mergedMeasurement.thighs_cm as number | null | undefined),
+          ),
+          coscia_bassa_cm: numberToString(mergedMeasurement.coscia_bassa_cm as number | null | undefined),
+          ginocchio_cm: numberToString(mergedMeasurement.ginocchio_cm as number | null | undefined),
+          polpaccio_cm: numberToString(mergedMeasurement.polpaccio_cm as number | null | undefined),
+          caviglia_cm: numberToString(mergedMeasurement.caviglia_cm as number | null | undefined),
 
           // Perimetri corretti
-          braccio_corretto_cm: numberToString(lastMeasurement.braccio_corretto_cm),
-          coscia_corretta_cm: numberToString(lastMeasurement.coscia_corretta_cm),
-          gamba_corretta_cm: numberToString(lastMeasurement.gamba_corretta_cm),
+          braccio_corretto_cm: numberToString(mergedMeasurement.braccio_corretto_cm as number | null | undefined),
+          coscia_corretta_cm: numberToString(mergedMeasurement.coscia_corretta_cm as number | null | undefined),
+          gamba_corretta_cm: numberToString(mergedMeasurement.gamba_corretta_cm as number | null | undefined),
 
           // Indici principali
-          imc: numberToString(lastMeasurement.imc),
-          indice_vita_fianchi: numberToString(lastMeasurement.indice_vita_fianchi),
-          indice_adiposo_muscolare: numberToString(lastMeasurement.indice_adiposo_muscolare),
-          indice_muscolo_osseo: numberToString(lastMeasurement.indice_muscolo_osseo),
-          indice_conicita: numberToString(lastMeasurement.indice_conicita),
-          indice_manouvrier: numberToString(lastMeasurement.indice_manouvrier),
-          indice_cormico: numberToString(lastMeasurement.indice_cormico),
-          area_superficie_corporea_m2: numberToString(lastMeasurement.area_superficie_corporea_m2),
+          imc: numberToString(mergedMeasurement.imc as number | null | undefined),
+          indice_vita_fianchi: numberToString(mergedMeasurement.indice_vita_fianchi as number | null | undefined),
+          indice_adiposo_muscolare: numberToString(
+            mergedMeasurement.indice_adiposo_muscolare as number | null | undefined,
+          ),
+          indice_muscolo_osseo: numberToString(mergedMeasurement.indice_muscolo_osseo as number | null | undefined),
+          indice_conicita: numberToString(mergedMeasurement.indice_conicita as number | null | undefined),
+          indice_manouvrier: numberToString(mergedMeasurement.indice_manouvrier as number | null | undefined),
+          indice_cormico: numberToString(mergedMeasurement.indice_cormico as number | null | undefined),
+          area_superficie_corporea_m2: numberToString(
+            mergedMeasurement.area_superficie_corporea_m2 as number | null | undefined,
+          ),
 
           // Metabolismo
-          metabolismo_basale_kcal: numberToString(lastMeasurement.metabolismo_basale_kcal),
-          dispendio_energetico_totale_kcal: numberToString(
-            lastMeasurement.dispendio_energetico_totale_kcal,
+          metabolismo_basale_kcal: numberToString(
+            mergedMeasurement.metabolismo_basale_kcal as number | null | undefined,
           ),
-          livello_attivita: lastMeasurement.livello_attivita || '',
+          dispendio_energetico_totale_kcal: numberToString(
+            mergedMeasurement.dispendio_energetico_totale_kcal as number | null | undefined,
+          ),
+          livello_attivita: (mergedMeasurement.livello_attivita as string | null | undefined) || '',
 
           // Somatotipo
-          endomorfia: numberToString(lastMeasurement.endomorfia),
-          mesomorfia: numberToString(lastMeasurement.mesomorfia),
-          ectomorfia: numberToString(lastMeasurement.ectomorfia),
+          endomorfia: numberToString(mergedMeasurement.endomorfia as number | null | undefined),
+          mesomorfia: numberToString(mergedMeasurement.mesomorfia as number | null | undefined),
+          ectomorfia: numberToString(mergedMeasurement.ectomorfia as number | null | undefined),
 
           // Pliche cutanee
-          plica_tricipite_mm: numberToString(lastMeasurement.plica_tricipite_mm),
-          plica_sottoscapolare_mm: numberToString(lastMeasurement.plica_sottoscapolare_mm),
-          plica_bicipite_mm: numberToString(lastMeasurement.plica_bicipite_mm),
-          plica_cresta_iliaca_mm: numberToString(lastMeasurement.plica_cresta_iliaca_mm),
-          plica_sopraspinale_mm: numberToString(lastMeasurement.plica_sopraspinale_mm),
-          plica_addominale_mm: numberToString(lastMeasurement.plica_addominale_mm),
-          plica_coscia_mm: numberToString(lastMeasurement.plica_coscia_mm),
-          plica_gamba_mm: numberToString(lastMeasurement.plica_gamba_mm),
+          plica_tricipite_mm: numberToString(mergedMeasurement.plica_tricipite_mm as number | null | undefined),
+          plica_sottoscapolare_mm: numberToString(
+            mergedMeasurement.plica_sottoscapolare_mm as number | null | undefined,
+          ),
+          plica_bicipite_mm: numberToString(mergedMeasurement.plica_bicipite_mm as number | null | undefined),
+          plica_cresta_iliaca_mm: numberToString(
+            mergedMeasurement.plica_cresta_iliaca_mm as number | null | undefined,
+          ),
+          plica_sopraspinale_mm: numberToString(
+            mergedMeasurement.plica_sopraspinale_mm as number | null | undefined,
+          ),
+          plica_addominale_mm: numberToString(mergedMeasurement.plica_addominale_mm as number | null | undefined),
+          plica_coscia_mm: numberToString(mergedMeasurement.plica_coscia_mm as number | null | undefined),
+          plica_gamba_mm: numberToString(mergedMeasurement.plica_gamba_mm as number | null | undefined),
 
           // Diametri ossei
-          diametro_omero_cm: numberToString(lastMeasurement.diametro_omero_cm),
-          diametro_bistiloideo_cm: numberToString(lastMeasurement.diametro_bistiloideo_cm),
-          diametro_femore_cm: numberToString(lastMeasurement.diametro_femore_cm),
+          diametro_omero_cm: numberToString(mergedMeasurement.diametro_omero_cm as number | null | undefined),
+          diametro_bistiloideo_cm: numberToString(
+            mergedMeasurement.diametro_bistiloideo_cm as number | null | undefined,
+          ),
+          diametro_femore_cm: numberToString(mergedMeasurement.diametro_femore_cm as number | null | undefined),
 
           // Osservazioni cliniche
-          rischio_cardiometabolico: lastMeasurement.rischio_cardiometabolico || '',
-          adiposita_centrale: lastMeasurement.adiposita_centrale || '',
-          struttura_muscolo_scheletrica: lastMeasurement.struttura_muscolo_scheletrica || '',
-          capacita_dispersione_calore: lastMeasurement.capacita_dispersione_calore || '',
+          rischio_cardiometabolico:
+            (mergedMeasurement.rischio_cardiometabolico as string | null | undefined) || '',
+          adiposita_centrale: (mergedMeasurement.adiposita_centrale as string | null | undefined) || '',
+          struttura_muscolo_scheletrica:
+            (mergedMeasurement.struttura_muscolo_scheletrica as string | null | undefined) || '',
+          capacita_dispersione_calore:
+            (mergedMeasurement.capacita_dispersione_calore as string | null | undefined) || '',
 
           // Note
-          note: lastMeasurement.note || '',
+          note: (mergedMeasurement.note as string | null | undefined) || '',
 
           // Data: mantieni la data odierna (non quella della misurazione precedente)
           date: new Date().toISOString().split('T')[0],
@@ -389,169 +416,8 @@ export default function NuovoProgressoPage() {
     loadLastMeasurement()
   }, [supabase])
 
-  // Mappa i nomi dei campi del form ai range definiti
-  const getFieldRangeMapping = (
-    field: keyof FormData,
-  ): { category: keyof ProgressRanges; field: string } | null => {
-    const mapping: Record<string, { category: keyof ProgressRanges; field: string }> = {
-      // Valori principali
-      peso_kg: { category: 'valoriPrincipali', field: 'peso_kg' },
-      massa_grassa_percentuale: { category: 'valoriPrincipali', field: 'massa_grassa_percentuale' },
-      massa_grassa_kg: { category: 'valoriPrincipali', field: 'massa_grassa_kg' },
-      massa_magra_kg: { category: 'valoriPrincipali', field: 'massa_magra_kg' },
-      massa_muscolare_kg: { category: 'valoriPrincipali', field: 'massa_muscolare_kg' },
-      massa_muscolare_scheletrica_kg: {
-        category: 'valoriPrincipali',
-        field: 'massa_muscolare_scheletrica_kg',
-      },
-      // Circonferenze
-      collo_cm: { category: 'circonferenze', field: 'collo_cm' },
-      spalle_cm: { category: 'circonferenze', field: 'spalle_cm' },
-      torace_cm: { category: 'circonferenze', field: 'torace_cm' },
-      torace_inspirazione_cm: { category: 'circonferenze', field: 'torace_inspirazione_cm' },
-      braccio_rilassato_cm: { category: 'circonferenze', field: 'braccio_rilassato_cm' },
-      braccio_contratto_cm: { category: 'circonferenze', field: 'braccio_contratto_cm' },
-      avambraccio_cm: { category: 'circonferenze', field: 'avambraccio_cm' },
-      polso_cm: { category: 'circonferenze', field: 'polso_cm' },
-      vita_alta_cm: { category: 'circonferenze', field: 'vita_alta_cm' },
-      vita_cm: { category: 'circonferenze', field: 'vita_cm' },
-      addome_basso_cm: { category: 'circonferenze', field: 'addome_basso_cm' },
-      fianchi_cm: { category: 'circonferenze', field: 'fianchi_cm' },
-      glutei_cm: { category: 'circonferenze', field: 'glutei_cm' },
-      coscia_alta_cm: { category: 'circonferenze', field: 'coscia_alta_cm' },
-      coscia_media_cm: { category: 'circonferenze', field: 'coscia_media_cm' },
-      coscia_bassa_cm: { category: 'circonferenze', field: 'coscia_bassa_cm' },
-      ginocchio_cm: { category: 'circonferenze', field: 'ginocchio_cm' },
-      polpaccio_cm: { category: 'circonferenze', field: 'polpaccio_cm' },
-      caviglia_cm: { category: 'circonferenze', field: 'caviglia_cm' },
-      // Misure antropometriche
-      statura_allungata_cm: { category: 'misureAntropometriche', field: 'statura_allungata_cm' },
-      statura_seduto_cm: { category: 'misureAntropometriche', field: 'statura_da_seduto_cm' },
-      apertura_braccia_cm: { category: 'misureAntropometriche', field: 'apertura_braccia_cm' },
-      // Composizione corporea
-      massa_ossea_kg: { category: 'composizioneCorporea', field: 'massa_ossea_kg' },
-      massa_residuale_kg: { category: 'composizioneCorporea', field: 'massa_residuale_kg' },
-      // Perimetri corretti
-      braccio_corretto_cm: { category: 'perimetriCorretti', field: 'braccio_corretto_cm' },
-      coscia_corretta_cm: { category: 'perimetriCorretti', field: 'coscia_corretta_cm' },
-      gamba_corretta_cm: { category: 'perimetriCorretti', field: 'gamba_corretta_cm' },
-      // Indici
-      imc: { category: 'indici', field: 'imc' },
-      indice_vita_fianchi: { category: 'indici', field: 'vita_fianchi' },
-      indice_adiposo_muscolare: { category: 'indici', field: 'indice_adiposo_muscolare' },
-      indice_muscolo_osseo: { category: 'indici', field: 'indice_muscolo_osseo' },
-      indice_conicita: { category: 'indici', field: 'indice_conicita' },
-      indice_manouvrier: { category: 'indici', field: 'indice_manouvrier' },
-      indice_cormico: { category: 'indici', field: 'indice_cormico' },
-      area_superficie_corporea_m2: { category: 'indici', field: 'area_superficie_corporea_m2' },
-      // Metabolismo
-      metabolismo_basale_kcal: { category: 'metabolismo', field: 'metabolismo_basale_kcal' },
-      dispendio_energetico_totale_kcal: {
-        category: 'metabolismo',
-        field: 'dispendio_totale_kcal',
-      },
-      // Somatotipo
-      endomorfia: { category: 'somatotipo', field: 'endomorfia' },
-      mesomorfia: { category: 'somatotipo', field: 'mesomorfia' },
-      ectomorfia: { category: 'somatotipo', field: 'ectomorfia' },
-      // Pliche cutanee
-      plica_tricipite_mm: { category: 'plicheCutanee', field: 'tricipite_mm' },
-      plica_sottoscapolare_mm: { category: 'plicheCutanee', field: 'sottoscapolare_mm' },
-      plica_bicipite_mm: { category: 'plicheCutanee', field: 'bicipite_mm' },
-      plica_cresta_iliaca_mm: { category: 'plicheCutanee', field: 'cresta_iliaca_mm' },
-      plica_sopraspinale_mm: { category: 'plicheCutanee', field: 'sopraspinale_mm' },
-      plica_addominale_mm: { category: 'plicheCutanee', field: 'addominale_mm' },
-      plica_coscia_mm: { category: 'plicheCutanee', field: 'coscia_mm' },
-      plica_gamba_mm: { category: 'plicheCutanee', field: 'gamba_mm' },
-      // Diametri ossei
-      diametro_omero_cm: { category: 'diametriOssei', field: 'omero_cm' },
-      diametro_bistiloideo_cm: { category: 'diametriOssei', field: 'bistiloideo_cm' },
-      diametro_femore_cm: { category: 'diametriOssei', field: 'femore_cm' },
-    }
-    return mapping[field] || null
-  }
-
-  // Valida un campo contro il suo range
-  const validateFieldRange = (field: keyof FormData, value: string) => {
-    const mapping = getFieldRangeMapping(field)
-    if (!mapping || !value || value.trim() === '') {
-      setFieldValidation((prev) => ({ ...prev, [field]: { status: null } }))
-      return
-    }
-
-    const numValue = parseFloat(value)
-    if (isNaN(numValue)) {
-      setFieldValidation((prev) => ({ ...prev, [field]: { status: null } }))
-      return
-    }
-
-    const range = getValueRange(mapping.category, mapping.field)
-    if (!range) {
-      setFieldValidation((prev) => ({ ...prev, [field]: { status: null } }))
-      return
-    }
-
-    const isInRange = numValue >= range.min && numValue <= range.max
-
-    let status: 'valid' | 'warning' | 'error' | null = null
-    let message: string | undefined
-
-    if (isInRange) {
-      status = 'valid'
-    } else {
-      // Calcola quanto è fuori range (percentuale)
-      const rangeSize = range.max - range.min
-      const distanceFromMin = Math.abs(numValue - range.min)
-      const distanceFromMax = Math.abs(numValue - range.max)
-      const minDistance = Math.min(distanceFromMin, distanceFromMax)
-      const percentOut = (minDistance / rangeSize) * 100
-
-      if (percentOut > 50) {
-        status = 'error'
-        message = `Valore molto fuori range (${range.min}-${range.max}${range.unit || ''})`
-      } else {
-        status = 'warning'
-        message = `Valore fuori range ottimale (${range.min}-${range.max}${range.unit || ''})`
-      }
-    }
-
-    setFieldValidation((prev) => ({ ...prev, [field]: { status, message } }))
-  }
-
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Valida il campo in tempo reale
-    validateFieldRange(field, value)
-  }
-
-  // Helper per ottenere le props di validazione per un Input
-  const getValidationProps = (field: keyof FormData) => {
-    const validation = fieldValidation[field]
-    if (!validation || validation.status === null) {
-      return {
-        variant: 'default' as const,
-        errorMessage: undefined,
-        rightIcon: undefined,
-      }
-    }
-
-    return {
-      variant:
-        validation.status === 'error'
-          ? ('error' as const)
-          : validation.status === 'warning'
-            ? ('warning' as const)
-            : validation.status === 'valid'
-              ? ('success' as const)
-              : ('default' as const),
-      errorMessage: validation.message,
-      rightIcon:
-        validation.status === 'valid' ? (
-          <CheckCircle2 className="h-4 w-4 text-state-success" />
-        ) : validation.status === 'error' || validation.status === 'warning' ? (
-          <AlertTriangle className="h-4 w-4 text-state-error" />
-        ) : undefined,
-    }
   }
 
   const parseNumber = (value: string): number | null => {
@@ -581,7 +447,7 @@ export default function NuovoProgressoPage() {
     })
 
     // Verifica che esista un profilo con user_id = auth.uid()
-    // Usa .single() invece di .maybeSingle() per avere un errore più chiaro
+    // Usa .single() invece di .maybeSingle() per avere un errore piÃ¹ chiaro
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, user_id, email, nome, cognome, role')
@@ -597,11 +463,11 @@ export default function NuovoProgressoPage() {
         errorHint: profileError.hint,
       })
 
-      // Se il profilo non esiste (PGRST116), mostra un messaggio più chiaro
+      // Se il profilo non esiste (PGRST116), mostra un messaggio piÃ¹ chiaro
       if (profileError.code === 'PGRST116') {
         notifyError(
           'Errore',
-          "Il tuo profilo non è stato trovato nel sistema. Contatta l'amministratore.",
+          "Il tuo profilo non Ã¨ stato trovato nel sistema. Contatta l'amministratore.",
         )
       } else {
         notifyError('Errore', `Errore nel verificare il profilo: ${profileError.message}`)
@@ -633,43 +499,6 @@ export default function NuovoProgressoPage() {
       validationErrors.push(dateValidation.error || 'Data non valida')
     }
 
-    // Validazione peso (se inserito)
-    if (formData.peso_kg && formData.peso_kg.trim()) {
-      const weightValue = parseFloat(formData.peso_kg)
-      if (!isNaN(weightValue)) {
-        // Valida peso con range realistico (40-150 kg) e messaggi specifici
-        const weightValidation = validateWeight(weightValue, { min: 40, max: 150 })
-        if (!weightValidation.valid) {
-          validationErrors.push(
-            weightValidation.error || 'Il peso deve essere compreso tra 40 e 150 kg',
-          )
-        }
-      }
-    }
-
-    // Validazione circonferenze (se inserite) - range 0-200 cm
-    const circumferenceFields = [
-      { key: 'collo_cm', name: 'Collo' },
-      { key: 'spalle_cm', name: 'Spalle' },
-      { key: 'torace_cm', name: 'Torace' },
-      { key: 'vita_cm', name: 'Vita' },
-      { key: 'fianchi_cm', name: 'Fianchi' },
-      { key: 'coscia_media_cm', name: 'Coscia' },
-    ]
-
-    for (const field of circumferenceFields) {
-      const value = formData[field.key as keyof FormData] as string
-      if (value && value.trim()) {
-        const numValue = parseFloat(value)
-        if (!isNaN(numValue)) {
-          const rangeValidation = validateNumberRange(numValue, 0, 200, field.name)
-          if (!rangeValidation.valid) {
-            validationErrors.push(rangeValidation.error || `${field.name} non valido`)
-          }
-        }
-      }
-    }
-
     if (validationErrors.length > 0) {
       notifyError('Errore validazione', validationErrors.join(', '))
       return
@@ -678,11 +507,12 @@ export default function NuovoProgressoPage() {
     setLoading(true)
     try {
       // Prepara i dati per l'inserimento
-      // progress_logs.athlete_id è FK a profiles.user_id; usare profile.user_id o authUser.id
+      // progress_logs.athlete_id → profiles.user_id (auth uid). created_by_profile_id richiesto da molte policy RLS.
       const insertData: Record<string, unknown> = {
         athlete_id: profile.user_id ?? authUser.id,
+        created_by_profile_id: profile.id,
         date: formData.date,
-        // Valori principali - mappa peso_kg a weight_kg per compatibilità
+        // Valori principali - mappa peso_kg a weight_kg per compatibilitÃ 
         weight_kg: parseNumber(formData.peso_kg),
         massa_grassa_percentuale: parseNumber(formData.massa_grassa_percentuale),
         massa_grassa_kg: parseNumber(formData.massa_grassa_kg),
@@ -699,14 +529,14 @@ export default function NuovoProgressoPage() {
         massa_ossea_kg: parseNumber(formData.massa_ossea_kg),
         massa_residuale_kg: parseNumber(formData.massa_residuale_kg),
 
-        // Circonferenze - mappa torace_cm a chest_cm, vita_cm a waist_cm, fianchi_cm a hips_cm per compatibilità
+        // Circonferenze - mappa torace_cm a chest_cm, vita_cm a waist_cm, fianchi_cm a hips_cm per compatibilitÃ 
         collo_cm: parseNumber(formData.collo_cm),
         spalle_cm: parseNumber(formData.spalle_cm),
         chest_cm: parseNumber(formData.torace_cm), // Mappa a chest_cm esistente
         torace_inspirazione_cm: parseNumber(formData.torace_inspirazione_cm),
         braccio_rilassato_cm: parseNumber(formData.braccio_rilassato_cm),
         braccio_contratto_cm: parseNumber(formData.braccio_contratto_cm),
-        biceps_cm: parseNumber(formData.braccio_contratto_cm), // Mappa anche a biceps_cm per compatibilità
+        biceps_cm: parseNumber(formData.braccio_contratto_cm), // Mappa anche a biceps_cm per compatibilitÃ 
         avambraccio_cm: parseNumber(formData.avambraccio_cm),
         polso_cm: parseNumber(formData.polso_cm),
         vita_alta_cm: parseNumber(formData.vita_alta_cm),
@@ -716,7 +546,7 @@ export default function NuovoProgressoPage() {
         glutei_cm: parseNumber(formData.glutei_cm),
         coscia_alta_cm: parseNumber(formData.coscia_alta_cm),
         coscia_media_cm: parseNumber(formData.coscia_media_cm),
-        thighs_cm: parseNumber(formData.coscia_media_cm), // Mappa anche a thighs_cm per compatibilità
+        thighs_cm: parseNumber(formData.coscia_media_cm), // Mappa anche a thighs_cm per compatibilitÃ 
         coscia_bassa_cm: parseNumber(formData.coscia_bassa_cm),
         ginocchio_cm: parseNumber(formData.ginocchio_cm),
         polpaccio_cm: parseNumber(formData.polpaccio_cm),
@@ -781,71 +611,55 @@ export default function NuovoProgressoPage() {
         Object.entries(insertData).filter(([, value]) => value !== null && value !== undefined),
       )
 
-      logger.debug('Inserting progress log', {
+      logger.debug('Inserting progress log (API)', {
         athleteId: authUser.id,
         profileId: profile.id,
-        profileUserId: profile.user_id,
         date: formData.date,
         fieldsCount: Object.keys(filteredInsertData).length,
-        athleteIdInData: filteredInsertData.athlete_id,
-        sampleFields: Object.keys(filteredInsertData).slice(0, 10),
       })
 
-      const { error } = await supabase
-        .from('progress_logs')
-        .insert(filteredInsertData as never)
-        .select()
+      const apiRes = await fetch('/api/athlete/progress-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ payload: filteredInsertData }),
+      })
 
-      if (error) {
-        // Log completo dell'errore con tutti i dettagli
-        console.error('=== ERRORE SUPABASE COMPLETO ===', {
-          error: error,
-          errorCode: error.code,
-          errorMessage: error.message,
-          errorDetails: error.details,
-          errorHint: error.hint,
+      const apiJson = (await apiRes.json().catch(() => ({}))) as {
+        error?: string
+        code?: string
+        details?: string | null
+        hint?: string
+      }
+
+      if (!apiRes.ok) {
+        const errCode = apiJson.code
+        const errMsg = apiJson.error || 'Errore nel salvataggio'
+        logger.error('Error saving progress (API)', new Error(errMsg), {
           athleteId: authUser.id,
-          profileId: profile.id,
-          profileUserId: profile.user_id,
-          athleteIdInData: filteredInsertData.athlete_id,
-          athleteIdMatch: authUser.id === filteredInsertData.athlete_id,
-          profileUserIdMatch: profile.user_id === filteredInsertData.athlete_id,
-          insertDataKeys: Object.keys(filteredInsertData),
-          insertDataSample: Object.fromEntries(Object.entries(filteredInsertData).slice(0, 20)),
+          status: apiRes.status,
+          errorCode: errCode,
+          apiJson,
         })
 
-        logger.error('Error saving progress', error, {
-          athleteId: authUser.id,
-          profileId: profile.id,
-          profileUserId: profile.user_id,
-          athleteIdInData: filteredInsertData.athlete_id,
-          errorCode: error.code,
-          errorMessage: error.message,
-          errorDetails: error.details,
-          errorHint: error.hint,
-          insertDataKeys: Object.keys(filteredInsertData),
-          insertDataSample: Object.fromEntries(
-            Object.entries(filteredInsertData).slice(0, 15), // Aumentato per vedere athlete_id
-          ),
-        })
-
-        // Messaggio di errore più dettagliato
-        let errorMessage = error.message || 'Errore sconosciuto'
-        if (
-          error.code === '42501' ||
-          error.message?.includes('permission') ||
-          error.message?.includes('row-level security')
+        let errorMessage = errMsg
+        if (apiJson.hint) {
+          errorMessage = `${errMsg}\n${apiJson.hint}`
+        } else if (
+          errCode === '42501' ||
+          errMsg.includes('permission') ||
+          errMsg.includes('row-level security')
         ) {
           errorMessage =
             'Non hai i permessi per salvare i progressi. Verifica le policy RLS in Supabase.'
-        } else if (error.code === '23503' || error.message?.includes('foreign key')) {
+        } else if (errCode === '23503' || errMsg.includes('foreign key')) {
           errorMessage = "Errore di riferimento: verifica che l'atleta esista nel sistema."
-        } else if (error.code === '23505' || error.message?.includes('unique')) {
+        } else if (errCode === '23505' || errMsg.includes('unique')) {
           errorMessage = 'Esiste già un progresso per questa data.'
-        } else if (error.code === '23502' || error.message?.includes('not null')) {
+        } else if (errCode === '23502' || errMsg.includes('not null')) {
           errorMessage = 'Alcuni campi obbligatori sono mancanti.'
-        } else if (error.details) {
-          errorMessage = `${error.message}. Dettagli: ${error.details}`
+        } else if (apiJson.details) {
+          errorMessage = `${errMsg}. Dettagli: ${apiJson.details}`
         }
 
         notifyError('Errore nel salvare i progressi', errorMessage)
@@ -870,7 +684,7 @@ export default function NuovoProgressoPage() {
   if (loadingLastMeasurement) {
     return (
       <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
-        <div className="space-y-4 px-3 pt-24 pb-24 py-4 sm:px-4 min-[834px]:px-6">
+        <div className="space-y-4 px-3 pb-24 py-4 sm:px-4 min-[834px]:px-6">
           <PageHeaderFixed
             variant="chat"
             title="Nuova Misurazione"
@@ -880,7 +694,7 @@ export default function NuovoProgressoPage() {
           />
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <CardContent className="p-12 text-center relative z-10">
-              <div className="mb-3 text-4xl opacity-50">📊</div>
+              <div className="mb-3 text-4xl opacity-50">ðŸ“Š</div>
               <p className="text-text-secondary text-sm font-medium">Caricamento dati...</p>
             </CardContent>
           </Card>
@@ -891,7 +705,7 @@ export default function NuovoProgressoPage() {
 
   return (
     <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
-      <div className="space-y-4 px-3 pt-24 pb-24 py-4 sm:px-4 min-[834px]:px-6">
+      <div className="space-y-4 px-3 pb-24 py-4 sm:px-4 min-[834px]:px-6">
         <PageHeaderFixed
           variant="chat"
           title="Nuova Misurazione"
@@ -942,70 +756,56 @@ export default function NuovoProgressoPage() {
                   label="Peso (kg)"
                   type="number"
                   step="0.1"
-                  min="20"
-                  max="300"
                   value={formData.peso_kg}
                   onChange={(e) => handleInputChange('peso_kg', e.target.value)}
                   placeholder="es. 75.5"
-                  {...getValidationProps('peso_kg')}
                 />
 
                 <Input
                   label="Massa Grassa (%)"
                   type="number"
                   step="0.1"
-                  min="0"
-                  max="100"
                   value={formData.massa_grassa_percentuale}
                   onChange={(e) => handleInputChange('massa_grassa_percentuale', e.target.value)}
                   placeholder="es. 15.5"
-                  {...getValidationProps('massa_grassa_percentuale')}
                 />
 
                 <Input
                   label="Massa Grassa (kg)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.massa_grassa_kg}
                   onChange={(e) => handleInputChange('massa_grassa_kg', e.target.value)}
                   placeholder="es. 11.6"
-                  {...getValidationProps('massa_grassa_kg')}
                 />
 
                 <Input
                   label="Massa Magra (kg)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.massa_magra_kg}
                   onChange={(e) => handleInputChange('massa_magra_kg', e.target.value)}
                   placeholder="es. 63.9"
-                  {...getValidationProps('massa_magra_kg')}
                 />
 
                 <Input
                   label="Massa Muscolare (kg)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.massa_muscolare_kg}
                   onChange={(e) => handleInputChange('massa_muscolare_kg', e.target.value)}
                   placeholder="es. 58.5"
-                  {...getValidationProps('massa_muscolare_kg')}
                 />
 
                 <Input
                   label="Massa Muscolare Scheletrica (kg)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.massa_muscolare_scheletrica_kg}
                   onChange={(e) =>
                     handleInputChange('massa_muscolare_scheletrica_kg', e.target.value)
                   }
                   placeholder="es. 30.2"
-                  {...getValidationProps('massa_muscolare_scheletrica_kg')}
                 />
               </div>
             </CardContent>
@@ -1027,209 +827,171 @@ export default function NuovoProgressoPage() {
                   label="Collo"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.collo_cm}
                   onChange={(e) => handleInputChange('collo_cm', e.target.value)}
                   placeholder="es. 38.5"
-                  {...getValidationProps('collo_cm')}
                 />
 
                 <Input
                   label="Spalle"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.spalle_cm}
                   onChange={(e) => handleInputChange('spalle_cm', e.target.value)}
                   placeholder="es. 110.0"
-                  {...getValidationProps('spalle_cm')}
                 />
 
                 <Input
                   label="Torace"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.torace_cm}
                   onChange={(e) => handleInputChange('torace_cm', e.target.value)}
                   placeholder="es. 100.0"
-                  {...getValidationProps('torace_cm')}
                 />
 
                 <Input
                   label="Torace in Inspirazione"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.torace_inspirazione_cm}
                   onChange={(e) => handleInputChange('torace_inspirazione_cm', e.target.value)}
                   placeholder="es. 105.0"
-                  {...getValidationProps('torace_inspirazione_cm')}
                 />
 
                 <Input
                   label="Braccio Rilassato"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.braccio_rilassato_cm}
                   onChange={(e) => handleInputChange('braccio_rilassato_cm', e.target.value)}
                   placeholder="es. 32.0"
-                  {...getValidationProps('braccio_rilassato_cm')}
                 />
 
                 <Input
                   label="Braccio Contratto"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.braccio_contratto_cm}
                   onChange={(e) => handleInputChange('braccio_contratto_cm', e.target.value)}
                   placeholder="es. 36.5"
-                  {...getValidationProps('braccio_contratto_cm')}
                 />
 
                 <Input
                   label="Avambraccio"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.avambraccio_cm}
                   onChange={(e) => handleInputChange('avambraccio_cm', e.target.value)}
                   placeholder="es. 28.0"
-                  {...getValidationProps('avambraccio_cm')}
                 />
 
                 <Input
                   label="Polso"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.polso_cm}
                   onChange={(e) => handleInputChange('polso_cm', e.target.value)}
                   placeholder="es. 17.0"
-                  {...getValidationProps('polso_cm')}
                 />
 
                 <Input
                   label="Vita Alta"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.vita_alta_cm}
                   onChange={(e) => handleInputChange('vita_alta_cm', e.target.value)}
                   placeholder="es. 80.0"
-                  {...getValidationProps('vita_alta_cm')}
                 />
 
                 <Input
                   label="Vita"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.vita_cm}
                   onChange={(e) => handleInputChange('vita_cm', e.target.value)}
                   placeholder="es. 82.0"
-                  {...getValidationProps('vita_cm')}
                 />
 
                 <Input
                   label="Addome Basso"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.addome_basso_cm}
                   onChange={(e) => handleInputChange('addome_basso_cm', e.target.value)}
                   placeholder="es. 85.0"
-                  {...getValidationProps('addome_basso_cm')}
                 />
 
                 <Input
                   label="Fianchi"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.fianchi_cm}
                   onChange={(e) => handleInputChange('fianchi_cm', e.target.value)}
                   placeholder="es. 95.0"
-                  {...getValidationProps('fianchi_cm')}
                 />
 
                 <Input
                   label="Glutei"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.glutei_cm}
                   onChange={(e) => handleInputChange('glutei_cm', e.target.value)}
                   placeholder="es. 98.0"
-                  {...getValidationProps('glutei_cm')}
                 />
 
                 <Input
                   label="Coscia Alta"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.coscia_alta_cm}
                   onChange={(e) => handleInputChange('coscia_alta_cm', e.target.value)}
                   placeholder="es. 58.0"
-                  {...getValidationProps('coscia_alta_cm')}
                 />
 
                 <Input
                   label="Coscia Media"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.coscia_media_cm}
                   onChange={(e) => handleInputChange('coscia_media_cm', e.target.value)}
                   placeholder="es. 56.0"
-                  {...getValidationProps('coscia_media_cm')}
                 />
 
                 <Input
                   label="Coscia Bassa"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.coscia_bassa_cm}
                   onChange={(e) => handleInputChange('coscia_bassa_cm', e.target.value)}
                   placeholder="es. 54.0"
-                  {...getValidationProps('coscia_bassa_cm')}
                 />
 
                 <Input
                   label="Ginocchio"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.ginocchio_cm}
                   onChange={(e) => handleInputChange('ginocchio_cm', e.target.value)}
                   placeholder="es. 38.0"
-                  {...getValidationProps('ginocchio_cm')}
                 />
 
                 <Input
                   label="Polpaccio"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.polpaccio_cm}
                   onChange={(e) => handleInputChange('polpaccio_cm', e.target.value)}
                   placeholder="es. 38.5"
-                  {...getValidationProps('polpaccio_cm')}
                 />
 
                 <Input
                   label="Caviglia"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.caviglia_cm}
                   onChange={(e) => handleInputChange('caviglia_cm', e.target.value)}
                   placeholder="es. 22.0"
-                  {...getValidationProps('caviglia_cm')}
                 />
               </div>
             </CardContent>
@@ -1251,31 +1013,25 @@ export default function NuovoProgressoPage() {
                   label="Statura Allungata (cm)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.statura_allungata_cm}
                   onChange={(e) => handleInputChange('statura_allungata_cm', e.target.value)}
                   placeholder="es. 182.2"
-                  {...getValidationProps('statura_allungata_cm')}
                 />
                 <Input
                   label="Statura da Seduto (cm)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.statura_seduto_cm}
                   onChange={(e) => handleInputChange('statura_seduto_cm', e.target.value)}
                   placeholder="es. 95.0"
-                  {...getValidationProps('statura_seduto_cm')}
                 />
                 <Input
                   label="Apertura Braccia (cm)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.apertura_braccia_cm}
                   onChange={(e) => handleInputChange('apertura_braccia_cm', e.target.value)}
                   placeholder="es. 180.0"
-                  {...getValidationProps('apertura_braccia_cm')}
                 />
               </div>
             </CardContent>
@@ -1297,21 +1053,17 @@ export default function NuovoProgressoPage() {
                   label="Massa Ossea (kg)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.massa_ossea_kg}
                   onChange={(e) => handleInputChange('massa_ossea_kg', e.target.value)}
                   placeholder="es. 14.22"
-                  {...getValidationProps('massa_ossea_kg')}
                 />
                 <Input
                   label="Massa Residuale (kg)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.massa_residuale_kg}
                   onChange={(e) => handleInputChange('massa_residuale_kg', e.target.value)}
                   placeholder="es. 15.89"
-                  {...getValidationProps('massa_residuale_kg')}
                 />
               </div>
             </CardContent>
@@ -1333,31 +1085,25 @@ export default function NuovoProgressoPage() {
                   label="Braccio Corretto"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.braccio_corretto_cm}
                   onChange={(e) => handleInputChange('braccio_corretto_cm', e.target.value)}
                   placeholder="es. 29.7"
-                  {...getValidationProps('braccio_corretto_cm')}
                 />
                 <Input
                   label="Coscia Corretta"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.coscia_corretta_cm}
                   onChange={(e) => handleInputChange('coscia_corretta_cm', e.target.value)}
                   placeholder="es. 48.63"
-                  {...getValidationProps('coscia_corretta_cm')}
                 />
                 <Input
                   label="Gamba Corretta"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.gamba_corretta_cm}
                   onChange={(e) => handleInputChange('gamba_corretta_cm', e.target.value)}
                   placeholder="es. 36.59"
-                  {...getValidationProps('gamba_corretta_cm')}
                 />
               </div>
             </CardContent>
@@ -1376,54 +1122,44 @@ export default function NuovoProgressoPage() {
             <CardContent className="relative z-10 space-y-3 pt-2.5">
               <div className="grid grid-cols-1 gap-3">
                 <Input
-                  label="IMC (kg/m²)"
+                  label="IMC (kg/mÂ²)"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.imc}
                   onChange={(e) => handleInputChange('imc', e.target.value)}
                   placeholder="es. 32.1"
-                  {...getValidationProps('imc')}
                 />
                 <Input
                   label="Indice Vita/Fianchi"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.indice_vita_fianchi}
                   onChange={(e) => handleInputChange('indice_vita_fianchi', e.target.value)}
                   placeholder="es. 0.84"
-                  {...getValidationProps('indice_vita_fianchi')}
                 />
                 <Input
                   label="Indice Adiposo-Muscolare"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.indice_adiposo_muscolare}
                   onChange={(e) => handleInputChange('indice_adiposo_muscolare', e.target.value)}
                   placeholder="es. 1.17"
-                  {...getValidationProps('indice_adiposo_muscolare')}
                 />
                 <Input
                   label="Indice Muscolo/Osseo"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.indice_muscolo_osseo}
                   onChange={(e) => handleInputChange('indice_muscolo_osseo', e.target.value)}
                   placeholder="es. 2.48"
-                  {...getValidationProps('indice_muscolo_osseo')}
                 />
                 <Input
-                  label="Indice di Conicità"
+                  label="Indice di ConicitÃ "
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.indice_conicita}
                   onChange={(e) => handleInputChange('indice_conicita', e.target.value)}
                   placeholder="es. 1.16"
-                  {...getValidationProps('indice_conicita')}
                 />
                 <Input
                   label="Indice Manouvrier"
@@ -1432,27 +1168,22 @@ export default function NuovoProgressoPage() {
                   value={formData.indice_manouvrier}
                   onChange={(e) => handleInputChange('indice_manouvrier', e.target.value)}
                   placeholder="es. -2.0"
-                  {...getValidationProps('indice_manouvrier')}
                 />
                 <Input
                   label="Indice Cormico"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.indice_cormico}
                   onChange={(e) => handleInputChange('indice_cormico', e.target.value)}
                   placeholder="es. 52.0"
-                  {...getValidationProps('indice_cormico')}
                 />
                 <Input
-                  label="Area Superficie Corporea (m²)"
+                  label="Area Superficie Corporea (mÂ²)"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.area_superficie_corporea_m2}
                   onChange={(e) => handleInputChange('area_superficie_corporea_m2', e.target.value)}
                   placeholder="es. 2.28"
-                  {...getValidationProps('area_superficie_corporea_m2')}
                 />
               </div>
             </CardContent>
@@ -1474,27 +1205,23 @@ export default function NuovoProgressoPage() {
                   label="Metabolismo Basale (kcal)"
                   type="number"
                   step="1"
-                  min="0"
                   value={formData.metabolismo_basale_kcal}
                   onChange={(e) => handleInputChange('metabolismo_basale_kcal', e.target.value)}
                   placeholder="es. 2235"
-                  {...getValidationProps('metabolismo_basale_kcal')}
                 />
                 <Input
                   label="Dispendio Energetico Totale (kcal)"
                   type="number"
                   step="1"
-                  min="0"
                   value={formData.dispendio_energetico_totale_kcal}
                   onChange={(e) =>
                     handleInputChange('dispendio_energetico_totale_kcal', e.target.value)
                   }
                   placeholder="es. 3352"
-                  {...getValidationProps('dispendio_energetico_totale_kcal')}
                 />
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    Livello Attività
+                    Livello AttivitÃ 
                   </label>
                   <select
                     className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
@@ -1530,31 +1257,25 @@ export default function NuovoProgressoPage() {
                   label="Endomorfia"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.endomorfia}
                   onChange={(e) => handleInputChange('endomorfia', e.target.value)}
                   placeholder="es. 7.10"
-                  {...getValidationProps('endomorfia')}
                 />
                 <Input
                   label="Mesomorfia"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.mesomorfia}
                   onChange={(e) => handleInputChange('mesomorfia', e.target.value)}
                   placeholder="es. 7.25"
-                  {...getValidationProps('mesomorfia')}
                 />
                 <Input
                   label="Ectomorfia"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={formData.ectomorfia}
                   onChange={(e) => handleInputChange('ectomorfia', e.target.value)}
                   placeholder="es. 0.16"
-                  {...getValidationProps('ectomorfia')}
                 />
               </div>
             </CardContent>
@@ -1576,81 +1297,65 @@ export default function NuovoProgressoPage() {
                   label="Tricipite"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_tricipite_mm}
                   onChange={(e) => handleInputChange('plica_tricipite_mm', e.target.value)}
                   placeholder="es. 28"
-                  {...getValidationProps('plica_tricipite_mm')}
                 />
                 <Input
                   label="Sottoscapolare"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_sottoscapolare_mm}
                   onChange={(e) => handleInputChange('plica_sottoscapolare_mm', e.target.value)}
                   placeholder="es. 25"
-                  {...getValidationProps('plica_sottoscapolare_mm')}
                 />
                 <Input
                   label="Bicipite"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_bicipite_mm}
                   onChange={(e) => handleInputChange('plica_bicipite_mm', e.target.value)}
                   placeholder="es. 14"
-                  {...getValidationProps('plica_bicipite_mm')}
                 />
                 <Input
                   label="Cresta Iliaca"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_cresta_iliaca_mm}
                   onChange={(e) => handleInputChange('plica_cresta_iliaca_mm', e.target.value)}
                   placeholder="es. 39"
-                  {...getValidationProps('plica_cresta_iliaca_mm')}
                 />
                 <Input
                   label="Sopraspinale"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_sopraspinale_mm}
                   onChange={(e) => handleInputChange('plica_sopraspinale_mm', e.target.value)}
                   placeholder="es. 30"
-                  {...getValidationProps('plica_sopraspinale_mm')}
                 />
                 <Input
                   label="Addominale"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_addominale_mm}
                   onChange={(e) => handleInputChange('plica_addominale_mm', e.target.value)}
                   placeholder="es. 38"
-                  {...getValidationProps('plica_addominale_mm')}
                 />
                 <Input
                   label="Coscia"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_coscia_mm}
                   onChange={(e) => handleInputChange('plica_coscia_mm', e.target.value)}
                   placeholder="es. 33"
-                  {...getValidationProps('plica_coscia_mm')}
                 />
                 <Input
                   label="Gamba"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.plica_gamba_mm}
                   onChange={(e) => handleInputChange('plica_gamba_mm', e.target.value)}
                   placeholder="es. 22"
-                  {...getValidationProps('plica_gamba_mm')}
                 />
               </div>
             </CardContent>
@@ -1672,31 +1377,25 @@ export default function NuovoProgressoPage() {
                   label="Omero"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.diametro_omero_cm}
                   onChange={(e) => handleInputChange('diametro_omero_cm', e.target.value)}
                   placeholder="es. 7.8"
-                  {...getValidationProps('diametro_omero_cm')}
                 />
                 <Input
                   label="Bistiloideo"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.diametro_bistiloideo_cm}
                   onChange={(e) => handleInputChange('diametro_bistiloideo_cm', e.target.value)}
                   placeholder="es. 6.2"
-                  {...getValidationProps('diametro_bistiloideo_cm')}
                 />
                 <Input
                   label="Femore"
                   type="number"
                   step="0.1"
-                  min="0"
                   value={formData.diametro_femore_cm}
                   onChange={(e) => handleInputChange('diametro_femore_cm', e.target.value)}
                   placeholder="es. 10.7"
-                  {...getValidationProps('diametro_femore_cm')}
                 />
               </div>
             </CardContent>
@@ -1732,7 +1431,7 @@ export default function NuovoProgressoPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    Adiposità Centrale
+                    AdipositÃ  Centrale
                   </label>
                   <select
                     className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
@@ -1761,7 +1460,7 @@ export default function NuovoProgressoPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    Capacità di Dispersione del Calore
+                    CapacitÃ  di Dispersione del Calore
                   </label>
                   <textarea
                     className="bg-white/[0.04] text-text-primary placeholder:text-text-tertiary w-full rounded-lg border border-white/10 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
@@ -1770,7 +1469,7 @@ export default function NuovoProgressoPage() {
                     onChange={(e) =>
                       handleInputChange('capacita_dispersione_calore', e.target.value)
                     }
-                    placeholder="es. Capacità di dispersione del calore elevata"
+                    placeholder="es. CapacitÃ  di dispersione del calore elevata"
                   />
                 </div>
               </div>
@@ -1795,7 +1494,7 @@ export default function NuovoProgressoPage() {
             </CardContent>
           </Card>
 
-          <div className="flex flex-col gap-2 pt-4 sm:pt-6">
+          <div className="flex flex-col gap-2">
             <Button
               type="submit"
               loading={loading}

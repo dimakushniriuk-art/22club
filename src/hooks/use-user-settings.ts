@@ -147,9 +147,9 @@ export function useUserSettings() {
 
         // Type assertion per settingsData
         type UserSettingsRow = {
-          notifications?: NotificationSettings | null
-          privacy?: PrivacySettings | null
-          account?: AccountSettings | null
+          notification_settings?: NotificationSettings | null
+          privacy_settings?: PrivacySettings | null
+          account_settings?: AccountSettings | null
           two_factor_enabled?: boolean | null
           two_factor_secret?: string | null
           two_factor_backup_codes?: string[] | null
@@ -163,10 +163,12 @@ export function useUserSettings() {
           // Gestisci caso in cui colonne JSONB potrebbero non esistere ancora
           setSettings({
             notifications:
-              (typedSettingsData.notifications as NotificationSettings | null) ||
+              (typedSettingsData.notification_settings as NotificationSettings | null) ||
               DEFAULT_NOTIFICATIONS,
-            privacy: (typedSettingsData.privacy as PrivacySettings | null) || DEFAULT_PRIVACY,
-            account: (typedSettingsData.account as AccountSettings | null) || DEFAULT_ACCOUNT,
+            privacy:
+              (typedSettingsData.privacy_settings as PrivacySettings | null) || DEFAULT_PRIVACY,
+            account:
+              (typedSettingsData.account_settings as AccountSettings | null) || DEFAULT_ACCOUNT,
             two_factor_enabled: typedSettingsData.two_factor_enabled ?? false,
             two_factor_secret: typedSettingsData.two_factor_secret ?? null,
             two_factor_backup_codes: typedSettingsData.two_factor_backup_codes ?? null,
@@ -187,9 +189,9 @@ export function useUserSettings() {
       } else if (data) {
         // Type assertion per data
         type UserSettingsRow = {
-          notifications?: NotificationSettings | null
-          privacy?: PrivacySettings | null
-          account?: AccountSettings | null
+          notification_settings?: NotificationSettings | null
+          privacy_settings?: PrivacySettings | null
+          account_settings?: AccountSettings | null
           two_factor_enabled?: boolean | null
           two_factor_secret?: string | null
           two_factor_backup_codes?: string[] | null
@@ -202,9 +204,11 @@ export function useUserSettings() {
         // Gestisci caso in cui colonne JSONB potrebbero non esistere ancora
         setSettings({
           notifications:
-            (typedData.notifications as NotificationSettings | null) || DEFAULT_NOTIFICATIONS,
-          privacy: (typedData.privacy as PrivacySettings | null) || DEFAULT_PRIVACY,
-          account: (typedData.account as AccountSettings | null) || DEFAULT_ACCOUNT,
+            (typedData.notification_settings as NotificationSettings | null) || DEFAULT_NOTIFICATIONS,
+          privacy:
+            (typedData.privacy_settings as PrivacySettings | null) || DEFAULT_PRIVACY,
+          account:
+            (typedData.account_settings as AccountSettings | null) || DEFAULT_ACCOUNT,
           two_factor_enabled: typedData.two_factor_enabled ?? false,
           two_factor_secret: typedData.two_factor_secret ?? null,
           two_factor_backup_codes: typedData.two_factor_backup_codes ?? null,
@@ -248,7 +252,7 @@ export function useUserSettings() {
       const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
         {
           user_id: authUser.id,
-          notifications,
+          notification_settings: notifications,
         },
         {
           onConflict: 'user_id',
@@ -259,7 +263,7 @@ export function useUserSettings() {
         // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
         if (updateError.code === '42703') {
           throw new Error(
-            'Colonna notifications non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+            'Colonna notification_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
           )
         }
         throw updateError
@@ -293,7 +297,7 @@ export function useUserSettings() {
       const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
         {
           user_id: authUser.id,
-          privacy,
+          privacy_settings: privacy,
         },
         {
           onConflict: 'user_id',
@@ -304,7 +308,7 @@ export function useUserSettings() {
         // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
         if (updateError.code === '42703') {
           throw new Error(
-            'Colonna privacy non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+            'Colonna privacy_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
           )
         }
         throw updateError
@@ -338,7 +342,7 @@ export function useUserSettings() {
       const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
         {
           user_id: authUser.id,
-          account,
+          account_settings: account,
         },
         {
           onConflict: 'user_id',
@@ -349,7 +353,7 @@ export function useUserSettings() {
         // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
         if (updateError.code === '42703') {
           throw new Error(
-            'Colonna account non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+            'Colonna account_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
           )
         }
         throw updateError

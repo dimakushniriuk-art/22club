@@ -26,6 +26,7 @@ export interface ExerciseStat {
     reps?: number | null
     execution_time_sec?: number | null
     set_number: number
+    workout_log_id?: string | null
   }>
 }
 
@@ -192,7 +193,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         const { data: workoutSets, error: setsError } = await supabase
           .from('workout_sets')
           .select(
-            'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, execution_time_sec',
+            'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, execution_time_sec, workout_log_id',
           )
           .in('workout_day_exercise_id', workoutDayExerciseIds)
           .not('completed_at', 'is', null)
@@ -210,6 +211,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           weight_kg?: number | null
           completed_at: string | null
           execution_time_sec?: number | null
+          workout_log_id?: string | null
         }>
 
         // Set con almeno un dato utile (peso, reps o tempo)
@@ -262,6 +264,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             reps: set.reps ?? null,
             execution_time_sec: set.execution_time_sec ?? null,
             set_number: set.set_number,
+            workout_log_id: set.workout_log_id ?? null,
           })
         }
 
@@ -292,8 +295,11 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         const allDates: string[] = []
 
         for (const [, stat] of exerciseStatsMap.entries()) {
+          const sessionKeys = new Set(
+            stat.dataPoints.map((dp) => dp.workout_log_id ?? `${dp.date}-${dp.set_number}`),
+          )
           const datesSet = new Set(stat.dataPoints.map((dp) => dp.date))
-          stat.total_sessions = datesSet.size
+          stat.total_sessions = sessionKeys.size
           stat.total_sets = stat.dataPoints.length
 
           const weights = stat.dataPoints.map((dp) => dp.weight_kg).filter((w) => w > 0)

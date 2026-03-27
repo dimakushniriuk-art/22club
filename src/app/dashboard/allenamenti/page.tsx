@@ -11,7 +11,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 import { Plus, Search, Calendar, User, TrendingUp, CheckCircle, Clock } from 'lucide-react'
 import { useAllenamenti } from '@/hooks/use-allenamenti'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import type { AllenamentoFilters, AllenamentoSort } from '@/types/allenamento'
 
@@ -222,14 +221,6 @@ export default function AllenamentiDashboardPage() {
 
           <TabsContent value={activeTab}>
             <div className="space-y-4">
-              {isLoadingUI && (
-                <Card variant="trainer">
-                  <CardContent className="py-10">
-                    <LoadingState message="Caricamento allenamenti..." />
-                  </CardContent>
-                </Card>
-              )}
-
               {!isLoadingUI && error && (
                 <Card variant="trainer">
                   <CardContent className="py-6">
@@ -425,7 +416,7 @@ export default function AllenamentiDashboardPage() {
 
       {/* Modals - Lazy loaded solo quando aperti */}
       {showFiltriAvanzati && (
-        <Suspense fallback={<LoadingState message="Caricamento filtri avanzati..." />}>
+        <Suspense fallback={null}>
           <AllenamentiFiltriAvanzati
             open={showFiltriAvanzati}
             onOpenChange={setShowFiltriAvanzati}
@@ -436,7 +427,7 @@ export default function AllenamentiDashboardPage() {
       )}
 
       {selectedAllenamento && (
-        <Suspense fallback={<LoadingState message="Caricamento dettagli allenamento..." />}>
+        <Suspense fallback={null}>
           <AllenamentoDettaglioModal
             allenamentoId={selectedAllenamento}
             open={selectedAllenamento !== null}

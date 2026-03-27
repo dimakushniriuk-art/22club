@@ -6,9 +6,7 @@ import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
 import { Card, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 import { useToast } from '@/components/ui/toast'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
-import { ProfiloPageSkeleton } from '@/components/dashboard/profilo-page-skeleton'
 import { usePTProfile } from '@/hooks/use-pt-profile'
 import { usePTSettings } from '@/hooks/use-pt-settings'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
@@ -74,8 +72,6 @@ const ProfiloSaveSuccessCard = () => (
     </CardContent>
   </Card>
 )
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 export default function MassaggiatoreProfiloPage() {
   const { signOut } = useAuth()
@@ -227,14 +223,20 @@ export default function MassaggiatoreProfiloPage() {
   }, [handleSaveSettings, addToast])
 
   if (showGuardLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
-      </div>
-    )
+    return null
   }
 
-  if (loading) return <ProfiloPageSkeleton />
+  if (loading) {
+    return (
+      <StaffContentLayout
+        title="Profilo"
+        description="Gestisci il tuo profilo, notifiche e impostazioni"
+        theme="amber"
+      >
+        {null}
+      </StaffContentLayout>
+    )
+  }
 
   return (
     <StaffContentLayout
@@ -279,7 +281,7 @@ export default function MassaggiatoreProfiloPage() {
 
         <TabsContent value="profilo">
           {profileData && (
-            <Suspense fallback={<LoadingState message="Caricamento profilo..." />}>
+            <Suspense fallback={null}>
               <PTProfileTab
                 profile={profileData}
                 isEditing={isEditing}
@@ -299,7 +301,7 @@ export default function MassaggiatoreProfiloPage() {
         </TabsContent>
 
         <TabsContent value="notifiche">
-          <Suspense fallback={<LoadingState message="Caricamento notifiche..." />}>
+          <Suspense fallback={null}>
             <PTNotificationsTab
               notifications={notifications}
               onMarkAsRead={handleMarkAsRead}
@@ -310,7 +312,7 @@ export default function MassaggiatoreProfiloPage() {
         </TabsContent>
 
         <TabsContent value="impostazioni">
-          <Suspense fallback={<LoadingState message="Caricamento impostazioni..." />}>
+          <Suspense fallback={null}>
             <PTSettingsTab
               settings={settings}
               authUserId={authUserId || ''}

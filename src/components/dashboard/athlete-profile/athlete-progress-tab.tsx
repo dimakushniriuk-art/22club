@@ -20,9 +20,17 @@ interface AthleteProgressTabProps {
     allenamenti_totali: number
     allenamenti_mese: number
   }
+  loadError?: string | null
+  /** Su `/dashboard/atleti/[id]/progressi` nascondere il CTA verso la stessa pagina */
+  showDetailsLink?: boolean
 }
 
-export function AthleteProgressTab({ athleteId, stats }: AthleteProgressTabProps) {
+export function AthleteProgressTab({
+  athleteId,
+  stats,
+  loadError = null,
+  showDetailsLink = true,
+}: AthleteProgressTabProps) {
   return (
     <Card variant="default" className="overflow-hidden">
       <CardContent className="p-6 space-y-6">
@@ -37,13 +45,24 @@ export function AthleteProgressTab({ athleteId, stats }: AthleteProgressTabProps
             </p>
             <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
           </div>
-          <Link href={`/dashboard/atleti/${athleteId}/progressi`}>
-            <Button variant="default" size="sm">
-              Dettagli completi
-              <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
-            </Button>
-          </Link>
+          {showDetailsLink ? (
+            <Link href={`/dashboard/atleti/${athleteId}/progressi`}>
+              <Button variant="default" size="sm">
+                Dettagli completi
+                <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+              </Button>
+            </Link>
+          ) : null}
         </div>
+
+        {loadError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
+            {loadError}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className={DS_KPI_CARD}>

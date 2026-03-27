@@ -98,23 +98,7 @@ export function UpcomingAppointmentsClient({ initialData }: UpcomingAppointments
   }, [])
 
   if (loading && appointments.length === 0) {
-    return (
-      <Card variant="trainer">
-        <CardHeader>
-          <CardTitle size="md">Prossimi Appuntamenti</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-3" aria-busy="true">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-1">
-                <div className="bg-background-tertiary h-4 w-28 rounded" />
-                <div className="bg-background-tertiary h-3 w-40 rounded" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (

@@ -15,9 +15,16 @@ const logger = createLogger('hooks:workouts:use-workout-exercises')
 
 type ExerciseRow = Tables<'exercises'>
 
-export function useWorkoutExercises() {
+type UseWorkoutExercisesOptions = {
+  /** Se false, non esegue il fetch (es. pagina atleta che non usa il catalogo globale). */
+  enabled?: boolean
+}
+
+export function useWorkoutExercises(options?: UseWorkoutExercisesOptions) {
+  const enabled = options?.enabled !== false
+
   const [exercises, setExercises] = useState<Exercise[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   const fetchExercises = useCallback(async () => {
@@ -42,8 +49,12 @@ export function useWorkoutExercises() {
   }, [])
 
   useEffect(() => {
-    fetchExercises()
-  }, [fetchExercises])
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
+    void fetchExercises()
+  }, [enabled, fetchExercises])
 
   return {
     exercises,

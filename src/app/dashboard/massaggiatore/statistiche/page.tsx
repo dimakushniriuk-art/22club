@@ -17,7 +17,6 @@ import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/hooks/use-auth'
 import { createLogger } from '@/lib/logger'
-import { Skeleton } from '@/components/shared/ui/skeleton'
 import { Button } from '@/components/ui'
 
 const logger = createLogger('app:dashboard:massaggiatore:statistiche')
@@ -183,14 +182,6 @@ export default function MassaggiatoreStatistichePage() {
           >
             Riprova
           </Button>
-        </div>
-      )}
-
-      {loading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="h-24 sm:h-28 rounded-xl" />
-          ))}
         </div>
       )}
 

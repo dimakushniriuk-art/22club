@@ -96,8 +96,14 @@ export const supabase = createClient()
 
 // 🔄 Helper per gestire errori di refresh token
 export function handleRefreshTokenError(error: unknown): boolean {
+  if (error == null) return false
   const errorMessage = error instanceof Error ? error.message : String(error)
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: string }).code ?? '')
+      : ''
   const isRefreshTokenError =
+    code === 'refresh_token_not_found' ||
     errorMessage.includes('Invalid Refresh Token') ||
     errorMessage.includes('Refresh Token Not Found') ||
     (error instanceof Error && error.name === 'AuthApiError' && errorMessage.includes('refresh'))
@@ -107,8 +113,8 @@ export function handleRefreshTokenError(error: unknown): boolean {
       errorMessage,
       errorName: error instanceof Error ? error.name : 'Unknown',
     })
-    // Disconnetti l'utente
-    void supabase.auth.signOut()
+    // scope: 'local' evita un altro round-trip auth con refresh token già invalido
+    void supabase.auth.signOut({ scope: 'local' })
     // Reindirizza al login se siamo in un contesto client-side
     if (typeof window !== 'undefined') {
       window.location.href = '/login'

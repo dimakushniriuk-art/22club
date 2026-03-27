@@ -58,6 +58,7 @@ import {
   PLAN_VERSION_STATUS_ARCHIVED,
 } from '@/lib/nutrition-tables'
 import { exportToCSV } from '@/lib/export-utils'
+import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:nutrizionista:piani')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -138,25 +139,6 @@ function KpiCard({
       </div>
       <p className="text-xl font-bold text-text-primary tabular-nums">{value}</p>
     </button>
-  )
-}
-
-function TableSkeleton() {
-  return (
-    <div className="rounded-xl border border-border overflow-hidden">
-      <div className="animate-pulse">
-        <div className="h-12 bg-background-tertiary/50 border-b border-border" />
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-14 border-b border-border/50 flex items-center gap-4 px-4">
-            <div className="h-4 flex-1 max-w-[140px] rounded bg-background-tertiary" />
-            <div className="h-5 w-12 rounded-full bg-background-tertiary" />
-            <div className="h-5 w-16 rounded-full bg-background-tertiary" />
-            <div className="h-4 w-24 rounded bg-background-tertiary" />
-            <div className="h-4 w-20 rounded bg-background-tertiary" />
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }
 
@@ -1131,9 +1113,7 @@ export default function NutrizionistaPianiPage() {
       </Drawer>
 
       {/* Content */}
-      {loading ? (
-        <TableSkeleton />
-      ) : rows.length === 0 ? (
+      {loading ? null : rows.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-12 text-center">
           <ClipboardList className="h-12 w-12 text-amber-400 mx-auto mb-3" />
           <p className="text-text-primary font-medium">Nessun piano trovato</p>
@@ -1299,35 +1279,24 @@ export default function NutrizionistaPianiPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem
-                                    onClick={async () => {
-                                      const { data, error } = await supabase.storage
-                                        .from('documents')
-                                        .createSignedUrl(storagePath, 3600)
-                                      if (!error && data?.signedUrl)
-                                        window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+                                    onClick={() => {
+                                      window.open(
+                                        storagePreviewHref('documents', storagePath),
+                                        '_blank',
+                                        'noopener,noreferrer',
+                                      )
                                     }}
                                   >
                                     <FileText className="h-4 w-4 mr-2" />
                                     Apri in nuova scheda
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={async () => {
-                                      const { data, error } = await supabase.storage
-                                        .from('documents')
-                                        .createSignedUrl(storagePath, 3600)
-                                      if (error || !data?.signedUrl) return
-                                      try {
-                                        const res = await fetch(data.signedUrl)
-                                        const blob = await res.blob()
-                                        const url = URL.createObjectURL(blob)
-                                        const a = document.createElement('a')
-                                        a.href = url
-                                        a.download = fileName
-                                        a.click()
-                                        URL.revokeObjectURL(url)
-                                      } catch {
-                                        window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
-                                      }
+                                    onClick={() => {
+                                      void downloadStorageBlobViaPreview(
+                                        'documents',
+                                        storagePath,
+                                        fileName,
+                                      )
                                     }}
                                   >
                                     <Download className="h-4 w-4 mr-2" />

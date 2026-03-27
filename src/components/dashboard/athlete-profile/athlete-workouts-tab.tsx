@@ -100,6 +100,7 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogRow[]>([])
   const [appointments, setAppointments] = useState<AppointmentRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!athleteId) return
@@ -107,8 +108,9 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
 
     const load = async () => {
       setLoading(true)
+      setLoadError(null)
       try {
-        const [schedeRes, logsRes, appRes] = await Promise.all([
+        const [workoutPlans, workoutLogs, athleteAppointments] = await Promise.all([
           supabase
             .from('workout_plans')
             .select('id, name, start_date, end_date, is_active, created_at')
@@ -118,7 +120,7 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
             .from('workout_logs')
             .select('id, data, completato, scheda_id, created_at')
             .or(`atleta_id.eq.${athleteId},athlete_id.eq.${athleteId}`)
-            .order('data', { ascending: false })
+            .order('data', { ascending: false, nullsFirst: false })
             .limit(100),
           supabase
             .from('appointments')
@@ -128,9 +130,16 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
             .limit(100),
         ])
 
-        setSchede((schedeRes.data ?? []) as SchedaRow[])
-        setWorkoutLogs((logsRes.data ?? []) as WorkoutLogRow[])
-        setAppointments((appRes.data ?? []) as AppointmentRow[])
+        const errs = [workoutPlans.error, workoutLogs.error, athleteAppointments.error].filter(
+          Boolean,
+        ) as { message: string }[]
+        if (errs.length > 0) {
+          setLoadError(errs.map((e) => e.message).join(' · '))
+        }
+
+        setSchede((workoutPlans.data ?? []) as SchedaRow[])
+        setWorkoutLogs((workoutLogs.data ?? []) as WorkoutLogRow[])
+        setAppointments((athleteAppointments.data ?? []) as AppointmentRow[])
       } finally {
         setLoading(false)
       }
@@ -138,6 +147,11 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
 
     void load()
   }, [athleteId])
+
+  const schedeAttiveCount = schede.filter((s) => s.is_active).length
+  const attiveLabel = schede.length > 0 ? schedeAttiveCount : schedeAttive
+  const isTotallyEmpty =
+    schede.length === 0 && workoutLogs.length === 0 && appointments.length === 0
 
   return (
     <Card variant="default" className="overflow-hidden">
@@ -149,7 +163,7 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
               Schede di Allenamento
             </h3>
             <p className="text-text-secondary text-sm mt-1">
-              {schedeAttive} {schedeAttive === 1 ? 'scheda attiva' : 'schede attive'}
+              {attiveLabel} {attiveLabel === 1 ? 'scheda attiva' : 'schede attive'}
             </p>
             <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
           </div>
@@ -161,9 +175,18 @@ export function AthleteWorkoutsTab({ athleteId, schedeAttive }: AthleteWorkoutsT
           </Link>
         </div>
 
+        {loadError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
+            {loadError}
+          </div>
+        ) : null}
+
         {loading ? (
           <p className="text-text-secondary text-sm py-4">Caricamento...</p>
-        ) : schedeAttive === 0 && workoutLogs.length === 0 && appointments.length === 0 ? (
+        ) : isTotallyEmpty ? (
           <div className="text-center py-12">
             <div className="rounded-lg p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
               <Dumbbell className="h-8 w-8" />

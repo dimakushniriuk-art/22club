@@ -6,10 +6,8 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
-import { Target } from 'lucide-react'
 import type { MacronutrientiTarget, AthleteNutritionDataUpdate } from '@/types/athlete-profile'
 
 interface NutritionMacronutrientsSectionProps {
@@ -28,14 +26,7 @@ export function NutritionMacronutrientsSection({
   onMacronutrientiUpdate,
 }: NutritionMacronutrientsSectionProps) {
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold text-text-primary flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          Macronutrienti Target
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="proteine">Proteine (g)</Label>
           {isEditing ? (
@@ -52,7 +43,7 @@ export function NutritionMacronutrientsSection({
                 )
               }
               placeholder="g"
-              className="text-base"
+              className="border-white/10 bg-white/[0.04] text-xs"
             />
           ) : (
             nutrition?.macronutrienti_target?.proteine_g && (
@@ -81,7 +72,7 @@ export function NutritionMacronutrientsSection({
               }
               placeholder="g"
               maxLength={6}
-              className="text-base"
+              className="border-white/10 bg-white/[0.04] text-xs"
             />
           ) : (
             nutrition?.macronutrienti_target?.carboidrati_g && (
@@ -108,7 +99,7 @@ export function NutritionMacronutrientsSection({
                 )
               }
               placeholder="g"
-              className="text-base"
+              className="border-white/10 bg-white/[0.04] text-xs"
             />
           ) : (
             nutrition?.macronutrienti_target?.grassi_g && (
@@ -118,7 +109,6 @@ export function NutritionMacronutrientsSection({
             )
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

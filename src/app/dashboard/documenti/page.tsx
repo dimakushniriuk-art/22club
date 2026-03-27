@@ -11,8 +11,11 @@ import { useDocumentsFilters } from '@/hooks/use-documents-filters'
 import { DocumentsFilters } from '@/components/dashboard/documenti/documents-filters'
 import { DocumentsTable } from '@/components/dashboard/documenti/documents-table'
 import { DocumentsStatsCards } from '@/components/dashboard/documenti/documents-stats-cards'
-import { extractFileName } from '@/lib/documents'
-import { LoadingState } from '@/components/dashboard/loading-state'
+import {
+  documentsFilePreviewHref,
+  extractFileName,
+  fetchDocumentBlobViaPreview,
+} from '@/lib/documents'
 import { useDocuments } from '@/hooks/use-documents'
 import { useToast } from '@/components/ui/toast'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -86,7 +89,8 @@ export default function DocumentiPage() {
 
   const handlePreview = (doc: Document) => {
     if (!doc.file_url) return
-    window.open(doc.file_url, '_blank', 'noopener,noreferrer')
+    const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
+    if (href) window.open(href, '_blank', 'noopener,noreferrer')
   }
 
   const handleMarkInvalid = () => {
@@ -113,10 +117,7 @@ export default function DocumentiPage() {
 
     void (async () => {
       try {
-        const res = await fetch(doc.file_url, { credentials: 'include' })
-        if (!res.ok) throw new Error(`Download fallito: ${res.status}`)
-
-        const blob = await res.blob()
+        const blob = await fetchDocumentBlobViaPreview(doc.file_url)
         const objectUrl = window.URL.createObjectURL(blob)
 
         const a = globalThis.document.createElement('a')
@@ -129,8 +130,8 @@ export default function DocumentiPage() {
 
         window.URL.revokeObjectURL(objectUrl)
       } catch {
-        // Fallback: apri in nuova tab (viewer del browser)
-        window.open(doc.file_url, '_blank', 'noopener,noreferrer')
+        const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
+        if (href) window.open(href, '_blank', 'noopener,noreferrer')
       }
     })()
   }
@@ -143,14 +144,7 @@ export default function DocumentiPage() {
         theme="teal"
         onBack={() => window.history.back()}
       >
-        <div className="animate-pulse space-y-4 py-2">
-          <div className="bg-background-tertiary h-8 w-64 rounded" />
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="bg-background-tertiary h-16 rounded-lg" />
-            ))}
-          </div>
-        </div>
+        {null}
       </StaffContentLayout>
     )
   }
@@ -196,7 +190,7 @@ export default function DocumentiPage() {
 
       {/* Drawer dettaglio documento - Lazy loaded solo quando aperto */}
       {showDrawer && selectedDocument && (
-        <Suspense fallback={<LoadingState message="Caricamento dettagli documento..." />}>
+        <Suspense fallback={null}>
           <DocumentDetailDrawer
             document={selectedDocument}
             open={showDrawer}
@@ -212,7 +206,7 @@ export default function DocumentiPage() {
 
       {/* Modal segnalazione non valido - Lazy loaded solo quando aperto */}
       {showInvalidModal && (
-        <Suspense fallback={<LoadingState message="Caricamento modal..." />}>
+        <Suspense fallback={null}>
           <DocumentInvalidModal
             open={showInvalidModal}
             rejectionReason={rejectionReason}

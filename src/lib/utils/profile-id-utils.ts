@@ -156,8 +156,7 @@ export function useProfileId(userId: string | null): string | null {
         logger.error('Errore in useProfileId', error, { userId })
         setProfileId(null)
       })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, user?.user_id])
+  }, [userId, user?.id, user?.user_id])
 
   return profileId
 }

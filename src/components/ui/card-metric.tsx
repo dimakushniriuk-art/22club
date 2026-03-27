@@ -32,11 +32,6 @@ export function CardMetric({
       )}
       {...props}
     >
-      <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
-        style={{ backgroundColor: accentData.bar }}
-        aria-hidden
-      />
       <CardContent className="relative z-10 flex items-center gap-3 p-4">
         {icon != null && (
           <div

@@ -6,11 +6,9 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Label } from '@/components/ui'
 import { Badge } from '@/components/ui'
-import { Target } from 'lucide-react'
 import type {
   LivelloEsperienzaEnum,
   ObiettivoFitnessEnum,
@@ -56,14 +54,7 @@ export function FitnessExperienceGoalsSection({
   const obiettiviSecondariList = formData.obiettivi_secondari || []
 
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          Esperienza e Obiettivi
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="livello_esperienza">Livello Esperienza</Label>
           {isEditing ? (
@@ -157,7 +148,6 @@ export function FitnessExperienceGoalsSection({
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { SkeletonAgendaTimeline } from '@/components/shared/ui/skeleton'
 import type { LucideIcon } from 'lucide-react'
 import { UserPlus, FileText, MessageSquare, BarChart3 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -353,9 +352,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="flex-1 min-h-0" aria-label="Agenda di oggi">
-        {loading ? (
-          <SkeletonAgendaTimeline rows={4} />
-        ) : loadError ? (
+        {loading ? null : loadError ? (
           <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-white/10 bg-black/20 p-6 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <p className="text-sm text-text-secondary">{loadError}</p>
             <Button variant="primary" size="sm" onClick={() => void loadAgenda()}>

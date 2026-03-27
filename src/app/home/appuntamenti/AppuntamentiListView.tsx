@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { RefreshButton } from '@/components/common/RefreshButton'
 import { AppointmentPopover } from '@/components/calendar'
 import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { Calendar, Clock } from 'lucide-react'
 import { AppuntamentiPageHeader } from './AppuntamentiPageHeader'
 import { AppointmentListCard } from './AppointmentListCard'
@@ -67,7 +66,7 @@ export function AppuntamentiListView({
       : 'Nessun appuntamento per i tuoi atleti'
   const emptySubtitle =
     normalizedRole === 'athlete'
-      ? 'Controlla più tardi o contatta il tuo trainer'
+      ? 'Controlla piÃ¹ tardi o contatta il tuo trainer'
       : 'Gli appuntamenti dei tuoi atleti appariranno qui'
 
   const athleteForForm = editingAppointment?.athlete_id
@@ -84,7 +83,7 @@ export function AppuntamentiListView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4 min-[834px]:space-y-5">
         <AppuntamentiPageHeader
           title="I miei Appuntamenti"
           subtitle="Visualizza i tuoi appuntamenti programmati"
@@ -106,7 +105,7 @@ export function AppuntamentiListView({
           <CardContent className="pt-2.5">
             {futureAppointments.length === 0 ? (
               <div className="py-6 text-center px-2">
-                <div className="mb-3 text-4xl opacity-50">📅</div>
+                <div className="mb-3 text-4xl opacity-50">ðŸ“…</div>
                 <h3 className="text-text-primary mb-2 text-base font-semibold line-clamp-2">
                   {emptyTitle}
                 </h3>
@@ -182,7 +181,7 @@ export function AppuntamentiListView({
             data-testid="appointment-form-overlay"
             className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 backdrop-blur-sm p-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:p-4"
           >
-            <Suspense fallback={<LoadingState message="Caricamento form..." />}>
+            <Suspense fallback={null}>
               <AppointmentForm
                 appointment={editingAppointment}
                 athletes={athleteForForm}

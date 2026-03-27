@@ -10,7 +10,6 @@ import {
   Hand,
   Heart,
   LogOut,
-  TrendingUp,
   User,
   Utensils,
 } from 'lucide-react'
@@ -20,18 +19,9 @@ import {
   AthleteStatsCards,
   AthleteSubscriptionsTab,
 } from '@/components/home-profile'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { PageHeaderFixed } from '@/components/layout'
-import {
-  Button,
-  Card,
-  CardContent,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui'
+import { Card, CardContent, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { useAvatarInitials } from '@/components/ui/avatar'
 import { useAuth } from '@/providers/auth-provider'
 import { useAthleteAdministrative } from '@/hooks/athlete-profile/use-athlete-administrative'
@@ -42,18 +32,27 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
 import { useProfileId } from '@/lib/utils/profile-id-utils'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('app:home:profilo:page')
 
 const CARD_DS =
-  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
-const TABS_LIST_CLASS =
-  'h-auto w-full grid gap-1.5 rounded-lg border border-white/10 bg-white/5 p-1.5 sm:gap-2 sm:p-2 min-h-[44px]'
+  'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] hover:border-white/15 transition-colors duration-200'
+/** Shell comune tab bar (senza display grid/flex: evita conflitti tra griglia desktop e chips scroll su mobile). */
+const TABS_SHELL =
+  'rounded-2xl border border-white/10 bg-black/35 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] backdrop-blur-md sm:p-1.5'
+const MAIN_TABS_LIST_CLASS =
+  `items-stretch justify-center text-text-tertiary h-auto w-full grid grid-cols-3 gap-0.5 min-h-[48px] sm:gap-1 ${TABS_SHELL}`
+const PROFILE_TABS_LIST_CLASS =
+  `items-stretch justify-center text-text-tertiary !flex-nowrap max-[851px]:gap-1 ${TABS_SHELL} inline-flex h-auto w-max max-w-none gap-1 min-h-[48px] min-[834px]:mb-0 min-[834px]:grid min-[834px]:w-full min-[834px]:max-w-full min-[834px]:grid-cols-3 min-[834px]:gap-1 min-[834px]:flex-none min-[1100px]:grid-cols-6`
 
 const TAB_TRIGGER_CLASS =
-  'text-xs px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 flex items-center justify-center gap-1 sm:gap-1.5 min-h-[40px] min-w-0'
+  'touch-manipulation text-xs px-2 sm:px-3 py-2.5 sm:py-3 rounded-xl font-medium data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 transition-all duration-200 flex items-center justify-center gap-1.5 min-h-[44px] min-w-0 active:opacity-90'
 const PROFILE_TAB_TRIGGER_CLASS =
-  'text-[11px] px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200 flex items-center justify-center gap-1 sm:gap-1.5 min-h-[40px] min-w-0'
+  'touch-manipulation shrink-0 text-[11px] px-3 sm:px-2.5 py-2.5 sm:py-2.5 rounded-xl font-medium data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 transition-all duration-200 inline-flex items-center justify-center gap-1.5 min-h-[44px] whitespace-nowrap active:opacity-90'
+
+const PROFILE_TABS_SCROLL =
+  '-mx-0.5 mb-1 overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch] scrollbar-hide'
 
 const AthleteAnagraficaTab = dynamic(
   () =>
@@ -62,7 +61,7 @@ const AthleteAnagraficaTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento anagrafica..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -73,7 +72,7 @@ const AthleteMedicalTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento dati medici..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -84,7 +83,7 @@ const AthleteFitnessTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento fitness..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -95,7 +94,7 @@ const AthleteNutritionTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento nutrizione..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -106,7 +105,7 @@ const AthleteMassageTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento massaggi..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -117,7 +116,7 @@ const AthleteAdministrativeTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento dati amministrativi..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -129,7 +128,7 @@ export default function ProfiloPage() {
   const [activeProfileTab, setActiveProfileTab] = useState('anagrafica')
 
   // Ottieni user_id per gli hook
-  // Nota: user è di tipo ProfileRow che ha user_id (UUID dell'utente auth)
+  // Nota: user Ã¨ di tipo ProfileRow che ha user_id (UUID dell'utente auth)
   // Gli hook usano user_id per filtrare i dati
   const athleteUserId = user?.user_id || null
 
@@ -150,7 +149,7 @@ export default function ProfiloPage() {
     }
   }
 
-  // Converti user_id a profile_id per useAthleteStats (workout_logs.athlete_id è FK a profiles.id)
+  // Converti user_id a profile_id per useAthleteStats (workout_logs.athlete_id Ã¨ FK a profiles.id)
   // Chiamato prima degli altri hook per evitare problemi di inizializzazione
   const athleteProfileId = useProfileId(athleteUserId)
 
@@ -163,7 +162,7 @@ export default function ProfiloPage() {
   const { data: fitness } = useAthleteFitness(athleteUserId || '')
   const { data: administrative } = useAthleteAdministrative(athleteUserId || '')
 
-  // React Query già esegue questi fetch in parallelo automaticamente
+  // React Query giÃ  esegue questi fetch in parallelo automaticamente
   // Non serve un hook aggregator - React Query gestisce il parallelismo
 
   const avatarInitials = useAvatarInitials(user?.nome || '', user?.cognome || '')
@@ -199,14 +198,18 @@ export default function ProfiloPage() {
 
   const handleRetry = useCallback(() => router.push('/login'), [router])
   const handleBack = useCallback(() => router.back(), [router])
-  const handleGoProgressi = useCallback(() => router.push('/home/progressi'), [router])
 
-  if (authLoading || statsLoading) {
+  if (authLoading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-6">
-          <LoadingState message="Caricamento profilo..." size="md" />
-        </div>
+        <PageHeaderFixed
+          variant="chat"
+          title="Il mio Profilo"
+          subtitle="Informazioni e statistiche"
+          onBack={handleBack}
+          icon={<User className="h-5 w-5 text-cyan-400" />}
+        />
+        <div className="min-h-0 flex-1" aria-hidden />
       </div>
     )
   }
@@ -214,7 +217,7 @@ export default function ProfiloPage() {
   if (statsError && !user) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
           <ErrorState
             message={statsError || 'Impossibile caricare il profilo'}
             onRetry={handleRetry}
@@ -227,7 +230,7 @@ export default function ProfiloPage() {
   if (!user || !athleteUserId) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
           <ErrorState message="Utente non trovato" onRetry={handleRetry} />
         </div>
       </div>
@@ -243,16 +246,26 @@ export default function ProfiloPage() {
         onBack={handleBack}
         icon={<User className="h-5 w-5 text-cyan-400" />}
       />
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:space-y-6 sm:px-5 min-[834px]:px-6">
-        <AthleteProfileHeaderHome user={user} avatarInitials={avatarInitials} />
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-3 pb-28 pt-1 safe-area-inset-bottom sm:space-y-5 sm:px-4 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
+        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          <AthleteProfileHeaderHome user={user} avatarInitials={avatarInitials} />
 
-        <AthleteStatsCards stats={stats} hideIcons />
+          <div className="mt-4 sm:mt-5">
+            <AthleteStatsCards stats={stats} hideIcons loading={statsLoading} />
+          </div>
+        </div>
 
         {/* Card principale */}
-        <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <CardContent className="relative z-10 p-3 sm:p-4">
+        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+        <Card
+          className={cn(
+            CARD_DS,
+            'relative overflow-hidden focus-visible:ring-0 focus-visible:ring-offset-0',
+          )}
+        >
+          <CardContent className="relative z-10 p-3 sm:p-5">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={`grid w-full grid-cols-3 ${TABS_LIST_CLASS}`}>
+              <TabsList className={MAIN_TABS_LIST_CLASS}>
                 <TabsTrigger value="overview" className={TAB_TRIGGER_CLASS}>
                   <BarChart3 className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">Overview</span>
@@ -267,7 +280,7 @@ export default function ProfiloPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="mt-2 pt-0">
+              <TabsContent value="overview" className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none">
                 <AthleteOverviewTab
                   user={user}
                   stats={stats}
@@ -275,16 +288,15 @@ export default function ProfiloPage() {
                 />
               </TabsContent>
 
-              <TabsContent value="profilo" className="mt-2 pt-0">
+              <TabsContent value="profilo" className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none">
                 {athleteUserId ? (
                   <Tabs
                     value={activeProfileTab}
                     onValueChange={setActiveProfileTab}
                     className="w-full"
                   >
-                    <TabsList
-                      className={`grid grid-cols-2 w-full min-[834px]:grid-cols-3 mb-5 min-h-0 ${TABS_LIST_CLASS}`}
-                    >
+                    <div className={PROFILE_TABS_SCROLL}>
+                    <TabsList className={`mb-4 w-full min-w-0 sm:mb-5 min-[834px]:mb-4 ${PROFILE_TABS_LIST_CLASS}`}>
                       <TabsTrigger value="anagrafica" className={PROFILE_TAB_TRIGGER_CLASS}>
                         <User className="h-3 w-3 shrink-0" />
                         <span className="truncate">Anagrafica</span>
@@ -310,6 +322,7 @@ export default function ProfiloPage() {
                         <span className="truncate">Amministrativo</span>
                       </TabsTrigger>
                     </TabsList>
+                    </div>
 
                     <TabsContent value="anagrafica" className="mt-0">
                       <AthleteAnagraficaTab athleteId={athleteUserId} />
@@ -335,43 +348,34 @@ export default function ProfiloPage() {
                       <AthleteAdministrativeTab athleteId={athleteUserId} />
                     </TabsContent>
                   </Tabs>
-                ) : (
-                  <LoadingState message="Caricamento dati profilo..." />
-                )}
+                ) : null}
               </TabsContent>
 
-              <TabsContent value="abbonamenti" className="mt-2 pt-0">
+              <TabsContent value="abbonamenti" className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none">
                 {athleteUserId ? (
                   <AthleteSubscriptionsTab athleteUserId={athleteUserId} />
-                ) : (
-                  <LoadingState message="Caricamento abbonamenti..." />
-                )}
+                ) : null}
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
+        </div>
 
         {/* Azioni */}
-        <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <CardContent className="relative z-10 space-y-2 p-3 sm:p-4">
-            <Button
-              variant="outline"
-              className="min-h-[44px] w-full justify-start rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
-              onClick={handleGoProgressi}
-            >
-              <TrendingUp className="mr-2 h-4 w-4 shrink-0" />
-              Storico progressi
-            </Button>
-            <Button
-              variant="destructive"
-              className="min-h-[44px] w-full justify-start rounded-lg text-sm"
+        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          <div className={`overflow-hidden ${CARD_DS}`}>
+            <button
+              type="button"
+              className="flex w-full min-h-[52px] items-center gap-3 px-4 py-3.5 text-left text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 active:bg-red-500/15 touch-manipulation sm:min-h-[48px] sm:py-3"
               onClick={handleLogout}
             >
-              <LogOut className="mr-2 h-4 w-4 shrink-0" />
-              Esci
-            </Button>
-          </CardContent>
-        </Card>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/15 text-red-400 ring-1 ring-red-500/20">
+                <LogOut className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">Esci dall&apos;account</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

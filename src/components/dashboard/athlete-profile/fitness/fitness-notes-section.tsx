@@ -6,7 +6,6 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Textarea } from '@/components/ui'
 import { sanitizeString } from '@/lib/sanitize'
 import type { AthleteFitnessDataUpdate } from '@/types/athlete-profile'
@@ -27,31 +26,27 @@ export function FitnessNotesSection({
   onFormDataChange,
 }: FitnessNotesSectionProps) {
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg">Note Fitness</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isEditing ? (
-          <Textarea
-            value={formData.note_fitness || ''}
-            onChange={(e) =>
-              onFormDataChange({
-                note_fitness: sanitizeString(e.target.value, 2000) || null,
-              })
-            }
-            maxLength={2000}
-            placeholder="Note aggiuntive sul fitness..."
-            rows={4}
-          />
-        ) : fitness?.note_fitness ? (
-          <p className="text-text-primary whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
-            {fitness.note_fitness}
-          </p>
-        ) : (
-          <p className="text-text-secondary text-center py-4">Nessuna nota fitness</p>
-        )}
-      </CardContent>
-    </Card>
+    <>
+      {isEditing ? (
+        <Textarea
+          value={formData.note_fitness || ''}
+          onChange={(e) =>
+            onFormDataChange({
+              note_fitness: sanitizeString(e.target.value, 2000) || null,
+            })
+          }
+          maxLength={2000}
+          placeholder="Note aggiuntive sul fitness..."
+          rows={4}
+          className="border-white/10 bg-white/[0.04] text-xs"
+        />
+      ) : fitness?.note_fitness ? (
+        <p className="whitespace-pre-wrap rounded-lg border border-white/10 bg-white/[0.02] p-3 text-sm text-text-primary">
+          {fitness.note_fitness}
+        </p>
+      ) : (
+        <p className="py-4 text-center text-sm text-text-secondary">Nessuna nota fitness</p>
+      )}
+    </>
   )
 }

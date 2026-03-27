@@ -16,7 +16,7 @@ export interface WorkoutPlanCardWorkout {
 }
 
 const CARD_DS =
-  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200 cursor-pointer'
+  'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md transition-colors duration-200 hover:border-white/20 active:opacity-90'
 
 interface WorkoutPlanCardProps {
   workout: WorkoutPlanCardWorkout
@@ -24,9 +24,12 @@ interface WorkoutPlanCardProps {
 
 function WorkoutPlanCardComponent({ workout }: WorkoutPlanCardProps) {
   return (
-    <Link href={`/home/allenamenti/${workout.id}`} className="block" prefetch={true}>
-      <Card className={`relative overflow-hidden ${CARD_DS}`}>
-        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+    <Link
+      href={`/home/allenamenti/${workout.id}`}
+      className="block touch-manipulation"
+      prefetch={true}
+    >
+      <Card className={`relative cursor-pointer overflow-hidden ${CARD_DS}`}>
         <CardContent className="relative z-10 p-3 sm:p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0 flex-1">

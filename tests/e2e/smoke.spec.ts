@@ -11,7 +11,7 @@ const getStorageState = (role: 'athlete' | 'trainer' | 'admin') => {
 test.describe('Smoke Tests - Anonymous', () => {
   test('should load login page', async ({ page }) => {
     await page.goto('/login')
-    await expect(page.getByText('Accedi')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Accedi' })).toBeVisible()
   })
 
   test('should handle 404 page', async ({ page }) => {
@@ -90,7 +90,7 @@ test.describe('Smoke Tests - Trainer', () => {
     }
 
     await expect(page).toHaveURL(/login/, { timeout: 15000 })
-    await expect(page.getByText('Accedi')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Accedi' })).toBeVisible()
   })
 })
 
@@ -98,6 +98,6 @@ test.describe('Smoke Tests - Protected Routes', () => {
   test('should redirect unauthenticated user from dashboard to login', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForURL('**/login*')
-    await expect(page.getByText('Accedi')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Accedi' })).toBeVisible()
   })
 })

@@ -19,6 +19,10 @@ import {
 import { iconMap } from '@/components/ui/professional-icons'
 import { getBloccoAccentColors, type BloccoAccentColors } from '@/lib/design-system-data'
 
+/** Superficie allineata a /home/profilo (shell app, vetro + alone). */
+const HOME_SURFACE_CLASS =
+  'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md transition-colors duration-200'
+
 /** Blocchi che usano icona Lucide invece di emoji (single source of truth). */
 const LUCIDE_BLOCCO_IDS = new Set(['schede', 'progressi', 'foto-risultati'])
 
@@ -108,15 +112,17 @@ function WelcomeHeader({
   onOpenWizard,
 }: WelcomeHeaderProps) {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 min-[834px]:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] animate-fade-in">
+    <div
+      className={`relative overflow-hidden p-4 min-[834px]:p-5 animate-fade-in ${HOME_SURFACE_CLASS} hover:border-white/15`}
+    >
       <div
-        className={`relative text-center${isAtleta && invitiCount > 0 ? ' pr-11 min-[834px]:pr-12' : ''}`}
+        className={`relative text-center${isAtleta && invitiCount > 0 ? ' pr-12 min-[834px]:pr-14' : ''}`}
       >
         {isAtleta && invitiCount > 0 && (
           <button
             type="button"
             onClick={onOpenWizard}
-            className="absolute right-0 top-0 z-10 flex shrink-0 items-center justify-center rounded-lg w-10 h-10 border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+            className="absolute right-0 top-0 z-10 flex min-h-[44px] min-w-[44px] shrink-0 touch-manipulation items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
             aria-label="Nuovo invito da un professionista"
           >
             <Mail className="h-5 w-5 shrink-0" aria-hidden />
@@ -158,19 +164,19 @@ function HomeBloccoCard({
     <Link
       href={blocco.href}
       prefetch={true}
-      className={`group relative flex min-h-[100px] flex-col items-center justify-center gap-2 rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 py-4 px-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200 ease-out hover:border-white/20 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background min-[834px]:min-h-[112px] min-[834px]:gap-2.5 min-[834px]:py-5 min-[834px]:px-4 ${isProfilo ? 'col-span-2 min-[834px]:col-span-3 min-[834px]:min-h-[100px] w-full' : ''}`}
+      className={`group relative flex min-h-[104px] touch-manipulation flex-col items-center justify-center gap-2 py-4 px-3 transition-all duration-200 ease-out hover:border-white/20 hover:scale-[1.01] active:scale-[0.99] active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background min-[834px]:min-h-[118px] min-[834px]:gap-2.5 min-[834px]:py-5 min-[834px]:px-4 ${HOME_SURFACE_CLASS} hover:border-white/20 ${isProfilo ? 'col-span-2 min-[834px]:col-span-3 min-[834px]:min-h-[104px] w-full' : ''}`}
       aria-label={`Vai a ${blocco.label}`}
     >
       <div className="relative z-10 flex items-center justify-center">
         {useLucide && IconComponent ? (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-100 min-[834px]:p-3">
             <IconComponent
               className="h-6 w-6 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8"
               strokeWidth={2.25}
             />
           </div>
         ) : EmojiIconComponent ? (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-100 min-[834px]:p-3">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-2.5 transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-100 min-[834px]:p-3">
             <EmojiIconComponent
               size={24}
               color="#22d3ee"
@@ -244,52 +250,45 @@ export default function HomePage() {
   if (!user || !isValidUser) {
     return (
       <div
-        className="bg-background min-h-dvh space-y-3 px-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5"
+        className="bg-background min-h-dvh px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
         style={SKELETON_CONTAINER_STYLE}
-      >
-        <div className="animate-pulse space-y-3">
-          <div className="bg-background-tertiary h-6 w-40 rounded" />
-          <div className="grid grid-cols-2 min-[834px]:grid-cols-3 gap-2.5 min-[834px]:gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="bg-background-tertiary h-28 min-[834px]:h-32 rounded-xl" />
-            ))}
-          </div>
-        </div>
-      </div>
+      />
     )
   }
 
   return (
     <div
-      className="relative min-h-0 w-full max-w-full bg-background space-y-5 min-[834px]:space-y-6 px-3 pb-6 pt-4 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:py-5"
+      className="relative min-h-0 w-full max-w-full bg-background px-3 pb-28 pt-0.5 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
       style={mainContainerStyle}
     >
-      <WelcomeHeader
-        nome={user.nome}
-        cognome={user.cognome}
-        isAtleta={isAtleta}
-        invitiCount={inviti.length}
-        onOpenWizard={openWizard}
-      />
-      <InvitoClienteWizard
-        open={wizardOpen}
-        onOpenChange={setWizardOpen}
-        invito={selectedInvito}
-        onSuccess={handleWizardSuccess}
-        onRefetchInviti={refetchInviti}
-      />
-      <div className="relative z-10 grid grid-cols-2 gap-3 min-[834px]:grid-cols-3 min-[834px]:gap-5">
-        {blocchiItems.map((blocco) => (
-          <HomeBloccoCard
-            key={blocco.id}
-            blocco={blocco}
-            accent={accentMap[blocco.id] ?? getBloccoAccentColors(blocco.id)}
-            useLucide={isLucideBlocco(blocco.id)}
-            EmojiIconComponent={
-              isLucideBlocco(blocco.id) ? null : (emojiIconComponents[blocco.id] ?? null)
-            }
-          />
-        ))}
+      <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+        <WelcomeHeader
+          nome={user.nome}
+          cognome={user.cognome}
+          isAtleta={isAtleta}
+          invitiCount={inviti.length}
+          onOpenWizard={openWizard}
+        />
+        <InvitoClienteWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          invito={selectedInvito}
+          onSuccess={handleWizardSuccess}
+          onRefetchInviti={refetchInviti}
+        />
+        <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-3">
+          {blocchiItems.map((blocco) => (
+            <HomeBloccoCard
+              key={blocco.id}
+              blocco={blocco}
+              accent={accentMap[blocco.id] ?? getBloccoAccentColors(blocco.id)}
+              useLucide={isLucideBlocco(blocco.id)}
+              EmojiIconComponent={
+                isLucideBlocco(blocco.id) ? null : (emojiIconComponents[blocco.id] ?? null)
+              }
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

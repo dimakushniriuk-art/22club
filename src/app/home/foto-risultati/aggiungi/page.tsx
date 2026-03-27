@@ -248,11 +248,11 @@ export default function AggiungiFotoPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
         <PageHeaderFixed
           variant="chat"
           title="Aggiungi foto"
-          subtitle="Scegli la vista e scatta: si aprirà la fotocamera"
+          subtitle="Scegli la vista e scatta: si aprirÃ  la fotocamera"
           backHref="/home/foto-risultati"
           icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
         />
@@ -317,10 +317,6 @@ export default function AggiungiFotoPage() {
               disabled={uploading}
               className={`group relative flex min-h-[180px] flex-1 flex-col items-center justify-center gap-2 p-3 disabled:pointer-events-none disabled:opacity-60 sm:min-h-[200px] sm:p-4 ${CARD_DS}`}
             >
-              <div
-                className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white"
-                aria-hidden
-              />
               {addedInThisSession.has(angle) && (
                 <div
                   className="absolute right-2 top-2 z-20 rounded-full bg-state-valid/90 p-0.5"
@@ -344,7 +340,7 @@ export default function AggiungiFotoPage() {
                   )}
                 </div>
                 <span className="shrink-0 text-sm font-semibold text-text-primary sm:text-base">
-                  {addedInThisSession.has(angle) ? `${label} · Tocca per aggiungere` : label}
+                  {addedInThisSession.has(angle) ? `${label} Â· Tocca per aggiungere` : label}
                 </span>
               </div>
             </button>
@@ -360,7 +356,7 @@ export default function AggiungiFotoPage() {
 
         <p className="text-text-tertiary text-xs min-[834px]:text-sm text-center px-2">
           Tocca una figura: potrai caricare un&apos;immagine dalla galleria o scattare una nuova
-          foto. Verrà salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
+          foto. VerrÃ  salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
         </p>
 
         {allThreeUploaded && (

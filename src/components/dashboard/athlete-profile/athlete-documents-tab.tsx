@@ -10,13 +10,16 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { FileText, ArrowLeft, AlertCircle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useDocuments } from '@/hooks/use-documents'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { DocumentsTable } from '@/components/dashboard/documenti/documents-table'
 import type { Document } from '@/types/document'
-import { extractFileName } from '@/lib/documents'
+import {
+  documentsFilePreviewHref,
+  extractFileName,
+  fetchDocumentBlobViaPreview,
+} from '@/lib/documents'
 
 interface AthleteDocumentsTabProps {
   athleteId: string
@@ -24,31 +27,25 @@ interface AthleteDocumentsTabProps {
 }
 
 export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDocumentsTabProps) {
-  const router = useRouter()
-  const { documents, loading, error } = useDocuments({ athleteId })
+  const { documents, loading, error, refetch } = useDocuments({ athleteId })
 
-  const goToAllDocuments = () => {
-    router.push(`/dashboard/documenti?atleta=${athleteId}`)
+  const handleRetry = () => {
+    void refetch()
   }
 
   const handlePreview = (doc: Document) => {
     if (!doc.file_url) return
-    // Anteprima: apri il file direttamente nel browser (viewer nativo).
-    window.open(doc.file_url, '_blank', 'noopener,noreferrer')
+    const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
+    if (href) window.open(href, '_blank', 'noopener,noreferrer')
   }
 
   const handleDownload = async (doc: Document) => {
     if (!doc.file_url) return
 
-    const fileUrl = doc.file_url
-    const fileName = doc.file_name || extractFileName(fileUrl)
+    const fileName = doc.file_name || extractFileName(doc.file_url)
 
     try {
-      // Download via Blob: evita che il browser apra/visualizzi invece di scaricare.
-      const res = await fetch(fileUrl, { credentials: 'include' })
-      if (!res.ok) throw new Error(`Download fallito: ${res.status}`)
-
-      const blob = await res.blob()
+      const blob = await fetchDocumentBlobViaPreview(doc.file_url)
       const objectUrl = window.URL.createObjectURL(blob)
 
       const a = globalThis.document.createElement('a')
@@ -61,8 +58,8 @@ export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDoc
 
       window.URL.revokeObjectURL(objectUrl)
     } catch {
-      // Fallback: apri il file se non è possibile scaricare via fetch.
-      window.open(fileUrl, '_blank', 'noopener,noreferrer')
+      const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
+      if (href) window.open(href, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -113,7 +110,7 @@ export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDoc
           <ErrorState
             title="Impossibile caricare i documenti"
             message={error}
-            onRetry={goToAllDocuments}
+            onRetry={handleRetry}
           />
         ) : documents.length > 0 ? (
           <DocumentsTable
@@ -126,10 +123,16 @@ export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDoc
             <div className="rounded-lg p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
               <FileText className="h-8 w-8" />
             </div>
-            <p className="text-text-primary font-medium mb-2">Gestione Documenti</p>
+            <p className="text-text-primary font-medium mb-2">Nessun documento in elenco</p>
             <p className="text-text-secondary text-sm mb-4">
-              Visualizza e gestisci tutti i documenti dell&apos;atleta
+              Carica certificati e liberatorie dalla pagina documenti o verifica i filtri in sede.
             </p>
+            <Link href={`/dashboard/documenti?atleta=${athleteId}`}>
+              <Button variant="default" size="sm">
+                Vai alla gestione documenti
+                <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+              </Button>
+            </Link>
           </div>
         )}
       </CardContent>

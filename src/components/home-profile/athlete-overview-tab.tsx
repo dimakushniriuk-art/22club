@@ -11,11 +11,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { Progress } from '@/components/ui'
-import { Mail, Phone, User, Target, TrendingUp, CreditCard, UserCircle } from 'lucide-react'
+import { Mail, Phone, User, Target, TrendingUp, UserCircle } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
-
-const CARD_DS =
-  'relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+import { ATHLETE_PROFILE_NESTED_CARD_CLASS } from '@/components/dashboard/athlete-profile/athlete-profile-ds'
 
 type TrainerProfile = {
   pt_nome: string
@@ -36,7 +34,6 @@ interface AthleteOverviewTabProps {
     peso_iniziale: number | null
     peso_attuale: number | null
     obiettivo_peso: number | null
-    lezioni_rimanenti: number
   }
   calculateProgress: () => number
 }
@@ -70,9 +67,9 @@ export function AthleteOverviewTab({
   }, [supabase])
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card variant="default" className={`${CARD_DS} sm:col-span-2`}>
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Card variant="default" className={`${ATHLETE_PROFILE_NESTED_CARD_CLASS} sm:col-span-2`}>
           <CardHeader className="pb-2">
             <CardTitle size="md" className="flex items-center gap-2 text-sm text-text-primary">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
@@ -154,7 +151,7 @@ export function AthleteOverviewTab({
         </Card>
 
         {stats.peso_iniziale != null && stats.obiettivo_peso != null && (
-          <Card variant="default" className={CARD_DS}>
+          <Card variant="default" className={ATHLETE_PROFILE_NESTED_CARD_CLASS}>
             <CardHeader className="pb-2">
               <CardTitle size="md" className="flex items-center gap-2 text-sm text-text-primary">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
@@ -200,27 +197,6 @@ export function AthleteOverviewTab({
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        )}
-
-        {stats.lezioni_rimanenti > 0 && (
-          <Card variant="default" className={`${CARD_DS} sm:col-span-2`}>
-            <CardHeader className="pb-2">
-              <CardTitle size="md" className="flex items-center gap-2 text-sm text-text-primary">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                  <CreditCard className="h-4 w-4 text-cyan-400" />
-                </span>
-                Lezioni
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold tabular-nums text-text-primary">
-                  {stats.lezioni_rimanenti}
-                </span>
-                <span className="text-sm text-text-secondary">lezioni rimanenti</span>
-              </div>
             </CardContent>
           </Card>
         )}

@@ -32,15 +32,16 @@ export function MotivationalMainSection({
   onFormDataChange,
 }: MotivationalMainSectionProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
       <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
+        <CardHeader className="pb-3 pt-4 px-6 space-y-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+            <Target className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
             Motivazione Principale
           </CardTitle>
+          <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2 pb-6 px-6">
           {isEditing ? (
             <Textarea
               value={formData.motivazione_principale || ''}
@@ -64,13 +65,14 @@ export function MotivationalMainSection({
       </Card>
 
       <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
+        <CardHeader className="pb-3 pt-4 px-6 space-y-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+            <TrendingUp className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
             Livello Motivazione
           </CardTitle>
+          <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-2 pb-6 px-6 space-y-4">
           {isEditing ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -110,7 +112,7 @@ export function MotivationalMainSection({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-text-secondary text-sm">Livello attuale</span>
-                <span className="text-text-primary font-bold text-2xl">
+                <span className="text-text-primary font-bold text-lg tabular-nums">
                   {motivational?.livello_motivazione || 0}/10
                 </span>
               </div>

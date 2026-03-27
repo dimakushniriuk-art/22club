@@ -338,7 +338,7 @@ export default function FotoProgressiPage() {
       } catch (err) {
         logger.error('Errore nel download', err, { photoId: photo.id })
         notify(
-          'Si è verificato un errore durante il download della foto. Riprova.',
+          'Si Ã¨ verificato un errore durante il download della foto. Riprova.',
           'error',
           'Errore download',
         )
@@ -383,15 +383,14 @@ export default function FotoProgressiPage() {
   if (loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-          <div className="animate-pulse space-y-4">
-            <div className="bg-white/10 h-12 w-56 rounded-lg" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white/10 h-48 rounded-lg" />
-              ))}
-            </div>
-          </div>
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4 min-[834px]:space-y-5">
+          <PageHeaderFixed
+            variant="chat"
+            title="Foto Progressi"
+            subtitle="Visualizza e confronta le foto per angolo"
+            onBack={handleBack}
+            icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
+          />
         </div>
       </div>
     )
@@ -399,7 +398,7 @@ export default function FotoProgressiPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4 min-[834px]:space-y-5">
         <PageHeaderFixed
           variant="chat"
           title="Foto Progressi"
@@ -445,7 +444,7 @@ export default function FotoProgressiPage() {
         {photos.length === 0 ? (
           <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="py-12 text-center">
-              <div className="mb-4 text-6xl opacity-50">📸</div>
+              <div className="mb-4 text-6xl opacity-50">ðŸ“¸</div>
               <h3 className="text-text-primary mb-2 text-lg font-medium">Nessuna foto caricata</h3>
               <p className="text-text-secondary mb-4 text-sm">
                 Inizia a caricare le tue foto per tracciare i progressi visivi
@@ -551,7 +550,7 @@ export default function FotoProgressiPage() {
               className="absolute right-4 top-4 rounded-xl bg-black/50 text-white hover:bg-black/70"
               aria-label="Chiudi"
             >
-              ✕
+              âœ•
             </Button>
           </div>
         </div>

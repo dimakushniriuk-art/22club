@@ -22,7 +22,7 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 const logger = createLogger('app:home:allenamenti:page')
 
 const CARD_DS =
-  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+  'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md transition-colors duration-200 hover:border-white/20'
 
 // Funzione helper per formattare la data in italiano
 function formatAppointmentDate(dateString: string): { day: string; time: string } {
@@ -100,7 +100,7 @@ function calculateStreak(allenamenti: Array<{ data: string; stato: string }>): n
     if (completedDates.has(dateKey)) {
       streak++
     } else if (streak > 0) {
-      // Se abbiamo già uno streak e questo giorno non ha allenamenti, interrompi
+      // Se abbiamo giÃ  uno streak e questo giorno non ha allenamenti, interrompi
       break
     }
   }
@@ -278,24 +278,6 @@ function organizeWorkoutLogs(
   }
 }
 
-function AllenamentiLoadingSkeleton() {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-12 w-56 rounded-lg bg-white/10" />
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 rounded-lg bg-white/10" />
-            ))}
-          </div>
-          <div className="h-64 rounded-lg bg-white/10" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function AllenamentiHomePageContent() {
   const router = useRouter()
   const { user } = useAuth()
@@ -320,7 +302,7 @@ function AllenamentiHomePageContent() {
 
   // Normalizza il ruolo usando utility function centralizzata
   const normalizedRoleRaw = useNormalizedRole(user?.role)
-  // Converte in formato legacy per compatibilità
+  // Converte in formato legacy per compatibilitÃ 
   const normalizedRole = useMemo(() => {
     return toLegacyRole(normalizedRoleRaw)
   }, [normalizedRoleRaw])
@@ -346,7 +328,7 @@ function AllenamentiHomePageContent() {
   // Usa profileId (profiles.id) per workout_logs.atleta_id
   const stableFilters = useMemo(
     () => ({
-      atleta_id: profileId, // ✅ Corretto: workout_logs.atleta_id = profiles.id
+      atleta_id: profileId, // âœ… Corretto: workout_logs.atleta_id = profiles.id
       stato: 'tutti' as const,
     }),
     [profileId],
@@ -355,32 +337,20 @@ function AllenamentiHomePageContent() {
   // Recupera workout logs (allenamenti)
   const {
     allenamenti: workoutLogs,
-    loading: allenamentiLoading,
+    loading: _allenamentiLoading,
     error: allenamentiError,
-    refresh: refreshAllenamenti,
   } = useAllenamenti(stableFilters)
 
   // Recupera workout plans attivi (schede di allenamento)
   const {
     workouts,
-    loading: workoutsLoading,
+    loading: _workoutsLoading,
     error: workoutsError,
-    refetch: refetchWorkouts,
   } = useWorkouts({
     userId: profileId,
     role: normalizedRole,
+    plansListOnly: true,
   })
-
-  const refreshAllenamentiRef = useRef(refreshAllenamenti)
-  const refetchWorkoutsRef = useRef(refetchWorkouts)
-  refreshAllenamentiRef.current = refreshAllenamenti
-  refetchWorkoutsRef.current = refetchWorkouts
-
-  useEffect(() => {
-    if (!profileId) return
-    refreshAllenamentiRef.current()
-    refetchWorkoutsRef.current()
-  }, [profileId])
 
   const stats = useMemo(() => computeStatsFromLogs(workoutLogs ?? []), [workoutLogs])
 
@@ -550,27 +520,25 @@ function AllenamentiHomePageContent() {
     notifyError('Errore nel caricamento schede allenamento', errorMessage)
   }, [workoutsError, user?.id, user?.user_id])
 
-  // Loading state per i dati
-  const showDataLoading = allenamentiLoading || workoutsLoading
-
   if (!user || !isValidUser) {
-    return <AllenamentiLoadingSkeleton />
-  }
-
-  if (showDataLoading) {
-    return <AllenamentiLoadingSkeleton />
+    return (
+      <div className="flex min-h-0 flex-1 flex-col bg-background">
+        <AllenamentiPageHeader onBack={handleBack} />
+        <div className="min-h-0 flex-1" aria-hidden />
+      </div>
+    )
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <AllenamentiPageHeader onBack={handleBack} />
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-[calc(12rem+env(safe-area-inset-bottom))] pt-24 safe-area-inset-bottom sm:space-y-6 sm:px-5 min-[834px]:px-6">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-4">
-          <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
-            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
+      <div className="min-h-0 flex-1 overflow-auto px-3 pb-[calc(9.5rem+env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
             <CardContent className="flex items-center gap-2.5 p-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                <Activity className="h-4 w-4 text-cyan-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                  <Activity className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
@@ -582,11 +550,10 @@ function AllenamentiHomePageContent() {
               </div>
             </CardContent>
           </Card>
-          <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
-            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-white" aria-hidden />
-            <CardContent className="flex items-center gap-2.5 p-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                <TrendingUp className="h-4 w-4 text-cyan-400" />
+            <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
+              <CardContent className="flex items-center gap-2.5 p-0">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                  <TrendingUp className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
@@ -598,9 +565,9 @@ function AllenamentiHomePageContent() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        {organizedAllenamenti.oggi && (
+          {organizedAllenamenti.oggi && (
           <AllenamentoOggiCard
             oggi={organizedAllenamenti.oggi}
             oggiMedia={oggiMedia}
@@ -609,48 +576,49 @@ function AllenamentiHomePageContent() {
             onVideoPause={handleVideoPause}
             onVideoError={handleVideoError}
           />
-        )}
+          )}
 
-        {workoutsAttivi.length > 0 && (
+          {workoutsAttivi.length > 0 && (
           <div className="space-y-3 sm:space-y-4">
-            <h2 className="text-base font-semibold text-text-primary sm:text-lg">
+            <h2 className="text-base font-semibold tracking-tight text-text-primary sm:text-lg">
               Schede Assegnate
             </h2>
-            <div className="space-y-2.5 sm:space-y-3">
+            <div className="space-y-3">
               {workoutsAttivi.map((workout) => (
                 <WorkoutPlanCard key={workout.id} workout={workout} />
               ))}
             </div>
           </div>
-        )}
+          )}
+        </div>
 
-        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900 to-black shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.04)] px-4 pb-[env(safe-area-inset-bottom)] sm:px-5 min-[834px]:px-6">
-          <CardContent className="flex flex-col items-center gap-4 py-5 sm:gap-5 sm:py-6">
-            <div className="h-0.5 w-12 rounded-full bg-cyan-400/80" aria-hidden />
-            <div className="flex items-center justify-center gap-4 sm:gap-5">
+        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/95 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 min-[834px]:px-5">
+          <CardContent className="flex flex-col gap-2.5 p-0 sm:gap-3">
+            <div className="mx-auto h-0.5 w-8 rounded-full bg-cyan-400/70" aria-hidden />
+            <div className="flex items-center justify-center gap-3 sm:gap-3.5">
               {trainerAvatarUrl ? (
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 ring-offset-2 ring-offset-transparent sm:h-16 sm:w-16">
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full ring-1 ring-white/10 sm:h-12 sm:w-12">
                   <Image
                     src={trainerAvatarUrl}
                     alt="Il tuo trainer"
                     fill
                     className="object-cover"
-                    sizes="64px"
+                    sizes="48px"
                     unoptimized={trainerAvatarUrl.startsWith('http')}
                   />
                 </div>
               ) : (
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-3xl sm:h-16 sm:w-16">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl sm:h-12 sm:w-12">
                   🏆
                 </div>
               )}
-              <div className="min-w-0 flex-1 text-left">
+              <div className="min-w-0 max-w-[min(100%,20rem)] text-center">
                 {stats.settimana > 0 ? (
                   <>
-                    <h3 className="break-words text-base font-semibold tracking-tight text-text-primary sm:text-xl">
+                    <h3 className="break-words text-sm font-semibold leading-tight text-text-primary sm:text-base">
                       Ottimo lavoro questa settimana!
                     </h3>
-                    <p className="break-words mt-0.5 text-xs leading-snug text-text-secondary sm:text-base">
+                    <p className="break-words mt-0.5 text-[11px] leading-snug text-text-secondary sm:text-xs">
                       Hai completato{' '}
                       <span className="font-bold tabular-nums text-cyan-400">
                         {stats.settimana}
@@ -659,16 +627,15 @@ function AllenamentiHomePageContent() {
                     </p>
                   </>
                 ) : (
-                  <h3 className="break-words text-base font-semibold tracking-tight text-text-primary sm:text-xl">
-                    Oh no! Questa settimana non hai mai fatto nessun allenamento! Torna in 22 Club
-                    per riprendere con gli allenamenti!
+                  <h3 className="break-words text-sm font-semibold leading-snug text-text-primary sm:text-base">
+                    Nessun allenamento questa settimana. Torna in 22 Club per riprendere!
                   </h3>
                 )}
               </div>
             </div>
-            <Link href="/home/progressi" prefetch={true} className="w-full sm:max-w-xs">
-              <Button className="h-10 min-h-[44px] w-full gap-2 rounded-lg bg-cyan-500 text-sm font-medium text-white hover:bg-cyan-400 sm:h-11 sm:text-base">
-                <Award className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Link href="/home/progressi" prefetch={true} className="block w-full touch-manipulation">
+              <Button className="h-10 min-h-[44px] w-full gap-1.5 rounded-xl bg-cyan-500 text-xs font-medium text-white hover:bg-cyan-400 sm:h-10 sm:text-sm">
+                <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Vedi i tuoi progressi
               </Button>
             </Link>
@@ -681,23 +648,7 @@ function AllenamentiHomePageContent() {
 
 export default function AllenamentiHomePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-0 flex-1 flex-col bg-background">
-          <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-12 w-56 rounded-lg bg-white/10" />
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-20 rounded-lg bg-white/10" />
-                ))}
-              </div>
-              <div className="h-64 rounded-lg bg-white/10" />
-            </div>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={null}>
       <AllenamentiHomePageContent />
     </Suspense>
   )

@@ -23,7 +23,6 @@ import {
 } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useToast } from '@/components/ui/toast'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import {
   MuscleGroupFilter,
@@ -131,38 +130,6 @@ const DIFFICULTY_OPTIONS = [
 ] as const
 
 const DIFF_ORDER: Record<Exercise['difficulty'], number> = { bassa: 1, media: 2, alta: 3 }
-
-/** Skeleton griglia durante caricamento iniziale */
-function EserciziPageSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-white/10 bg-white/[0.04] overflow-hidden animate-pulse"
-        >
-          <div className="h-40 w-full bg-background-tertiary" />
-          <div className="p-4 space-y-3">
-            <div className="h-5 w-[75%] rounded bg-background-tertiary" />
-            <div className="flex gap-2">
-              <div className="h-6 w-16 rounded-lg bg-background-tertiary" />
-              <div className="h-6 w-20 rounded-lg bg-background-tertiary" />
-            </div>
-            <div className="h-4 w-full rounded bg-background-tertiary/80" />
-            <div className="h-4 w-1/2 rounded bg-background-tertiary/80" />
-            <div className="flex justify-between pt-3 border-t border-white/10">
-              <div className="h-6 w-20 rounded-full bg-background-tertiary" />
-              <div className="flex gap-2">
-                <div className="h-8 w-16 rounded bg-background-tertiary" />
-                <div className="h-8 w-8 rounded bg-background-tertiary" />
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 function EserciziEmptyState({
   hasActiveFilters,
@@ -657,9 +624,7 @@ export default function EserciziPage() {
         </div>
 
         {/* Loading State */}
-        {loading && items.length === 0 ? (
-          <EserciziPageSkeleton />
-        ) : (
+        {loading && items.length === 0 ? null : (
           <>
             <div role="status" aria-live="polite" className="sr-only">
               {filtered.length === 1
@@ -973,7 +938,7 @@ export default function EserciziPage() {
 
         {/* Modal per creare/modificare esercizio - Lazy loaded solo quando aperto */}
         {showForm && (
-          <Suspense fallback={<LoadingState message="Caricamento form esercizio..." />}>
+          <Suspense fallback={null}>
             <ExerciseFormModal
               open={showForm}
               onOpenChange={(open) => {

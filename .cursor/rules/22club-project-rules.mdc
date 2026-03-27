@@ -24,6 +24,11 @@ CODICE VIVO (PRIORITÀ MASSIMA)
 - e2e/
 - tests/
 
+NAVIGAZIONE CODICE
+- Per mappa route, API e puntatori per dominio: `INDICE_PROGETTO.md` (root repo).
+- Manutenzione obbligatoria: se aggiungi o rimuovi route (`src/app/**/page.tsx`), handler API (`src/app/api/**/route.ts`), o cambi macro-aree / puntatori per dominio in `src/lib` o `src/hooks` documentati nell’indice, aggiorna nello stesso intervento (o subito dopo) `INDICE_PROGETTO.md` (elenchi e/o tabella puntatori) e la data **Ultimo aggiornamento** in cima al file.
+- Se modifichi solo `INDICE_PROGETTO.md`, aggiorna comunque la data **Ultimo aggiornamento** in meta.
+
 CODICE DI SUPPORTO (NON MODIFICARE)
 - project_memory/
 - project_tracker/

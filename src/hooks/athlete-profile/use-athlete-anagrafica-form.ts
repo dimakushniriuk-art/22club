@@ -24,6 +24,11 @@ export function useAthleteAnagraficaForm({ anagrafica, athleteId }: UseAthleteAn
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState<AthleteAnagraficaUpdate>({})
 
+  useEffect(() => {
+    setIsEditing(false)
+    setFormData({})
+  }, [athleteId])
+
   // Inizializza formData quando i dati vengono caricati
   useEffect(() => {
     if (anagrafica && !isEditing) {
@@ -37,6 +42,7 @@ export function useAthleteAnagraficaForm({ anagrafica, athleteId }: UseAthleteAn
         codice_fiscale: anagrafica.codice_fiscale || null,
         indirizzo: anagrafica.indirizzo || null,
         citta: anagrafica.citta || null,
+        cap: anagrafica.cap || null,
         provincia: anagrafica.provincia || null,
         nazione: anagrafica.nazione || null,
         contatto_emergenza_nome: anagrafica.contatto_emergenza_nome || null,
@@ -61,6 +67,7 @@ export function useAthleteAnagraficaForm({ anagrafica, athleteId }: UseAthleteAn
       codice_fiscale: sanitizeString(data.codice_fiscale, 16) || undefined,
       indirizzo: sanitizeString(data.indirizzo, 200) || undefined,
       citta: sanitizeString(data.citta, 100) || undefined,
+      cap: sanitizeString(data.cap, 10) || undefined,
       provincia: sanitizeString(data.provincia, 50) || undefined,
       nazione: sanitizeString(data.nazione, 50) || undefined,
       contatto_emergenza_nome: sanitizeString(data.contatto_emergenza_nome, 200) || undefined,
@@ -113,6 +120,7 @@ export function useAthleteAnagraficaForm({ anagrafica, athleteId }: UseAthleteAn
         codice_fiscale: anagrafica.codice_fiscale || null,
         indirizzo: anagrafica.indirizzo || null,
         citta: anagrafica.citta || null,
+        cap: anagrafica.cap || null,
         provincia: anagrafica.provincia || null,
         nazione: anagrafica.nazione || null,
         contatto_emergenza_nome: anagrafica.contatto_emergenza_nome || null,

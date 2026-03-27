@@ -3,8 +3,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense, memo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
-import { LoadingState } from '@/components/dashboard/loading-state'
-import { SkeletonClientiList } from '@/components/shared/ui/skeleton'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { ClientiToolbar } from '@/components/dashboard/clienti/clienti-toolbar'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -458,7 +456,7 @@ export default function ClientiPage() {
         description="Gestisci i tuoi atleti e monitora i progressi"
         theme="teal"
       >
-        <SkeletonClientiList cards={8} className="py-4" />
+        {null}
       </StaffContentLayout>
     )
   }
@@ -517,11 +515,7 @@ export default function ClientiPage() {
       </div>
 
       {/* Lista Clienti */}
-      {loading && clienti.length === 0 ? (
-        <div className="relative py-4">
-          <SkeletonClientiList cards={8} />
-        </div>
-      ) : displayClienti.length === 0 && !loading ? (
+      {loading && clienti.length === 0 ? null : displayClienti.length === 0 && !loading ? (
         // FIX: Usa total (totale filtrato) invece di stats.totali (totale globale) per riflettere i filtri attivi
         <ClientiEmptyState
           searchTerm={searchTerm}
@@ -593,7 +587,7 @@ export default function ClientiPage() {
       </Suspense>
 
       {showCreaAtleta && (
-        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+        <Suspense fallback={null}>
           <CreaAtletaModal
             open={showCreaAtleta}
             onOpenChange={handleCloseCreaAtleta}
@@ -603,7 +597,7 @@ export default function ClientiPage() {
       )}
 
       {showModificaAtleta && atletaToEdit && (
-        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+        <Suspense fallback={null}>
           <ModificaAtletaModal
             open={showModificaAtleta}
             onOpenChange={setShowModificaAtleta}
@@ -614,7 +608,7 @@ export default function ClientiPage() {
       )}
 
       {showInvitaCliente && (
-        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+        <Suspense fallback={null}>
           <InvitaClienteModal
             open={showInvitaCliente}
             onOpenChange={setShowInvitaCliente}

@@ -27,8 +27,6 @@ import { InvitationsGrid } from '@/components/dashboard/invitations-grid'
 import { useInvitations } from '@/hooks/use-invitations'
 import { useAuth } from '@/providers/auth-provider'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
-import { Skeleton } from '@/components/ui'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { exportToCSV } from '@/lib/export-utils'
 import { createInvitoSchema } from '@/lib/validations/invito'
@@ -72,35 +70,6 @@ const SORT_OPTIONS: { value: InvitoSort; label: string }[] = [
   { value: 'nome_desc', label: 'Nome (Z-A)' },
   { value: 'stato', label: 'Stato' },
 ]
-
-const SKELETON_CARD_COUNT = 6
-
-function InvitationsListSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: SKELETON_CARD_COUNT }).map((_, i) => (
-        <Card key={i} variant="default" className="overflow-hidden">
-          <CardContent className="p-4 pt-10">
-            <div className="space-y-3">
-              <div className="flex items-start justify-between">
-                <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="h-4 w-4 rounded-full" />
-              </div>
-              <Skeleton className="h-6 w-20 rounded-full" />
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <div className="flex gap-2">
-                <Skeleton className="h-9 flex-1" />
-                <Skeleton className="h-9 flex-1" />
-                <Skeleton className="h-9 w-9" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
-}
 
 export default function InvitaAtletaPage() {
   const router = useRouter()
@@ -529,13 +498,7 @@ export default function InvitaAtletaPage() {
 
   // Solo auth loading: full-page spinner; error: full-page error
   if (authLoading) {
-    return (
-      <div className="relative min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-          <LoadingState message="Caricamento autenticazione..." />
-        </div>
-      </div>
-    )
+    return null
   }
 
   if (error) {
@@ -729,9 +692,7 @@ export default function InvitaAtletaPage() {
       </div>
 
       {/* Invitations List: skeleton in caricamento, empty state o griglia */}
-      {loading && invitations.length === 0 ? (
-        <InvitationsListSkeleton />
-      ) : filteredInvitations.length === 0 ? (
+      {loading && invitations.length === 0 ? null : filteredInvitations.length === 0 ? (
         <Card variant="default" className="relative overflow-hidden">
           <CardContent className="p-12 text-center relative">
             <Users className="text-text-tertiary mx-auto mb-4 h-16 w-16" />

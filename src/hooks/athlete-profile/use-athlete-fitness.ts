@@ -43,13 +43,9 @@ export function useAthleteFitness(athleteId: string | null) {
           .from('athlete_fitness_data')
           .select('*')
           .eq('athlete_id', athleteId)
-          .single()
+          .maybeSingle()
 
         if (error) {
-          // Se non esiste record, ritorna null (non è un errore)
-          if (error.code === 'PGRST116') {
-            return null
-          }
           throw error
         }
 

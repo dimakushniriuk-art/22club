@@ -67,25 +67,26 @@ export function AthleteMotivationalTab({ athleteId }: AthleteMotivationalTabProp
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-            <Target className="h-6 w-6 text-primary" />
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary flex-shrink-0" aria-hidden />
             Dati Motivazionali
           </h2>
-          <p className="text-text-secondary text-sm mt-1">
+          <p className="text-text-secondary text-xs mt-1 line-clamp-1">
             Motivazioni, ostacoli e preferenze dell&apos;atleta
           </p>
-          <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
+          <div className="mt-3 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
         </div>
         {!isEditing && (
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+            size="sm"
+            className="flex items-center gap-1.5 h-8 text-xs flex-shrink-0 self-start sm:self-center border border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3 w-3" />
             Modifica
           </Button>
         )}
@@ -145,22 +146,23 @@ export function AthleteMotivationalTab({ athleteId }: AthleteMotivationalTabProp
 
       {/* Pulsanti azione */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
+        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-white/10">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+            size="sm"
+            className="h-9 text-xs border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
             Annulla
           </Button>
           <Button
             variant="default"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="flex items-center gap-2"
+            size="sm"
           >
-            <Save className="h-4 w-4" />
+            <Save className="h-3.5 w-3.5" />
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
           </Button>
         </div>

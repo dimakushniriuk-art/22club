@@ -17,7 +17,6 @@ import { useSettingsProfile } from '@/hooks/use-settings-profile'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
-import { Skeleton } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 
@@ -55,28 +54,6 @@ const DEFAULT_ACCOUNT: AccountSettings = {
   timezone: 'Europe/Rome',
   dateFormat: 'DD/MM/YYYY',
   timeFormat: '24h',
-}
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
-
-function SettingsTabSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="rounded-xl border border-amber-500/20 bg-background-secondary/50 p-6 space-y-4">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-4 w-3/4 max-w-md" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-        <div className="flex justify-end pt-4">
-          <Skeleton className="h-10 w-32" />
-        </div>
-      </div>
-    </div>
-  )
 }
 
 const SettingsProfileTab = lazy(() =>
@@ -407,11 +384,7 @@ export default function MassaggiatoreImpostazioniPage() {
   ])
 
   if (showGuardLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
-      </div>
-    )
+    return null
   }
 
   return (
@@ -494,7 +467,7 @@ export default function MassaggiatoreImpostazioniPage() {
           </div>
 
           <TabsContent value="profilo" className="mt-0 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
+            <Suspense fallback={null}>
               <SettingsProfileTab
                 profile={profile}
                 profileLoading={profileLoading}
@@ -506,7 +479,7 @@ export default function MassaggiatoreImpostazioniPage() {
           </TabsContent>
 
           <TabsContent value="notifiche" className="mt-0 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
+            <Suspense fallback={null}>
               <SettingsNotificationsTab
                 notifications={notifications}
                 loading={loading}
@@ -518,7 +491,7 @@ export default function MassaggiatoreImpostazioniPage() {
           </TabsContent>
 
           <TabsContent value="privacy" className="mt-0 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
+            <Suspense fallback={null}>
               <SettingsPrivacyTab
                 privacy={privacy}
                 loading={loading}
@@ -529,7 +502,7 @@ export default function MassaggiatoreImpostazioniPage() {
           </TabsContent>
 
           <TabsContent value="account" className="mt-0 space-y-6">
-            <Suspense fallback={<SettingsTabSkeleton />}>
+            <Suspense fallback={null}>
               <SettingsAccountTab
                 account={account}
                 loading={loading}

@@ -9,7 +9,6 @@ export type Accent = 'primary' | 'white' | 'cyan' | 'purple' | 'emerald'
 
 interface AccentStyles {
   linkFocusClass: string
-  barClass: string
   iconBoxClass: string
   ctaClass: string
 }
@@ -19,31 +18,26 @@ const ICON_BOX_NEUTRAL = 'border-white/10 bg-white/5'
 const ACCENT_STYLES: Record<Accent, AccentStyles> = {
   primary: {
     linkFocusClass: 'focus-visible:ring-primary/50',
-    barClass: 'bg-primary',
     iconBoxClass: ICON_BOX_NEUTRAL,
     ctaClass: 'text-primary',
   },
   white: {
     linkFocusClass: 'focus-visible:ring-white/50',
-    barClass: 'bg-white',
     iconBoxClass: ICON_BOX_NEUTRAL,
     ctaClass: 'text-white/90',
   },
   cyan: {
     linkFocusClass: 'focus-visible:ring-cyan-400/50',
-    barClass: 'bg-cyan-400',
     iconBoxClass: ICON_BOX_NEUTRAL,
     ctaClass: 'text-cyan-400',
   },
   purple: {
     linkFocusClass: 'focus-visible:ring-purple-400/50',
-    barClass: 'bg-purple-400',
     iconBoxClass: ICON_BOX_NEUTRAL,
     ctaClass: 'text-purple-400',
   },
   emerald: {
     linkFocusClass: 'focus-visible:ring-emerald-400/50',
-    barClass: 'bg-emerald-400',
     iconBoxClass: ICON_BOX_NEUTRAL,
     ctaClass: 'text-emerald-400',
   },
@@ -80,10 +74,6 @@ function ProgressiNavCardComponent({
         variant="default"
         className="relative overflow-hidden transition-all duration-200 hover:border-white/20"
       >
-        <div
-          className={`absolute left-0 top-0 h-full w-1 rounded-l-lg ${s.barClass}`}
-          aria-hidden
-        />
         <CardHeader className="relative z-10 pb-2.5 px-4 min-[834px]:px-5 pt-4 min-[834px]:pt-5">
           <div className="flex items-center gap-2">
             <div

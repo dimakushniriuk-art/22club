@@ -378,6 +378,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const msg = reason instanceof Error ? reason.message : String(reason ?? '')
       const name = reason instanceof Error ? reason.name : ''
       const isAuthNetworkFailure = msg === 'Failed to fetch' || name === 'AuthRetryableFetchError'
+      const isRefreshTokenRejection =
+        name === 'AuthApiError' &&
+        (msg.includes('Invalid Refresh Token') ||
+          msg.includes('Refresh Token Not Found') ||
+          msg.toLowerCase().includes('refresh_token_not_found'))
+      if (isRefreshTokenRejection) {
+        void handleRefreshTokenError(reason)
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
       if (isAuthNetworkFailure) {
         event.preventDefault()
         event.stopPropagation()

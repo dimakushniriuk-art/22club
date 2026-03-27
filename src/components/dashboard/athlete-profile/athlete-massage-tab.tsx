@@ -7,7 +7,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
@@ -18,10 +18,24 @@ import { useAthleteMassage } from '@/hooks/athlete-profile/use-athlete-massage'
 import { useAthleteMassageForm } from '@/hooks/athlete-profile/use-athlete-massage-form'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { Hand, Edit, Save, X, Plus, Trash2, Calendar, Clock } from 'lucide-react'
+import {
+  Hand,
+  Edit,
+  Save,
+  X,
+  Plus,
+  Trash2,
+  Calendar,
+  Clock,
+  Activity,
+  FileText,
+} from 'lucide-react'
 import type { TipoMassaggioEnum, IntensitaMassaggioEnum } from '@/types/athlete-profile'
 import { sanitizeString, sanitizeNumber } from '@/lib/sanitize'
 import { formatDate } from '@/lib/format'
+import { cn } from '@/lib/utils'
+import { ATHLETE_PROFILE_NESTED_CARD_CLASS } from './athlete-profile-ds'
+import { AthleteProfileSectionHeading } from './athlete-profile-section-heading'
 
 interface AthleteMassageTabProps {
   athleteId: string
@@ -71,7 +85,6 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
     updateMutation,
   } = useAthleteMassageForm({ massage: massage ?? null, athleteId })
 
-  // Memoizza liste array
   const zoneList = useMemo(() => formData.zone_problematiche || [], [formData.zone_problematiche])
   const allergieList = useMemo(() => formData.allergie_prodotti || [], [formData.allergie_prodotti])
   const tipiMassaggioList = useMemo(
@@ -89,227 +102,153 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-text-primary md:text-2xl">
-            <Hand className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+    <Card variant="default" className={cn(ATHLETE_PROFILE_NESTED_CARD_CLASS, 'p-0')}>
+      <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+        <div className="min-w-0 text-center sm:text-left">
+          <h2 className="flex items-center justify-center gap-2 text-base font-semibold text-text-primary sm:justify-start sm:text-lg">
+            <Hand className="h-4 w-4 shrink-0 text-cyan-400" aria-hidden />
             Dati Massaggi
           </h2>
-          <p className="mt-1 text-sm text-text-secondary md:text-base">
+          <p className="mt-1 line-clamp-2 text-xs text-text-secondary sm:line-clamp-1">
             Preferenze e storico massaggi dell&apos;atleta
           </p>
-          <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
         </div>
         {!isEditing && (
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className="min-h-[44px] shrink-0 gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+            size="sm"
+            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 text-xs touch-manipulation hover:border-primary/20 hover:bg-white/[0.04] sm:h-9 sm:w-auto sm:rounded-md"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3.5 w-3.5" />
             Modifica
           </Button>
         )}
       </div>
 
-      {/* Preferenze Massaggio */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader className="relative z-10">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
-              <Hand className="h-5 w-5 text-primary" />
-              Preferenze Tipo Massaggio
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {isEditing ? (
-              <div className="flex flex-wrap gap-3">
-                {TIPI_MASSAGGIO.map((tipo) => {
-                  const isSelected = tipiMassaggioList.includes(tipo.value)
-                  return (
-                    <button
-                      key={tipo.value}
-                      type="button"
-                      className={`${CHIP_BASE} ${isSelected ? CHIP_SELECTED : CHIP_UNSELECTED}`}
-                      onClick={() => toggleTipoMassaggio(tipo.value)}
-                    >
-                      {tipo.label}
-                    </button>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                {massage?.preferenze_tipo_massaggio &&
+      <CardContent className="space-y-0 p-0">
+        <AthleteProfileSectionHeading icon={Hand}>Preferenze massaggio</AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                Tipi preferiti
+              </p>
+              {isEditing ? (
+                <div className="flex flex-wrap gap-3">
+                  {TIPI_MASSAGGIO.map((tipo) => {
+                    const isSelected = tipiMassaggioList.includes(tipo.value)
+                    return (
+                      <button
+                        key={tipo.value}
+                        type="button"
+                        className={`${CHIP_BASE} ${isSelected ? CHIP_SELECTED : CHIP_UNSELECTED}`}
+                        onClick={() => toggleTipoMassaggio(tipo.value)}
+                      >
+                        {tipo.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : massage?.preferenze_tipo_massaggio &&
                 massage.preferenze_tipo_massaggio.length > 0 ? (
-                  massage.preferenze_tipo_massaggio.map((tipo, index) => (
+                <div className="flex flex-wrap gap-2">
+                  {massage.preferenze_tipo_massaggio.map((tipo, index) => (
                     <Badge key={index} variant="secondary">
                       {TIPI_MASSAGGIO.find((t) => t.value === tipo)?.label || tipo}
                     </Badge>
-                  ))
-                ) : (
-                  <p className="text-sm text-text-secondary">Nessuna preferenza tipo massaggio</p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader className="relative z-10">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
-              <Hand className="h-5 w-5 text-primary" />
-              Intensità Preferita
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {isEditing ? (
-              <SimpleSelect
-                value={formData.intensita_preferita || ''}
-                onValueChange={(v) =>
-                  setFormData({
-                    ...formData,
-                    intensita_preferita: (v || null) as IntensitaMassaggioEnum | null,
-                  })
-                }
-                placeholder="Non specificato"
-                options={[
-                  { value: '', label: 'Non specificato' },
-                  ...[...INTENSITA_MASSAGGIO].sort((a, b) => a.label.localeCompare(b.label, 'it')),
-                ]}
-              />
-            ) : (
-              massage?.intensita_preferita && (
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-text-secondary">Nessuna preferenza tipo massaggio</p>
+              )}
+            </div>
+            <div className="space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                Intensità preferita
+              </p>
+              {isEditing ? (
+                <SimpleSelect
+                  value={formData.intensita_preferita || ''}
+                  onValueChange={(v) =>
+                    setFormData({
+                      ...formData,
+                      intensita_preferita: (v || null) as IntensitaMassaggioEnum | null,
+                    })
+                  }
+                  placeholder="Non specificato"
+                  options={[
+                    { value: '', label: 'Non specificato' },
+                    ...[...INTENSITA_MASSAGGIO].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                  ]}
+                />
+              ) : massage?.intensita_preferita ? (
                 <p className="text-base capitalize text-text-primary">
                   {INTENSITA_MASSAGGIO.find((i) => i.value === massage.intensita_preferita)
                     ?.label || massage.intensita_preferita}
                 </p>
-              )
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Zone Problematiche e Allergie Prodotti */}
-      {isEditing && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card variant="default" className="overflow-hidden">
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">
-                Zone Problematiche
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10 space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Aggiungi zona"
-                  value={newArrayItem.zona || ''}
-                  maxLength={100}
-                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
-                  onChange={(e) => {
-                    const sanitized = sanitizeString(e.target.value, 100)
-                    setNewArrayItem({ ...newArrayItem, zona: sanitized || '' })
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newArrayItem.zona) {
-                      addArrayItem('zone_problematiche', newArrayItem.zona)
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-h-[44px] min-w-[44px] shrink-0 border border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-primary"
-                  onClick={() => {
-                    if (newArrayItem.zona) {
-                      addArrayItem('zone_problematiche', newArrayItem.zona)
-                    }
-                  }}
-                  aria-label="Aggiungi zona"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {zoneList.map((zona, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {zona}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeArrayItem('zone_problematiche', index)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card variant="default" className="overflow-hidden">
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">
-                Allergie Prodotti
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10 space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Aggiungi allergia"
-                  value={newArrayItem.allergia || ''}
-                  maxLength={100}
-                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
-                  onChange={(e) => {
-                    const sanitized = sanitizeString(e.target.value, 100)
-                    setNewArrayItem({ ...newArrayItem, allergia: sanitized || '' })
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newArrayItem.allergia) {
-                      addArrayItem('allergie_prodotti', newArrayItem.allergia)
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-h-[44px] min-w-[44px] shrink-0 border border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-primary"
-                  onClick={() => {
-                    if (newArrayItem.allergia) {
-                      addArrayItem('allergie_prodotti', newArrayItem.allergia)
-                    }
-                  }}
-                  aria-label="Aggiungi allergia"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {allergieList.map((allergia, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {allergia}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeArrayItem('allergie_prodotti', index)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              ) : (
+                <p className="text-sm text-text-secondary">Non specificato</p>
+              )}
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Visualizzazione Zone e Allergie (non editing) */}
-      {!isEditing && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card variant="default" className="overflow-hidden">
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">
-                Zone Problematiche
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              {massage?.zone_problematiche && massage.zone_problematiche.length > 0 ? (
+        <AthleteProfileSectionHeading icon={Activity}>
+          Zone e allergie prodotti
+        </AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                Zone problematiche
+              </p>
+              {isEditing ? (
+                <>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Aggiungi zona"
+                      value={newArrayItem.zona || ''}
+                      maxLength={100}
+                      className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
+                      onChange={(e) => {
+                        const sanitized = sanitizeString(e.target.value, 100)
+                        setNewArrayItem({ ...newArrayItem, zona: sanitized || '' })
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newArrayItem.zona) {
+                          addArrayItem('zone_problematiche', newArrayItem.zona)
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-9 shrink-0 border-white/10"
+                      onClick={() => {
+                        if (newArrayItem.zona) {
+                          addArrayItem('zone_problematiche', newArrayItem.zona)
+                        }
+                      }}
+                      aria-label="Aggiungi zona"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {zoneList.map((zona, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {zona}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => removeArrayItem('zone_problematiche', index)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              ) : massage?.zone_problematiche && massage.zone_problematiche.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {massage.zone_problematiche.map((zona, index) => (
                     <Badge key={index} variant="secondary">
@@ -320,17 +259,57 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               ) : (
                 <p className="text-sm text-text-secondary">Nessuna zona problematica</p>
               )}
-            </CardContent>
-          </Card>
-
-          <Card variant="default" className="overflow-hidden">
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-lg font-bold text-text-primary">
-                Allergie Prodotti
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              {massage?.allergie_prodotti && massage.allergie_prodotti.length > 0 ? (
+            </div>
+            <div className="space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                Allergie prodotti
+              </p>
+              {isEditing ? (
+                <>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Aggiungi allergia"
+                      value={newArrayItem.allergia || ''}
+                      maxLength={100}
+                      className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
+                      onChange={(e) => {
+                        const sanitized = sanitizeString(e.target.value, 100)
+                        setNewArrayItem({ ...newArrayItem, allergia: sanitized || '' })
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newArrayItem.allergia) {
+                          addArrayItem('allergie_prodotti', newArrayItem.allergia)
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-9 shrink-0 border-white/10"
+                      onClick={() => {
+                        if (newArrayItem.allergia) {
+                          addArrayItem('allergie_prodotti', newArrayItem.allergia)
+                        }
+                      }}
+                      aria-label="Aggiungi allergia"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {allergieList.map((allergia, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {allergia}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => removeArrayItem('allergie_prodotti', index)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              ) : massage?.allergie_prodotti && massage.allergie_prodotti.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {massage.allergie_prodotti.map((allergia, index) => (
                     <Badge key={index} variant="secondary">
@@ -341,38 +320,35 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               ) : (
                 <p className="text-sm text-text-secondary">Nessuna allergia prodotti</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Storico Massaggi */}
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader className="relative z-10">
-          <div className="flex items-center justify-between gap-3">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold text-text-primary">
-              <Calendar className="h-5 w-5 text-primary" />
-              Storico Massaggi
-            </CardTitle>
-            {isEditing && (
+        <AthleteProfileSectionHeading
+          icon={Calendar}
+          trailing={
+            isEditing ? (
               <Button
                 variant="outline"
-                className="min-h-[44px] shrink-0 gap-2 border border-white/10 hover:border-primary/20 hover:bg-white/[0.04] text-primary"
+                size="sm"
                 onClick={() => setShowMassaggioForm(true)}
+                className="flex h-9 items-center gap-2 border-white/10 text-xs hover:border-primary/20 hover:bg-white/[0.04]"
               >
-                <Plus className="h-4 w-4" />
-                Aggiungi Massaggio
+                <Plus className="h-3.5 w-3.5" />
+                Aggiungi massaggio
               </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="relative z-10">
+            ) : undefined
+          }
+        >
+          Storico massaggi
+        </AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
           {massaggiList.length > 0 ? (
             <div className="space-y-3">
               {massaggiList.map((massaggio, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4"
+                  className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-text-primary">
@@ -396,7 +372,8 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   {isEditing && (
                     <Button
                       variant="outline"
-                      className="min-h-[44px] min-w-[44px] shrink-0 rounded-lg border border-white/10 text-text-secondary hover:border-state-error/50 hover:text-state-error hover:bg-white/[0.04]"
+                      size="icon"
+                      className="h-9 shrink-0 border-white/10 sm:self-center"
                       onClick={() => removeMassaggio(index)}
                       aria-label="Rimuovi massaggio"
                     >
@@ -412,7 +389,6 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
             </p>
           )}
 
-          {/* Form Aggiungi Massaggio */}
           {showMassaggioForm && (
             <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-4 min-[834px]:p-5">
               <div className="space-y-2">
@@ -422,7 +398,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                 <Input
                   id="massaggio-data"
                   type="date"
-                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
+                  className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                   value={newArrayItem.massaggio?.data || ''}
                   onChange={(e) =>
                     setNewArrayItem({
@@ -460,7 +436,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   type="number"
                   min={15}
                   max={180}
-                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
+                  className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                   value={newArrayItem.massaggio?.durata_minuti || ''}
                   onChange={(e) => {
                     const sanitized = sanitizeNumber(
@@ -487,7 +463,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   id="massaggio-note"
                   value={newArrayItem.massaggio?.note || ''}
                   maxLength={500}
-                  className="min-h-[44px] rounded-md border border-white/10 bg-white/[0.04] text-base focus:ring-2 focus:ring-primary/20 focus:border-primary/30"
+                  className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                   onChange={(e) => {
                     const sanitized = sanitizeString(e.target.value, 500)
                     setNewArrayItem({
@@ -502,31 +478,26 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <Button
                   variant="outline"
-                  className="min-h-[44px] rounded-lg border border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+                  className="min-h-9 rounded-lg border border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
                   onClick={() => setShowMassaggioForm(false)}
                 >
                   Annulla
                 </Button>
-                <Button variant="default" className="min-h-[44px]" onClick={addMassaggio}>
+                <Button variant="default" className="min-h-9" onClick={addMassaggio}>
                   Aggiungi
                 </Button>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Note Terapeutiche */}
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader className="relative z-10">
-          <CardTitle className="text-lg font-bold text-text-primary">Note Terapeutiche</CardTitle>
-        </CardHeader>
-        <CardContent className="relative z-10">
+        <AthleteProfileSectionHeading icon={FileText}>Note terapeutiche</AthleteProfileSectionHeading>
+        <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
           {isEditing ? (
             <Textarea
               value={formData.note_terapeutiche || ''}
               maxLength={2000}
-              className="min-h-[44px] text-base"
+              className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
               onChange={(e) => {
                 const sanitized = sanitizeString(e.target.value, 2000)
                 setFormData({ ...formData, note_terapeutiche: sanitized || null })
@@ -535,37 +506,36 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               rows={4}
             />
           ) : massage?.note_terapeutiche ? (
-            <p className="whitespace-pre-wrap rounded-lg border border-white/10 bg-white/[0.02] p-4 text-text-primary">
+            <p className="whitespace-pre-wrap rounded-lg border border-white/10 bg-white/[0.02] p-3 text-sm text-text-primary">
               {massage.note_terapeutiche}
             </p>
           ) : (
             <p className="py-4 text-center text-sm text-text-secondary">Nessuna nota terapeutica</p>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Pulsanti azione */}
-      {isEditing && (
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-white/10 pt-4">
-          <Button
-            variant="outline"
-            className="min-h-[44px] gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
-            onClick={handleCancel}
-          >
-            <X className="h-4 w-4" />
-            Annulla
-          </Button>
-          <Button
-            variant="default"
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="min-h-[44px] gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
-          </Button>
         </div>
-      )}
-    </div>
+
+        {isEditing && (
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 px-4 pb-4 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3 sm:px-5 sm:pb-5 sm:pt-5">
+            <Button
+              variant="outline"
+              className="flex h-11 w-full items-center justify-center gap-2 border-white/10 touch-manipulation hover:border-primary/20 hover:bg-white/[0.04] sm:h-auto sm:min-h-[44px] sm:w-auto"
+              onClick={handleCancel}
+            >
+              <X className="h-4 w-4" />
+              Annulla
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+              className="flex h-11 w-full items-center justify-center gap-2 touch-manipulation sm:h-auto sm:min-h-[44px] sm:w-auto"
+            >
+              <Save className="h-4 w-4" />
+              {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

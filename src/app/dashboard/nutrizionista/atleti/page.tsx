@@ -118,25 +118,6 @@ function KpiCard({
   )
 }
 
-function AthletesTableSkeleton() {
-  return (
-    <div className="rounded-xl border border-border overflow-hidden">
-      <div className="animate-pulse">
-        <div className="h-12 bg-background-tertiary/50 border-b border-border" />
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="h-14 border-b border-border/50 flex items-center gap-4 px-4">
-            <div className="h-8 w-8 rounded-full bg-background-tertiary" />
-            <div className="h-4 flex-1 max-w-[200px] rounded bg-background-tertiary" />
-            <div className="h-4 w-32 rounded bg-background-tertiary" />
-            <div className="h-5 w-16 rounded-full bg-background-tertiary" />
-            <div className="h-4 w-12 rounded bg-background-tertiary" />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 const AthleteRowActions = memo(function AthleteRowActions({
   row,
   onAddProgress,
@@ -1010,9 +991,7 @@ export default function NutrizionistaAtletiPage() {
         </Drawer>
 
         {/* Content */}
-        {loading ? (
-          <AthletesTableSkeleton />
-        ) : rows.length === 0 ? (
+        {loading ? null : rows.length === 0 ? (
           <div className="rounded-xl border-2 border-teal-500/30 bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
             <Users className="h-12 w-12 text-teal-500/50 shrink-0" aria-hidden />
             <p className="text-text-primary font-medium">Nessun cliente assegnato</p>

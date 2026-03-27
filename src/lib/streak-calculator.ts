@@ -100,43 +100,47 @@ export function calculateStreakDays(
 /**
  * Calcola streak da workout_logs con query Supabase
  * @param athleteId - UUID dell'atleta (può essere user_id da auth.users o profile.id)
+ * @param resolvedProfileId - Se già noto (es. da batch profilo), evita query duplicate su `profiles`
  */
 export async function calculateStreakFromLogs(
   supabase: ReturnType<typeof import('@/lib/supabase').createClient>,
   athleteId: string,
+  resolvedProfileId?: string | null,
 ): Promise<number> {
   try {
-    let profileId: string | null = null
+    let profileId: string | null = resolvedProfileId ?? null
 
-    // Prova prima come user_id (profiles.user_id)
-    const { data: profileByUserId, error: profileErrorByUserId } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', athleteId)
-      .maybeSingle()
-
-    const profileByUserIdTyped = profileByUserId as { id?: string } | null
-    if (profileByUserIdTyped?.id) {
-      profileId = profileByUserIdTyped.id
-    } else {
-      // Se non trovato come user_id, prova come profile.id direttamente
-      const { data: profileById, error: profileErrorById } = await supabase
+    if (!profileId) {
+      // Prova prima come user_id (profiles.user_id)
+      const { data: profileByUserId, error: profileErrorByUserId } = await supabase
         .from('profiles')
         .select('id')
-        .eq('id', athleteId)
+        .eq('user_id', athleteId)
         .maybeSingle()
 
-      const profileByIdTyped = profileById as { id?: string } | null
-      if (profileByIdTyped?.id) {
-        profileId = profileByIdTyped.id
+      const profileByUserIdTyped = profileByUserId as { id?: string } | null
+      if (profileByUserIdTyped?.id) {
+        profileId = profileByUserIdTyped.id
       } else {
-        // Nessun profilo trovato né come user_id né come profile.id
-        logger.warn('Streak: profilo non trovato né come user_id né come profile.id', {
-          athleteId,
-          profileErrorById,
-          profileErrorByUserId,
-        })
-        return 0
+        // Se non trovato come user_id, prova come profile.id direttamente
+        const { data: profileById, error: profileErrorById } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', athleteId)
+          .maybeSingle()
+
+        const profileByIdTyped = profileById as { id?: string } | null
+        if (profileByIdTyped?.id) {
+          profileId = profileByIdTyped.id
+        } else {
+          // Nessun profilo trovato né come user_id né come profile.id
+          logger.warn('Streak: profilo non trovato né come user_id né come profile.id', {
+            athleteId,
+            profileErrorById,
+            profileErrorByUserId,
+          })
+          return 0
+        }
       }
     }
 

@@ -18,16 +18,18 @@ interface AthleteStatsCardsProps {
   }
   /** Se true, nasconde le icon box decorative in angolo (solo pagina profilo). */
   hideIcons?: boolean
+  /** Se true, mostra “—” al posto dei numeri (niente skeleton). */
+  loading?: boolean
 }
 
 const CARD_DS =
-  'relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200 active:scale-[0.98]'
+  'relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] transition-colors duration-200 hover:border-white/15 active:scale-[0.98] touch-manipulation'
 const ICON_BOX =
   'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-10 sm:w-10'
 
-export function AthleteStatsCards({ stats, hideIcons = false }: AthleteStatsCardsProps) {
+export function AthleteStatsCards({ stats, hideIcons = false, loading = false }: AthleteStatsCardsProps) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+    <div className="grid grid-cols-3 gap-2 sm:gap-3 min-[834px]:gap-4">
       <Card variant="default" className={CARD_DS}>
         <CardContent className="relative p-3 text-center sm:p-4">
           {!hideIcons && (
@@ -36,7 +38,7 @@ export function AthleteStatsCards({ stats, hideIcons = false }: AthleteStatsCard
             </div>
           )}
           <div className="relative z-10 text-2xl font-bold tabular-nums text-text-primary sm:text-3xl">
-            {stats.allenamenti_mese}
+            {loading ? '—' : stats.allenamenti_mese}
           </div>
           <div className="relative z-10 mt-0.5 text-[11px] font-medium leading-tight text-text-secondary sm:text-xs">
             Allenamenti mese
@@ -51,7 +53,7 @@ export function AthleteStatsCards({ stats, hideIcons = false }: AthleteStatsCard
             </div>
           )}
           <div className="relative z-10 text-2xl font-bold tabular-nums text-text-primary sm:text-3xl">
-            {stats.lezioni_rimanenti}
+            {loading ? '—' : stats.lezioni_rimanenti}
           </div>
           <div className="relative z-10 mt-0.5 text-[11px] font-medium leading-tight text-text-secondary sm:text-xs">
             Lezioni rimanenti
@@ -66,7 +68,7 @@ export function AthleteStatsCards({ stats, hideIcons = false }: AthleteStatsCard
             </div>
           )}
           <div className="relative z-10 text-2xl font-bold tabular-nums text-text-primary sm:text-3xl">
-            {stats.allenamenti_totali}
+            {loading ? '—' : stats.allenamenti_totali}
           </div>
           <div className="relative z-10 mt-0.5 text-[11px] font-medium leading-tight text-text-secondary sm:text-xs">
             Totale sessioni

@@ -17,7 +17,6 @@ import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { Button } from '@/components/ui'
-import { Skeleton } from '@/components/shared/ui/skeleton'
 import { createLogger } from '@/lib/logger'
 import {
   NUTRITION_TABLES,
@@ -28,8 +27,6 @@ import {
 } from '@/lib/nutrition-tables'
 
 const logger = createLogger('app:dashboard:nutrizionista:page')
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 /** Primo e ultimo istante del mese corrente (UTC). */
 function getCurrentMonthRange(): { start: string; end: string } {
@@ -481,11 +478,7 @@ export default function NutrizionistaPage() {
   }, [loadData])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return null
   }
 
   return (
@@ -521,23 +514,6 @@ export default function NutrizionistaPage() {
 
         {/* Vista smartphone: layout "I tuoi KPI Nutrizione" — testi e blocchi adattati */}
         <div className="md:hidden flex flex-col gap-4 pb-4">
-          {loading && (
-            <div className="flex flex-col gap-3">
-              <Skeleton className="h-14 w-full rounded-lg" />
-              <Skeleton className="h-11 w-40 rounded-lg" />
-              <div className="grid grid-cols-3 gap-1.5">
-                <Skeleton className="h-[72px] rounded-lg" />
-                <Skeleton className="h-[72px] rounded-lg" />
-                <Skeleton className="h-[72px] rounded-lg" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Skeleton className="h-20 rounded-lg" />
-                <Skeleton className="h-20 rounded-lg" />
-                <Skeleton className="h-20 rounded-lg" />
-                <Skeleton className="h-20 rounded-lg" />
-              </div>
-            </div>
-          )}
           {!loading && !error && (
             <>
               <div>
@@ -703,18 +679,7 @@ export default function NutrizionistaPage() {
               </div>
             )}
 
-          {loading ? (
-            <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} height={100} className="rounded-xl" />
-                ))}
-              </div>
-              <Skeleton height={200} className="rounded-xl" />
-              <Skeleton height={280} className="rounded-xl" />
-              <Skeleton height={240} className="rounded-xl" />
-            </div>
-          ) : (
+          {loading ? null : (
             <div className="flex flex-col gap-6">
               {/* KPI — stile Statistiche (card teal/cyan) + growth + atleti senza piano */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">

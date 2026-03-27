@@ -18,7 +18,6 @@ import {
   isAthleteAppointmentPastLike,
 } from '@/lib/appointments/athlete-query-params'
 import { supabase } from '@/lib/supabase/client'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { AppuntamentiPageHeader } from './AppuntamentiPageHeader'
 import { AppuntamentiListView } from './AppuntamentiListView'
 
@@ -36,23 +35,6 @@ function toLocalISOString(date: Date): string {
   const min = String(date.getMinutes()).padStart(2, '0')
   const s = String(date.getSeconds()).padStart(2, '0')
   return `${y}-${m}-${d}T${h}:${min}:${s}`
-}
-
-function AppuntamentiLoadingSkeleton() {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-        <div className="animate-pulse space-y-4">
-          <div className="bg-background-tertiary h-12 w-56 rounded-xl" />
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-background-tertiary h-20 rounded-xl" />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 function AppuntamentiPageContent() {
@@ -227,7 +209,7 @@ function AppuntamentiPageContent() {
         profileId: user?.id,
         userId: user?.user_id,
       })
-      // error è di tipo string | null da useAthleteAppointments
+      // error Ã¨ di tipo string | null da useAthleteAppointments
       const errorMessage =
         typeof error === 'string' ? error : 'Errore sconosciuto nel caricamento degli appuntamenti'
       notifyError('Errore nel caricamento appuntamenti', errorMessage)
@@ -235,17 +217,19 @@ function AppuntamentiPageContent() {
   }, [error, user?.id, user?.user_id])
 
   if (!user || !isValidUser) {
-    return <AppuntamentiLoadingSkeleton />
-  }
-
-  if (isAthlete && statoCliente === null) {
-    return <AppuntamentiLoadingSkeleton />
+    return (
+      <div className="flex min-h-0 flex-1 flex-col bg-background">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+          <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
+        </div>
+      </div>
+    )
   }
 
   if (isAthlete && statoCliente === 'non_ancora_cliente') {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4">
           <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
           <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
             <p className="text-text-primary text-sm font-medium">
@@ -258,18 +242,13 @@ function AppuntamentiPageContent() {
     )
   }
 
-  const isLoading = isAthlete ? athleteCalendar.appointmentsLoading : loading
-  if (isLoading && !error) {
-    return <AppuntamentiLoadingSkeleton />
-  }
-
   if (error && !loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4">
           <AppuntamentiPageHeader onBack={handleBack} />
           <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
-            <div className="mb-3 text-4xl opacity-50">❌</div>
+            <div className="mb-3 text-4xl opacity-50">âŒ</div>
             <p className="text-text-primary mb-4 text-sm font-medium line-clamp-3">
               {typeof error === 'string'
                 ? error
@@ -369,63 +348,52 @@ function AppuntamentiPageContent() {
 
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 flex flex-col px-3 pt-24 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5">
+        <div className="min-h-0 flex-1 flex flex-col px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
           <AppuntamentiPageHeader
             subtitle="Calendario e appuntamenti con il trainer"
             onBack={handleBack}
           />
 
           <div className="min-h-[260px] rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] overflow-hidden flex flex-col">
-            {athleteCalendar.appointmentsLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mx-auto mb-4" />
-                  <p className="text-text-secondary text-sm">Caricamento calendario...</p>
-                </div>
-              </div>
-            ) : (
-              <CalendarView
-                appointments={calendarAppointments}
-                onEventClick={handleEventClick}
-                onNewAppointment={trainerStaffId ? handleNewAppointment : undefined}
-                onEventDrop={handleEventDrop}
-                onEventResize={handleEventResize}
-                onSelectSlot={handleSelectSlot}
-                navigateToDate={navigateToDate}
-                onNavigateComplete={() => setNavigateToDate(null)}
-                isEventEditable={(apt) =>
-                  !apt.is_open_booking_day && apt.created_by_role === 'athlete'
-                }
-                openBookingAsBackground
-                slotBookingCounts={slotBookingCounts}
-                openBookingSlotMax={openBookingSlotMax}
-                compactToolbar
-              />
-            )}
+            <CalendarView
+              appointments={calendarAppointments}
+              onEventClick={handleEventClick}
+              onNewAppointment={trainerStaffId ? handleNewAppointment : undefined}
+              onEventDrop={handleEventDrop}
+              onEventResize={handleEventResize}
+              onSelectSlot={handleSelectSlot}
+              navigateToDate={navigateToDate}
+              onNavigateComplete={() => setNavigateToDate(null)}
+              isEventEditable={(apt) =>
+                !apt.is_open_booking_day && apt.created_by_role === 'athlete'
+              }
+              openBookingAsBackground
+              slotBookingCounts={slotBookingCounts}
+              openBookingSlotMax={openBookingSlotMax}
+              compactToolbar
+            />
           </div>
 
-          {!athleteCalendar.appointmentsLoading && (
-            <div className="mt-3 space-y-2">
-              {trainerStaffId && (
-                <p className="text-center text-xs text-text-secondary px-1">
-                  Libera prenotazione: max {openBookingSlotMax} prenotazioni per fascia oraria.
-                </p>
-              )}
-              {!trainerStaffId && !athleteCalendar.trainerLoading && (
-                <p className="text-center text-sm text-text-secondary rounded-lg border border-white/10 bg-white/5 py-2.5 px-3">
-                  Non hai ancora un trainer assegnato. Contatta l&apos;organizzazione per poter
-                  prenotare.
-                </p>
-              )}
-            </div>
-          )}
+          <div className="mt-3 space-y-2">
+            {trainerStaffId && (
+              <p className="text-center text-xs text-text-secondary px-1">
+                Libera prenotazione: max {openBookingSlotMax} prenotazioni per fascia oraria.
+              </p>
+            )}
+            {!trainerStaffId && !athleteCalendar.trainerLoading && (
+              <p className="text-center text-sm text-text-secondary rounded-lg border border-white/10 bg-white/5 py-2.5 px-3">
+                Non hai ancora un trainer assegnato. Contatta l&apos;organizzazione per poter
+                prenotare.
+              </p>
+            )}
+          </div>
 
           {showForm && (
             <div
               data-testid="appointment-form-overlay"
               className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden bg-black/70 backdrop-blur-sm p-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:p-4"
             >
-              <Suspense fallback={<LoadingState message="Caricamento form..." />}>
+              <Suspense fallback={null}>
                 <AppointmentForm
                   appointment={
                     editingAppointment ||
@@ -521,22 +489,7 @@ function AppuntamentiPageContent() {
 
 export default function AppuntamentiPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-0 flex-1 flex-col bg-background">
-          <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 space-y-4">
-            <div className="animate-pulse space-y-4">
-              <div className="h-12 w-56 bg-background-tertiary rounded-xl" />
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-background-tertiary rounded-xl" />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={null}>
       <AppuntamentiPageContent />
     </Suspense>
   )

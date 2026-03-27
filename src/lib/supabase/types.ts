@@ -1174,6 +1174,48 @@ export type Database = {
           },
         ]
       }
+      athlete_workout_day_exercise_notes: {
+        Row: {
+          id: string
+          profile_id: string
+          workout_day_exercise_id: string
+          note: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          workout_day_exercise_id: string
+          note?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          workout_day_exercise_id?: string
+          note?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'athlete_workout_day_exercise_notes_profile_id_fkey'
+            columns: ['profile_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'athlete_workout_day_exercise_notes_workout_day_exercise_id_fkey'
+            columns: ['workout_day_exercise_id']
+            isOneToOne: false
+            referencedRelation: 'workout_day_exercises'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       athletes: {
         Row: {
           converted_from_lead_id: string | null

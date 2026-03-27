@@ -8,7 +8,6 @@ const logger = createLogger('app:dashboard:schede:[id]:modifica:page')
 import { useWorkoutDetail } from '@/hooks/workout/use-workout-detail'
 import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
 import { WorkoutWizardContent } from '@/components/workout/workout-wizard-content'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useToast } from '@/components/ui/toast'
 import type { WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
@@ -181,11 +180,7 @@ function ModificaSchedaContent() {
   }
 
   if (detailLoading || plansLoading) {
-    return (
-      <div className="relative min-h-screen flex flex-col">
-        <LoadingState message="Caricamento scheda..." />
-      </div>
-    )
+    return null
   }
 
   if (detailError) {
@@ -226,7 +221,7 @@ function ModificaSchedaContent() {
 
 export default function ModificaSchedaPage() {
   return (
-    <Suspense fallback={<LoadingState message="Caricamento..." />}>
+    <Suspense fallback={null}>
       <ModificaSchedaContent />
     </Suspense>
   )

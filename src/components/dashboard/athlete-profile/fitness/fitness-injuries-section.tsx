@@ -6,13 +6,12 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
 import { Textarea } from '@/components/ui'
 import { Badge } from '@/components/ui'
-import { AlertCircle, Plus, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { sanitizeString } from '@/lib/sanitize'
 import type { InfortunioPregresso } from '@/types/athlete-profile'
 
@@ -32,8 +31,6 @@ interface FitnessInjuriesSectionProps {
 
 export function FitnessInjuriesSection({
   isEditing,
-  // Nota: infortuni potrebbe essere usato in futuro per visualizzazione lista
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   infortuni,
   showInfortunioForm,
   newInfortunio,
@@ -43,34 +40,18 @@ export function FitnessInjuriesSection({
   onInfortunioAdd,
   onInfortunioRemove,
 }: FitnessInjuriesSectionProps) {
+  const listaInfortuni = isEditing
+    ? infortuni
+    : (fitness?.infortuni_pregressi ?? [])
+
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-primary" />
-            Infortuni Pregressi
-          </CardTitle>
-          {isEditing && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onShowInfortunioFormChange(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Aggiungi Infortunio
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {fitness?.infortuni_pregressi && fitness.infortuni_pregressi.length > 0 ? (
-          <div className="space-y-3">
-            {fitness.infortuni_pregressi.map((infortunio, index) => (
+    <div className="space-y-3">
+      {listaInfortuni.length > 0 ? (
+        <div className="space-y-3">
+          {listaInfortuni.map((infortunio, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02]"
+                className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="text-text-primary font-semibold">{infortunio.tipo}</p>
@@ -87,85 +68,91 @@ export function FitnessInjuriesSection({
                   )}
                 </div>
                 {isEditing && (
-                  <Button variant="outline" size="sm" onClick={() => onInfortunioRemove(index)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 border-white/10 sm:self-center"
+                    onClick={() => onInfortunioRemove(index)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
             ))}
-          </div>
-        ) : (
-          <p className="text-text-secondary text-center py-4">Nessun infortunio pregresso</p>
-        )}
+        </div>
+      ) : (
+        <p className="py-4 text-center text-text-secondary">Nessun infortunio pregresso</p>
+      )}
 
-        {/* Form Aggiungi Infortunio */}
-        {showInfortunioForm && (
-          <div className="mt-4 p-4 rounded-lg border border-white/10 bg-white/[0.02] space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="infortunio-data">Data</Label>
-              <Input
-                id="infortunio-data"
-                type="date"
-                value={newInfortunio.data || ''}
-                onChange={(e) => onNewInfortunioChange({ ...newInfortunio, data: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="infortunio-tipo">Tipo</Label>
-              <Input
-                id="infortunio-tipo"
-                value={newInfortunio.tipo || ''}
-                onChange={(e) =>
-                  onNewInfortunioChange({
-                    ...newInfortunio,
-                    tipo: sanitizeString(e.target.value, 100) || '',
-                  })
-                }
-                placeholder="Es. Distorsione caviglia"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="infortunio-recuperato"
-                checked={newInfortunio.recuperato || false}
-                onChange={(e) =>
-                  onNewInfortunioChange({ ...newInfortunio, recuperato: e.target.checked })
-                }
-                className="rounded"
-              />
-              <Label htmlFor="infortunio-recuperato">Recuperato</Label>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="infortunio-note">Note (opzionale)</Label>
-              <Textarea
-                id="infortunio-note"
-                value={newInfortunio.note || ''}
-                onChange={(e) =>
-                  onNewInfortunioChange({
-                    ...newInfortunio,
-                    note: sanitizeString(e.target.value, 500) || '',
-                  })
-                }
-                placeholder="Note aggiuntive..."
-                rows={2}
-              />
-            </div>
-            <div className="flex items-center justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => onShowInfortunioFormChange(false)}
-                className="border-white/10 hover:border-primary/20"
-              >
-                Annulla
-              </Button>
-              <Button variant="default" onClick={onInfortunioAdd}>
-                Aggiungi
-              </Button>
-            </div>
+      {showInfortunioForm && (
+        <div className="mt-4 space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-4">
+          <div className="space-y-2">
+            <Label htmlFor="infortunio-data">Data</Label>
+            <Input
+              id="infortunio-data"
+              type="date"
+              value={newInfortunio.data || ''}
+              onChange={(e) => onNewInfortunioChange({ ...newInfortunio, data: e.target.value })}
+              className="border-white/10 bg-white/[0.04] text-xs"
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div className="space-y-2">
+            <Label htmlFor="infortunio-tipo">Tipo</Label>
+            <Input
+              id="infortunio-tipo"
+              value={newInfortunio.tipo || ''}
+              onChange={(e) =>
+                onNewInfortunioChange({
+                  ...newInfortunio,
+                  tipo: sanitizeString(e.target.value, 100) || '',
+                })
+              }
+              placeholder="Es. Distorsione caviglia"
+              className="border-white/10 bg-white/[0.04] text-xs"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="infortunio-recuperato"
+              checked={newInfortunio.recuperato || false}
+              onChange={(e) =>
+                onNewInfortunioChange({ ...newInfortunio, recuperato: e.target.checked })
+              }
+              className="rounded"
+            />
+            <Label htmlFor="infortunio-recuperato">Recuperato</Label>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="infortunio-note">Note (opzionale)</Label>
+            <Textarea
+              id="infortunio-note"
+              value={newInfortunio.note || ''}
+              onChange={(e) =>
+                onNewInfortunioChange({
+                  ...newInfortunio,
+                  note: sanitizeString(e.target.value, 500) || '',
+                })
+              }
+              placeholder="Note aggiuntive..."
+              rows={2}
+              className="border-white/10 bg-white/[0.04] text-xs"
+            />
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onShowInfortunioFormChange(false)}
+              className="border-white/10 hover:border-primary/20"
+            >
+              Annulla
+            </Button>
+            <Button variant="default" onClick={onInfortunioAdd}>
+              Aggiungi
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -47,6 +47,7 @@ import {
   PLAN_VERSION_STATUS_ACTIVE,
   PLAN_VERSION_STATUS_DRAFT,
 } from '@/lib/nutrition-tables'
+import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:nutrizionista:atleti:[id]')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -1201,35 +1202,24 @@ export default function NutrizionistaAtletaProfilePage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={async () => {
-                                    const { data, error } = await supabase.storage
-                                      .from('documents')
-                                      .createSignedUrl(storagePath, 3600)
-                                    if (!error && data?.signedUrl)
-                                      window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+                                  onClick={() => {
+                                    window.open(
+                                      storagePreviewHref('documents', storagePath),
+                                      '_blank',
+                                      'noopener,noreferrer',
+                                    )
                                   }}
                                 >
                                   <FileText className="h-4 w-4 mr-2" />
                                   Apri in nuova scheda
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={async () => {
-                                    const { data, error } = await supabase.storage
-                                      .from('documents')
-                                      .createSignedUrl(storagePath, 3600)
-                                    if (error || !data?.signedUrl) return
-                                    try {
-                                      const res = await fetch(data.signedUrl)
-                                      const blob = await res.blob()
-                                      const url = URL.createObjectURL(blob)
-                                      const a = document.createElement('a')
-                                      a.href = url
-                                      a.download = fileName
-                                      a.click()
-                                      URL.revokeObjectURL(url)
-                                    } catch {
-                                      window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
-                                    }
+                                  onClick={() => {
+                                    void downloadStorageBlobViaPreview(
+                                      'documents',
+                                      storagePath,
+                                      fileName,
+                                    )
                                   }}
                                 >
                                   <Download className="h-4 w-4 mr-2" />
@@ -1268,35 +1258,24 @@ export default function NutrizionistaAtletaProfilePage() {
                               {storagePath && (
                                 <>
                                   <DropdownMenuItem
-                                    onClick={async () => {
-                                      const { data, error } = await supabase.storage
-                                        .from('documents')
-                                        .createSignedUrl(storagePath, 3600)
-                                      if (!error && data?.signedUrl)
-                                        window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+                                    onClick={() => {
+                                      window.open(
+                                        storagePreviewHref('documents', storagePath),
+                                        '_blank',
+                                        'noopener,noreferrer',
+                                      )
                                     }}
                                   >
                                     <FileText className="h-4 w-4 mr-2" />
                                     Visualizza PDF
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={async () => {
-                                      const { data, error } = await supabase.storage
-                                        .from('documents')
-                                        .createSignedUrl(storagePath, 3600)
-                                      if (error || !data?.signedUrl) return
-                                      try {
-                                        const res = await fetch(data.signedUrl)
-                                        const blob = await res.blob()
-                                        const url = URL.createObjectURL(blob)
-                                        const a = document.createElement('a')
-                                        a.href = url
-                                        a.download = fileName
-                                        a.click()
-                                        URL.revokeObjectURL(url)
-                                      } catch {
-                                        window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
-                                      }
+                                    onClick={() => {
+                                      void downloadStorageBlobViaPreview(
+                                        'documents',
+                                        storagePath,
+                                        fileName,
+                                      )
                                     }}
                                   >
                                     <Download className="h-4 w-4 mr-2" />

@@ -764,6 +764,7 @@ export interface Database {
           athlete_id?: string | null
           scheda_id?: string | null
           workout_plan_id?: string | null
+          workout_day_id?: string | null
           data: string
           stato?: string | null
           durata_minuti?: number | null
@@ -780,6 +781,7 @@ export interface Database {
           athlete_id?: string | null
           scheda_id?: string | null
           workout_plan_id?: string | null
+          workout_day_id?: string | null
           data: string
           stato?: string | null
           durata_minuti?: number | null
@@ -796,6 +798,7 @@ export interface Database {
           athlete_id?: string | null
           scheda_id?: string | null
           workout_plan_id?: string | null
+          workout_day_id?: string | null
           data?: string
           stato?: string | null
           durata_minuti?: number | null

@@ -1,12 +1,10 @@
 // ============================================================
 // Componente Sezione Intolleranze e Allergie (FASE C - Split File Lunghi)
-// ============================================================
-// Estratto da athlete-nutrition-tab.tsx per migliorare manutenibilità
+// Contenuto per shell Card tab nutrizione.
 // ============================================================
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -45,16 +43,14 @@ export function NutritionIntolerancesAllergiesSection({
   onNewIntolleranzaChange,
   onNewAllergiaChange,
 }: NutritionIntolerancesAllergiesSectionProps) {
-  if (isEditing) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">
-              Intolleranze Alimentari
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Intolleranze alimentari
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi intolleranza"
@@ -69,11 +65,13 @@ export function NutritionIntolerancesAllergiesSection({
                     onIntolleranzaAdd(newIntolleranza)
                   }
                 }}
-                className="text-base"
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
               <Button
+                type="button"
+                size="icon"
                 onClick={() => newIntolleranza && onIntolleranzaAdd(newIntolleranza)}
-                className="min-h-[44px] min-w-[44px]"
+                className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -89,16 +87,26 @@ export function NutritionIntolerancesAllergiesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : nutrition?.intolleranze_alimentari && nutrition.intolleranze_alimentari.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {nutrition.intolleranze_alimentari.map((intolleranza, index) => (
+              <Badge key={index} variant="secondary">
+                {intolleranza}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessuna intolleranza alimentare</p>
+        )}
+      </div>
 
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">
-              Allergie Alimentari
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Allergie alimentari
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi allergia"
@@ -113,72 +121,38 @@ export function NutritionIntolerancesAllergiesSection({
                     onAllergiaAdd(newAllergia)
                   }
                 }}
-                className="text-base"
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
               <Button
+                type="button"
+                size="icon"
                 onClick={() => newAllergia && onAllergiaAdd(newAllergia)}
-                className="min-h-[44px] min-w-[44px]"
+                className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {allergie.map((allergia, index) => (
+              {allergie.map((a, index) => (
                 <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {allergia}
+                  {a}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => onAllergiaRemove(index)} />
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : nutrition?.allergie_alimentari && nutrition.allergie_alimentari.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {nutrition.allergie_alimentari.map((a, index) => (
+              <Badge key={index} variant="secondary">
+                {a}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessuna allergia alimentare</p>
+        )}
       </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold text-text-primary">
-            Intolleranze Alimentari
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {nutrition?.intolleranze_alimentari && nutrition.intolleranze_alimentari.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {nutrition.intolleranze_alimentari.map((intolleranza, index) => (
-                <Badge key={index} variant="secondary">
-                  {intolleranza}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm md:text-base">
-              Nessuna intolleranza alimentare
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold text-text-primary">Allergie Alimentari</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {nutrition?.allergie_alimentari && nutrition.allergie_alimentari.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {nutrition.allergie_alimentari.map((allergia, index) => (
-                <Badge key={index} variant="secondary">
-                  {allergia}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm md:text-base">Nessuna allergia alimentare</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }

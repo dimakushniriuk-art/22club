@@ -17,8 +17,6 @@ import { useSettingsProfile } from '@/hooks/use-settings-profile'
 import { useImpostazioniPageGuard } from '@/hooks/use-impostazioni-page-guard'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
-import { Skeleton } from '@/components/ui'
-import { LoadingState as _LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 
@@ -63,28 +61,6 @@ type SaveErrorType = 'profile' | 'notifications' | 'privacy' | 'account'
 
 function isImpostazioniTab(t: string | null): t is ImpostazioniTabValue {
   return t !== null && IMPOSTAZIONI_TABS.includes(t as ImpostazioniTabValue)
-}
-
-const IMPOSTAZIONI_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
-
-function SettingsTabSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 space-y-4">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-4 w-3/4 max-w-md" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-        <div className="flex justify-end pt-4">
-          <Skeleton className="h-10 w-32" />
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // Lazy load dei tab delle impostazioni
@@ -430,11 +406,7 @@ export default function ImpostazioniPage() {
   ])
 
   if (showGuardLoader) {
-    return (
-      <div className={IMPOSTAZIONI_LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return null
   }
 
   return (
@@ -507,7 +479,7 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Profilo */}
         <TabsContent value="profilo" className="mt-6 space-y-6">
-          <Suspense fallback={<SettingsTabSkeleton />}>
+          <Suspense fallback={null}>
             <SettingsProfileTab
               profile={profile}
               profileLoading={profileLoading}
@@ -520,7 +492,7 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Notifiche */}
         <TabsContent value="notifiche" className="mt-6 space-y-6">
-          <Suspense fallback={<SettingsTabSkeleton />}>
+          <Suspense fallback={null}>
             <SettingsNotificationsTab
               notifications={notifications}
               loading={loading}
@@ -533,7 +505,7 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Privacy */}
         <TabsContent value="privacy" className="mt-6 space-y-6">
-          <Suspense fallback={<SettingsTabSkeleton />}>
+          <Suspense fallback={null}>
             <SettingsPrivacyTab
               privacy={privacy}
               loading={loading}
@@ -545,14 +517,14 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Profilo professionale (trainer) */}
         <TabsContent value="profilo-professionale" className="mt-6 space-y-6">
-          <Suspense fallback={<SettingsTabSkeleton />}>
+          <Suspense fallback={null}>
             <SettingsTrainerProfileTab />
           </Suspense>
         </TabsContent>
 
         {/* Tab: Account */}
         <TabsContent value="account" className="mt-6 space-y-6">
-          <Suspense fallback={<SettingsTabSkeleton />}>
+          <Suspense fallback={null}>
             <SettingsAccountTab
               account={account}
               loading={loading}

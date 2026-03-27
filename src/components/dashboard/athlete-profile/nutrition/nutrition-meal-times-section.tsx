@@ -6,7 +6,6 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
 import { Button } from '@/components/ui'
@@ -43,15 +42,8 @@ export function NutritionMealTimesSection({
   const spuntiniList = formData.preferenze_orari_pasti?.spuntini || []
 
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold text-text-primary flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" />
-          Preferenze Orari Pasti
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="colazione">Colazione</Label>
             {isEditing ? (
@@ -60,7 +52,7 @@ export function NutritionMealTimesSection({
                 type="time"
                 value={formData.preferenze_orari_pasti?.colazione || ''}
                 onChange={(e) => onOrarioPastoUpdate('colazione', e.target.value || null)}
-                className="text-base min-h-[44px]"
+                className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
               />
             ) : (
               nutrition?.preferenze_orari_pasti?.colazione && (
@@ -82,7 +74,7 @@ export function NutritionMealTimesSection({
                 type="time"
                 value={formData.preferenze_orari_pasti?.pranzo || ''}
                 onChange={(e) => onOrarioPastoUpdate('pranzo', e.target.value || null)}
-                className="text-base min-h-[44px]"
+                className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
               />
             ) : (
               nutrition?.preferenze_orari_pasti?.pranzo && (
@@ -104,7 +96,7 @@ export function NutritionMealTimesSection({
                 type="time"
                 value={formData.preferenze_orari_pasti?.cena || ''}
                 onChange={(e) => onOrarioPastoUpdate('cena', e.target.value || null)}
-                className="text-base min-h-[44px]"
+                className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
               />
             ) : (
               nutrition?.preferenze_orari_pasti?.cena && (
@@ -134,11 +126,13 @@ export function NutritionMealTimesSection({
                       onSpuntinoAdd(newSpuntino)
                     }
                   }}
-                  className="text-base min-h-[44px]"
+                  className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                 />
                 <Button
+                  type="button"
                   onClick={() => newSpuntino && onSpuntinoAdd(newSpuntino)}
-                  className="min-h-[44px] min-w-[44px]"
+                  size="icon"
+                  className="h-9 shrink-0"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -171,7 +165,6 @@ export function NutritionMealTimesSection({
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

@@ -95,6 +95,8 @@ interface AthleteProfileTabsProps {
     documenti_scadenza: number
     peso_attuale: number | null
   }
+  /** Errori RLS/rete sul caricamento statistiche (tab Progressi / header KPI) */
+  statsError?: string | null
   onPrefetchTab: (tabName: string) => void
 }
 
@@ -107,6 +109,7 @@ export function AthleteProfileTabs({
   athleteId,
   athleteUserId,
   stats,
+  statsError = null,
   onPrefetchTab,
 }: AthleteProfileTabsProps) {
   const [activeTab, setActiveTab] = useState('profilo')
@@ -282,7 +285,7 @@ export function AthleteProfileTabs({
 
       <TabsContent value="progressi" className="mt-0">
         <Suspense fallback={<LoadingState message="Caricamento progressi..." />}>
-          <AthleteProgressTab athleteId={athleteId} stats={stats} />
+          <AthleteProgressTab athleteId={athleteId} stats={stats} loadError={statsError} />
         </Suspense>
       </TabsContent>
 

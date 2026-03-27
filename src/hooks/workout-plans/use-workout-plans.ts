@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { apiGet } from '@/lib/api-client'
 import { createLogger } from '@/lib/logger'
 import type {
   Workout,
@@ -137,6 +138,16 @@ export function useWorkoutPlans() {
     async function fetchWizardData() {
       try {
         setExercisesLoadError(null)
+
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user?.id) {
+          setAthletes([])
+          setExercises([])
+          return
+        }
+
         // Recupera atleti
         const { data: athletesData, error: athletesError } = await supabase
           .from('profiles')
@@ -158,41 +169,52 @@ export function useWorkoutPlans() {
           setAthletes(formattedAthletes)
         }
 
-        // Recupera esercizi
-        const { data: exercisesData, error: exercisesError } = await supabase
-          .from('exercises')
-          .select('*')
-          .order('name', { ascending: true })
-
-        if (exercisesError) {
-          logger.error('Caricamento esercizi (wizard)', exercisesError)
-          setExercises([])
-          setExercisesLoadError(
-            exercisesError.message ||
-              'Impossibile caricare il catalogo esercizi. Controlla permessi e policy RLS su public.exercises.',
+        // Recupera esercizi (web: /api/exercises con sessione server; mobile: Supabase dopo auth)
+        let typedExercises: ExerciseRow[] = []
+        try {
+          typedExercises = await apiGet<ExerciseRow[]>(
+            '/api/exercises',
+            {},
+            async () => {
+              const { data: exercisesData, error: exercisesError } = await supabase
+                .from('exercises')
+                .select('*')
+                .order('name', { ascending: true })
+              if (exercisesError) throw exercisesError
+              return (exercisesData ?? []) as ExerciseRow[]
+            },
           )
+        } catch (exercisesErr) {
+          const errMsg =
+            exercisesErr &&
+            typeof exercisesErr === 'object' &&
+            'message' in exercisesErr &&
+            typeof (exercisesErr as { message: unknown }).message === 'string'
+              ? (exercisesErr as { message: string }).message
+              : exercisesErr instanceof Error
+                ? exercisesErr.message
+                : 'Impossibile caricare il catalogo esercizi. Controlla permessi e policy RLS su public.exercises.'
+          logger.error('Caricamento esercizi (wizard)', exercisesErr)
+          setExercises([])
+          setExercisesLoadError(errMsg)
           return
         }
 
-        if (exercisesData) {
-          const typedExercises = (exercisesData ?? []) as ExerciseRow[]
-
-          const formattedExercises: Exercise[] = typedExercises.map((exercise) => ({
-            id: exercise.id,
-            org_id: exercise.org_id || 'default-org',
-            name: exercise.name,
-            category: exercise.category || exercise.muscle_group || '',
-            muscle_group: exercise.muscle_group || '',
-            equipment: exercise.equipment || '',
-            difficulty: difficultyDbToUi(exercise.difficulty),
-            video_url: exercise.video_url || null,
-            description: exercise.description || null,
-            image_url: exercise.image_url || null,
-            thumb_url: exercise.thumb_url || null,
-            created_at: exercise.created_at ?? new Date().toISOString(),
-          }))
-          setExercises(formattedExercises)
-        }
+        const formattedExercises: Exercise[] = typedExercises.map((exercise) => ({
+          id: exercise.id,
+          org_id: exercise.org_id || 'default-org',
+          name: exercise.name,
+          category: exercise.category || exercise.muscle_group || '',
+          muscle_group: exercise.muscle_group || '',
+          equipment: exercise.equipment || '',
+          difficulty: difficultyDbToUi(exercise.difficulty),
+          video_url: exercise.video_url || null,
+          description: exercise.description || null,
+          image_url: exercise.image_url || null,
+          thumb_url: exercise.thumb_url || null,
+          created_at: exercise.created_at ?? new Date().toISOString(),
+        }))
+        setExercises(formattedExercises)
       } catch (error) {
         logger.error('Errore caricamento dati wizard', error)
       }

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui'
 import { Calendar, Clock, Play, Target } from 'lucide-react'
 
 const CARD_DS =
-  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+  'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md transition-colors duration-200 hover:border-white/20'
 
 export interface AllenamentoOggiData {
   id: string
@@ -48,7 +48,7 @@ export function AllenamentoOggiCard({
       <CardHeader className="px-3 pb-2.5 sm:px-4">
         <div className="flex items-center justify-between gap-2">
           <CardTitle size="sm" className="flex items-center text-sm text-text-primary sm:text-base">
-            <span className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+            <span className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
               <Calendar className="h-4 w-4 text-cyan-400" />
             </span>
             <span className="truncate">Allenamento di Oggi</span>
@@ -102,7 +102,7 @@ export function AllenamentoOggiCard({
               </h3>
               <p className="line-clamp-2 text-xs text-text-secondary">{oggi.descrizione}</p>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 rounded-lg border border-white/10 bg-white/5 p-2 text-center sm:gap-2 sm:p-2.5">
+            <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-white/10 bg-white/5 p-2 text-center sm:gap-2 sm:p-2.5">
               <div>
                 <div className="mb-0.5 text-[10px] uppercase tracking-wide text-text-tertiary sm:text-xs">
                   Durata
@@ -132,7 +132,7 @@ export function AllenamentoOggiCard({
             </div>
             <Button
               onClick={onStart}
-              className="h-9 min-h-[44px] w-full rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90 sm:h-10 sm:text-sm"
+              className="h-9 min-h-[44px] w-full touch-manipulation rounded-xl bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90 sm:h-10 sm:text-sm"
             >
               <Play className="mr-1.5 h-3.5 w-3.5" />
               Inizia Allenamento

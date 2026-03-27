@@ -32,6 +32,8 @@ const eslintConfig = [
       '.icon-backup/**',
       '.chat-backup/**',
       '.dynamic-routes-backup/**',
+      // Script Node CommonJS (.cjs)
+      'scripts/**/*.cjs',
     ],
   },
   {

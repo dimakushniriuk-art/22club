@@ -7,6 +7,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import type { ReactNode } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
@@ -41,6 +42,9 @@ import type {
   DocumentoContrattuale,
 } from '@/types/athlete-profile'
 import { sanitizeString } from '@/lib/sanitize'
+import { cn } from '@/lib/utils'
+import { ATHLETE_PROFILE_NESTED_CARD_CLASS } from './athlete-profile-ds'
+import { AthleteProfileSectionHeading } from './athlete-profile-section-heading'
 
 interface AthleteAdministrativeTabProps {
   athleteId: string
@@ -68,6 +72,42 @@ const METODI_PAGAMENTO: { value: MetodoPagamentoEnum; label: string }[] = [
   { value: 'contanti', label: 'Contanti' },
   { value: 'altro', label: 'Altro' },
 ]
+
+const ADM_SELECT_CLS =
+  'h-9 w-full min-w-0 rounded-md border border-white/10 bg-white/[0.04] px-2.5 text-xs text-text-primary'
+const ADM_INPUT_CLS = 'h-9 w-full min-w-0 border-white/10 bg-white/[0.04] text-xs'
+
+/** Righe allineate come tab Anagrafica (colonna etichette fissa da sm). */
+function AdmFieldRow({
+  label,
+  htmlFor,
+  children,
+  layout = 'split',
+}: {
+  label: string
+  htmlFor?: string
+  children: ReactNode
+  layout?: 'split' | 'stacked'
+}) {
+  const gridClass =
+    layout === 'stacked'
+      ? 'grid grid-cols-1 gap-1.5'
+      : 'grid grid-cols-1 gap-1.5 sm:grid-cols-[minmax(8.5rem,11rem)_1fr] sm:items-start sm:gap-x-5'
+  return (
+    <div className={gridClass}>
+      <Label
+        htmlFor={htmlFor}
+        className={cn(
+          'text-[10px] uppercase tracking-wide text-text-tertiary sm:pt-1.5',
+          layout === 'stacked' && 'sm:pt-0',
+        )}
+      >
+        {label}
+      </Label>
+      <div className="min-w-0">{children}</div>
+    </div>
+  )
+}
 
 export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTabProps) {
   const { data: administrative, isLoading, error } = useAthleteAdministrative(athleteId)
@@ -259,167 +299,164 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
   }
 
   const statoBadge = statoAbbonamentoBadge
+  const StatoAbbonamentoIcon = statoBadge?.icon
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-            <CreditCard className="h-6 w-6 text-primary" />
-            Dati Amministrativi
-          </h2>
-          <p className="text-text-secondary text-sm mt-1">
-            Abbonamenti, pagamenti e documenti contrattuali
-          </p>
-          <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
-        </div>
-        {!isEditing && (
-          <Button
-            onClick={() => setIsEditing(true)}
-            variant="outline"
-            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
-          >
-            <Edit className="h-4 w-4" />
-            Modifica
-          </Button>
-        )}
-      </div>
-
-      {/* Abbonamento */}
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" />
-              Abbonamento
-            </CardTitle>
-            {statoBadge && (
-              <Badge variant={statoBadge.color as BadgeProps['variant']} size="sm">
-                <statoBadge.icon className="mr-1 h-3 w-3" />
-                {statoBadge.text}
-              </Badge>
-            )}
+    <>
+      <Card variant="default" className={cn(ATHLETE_PROFILE_NESTED_CARD_CLASS, 'p-0')}>
+        <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+          <div className="min-w-0 text-center sm:text-left">
+            <h2 className="flex items-center justify-center gap-2 text-base font-semibold text-text-primary sm:justify-start sm:text-lg">
+              <CreditCard className="h-4 w-4 shrink-0 text-cyan-400" aria-hidden />
+              Dati Amministrativi
+            </h2>
+            <p className="mt-1 line-clamp-2 text-xs text-text-secondary sm:line-clamp-1">
+              Abbonamenti, pagamenti e documenti contrattuali
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="tipo_abbonamento">Tipo Abbonamento</Label>
-                {isEditing ? (
-                  <select
-                    id="tipo_abbonamento"
-                    value={formData.tipo_abbonamento || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tipo_abbonamento: (e.target.value || null) as TipoAbbonamentoEnum | null,
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
-                  >
-                    <option value="">Non specificato</option>
-                    {TIPI_ABBONAMENTO.map((tipo) => (
-                      <option key={tipo.value} value={tipo.value}>
-                        {tipo.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  administrative?.tipo_abbonamento && (
-                    <p className="text-text-primary text-base font-semibold">
-                      {TIPI_ABBONAMENTO.find((t) => t.value === administrative.tipo_abbonamento)
-                        ?.label || administrative.tipo_abbonamento}
-                    </p>
-                  )
-                )}
-              </div>
+          {!isEditing && (
+            <Button
+              onClick={() => setIsEditing(true)}
+              variant="outline"
+              size="sm"
+              className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 text-xs touch-manipulation hover:border-primary/20 hover:bg-white/[0.04] sm:h-9 sm:w-auto sm:rounded-md"
+            >
+              <Edit className="h-3.5 w-3.5" />
+              Modifica
+            </Button>
+          )}
+        </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="stato_abbonamento">Stato</Label>
-                {isEditing ? (
-                  <select
-                    id="stato_abbonamento"
-                    value={formData.stato_abbonamento || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        stato_abbonamento: (e.target.value || null) as StatoAbbonamentoEnum | null,
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
-                  >
-                    <option value="">Non specificato</option>
-                    {STATI_ABBONAMENTO.map((stato) => (
-                      <option key={stato.value} value={stato.value}>
-                        {stato.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  administrative?.stato_abbonamento && (
-                    <p className="text-text-primary text-base">
-                      {STATI_ABBONAMENTO.find((s) => s.value === administrative.stato_abbonamento)
-                        ?.label || administrative.stato_abbonamento}
-                    </p>
-                  )
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="data_inizio">Data Inizio</Label>
+        <CardContent className="space-y-0 p-0">
+          <AthleteProfileSectionHeading
+            icon={CreditCard}
+            trailing={
+              statoBadge && StatoAbbonamentoIcon ? (
+                <Badge variant={statoBadge.color as BadgeProps['variant']} size="sm">
+                  <StatoAbbonamentoIcon className="mr-1 h-3 w-3" />
+                  {statoBadge.text}
+                </Badge>
+              ) : undefined
+            }
+          >
+            Abbonamento
+          </AthleteProfileSectionHeading>
+          <div className="px-4 py-4 sm:px-5 sm:py-5">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+              <div className="space-y-4">
+                <AdmFieldRow label="Tipo abbonamento" htmlFor="tipo_abbonamento">
                   {isEditing ? (
-                    <Input
-                      id="data_inizio"
-                      type="date"
-                      value={formData.data_inizio_abbonamento || ''}
+                    <select
+                      id="tipo_abbonamento"
+                      value={formData.tipo_abbonamento || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          data_inizio_abbonamento: e.target.value || null,
+                          tipo_abbonamento: (e.target.value || null) as TipoAbbonamentoEnum | null,
                         })
                       }
-                    />
+                      className={ADM_SELECT_CLS}
+                    >
+                      <option value="">Non specificato</option>
+                      {TIPI_ABBONAMENTO.map((tipo) => (
+                        <option key={tipo.value} value={tipo.value}>
+                          {tipo.label}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
-                    administrative?.data_inizio_abbonamento && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-text-tertiary" />
-                        <p className="text-text-primary text-base">
-                          {new Date(administrative.data_inizio_abbonamento).toLocaleDateString(
-                            'it-IT',
-                          )}
-                        </p>
-                      </div>
-                    )
+                    <span className="text-sm font-medium text-text-primary">
+                      {administrative?.tipo_abbonamento
+                        ? TIPI_ABBONAMENTO.find((t) => t.value === administrative.tipo_abbonamento)
+                            ?.label || administrative.tipo_abbonamento
+                        : '—'}
+                    </span>
                   )}
-                </div>
+                </AdmFieldRow>
 
-                <div className="space-y-2">
-                  <Label htmlFor="data_scadenza">Data Scadenza</Label>
+                <AdmFieldRow label="Stato" htmlFor="stato_abbonamento">
                   {isEditing ? (
-                    <Input
-                      id="data_scadenza"
-                      type="date"
-                      value={formData.data_scadenza_abbonamento || ''}
+                    <select
+                      id="stato_abbonamento"
+                      value={formData.stato_abbonamento || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          data_scadenza_abbonamento: e.target.value || null,
+                          stato_abbonamento: (e.target.value || null) as StatoAbbonamentoEnum | null,
                         })
                       }
-                    />
+                      className={ADM_SELECT_CLS}
+                    >
+                      <option value="">Non specificato</option>
+                      {STATI_ABBONAMENTO.map((stato) => (
+                        <option key={stato.value} value={stato.value}>
+                          {stato.label}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
-                    administrative?.data_scadenza_abbonamento && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-text-tertiary" />
-                        <p className="text-text-primary text-base">
-                          {new Date(administrative.data_scadenza_abbonamento).toLocaleDateString(
-                            'it-IT',
-                          )}
-                        </p>
-                        {scadenzaStatus && (
+                    <span className="text-sm font-medium text-text-primary">
+                      {administrative?.stato_abbonamento
+                        ? STATI_ABBONAMENTO.find((s) => s.value === administrative.stato_abbonamento)
+                            ?.label || administrative.stato_abbonamento
+                        : '—'}
+                    </span>
+                  )}
+                </AdmFieldRow>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
+                  <AdmFieldRow label="Data inizio" htmlFor="data_inizio" layout="stacked">
+                    {isEditing ? (
+                      <Input
+                        id="data_inizio"
+                        type="date"
+                        value={formData.data_inizio_abbonamento || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            data_inizio_abbonamento: e.target.value || null,
+                          })
+                        }
+                        className={ADM_INPUT_CLS}
+                      />
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5 shrink-0 text-text-tertiary" aria-hidden />
+                        <span className="text-sm font-medium text-text-primary tabular-nums">
+                          {administrative?.data_inizio_abbonamento
+                            ? new Date(administrative.data_inizio_abbonamento).toLocaleDateString(
+                                'it-IT',
+                              )
+                            : '—'}
+                        </span>
+                      </div>
+                    )}
+                  </AdmFieldRow>
+                  <AdmFieldRow label="Data scadenza" htmlFor="data_scadenza" layout="stacked">
+                    {isEditing ? (
+                      <Input
+                        id="data_scadenza"
+                        type="date"
+                        value={formData.data_scadenza_abbonamento || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            data_scadenza_abbonamento: e.target.value || null,
+                          })
+                        }
+                        className={ADM_INPUT_CLS}
+                      />
+                    ) : (
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5 shrink-0 text-text-tertiary" aria-hidden />
+                        <span className="text-sm font-medium text-text-primary tabular-nums">
+                          {administrative?.data_scadenza_abbonamento
+                            ? new Date(administrative.data_scadenza_abbonamento).toLocaleDateString(
+                                'it-IT',
+                              )
+                            : '—'}
+                        </span>
+                        {scadenzaStatus && administrative?.data_scadenza_abbonamento && (
                           <Badge
                             variant={
                               scadenzaStatus.status === 'scaduto'
@@ -429,277 +466,287 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                                   : 'success'
                             }
                             size="sm"
-                            className="ml-2"
+                            className="shrink-0"
                           >
                             {scadenzaStatus.text}
                           </Badge>
                         )}
                       </div>
-                    )
-                  )}
+                    )}
+                  </AdmFieldRow>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="lezioni_incluse">Lezioni Incluse</Label>
-                <p className="text-text-primary text-base font-semibold">
-                  {subscriptionData?.totalPurchased ?? administrative?.lezioni_incluse ?? 0}
-                </p>
-                <p className="text-text-secondary text-xs">
-                  (Calcolato dai pagamenti nella sezione Abbonamenti)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lezioni_utilizzate">Lezioni Utilizzate</Label>
-                <p className="text-text-primary text-base">
-                  {subscriptionData?.totalUsed ?? administrative?.lezioni_utilizzate ?? 0}
-                </p>
-                <p className="text-text-secondary text-xs">
-                  (Calcolato dagli appuntamenti completati)
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                  Lezioni Rimanenti
-                </Label>
-                <p className="text-text-primary text-lg font-bold text-primary drop-shadow-[0_0_12px_rgba(2,179,191,0.5)]">
-                  {subscriptionData?.totalRemaining ?? administrative?.lezioni_rimanenti ?? 0}
-                </p>
-                <p className="text-text-secondary text-[10px] opacity-60">
-                  Calcolato automaticamente dal sistema
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="metodo_pagamento">Metodo Pagamento Preferito</Label>
-                {isEditing ? (
-                  <select
-                    id="metodo_pagamento"
-                    value={formData.metodo_pagamento_preferito || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        metodo_pagamento_preferito: (e.target.value ||
-                          null) as MetodoPagamentoEnum | null,
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-md border border-white/10 bg-white/[0.04] text-text-primary"
-                  >
-                    <option value="">Non specificato</option>
-                    {METODI_PAGAMENTO.map((metodo) => (
-                      <option key={metodo.value} value={metodo.value}>
-                        {metodo.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  administrative?.metodo_pagamento_preferito && (
-                    <p className="text-text-primary text-base">
-                      {METODI_PAGAMENTO.find(
-                        (m) => m.value === administrative.metodo_pagamento_preferito,
-                      )?.label || administrative.metodo_pagamento_preferito}
+              <div className="space-y-4">
+                <AdmFieldRow label="Lezioni incluse">
+                  <>
+                    <span className="text-sm font-semibold tabular-nums text-text-primary">
+                      {subscriptionData?.totalPurchased ?? administrative?.lezioni_incluse ?? 0}
+                    </span>
+                    <p className="mt-1 text-[10px] leading-snug text-text-tertiary">
+                      Da pagamenti completati (sezione Abbonamenti).
                     </p>
-                  )
-                )}
+                  </>
+                </AdmFieldRow>
+
+                <AdmFieldRow label="Lezioni utilizzate">
+                  <>
+                    <span className="text-sm font-medium tabular-nums text-text-primary">
+                      {subscriptionData?.totalUsed ?? administrative?.lezioni_utilizzate ?? 0}
+                    </span>
+                    <p className="mt-1 text-[10px] leading-snug text-text-tertiary">
+                      Da appuntamenti completati.
+                    </p>
+                  </>
+                </AdmFieldRow>
+
+                <AdmFieldRow label="Lezioni rimanenti">
+                  <>
+                    <span className="text-lg font-bold tabular-nums text-primary drop-shadow-[0_0_12px_rgba(2,179,191,0.35)]">
+                      {subscriptionData?.totalRemaining ?? administrative?.lezioni_rimanenti ?? 0}
+                    </span>
+                    <p className="mt-1 text-[10px] leading-snug text-text-tertiary opacity-80">
+                      Calcolato dal sistema.
+                    </p>
+                  </>
+                </AdmFieldRow>
+
+                <AdmFieldRow label="Metodo pagamento" htmlFor="metodo_pagamento">
+                  {isEditing ? (
+                    <select
+                      id="metodo_pagamento"
+                      value={formData.metodo_pagamento_preferito || ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          metodo_pagamento_preferito: (e.target.value ||
+                            null) as MetodoPagamentoEnum | null,
+                        })
+                      }
+                      className={ADM_SELECT_CLS}
+                    >
+                      <option value="">Non specificato</option>
+                      {METODI_PAGAMENTO.map((metodo) => (
+                        <option key={metodo.value} value={metodo.value}>
+                          {metodo.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-sm font-medium text-text-primary">
+                      {administrative?.metodo_pagamento_preferito
+                        ? METODI_PAGAMENTO.find(
+                            (m) => m.value === administrative.metodo_pagamento_preferito,
+                          )?.label || administrative.metodo_pagamento_preferito
+                        : '—'}
+                    </span>
+                  )}
+                </AdmFieldRow>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Documenti Contrattuali */}
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Documenti Contrattuali
-            </CardTitle>
-            {isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowUploadDocumento(true)}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Aggiungi Documento
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="relative z-10">
-          {allDocuments.length > 0 ? (
-            <div className="space-y-3">
-              {allDocuments.map((documento) => (
-                <div
-                  key={documento.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02]"
+          <AthleteProfileSectionHeading
+            icon={FileText}
+            trailing={
+              isEditing ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUploadDocumento(true)}
+                  className="flex h-9 items-center gap-2 border-white/10 text-xs hover:border-primary/20 hover:bg-white/[0.04]"
                 >
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-text-primary font-semibold">{documento.nome}</p>
-                      <p className="text-text-secondary text-sm">
-                        {documento.tipo} •{' '}
-                        {new Date(documento.data_upload).toLocaleDateString('it-IT')}
-                        {documento.note && ` • ${documento.note}`}
-                      </p>
+                  <Plus className="h-3.5 w-3.5" />
+                  Aggiungi documento
+                </Button>
+              ) : undefined
+            }
+          >
+            Documenti contrattuali
+          </AthleteProfileSectionHeading>
+          <div className="px-4 py-4 sm:px-5 sm:py-5">
+            {allDocuments.length > 0 ? (
+              <div className="space-y-3">
+                {allDocuments.map((documento) => (
+                  <div
+                    key={documento.id}
+                    className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex min-w-0 items-start gap-3 sm:items-center">
+                      <FileText className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-text-primary">{documento.nome}</p>
+                        <p className="text-sm text-text-secondary">
+                          {documento.tipo} •{' '}
+                          {new Date(documento.data_upload).toLocaleDateString('it-IT')}
+                          {documento.note && ` • ${documento.note}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(documento.url, '_blank')}
+                        className="border-white/10"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Apri
+                      </Button>
+                      {isEditing && documento.source === 'contract' && (
+                        <Button variant="outline" size="sm" disabled className="border-white/10">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(documento.url, '_blank')}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Apri
-                    </Button>
-                    {isEditing && documento.source === 'contract' && (
-                      <Button variant="outline" size="sm" disabled>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-text-tertiary mx-auto mb-4" />
-              <p className="text-text-secondary">Nessun documento contrattuale caricato</p>
-            </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <FileText className="mx-auto mb-4 h-12 w-12 text-text-tertiary" aria-hidden />
+                <p className="text-text-secondary">Nessun documento contrattuale caricato</p>
+              </div>
+            )}
+          </div>
 
-          {/* Modal Upload Documento */}
-          {showUploadDocumento && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-              <Card className="w-full max-w-md">
-                <CardHeader>
-                  <CardTitle>Carica Documento Contrattuale</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="file-documento">File</Label>
-                    <Input
-                      id="file-documento"
-                      type="file"
-                      accept="application/pdf,image/jpeg,image/png,image/jpg"
-                      onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="nome-documento">Nome Documento</Label>
-                    <Input
-                      id="nome-documento"
-                      value={documentoData.nome}
-                      maxLength={200}
-                      onChange={(e) => {
-                        const sanitized = sanitizeString(e.target.value, 200)
-                        setDocumentoData({ ...documentoData, nome: sanitized || '' })
-                      }}
-                      placeholder="Es. Contratto abbonamento annuale"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tipo-documento">Tipo Documento</Label>
-                    <Input
-                      id="tipo-documento"
-                      value={documentoData.tipo}
-                      maxLength={100}
-                      onChange={(e) => {
-                        const sanitized = sanitizeString(e.target.value, 100)
-                        setDocumentoData({ ...documentoData, tipo: sanitized || '' })
-                      }}
-                      placeholder="Es. Contratto, Fattura, ecc."
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="note-documento">Note (opzionale)</Label>
-                    <Textarea
-                      id="note-documento"
-                      value={documentoData.note}
-                      maxLength={500}
-                      onChange={(e) => {
-                        const sanitized = sanitizeString(e.target.value, 500)
-                        setDocumentoData({ ...documentoData, note: sanitized || '' })
-                      }}
-                      placeholder="Note aggiuntive sul documento"
-                      rows={2}
-                    />
-                  </div>
-                  <div className="flex items-center justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowUploadDocumento(false)}>
-                      Annulla
-                    </Button>
-                    <Button
-                      onClick={handleUploadDocumento}
-                      disabled={uploadDocumentoMutation.isPending}
-                    >
-                      {uploadDocumentoMutation.isPending ? 'Caricamento...' : 'Carica'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+          <AthleteProfileSectionHeading icon={FileText}>Note contrattuali</AthleteProfileSectionHeading>
+          <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
+            {isEditing ? (
+              <Textarea
+                value={formData.note_contrattuali || ''}
+                maxLength={2000}
+                onChange={(e) => {
+                  const sanitized = sanitizeString(e.target.value, 2000)
+                  setFormData({ ...formData, note_contrattuali: sanitized || null })
+                }}
+                placeholder="Note aggiuntive sui contratti..."
+                rows={4}
+                className="border-white/10 bg-white/[0.04] text-xs"
+              />
+            ) : administrative?.note_contrattuali ? (
+              <p className="whitespace-pre-wrap rounded-lg border border-white/10 bg-white/[0.02] p-3 text-sm text-text-primary">
+                {administrative.note_contrattuali}
+              </p>
+            ) : (
+              <p className="py-4 text-center text-sm text-text-secondary">Nessuna nota contrattuale</p>
+            )}
+          </div>
+
+          {isEditing && (
+            <div className="flex flex-col-reverse gap-2 border-t border-white/10 px-4 pb-4 pt-4 sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:px-5 sm:pb-5 sm:pt-5">
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                className="flex h-11 w-full items-center justify-center gap-2 border-white/10 touch-manipulation hover:border-primary/20 hover:bg-white/[0.04] sm:h-auto sm:w-auto"
+              >
+                <X className="h-4 w-4" />
+                Annulla
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleSave}
+                disabled={updateMutation.isPending}
+                className="flex h-11 w-full items-center justify-center gap-2 touch-manipulation sm:h-auto sm:w-auto"
+              >
+                <Save className="h-4 w-4" />
+                {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Note Contrattuali */}
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg">Note Contrattuali</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isEditing ? (
-            <Textarea
-              value={formData.note_contrattuali || ''}
-              maxLength={2000}
-              onChange={(e) => {
-                const sanitized = sanitizeString(e.target.value, 2000)
-                setFormData({ ...formData, note_contrattuali: sanitized || null })
-              }}
-              placeholder="Note aggiuntive sui contratti..."
-              rows={4}
-            />
-          ) : administrative?.note_contrattuali ? (
-            <p className="text-text-primary whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
-              {administrative.note_contrattuali}
-            </p>
-          ) : (
-            <p className="text-text-secondary text-center py-4">Nessuna nota contrattuale</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Pulsanti azione */}
-      {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            className="flex items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+      {showUploadDocumento && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-3"
+          onClick={() =>
+            !uploadDocumentoMutation.isPending && setShowUploadDocumento(false)
+          }
+        >
+          <Card
+            className="w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="h-4 w-4" />
-            Annulla
-          </Button>
-          <Button
-            variant="default"
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="flex items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
-          </Button>
+            <CardHeader className="border-b border-white/10 pb-2">
+              <CardTitle className="text-sm font-bold text-text-primary">
+                Carica documento contrattuale
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="file-documento">File</Label>
+                <Input
+                  id="file-documento"
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/png,image/jpg"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  className="border-white/10 bg-white/[0.04] text-xs"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nome-documento">Nome documento</Label>
+                <Input
+                  id="nome-documento"
+                  value={documentoData.nome}
+                  maxLength={200}
+                  onChange={(e) => {
+                    const sanitized = sanitizeString(e.target.value, 200)
+                    setDocumentoData({ ...documentoData, nome: sanitized || '' })
+                  }}
+                  placeholder="Es. Contratto abbonamento annuale"
+                  className="border-white/10 bg-white/[0.04] text-xs"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tipo-documento">Tipo documento</Label>
+                <Input
+                  id="tipo-documento"
+                  value={documentoData.tipo}
+                  maxLength={100}
+                  onChange={(e) => {
+                    const sanitized = sanitizeString(e.target.value, 100)
+                    setDocumentoData({ ...documentoData, tipo: sanitized || '' })
+                  }}
+                  placeholder="Es. Contratto, Fattura, ecc."
+                  className="border-white/10 bg-white/[0.04] text-xs"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="note-documento">Note (opzionale)</Label>
+                <Textarea
+                  id="note-documento"
+                  value={documentoData.note}
+                  maxLength={500}
+                  onChange={(e) => {
+                    const sanitized = sanitizeString(e.target.value, 500)
+                    setDocumentoData({ ...documentoData, note: sanitized || '' })
+                  }}
+                  placeholder="Note aggiuntive sul documento"
+                  rows={2}
+                  className="border-white/10 bg-white/[0.04] text-xs"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  variant="outline"
+                  className="border-white/10"
+                  onClick={() => setShowUploadDocumento(false)}
+                  disabled={uploadDocumentoMutation.isPending}
+                >
+                  Annulla
+                </Button>
+                <Button
+                  onClick={handleUploadDocumento}
+                  disabled={uploadDocumentoMutation.isPending}
+                >
+                  {uploadDocumentoMutation.isPending ? 'Caricamento...' : 'Carica'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
-    </div>
+    </>
   )
 }

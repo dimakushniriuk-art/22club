@@ -23,6 +23,12 @@ interface AthleteStats {
   lessons_remaining: number | null
 }
 
+function pushSupabaseError(messages: string[], res: { error?: { message: string } | null }) {
+  if (res.error?.message) {
+    messages.push(res.error.message)
+  }
+}
+
 export function useAthleteProfileData(athleteId: string) {
   // Nota: queryClient potrebbe essere usato in futuro per invalidazione cache
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -38,6 +44,7 @@ export function useAthleteProfileData(athleteId: string) {
     peso_attuale: null,
     lessons_remaining: null,
   })
+  const [statsError, setStatsError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [athleteUserId, setAthleteUserId] = useState<string | null>(null)
@@ -135,137 +142,75 @@ export function useAthleteProfileData(athleteId: string) {
       return
     }
 
+    const errMsgs: string[] = []
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      .toISOString()
+      .split('T')[0]
+    const workoutLogsOr = `atleta_id.eq.${athleteId},athlete_id.eq.${athleteId}`
+
     try {
-      // Conta workout logs totali (prova con atleta_id e athlete_id)
-      let totalWorkouts = 0
-      try {
-        const { count } = await supabase
-          .from('workout_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('atleta_id', athleteId)
-        totalWorkouts = count || 0
-      } catch {
-        try {
-          const { count } = await supabase
-            .from('workout_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('athlete_id', athleteId)
-          totalWorkouts = count || 0
-        } catch {}
-      }
+      setStatsError(null)
+      const totalRes = await supabase
+        .from('workout_logs')
+        .select('*', { count: 'exact', head: true })
+        .or(workoutLogsOr)
+      pushSupabaseError(errMsgs, totalRes)
 
-      // Conta workout logs del mese corrente
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      let monthlyWorkouts = 0
-      try {
-        const { count } = await supabase
-          .from('workout_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('atleta_id', athleteId)
-          .gte('data', startOfMonth.toISOString().split('T')[0])
-        monthlyWorkouts = count || 0
-      } catch {
-        try {
-          const { count } = await supabase
-            .from('workout_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('athlete_id', athleteId)
-            .gte('data', startOfMonth.toISOString().split('T')[0])
-          monthlyWorkouts = count || 0
-        } catch {}
-      }
+      const monthRes = await supabase
+        .from('workout_logs')
+        .select('*', { count: 'exact', head: true })
+        .or(workoutLogsOr)
+        .gte('data', startOfMonth)
+      pushSupabaseError(errMsgs, monthRes)
 
-      // Conta schede attive
-      const { count: activeWorkouts } = await supabase
+      const plansRes = await supabase
         .from('workout_plans')
         .select('*', { count: 'exact', head: true })
         .eq('athlete_id', athleteId)
         .eq('is_active', true)
+      pushSupabaseError(errMsgs, plansRes)
 
-      // Conta documenti in scadenza (prova con user_id se athlete_id fallisce)
-      let expiringDocs = 0
-      try {
-        const { count } = await supabase
-          .from('documents')
-          .select('*', { count: 'exact', head: true })
-          .eq('athlete_id', athleteId)
-          .eq('status', 'in_scadenza')
-        expiringDocs = count || 0
-      } catch {
-        // Prova con id se la colonna athlete_id non esiste
-        try {
-          const userProfile = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', athleteId)
-            .single()
+      const docsRes = await supabase
+        .from('documents')
+        .select('*', { count: 'exact', head: true })
+        .eq('athlete_id', athleteId)
+        .eq('status', 'in_scadenza')
+      pushSupabaseError(errMsgs, docsRes)
 
-          if (userProfile.data?.id) {
-            const { count } = await supabase
-              .from('documents')
-              .select('*', { count: 'exact', head: true })
-              .eq('athlete_id', userProfile.data.id)
-              .eq('status', 'in_scadenza')
-            expiringDocs = count || 0
-          }
-        } catch {}
-      }
+      const progressRes = await supabase
+        .from('progress_logs')
+        .select('weight_kg')
+        .eq('athlete_id', athleteId)
+        .order('date', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle()
+      pushSupabaseError(errMsgs, progressRes)
 
-      // Ultimo progress log per peso (prova con user_id se athlete_id fallisce)
-      let pesoAttuale = null
-      try {
-        const { data: lastProgress } = await supabase
-          .from('progress_logs')
-          .select('weight_kg')
-          .eq('atleta_id', athleteId)
-          .order('date', { ascending: false })
-          .limit(1)
-          .single()
-        pesoAttuale = lastProgress?.weight_kg || null
-      } catch {
-        try {
-          const userProfile = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', athleteId)
-            .single()
+      const counterRes = await supabase
+        .from('lesson_counters')
+        .select('count')
+        .eq('athlete_id', athleteId)
+        .maybeSingle()
+      pushSupabaseError(errMsgs, counterRes)
 
-          if (userProfile.data?.id) {
-            const { data: lastProgress } = await supabase
-              .from('progress_logs')
-              .select('weight_kg')
-              .eq('athlete_id', userProfile.data.id)
-              .order('date', { ascending: false })
-              .limit(1)
-              .maybeSingle()
-            pesoAttuale = lastProgress?.weight_kg || null
-          }
-        } catch {}
-      }
-
-      // Lezioni rimanenti (lesson_counters: 1 riga per atleta, lesson_type=default)
-      let lessonsRemaining: number | null = null
-      try {
-        const { data: counter } = await supabase
-          .from('lesson_counters')
-          .select('count')
-          .eq('athlete_id', athleteId)
-          .maybeSingle()
-        lessonsRemaining = counter?.count ?? null
-      } catch {}
+      const weightRaw = progressRes.data?.weight_kg
+      const pesoAttuale =
+        weightRaw === null || weightRaw === undefined ? null : Number(weightRaw)
 
       setStats({
-        allenamenti_totali: totalWorkouts,
-        allenamenti_mese: monthlyWorkouts,
-        schede_attive: activeWorkouts || 0,
-        documenti_scadenza: expiringDocs,
+        allenamenti_totali: totalRes.count ?? 0,
+        allenamenti_mese: monthRes.count ?? 0,
+        schede_attive: plansRes.count ?? 0,
+        documenti_scadenza: docsRes.count ?? 0,
         ultimo_accesso: athlete?.ultimo_accesso || null,
-        peso_attuale: pesoAttuale,
-        lessons_remaining: lessonsRemaining,
+        peso_attuale: Number.isFinite(pesoAttuale) ? pesoAttuale : null,
+        lessons_remaining: counterRes.data?.count ?? null,
       })
+      setStatsError(errMsgs.length ? [...new Set(errMsgs)].join(' · ') : null)
     } catch (err) {
       logger.error('Errore caricamento statistiche', err, { athleteId })
+      const msg = err instanceof Error ? err.message : 'Errore nel caricamento delle statistiche'
+      setStatsError(msg)
     }
   }, [athlete, athleteId])
 
@@ -283,6 +228,7 @@ export function useAthleteProfileData(athleteId: string) {
   return {
     athlete,
     stats,
+    statsError,
     loading,
     error,
     athleteUserId,

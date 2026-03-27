@@ -46,13 +46,9 @@ export function useAthleteMotivational(athleteId: string | null) {
           .from('athlete_motivational_data')
           .select('*')
           .eq('athlete_id', athleteId)
-          .single()
+          .maybeSingle()
 
         if (error) {
-          // Se non esiste record, ritorna null (non è un errore)
-          if (error.code === 'PGRST116') {
-            return null
-          }
           throw error
         }
 
@@ -135,7 +131,7 @@ export function useUpdateAthleteMotivational(athleteId: string | null) {
           .from('athlete_motivational_data')
           .select('id')
           .eq('athlete_id', athleteId)
-          .single()
+          .maybeSingle()
 
         let result
 

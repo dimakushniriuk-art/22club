@@ -1,12 +1,9 @@
 // ============================================================
-// Componente Sezione Note Nutrizionali (FASE C - Split File Lunghi)
-// ============================================================
-// Estratto da athlete-nutrition-tab.tsx per migliorare manutenibilità
+// Componente Sezione Note Nutrizionali (FASE C)
 // ============================================================
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Textarea } from '@/components/ui'
 import { sanitizeString } from '@/lib/sanitize'
 import type { AthleteNutritionDataUpdate } from '@/types/athlete-profile'
@@ -27,31 +24,26 @@ export function NutritionNotesSection({
   onFormDataChange,
 }: NutritionNotesSectionProps) {
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold text-text-primary">Note Nutrizionali</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isEditing ? (
-          <Textarea
-            value={formData.note_nutrizionali || ''}
-            maxLength={2000}
-            onChange={(e) => {
-              const sanitized = sanitizeString(e.target.value, 2000)
-              onFormDataChange({ note_nutrizionali: sanitized || null })
-            }}
-            placeholder="Note aggiuntive sulla nutrizione..."
-            rows={4}
-            className="text-base"
-          />
-        ) : nutrition?.note_nutrizionali ? (
-          <p className="text-text-primary text-sm md:text-base whitespace-pre-wrap p-4 rounded-lg border border-white/10 bg-white/[0.02]">
-            {nutrition.note_nutrizionali}
-          </p>
-        ) : (
-          <p className="text-text-secondary text-sm text-center py-4">Nessuna nota nutrizionale</p>
-        )}
-      </CardContent>
-    </Card>
+    <>
+      {isEditing ? (
+        <Textarea
+          value={formData.note_nutrizionali || ''}
+          maxLength={2000}
+          onChange={(e) => {
+            const sanitized = sanitizeString(e.target.value, 2000)
+            onFormDataChange({ note_nutrizionali: sanitized || null })
+          }}
+          placeholder="Note aggiuntive sulla nutrizione..."
+          rows={4}
+          className="border-white/10 bg-white/[0.04] text-xs"
+        />
+      ) : nutrition?.note_nutrizionali ? (
+        <p className="whitespace-pre-wrap rounded-lg border border-white/10 bg-white/[0.02] p-3 text-sm text-text-primary md:text-base">
+          {nutrition.note_nutrizionali}
+        </p>
+      ) : (
+        <p className="py-4 text-center text-sm text-text-secondary">Nessuna nota nutrizionale</p>
+      )}
+    </>
   )
 }

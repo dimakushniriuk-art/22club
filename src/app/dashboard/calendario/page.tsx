@@ -11,7 +11,6 @@ import { useBirthdays } from '@/hooks/calendar/use-birthdays'
 import Link from 'next/link'
 import { useCalendarKeyboardShortcuts } from '@/hooks/calendar/use-calendar-keyboard-shortcuts'
 import { useAuth } from '@/providers/auth-provider'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import {
   Clock,
   ChevronRight,
@@ -442,31 +441,6 @@ function ShortcutRow({ keys, description }: { keys: string[]; description: strin
           >
             {key}
           </kbd>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/** Skeleton della griglia calendario durante il caricamento appuntamenti */
-function CalendarPageSkeleton() {
-  return (
-    <div className="h-full flex flex-col p-4 animate-pulse">
-      <div className="flex items-center justify-between mb-4">
-        <div className="h-8 w-32 rounded-lg bg-background-tertiary" />
-        <div className="flex gap-2">
-          <div className="h-9 w-9 rounded-lg bg-background-tertiary" />
-          <div className="h-9 w-9 rounded-lg bg-background-tertiary" />
-        </div>
-      </div>
-      <div className="grid grid-cols-7 gap-px mb-2">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="h-6 rounded bg-background-tertiary" />
-        ))}
-      </div>
-      <div className="flex-1 grid grid-cols-7 grid-rows-5 gap-px min-h-0">
-        {Array.from({ length: 35 }).map((_, i) => (
-          <div key={i} className="rounded-lg bg-background-tertiary/80" />
         ))}
       </div>
     </div>
@@ -1109,9 +1083,7 @@ export function CalendarPageContent({
             ? '1 appuntamento'
             : `${filteredAppointments.length} appuntamenti`}
         </div>
-        {appointmentsLoading ? (
-          <CalendarPageSkeleton />
-        ) : (
+        {appointmentsLoading ? null : (
           <>
             <CalendarView
               appointments={filteredAppointments}
@@ -1172,7 +1144,7 @@ export function CalendarPageContent({
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
         >
           <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
-            <Suspense fallback={<LoadingState message="Caricamento form..." />}>
+            <Suspense fallback={null}>
               <AppointmentForm
                 appointment={formInitialAppointment}
                 athletes={athletes}

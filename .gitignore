@@ -60,3 +60,26 @@ next-env.d.ts
 # large archive files (exceed GitHub 100MB limit)
 *.zip
 .vercel
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# e2e auth (cookie di sessione — non versionare)
+tests/e2e/.auth/
+
+# report e cache generati
+playwright-report/
+test-results/
+.vitest-cache/
+
+# supabase CLI temp
+supabase/.temp/
+
+# storico AI locale (non versionare)
+ai_memory/
+
+# log debug
+debug-*.log
+
+# Cursor MCP (può contenere chiavi)
+.cursor/mcp.json

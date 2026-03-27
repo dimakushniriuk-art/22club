@@ -27,7 +27,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from '@/components/ui'
-import { Skeleton } from '@/components/shared/ui/skeleton'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('app:dashboard:massaggiatore:page')
@@ -66,8 +65,6 @@ function isToday(iso: string): boolean {
     d.getUTCDate() === today.getUTCDate()
   )
 }
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 export default function MassaggiatorePage() {
   const { showLoader } = useStaffDashboardGuard('massaggiatore')
@@ -188,11 +185,7 @@ export default function MassaggiatorePage() {
   }, [loadData])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
-      </div>
-    )
+    return null
   }
 
   return (
@@ -218,23 +211,6 @@ export default function MassaggiatorePage() {
 
       {/* Vista smartphone */}
       <div className="md:hidden flex flex-col gap-4 pb-4">
-        {loading && (
-          <div className="flex flex-col gap-3">
-            <Skeleton className="h-14 w-full rounded-lg" />
-            <Skeleton className="h-11 w-40 rounded-lg" />
-            <div className="grid grid-cols-3 gap-1.5">
-              <Skeleton className="h-[72px] rounded-lg" />
-              <Skeleton className="h-[72px] rounded-lg" />
-              <Skeleton className="h-[72px] rounded-lg" />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Skeleton className="h-20 rounded-lg" />
-              <Skeleton className="h-20 rounded-lg" />
-              <Skeleton className="h-20 rounded-lg" />
-              <Skeleton className="h-20 rounded-lg" />
-            </div>
-          </div>
-        )}
         {!loading && !error && (
           <>
             <div>
@@ -388,17 +364,6 @@ export default function MassaggiatorePage() {
 
       {/* Vista desktop */}
       <div className="hidden md:block">
-        {loading && (
-          <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-[7.5rem] rounded-xl" />
-              ))}
-            </div>
-            <Skeleton className="h-24 rounded-xl" />
-            <Skeleton className="h-[280px] rounded-xl" />
-          </div>
-        )}
         {!loading && !error && (
           <div className="flex flex-col gap-6">
             {/* Banner: appuntamenti oggi */}

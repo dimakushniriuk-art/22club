@@ -9,7 +9,6 @@ import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-se
 import { useAuth } from '@/providers/auth-provider'
 import { useNotify } from '@/lib/ui/notify'
 import { Button, Input, Label } from '@/components/ui'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
 import {
   getDefaultDurationsForRole,
@@ -364,7 +363,7 @@ export default function CalendarioImpostazioniPage() {
   }
 
   if (showLoader || (!loading && !staffProfileId)) {
-    return <LoadingState />
+    return null
   }
 
   const calendarPath =

@@ -67,7 +67,7 @@ export default function EsercizioDetailPage() {
   if (authLoading || !exerciseId) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 flex items-center justify-center">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 flex items-center justify-center">
           <p className="text-text-secondary text-sm">Caricamento...</p>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function EsercizioDetailPage() {
   if (error || !exercise) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
           <PageHeaderFixed
             variant="chat"
             title="Esercizio"
@@ -105,7 +105,7 @@ export default function EsercizioDetailPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 sm:space-y-5 min-[834px]:px-6">
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-5 min-[834px]:px-6">
         <PageHeaderFixed
           variant="chat"
           title={exercise.name}

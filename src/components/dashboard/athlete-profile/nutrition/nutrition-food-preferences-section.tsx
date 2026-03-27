@@ -1,12 +1,10 @@
 // ============================================================
-// Componente Sezione Alimenti Preferiti e Evitati (FASE C - Split File Lunghi)
-// ============================================================
-// Estratto da athlete-nutrition-tab.tsx per migliorare manutenibilità
+// Componente Sezione Alimenti Preferiti e Evitati (FASE C)
+// Contenuto per shell Card tab nutrizione.
 // ============================================================
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -45,16 +43,14 @@ export function NutritionFoodPreferencesSection({
   onNewAlimentoPreferitoChange,
   onNewAlimentoEvitatoChange,
 }: NutritionFoodPreferencesSectionProps) {
-  if (isEditing) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">
-              Alimenti Preferiti
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Alimenti preferiti
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi alimento"
@@ -69,11 +65,15 @@ export function NutritionFoodPreferencesSection({
                     onAlimentoPreferitoAdd(newAlimentoPreferito)
                   }
                 }}
-                className="text-base"
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
               <Button
-                onClick={() => newAlimentoPreferito && onAlimentoPreferitoAdd(newAlimentoPreferito)}
-                className="min-h-[44px] min-w-[44px]"
+                type="button"
+                size="icon"
+                onClick={() =>
+                  newAlimentoPreferito && onAlimentoPreferitoAdd(newAlimentoPreferito)
+                }
+                className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -89,14 +89,26 @@ export function NutritionFoodPreferencesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : nutrition?.alimenti_preferiti && nutrition.alimenti_preferiti.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {nutrition.alimenti_preferiti.map((alimento, index) => (
+              <Badge key={index} variant="secondary">
+                {alimento}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessun alimento preferito</p>
+        )}
+      </div>
 
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold text-text-primary">Alimenti Evitati</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Alimenti evitati
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi alimento"
@@ -111,11 +123,13 @@ export function NutritionFoodPreferencesSection({
                     onAlimentoEvitatoAdd(newAlimentoEvitato)
                   }
                 }}
-                className="text-base"
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
               <Button
+                type="button"
+                size="icon"
                 onClick={() => newAlimentoEvitato && onAlimentoEvitatoAdd(newAlimentoEvitato)}
-                className="min-h-[44px] min-w-[44px]"
+                className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -131,51 +145,19 @@ export function NutritionFoodPreferencesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : nutrition?.alimenti_evitati && nutrition.alimenti_evitati.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {nutrition.alimenti_evitati.map((alimento, index) => (
+              <Badge key={index} variant="secondary">
+                {alimento}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessun alimento evitato</p>
+        )}
       </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold text-text-primary">Alimenti Preferiti</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {nutrition?.alimenti_preferiti && nutrition.alimenti_preferiti.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {nutrition.alimenti_preferiti.map((alimento, index) => (
-                <Badge key={index} variant="secondary">
-                  {alimento}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm md:text-base">Nessun alimento preferito</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold text-text-primary">Alimenti Evitati</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {nutrition?.alimenti_evitati && nutrition.alimenti_evitati.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {nutrition.alimenti_evitati.map((alimento, index) => (
-                <Badge key={index} variant="secondary">
-                  {alimento}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm md:text-base">Nessun alimento evitato</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }

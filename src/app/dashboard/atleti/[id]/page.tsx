@@ -3,7 +3,6 @@
 import { useState, lazy, Suspense } from 'react'
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useAthleteProfileData } from '@/hooks/athlete-profile/use-athlete-profile-data'
 import { AthleteProfileHeader, AthleteProfileTabs } from '@/components/dashboard/athlete-profile'
@@ -38,9 +37,8 @@ export default function AtletaPage() {
   const [showModifica, setShowModifica] = useState(false)
   const canEdit = role === 'trainer' || role === 'admin'
 
-  const { athlete, stats, loading, error, athleteUserId, loadAthleteData } = useAthleteProfileData(
-    id ?? '',
-  )
+  const { athlete, stats, statsError, loading, error, athleteUserId, loadAthleteData } =
+    useAthleteProfileData(id ?? '')
   const avatarInitials = useAvatarInitials(athlete?.nome ?? '', athlete?.cognome ?? '')
 
   if (!id) {
@@ -55,11 +53,7 @@ export default function AtletaPage() {
   }
 
   if (loading && !athlete) {
-    return (
-      <div className="p-6">
-        <LoadingState message="Caricamento profilo atleta..." />
-      </div>
-    )
+    return null
   }
 
   if (error || !athlete) {
@@ -101,11 +95,12 @@ export default function AtletaPage() {
         athleteId={id}
         athleteUserId={athleteUserId}
         stats={tabStats}
+        statsError={statsError}
         onPrefetchTab={() => {}}
       />
 
       {canEdit && showModifica && (
-        <Suspense fallback={<LoadingState message="Caricamento..." />}>
+        <Suspense fallback={null}>
           <ModificaAtletaModal
             open={showModifica}
             onOpenChange={setShowModifica}

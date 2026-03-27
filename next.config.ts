@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -5,15 +6,22 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+/** Middleware e altro possono usare solo CAPACITOR=true (es. in .env.local). */
 const isCapacitor = process.env.CAPACITOR === 'true'
+/**
+ * Export statico solo per la pipeline Capacitor (`npm run build:capacitor`), non per `next build` web:
+ * altrimenti CAPACITOR=true in .env.local abiliterebbe output: 'export' e fallirebbe sulle API routes.
+ */
+const isCapacitorStaticExport =
+  process.env.CAPACITOR === 'true' && process.env.CAPACITOR_NEXT_EXPORT === 'true'
 
 const nextConfig: NextConfig = {
   // Forza la root di tracing su questa app per evitare l'avviso multi-lockfile
   outputFileTracingRoot: path.join(__dirname),
 
   // Export statico per Capacitor (app native)
-  // Quando CAPACITOR=true, Next.js genera file statici nella cartella 'out'
-  ...(isCapacitor && {
+  // Richiede CAPACITOR_NEXT_EXPORT=true (impostato negli script build:capacitor*)
+  ...(isCapacitorStaticExport && {
     output: 'export',
     // Escludi API routes dal build per Capacitor (non supportate con export statico)
     distDir: '.next',
@@ -282,4 +290,40 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  // For all available options, see:
+  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+
+  org: "22club",
+
+  project: "javascript-nextjs",
+
+  // Only print logs for uploading source maps in CI
+  silent: !process.env.CI,
+
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+  // Upload a larger set of source maps for prettier stack traces (increases build time)
+  widenClientFileUpload: true,
+
+  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+  // This can increase your server load as well as your hosting bill.
+  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
+  // side errors will fail.
+  tunnelRoute: "/monitoring",
+
+  webpack: {
+    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+    // See the following for more information:
+    // https://docs.sentry.io/product/crons/
+    // https://vercel.com/docs/cron-jobs
+    automaticVercelMonitors: true,
+
+    // Tree-shaking options for reducing bundle size
+    treeshake: {
+      // Automatically tree-shake Sentry logger statements to reduce bundle size
+      removeDebugLogging: true,
+    },
+  },
+});

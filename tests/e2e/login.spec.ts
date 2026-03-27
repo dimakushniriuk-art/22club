@@ -1,7 +1,7 @@
 import { test, expect, type Browser, type Page } from '@playwright/test'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
-import { TEST_CREDENTIALS } from './helpers/auth'
+import { LOGIN_EMAIL_FIELD, LOGIN_PASSWORD_FIELD, TEST_CREDENTIALS } from './helpers/auth'
 
 // Helper per contesto realmente anonimo (nessun cookie/localStorage) e pagina /login pronta
 async function openLogin(browser: Browser) {
@@ -59,8 +59,9 @@ const isSafariProject = (name: string) =>
   name?.toLowerCase().includes('webkit') || name?.toLowerCase().includes('safari')
 
 async function waitForLoginForm(page: Page) {
-  const emailInput = page.getByPlaceholder('Email')
-  const passwordInput = page.getByPlaceholder('Password')
+  // LoginCard: placeholder email "la.tua@email.com", password "••••••••" (non più "Email"/"Password")
+  const emailInput = page.locator(LOGIN_EMAIL_FIELD).first()
+  const passwordInput = page.locator(LOGIN_PASSWORD_FIELD).first()
   await emailInput.waitFor({ state: 'visible', timeout: 10000 })
   await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
 }
@@ -114,8 +115,8 @@ async function loginAndReach(
   role: 'trainer' | 'athlete',
 ) {
   await waitForLoginForm(page)
-  const emailInput = page.getByPlaceholder('Email')
-  const passwordInput = page.getByPlaceholder('Password')
+  const emailInput = page.locator(LOGIN_EMAIL_FIELD).first()
+  const passwordInput = page.locator(LOGIN_PASSWORD_FIELD).first()
   await emailInput.fill(email)
   await passwordInput.fill(password)
 
@@ -166,9 +167,9 @@ async function ensureLogged(
 test.describe('Login Flow', () => {
   test('should display login form', async ({ browser }) => {
     const { context, page } = await openLogin(browser)
-    await expect(page.getByText('Accedi')).toBeVisible()
-    await expect(page.getByPlaceholder('Email')).toBeVisible()
-    await expect(page.getByPlaceholder('Password')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Accedi' })).toBeVisible()
+    await expect(page.locator(LOGIN_EMAIL_FIELD).first()).toBeVisible()
+    await expect(page.locator(LOGIN_PASSWORD_FIELD).first()).toBeVisible()
     await expect(page.getByRole('button', { name: 'Accedi' })).toBeVisible()
     await context.close()
   })
@@ -226,58 +227,23 @@ test.describe('Login Flow', () => {
     await context.close()
   })
 
-  test('should validate required fields', async ({ browser, browserName }) => {
+  test('should validate required fields', async ({ browser }) => {
     const { context, page } = await openLogin(browser)
     await waitForLoginForm(page)
-
-    // Chiudi il cookie banner se presente (importante per Mobile Chrome/Safari)
     await dismissCookieBanner(page)
 
-    // Su Mobile Chrome/Safari, usa force: true per bypassare il banner se persiste
-    const isMobile =
-      browserName?.toLowerCase().includes('mobile') ||
-      browserName?.toLowerCase().includes('webkit') ||
-      browserName?.toLowerCase().includes('safari')
-    if (isMobile) {
-      await page.click('button[type="submit"]', { force: true })
-      // Attendi che la validazione si attivi (con force: true potrebbe essere più lenta)
-      await page.waitForTimeout(500)
-    } else {
-      await page.click('button[type="submit"]')
-    }
+    // LoginCard disabilita il submit se manca email o password: niente submit → niente errori inline da handleLogin
+    const submitBtn = page.getByRole('button', { name: 'Accedi' })
+    await expect(submitBtn).toBeDisabled()
 
-    // Check for validation messages (con timeout più lungo per mobile)
-    // Verifica sia i messaggi custom che quelli HTML5
-    const timeout = isMobile ? 10000 : 5000
+    await page.locator(LOGIN_EMAIL_FIELD).first().fill('test@example.com')
+    await expect(submitBtn).toBeDisabled()
 
-    // Su mobile, verifica almeno che uno dei due metodi di validazione funzioni
-    if (isMobile) {
-      const hasEmailError = await page
-        .getByText('Email è richiesta')
-        .isVisible({ timeout: 3000 })
-        .catch(() => false)
-      const hasPasswordError = await page
-        .getByText('Password è richiesta')
-        .isVisible({ timeout: 3000 })
-        .catch(() => false)
-      const hasHtml5Email = await page
-        .locator('input[name="email"]:invalid')
-        .count()
-        .then((c) => c > 0)
-        .catch(() => false)
-      const hasHtml5Password = await page
-        .locator('input[name="password"]:invalid')
-        .count()
-        .then((c) => c > 0)
-        .catch(() => false)
+    await page.locator(LOGIN_PASSWORD_FIELD).first().fill('secret')
+    await expect(submitBtn).toBeEnabled()
 
-      // Almeno una validazione deve essere presente
-      expect(hasEmailError || hasHtml5Email).toBeTruthy()
-      expect(hasPasswordError || hasHtml5Password).toBeTruthy()
-    } else {
-      await expect(page.getByText('Email è richiesta')).toBeVisible({ timeout })
-      await expect(page.getByText('Password è richiesta')).toBeVisible({ timeout })
-    }
+    await page.locator(LOGIN_EMAIL_FIELD).first().fill('')
+    await expect(submitBtn).toBeDisabled()
 
     await context.close()
   })

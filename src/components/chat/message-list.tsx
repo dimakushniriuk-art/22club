@@ -9,6 +9,7 @@ import { useIcon } from '@/components/ui/professional-icons'
 import { createLogger } from '@/lib/logger'
 import { formatTime } from '@/lib/format'
 import { notifyError } from '@/lib/notifications'
+import { documentsFilePreviewHref } from '@/lib/documents'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -217,7 +218,12 @@ export function MessageList({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.open(message.file_url, '_blank')}
+                        onClick={() => {
+                          const href = message.file_url
+                            ? documentsFilePreviewHref(message.file_url)
+                            : null
+                          if (href) window.open(href, '_blank', 'noopener,noreferrer')
+                        }}
                         className="h-7 px-2 text-xs rounded-md text-zinc-300 hover:bg-white/10"
                       >
                         <Eye className="mr-1 h-3 w-3" />

@@ -252,7 +252,7 @@ export default function NewSegmentPage() {
         <div className="mt-6 flex gap-2">
           <Button type="submit" disabled={saving}>
             {saving ? (
-              <span className="animate-pulse">Salvataggio...</span>
+              <span>Salvataggio...</span>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />

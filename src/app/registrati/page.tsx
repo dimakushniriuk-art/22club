@@ -42,16 +42,7 @@ function RegisterFormFallback() {
             <h2 className="text-xl sm:text-2xl font-bold text-text-primary">Crea il tuo account</h2>
             <p className="text-text-secondary text-sm mt-2">Caricamento...</p>
           </div>
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="h-10 rounded-md bg-white/[0.04] animate-pulse" />
-              <div className="h-10 rounded-md bg-white/[0.04] animate-pulse" />
-            </div>
-            <div className="h-10 rounded-md bg-white/[0.04] animate-pulse" />
-            <div className="h-10 rounded-md bg-white/[0.04] animate-pulse" />
-            <div className="h-10 rounded-md bg-white/[0.04] animate-pulse" />
-            <div className="h-12 rounded-md bg-white/[0.04] animate-pulse" />
-          </div>
+          <div className="min-h-[200px]" aria-hidden />
         </CardContent>
       </Card>
     </div>

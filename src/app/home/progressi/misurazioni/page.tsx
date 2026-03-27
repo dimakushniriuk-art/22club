@@ -7,22 +7,13 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/u
 import { PageHeaderFixed } from '@/components/layout'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useProgressAnalytics, type ProgressKPI } from '@/hooks/use-progress-analytics'
-import { Plus, Scale, Dumbbell } from 'lucide-react'
+import { Plus, Scale } from 'lucide-react'
 import Link from 'next/link'
 import { RangeStatusMeter } from '@/components/dashboard/range-status-meter'
-import { getValueRange, PROGRESS_RANGES, type ValueRange } from '@/lib/constants/progress-ranges'
+import { getValueRange, PROGRESS_RANGES } from '@/lib/constants/progress-ranges'
 
 const CARD_DS =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
-
-/** Range ottimale come 25%-75% del range (zona centrale) */
-function optimalFromRange(r: ValueRange): { optimalMin: number; optimalMax: number } {
-  const span = r.max - r.min
-  return {
-    optimalMin: r.min + span * 0.25,
-    optimalMax: r.max - span * 0.25,
-  }
-}
 
 type CategoryKey = keyof typeof PROGRESS_RANGES
 
@@ -213,7 +204,7 @@ const MISURAZIONI_ENTRIES: MeasurementEntry[] = [
   {
     section: 'Circonferenze',
     category: 'circonferenze',
-    field: 'braccio_contratto_cm',
+    field: 'biceps_cm',
     label: 'Biceps',
     getValue: (d) => d.valoriCirconferenzeAttuali.biceps_cm,
   },
@@ -222,6 +213,31 @@ const MISURAZIONI_ENTRIES: MeasurementEntry[] = [
 const SCROLL_CONTAINER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' } as const
 
 function MisurazioniValuesContent({ data }: { data: ProgressKPI }) {
+  const toHistory = useCallback(
+    (entry: MeasurementEntry): Array<{ date: string; value: number | null }> => {
+      if (entry.category === 'valoriPrincipali' && entry.field === 'peso_kg') {
+        return data.datasetPeso.map((point) => ({ date: point.date, value: point.peso }))
+      }
+
+      if (entry.category === 'valoriPrincipali') {
+        return data.datasetComposizioneCorporea.map((point) => ({
+          date: point.date,
+          value: point[entry.field as keyof typeof point] as number | null,
+        }))
+      }
+
+      if (entry.category === 'circonferenze') {
+        return data.datasetCirconferenze.map((point) => ({
+          date: point.date,
+          value: point[entry.field as keyof typeof point] as number | null,
+        }))
+      }
+
+      return []
+    },
+    [data.datasetCirconferenze, data.datasetComposizioneCorporea, data.datasetPeso],
+  )
+
   const sections = useMemo(() => {
     const bySection = new Map<string, MeasurementEntry[]>()
     for (const entry of MISURAZIONI_ENTRIES) {
@@ -245,19 +261,15 @@ function MisurazioniValuesContent({ data }: { data: ProgressKPI }) {
               const range = getValueRange(entry.category, entry.field)
               if (!range) return null
               const unit = range.unit ? ` ${range.unit}` : ''
-              const { optimalMin, optimalMax } = optimalFromRange(range)
               return (
                 <RangeStatusMeter
                   key={`${entry.category}-${entry.field}`}
                   value={value}
-                  min={range.min}
-                  max={range.max}
-                  optimalMin={optimalMin}
-                  optimalMax={optimalMax}
+                  history={toHistory(entry)}
                   title={entry.label}
                   unit={unit}
                   showValue
-                  height={44}
+                  height={160}
                 />
               )
             })}
@@ -265,35 +277,6 @@ function MisurazioniValuesContent({ data }: { data: ProgressKPI }) {
         </div>
       ))}
 
-      {/* Forza: valori senza range di riferimento */}
-      <div>
-        <h3 className="text-sm font-semibold text-text-primary mb-3 pb-1.5 border-b border-white/10 flex items-center gap-2">
-          <Dumbbell className="h-4 w-4 text-cyan-400" />
-          Forza
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            {
-              key: 'max_bench_kg',
-              label: 'Panca piana',
-              value: data.valoriForzaAttuali.max_bench_kg,
-            },
-            { key: 'max_squat_kg', label: 'Squat', value: data.valoriForzaAttuali.max_squat_kg },
-            {
-              key: 'max_deadlift_kg',
-              label: 'Stacco',
-              value: data.valoriForzaAttuali.max_deadlift_kg,
-            },
-          ].map(({ key, label, value }) => (
-            <div key={key} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5">
-              <p className="text-xs text-text-tertiary">{label}</p>
-              <p className="text-lg font-bold tabular-nums text-text-primary mt-0.5">
-                {value != null ? `${value} kg` : '—'}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }
@@ -339,10 +322,10 @@ function MisurazioniContent() {
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6 min-[834px]:pt-24">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <CardContent className="p-8 min-[834px]:p-12 text-center">
-              <div className="mb-3 text-4xl opacity-50">📊</div>
+              <div className="mb-3 text-4xl opacity-50">[ ]</div>
               <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">
                 Caricamento...
               </p>
@@ -360,7 +343,7 @@ function MisurazioniContent() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24"
+        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24"
         style={SCROLL_CONTAINER_STYLE}
       >
         <PageHeaderFixed
@@ -393,14 +376,14 @@ function MisurazioniContent() {
           <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
             {progressLoading ? (
               <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
-                <div className="mb-3 text-4xl opacity-50">📊</div>
+                <div className="mb-3 text-4xl opacity-50">[ ]</div>
                 <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">
                   Caricamento dati...
                 </p>
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center px-4">
-                <div className="mb-3 text-4xl opacity-50">⚠️</div>
+                <div className="mb-3 text-4xl opacity-50">!</div>
                 <p className="text-text-primary text-sm min-[834px]:text-base font-medium">
                   Errore nel caricamento
                 </p>
@@ -441,25 +424,7 @@ function MisurazioniContent() {
 
 export default function MisurazioniPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-          <div
-            className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 sm:px-5 min-[834px]:px-6 min-[834px]:pt-24"
-            style={SCROLL_CONTAINER_STYLE}
-          >
-            <Card className={`relative overflow-hidden ${CARD_DS}`}>
-              <CardContent className="relative z-10 p-8 min-[834px]:p-12 text-center">
-                <div className="mb-3 text-4xl opacity-50">📊</div>
-                <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">
-                  Caricamento...
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={null}>
       <MisurazioniContent />
     </Suspense>
   )

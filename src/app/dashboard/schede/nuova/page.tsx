@@ -7,7 +7,6 @@ import { createLogger } from '@/lib/logger'
 const logger = createLogger('app:dashboard:schede:nuova:page')
 import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
 import { WorkoutWizardContent } from '@/components/workout/workout-wizard-content'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useToast } from '@/components/ui/toast'
 import { useSearchParams } from 'next/navigation'
@@ -58,11 +57,7 @@ function NuovaSchedaContent() {
   }
 
   if (loading) {
-    return (
-      <div className="relative min-h-screen flex flex-col">
-        <LoadingState message="Caricamento dati..." />
-      </div>
-    )
+    return null
   }
 
   if (error || exercisesLoadError) {
@@ -86,7 +81,7 @@ function NuovaSchedaContent() {
 
 export default function NuovaSchedaPage() {
   return (
-    <Suspense fallback={<LoadingState message="Caricamento..." />}>
+    <Suspense fallback={null}>
       <NuovaSchedaContent />
     </Suspense>
   )

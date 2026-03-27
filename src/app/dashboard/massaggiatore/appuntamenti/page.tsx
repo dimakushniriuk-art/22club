@@ -12,7 +12,6 @@ import { useStaffAppointmentsTable } from '@/hooks/appointments/useStaffAppointm
 import { useLessonCounters } from '@/hooks/use-lesson-counters'
 import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { useAuth } from '@/providers/auth-provider'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
@@ -324,7 +323,7 @@ export default function MassaggiatoreAppuntamentiPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
         >
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
-            <Suspense fallback={<LoadingState message="Caricamento form..." />}>
+            <Suspense fallback={null}>
               <AppointmentForm
                 appointment={editingAppointment || undefined}
                 athletes={athletes}
@@ -342,7 +341,7 @@ export default function MassaggiatoreAppuntamentiPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
         >
           <div className="w-full max-w-md">
-            <Suspense fallback={<LoadingState message="Caricamento dettagli..." />}>
+            <Suspense fallback={null}>
               <AppointmentDetail
                 appointment={selectedAppointment}
                 onEdit={handleEditFromDetail}

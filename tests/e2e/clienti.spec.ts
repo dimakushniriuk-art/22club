@@ -16,7 +16,7 @@ const gotoClienti = async (page: Page) => {
   }
 
   // naviga a clienti e attendi heading
-  await page.goto('http://localhost:3001/dashboard/clienti', { waitUntil: 'domcontentloaded' })
+  await page.goto('/dashboard/clienti', { waitUntil: 'domcontentloaded' })
   await page.waitForURL('**/dashboard/clienti**', { timeout: 20000 })
   const heading = page.getByRole('heading', { name: /Clienti/i }).first()
   await expect(heading).toBeVisible({ timeout: 10000 })
@@ -29,6 +29,9 @@ const switchToTableView = async (page: Page) => {
 }
 
 test.describe('Pagina Clienti', () => {
+  // Login admin + navigazione: in parallelo i worker contendono sessione/Supabase → flaky
+  test.describe.configure({ mode: 'serial', timeout: 60_000 })
+
   test.beforeEach(async ({ page }) => {
     await gotoClienti(page)
   })
@@ -41,7 +44,7 @@ test.describe('Pagina Clienti', () => {
     await expect(page.getByText('Clienti Totali')).toBeVisible()
     await expect(page.getByText('Clienti Attivi')).toBeVisible()
     await expect(page.getByText('Nuovi Questo Mese')).toBeVisible()
-    await expect(page.getByText('Documenti in Scadenza')).toBeVisible()
+    await expect(page.getByText('Clienti invitati')).toBeVisible()
   })
 
   test('should filter clienti by search', async ({ page }) => {
@@ -53,7 +56,8 @@ test.describe('Pagina Clienti', () => {
   })
 
   test('should filter by stato', async ({ page }) => {
-    const attivi = page.getByRole('button', { name: 'Filtra per clienti attivi' })
+    // clienti-toolbar: aria-label è "Filtra per clienti attivo" (value === 'attivo')
+    const attivi = page.getByRole('button', { name: /Filtra per clienti attivo/ })
     await attivi.click()
     await expect(attivi).toHaveAttribute('aria-pressed', 'true')
   })

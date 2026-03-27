@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('app:home:pagamenti:page')
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
+import { PageHeaderFixed } from '@/components/layout'
 import { Euro, FileText, Download, Eye, X } from 'lucide-react'
 import { useAuth } from '@/providers/auth-provider'
+
+const logger = createLogger('app:home:pagamenti:page')
 
 interface Pagamento {
   id: string
@@ -23,12 +24,17 @@ interface Pagamento {
 }
 
 export default function PagamentiPage() {
+  const router = useRouter()
   const { user } = useAuth()
   const supabase = useSupabaseClient()
   const [pagamenti, setPagamenti] = useState<Pagamento[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null)
+
+  const handleBack = useCallback(() => {
+    router.back()
+  }, [router])
 
   const loadPagamenti = useCallback(async () => {
     try {
@@ -40,19 +46,22 @@ export default function PagamentiPage() {
         return
       }
 
-      // Ottieni profilo atleta (user.user_id = auth.users.id per profiles.user_id)
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.user_id)
-        .single()
-
-      if (profileError || !profile?.id) {
+      // user.id dal AuthProvider Ã¨ profiles.id (FK athlete_id su payments / lesson_counters)
+      let athleteId = user.id ?? null
+      if (!athleteId) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.user_id)
+          .single()
+        if (profileError || !profile?.id) {
+          throw new Error('Profilo atleta non trovato')
+        }
+        athleteId = profile.id
+      }
+      if (!athleteId) {
         throw new Error('Profilo atleta non trovato')
       }
-
-      // Query indipendenti: profile id noto, parallelizzabili
-      const athleteId = profile.id!
       const [paymentsRes, counterRes] = await Promise.all([
         supabase
           .from('payments')
@@ -139,56 +148,47 @@ export default function PagamentiPage() {
 
   if (loading) {
     return (
-      <div
-        className="bg-black min-w-[402px] min-h-[874px] flex flex-col"
-        style={{ overflow: 'auto' }}
-      >
-        <Card variant="trainer" className="relative bg-transparent">
-          <CardContent className="relative py-16 text-center">
-            <LoadingState message="Caricamento pagamenti..." />
-          </CardContent>
-        </Card>
+      <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
+        <PageHeaderFixed
+          variant="chat"
+          title="Pagamenti"
+          subtitle="I tuoi abbonamenti e pagamenti"
+          onBack={handleBack}
+          icon={<Euro className="h-5 w-5 text-cyan-400" />}
+        />
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom" aria-hidden />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div
-        className="bg-black min-w-[402px] min-h-[874px] flex flex-col"
-        style={{ overflow: 'auto' }}
-      >
-        <Card variant="trainer" className="relative bg-transparent">
-          <CardContent className="relative py-16 text-center">
-            <ErrorState message={error} onRetry={loadPagamenti} />
-          </CardContent>
-        </Card>
+      <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
+        <PageHeaderFixed
+          variant="chat"
+          title="Pagamenti"
+          subtitle="I tuoi abbonamenti e pagamenti"
+          onBack={handleBack}
+          icon={<Euro className="h-5 w-5 text-cyan-400" />}
+        />
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-auto px-4 pb-24 safe-area-inset-bottom">
+          <ErrorState message={error} onRetry={loadPagamenti} />
+        </div>
       </div>
     )
   }
 
   return (
-    <div
-      className="bg-black min-w-[402px] min-h-[874px] flex flex-col"
-      style={{ overflow: 'auto' }}
-    >
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none"></div>
+    <div className="relative flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
+      <PageHeaderFixed
+        variant="chat"
+        title="Pagamenti"
+        subtitle="I tuoi abbonamenti e pagamenti"
+        onBack={handleBack}
+        icon={<Euro className="h-5 w-5 text-cyan-400" />}
+      />
 
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full relative">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight flex items-center gap-3">
-              <Euro className="h-8 w-8 text-blue-400" />
-              Pagamenti
-            </h1>
-            <p className="text-text-secondary text-sm sm:text-base mt-1">
-              I tuoi abbonamenti e pagamenti
-            </p>
-          </div>
-        </div>
-
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-[1800px] flex-1 flex-col space-y-4 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:space-y-6 sm:px-6">
         {/* Tabella Pagamenti */}
         <Card
           variant="trainer"
@@ -294,7 +294,7 @@ export default function PagamentiPage() {
 
       {/* Modal Preview Fattura */}
       {selectedInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
           <div className="relative w-full h-full max-w-4xl max-h-[90vh] m-4 bg-background-secondary rounded-lg border border-blue-500/30 shadow-xl">
             <div className="flex items-center justify-between p-4 border-b border-blue-500/20">
               <h3 className="text-text-primary text-lg font-semibold flex items-center gap-2">

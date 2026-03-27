@@ -6,11 +6,9 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
 import { SimpleSelect } from '@/components/ui'
-import { Target } from 'lucide-react'
 import type {
   ObiettivoNutrizionaleEnum,
   DietaEnum,
@@ -54,14 +52,7 @@ export function NutritionGoalsSection({
   onFormDataChange,
 }: NutritionGoalsSectionProps) {
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold text-text-primary flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          Obiettivo Nutrizionale
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="obiettivo_nutrizionale" className="text-text-tertiary">
             Obiettivo
@@ -110,7 +101,7 @@ export function NutritionGoalsSection({
               }}
               placeholder="800-5000 kcal"
               maxLength={5}
-              className="text-base"
+              className="border-white/10 bg-white/[0.04] text-xs"
             />
           ) : (
             nutrition?.calorie_giornaliere_target && (
@@ -148,7 +139,6 @@ export function NutritionGoalsSection({
             )
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

@@ -1,16 +1,16 @@
 'use client'
 
 /**
- * Pagina Documenti atleta – /home/documenti
+ * Pagina Documenti atleta â€“ /home/documenti
  *
- * Mostra in un’unica lista tutti i documenti dell’atleta: tabella documents (certificati,
+ * Mostra in unâ€™unica lista tutti i documenti dellâ€™atleta: tabella documents (certificati,
  * liberatorie, contratti, dossier onboarding), certificato/referti da athlete_medical_data,
  * documenti contrattuali da athlete_administrative_data, fatture da payments (invoice_url).
  *
- * Funzionalità:
+ * FunzionalitÃ :
  * - Lista unificata con categoria, label, date, stato (valido/in_scadenza/scaduto), note.
- * - Visualizza: apre il documento in nuova scheda (signed → proxy /api/document-preview).
- * - Carica: upload nuovo documento (PDF/JPG); se categoria “altro” si apre dialog per scegliere.
+ * - Visualizza: apre il documento in nuova scheda (signed â†’ proxy /api/document-preview).
+ * - Carica: upload nuovo documento (PDF/JPG); se categoria â€œaltroâ€ si apre dialog per scegliere.
  * - Nuovo: sostituzione documento (solo per documenti sostituibili, es. scaduti).
  *
  * Dati: getAllAthleteDocuments(profileId, userId) in lib/all-athlete-documents.ts.
@@ -24,10 +24,16 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle,
+  ClipboardList,
   Clock,
   Eye,
+  FileSignature,
   FileText,
+  FolderOpen,
   Loader2,
+  Receipt,
+  ScrollText,
+  Stethoscope,
   Upload,
   XCircle,
 } from 'lucide-react'
@@ -67,7 +73,7 @@ type DocStatus = 'valido' | 'scaduto' | 'in-revisione' | 'in_scadenza' | 'non_va
 type BadgeVariant = 'primary' | 'success' | 'warning' | 'neutral' | 'outline' | 'secondary'
 
 const CARD_DS =
-  'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
+  'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md transition-colors duration-200 hover:border-white/20'
 
 function getStatusColor(status: DocStatus): BadgeVariant {
   switch (status) {
@@ -123,24 +129,26 @@ function getCategoryText(category: string): string {
   }
 }
 
-function getCategoryIcon(category: string): string {
+const CATEGORY_ICON_CLASS = 'h-5 w-5 text-cyan-400'
+
+function getCategoryIcon(category: string): ReactNode {
   switch (category) {
     case 'certificato':
-      return '🏥'
+      return <Stethoscope className={CATEGORY_ICON_CLASS} aria-hidden />
     case 'liberatoria':
-      return '📝'
+      return <FileSignature className={CATEGORY_ICON_CLASS} aria-hidden />
     case 'contratto':
-      return '📋'
+      return <ClipboardList className={CATEGORY_ICON_CLASS} aria-hidden />
     case 'altro':
-      return '📄'
+      return <FileText className={CATEGORY_ICON_CLASS} aria-hidden />
     case 'dossier_onboarding':
-      return '📁'
+      return <FolderOpen className={CATEGORY_ICON_CLASS} aria-hidden />
     case 'referto':
-      return '🩺'
+      return <ScrollText className={CATEGORY_ICON_CLASS} aria-hidden />
     case 'fattura':
-      return '🧾'
+      return <Receipt className={CATEGORY_ICON_CLASS} aria-hidden />
     default:
-      return '📄'
+      return <FileText className={CATEGORY_ICON_CLASS} aria-hidden />
   }
 }
 
@@ -174,7 +182,6 @@ function DocumentiPageContent() {
   const isValidUser = user && isValidProfile(user)
 
   const [allDocuments, setAllDocuments] = useState<UnifiedDocumentItem[]>([])
-  const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -183,7 +190,6 @@ function DocumentiPageContent() {
   const fetchAllDocuments = useCallback(async () => {
     if (!athleteProfileId) return
     try {
-      setLoading(true)
       const list = await getAllAthleteDocuments(athleteProfileId, athleteUserId)
       setAllDocuments(list)
     } catch (error) {
@@ -191,8 +197,6 @@ function DocumentiPageContent() {
         athleteProfileId,
         athleteUserId,
       })
-    } finally {
-      setLoading(false)
     }
   }, [athleteProfileId, athleteUserId])
 
@@ -200,7 +204,6 @@ function DocumentiPageContent() {
     if (!athleteProfileId) return
     let cancelled = false
     const load = async () => {
-      setLoading(true)
       try {
         const list = await getAllAthleteDocuments(athleteProfileId, athleteUserId)
         if (cancelled) return
@@ -212,8 +215,6 @@ function DocumentiPageContent() {
             athleteUserId,
           })
         }
-      } finally {
-        if (!cancelled) setLoading(false)
       }
     }
     load()
@@ -307,7 +308,7 @@ function DocumentiPageContent() {
 
   /**
    * Apre file picker per caricare un documento (PDF/JPG).
-   * Se category assente o "altro", mostra dialog per scegliere categoria prima dell’upload.
+   * Se category assente o "altro", mostra dialog per scegliere categoria prima dellâ€™upload.
    */
   const validCount = useMemo(
     () => allDocuments.filter((d) => d.status === 'valido').length,
@@ -320,30 +321,15 @@ function DocumentiPageContent() {
 
   if (!user || !isValidUser) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col overflow-auto bg-background px-4 py-5 pb-24 safe-area-inset-bottom">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded bg-background-tertiary" />
-          <div className="grid grid-cols-1 gap-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 rounded-lg bg-background-tertiary" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col overflow-auto bg-background px-4 py-5 pb-24 safe-area-inset-bottom">
-        <div className="animate-pulse space-y-3">
-          <div className="h-6 w-40 rounded bg-background-tertiary" />
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 rounded-lg bg-background-tertiary" />
-            ))}
-          </div>
-        </div>
+      <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
+        <PageHeaderFixed
+          variant="chat"
+          title="I miei Documenti"
+          subtitle="Gestisci i tuoi certificati e documenti"
+          onBack={handleBack}
+          icon={<FileText className="h-5 w-5 text-cyan-400" />}
+        />
+        <div className="min-h-0 flex-1" aria-hidden />
       </div>
     )
   }
@@ -357,12 +343,13 @@ function DocumentiPageContent() {
         onBack={handleBack}
         icon={<FileText className="h-5 w-5 text-cyan-400" />}
       />
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:space-y-6 sm:px-5 min-[834px]:px-6">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
+        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           <Button
             onClick={() => handleUploadDocument()}
             disabled={uploading}
-            className="min-h-[44px] gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="min-h-[44px] touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {uploading ? (
               <>
@@ -381,9 +368,8 @@ function DocumentiPageContent() {
         {/* Stats - card compatte */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <div className="absolute left-0 top-0 h-full w-1 bg-white" aria-hidden />
             <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                 <CheckCircle className="h-4 w-4 text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
@@ -397,9 +383,8 @@ function DocumentiPageContent() {
             </CardContent>
           </Card>
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <div className="absolute left-0 top-0 h-full w-1 bg-state-warn" aria-hidden />
             <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                 <Clock className="h-4 w-4 text-state-warn" />
               </div>
               <div className="min-w-0 flex-1">
@@ -419,8 +404,8 @@ function DocumentiPageContent() {
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <CardContent className="relative z-10 px-4 py-8 text-center sm:px-6 sm:py-10">
               <div className="mb-3 flex justify-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-2xl">
-                  📄
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                  <FileText className="h-8 w-8 text-cyan-400" aria-hidden />
                 </div>
               </div>
               <h3 className="mb-1.5 text-base font-bold text-text-primary md:text-lg">
@@ -430,7 +415,7 @@ function DocumentiPageContent() {
               <Button
                 onClick={() => handleUploadDocument()}
                 disabled={uploading}
-                className="min-h-[44px] gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                className="min-h-[44px] touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {uploading ? (
                   <>
@@ -450,11 +435,10 @@ function DocumentiPageContent() {
           <div className="space-y-3 sm:space-y-4">
             {allDocuments.map((item) => (
               <Card key={item.id} className={`relative overflow-hidden ${CARD_DS}`}>
-                <div className="absolute left-0 top-0 h-full w-1 bg-white" aria-hidden />
                 <CardContent className="relative z-10 p-4 sm:p-5">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <div className="flex min-w-0 flex-1 items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-base">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                         {getCategoryIcon(item.categoryKey)}
                       </div>
                       <div className="min-w-0 flex-1 space-y-1.5">
@@ -498,16 +482,16 @@ function DocumentiPageContent() {
                           )}
                         </div>
                         {item.notes && (
-                          <div className="mt-2 rounded-lg border border-white/10 bg-white/5 p-2">
+                          <div className="mt-2 rounded-xl border border-white/10 bg-white/5 p-2">
                             <p className="line-clamp-2 text-xs text-text-secondary">{item.notes}</p>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                       <Button
                         onClick={() => openDocument(item)}
-                        className="min-h-[44px] shrink-0 gap-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="min-h-[44px] w-full touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
                       >
                         <Eye className="h-4 w-4" />
                         Visualizza
@@ -516,7 +500,7 @@ function DocumentiPageContent() {
                         <Button
                           variant="outline"
                           onClick={() => handleUploadNew(item)}
-                          className="min-h-[44px] shrink-0 rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
+                          className="min-h-[44px] w-full touch-manipulation shrink-0 rounded-xl border border-white/10 text-text-primary hover:bg-white/5 sm:w-auto"
                         >
                           <Upload className="h-4 w-4" />
                           Nuovo
@@ -532,9 +516,8 @@ function DocumentiPageContent() {
 
         {/* Info compatta */}
         <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <div className="absolute left-0 top-0 h-full w-1 bg-state-warn" aria-hidden />
           <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
               <AlertTriangle className="h-4 w-4 text-state-warn" />
             </div>
             <div className="min-w-0 flex-1">
@@ -547,11 +530,12 @@ function DocumentiPageContent() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Dialog categoria upload - SimpleSelect */}
       <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
-        <DialogContent className="max-w-[90vw] border border-white/10 bg-background-secondary">
+        <DialogContent className="max-w-[90vw] rounded-2xl border border-white/10 bg-background-secondary">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-text-primary md:text-lg">
               Seleziona Categoria Documento
@@ -575,14 +559,14 @@ function DocumentiPageContent() {
                 setShowCategoryDialog(false)
                 setPendingFile(null)
               }}
-              className="min-h-[44px] rounded-lg border border-white/10 text-text-primary hover:bg-white/5"
+              className="min-h-[44px] touch-manipulation rounded-xl border border-white/10 text-text-primary hover:bg-white/5"
             >
               Annulla
             </Button>
             <Button
               onClick={handleCategoryConfirm}
               disabled={uploading}
-              className="min-h-[44px] rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="min-h-[44px] touch-manipulation rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {uploading ? (
                 <>
@@ -600,25 +584,9 @@ function DocumentiPageContent() {
   )
 }
 
-/**
- * Pagina /home/documenti: wrapper con Suspense e fallback skeleton.
- */
 export default function DocumentiPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-0 flex-1 flex-col overflow-auto bg-background px-4 py-5 pb-24 safe-area-inset-bottom">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 w-48 rounded bg-background-tertiary" />
-            <div className="grid grid-cols-1 gap-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 rounded-lg bg-background-tertiary" />
-              ))}
-            </div>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={null}>
       <DocumentiPageContent />
     </Suspense>
   )

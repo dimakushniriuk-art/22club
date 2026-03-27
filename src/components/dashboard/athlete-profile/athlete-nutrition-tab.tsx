@@ -7,12 +7,25 @@
 'use client'
 
 import { Button } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui'
 import { useAthleteNutrition } from '@/hooks/athlete-profile/use-athlete-nutrition'
 
 import { useAthleteNutritionForm } from '@/hooks/athlete-profile/use-athlete-nutrition-form'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { Utensils, Edit, Save, X } from 'lucide-react'
+import {
+  Utensils,
+  Edit,
+  Save,
+  X,
+  Target,
+  ChartPie,
+  AlertCircle,
+  Apple,
+  Clock,
+  FileText,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   NutritionGoalsSection,
   NutritionMacronutrientsSection,
@@ -21,6 +34,8 @@ import {
   NutritionMealTimesSection,
   NutritionNotesSection,
 } from './nutrition'
+import { ATHLETE_PROFILE_NESTED_CARD_CLASS } from './athlete-profile-ds'
+import { AthleteProfileSectionHeading } from './athlete-profile-section-heading'
 
 interface AthleteNutritionTabProps {
   athleteId: string
@@ -56,130 +71,141 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-text-primary md:text-2xl">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
-              <Utensils className="h-4 w-4 text-primary md:h-5 md:w-5" />
-            </span>
+    <Card variant="default" className={cn(ATHLETE_PROFILE_NESTED_CARD_CLASS, 'p-0')}>
+      <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+        <div className="min-w-0 text-center sm:text-left">
+          <h2 className="flex items-center justify-center gap-2 text-base font-semibold text-text-primary sm:justify-start sm:text-lg">
+            <Utensils className="h-4 w-4 shrink-0 text-cyan-400" aria-hidden />
             Dati Nutrizionali
           </h2>
-          <p className="mt-1.5 text-sm md:text-base leading-relaxed text-text-secondary">
+          <p className="mt-1 line-clamp-2 text-xs text-text-secondary sm:line-clamp-1">
             Obiettivi, dieta e preferenze alimentari dell&apos;atleta
           </p>
-          <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary/70 via-primary/40 to-transparent" />
         </div>
         {!isEditing && (
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"
-            className="w-full min-h-[44px] shrink-0 gap-2 sm:w-auto border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
+            size="sm"
+            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 text-xs touch-manipulation hover:border-primary/20 hover:bg-white/[0.04] sm:h-9 sm:w-auto sm:rounded-md"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3.5 w-3.5" />
             Modifica
           </Button>
         )}
       </div>
 
-      {/* Obiettivi e Calorie */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <NutritionGoalsSection
-          isEditing={isEditing}
-          formData={formData}
-          nutrition={nutrition ?? null}
-          onFormDataChange={(data) => setFormData({ ...formData, ...data })}
-        />
-
-        <NutritionMacronutrientsSection
-          isEditing={isEditing}
-          formData={formData}
-          nutrition={nutrition ?? null}
-          onMacronutrientiUpdate={updateMacronutrienti}
-        />
-      </div>
-
-      {/* Intolleranze e Allergie */}
-      <NutritionIntolerancesAllergiesSection
-        isEditing={isEditing}
-        intolleranze={formData.intolleranze_alimentari || []}
-        allergie={formData.allergie_alimentari || []}
-        newIntolleranza={newArrayItem.intolleranza || ''}
-        newAllergia={newArrayItem.allergia || ''}
-        nutrition={nutrition ?? null}
-        onIntolleranzaAdd={(value) => addArrayItem('intolleranze_alimentari', value)}
-        onIntolleranzaRemove={(index) => removeArrayItem('intolleranze_alimentari', index)}
-        onAllergiaAdd={(value) => addArrayItem('allergie_alimentari', value)}
-        onAllergiaRemove={(index) => removeArrayItem('allergie_alimentari', index)}
-        onNewIntolleranzaChange={(value) =>
-          setNewArrayItem({ ...newArrayItem, intolleranza: value })
-        }
-        onNewAllergiaChange={(value) => setNewArrayItem({ ...newArrayItem, allergia: value })}
-      />
-
-      {/* Alimenti Preferiti e Evitati */}
-      <NutritionFoodPreferencesSection
-        isEditing={isEditing}
-        alimentiPreferiti={formData.alimenti_preferiti || []}
-        alimentiEvitati={formData.alimenti_evitati || []}
-        newAlimentoPreferito={newArrayItem.alimento_preferito || ''}
-        newAlimentoEvitato={newArrayItem.alimento_evitato || ''}
-        nutrition={nutrition ?? null}
-        onAlimentoPreferitoAdd={(value) => addArrayItem('alimenti_preferiti', value)}
-        onAlimentoPreferitoRemove={(index) => removeArrayItem('alimenti_preferiti', index)}
-        onAlimentoEvitatoAdd={(value) => addArrayItem('alimenti_evitati', value)}
-        onAlimentoEvitatoRemove={(index) => removeArrayItem('alimenti_evitati', index)}
-        onNewAlimentoPreferitoChange={(value) =>
-          setNewArrayItem({ ...newArrayItem, alimento_preferito: value })
-        }
-        onNewAlimentoEvitatoChange={(value) =>
-          setNewArrayItem({ ...newArrayItem, alimento_evitato: value })
-        }
-      />
-
-      {/* Preferenze Orari Pasti */}
-      <NutritionMealTimesSection
-        isEditing={isEditing}
-        formData={formData}
-        nutrition={nutrition ?? null}
-        newSpuntino={newArrayItem.spuntino || ''}
-        onOrarioPastoUpdate={updateOrarioPasto}
-        onSpuntinoAdd={addSpuntino}
-        onSpuntinoRemove={removeSpuntino}
-        onNewSpuntinoChange={(value) => setNewArrayItem({ ...newArrayItem, spuntino: value })}
-      />
-
-      {/* Note Nutrizionali */}
-      <NutritionNotesSection
-        isEditing={isEditing}
-        formData={formData}
-        nutrition={nutrition ?? null}
-        onFormDataChange={(data) => setFormData({ ...formData, ...data })}
-      />
-
-      {/* Pulsanti azione */}
-      {isEditing && (
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            className="flex min-h-[44px] items-center gap-2 border-white/10 hover:border-primary/20 hover:bg-white/[0.04]"
-          >
-            <X className="h-4 w-4" />
-            Annulla
-          </Button>
-          <Button
-            variant="default"
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="flex min-h-[44px] items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
-          </Button>
+      <CardContent className="space-y-0 p-0">
+        <AthleteProfileSectionHeading icon={Target}>Obiettivo e piano alimentare</AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <NutritionGoalsSection
+            isEditing={isEditing}
+            formData={formData}
+            nutrition={nutrition ?? null}
+            onFormDataChange={(data) => setFormData({ ...formData, ...data })}
+          />
         </div>
-      )}
-    </div>
+
+        <AthleteProfileSectionHeading icon={ChartPie}>Macronutrienti target</AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <NutritionMacronutrientsSection
+            isEditing={isEditing}
+            formData={formData}
+            nutrition={nutrition ?? null}
+            onMacronutrientiUpdate={updateMacronutrienti}
+          />
+        </div>
+
+        <AthleteProfileSectionHeading icon={AlertCircle}>
+          Intolleranze e allergie
+        </AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <NutritionIntolerancesAllergiesSection
+            isEditing={isEditing}
+            intolleranze={formData.intolleranze_alimentari || []}
+            allergie={formData.allergie_alimentari || []}
+            newIntolleranza={newArrayItem.intolleranza || ''}
+            newAllergia={newArrayItem.allergia || ''}
+            nutrition={nutrition ?? null}
+            onIntolleranzaAdd={(value) => addArrayItem('intolleranze_alimentari', value)}
+            onIntolleranzaRemove={(index) => removeArrayItem('intolleranze_alimentari', index)}
+            onAllergiaAdd={(value) => addArrayItem('allergie_alimentari', value)}
+            onAllergiaRemove={(index) => removeArrayItem('allergie_alimentari', index)}
+            onNewIntolleranzaChange={(value) =>
+              setNewArrayItem({ ...newArrayItem, intolleranza: value })
+            }
+            onNewAllergiaChange={(value) => setNewArrayItem({ ...newArrayItem, allergia: value })}
+          />
+        </div>
+
+        <AthleteProfileSectionHeading icon={Apple}>Preferenze alimentari</AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <NutritionFoodPreferencesSection
+            isEditing={isEditing}
+            alimentiPreferiti={formData.alimenti_preferiti || []}
+            alimentiEvitati={formData.alimenti_evitati || []}
+            newAlimentoPreferito={newArrayItem.alimento_preferito || ''}
+            newAlimentoEvitato={newArrayItem.alimento_evitato || ''}
+            nutrition={nutrition ?? null}
+            onAlimentoPreferitoAdd={(value) => addArrayItem('alimenti_preferiti', value)}
+            onAlimentoPreferitoRemove={(index) => removeArrayItem('alimenti_preferiti', index)}
+            onAlimentoEvitatoAdd={(value) => addArrayItem('alimenti_evitati', value)}
+            onAlimentoEvitatoRemove={(index) => removeArrayItem('alimenti_evitati', index)}
+            onNewAlimentoPreferitoChange={(value) =>
+              setNewArrayItem({ ...newArrayItem, alimento_preferito: value })
+            }
+            onNewAlimentoEvitatoChange={(value) =>
+              setNewArrayItem({ ...newArrayItem, alimento_evitato: value })
+            }
+          />
+        </div>
+
+        <AthleteProfileSectionHeading icon={Clock}>Orari pasti</AthleteProfileSectionHeading>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
+          <NutritionMealTimesSection
+            isEditing={isEditing}
+            formData={formData}
+            nutrition={nutrition ?? null}
+            newSpuntino={newArrayItem.spuntino || ''}
+            onOrarioPastoUpdate={updateOrarioPasto}
+            onSpuntinoAdd={addSpuntino}
+            onSpuntinoRemove={removeSpuntino}
+            onNewSpuntinoChange={(value) => setNewArrayItem({ ...newArrayItem, spuntino: value })}
+          />
+        </div>
+
+        <AthleteProfileSectionHeading icon={FileText}>Note nutrizionali</AthleteProfileSectionHeading>
+        <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
+          <NutritionNotesSection
+            isEditing={isEditing}
+            formData={formData}
+            nutrition={nutrition ?? null}
+            onFormDataChange={(data) => setFormData({ ...formData, ...data })}
+          />
+        </div>
+
+        {isEditing && (
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 px-4 pb-4 pt-4 sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:px-5 sm:pb-5 sm:pt-5">
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              className="flex h-11 w-full items-center justify-center gap-2 border-white/10 touch-manipulation hover:border-primary/20 hover:bg-white/[0.04] sm:h-auto sm:w-auto"
+            >
+              <X className="h-4 w-4" />
+              Annulla
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+              className="flex h-11 w-full items-center justify-center gap-2 touch-manipulation sm:h-auto sm:w-auto"
+            >
+              <Save className="h-4 w-4" />
+              {updateMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

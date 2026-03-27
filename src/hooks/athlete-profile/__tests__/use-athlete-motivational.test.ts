@@ -16,7 +16,7 @@ const { mockSupabase } = vi.hoisted(() => ({
 
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
-const mockSingle = vi.fn()
+const mockMaybeSingle = vi.fn()
 const mockUpdate = vi.fn()
 const mockInsert = vi.fn()
 
@@ -75,6 +75,7 @@ function createWrapper() {
 describe('useAthleteMotivational', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockMaybeSingle.mockReset()
 
     // Setup chain mock
     mockSupabase.from.mockReturnValue({
@@ -88,7 +89,7 @@ describe('useAthleteMotivational', () => {
     })
 
     mockEq.mockReturnValue({
-      single: mockSingle,
+      maybeSingle: mockMaybeSingle,
     })
 
     mockUpdate.mockReturnValue({
@@ -151,7 +152,7 @@ describe('useAthleteMotivational', () => {
         updated_at: '2025-01-01T00:00:00Z',
       }
 
-      mockSingle.mockResolvedValue({
+      mockMaybeSingle.mockResolvedValue({
         data: mockData,
         error: null,
       })
@@ -170,12 +171,10 @@ describe('useAthleteMotivational', () => {
       expect(mockSupabase.from).toHaveBeenCalledWith('athlete_motivational_data')
     })
 
-    it('should handle error when fetching fails', async () => {
-      const mockError = { message: 'Database error', code: 'PGRST116' }
-
-      mockSingle.mockResolvedValue({
+    it('should return null when no row (maybeSingle)', async () => {
+      mockMaybeSingle.mockResolvedValue({
         data: null,
-        error: mockError,
+        error: null,
       })
 
       const { result } = renderHook(() => useAthleteMotivational('test-athlete-id'), {
@@ -186,9 +185,9 @@ describe('useAthleteMotivational', () => {
         expect(result.current.isSuccess).toBe(true)
       })
 
-      // PGRST116 significa "no rows returned", quindi ritorna null (non errore)
       expect(result.current.data).toBeNull()
     })
+
   })
 
   describe('UPDATE - useUpdateAthleteMotivational', () => {
@@ -223,7 +222,7 @@ describe('useAthleteMotivational', () => {
       })
 
       mockEqForCheck.mockReturnValue({
-        single: mockSingleForCheck,
+        maybeSingle: mockSingleForCheck,
       })
 
       mockSingleForCheck.mockResolvedValue({

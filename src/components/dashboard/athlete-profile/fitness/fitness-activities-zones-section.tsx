@@ -1,12 +1,11 @@
 // ============================================================
 // Componente Sezione Attività Precedenti e Zone Problematiche (FASE C - Split File Lunghi)
 // ============================================================
-// Estratto da athlete-fitness-tab.tsx per migliorare manutenibilità
+// Contenuto interno: usare dentro shell Card profilo (tab fitness).
 // ============================================================
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -44,14 +43,14 @@ export function FitnessActivitiesZonesSection({
   onNewAttivitaChange,
   onNewZonaChange,
 }: FitnessActivitiesZonesSectionProps) {
-  if (isEditing) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg">Attività Precedenti</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Attività precedenti
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi attività"
@@ -62,8 +61,13 @@ export function FitnessActivitiesZonesSection({
                     onAttivitaAdd(newAttivita)
                   }
                 }}
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
-              <Button onClick={() => newAttivita && onAttivitaAdd(newAttivita)}>
+              <Button
+                size="icon"
+                onClick={() => newAttivita && onAttivitaAdd(newAttivita)}
+                className="h-9 shrink-0"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -75,14 +79,26 @@ export function FitnessActivitiesZonesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : fitness?.attivita_precedenti && fitness.attivita_precedenti.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {fitness.attivita_precedenti.map((attivita, index) => (
+              <Badge key={index} variant="secondary">
+                {attivita}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessuna attività precedente</p>
+        )}
+      </div>
 
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg">Zone Problematiche</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Zone problematiche
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi zona"
@@ -93,8 +109,13 @@ export function FitnessActivitiesZonesSection({
                     onZonaAdd(newZona)
                   }
                 }}
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
-              <Button onClick={() => newZona && onZonaAdd(newZona)}>
+              <Button
+                size="icon"
+                onClick={() => newZona && onZonaAdd(newZona)}
+                className="h-9 shrink-0"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -106,51 +127,19 @@ export function FitnessActivitiesZonesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : fitness?.zone_problematiche && fitness.zone_problematiche.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {fitness.zone_problematiche.map((zona, index) => (
+              <Badge key={index} variant="secondary">
+                {zona}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessuna zona problematica</p>
+        )}
       </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg">Attività Precedenti</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {fitness?.attivita_precedenti && fitness.attivita_precedenti.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {fitness.attivita_precedenti.map((attivita, index) => (
-                <Badge key={index} variant="secondary">
-                  {attivita}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm">Nessuna attività precedente</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg">Zone Problematiche</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {fitness?.zone_problematiche && fitness.zone_problematiche.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {fitness.zone_problematiche.map((zona, index) => (
-                <Badge key={index} variant="secondary">
-                  {zona}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm">Nessuna zona problematica</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }

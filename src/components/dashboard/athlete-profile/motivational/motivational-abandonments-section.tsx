@@ -10,9 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
-// Nota: Badge potrebbe essere usato in futuro per display status
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Badge } from '@/components/ui'
 import { AlertCircle, Plus, Trash2, Calendar } from 'lucide-react'
 import { sanitizeString, sanitizeNumber } from '@/lib/sanitize'
 import type { AbbandonoStorico } from '@/types/athlete-profile'
@@ -42,26 +39,29 @@ export function MotivationalAbandonmentsSection({
 }: MotivationalAbandonmentsSectionProps) {
   return (
     <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-primary" />
-            Storico Abbandoni
-          </CardTitle>
+      <CardHeader className="pb-3 pt-4 px-6 space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2 min-w-0">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+              <AlertCircle className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
+              Storico Abbandoni
+            </CardTitle>
+            <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
+          </div>
           {isEditing && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => onShowAbbandonoFormChange(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 h-8 text-xs shrink-0 self-start"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               Aggiungi Abbandono
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2 pb-6 px-6">
         {motivational?.storico_abbandoni && motivational.storico_abbandoni.length > 0 ? (
           <div className="space-y-3">
             {motivational.storico_abbandoni.map((abbandono, index) => (
@@ -138,15 +138,16 @@ export function MotivationalAbandonmentsSection({
                 placeholder="Durata in mesi"
               />
             </div>
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center justify-end gap-2.5">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => onShowAbbandonoFormChange(false)}
-                className="border-white/10 hover:border-primary/20"
+                className="h-9 text-xs border-white/10 hover:border-primary/20"
               >
                 Annulla
               </Button>
-              <Button variant="default" onClick={onAbbandonoAdd}>
+              <Button variant="default" size="sm" className="h-9 text-xs" onClick={onAbbandonoAdd}>
                 Aggiungi
               </Button>
             </div>

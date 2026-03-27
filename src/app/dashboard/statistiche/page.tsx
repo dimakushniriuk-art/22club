@@ -8,8 +8,6 @@ import { createLogger } from '@/lib/logger'
 import type { AnalyticsData, TrendData, DistributionData, PerformanceData } from '@/lib/analytics'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
-import { Skeleton } from '@/components/shared/ui/skeleton'
-
 const logger = createLogger('StatistichePage')
 
 // Funzione client-side per calcolare growth metrics
@@ -257,11 +255,7 @@ export default function StatistichePage() {
   }, [org_id, supabase])
 
   if (loading || !data) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
+    return null
   }
 
   const growth = calculateGrowthMetrics(data.trend)

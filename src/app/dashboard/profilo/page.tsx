@@ -6,9 +6,7 @@ import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
 import { Card, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 import { useToast } from '@/components/ui/toast'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ProfiloPageHeader } from '@/components/dashboard/profilo-page-header'
-import { ProfiloPageSkeleton } from '@/components/dashboard/profilo-page-skeleton'
 import { usePTProfile } from '@/hooks/use-pt-profile'
 import { usePTSettings } from '@/hooks/use-pt-settings'
 import { useProfiloPageGuard } from '@/hooks/use-profilo-page-guard'
@@ -21,8 +19,6 @@ type TabValue = (typeof VALID_TABS)[number]
 function isTabValue(t: string | null): t is TabValue {
   return t !== null && VALID_TABS.includes(t as TabValue)
 }
-
-const PROFILO_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 const logger = createLogger('ProfiloPage')
 
@@ -252,14 +248,22 @@ export default function ProfiloPTPage() {
   }, [handleSaveSettings, addToast])
 
   if (showGuardLoader) {
+    return null
+  }
+
+  if (loading) {
     return (
-      <div className={PROFILO_LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="relative min-h-screen flex flex-col">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-primary/5 via-transparent to-transparent" />
+        </div>
+        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+          <ProfiloPageHeader />
+        </div>
       </div>
     )
   }
-
-  if (loading) return <ProfiloPageSkeleton />
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -299,7 +303,7 @@ export default function ProfiloPTPage() {
           {/* Tab: Profilo */}
           <TabsContent value="profilo">
             {profileData && (
-              <Suspense fallback={<LoadingState message="Caricamento profilo..." />}>
+              <Suspense fallback={null}>
                 <PTProfileTab
                   profile={profileData}
                   isEditing={isEditing}
@@ -318,7 +322,7 @@ export default function ProfiloPTPage() {
 
           {/* Tab: Notifiche */}
           <TabsContent value="notifiche">
-            <Suspense fallback={<LoadingState message="Caricamento notifiche..." />}>
+            <Suspense fallback={null}>
               <PTNotificationsTab
                 notifications={notifications}
                 onMarkAsRead={handleMarkAsRead}
@@ -330,7 +334,7 @@ export default function ProfiloPTPage() {
 
           {/* Tab: Impostazioni */}
           <TabsContent value="impostazioni">
-            <Suspense fallback={<LoadingState message="Caricamento impostazioni..." />}>
+            <Suspense fallback={null}>
               <PTSettingsTab
                 settings={settings}
                 authUserId={authUserId || ''}

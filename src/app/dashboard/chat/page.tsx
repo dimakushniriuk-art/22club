@@ -34,26 +34,6 @@ const DS_PANEL_CLASS =
 const CONTAINER_CLASS =
   'flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full'
 
-function StaffChatPageSkeleton() {
-  return (
-    <div className={CONTAINER_CLASS}>
-      <div className="animate-pulse flex flex-col gap-4 sm:gap-6 flex-1 min-h-0">
-        <div className="flex items-center gap-4">
-          <div className="bg-background-secondary/50 h-10 w-10 rounded-xl shrink-0" />
-          <div className="flex-1">
-            <div className="bg-background-secondary/50 h-7 w-32 rounded-lg" />
-            <div className="mt-2 bg-background-secondary/30 h-4 w-48 rounded-lg" />
-          </div>
-        </div>
-        <div className="flex flex-1 min-h-0 gap-4 sm:gap-6">
-          <div className="w-full lg:w-[320px] rounded-lg border border-white/10 bg-zinc-900/50 min-h-[300px]" />
-          <div className="flex-1 rounded-lg border border-white/10 bg-zinc-900/50 min-h-[300px]" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 const _StaffChatErrorState = memo(function StaffChatErrorState({
   error,
   onRetry,
@@ -84,8 +64,6 @@ const _StaffChatErrorState = memo(function StaffChatErrorState({
     </div>
   )
 })
-
-const CHAT_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 type ChatPageContentProps = { basePath?: string }
 
@@ -328,7 +306,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
   const handleRetry = useCallback(() => router.refresh(), [router])
 
   if (isLoading && conversations.length === 0) {
-    return <StaffChatPageSkeleton />
+    return null
   }
 
   return (
@@ -472,11 +450,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
 export default function StaffChatPage() {
   const { showLoader: showGuardLoader } = useChatPageGuard()
   if (showGuardLoader) {
-    return (
-      <div className={CHAT_LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return null
   }
   return <ChatPageContent />
 }

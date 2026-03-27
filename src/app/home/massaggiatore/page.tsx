@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ArrowLeft, Calendar, Hand, Sparkles } from 'lucide-react'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { useAuth } from '@/providers/auth-provider'
@@ -42,7 +41,6 @@ const StatCard = memo(function StatCard({
       className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
       style={CARD_STATS_STYLE}
     >
-      <div className="absolute left-0 top-0 h-full w-1 bg-cyan-400" aria-hidden />
       <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
           <Icon className="h-4 w-4 text-cyan-400" />
@@ -64,7 +62,7 @@ const StatCard = memo(function StatCard({
 })
 
 const PAGE_WRAPPER_CLASS =
-  'bg-background w-full max-w-full space-y-4 px-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 pb-24 safe-area-inset-bottom'
+  'bg-background w-full max-w-full space-y-4 px-3 sm:px-4 min-[834px]:px-6 pb-24 safe-area-inset-bottom'
 
 const HEADER_STYLE = {
   border: '1px solid rgba(2, 179, 191, 0.4)',
@@ -102,7 +100,7 @@ const AthleteMassageTab = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <LoadingState message="Caricamento massaggi..." size="md" />,
+    loading: () => null,
   },
 )
 
@@ -129,11 +127,7 @@ function MassaggiatorePageContent() {
   const { trattamenti, preferenze } = useAthleteMassageStats(athleteUserId)
 
   if (authLoading) {
-    return (
-      <div className={PAGE_WRAPPER_CLASS}>
-        <LoadingState message="Caricamento..." size="md" />
-      </div>
-    )
+    return <div className={`${PAGE_WRAPPER_CLASS} min-h-0 flex-1`} aria-hidden />
   }
 
   if (!isValidUser || !athleteUserId) {
@@ -159,7 +153,7 @@ function MassaggiatorePageContent() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       {/* Area scrollabile: header pagina + stats + card Dati Massaggi */}
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-5 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-6">
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
         {/* Header - glass + accento #02b3bf (pattern design doc) */}
         <div
           className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5"
@@ -236,7 +230,7 @@ function MassaggiatorePageContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
-            <Suspense fallback={<LoadingState message="Caricamento dati massaggi..." size="sm" />}>
+            <Suspense fallback={null}>
               <AthleteMassageTab athleteId={athleteUserId} />
             </Suspense>
           </CardContent>
@@ -248,7 +242,7 @@ function MassaggiatorePageContent() {
 
 export default function MassaggiatorePage() {
   return (
-    <Suspense fallback={<LoadingState message="Caricamento pagina massaggiatore..." size="md" />}>
+    <Suspense fallback={null}>
       <MassaggiatorePageContent />
     </Suspense>
   )

@@ -14,7 +14,6 @@ import {
   DrawerBody,
 } from '@/components/ui'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import {
   Plus,
@@ -49,6 +48,12 @@ import {
   parseServiceFromUrl,
   defaultServiceForRole,
 } from '@/lib/abbonamenti-service-type'
+import {
+  DOCUMENTS_STORAGE_BUCKET,
+  downloadStorageBlobViaPreview,
+  resolveInvoiceDocumentsStoragePath,
+  storagePreviewHref,
+} from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:abbonamenti:page')
 const ABBONAMENTI_PER_PAGE = 100 // Soglia per attivare paginazione
@@ -60,8 +65,7 @@ const NuovoPagamentoModal = lazy(() =>
   })),
 )
 
-// Componente per visualizzare la fattura con signed URL
-// Estratto come componente separato per poter essere lazy loaded
+// Anteprima fattura via proxy same-origin `/api/document-preview` (cookie di sessione).
 function InvoiceViewModal({
   url,
   athlete,
@@ -74,46 +78,9 @@ function InvoiceViewModal({
   theme?: AbbonamentiTheme
 }) {
   const m = ABBONAMENTI_THEME[theme]
-  const [signedUrl, setSignedUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const supabase = useSupabaseClient()
-
-  useEffect(() => {
-    let cancelled = false
-    const loadSignedUrl = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const filePath = invoiceUrlToStoragePath(url)
-        const { data, error: signedError } = await supabase.storage
-          .from('documents')
-          .createSignedUrl(filePath, 3600)
-
-        if (cancelled) return
-        if (signedError) {
-          logger.warn('Errore creazione signed URL', signedError, { url, filePath })
-          setError(signedError.message || 'Impossibile caricare l’anteprima della fattura')
-        } else if (data?.signedUrl) {
-          setSignedUrl(data.signedUrl)
-        } else {
-          setError('URL della fattura non disponibile')
-        }
-      } catch (err) {
-        if (cancelled) return
-        logger.error('Errore caricamento signed URL', err, { url })
-        setError(err instanceof Error ? err.message : 'Errore nel caricamento della fattura')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    loadSignedUrl()
-    return () => {
-      cancelled = true
-    }
-  }, [url, supabase])
+  const filePath = useMemo(() => resolveInvoiceDocumentsStoragePath(url), [url])
+  const previewHref =
+    filePath && filePath.length > 0 ? storagePreviewHref(DOCUMENTS_STORAGE_BUCKET, filePath) : null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
@@ -130,33 +97,29 @@ function InvoiceViewModal({
           </Button>
         </div>
         <div className="p-4 h-[calc(90vh-80px)] overflow-auto">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className={`h-8 w-8 animate-spin ${m.spinner}`} />
-            </div>
-          ) : error && !signedUrl ? (
+          {!previewHref ? (
             <div className="flex flex-col items-center justify-center h-full gap-3">
-              <p className="text-red-400">{error}</p>
+              <p className="text-red-400">Impossibile risolvere il percorso della fattura</p>
               <Button variant="outline" onClick={onClose}>
                 Chiudi
               </Button>
             </div>
-          ) : signedUrl ? (
+          ) : (
             <div className="flex flex-col h-full gap-3">
               <iframe
-                src={signedUrl}
+                src={previewHref}
                 title={`Fattura - ${athlete}`}
                 className="w-full flex-1 min-h-0 rounded-lg border border-border bg-white"
               />
               <div className="flex justify-end shrink-0">
                 <Button asChild variant="outline" size="sm">
-                  <a href={signedUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={previewHref} target="_blank" rel="noopener noreferrer">
                     Apri in nuova scheda
                   </a>
                 </Button>
               </div>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     </div>
@@ -177,15 +140,6 @@ interface Abbonamento {
   created_by_staff_id?: string // Campo opzionale per filtri trainer/PT
   /** true se rimasti > (credited - used), saldo pre-ledger non tracciato */
   legacy_balance_hint?: boolean
-}
-
-/** Estrae il path storage da invoice_url (path o URL completo). */
-function invoiceUrlToStoragePath(invoiceUrl: string): string {
-  if (!invoiceUrl || typeof invoiceUrl !== 'string') return invoiceUrl
-  const s = invoiceUrl.trim()
-  if (!s.startsWith('http')) return s.startsWith('documents/') ? s.replace(/^documents\//, '') : s
-  const match = s.match(/\/documents\/([^?]+)/)
-  return match ? match[1] : s
 }
 
 /** Nome documento fattura per visualizzazione in tabella (filename da path o "Fattura DD/MM/YYYY"). */
@@ -318,58 +272,6 @@ function getCurrentMonthRange(): { start: string; end: string } {
   const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0))
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999))
   return { start: start.toISOString(), end: end.toISOString() }
-}
-
-/** Skeleton tabella durante caricamento iniziale */
-function AbbonamentiPageSkeleton() {
-  return (
-    <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-      <div className="flex justify-between items-start gap-4">
-        <div className="space-y-2">
-          <div className="h-8 w-48 rounded-lg bg-background-tertiary animate-pulse" />
-          <div className="h-4 w-32 rounded bg-background-tertiary/80 animate-pulse" />
-        </div>
-        <div className="h-10 w-36 rounded-lg bg-background-tertiary animate-pulse" />
-      </div>
-      <div className="flex flex-wrap gap-3 p-4">
-        <div className="h-10 flex-1 min-w-[200px] rounded-lg bg-background-tertiary animate-pulse" />
-        <div className="h-10 w-[160px] rounded-lg bg-background-tertiary animate-pulse" />
-        <div className="h-10 w-[160px] rounded-lg bg-background-tertiary animate-pulse" />
-        <div className="h-10 w-[160px] rounded-lg bg-background-tertiary animate-pulse" />
-      </div>
-      <Card variant="trainer" className="overflow-hidden border-border">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-background-tertiary/50 border-b border-border">
-                <tr>
-                  {Array.from({ length: 8 }, (_, i) => (
-                    <th key={`skeleton-th-${i}`} className="px-4 py-3">
-                      <div className="h-4 w-16 rounded bg-background-tertiary animate-pulse" />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {Array.from({ length: 6 }, (_, i) => (
-                  <tr key={`skeleton-row-${i}`}>
-                    {Array.from({ length: 8 }, (_, j) => (
-                      <td key={`skeleton-cell-${i}-${j}`} className="px-4 py-3">
-                        <div
-                          className="h-5 rounded bg-background-tertiary/80 animate-pulse"
-                          style={{ width: j === 0 ? 120 : 60 }}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
 }
 
 export default function AbbonamentiPage() {
@@ -928,25 +830,18 @@ export default function AbbonamentiPage() {
   const handleDownloadInvoice = useCallback(
     async (invoiceUrl: string) => {
       try {
-        const filePath = invoiceUrlToStoragePath(invoiceUrl)
-        const { data, error: signedError } = await supabase.storage
-          .from('documents')
-          .createSignedUrl(filePath, 3600)
-
-        if (signedError) {
-          logger.error('Errore creazione signed URL per download', signedError, {
-            invoiceUrl,
-            filePath,
-          })
+        const filePath = resolveInvoiceDocumentsStoragePath(invoiceUrl)
+        if (!filePath) {
           addToast({
             title: 'Errore',
-            message: 'Impossibile scaricare la fattura. Riprova più tardi.',
+            message: 'Percorso fattura non valido.',
             variant: 'error',
           })
           return
         }
-
-        window.open(data.signedUrl, '_blank')
+        const safeName =
+          filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
+        await downloadStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath, safeName)
       } catch (err) {
         logger.error('Errore download fattura', err, { invoiceUrl })
         addToast({
@@ -956,7 +851,7 @@ export default function AbbonamentiPage() {
         })
       }
     },
-    [supabase, addToast],
+    [addToast],
   )
 
   const handleStornoPayment = useCallback((paymentId: string) => {
@@ -1266,13 +1161,8 @@ export default function AbbonamentiPage() {
     else setLedgerHistory([])
   }, [drilldownRow?.athlete_id, loadDrilldownLedger])
 
-  // Primo caricamento: skeleton invece di messaggio generico
   if (loading && abbonamenti.length === 0) {
-    return (
-      <div className="relative min-h-screen flex flex-col">
-        <AbbonamentiPageSkeleton />
-      </div>
-    )
+    return null
   }
 
   return (
@@ -1728,7 +1618,7 @@ export default function AbbonamentiPage() {
 
       {/* Modal Nuovo Pagamento - Lazy loaded solo quando aperto */}
       {showModal && (
-        <Suspense fallback={<LoadingState message="Caricamento form pagamento..." />}>
+        <Suspense fallback={null}>
           <NuovoPagamentoModal
             open={showModal}
             onOpenChange={setShowModal}
@@ -1746,7 +1636,7 @@ export default function AbbonamentiPage() {
 
       {/* Modal Preview Fattura - Lazy loaded solo quando aperto */}
       {selectedInvoice && (
-        <Suspense fallback={<LoadingState message="Caricamento fattura..." />}>
+        <Suspense fallback={null}>
           <InvoiceViewModal
             url={selectedInvoice.url}
             athlete={selectedInvoice.athlete}

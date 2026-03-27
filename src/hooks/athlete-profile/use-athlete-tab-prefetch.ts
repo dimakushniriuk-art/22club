@@ -50,8 +50,8 @@ export function useAthleteTabPrefetch(athleteUserId: string | null) {
               .from('athlete_medical_data')
               .select('*')
               .eq('athlete_id', athleteUserId)
-              .single()
-            if (error && error.code !== 'PGRST116') throw error
+              .maybeSingle()
+            if (error) throw error
             return data
           },
         },
@@ -62,8 +62,8 @@ export function useAthleteTabPrefetch(athleteUserId: string | null) {
               .from('athlete_fitness_data')
               .select('*')
               .eq('athlete_id', athleteUserId)
-              .single()
-            if (error && error.code !== 'PGRST116') throw error
+              .maybeSingle()
+            if (error) throw error
             return data
           },
         },
@@ -74,8 +74,8 @@ export function useAthleteTabPrefetch(athleteUserId: string | null) {
               .from('athlete_motivational_data')
               .select('*')
               .eq('athlete_id', athleteUserId)
-              .single()
-            if (error && error.code !== 'PGRST116') throw error
+              .maybeSingle()
+            if (error) throw error
             return data
           },
         },

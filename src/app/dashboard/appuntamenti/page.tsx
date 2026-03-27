@@ -12,7 +12,6 @@ import { useStaffAppointmentsTable } from '@/hooks/appointments/useStaffAppointm
 import { useLessonCounters } from '@/hooks/use-lesson-counters'
 import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useAuth } from '@/providers/auth-provider'
@@ -399,7 +398,7 @@ export default function AppuntamentiPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
         >
           <div className="w-full max-w-md">
-            <Suspense fallback={<LoadingState message="Caricamento dettagli appuntamento..." />}>
+            <Suspense fallback={null}>
               <AppointmentDetail
                 appointment={selectedAppointment}
                 onEdit={handleEditFromDetail}

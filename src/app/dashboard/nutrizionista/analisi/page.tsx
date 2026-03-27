@@ -730,9 +730,7 @@ export default function NutrizionistaAnalisiPage() {
                   <h4 className="text-sm font-medium text-text-secondary mb-2">
                     Progressi in settimana
                   </h4>
-                  {drawerLoading ? (
-                    <div className="animate-pulse h-16 rounded-lg bg-background-tertiary" />
-                  ) : drawerProgress.length === 0 ? (
+                  {drawerLoading ? null : drawerProgress.length === 0 ? (
                     <p className="text-sm text-text-muted">Nessun progresso in questo range.</p>
                   ) : (
                     <ul className="rounded-lg border border-border divide-y divide-border/50 overflow-hidden">

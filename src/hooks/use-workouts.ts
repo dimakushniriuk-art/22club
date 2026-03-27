@@ -10,15 +10,21 @@ import { useWorkoutMutations } from './workouts/use-workout-mutations'
 interface UseWorkoutsProps {
   userId?: string | null
   role?: string | null
+  /**
+   * true: solo lista piani (es. /home/allenamenti). Evita sessione corrente + stats
+   * che non servono alla UI e duplicano query pesanti.
+   */
+  plansListOnly?: boolean
 }
 
-export function useWorkouts({ userId, role }: UseWorkoutsProps) {
+export function useWorkouts({ userId, role, plansListOnly = false }: UseWorkoutsProps) {
+  const isAthleteRole = role === 'athlete' || role === 'atleta'
   const {
     exercises,
     loading: exercisesLoading,
     error: exercisesError,
     fetchExercises,
-  } = useWorkoutExercises()
+  } = useWorkoutExercises({ enabled: !isAthleteRole })
   const {
     workouts,
     loading: workoutsLoading,
@@ -29,7 +35,8 @@ export function useWorkouts({ userId, role }: UseWorkoutsProps) {
   const { stats, fetchStats } = useWorkoutStats()
   const { createWorkout, updateWorkoutSet, completeExercise } = useWorkoutMutations()
 
-  const loading = exercisesLoading || workoutsLoading
+  // Atleta: il catalogo globale exercises non serve a /home/allenamenti → non bloccare sul suo fetch
+  const loading = workoutsLoading || (!isAthleteRole && exercisesLoading)
   const error = exercisesError || workoutsError
 
   // Usa useRef per tracciare i valori precedenti e evitare fetch inutili
@@ -48,14 +55,14 @@ export function useWorkouts({ userId, role }: UseWorkoutsProps) {
     prevRoleRef.current = role
 
     if (userId) {
-      fetchWorkouts(userId, role || null)
-      if (role === 'athlete') {
-        fetchCurrentWorkout(userId)
-        fetchStats(userId)
+      void fetchWorkouts(userId, role || null)
+      if (role === 'athlete' && !plansListOnly) {
+        void fetchCurrentWorkout(userId)
+        void fetchStats(userId)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, role]) // Rimossi fetchWorkouts, fetchCurrentWorkout, fetchStats dalle dipendenze per evitare loop
+  }, [userId, role, plansListOnly]) // Rimossi fetch* dalle dipendenze per evitare loop
 
   return {
     workouts,

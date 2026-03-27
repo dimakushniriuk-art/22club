@@ -131,23 +131,6 @@ function KpiCard({
   )
 }
 
-function TableSkeleton() {
-  return (
-    <div className="rounded-xl border border-border overflow-hidden">
-      <div className="animate-pulse">
-        <div className="h-12 bg-background-tertiary/50 border-b border-border" />
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-14 border-b border-border/50 flex items-center gap-4 px-4">
-            <div className="h-4 flex-1 max-w-[140px] rounded bg-background-tertiary" />
-            <div className="h-5 w-24 rounded bg-background-tertiary" />
-            <div className="h-4 w-20 rounded bg-background-tertiary" />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export default function NutrizionistaProgressiPage() {
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
   const { user } = useAuth()
@@ -858,9 +841,7 @@ export default function NutrizionistaProgressiPage() {
         </DrawerContent>
       </Drawer>
 
-      {loading ? (
-        <TableSkeleton />
-      ) : viewMode === 'timeline' ? (
+      {loading ? null : viewMode === 'timeline' ? (
         filteredTimeline.length === 0 ? (
           <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
             {timelineRows.length === 0

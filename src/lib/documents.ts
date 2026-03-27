@@ -25,6 +25,200 @@ const supabase = createClient()
  * (campi non presenti nel DB ma utili per UI)
  * Esportate per uso nei componenti
  */
+/** Bucket storage per tabella `documents` (file in `file_url`). */
+export const DOCUMENTS_STORAGE_BUCKET = 'documents' as const
+
+/** Bucket ammessi da `/api/document-preview` (allineare alla route API). */
+export const STORAGE_PREVIEW_BUCKETS = [
+  'documents',
+  'athlete-certificates',
+  'athlete-referti',
+  'athlete-documents',
+  'trainer-certificates',
+  'trainer-media',
+] as const
+
+export type StoragePreviewBucket = (typeof STORAGE_PREVIEW_BUCKETS)[number]
+
+export function isStoragePreviewBucket(bucket: string): bucket is StoragePreviewBucket {
+  return (STORAGE_PREVIEW_BUCKETS as readonly string[]).includes(bucket)
+}
+
+/**
+ * Path oggetto nel bucket da URL Supabase (`/object/public|sign|authenticated/{bucket}/…`) o path relativo con `/`.
+ */
+export function resolveStorageObjectPathFromUrl(fileUrl: string, bucket: string): string | null {
+  const trimmed = fileUrl.trim()
+  if (!trimmed) return null
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed)
+      const pathname = url.pathname
+      const markers = [
+        `/object/public/${bucket}/`,
+        `/object/sign/${bucket}/`,
+        `/object/authenticated/${bucket}/`,
+      ]
+      for (const marker of markers) {
+        const idx = pathname.indexOf(marker)
+        if (idx !== -1) {
+          return decodeURIComponent(pathname.slice(idx + marker.length))
+        }
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  const noLeading = trimmed.replace(/^\/+/, '')
+  if (noLeading.includes('/')) {
+    return noLeading
+  }
+  return null
+}
+
+/**
+ * Path oggetto nel bucket `documents` da `file_url` (URL Supabase o path relativo).
+ */
+export function resolveDocumentsStoragePath(fileUrl: string): string | null {
+  return resolveStorageObjectPathFromUrl(fileUrl, DOCUMENTS_STORAGE_BUCKET)
+}
+
+/**
+ * `invoice_url` a volte è stato salvato come route app (`/home/fatture/...` o URL su stesso host)
+ * invece del path reale nel bucket (`fatture/...`). Senza questa normalizzazione il path diventa
+ * `home/fatture/...` e lo storage fallisce; il fallback apre una pagina inesistente (404).
+ */
+function normalizeLegacyAppInvoiceHref(invoiceUrl: string): string {
+  const t = invoiceUrl.trim()
+  if (!t) return t
+
+  const mapHomeFattureToStorage = (path: string): string | null => {
+    const nl = path.replace(/^\/+/, '')
+    if (nl.startsWith('home/fatture/')) {
+      return nl.slice('home/'.length)
+    }
+    return null
+  }
+
+  if (/^https?:\/\//i.test(t)) {
+    try {
+      const u = new URL(t)
+      const mapped = mapHomeFattureToStorage(u.pathname)
+      if (mapped) return mapped
+    } catch {
+      /* ignora */
+    }
+    return t
+  }
+
+  const mapped = mapHomeFattureToStorage(t.startsWith('/') ? t : `/${t}`)
+  return mapped ?? t
+}
+
+/** Path bucket `documents` per fatture (URL completo o path tipo `fatture/...`). */
+export function resolveInvoiceDocumentsStoragePath(invoiceUrl: string): string | null {
+  const ref = normalizeLegacyAppInvoiceHref(invoiceUrl)
+  const resolved = resolveDocumentsStoragePath(ref)
+  if (resolved) {
+    if (resolved.startsWith('home/fatture/')) {
+      return resolved.slice('home/'.length)
+    }
+    return resolved
+  }
+  const s = ref.trim()
+  if (!s) return null
+  if (!s.startsWith('http')) {
+    if (s.startsWith('documents/')) return s.replace(/^documents\//, '')
+    if (s.startsWith('home/fatture/')) return s.slice('home/'.length)
+    return s
+  }
+  const match = s.match(/\/documents\/([^?]+)/)
+  return match?.[1] ?? null
+}
+
+/** URL same-origin verso `/api/document-preview` (stream inline, cookie di sessione). */
+export function storagePreviewHref(bucket: string, storagePath: string): string {
+  return `/api/document-preview?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(storagePath)}`
+}
+
+/** Path da URL completo + `/api/document-preview`. */
+export function storagePreviewHrefFromUrl(fileUrl: string, bucket: string): string | null {
+  const path = resolveStorageObjectPathFromUrl(fileUrl, bucket)
+  if (path == null) return null
+  return storagePreviewHref(bucket, path)
+}
+
+/**
+ * Path o URL già noto: risolve e restituisce href preview, altrimenti null.
+ */
+export function storagePreviewHrefFromUrlOrPath(bucket: string, urlOrPath: string): string | null {
+  const t = urlOrPath.trim()
+  if (!t) return null
+  if (/^https?:\/\//i.test(t)) {
+    return storagePreviewHrefFromUrl(t, bucket)
+  }
+  const path = t.startsWith('/') ? t.slice(1) : t
+  if (!path.includes('/')) return null
+  return storagePreviewHref(bucket, path)
+}
+
+/**
+ * Link same-origin per file da bucket `documents` (proxy `/api/document-preview`).
+ * `redirectForNavigation` è ignorato (compatibilità call site).
+ */
+export function documentsFilePreviewHref(
+  fileUrl: string,
+  _options?: { redirectForNavigation?: boolean },
+): string | null {
+  const path = resolveDocumentsStoragePath(fileUrl)
+  if (path == null) return null
+  return storagePreviewHref(DOCUMENTS_STORAGE_BUCKET, path)
+}
+
+export async function fetchStorageBlobViaPreview(bucket: string, storagePath: string): Promise<Blob> {
+  const href = storagePreviewHref(bucket, storagePath)
+  const res = await fetch(href, { credentials: 'include' })
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`
+    try {
+      const ct = res.headers.get('content-type') ?? ''
+      if (ct.includes('application/json')) {
+        const j = (await res.json()) as { error?: unknown }
+        if (typeof j?.error === 'string' && j.error.trim()) detail = j.error
+      }
+    } catch {
+      /* ignora */
+    }
+    throw new Error(`Download fallito: ${detail}`)
+  }
+  return await res.blob()
+}
+
+export async function downloadStorageBlobViaPreview(
+  bucket: string,
+  storagePath: string,
+  fileName: string,
+): Promise<void> {
+  const blob = await fetchStorageBlobViaPreview(bucket, storagePath)
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function fetchDocumentBlobViaPreview(fileUrl: string): Promise<Blob> {
+  const path = resolveDocumentsStoragePath(fileUrl)
+  if (path == null) {
+    throw new Error('Percorso file non valido')
+  }
+  return fetchStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, path)
+}
+
 export function extractFileName(fileUrl: string): string {
   try {
     const url = new URL(fileUrl)
@@ -345,12 +539,13 @@ export async function deleteDocument(documentId: string): Promise<void> {
     }
 
     // 3. Delete file from storage
-    const filePath = document.file_url.split('/').slice(-2).join('/')
-    const { error: storageError } = await supabase.storage.from('documents').remove([filePath])
-
-    if (storageError) {
-      logger.warn('Error deleting file from storage', storageError, { documentId })
-      // Non bloccare l'operazione se il file non esiste più
+    const filePath = resolveDocumentsStoragePath(document.file_url)
+    if (filePath) {
+      const { error: storageError } = await supabase.storage.from('documents').remove([filePath])
+      if (storageError) {
+        logger.warn('Error deleting file from storage', storageError, { documentId })
+        // Non bloccare l'operazione se il file non esiste più
+      }
     }
   } catch (error) {
     logger.error('Error deleting document', error, { documentId })

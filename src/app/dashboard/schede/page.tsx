@@ -3,9 +3,7 @@
 import { useState, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { SkeletonWorkoutList } from '@/components/shared/ui/skeleton'
 import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
 import { SchedeHeaderActions, WorkoutPlansList } from '@/components/workout-plans'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -121,7 +119,7 @@ export default function SchedePage() {
         description="Gestisci le schede di allenamento per i tuoi atleti"
         theme="teal"
       >
-        <SkeletonWorkoutList cards={8} />
+        {null}
       </StaffContentLayout>
     )
   }
@@ -155,7 +153,7 @@ export default function SchedePage() {
       }
     >
       {showFilters && (
-        <Suspense fallback={<LoadingState message="Caricamento filtri..." />}>
+        <Suspense fallback={null}>
           <WorkoutPlansFilters
             searchTerm={searchTerm}
             statusFilter={statusFilter}

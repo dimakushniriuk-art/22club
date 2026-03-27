@@ -24,6 +24,9 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import type { TrainerProfileFull } from '@/types/trainer-profile'
 import { gradients } from '@/lib/design-tokens'
+import { storagePreviewHrefFromUrl } from '@/lib/documents'
+
+const TRAINER_CERT_BUCKET = 'trainer-certificates' as const
 
 type TrainerProfile = {
   pt_id: string
@@ -100,7 +103,7 @@ export default function TrainerProfilePage() {
   if (authLoading) {
     return (
       <div
-        className="bg-background min-h-dvh space-y-3 px-3 sm:px-4 min-[834px]:px-6 py-4 min-[834px]:py-5 flex items-center justify-center"
+        className="bg-background min-h-dvh space-y-3 px-3 sm:px-4 min-[834px]:px-6 flex items-center justify-center"
         style={{ overflow: 'auto' }}
       >
         <p className="text-text-secondary text-sm">Caricamento...</p>
@@ -111,7 +114,7 @@ export default function TrainerProfilePage() {
   const backHref = '/home/profilo'
 
   const pageContainerClass =
-    'relative min-h-0 w-full max-w-full space-y-5 min-[834px]:space-y-6 px-3 pb-6 pt-4 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:py-5'
+    'relative min-h-0 w-full max-w-full space-y-5 min-[834px]:space-y-6 px-3 pb-6 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-5'
   const pageContainerStyle: React.CSSProperties = {
     overflow: 'auto',
     minHeight: 'calc(100dvh - 56px)',
@@ -205,13 +208,7 @@ export default function TrainerProfilePage() {
 
       {loading ? (
         <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-          <CardContent className="p-5 sm:p-6 min-[834px]:p-6">
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-24 w-24 rounded-full bg-background-tertiary/50 animate-pulse" />
-              <div className="h-5 w-48 bg-background-tertiary/50 rounded animate-pulse" />
-              <div className="h-4 w-32 bg-background-tertiary/30 rounded animate-pulse" />
-            </div>
-          </CardContent>
+          <CardContent className="min-h-[140px] p-5 sm:p-6 min-[834px]:p-6" aria-hidden />
         </Card>
       ) : trainer ? (
         <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
@@ -345,6 +342,9 @@ export default function TrainerProfilePage() {
                 <ul className="space-y-4">
                   {fullProfile.certifications.map((c) => {
                     const isPdf = c.file_url?.toLowerCase().includes('.pdf') ?? false
+                    const certHref =
+                      c.file_url &&
+                      (storagePreviewHrefFromUrl(c.file_url, TRAINER_CERT_BUCKET) ?? c.file_url)
                     return (
                       <li
                         key={c.id}
@@ -355,9 +355,9 @@ export default function TrainerProfilePage() {
                           {c.ente && <span> · {c.ente}</span>}
                           {c.anno != null && <span> · {c.anno}</span>}
                         </div>
-                        {c.file_url && (
+                        {certHref && (
                           <a
-                            href={c.file_url}
+                            href={certHref}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block w-24 h-24 rounded-lg overflow-hidden border border-border hover:border-primary/50 shrink-0"
@@ -369,11 +369,7 @@ export default function TrainerProfilePage() {
                               </div>
                             ) : (
                               /* eslint-disable-next-line @next/next/no-img-element */
-                              <img
-                                src={c.file_url}
-                                alt={c.nome}
-                                className="w-full h-full object-cover"
-                              />
+                              <img src={certHref} alt={c.nome} className="w-full h-full object-cover" />
                             )}
                           </a>
                         )}

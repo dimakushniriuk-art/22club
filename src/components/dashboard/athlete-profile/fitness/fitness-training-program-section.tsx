@@ -6,12 +6,11 @@
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Label } from '@/components/ui'
 import { Badge } from '@/components/ui'
-import { Calendar, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import type { AthleteFitnessDataUpdate } from '@/types/athlete-profile'
 
 interface FitnessTrainingProgramSectionProps {
@@ -38,14 +37,7 @@ export function FitnessTrainingProgramSection({
   const preferenzeOrarioList = formData.preferenze_orario || []
 
   return (
-    <Card variant="default" className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
-          Programma Allenamento
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="giorni_settimana">Giorni a Settimana</Label>
           {isEditing ? (
@@ -133,7 +125,6 @@ export function FitnessTrainingProgramSection({
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

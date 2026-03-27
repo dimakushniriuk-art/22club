@@ -9,6 +9,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
+import { Trees, UsersRound } from 'lucide-react'
 import type { AthleteMotivationalDataUpdate } from '@/types/athlete-profile'
 
 interface MotivationalPreferencesSectionProps {
@@ -34,12 +35,16 @@ export function MotivationalPreferencesSection({
   const preferenzeCompagniaList = formData.preferenze_compagnia || []
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
       <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg">Preferenze Ambiente</CardTitle>
+        <CardHeader className="pb-3 pt-4 px-6 space-y-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+            <Trees className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
+            Preferenze Ambiente
+          </CardTitle>
+          <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2 pb-6 px-6">
           {isEditing ? (
             <div className="flex flex-wrap gap-2">
               {PREFERENZE_AMBIENTE.map((ambiente) => {
@@ -74,10 +79,14 @@ export function MotivationalPreferencesSection({
       </Card>
 
       <Card variant="default" className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-lg">Preferenze Compagnia</CardTitle>
+        <CardHeader className="pb-3 pt-4 px-6 space-y-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+            <UsersRound className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
+            Preferenze Compagnia
+          </CardTitle>
+          <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2 pb-6 px-6">
           {isEditing ? (
             <div className="flex flex-wrap gap-2">
               {PREFERENZE_COMPAGNIA.map((compagnia) => {

@@ -2,13 +2,13 @@
 
 import type { ReactNode } from 'react'
 import { Scale, TrendingUp, Activity, BarChart3, History, Image } from 'lucide-react'
-import { PageHeaderGlass } from '@/components/layout'
+import { PageHeaderFixed } from '@/components/layout'
 import { ProgressiNavCard, type Accent } from '@/components/home/progressi-nav-card'
 
 const SCROLL_CONTAINER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' } as const
 
 const SCROLL_CONTAINER_CLASS =
-  'min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24 min-[834px]:pt-24'
+  'min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24'
 
 const ICON_CLASS = 'h-4 w-4 min-[834px]:h-5 min-[834px]:w-5'
 const CTA_ICON_CLASS = 'h-3 w-3 group-hover:translate-x-0.5 transition-transform'
@@ -74,11 +74,12 @@ export default function ProgressiPage() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <div className={SCROLL_CONTAINER_CLASS} style={SCROLL_CONTAINER_STYLE}>
-        <PageHeaderGlass
+        <PageHeaderFixed
+          variant="chat"
           title="Progressi"
           subtitle="Monitora i tuoi progressi e le tue statistiche"
           backHref="/home"
-          icon={<BarChart3 className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />}
+          icon={<BarChart3 className="h-5 w-5 text-cyan-400" />}
         />
 
         <div className="grid grid-cols-1 min-[834px]:grid-cols-2 gap-3 min-[834px]:gap-4">

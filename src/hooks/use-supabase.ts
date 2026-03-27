@@ -60,6 +60,9 @@ export function useSupabase() {
           hasError: !!sessionError,
         })
 
+        if (sessionError) {
+          if (handleRefreshTokenError(sessionError)) return null
+        }
         if (!sessionError && session?.user) {
           if (loadingTimeout) {
             clearTimeout(loadingTimeout)
@@ -182,6 +185,9 @@ export function useSupabase() {
         }
 
         // Solo aggiorna se onAuthStateChange non ha già impostato l'utente
+        if (sessionError && handleRefreshTokenError(sessionError)) {
+          return
+        }
         if (!sessionError && session?.user && !authStateChangeCalled) {
           console.log('[useSupabase] getSession completato (fallback)', {
             userId: session.user.id,

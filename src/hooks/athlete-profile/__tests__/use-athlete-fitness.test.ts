@@ -17,6 +17,7 @@ const { mockSupabase } = vi.hoisted(() => ({
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
 const mockSingle = vi.fn()
+const mockMaybeSingle = vi.fn()
 const mockUpdate = vi.fn()
 const mockInsert = vi.fn()
 
@@ -92,6 +93,7 @@ describe('useAthleteFitness', () => {
 
     mockEq.mockReturnValue({
       single: mockSingle,
+      maybeSingle: mockMaybeSingle,
     })
 
     mockUpdate.mockReturnValue({
@@ -156,7 +158,7 @@ describe('useAthleteFitness', () => {
         updated_at: '2025-01-01T00:00:00Z',
       }
 
-      mockSingle.mockResolvedValue({
+      mockMaybeSingle.mockResolvedValue({
         data: mockData,
         error: null,
       })
@@ -175,12 +177,10 @@ describe('useAthleteFitness', () => {
       expect(mockSupabase.from).toHaveBeenCalledWith('athlete_fitness_data')
     })
 
-    it('should handle error when fetching fails', async () => {
-      const mockError = { message: 'Database error', code: 'PGRST116' }
-
-      mockSingle.mockResolvedValue({
+    it('should return null when no fitness row exists', async () => {
+      mockMaybeSingle.mockResolvedValue({
         data: null,
-        error: mockError,
+        error: null,
       })
 
       const { result } = renderHook(() => useAthleteFitness('test-athlete-id'), {
@@ -191,7 +191,6 @@ describe('useAthleteFitness', () => {
         expect(result.current.isSuccess).toBe(true)
       })
 
-      // PGRST116 significa "no rows returned", quindi ritorna null (non errore)
       expect(result.current.data).toBeNull()
     })
   })

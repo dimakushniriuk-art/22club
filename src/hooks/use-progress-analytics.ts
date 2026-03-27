@@ -274,19 +274,16 @@ export function useProgressAnalytics(athleteId?: string) {
         note,
         created_at,
         updated_at,
-        -- Circonferenze base (esistenti)
         chest_cm,
         waist_cm,
         hips_cm,
         biceps_cm,
         thighs_cm,
-        -- Composizione corporea
         massa_grassa_percentuale,
         massa_grassa_kg,
         massa_magra_kg,
         massa_muscolare_kg,
         massa_muscolare_scheletrica_kg,
-        -- Circonferenze aggiuntive (dalla migrazione 20250201)
         collo_cm,
         spalle_cm,
         torace_inspirazione_cm,

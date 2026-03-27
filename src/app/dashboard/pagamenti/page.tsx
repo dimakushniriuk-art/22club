@@ -12,7 +12,6 @@ import { PaymentsFilters } from '@/components/dashboard/pagamenti/payments-filte
 import { PaymentsTable } from '@/components/dashboard/pagamenti/payments-table'
 import { PaymentsExportMenu } from '@/components/dashboard/pagamenti/payments-export-menu'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
-import { LoadingState } from '@/components/dashboard/loading-state'
 import { useToast } from '@/components/ui/toast'
 import type { Payment } from '@/types/payment'
 import { logger } from '@/lib/logger'
@@ -169,20 +168,7 @@ export default function PagamentiPage() {
   }
 
   if (loading) {
-    return (
-      <div className="relative min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-          <div className="animate-pulse space-y-4">
-            <div className="bg-background-tertiary h-8 w-64 rounded" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="bg-background-tertiary h-16 rounded-lg" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return null
   }
 
   return (
@@ -290,7 +276,7 @@ export default function PagamentiPage() {
 
       {/* Drawer dettaglio pagamento - Lazy loaded */}
       {showDrawer && selectedPayment && (
-        <Suspense fallback={<LoadingState message="Caricamento dettagli..." />}>
+        <Suspense fallback={null}>
           <PaymentDetailDrawer
             payment={selectedPayment}
             open={showDrawer}
@@ -305,7 +291,7 @@ export default function PagamentiPage() {
 
       {/* Modal nuovo pagamento - Lazy loaded solo quando aperto */}
       {showNewPaymentModal && (
-        <Suspense fallback={<LoadingState message="Caricamento form pagamento..." />}>
+        <Suspense fallback={null}>
           <NewPaymentModal
             onClose={() => setShowNewPaymentModal(false)}
             onSave={handleSavePayment}

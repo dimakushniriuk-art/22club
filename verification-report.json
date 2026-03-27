@@ -1,41 +1,16 @@
 {
-  "timestamp": "2026-01-07T16:18:56.245Z",
+  "timestamp": "2026-03-23T00:20:32.876Z",
   "summary": {
-    "ok": 5,
-    "errors": 0,
+    "ok": 4,
+    "errors": 1,
     "warnings": 0,
     "total": 5
   },
   "results": [
     {
       "service": "Next.js Server",
-      "status": "ok",
-      "message": "Server attivo su porta 3001",
-      "details": {
-        "status": "healthy",
-        "uptime": 450.569118,
-        "environment": "development",
-        "checks": {
-          "memory": {
-            "status": "ok",
-            "used": {
-              "rss": 1591558144,
-              "heapTotal": 1092575232,
-              "heapUsed": 922657720,
-              "external": 303382138,
-              "arrayBuffers": 297689374
-            }
-          },
-          "database": {
-            "status": "ok",
-            "connected": true
-          },
-          "api": {
-            "status": "ok",
-            "responseTime": 0
-          }
-        }
-      }
+      "status": "error",
+      "message": ""
     },
     {
       "service": "Supabase Config",

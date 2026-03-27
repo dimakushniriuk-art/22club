@@ -48,7 +48,7 @@ export default function FotoRisultatiPage() {
 
   const handleDelete = useCallback(
     async (photo: ProgressPhoto) => {
-      if (!window.confirm("Eliminare questa foto? L'operazione non può essere annullata.")) return
+      if (!window.confirm("Eliminare questa foto? L'operazione non puÃ² essere annullata.")) return
       setDeletingId(photo.id)
       const path = getStoragePathFromProgressPhotoUrl(photo.image_url)
       try {
@@ -98,7 +98,7 @@ export default function FotoRisultatiPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 pt-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
         <PageHeaderFixed
           variant="chat"
           title="Foto / Risultati"
@@ -149,7 +149,7 @@ export default function FotoRisultatiPage() {
             <div className={`p-6 text-center sm:p-8 ${CARD_DS}`}>
               <div className="mb-3 flex justify-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-2xl">
-                  📷
+                  ðŸ“·
                 </div>
               </div>
               <p className="text-sm text-text-secondary sm:text-base">
