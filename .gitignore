@@ -83,3 +83,8 @@ debug-*.log
 
 # Cursor MCP (può contenere chiavi)
 .cursor/mcp.json
+
+# Playwright auth accidentale in root
+/athlete-auth.json
+/admin-auth.json
+/pt-auth.json
