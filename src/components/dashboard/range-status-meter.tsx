@@ -28,7 +28,9 @@ export function RangeStatusMeter({
   height = 170,
   showValue = false,
 }: RangeStatusMeterProps) {
-  const chartData = history.filter((point): point is { date: string; value: number } => point.value !== null)
+  const chartData = history.filter(
+    (point): point is { date: string; value: number } => point.value !== null,
+  )
   const hasChartData = chartData.length > 0
   const formatDate = (raw: string) => {
     const d = new Date(raw)
@@ -69,10 +71,7 @@ export function RangeStatusMeter({
               <YAxis
                 stroke="rgba(255,255,255,.45)"
                 fontSize={11}
-                domain={[
-                  (dataMin: number) => dataMin - 2,
-                  (dataMax: number) => dataMax + 2,
-                ]}
+                domain={[(dataMin: number) => dataMin - 2, (dataMax: number) => dataMax + 2]}
                 tickFormatter={(raw: number) => `${Math.round(raw)}`}
               />
               <Tooltip

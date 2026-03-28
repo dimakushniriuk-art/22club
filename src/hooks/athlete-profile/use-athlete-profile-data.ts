@@ -194,8 +194,7 @@ export function useAthleteProfileData(athleteId: string) {
       pushSupabaseError(errMsgs, counterRes)
 
       const weightRaw = progressRes.data?.weight_kg
-      const pesoAttuale =
-        weightRaw === null || weightRaw === undefined ? null : Number(weightRaw)
+      const pesoAttuale = weightRaw === null || weightRaw === undefined ? null : Number(weightRaw)
 
       setStats({
         allenamenti_totali: totalRes.count ?? 0,

@@ -16,8 +16,15 @@ import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizar
 function NuovaSchedaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { athletes, exercises, loading, error, exercisesLoadError, handleCreateWorkout } =
-    useWorkoutPlans()
+  const {
+    athletes,
+    exercises,
+    loading,
+    wizardDataLoading,
+    error,
+    exercisesLoadError,
+    handleCreateWorkout,
+  } = useWorkoutPlans()
   const { addToast } = useToast()
 
   const initialAthleteId = searchParams.get('athlete_id') || undefined
@@ -56,7 +63,7 @@ function NuovaSchedaContent() {
     router.push('/dashboard/schede')
   }
 
-  if (loading) {
+  if (loading || wizardDataLoading) {
     return null
   }
 

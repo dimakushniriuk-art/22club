@@ -204,11 +204,10 @@ export function useUserSettings() {
         // Gestisci caso in cui colonne JSONB potrebbero non esistere ancora
         setSettings({
           notifications:
-            (typedData.notification_settings as NotificationSettings | null) || DEFAULT_NOTIFICATIONS,
-          privacy:
-            (typedData.privacy_settings as PrivacySettings | null) || DEFAULT_PRIVACY,
-          account:
-            (typedData.account_settings as AccountSettings | null) || DEFAULT_ACCOUNT,
+            (typedData.notification_settings as NotificationSettings | null) ||
+            DEFAULT_NOTIFICATIONS,
+          privacy: (typedData.privacy_settings as PrivacySettings | null) || DEFAULT_PRIVACY,
+          account: (typedData.account_settings as AccountSettings | null) || DEFAULT_ACCOUNT,
           two_factor_enabled: typedData.two_factor_enabled ?? false,
           two_factor_secret: typedData.two_factor_secret ?? null,
           two_factor_backup_codes: typedData.two_factor_backup_codes ?? null,

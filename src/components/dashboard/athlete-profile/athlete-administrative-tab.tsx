@@ -382,7 +382,8 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          stato_abbonamento: (e.target.value || null) as StatoAbbonamentoEnum | null,
+                          stato_abbonamento: (e.target.value ||
+                            null) as StatoAbbonamentoEnum | null,
                         })
                       }
                       className={ADM_SELECT_CLS}
@@ -397,8 +398,9 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                   ) : (
                     <span className="text-sm font-medium text-text-primary">
                       {administrative?.stato_abbonamento
-                        ? STATI_ABBONAMENTO.find((s) => s.value === administrative.stato_abbonamento)
-                            ?.label || administrative.stato_abbonamento
+                        ? STATI_ABBONAMENTO.find(
+                            (s) => s.value === administrative.stato_abbonamento,
+                          )?.label || administrative.stato_abbonamento
                         : '—'}
                     </span>
                   )}
@@ -610,7 +612,9 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
             )}
           </div>
 
-          <AthleteProfileSectionHeading icon={FileText}>Note contrattuali</AthleteProfileSectionHeading>
+          <AthleteProfileSectionHeading icon={FileText}>
+            Note contrattuali
+          </AthleteProfileSectionHeading>
           <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
             {isEditing ? (
               <Textarea
@@ -629,7 +633,9 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                 {administrative.note_contrattuali}
               </p>
             ) : (
-              <p className="py-4 text-center text-sm text-text-secondary">Nessuna nota contrattuale</p>
+              <p className="py-4 text-center text-sm text-text-secondary">
+                Nessuna nota contrattuale
+              </p>
             )}
           </div>
 
@@ -660,14 +666,9 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
       {showUploadDocumento && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-3"
-          onClick={() =>
-            !uploadDocumentoMutation.isPending && setShowUploadDocumento(false)
-          }
+          onClick={() => !uploadDocumentoMutation.isPending && setShowUploadDocumento(false)}
         >
-          <Card
-            className="w-full max-w-md overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <Card className="w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <CardHeader className="border-b border-white/10 pb-2">
               <CardTitle className="text-sm font-bold text-text-primary">
                 Carica documento contrattuale

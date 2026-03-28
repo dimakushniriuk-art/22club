@@ -559,7 +559,7 @@ export async function DELETE(request: NextRequest) {
       await safeDelete('workouts', { column: 'athlete_id', value: profileId })
       await safeDelete('workouts', { column: 'created_by_staff_id', value: profileId })
       await safeDelete('workout_plans', { column: 'athlete_id', value: profileId })
-      await safeDelete('workout_plans', { column: 'created_by_staff_id', value: profileId })
+      await safeDelete('workout_plans', { column: 'created_by_profile_id', value: profileId })
       await safeDelete('documents', { column: 'athlete_id', value: profileId })
       await safeDelete('documents', { column: 'uploaded_by_profile_id', value: profileId })
       await safeDelete('inviti_atleti', { column: 'pt_id', value: profileId })

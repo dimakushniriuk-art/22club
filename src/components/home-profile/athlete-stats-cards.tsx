@@ -27,7 +27,11 @@ const CARD_DS =
 const ICON_BOX =
   'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 sm:h-10 sm:w-10'
 
-export function AthleteStatsCards({ stats, hideIcons = false, loading = false }: AthleteStatsCardsProps) {
+export function AthleteStatsCards({
+  stats,
+  hideIcons = false,
+  loading = false,
+}: AthleteStatsCardsProps) {
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3 min-[834px]:gap-4">
       <Card variant="default" className={CARD_DS}>

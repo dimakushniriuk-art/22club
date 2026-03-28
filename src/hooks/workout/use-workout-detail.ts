@@ -8,17 +8,25 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
-import type { DayItem, WorkoutDayExerciseData } from '@/types/workout'
+import type { DayItem, Workout, WorkoutDayExerciseData } from '@/types/workout'
 
 const logger = createLogger('hooks:workout:use-workout-detail')
+
+function planDifficultyToUi(raw?: string | null): Workout['difficulty'] {
+  if (raw === 'bassa' || raw === 'beginner') return 'bassa'
+  if (raw === 'alta' || raw === 'advanced') return 'alta'
+  if (raw === 'media' || raw === 'intermediate') return 'media'
+  return 'media'
+}
 
 interface WorkoutDetail {
   id: string
   name: string
   description: string | null
   objective: string | null
+  is_draft: boolean
   status: string
-  difficulty: string | null
+  difficulty: Workout['difficulty']
   created_at: string
   updated_at: string
   athlete_id: string | null
@@ -106,34 +114,10 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
       setLoading(true)
       setError(null)
 
-      // Recupera scheda base
-      const { data: workoutBaseRaw, error: workoutBaseError } = await supabase
-        .from('workout_plans')
-        .select(
-          `
-          id,
-          name,
-          description,
-          objective,
-          is_active,
-          athlete_id,
-          created_by_profile_id,
-          created_at,
-          updated_at
-        `,
-        )
-        .eq('id', workoutId)
-        .single()
-
-      if (workoutBaseError) {
-        throw new Error(workoutBaseError.message || 'Errore nel recupero della scheda')
-      }
-
-      if (!workoutBaseRaw) {
-        setError(new Error('Scheda non trovata'))
-        return
-      }
-
+      type WorkoutDayRowFromDb = Pick<
+        Tables<'workout_days'>,
+        'id' | 'workout_plan_id' | 'day_number' | 'day_name' | 'title' | 'order_num' | 'created_at'
+      >
       type WorkoutPlanRow = Pick<
         Tables<'workout_plans'>,
         | 'id'
@@ -144,212 +128,61 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
         | 'created_by_profile_id'
         | 'created_at'
         | 'updated_at'
-      > & { objective?: string | null }
-      const workoutBase = workoutBaseRaw as WorkoutPlanRow
+      > & {
+        objective?: string | null
+        is_draft?: boolean | null
+        difficulty?: string | null
+      }
 
-      // Recupera giorni
-      type WorkoutDayRowFromDb = Pick<
-        Tables<'workout_days'>,
-        'id' | 'workout_plan_id' | 'day_number' | 'day_name' | 'title' | 'order_num' | 'created_at'
-      >
-      let daysData: WorkoutDayRowFromDb[] = []
-
-      try {
-        const daysResult = await supabase
+      const [workoutPlanResult, daysResult] = await Promise.all([
+        supabase.from('workout_plans').select('*').eq('id', workoutId).single(),
+        supabase
           .from('workout_days')
           .select('*')
           .eq('workout_plan_id', workoutId)
-          .order('day_number', { ascending: true })
+          .order('day_number', { ascending: true }),
+      ])
 
-        if (daysResult.error) {
-          const errorMessage = String(daysResult.error.message || '')
-          const errorCode = String(daysResult.error.code || '')
-
-          if (
-            errorCode === '42P01' ||
-            errorCode === 'PGRST301' ||
-            errorMessage.includes('does not exist') ||
-            errorMessage.includes('permission denied') ||
-            errorMessage.includes('relation') ||
-            errorMessage.includes('could not find')
-          ) {
-            logger.warn(
-              'Tabella workout_days non disponibile, continuando senza giorni',
-              undefined,
-              { errorCode, workoutId },
-            )
-            daysData = []
-          } else {
-            logger.warn('Errore nel recupero dei giorni, continuando senza giorni', undefined, {
-              errorMessage,
-            })
-            daysData = []
-          }
-        } else {
-          daysData = (daysResult.data ?? []) as WorkoutDayRowFromDb[]
-        }
-      } catch (err) {
-        logger.error('Exception during workout_days query', err, { workoutId })
-        daysData = []
+      if (workoutPlanResult.error) {
+        throw new Error(workoutPlanResult.error.message || 'Errore nel recupero della scheda')
+      }
+      if (!workoutPlanResult.data) {
+        setError(new Error('Scheda non trovata'))
+        return
       }
 
-      // Per ogni giorno, recupera gli esercizi (senza join - due query separate)
-      const daysWithExercises: WorkoutDayWithExercises[] = await Promise.all(
-        daysData.map(async (day) => {
-          let exercisesData: WorkoutDayExerciseJoined[] = []
-          try {
-            // Query 1: Recupera esercizi da workout_day_exercises (senza join)
-            const exercisesResult = await supabase
-              .from('workout_day_exercises')
-              .select('*')
-              .eq('workout_day_id', day.id)
-              .order('order_index', { ascending: true })
+      const workoutBase = workoutPlanResult.data as WorkoutPlanRow
 
-            if (exercisesResult.error) {
-              logger.warn('Error fetching exercises for day', undefined, {
-                dayId: day.id,
-                error: exercisesResult.error.message,
-              })
-              exercisesData = []
-            } else {
-              type WorkoutDayExerciseRow = Pick<
-                Tables<'workout_day_exercises'>,
-                | 'id'
-                | 'exercise_id'
-                | 'target_sets'
-                | 'target_reps'
-                | 'target_weight'
-                | 'rest_timer_sec'
-                | 'order_index'
-                | 'workout_day_id'
-                | 'note'
-              > & { circuit_block_id?: string | null }
-              const workoutDayExercises = (exercisesResult.data ?? []) as WorkoutDayExerciseRow[]
-
-              // Query 2: Recupera i nomi degli esercizi dalla tabella exercises
-              if (workoutDayExercises.length > 0) {
-                const exerciseIds = workoutDayExercises
-                  .map((ex) => ex.exercise_id)
-                  .filter((id): id is string => id !== null)
-
-                if (exerciseIds.length > 0) {
-                  const exercisesDetailsResult = await supabase
-                    .from('exercises')
-                    .select('id, name, video_url, image_url')
-                    .in('id', exerciseIds)
-
-                  type ExerciseDetailsRow = Pick<
-                    Tables<'exercises'>,
-                    'id' | 'name' | 'video_url' | 'image_url'
-                  >
-                  const typedExercisesDetails = (exercisesDetailsResult.data ??
-                    []) as ExerciseDetailsRow[]
-                  const exercisesMap = new Map(typedExercisesDetails.map((ex) => [ex.id, ex]))
-
-                  // Query 3: Recupera i set per ogni esercizio
-                  const exerciseIdsForSets = workoutDayExercises
-                    .map((ex) => ex.id)
-                    .filter((id): id is string => id !== null)
-
-                  let setsMap = new Map<
-                    string,
-                    Array<{
-                      id: string
-                      set_number: number
-                      reps: number
-                      weight_kg: number | null
-                      execution_time_sec: number | null
-                      rest_timer_sec: number | null
-                    }>
-                  >()
-
-                  if (exerciseIdsForSets.length > 0) {
-                    const setsResult = await supabase
-                      .from('workout_sets')
-                      .select(
-                        'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at',
-                      )
-                      .in('workout_day_exercise_id', exerciseIdsForSets)
-                      .order('set_number', { ascending: true })
-
-                    if (!setsResult.error && setsResult.data) {
-                      type WorkoutSetRow = Pick<
-                        Tables<'workout_sets'>,
-                        | 'id'
-                        | 'workout_day_exercise_id'
-                        | 'set_number'
-                        | 'reps'
-                        | 'weight_kg'
-                        | 'completed_at'
-                      >
-                      const typedSetsData = (setsResult.data ?? []) as WorkoutSetRow[]
-                      setsMap = new Map(
-                        exerciseIdsForSets.map((exId) => [
-                          exId,
-                          typedSetsData
-                            .filter((s) => s.workout_day_exercise_id === exId)
-                            .map((s) => ({
-                              id: s.id,
-                              set_number: s.set_number,
-                              reps: (s.reps ?? 0) as number,
-                              weight_kg: (s.weight_kg ?? null) as number | null,
-                              execution_time_sec: null as number | null, // Campo non presente nella tabella
-                              rest_timer_sec: null as number | null, // Campo non presente nella tabella
-                            })),
-                        ]),
-                      )
-                    }
-                  }
-
-                  // Combina i dati: workout_day_exercises + exercises + sets
-                  exercisesData = workoutDayExercises.map((wde) => ({
-                    ...wde,
-                    exercises: exercisesMap.get(wde.exercise_id || '') || null,
-                    sets: setsMap.get(wde.id) || [],
-                  })) as (WorkoutDayExerciseJoined & {
-                    sets?: Array<{
-                      id: string
-                      set_number: number
-                      reps: number
-                      weight_kg: number | null
-                      execution_time_sec: number | null
-                      rest_timer_sec: number | null
-                    }>
-                  })[]
-                } else {
-                  exercisesData = workoutDayExercises.map((wde) => ({
-                    ...wde,
-                    exercises: null,
-                    sets: [],
-                  })) as (WorkoutDayExerciseJoined & {
-                    sets?: Array<{
-                      id: string
-                      set_number: number
-                      reps: number
-                      weight_kg: number | null
-                      execution_time_sec: number | null
-                      rest_timer_sec: number | null
-                    }>
-                  })[]
-                }
-              }
-            }
-          } catch (err) {
-            logger.error('Exception fetching exercises for day', err, { dayId: day.id, workoutId })
-            exercisesData = []
-          }
-
-          return {
-            ...day,
-            exercises: exercisesData ?? [],
-          } as WorkoutDayWithExercises
-        }),
-      )
+      let daysData: WorkoutDayRowFromDb[] = []
+      if (daysResult.error) {
+        const errorMessage = String(daysResult.error.message || '')
+        const errorCode = String(daysResult.error.code || '')
+        if (
+          errorCode === '42P01' ||
+          errorCode === 'PGRST301' ||
+          errorMessage.includes('does not exist') ||
+          errorMessage.includes('permission denied') ||
+          errorMessage.includes('relation') ||
+          errorMessage.includes('could not find')
+        ) {
+          logger.warn('Tabella workout_days non disponibile, continuando senza giorni', undefined, {
+            errorCode,
+            workoutId,
+          })
+        } else {
+          logger.warn('Errore nel recupero dei giorni, continuando senza giorni', undefined, {
+            errorMessage,
+          })
+        }
+        daysData = []
+      } else {
+        daysData = (daysResult.data ?? []) as WorkoutDayRowFromDb[]
+      }
 
       const athleteId = workoutBase.athlete_id
       const staffProfileId = workoutBase.created_by_profile_id
 
-      const [athleteResult, staffResult] = await Promise.all([
+      const profilesPromise = Promise.all([
         athleteId
           ? supabase
               .from('profiles')
@@ -368,19 +201,183 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
           : Promise.resolve({ data: null, error: null }),
       ])
 
+      // Recupero batch (evita timeout multipli per ogni giorno)
+      type WorkoutDayExerciseRow = Pick<
+        Tables<'workout_day_exercises'>,
+        | 'id'
+        | 'exercise_id'
+        | 'target_sets'
+        | 'target_reps'
+        | 'target_weight'
+        | 'rest_timer_sec'
+        | 'order_index'
+        | 'workout_day_id'
+        | 'note'
+      > & { circuit_block_id?: string | null }
+      type ExerciseDetailsRow = Pick<Tables<'exercises'>, 'id' | 'name' | 'video_url' | 'image_url'>
+      type WorkoutSetRow = Pick<
+        Tables<'workout_sets'>,
+        | 'id'
+        | 'workout_day_exercise_id'
+        | 'set_number'
+        | 'reps'
+        | 'weight_kg'
+        | 'completed_at'
+        | 'execution_time_sec'
+        | 'rest_timer_sec'
+      >
+
+      const dayIds = daysData.map((d) => d.id)
+      const exercisesByDay = new Map<string, WorkoutDayExerciseJoined[]>()
+
+      if (dayIds.length > 0) {
+        const fillPerDayFallback = async () => {
+          const settled = await Promise.allSettled(
+            dayIds.map((dayId) =>
+              supabase
+                .from('workout_day_exercises')
+                .select('*')
+                .eq('workout_day_id', dayId)
+                .order('order_index', { ascending: true }),
+            ),
+          )
+
+          for (let i = 0; i < settled.length; i++) {
+            const dayId = dayIds[i]
+            const result = settled[i]
+            if (result.status !== 'fulfilled') continue
+            if (result.value.error) continue
+
+            const rows = (result.value.data ?? []) as WorkoutDayExerciseRow[]
+            const mapped = rows.map((row) => ({
+              ...row,
+              exercises: null,
+              sets: [],
+            })) as WorkoutDayExerciseJoined[]
+            exercisesByDay.set(dayId, mapped)
+          }
+        }
+
+        try {
+          const exercisesResult = await supabase
+            .from('workout_day_exercises')
+            .select('*')
+            .in('workout_day_id', dayIds)
+            .order('order_index', { ascending: true })
+
+          if (exercisesResult.error) {
+            logger.warn('Errore recupero workout_day_exercises batch', undefined, {
+              workoutId,
+              message: exercisesResult.error.message,
+            })
+            await fillPerDayFallback()
+          } else {
+            const workoutDayExercises = (exercisesResult.data ?? []) as WorkoutDayExerciseRow[]
+            const exerciseIds = [
+              ...new Set(
+                workoutDayExercises
+                  .map((ex) => ex.exercise_id)
+                  .filter((id): id is string => typeof id === 'string' && id.length > 0),
+              ),
+            ]
+            const wdeIds = workoutDayExercises.map((ex) => ex.id)
+
+            const [exercisesDetailsResult, setsResult] = await Promise.all([
+              exerciseIds.length > 0
+                ? supabase
+                    .from('exercises')
+                    .select('id, name, video_url, image_url')
+                    .in('id', exerciseIds)
+                : Promise.resolve({ data: [] as ExerciseDetailsRow[], error: null }),
+              wdeIds.length > 0
+                ? supabase
+                    .from('workout_sets')
+                    .select(
+                      'id, workout_day_exercise_id, set_number, reps, weight_kg, execution_time_sec, rest_timer_sec, completed_at',
+                    )
+                    .in('workout_day_exercise_id', wdeIds)
+                    .order('set_number', { ascending: true })
+                : Promise.resolve({ data: [] as WorkoutSetRow[], error: null }),
+            ])
+
+            let exercisesMap = new Map<string, ExerciseDetailsRow>()
+            if (!exercisesDetailsResult.error && exercisesDetailsResult.data) {
+              const typedExercisesDetails = (exercisesDetailsResult.data ??
+                []) as ExerciseDetailsRow[]
+              exercisesMap = new Map(typedExercisesDetails.map((ex) => [ex.id, ex]))
+            }
+
+            let setsMap = new Map<
+              string,
+              Array<{
+                id: string
+                set_number: number
+                reps: number
+                weight_kg: number | null
+                execution_time_sec: number | null
+                rest_timer_sec: number | null
+              }>
+            >()
+            if (!setsResult.error && setsResult.data) {
+              const typedSetsData = (setsResult.data ?? []) as WorkoutSetRow[]
+              setsMap = new Map(
+                wdeIds.map((exId) => [
+                  exId,
+                  typedSetsData
+                    .filter((s) => s.workout_day_exercise_id === exId)
+                    .map((s) => ({
+                      id: s.id,
+                      set_number: s.set_number,
+                      reps: (s.reps ?? 0) as number,
+                      weight_kg: (s.weight_kg ?? null) as number | null,
+                      execution_time_sec: (s.execution_time_sec ?? null) as number | null,
+                      rest_timer_sec: (s.rest_timer_sec ?? null) as number | null,
+                    })),
+                ]),
+              )
+            }
+
+            for (const row of workoutDayExercises) {
+              const list = exercisesByDay.get(row.workout_day_id ?? '') ?? []
+              list.push({
+                ...row,
+                exercises: row.exercise_id ? (exercisesMap.get(row.exercise_id) ?? null) : null,
+                sets: setsMap.get(row.id) ?? [],
+              } as WorkoutDayExerciseJoined)
+              exercisesByDay.set(row.workout_day_id ?? '', list)
+            }
+          }
+        } catch (err) {
+          logger.warn('Errore recupero batch esercizi scheda', undefined, {
+            workoutId,
+            message: err instanceof Error ? err.message : String(err),
+          })
+          await fillPerDayFallback()
+        }
+      }
+
+      const daysWithExercises: WorkoutDayWithExercises[] = daysData.map((day) => ({
+        ...day,
+        exercises: exercisesByDay.get(day.id) ?? [],
+      }))
+
+      const [athleteResult, staffResult] = await profilesPromise
+
       type ProfileAthleteRow = Pick<Tables<'profiles'>, 'id' | 'nome' | 'cognome'>
       type ProfileStaffRow = Pick<Tables<'profiles'>, 'id' | 'nome' | 'cognome'>
       const athlete = (athleteResult.data ?? null) as ProfileAthleteRow | null
       const staff = (staffResult.data ?? null) as ProfileStaffRow | null
 
       // Trasforma i dati
+      const isDraft = Boolean(workoutBase.is_draft)
       const transformedWorkout: WorkoutDetail = {
         id: workoutBase.id,
         name: workoutBase.name ?? 'Scheda senza titolo',
         description: workoutBase.description ?? null,
         objective: workoutBase.objective ?? null,
-        status: workoutBase.is_active ? 'attivo' : 'completato',
-        difficulty: null,
+        is_draft: isDraft,
+        status: isDraft ? 'bozza' : workoutBase.is_active ? 'attivo' : 'completato',
+        difficulty: planDifficultyToUi(workoutBase.difficulty),
         created_at: workoutBase.created_at ?? new Date().toISOString(),
         updated_at: workoutBase.updated_at ?? workoutBase.created_at ?? new Date().toISOString(),
         athlete_id: workoutBase.athlete_id,

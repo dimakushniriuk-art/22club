@@ -369,7 +369,11 @@ export default function TrainerProfilePage() {
                               </div>
                             ) : (
                               /* eslint-disable-next-line @next/next/no-img-element */
-                              <img src={certHref} alt={c.nome} className="w-full h-full object-cover" />
+                              <img
+                                src={certHref}
+                                alt={c.nome}
+                                className="w-full h-full object-cover"
+                              />
                             )}
                           </a>
                         )}

@@ -53,92 +53,92 @@ export function NutritionGoalsSection({
 }: NutritionGoalsSectionProps) {
   return (
     <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="obiettivo_nutrizionale" className="text-text-tertiary">
-            Obiettivo
-          </Label>
-          {isEditing ? (
-            <SimpleSelect
-              value={formData.obiettivo_nutrizionale || ''}
-              onValueChange={(v) =>
-                onFormDataChange({
-                  obiettivo_nutrizionale: (v || null) as ObiettivoNutrizionaleEnum | null,
-                })
-              }
-              placeholder="Non specificato"
-              options={[
-                { value: '', label: 'Non specificato' },
-                ...[...OBIETTIVI_NUTRIZIONALI].sort((a, b) => a.label.localeCompare(b.label, 'it')),
-              ]}
-            />
-          ) : (
-            nutrition?.obiettivo_nutrizionale && (
-              <p className="text-text-primary text-sm md:text-base">
-                {OBIETTIVI_NUTRIZIONALI.find((o) => o.value === nutrition.obiettivo_nutrizionale)
-                  ?.label || nutrition.obiettivo_nutrizionale}
-              </p>
-            )
-          )}
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="obiettivo_nutrizionale" className="text-text-tertiary">
+          Obiettivo
+        </Label>
+        {isEditing ? (
+          <SimpleSelect
+            value={formData.obiettivo_nutrizionale || ''}
+            onValueChange={(v) =>
+              onFormDataChange({
+                obiettivo_nutrizionale: (v || null) as ObiettivoNutrizionaleEnum | null,
+              })
+            }
+            placeholder="Non specificato"
+            options={[
+              { value: '', label: 'Non specificato' },
+              ...[...OBIETTIVI_NUTRIZIONALI].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+            ]}
+          />
+        ) : (
+          nutrition?.obiettivo_nutrizionale && (
+            <p className="text-text-primary text-sm md:text-base">
+              {OBIETTIVI_NUTRIZIONALI.find((o) => o.value === nutrition.obiettivo_nutrizionale)
+                ?.label || nutrition.obiettivo_nutrizionale}
+            </p>
+          )
+        )}
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="calorie_giornaliere">Calorie Giornaliere Target</Label>
-          {isEditing ? (
-            <Input
-              id="calorie_giornaliere"
-              type="number"
-              min="800"
-              max="5000"
-              step="1"
-              value={formData.calorie_giornaliere_target || ''}
-              onChange={(e) => {
-                const sanitized = sanitizeNumber(
-                  e.target.value ? parseInt(e.target.value) : null,
-                  800,
-                  5000,
-                )
-                onFormDataChange({ calorie_giornaliere_target: sanitized })
-              }}
-              placeholder="800-5000 kcal"
-              maxLength={5}
-              className="border-white/10 bg-white/[0.04] text-xs"
-            />
-          ) : (
-            nutrition?.calorie_giornaliere_target && (
-              <p className="text-text-primary text-sm md:text-base font-semibold">
-                {nutrition.calorie_giornaliere_target} kcal/giorno
-              </p>
-            )
-          )}
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="calorie_giornaliere">Calorie Giornaliere Target</Label>
+        {isEditing ? (
+          <Input
+            id="calorie_giornaliere"
+            type="number"
+            min="800"
+            max="5000"
+            step="1"
+            value={formData.calorie_giornaliere_target || ''}
+            onChange={(e) => {
+              const sanitized = sanitizeNumber(
+                e.target.value ? parseInt(e.target.value) : null,
+                800,
+                5000,
+              )
+              onFormDataChange({ calorie_giornaliere_target: sanitized })
+            }}
+            placeholder="800-5000 kcal"
+            maxLength={5}
+            className="border-white/10 bg-white/[0.04] text-xs"
+          />
+        ) : (
+          nutrition?.calorie_giornaliere_target && (
+            <p className="text-text-primary text-sm md:text-base font-semibold">
+              {nutrition.calorie_giornaliere_target} kcal/giorno
+            </p>
+          )
+        )}
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="dieta_seguita" className="text-text-tertiary">
-            Dieta Seguita
-          </Label>
-          {isEditing ? (
-            <SimpleSelect
-              value={formData.dieta_seguita || ''}
-              onValueChange={(v) =>
-                onFormDataChange({
-                  dieta_seguita: (v || null) as DietaEnum | null,
-                })
-              }
-              placeholder="Non specificato"
-              options={[
-                { value: '', label: 'Non specificato' },
-                ...[...DIETE].sort((a, b) => a.label.localeCompare(b.label, 'it')),
-              ]}
-            />
-          ) : (
-            nutrition?.dieta_seguita && (
-              <p className="text-text-primary text-sm md:text-base">
-                {DIETE.find((d) => d.value === nutrition.dieta_seguita)?.label ||
-                  nutrition.dieta_seguita}
-              </p>
-            )
-          )}
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="dieta_seguita" className="text-text-tertiary">
+          Dieta Seguita
+        </Label>
+        {isEditing ? (
+          <SimpleSelect
+            value={formData.dieta_seguita || ''}
+            onValueChange={(v) =>
+              onFormDataChange({
+                dieta_seguita: (v || null) as DietaEnum | null,
+              })
+            }
+            placeholder="Non specificato"
+            options={[
+              { value: '', label: 'Non specificato' },
+              ...[...DIETE].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+            ]}
+          />
+        ) : (
+          nutrition?.dieta_seguita && (
+            <p className="text-text-primary text-sm md:text-base">
+              {DIETE.find((d) => d.value === nutrition.dieta_seguita)?.label ||
+                nutrition.dieta_seguita}
+            </p>
+          )
+        )}
+      </div>
     </div>
   )
 }

@@ -25,11 +25,11 @@ Allineare sempre a `STORAGE_PREVIEW_BUCKETS` in `src/lib/documents.ts`:
 
 ### Regole accesso (sintesi)
 
-| Contesto | Logica |
-|----------|--------|
-| Path `documents` “atleta” (dossier/, fatture/, …) | `profiles.id` estratto dal path; `canActorAccessAthleteStorageObject` (atleta, trainer assegnato, staff_atleti, admin). |
-| `documents` con prefisso `chat_files/{authUserId}/…` | Mittente o destinatario di un messaggio con `file_url` che contiene quel path (o uploader = attore). |
-| Bucket athlete-* e trainer-* con path `{userId}/…` | Owner `profiles.id`; per athlete stessa matrice staff; per trainer file di profilo trainer autenticato. |
+| Contesto                                             | Logica                                                                                                                  |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Path `documents` “atleta” (dossier/, fatture/, …)    | `profiles.id` estratto dal path; `canActorAccessAthleteStorageObject` (atleta, trainer assegnato, staff_atleti, admin). |
+| `documents` con prefisso `chat_files/{authUserId}/…` | Mittente o destinatario di un messaggio con `file_url` che contiene quel path (o uploader = attore).                    |
+| Bucket athlete-_ e trainer-_ con path `{userId}/…`   | Owner `profiles.id`; per athlete stessa matrice staff; per trainer file di profilo trainer autenticato.                 |
 
 Aggiungere un **nuovo bucket privato**:
 
@@ -94,4 +94,4 @@ Modifiche a bucket ammessi o entry point rilevanti: aggiornare `INDICE_PROGETTO.
 
 ---
 
-*Ultimo allineamento: flusso marzo 2026 (JWT utente + proxy, chat e trainer bucket).*
+_Ultimo allineamento: flusso marzo 2026 (JWT utente + proxy, chat e trainer bucket)._

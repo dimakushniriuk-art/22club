@@ -341,7 +341,7 @@ function PresetComboField({
   return field
 }
 
-function RestSecondsField({
+export function RestSecondsField({
   value,
   onChange,
   className,
@@ -371,7 +371,7 @@ function RestSecondsField({
   )
 }
 
-function ExecutionSecondsField({
+export function ExecutionSecondsField({
   value,
   onChange,
   className,
@@ -401,7 +401,7 @@ function ExecutionSecondsField({
   )
 }
 
-function WeightKgField({
+export function WeightKgField({
   value,
   onChange,
   className,

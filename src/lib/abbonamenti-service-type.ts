@@ -26,3 +26,9 @@ export function defaultServiceForRole(role: string | null): ServiceType {
   if (role === 'massaggiatore') return 'massage'
   return 'training'
 }
+
+/** Valore DB / RPC → tipo accettato da `addDebitFromAppointment` / ledger (altro → undefined, default a training nel ledger). */
+export function coerceLedgerServiceType(raw: string | null | undefined): ServiceType | undefined {
+  if (raw === 'nutrition' || raw === 'massage' || raw === 'training') return raw
+  return undefined
+}

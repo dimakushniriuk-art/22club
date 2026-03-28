@@ -96,7 +96,9 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
       </div>
 
       <CardContent className="space-y-0 p-0">
-        <AthleteProfileSectionHeading icon={Target}>Obiettivo e piano alimentare</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={Target}>
+          Obiettivo e piano alimentare
+        </AthleteProfileSectionHeading>
         <div className="px-4 py-4 sm:px-5 sm:py-5">
           <NutritionGoalsSection
             isEditing={isEditing}
@@ -106,7 +108,9 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
           />
         </div>
 
-        <AthleteProfileSectionHeading icon={ChartPie}>Macronutrienti target</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={ChartPie}>
+          Macronutrienti target
+        </AthleteProfileSectionHeading>
         <div className="px-4 py-4 sm:px-5 sm:py-5">
           <NutritionMacronutrientsSection
             isEditing={isEditing}
@@ -138,7 +142,9 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
           />
         </div>
 
-        <AthleteProfileSectionHeading icon={Apple}>Preferenze alimentari</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={Apple}>
+          Preferenze alimentari
+        </AthleteProfileSectionHeading>
         <div className="px-4 py-4 sm:px-5 sm:py-5">
           <NutritionFoodPreferencesSection
             isEditing={isEditing}
@@ -174,7 +180,9 @@ export function AthleteNutritionTab({ athleteId }: AthleteNutritionTabProps) {
           />
         </div>
 
-        <AthleteProfileSectionHeading icon={FileText}>Note nutrizionali</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={FileText}>
+          Note nutrizionali
+        </AthleteProfileSectionHeading>
         <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
           <NutritionNotesSection
             isEditing={isEditing}

@@ -10,7 +10,8 @@ import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
 import { WorkoutWizardContent } from '@/components/workout/workout-wizard-content'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useToast } from '@/components/ui/toast'
-import type { WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
+import { Loader2 } from 'lucide-react'
+import type { Workout, WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
 import { WORKOUT_PLAN_NO_ATHLETE_VALUE } from '@/lib/constants/workout-plan-wizard'
 import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizard'
 
@@ -19,6 +20,7 @@ function workoutDetailToWizardData(detail: {
   description: string | null
   objective: string | null
   athlete_id: string | null
+  difficulty: Workout['difficulty']
   days: Array<{
     day_number: number
     title: string
@@ -78,7 +80,7 @@ function workoutDetailToWizardData(detail: {
   return {
     title: detail.name,
     notes: detail.description ?? undefined,
-    difficulty: 'media',
+    difficulty: detail.difficulty,
     athlete_id:
       detail.athlete_id == null || detail.athlete_id === ''
         ? WORKOUT_PLAN_NO_ATHLETE_VALUE
@@ -121,13 +123,8 @@ function ModificaSchedaContent() {
   const workoutId = typeof params?.id === 'string' ? params.id : null
 
   const { workout, loading: detailLoading, error: detailError } = useWorkoutDetail(workoutId, true)
-  const {
-    athletes,
-    exercises,
-    loading: plansLoading,
-    exercisesLoadError,
-    handleUpdateWorkout,
-  } = useWorkoutPlans()
+  const { athletes, exercises, wizardDataLoading, exercisesLoadError, handleUpdateWorkout } =
+    useWorkoutPlans({ skipWorkoutList: true })
   const { addToast } = useToast()
 
   const initialData = useMemo(
@@ -179,8 +176,15 @@ function ModificaSchedaContent() {
     )
   }
 
-  if (detailLoading || plansLoading) {
-    return null
+  if (detailLoading || wizardDataLoading) {
+    return (
+      <div className="relative min-h-screen flex flex-col items-center justify-center p-6">
+        <div className="flex items-center gap-3 text-text-secondary">
+          <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
+          <span>Caricamento scheda in corso...</span>
+        </div>
+      </div>
+    )
   }
 
   if (detailError) {

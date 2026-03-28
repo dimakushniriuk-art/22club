@@ -9,16 +9,17 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Badge } from '@/components/ui'
-import { GripVertical } from 'lucide-react'
-import type { WorkoutWizardData, Exercise, WorkoutDayExerciseData, DayItem } from '@/types/workout'
-import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
-import { validateWorkoutTarget, type WorkoutTarget } from '@/lib/validations/workout-target'
 import { Zap } from 'lucide-react'
+import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
+import type { WorkoutWizardData, Exercise, WorkoutDayExerciseData, DayItem } from '@/types/workout'
+import { validateWorkoutTarget, type WorkoutTarget } from '@/lib/validations/workout-target'
 import { WorkoutExerciseTargetPanel } from '../workout-exercise-target-panel'
 
 interface WorkoutWizardStep4Props {
   wizardData: WorkoutWizardData
   exercises: Exercise[]
+  /** Allineato ai tab giorno (header wizard) */
+  selectedDayIndex: number
   circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>
   getDayItems?: (day: {
     items?: DayItem[]
@@ -31,7 +32,6 @@ interface WorkoutWizardStep4Props {
     data: Partial<WorkoutDayExerciseData>,
   ) => void
   onExerciseRemove: (dayIndex: number, itemIndex: number) => void
-  onReorderItem?: (dayIndex: number, fromIndex: number, toIndex: number) => void
 }
 
 function getDayItemsFallback(day: {
@@ -45,40 +45,14 @@ function getDayItemsFallback(day: {
 export function WorkoutWizardStep4({
   wizardData,
   exercises,
+  selectedDayIndex,
   circuitList = [],
   getDayItems = getDayItemsFallback,
   onExerciseUpdate,
   onExerciseRemove,
-  onReorderItem,
 }: WorkoutWizardStep4Props) {
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    const t = e.currentTarget
-    if (t.getAttribute('data-drag-over') !== '1') {
-      t.setAttribute('data-drag-over', '1')
-      t.classList.add('ring-2', 'ring-teal-500/50', 'rounded-xl')
-    }
-  }
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.currentTarget.removeAttribute('data-drag-over')
-    e.currentTarget.classList.remove('ring-2', 'ring-teal-500/50', 'rounded-xl')
-  }
-  const handleDrop = (e: React.DragEvent, dayIndex: number, toIndex: number) => {
-    e.preventDefault()
-    e.currentTarget.removeAttribute('data-drag-over')
-    e.currentTarget.classList.remove('ring-2', 'ring-teal-500/50', 'rounded-xl')
-    const data = e.dataTransfer.getData('application/json')
-    if (!data || !onReorderItem) return
-    try {
-      const { dayIndex: fromDay, fromIndex } = JSON.parse(data)
-      if (fromDay === dayIndex && fromIndex !== toIndex) {
-        onReorderItem(dayIndex, fromIndex, toIndex)
-      }
-    } catch {
-      // ignore
-    }
-  }
+  const dayIndex = Math.min(selectedDayIndex, Math.max(0, wizardData.days.length - 1))
+
   const [validations, setValidations] = useState<
     Record<string, { errors: string[]; warnings: string[] }>
   >({})
@@ -116,180 +90,132 @@ export function WorkoutWizardStep4({
           <div className="mb-6">
             <h3 className="text-text-primary mb-2 text-xl font-bold">Target e parametri</h3>
             <p className="text-text-secondary text-sm">
-              Imposta serie, ripetizioni, pesi e tempi di recupero per ogni esercizio
+              Giorno selezionato sopra: esercizi modificabili; circuiti in sintesi (parametri e
+              ordine nel passo Esercizi).
             </p>
           </div>
 
           <div className="space-y-6">
-            {wizardData.days.map((day, dayIndex) => (
-              <Card
-                id={`day-${dayIndex}`}
-                key={dayIndex}
-                variant="default"
-                className="relative overflow-hidden transition-all duration-200 hover:border-white/20 scroll-mt-4"
-              >
-                <CardHeader className="border-b border-white/10">
-                  <CardTitle size="sm" className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      size="sm"
-                      className="border-0 bg-primary/10 text-primary"
+            {wizardData.days.length === 0
+              ? null
+              : (() => {
+                  const day = wizardData.days[dayIndex]!
+                  const items = getDayItems(day)
+
+                  return (
+                    <Card
+                      id={`day-${dayIndex}`}
+                      key={dayIndex}
+                      variant="default"
+                      className="relative overflow-hidden transition-all duration-200 hover:border-white/20 scroll-mt-4"
                     >
-                      Giorno {day.day_number}
-                    </Badge>
-                    <span>{day.title}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5 pt-6">
-                  {(() => {
-                    const items = getDayItems(day)
-                    if (items.length === 0) {
-                      return (
-                        <div className="py-8 text-center">
-                          <p className="text-text-tertiary text-sm">
-                            Nessun esercizio aggiunto a questo giorno
-                          </p>
-                        </div>
-                      )
-                    }
-                    return items.map((item, itemIndex) => {
-                      if (item.type === 'circuit') {
-                        const circuit = circuitList.find((c) => c.id === item.circuitId)
-                        if (!circuit) return null
-                        const block = (
-                          <div
-                            key={`circuit-${item.circuitId}`}
-                            className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 shadow-sm"
+                      <CardHeader className="border-b border-white/10">
+                        <CardTitle size="sm" className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            size="sm"
+                            className="border-0 bg-primary/10 text-primary"
                           >
-                            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none" />
-                            <div className="relative z-10 flex items-center gap-2 mb-3">
-                              <Zap className="h-5 w-5 text-amber-400 shrink-0" />
-                              <h4 className="text-text-primary font-semibold text-base">
-                                Circuito
-                              </h4>
-                              <Badge
-                                variant="outline"
-                                size="sm"
-                                className="bg-amber-500/15 text-amber-400 border-amber-500/25"
-                              >
-                                {circuit.params.length} esercizi
-                              </Badge>
-                              <span className="text-text-tertiary text-sm ml-auto">
-                                Solo lettura
-                              </span>
-                            </div>
-                            <ul className="space-y-1.5 text-sm">
-                              {circuit.params.map((param, idx) => {
-                                const ex = exercises.find((e) => e.id === param.exercise_id)
-                                const details = [
-                                  param.target_sets != null && `${param.target_sets} serie`,
-                                  param.target_reps != null &&
-                                    `${param.target_reps === WORKOUT_REPS_MAX_SENTINEL ? 'MAX' : param.target_reps} rip`,
-                                  param.target_weight != null &&
-                                    param.target_weight > 0 &&
-                                    `${param.target_weight} kg`,
-                                ]
-                                  .filter(Boolean)
-                                  .join(' · ')
-                                return (
-                                  <li
-                                    key={param.exercise_id}
-                                    className="flex items-center gap-2 text-text-secondary"
-                                  >
-                                    <span className="text-amber-400/80 font-medium w-6">
-                                      {idx + 1}.
-                                    </span>
-                                    <span className="text-text-primary">
-                                      {ex?.name ?? 'Esercizio'}
-                                    </span>
-                                    {details && (
-                                      <span className="text-text-tertiary text-xs">
-                                        ({details})
-                                      </span>
-                                    )}
-                                  </li>
-                                )
-                              })}
-                            </ul>
-                          </div>
-                        )
-                        return onReorderItem ? (
-                          <div
-                            key={`${dayIndex}-${itemIndex}-circuit`}
-                            className="flex gap-2 items-stretch transition-[box-shadow]"
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={(e) => handleDrop(e, dayIndex, itemIndex)}
-                          >
-                            <div
-                              draggable
-                              onDragStart={(e) => {
-                                e.stopPropagation()
-                                e.dataTransfer.setData(
-                                  'application/json',
-                                  JSON.stringify({ dayIndex, fromIndex: itemIndex }),
-                                )
-                                e.dataTransfer.effectAllowed = 'move'
-                              }}
-                              className="cursor-grab active:cursor-grabbing touch-none p-1 -ml-1 rounded text-text-tertiary hover:text-text-primary hover:bg-surface-200/50 shrink-0 mt-1"
-                              title="Trascina per riordinare"
-                            >
-                              <GripVertical className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">{block}</div>
+                            Giorno {day.day_number}
+                          </Badge>
+                          <span>{day.title}</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-5 pt-6">
+                        {items.length === 0 ? (
+                          <div className="py-8 text-center">
+                            <p className="text-text-tertiary text-sm">
+                              Nessun esercizio aggiunto a questo giorno
+                            </p>
                           </div>
                         ) : (
-                          block
-                        )
-                      }
-                      const exercise = item.exercise
-                      const exerciseData = exercises.find((e) => e.id === exercise.exercise_id)
-                      const vKey = `${dayIndex}-${itemIndex}`
-                      const exerciseBlock = (
-                        <WorkoutExerciseTargetPanel
-                          exercise={exercise}
-                          catalogExercise={exerciseData}
-                          dayIndex={dayIndex}
-                          itemIndex={itemIndex}
-                          onUpdate={(patch) => onExerciseUpdate(dayIndex, itemIndex, patch)}
-                          validation={validations[vKey]}
-                          anchorId={`workout-target-${dayIndex}-${itemIndex}`}
-                          onRemove={() => onExerciseRemove(dayIndex, itemIndex)}
-                        />
-                      )
-                      return onReorderItem ? (
-                        <div
-                          key={`${dayIndex}-${itemIndex}-ex`}
-                          className="flex gap-2 items-stretch transition-[box-shadow]"
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, dayIndex, itemIndex)}
-                        >
-                          <div
-                            draggable
-                            onDragStart={(e) => {
-                              e.stopPropagation()
-                              e.dataTransfer.setData(
-                                'application/json',
-                                JSON.stringify({ dayIndex, fromIndex: itemIndex }),
+                          items.map((item, itemIndex) => {
+                            if (item.type === 'circuit') {
+                              const circuit = circuitList.find((c) => c.id === item.circuitId)
+                              if (!circuit) return null
+                              return (
+                                <div
+                                  key={`${dayIndex}-${itemIndex}-circuit-${item.circuitId}`}
+                                  className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 shadow-sm"
+                                >
+                                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none" />
+                                  <div className="relative z-10 flex items-center gap-2 mb-3 flex-wrap">
+                                    <Zap className="h-5 w-5 text-amber-400 shrink-0" />
+                                    <h4 className="text-text-primary font-semibold text-base">
+                                      Circuito
+                                    </h4>
+                                    <Badge
+                                      variant="outline"
+                                      size="sm"
+                                      className="bg-amber-500/15 text-amber-400 border-amber-500/25"
+                                    >
+                                      {circuit.params.length} esercizi
+                                    </Badge>
+                                    <span className="text-text-tertiary text-sm ml-auto">
+                                      Solo lettura — modifica nel passo Esercizi
+                                    </span>
+                                  </div>
+                                  <ul className="relative z-10 space-y-1.5 text-sm">
+                                    {circuit.params.map((param, idx) => {
+                                      const ex = exercises.find((e) => e.id === param.exercise_id)
+                                      const details = [
+                                        param.target_sets != null && `${param.target_sets} serie`,
+                                        param.target_reps != null &&
+                                          `${param.target_reps === WORKOUT_REPS_MAX_SENTINEL ? 'MAX' : param.target_reps} rip`,
+                                        param.target_weight != null &&
+                                          param.target_weight > 0 &&
+                                          `${param.target_weight} kg`,
+                                      ]
+                                        .filter(Boolean)
+                                        .join(' · ')
+                                      return (
+                                        <li
+                                          key={param.exercise_id}
+                                          className="flex items-center gap-2 text-text-secondary"
+                                        >
+                                          <span className="text-amber-400/80 font-medium w-6">
+                                            {idx + 1}.
+                                          </span>
+                                          <span className="text-text-primary">
+                                            {ex?.name ?? 'Esercizio'}
+                                          </span>
+                                          {details && (
+                                            <span className="text-text-tertiary text-xs">
+                                              ({details})
+                                            </span>
+                                          )}
+                                        </li>
+                                      )
+                                    })}
+                                  </ul>
+                                </div>
                               )
-                              e.dataTransfer.effectAllowed = 'move'
-                            }}
-                            className="cursor-grab active:cursor-grabbing touch-none p-1 -ml-1 rounded text-text-tertiary hover:text-text-primary hover:bg-surface-200/50 shrink-0 mt-1"
-                            title="Trascina per riordinare"
-                          >
-                            <GripVertical className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1 min-w-0">{exerciseBlock}</div>
-                        </div>
-                      ) : (
-                        exerciseBlock
-                      )
-                    })
-                  })()}
-                </CardContent>
-              </Card>
-            ))}
+                            }
+
+                            const exercise = item.exercise
+                            const exerciseData = exercises.find(
+                              (e) => e.id === exercise.exercise_id,
+                            )
+                            const vKey = `${dayIndex}-${itemIndex}`
+                            return (
+                              <WorkoutExerciseTargetPanel
+                                key={`${dayIndex}-${itemIndex}-ex`}
+                                exercise={exercise}
+                                catalogExercise={exerciseData}
+                                dayIndex={dayIndex}
+                                itemIndex={itemIndex}
+                                onUpdate={(patch) => onExerciseUpdate(dayIndex, itemIndex, patch)}
+                                validation={validations[vKey]}
+                                anchorId={`workout-target-${dayIndex}-${itemIndex}`}
+                                onRemove={() => onExerciseRemove(dayIndex, itemIndex)}
+                              />
+                            )
+                          })
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                })()}
           </div>
         </div>
       </CardContent>

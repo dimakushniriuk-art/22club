@@ -3,16 +3,7 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import {
-  BarChart3,
-  CreditCard,
-  Dumbbell,
-  Hand,
-  Heart,
-  LogOut,
-  User,
-  Utensils,
-} from 'lucide-react'
+import { BarChart3, CreditCard, Dumbbell, Hand, Heart, LogOut, User, Utensils } from 'lucide-react'
 import {
   AthleteOverviewTab,
   AthleteProfileHeaderHome,
@@ -41,10 +32,8 @@ const CARD_DS =
 /** Shell comune tab bar (senza display grid/flex: evita conflitti tra griglia desktop e chips scroll su mobile). */
 const TABS_SHELL =
   'rounded-2xl border border-white/10 bg-black/35 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] backdrop-blur-md sm:p-1.5'
-const MAIN_TABS_LIST_CLASS =
-  `items-stretch justify-center text-text-tertiary h-auto w-full grid grid-cols-3 gap-0.5 min-h-[48px] sm:gap-1 ${TABS_SHELL}`
-const PROFILE_TABS_LIST_CLASS =
-  `items-stretch justify-center text-text-tertiary !flex-nowrap max-[851px]:gap-1 ${TABS_SHELL} inline-flex h-auto w-max max-w-none gap-1 min-h-[48px] min-[834px]:mb-0 min-[834px]:grid min-[834px]:w-full min-[834px]:max-w-full min-[834px]:grid-cols-3 min-[834px]:gap-1 min-[834px]:flex-none min-[1100px]:grid-cols-6`
+const MAIN_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary h-auto w-full grid grid-cols-3 gap-0.5 min-h-[48px] sm:gap-1 ${TABS_SHELL}`
+const PROFILE_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary !flex-nowrap max-[851px]:gap-1 ${TABS_SHELL} inline-flex h-auto w-max max-w-none gap-1 min-h-[48px] min-[834px]:mb-0 min-[834px]:grid min-[834px]:w-full min-[834px]:max-w-full min-[834px]:grid-cols-3 min-[834px]:gap-1 min-[834px]:flex-none min-[1100px]:grid-cols-6`
 
 const TAB_TRIGGER_CLASS =
   'touch-manipulation text-xs px-2 sm:px-3 py-2.5 sm:py-3 rounded-xl font-medium data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 transition-all duration-200 flex items-center justify-center gap-1.5 min-h-[44px] min-w-0 active:opacity-90'
@@ -126,6 +115,7 @@ export default function ProfiloPage() {
   const supabase = useSupabaseClient() // Client stabile, creato una sola volta
   const [activeTab, setActiveTab] = useState('overview')
   const [activeProfileTab, setActiveProfileTab] = useState('anagrafica')
+  const [subscriptionsRefreshKey, setSubscriptionsRefreshKey] = useState(0)
 
   // Ottieni user_id per gli hook
   // Nota: user Ã¨ di tipo ProfileRow che ha user_id (UUID dell'utente auth)
@@ -257,108 +247,129 @@ export default function ProfiloPage() {
 
         {/* Card principale */}
         <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
-        <Card
-          className={cn(
-            CARD_DS,
-            'relative overflow-hidden focus-visible:ring-0 focus-visible:ring-offset-0',
-          )}
-        >
-          <CardContent className="relative z-10 p-3 sm:p-5">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={MAIN_TABS_LIST_CLASS}>
-                <TabsTrigger value="overview" className={TAB_TRIGGER_CLASS}>
-                  <BarChart3 className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">Overview</span>
-                </TabsTrigger>
-                <TabsTrigger value="profilo" className={TAB_TRIGGER_CLASS}>
-                  <User className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">Profilo</span>
-                </TabsTrigger>
-                <TabsTrigger value="abbonamenti" className={TAB_TRIGGER_CLASS}>
-                  <CreditCard className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">Abbonamenti</span>
-                </TabsTrigger>
-              </TabsList>
+          <Card
+            className={cn(
+              CARD_DS,
+              'relative overflow-hidden focus-visible:ring-0 focus-visible:ring-offset-0',
+            )}
+          >
+            <CardContent className="relative z-10 p-3 sm:p-5">
+              <Tabs
+                value={activeTab}
+                onValueChange={(v) => {
+                  setActiveTab(v)
+                  if (v === 'abbonamenti') setSubscriptionsRefreshKey((k) => k + 1)
+                }}
+                className="w-full"
+              >
+                <TabsList className={MAIN_TABS_LIST_CLASS}>
+                  <TabsTrigger value="overview" className={TAB_TRIGGER_CLASS}>
+                    <BarChart3 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Overview</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="profilo" className={TAB_TRIGGER_CLASS}>
+                    <User className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Profilo</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="abbonamenti" className={TAB_TRIGGER_CLASS}>
+                    <CreditCard className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Abbonamenti</span>
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="overview" className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none">
-                <AthleteOverviewTab
-                  user={user}
-                  stats={stats}
-                  calculateProgress={calculateProgress}
-                />
-              </TabsContent>
+                <TabsContent
+                  value="overview"
+                  className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none"
+                >
+                  <AthleteOverviewTab
+                    user={user}
+                    stats={stats}
+                    calculateProgress={calculateProgress}
+                  />
+                </TabsContent>
 
-              <TabsContent value="profilo" className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none">
-                {athleteUserId ? (
-                  <Tabs
-                    value={activeProfileTab}
-                    onValueChange={setActiveProfileTab}
-                    className="w-full"
-                  >
-                    <div className={PROFILE_TABS_SCROLL}>
-                    <TabsList className={`mb-4 w-full min-w-0 sm:mb-5 min-[834px]:mb-4 ${PROFILE_TABS_LIST_CLASS}`}>
-                      <TabsTrigger value="anagrafica" className={PROFILE_TAB_TRIGGER_CLASS}>
-                        <User className="h-3 w-3 shrink-0" />
-                        <span className="truncate">Anagrafica</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="medica" className={PROFILE_TAB_TRIGGER_CLASS}>
-                        <Heart className="h-3 w-3 shrink-0" />
-                        <span className="truncate">Medica</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="fitness" className={PROFILE_TAB_TRIGGER_CLASS}>
-                        <Dumbbell className="h-3 w-3 shrink-0" />
-                        <span className="truncate">Fitness</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="nutrizione" className={PROFILE_TAB_TRIGGER_CLASS}>
-                        <Utensils className="h-3 w-3 shrink-0" />
-                        <span className="truncate">Nutrizione</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="massaggio" className={PROFILE_TAB_TRIGGER_CLASS}>
-                        <Hand className="h-3 w-3 shrink-0" />
-                        <span className="truncate">Massaggio</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="amministrativo" className={PROFILE_TAB_TRIGGER_CLASS}>
-                        <CreditCard className="h-3 w-3 shrink-0" />
-                        <span className="truncate">Amministrativo</span>
-                      </TabsTrigger>
-                    </TabsList>
-                    </div>
+                <TabsContent
+                  value="profilo"
+                  className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none"
+                >
+                  {athleteUserId ? (
+                    <Tabs
+                      value={activeProfileTab}
+                      onValueChange={setActiveProfileTab}
+                      className="w-full"
+                    >
+                      <div className={PROFILE_TABS_SCROLL}>
+                        <TabsList
+                          className={`mb-4 w-full min-w-0 sm:mb-5 min-[834px]:mb-4 ${PROFILE_TABS_LIST_CLASS}`}
+                        >
+                          <TabsTrigger value="anagrafica" className={PROFILE_TAB_TRIGGER_CLASS}>
+                            <User className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Anagrafica</span>
+                          </TabsTrigger>
+                          <TabsTrigger value="medica" className={PROFILE_TAB_TRIGGER_CLASS}>
+                            <Heart className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Medica</span>
+                          </TabsTrigger>
+                          <TabsTrigger value="fitness" className={PROFILE_TAB_TRIGGER_CLASS}>
+                            <Dumbbell className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Fitness</span>
+                          </TabsTrigger>
+                          <TabsTrigger value="nutrizione" className={PROFILE_TAB_TRIGGER_CLASS}>
+                            <Utensils className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Nutrizione</span>
+                          </TabsTrigger>
+                          <TabsTrigger value="massaggio" className={PROFILE_TAB_TRIGGER_CLASS}>
+                            <Hand className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Massaggio</span>
+                          </TabsTrigger>
+                          <TabsTrigger value="amministrativo" className={PROFILE_TAB_TRIGGER_CLASS}>
+                            <CreditCard className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Amministrativo</span>
+                          </TabsTrigger>
+                        </TabsList>
+                      </div>
 
-                    <TabsContent value="anagrafica" className="mt-0">
-                      <AthleteAnagraficaTab athleteId={athleteUserId} />
-                    </TabsContent>
+                      <TabsContent value="anagrafica" className="mt-0">
+                        <AthleteAnagraficaTab athleteId={athleteUserId} />
+                      </TabsContent>
 
-                    <TabsContent value="medica" className="mt-0">
-                      <AthleteMedicalTab athleteId={athleteUserId} />
-                    </TabsContent>
+                      <TabsContent value="medica" className="mt-0">
+                        <AthleteMedicalTab athleteId={athleteUserId} />
+                      </TabsContent>
 
-                    <TabsContent value="fitness" className="mt-0">
-                      <AthleteFitnessTab athleteId={athleteUserId} />
-                    </TabsContent>
+                      <TabsContent value="fitness" className="mt-0">
+                        <AthleteFitnessTab athleteId={athleteUserId} />
+                      </TabsContent>
 
-                    <TabsContent value="nutrizione" className="mt-0">
-                      <AthleteNutritionTab athleteId={athleteUserId} />
-                    </TabsContent>
+                      <TabsContent value="nutrizione" className="mt-0">
+                        <AthleteNutritionTab athleteId={athleteUserId} />
+                      </TabsContent>
 
-                    <TabsContent value="massaggio" className="mt-0">
-                      <AthleteMassageTab athleteId={athleteUserId} />
-                    </TabsContent>
+                      <TabsContent value="massaggio" className="mt-0">
+                        <AthleteMassageTab athleteId={athleteUserId} />
+                      </TabsContent>
 
-                    <TabsContent value="amministrativo" className="mt-0">
-                      <AthleteAdministrativeTab athleteId={athleteUserId} />
-                    </TabsContent>
-                  </Tabs>
-                ) : null}
-              </TabsContent>
+                      <TabsContent value="amministrativo" className="mt-0">
+                        <AthleteAdministrativeTab athleteId={athleteUserId} />
+                      </TabsContent>
+                    </Tabs>
+                  ) : null}
+                </TabsContent>
 
-              <TabsContent value="abbonamenti" className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none">
-                {athleteUserId ? (
-                  <AthleteSubscriptionsTab athleteUserId={athleteUserId} />
-                ) : null}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+                <TabsContent
+                  value="abbonamenti"
+                  className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5 [&:focus-visible]:outline-none"
+                >
+                  {athleteUserId ? (
+                    <AthleteSubscriptionsTab
+                      athleteUserId={athleteUserId}
+                      refreshKey={subscriptionsRefreshKey}
+                    />
+                  ) : null}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Azioni */}

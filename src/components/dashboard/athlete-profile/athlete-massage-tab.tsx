@@ -127,7 +127,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
       </div>
 
       <CardContent className="space-y-0 p-0">
-        <AthleteProfileSectionHeading icon={Hand}>Preferenze massaggio</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={Hand}>
+          Preferenze massaggio
+        </AthleteProfileSectionHeading>
         <div className="px-4 py-4 sm:px-5 sm:py-5">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-3">
@@ -179,7 +181,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   placeholder="Non specificato"
                   options={[
                     { value: '', label: 'Non specificato' },
-                    ...[...INTENSITA_MASSAGGIO].sort((a, b) => a.label.localeCompare(b.label, 'it')),
+                    ...[...INTENSITA_MASSAGGIO].sort((a, b) =>
+                      a.label.localeCompare(b.label, 'it'),
+                    ),
                   ]}
                 />
               ) : massage?.intensita_preferita ? (
@@ -491,7 +495,9 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
           )}
         </div>
 
-        <AthleteProfileSectionHeading icon={FileText}>Note terapeutiche</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={FileText}>
+          Note terapeutiche
+        </AthleteProfileSectionHeading>
         <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
           {isEditing ? (
             <Textarea

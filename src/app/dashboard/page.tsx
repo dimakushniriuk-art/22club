@@ -10,8 +10,7 @@ import { cn } from '@/lib/utils'
 import { NewAppointmentButton } from './_components/new-appointment-button'
 import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
-import { useLessonCounters } from '@/hooks/use-lesson-counters'
-import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
+import { useLessonUsageByAthleteIds } from '@/hooks/use-lesson-usage-by-athlete-ids'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { Button } from '@/components/ui'
 import {
@@ -287,21 +286,17 @@ export default function DashboardPage() {
     () => agendaData.map((e) => e.athlete_id).filter(Boolean) as string[],
     [agendaData],
   )
-  const rimastiMap = useLessonCounters(athleteIds)
-  const lessonStatsMap = useLessonStatsBulk(athleteIds)
+  const lessonUsageMap = useLessonUsageByAthleteIds(athleteIds, 'training')
   const initialEvents = useMemo(
     () =>
       agendaData.map((e) => {
         if (!e.athlete_id) return { ...e, lessons_remaining: undefined }
-        const fromCounter = rimastiMap.get(e.athlete_id)
-        const stats = lessonStatsMap.get(e.athlete_id)
-        const computed = stats != null ? stats.acquired - stats.used : undefined
         return {
           ...e,
-          lessons_remaining: fromCounter !== undefined ? fromCounter : computed,
+          lessons_remaining: lessonUsageMap.get(e.athlete_id)?.totalRemaining,
         }
       }),
-    [agendaData, rimastiMap, lessonStatsMap],
+    [agendaData, lessonUsageMap],
   )
 
   return (

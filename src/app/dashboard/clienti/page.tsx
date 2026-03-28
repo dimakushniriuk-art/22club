@@ -15,8 +15,7 @@ import { useClientiPermissions } from '@/hooks/use-clienti-permissions'
 import { useClientiFilters } from '@/hooks/use-clienti-filters'
 import { useClientiPageGuard } from '@/hooks/use-clienti-page-guard'
 import { useClientiSelection } from '@/hooks/use-clienti-selection'
-import { useLessonCounters } from '@/hooks/use-lesson-counters'
-import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
+import { useLessonUsageByAthleteIds } from '@/hooks/use-lesson-usage-by-athlete-ids'
 import { useInvitiClientePendentiStaff } from '@/hooks/use-inviti-cliente'
 import { exportToCSV, exportToPDF, formatClientiForExport } from '@/lib/export-utils'
 import { useNotify } from '@/lib/ui/notify'
@@ -270,26 +269,21 @@ export default function ClientiPage() {
     useClientiSelection(selectableClienti)
 
   const athleteIds = useMemo(() => selectableClienti.map((c) => c.id), [selectableClienti])
-  const rimastiMap = useLessonCounters(athleteIds)
-  const lessonStatsMap = useLessonStatsBulk(athleteIds)
+  const lessonUsageMap = useLessonUsageByAthleteIds(athleteIds, 'training')
 
-  // Clienti con lessons_remaining e dati abbonamento (acquistati/eseguiti) per la griglia.
-  // Rimasti: da lesson_counters se presente, altrimenti calcolato come Acquistati - Eseguiti.
+  // Stesso modello abbonamenti / profilo atleta (training).
   const clientiForGrid = useMemo(
     () =>
       displayClienti.map((c) => {
-        const stats = lessonStatsMap.get(c.id)
-        const fromCounter = rimastiMap.get(c.id)
-        const computedRemaining =
-          stats != null ? Math.max(0, stats.acquired - stats.used) : undefined
+        const u = lessonUsageMap.get(c.id)
         return {
           ...c,
-          lessons_remaining: fromCounter !== undefined ? fromCounter : computedRemaining,
-          lessons_acquired: stats?.acquired,
-          lessons_used: stats?.used,
+          lessons_remaining: u?.totalRemaining,
+          lessons_acquired: u?.totalPurchased,
+          lessons_used: u?.totalUsed,
         }
       }),
-    [displayClienti, rimastiMap, lessonStatsMap],
+    [displayClienti, lessonUsageMap],
   )
 
   const displayStats = useMemo<ClienteStats>(() => {

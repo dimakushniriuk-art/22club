@@ -54,6 +54,10 @@ import {
   resolveInvoiceDocumentsStoragePath,
   storagePreviewHref,
 } from '@/lib/documents'
+import {
+  lessonUsageByAthleteIds,
+  type AthleteLessonUsageRow,
+} from '@/lib/credits/athlete-training-lessons-display'
 
 const logger = createLogger('app:dashboard:abbonamenti:page')
 const ABBONAMENTI_PER_PAGE = 100 // Soglia per attivare paginazione
@@ -413,21 +417,6 @@ export default function AbbonamentiPage() {
 
       const supabaseClient = supabase
 
-      // Controlla cache (stessa chiave per get/set/invalidate)
-      const cacheKey = getCacheKey(currentServiceType, currentPage, enablePagination, role, userId)
-      const cached = frequentQueryCache.get<{
-        abbonamenti: Abbonamento[]
-        totalCount: number
-      }>(cacheKey)
-
-      if (cached && !enablePagination) {
-        // Se non usiamo paginazione e abbiamo cache, usa quella
-        setAbbonamenti(cached.abbonamenti)
-        setTotalCount(cached.totalCount)
-        setLoading(false)
-        return
-      }
-
       // RPC solo per admin (vede tutti i pagamenti); trainer/nutrizionista/massaggiatore usano fallback filtrato per created_by_staff_id
       const isStaffOwnPayments =
         role === 'trainer' || role === 'nutrizionista' || role === 'massaggiatore'
@@ -460,66 +449,20 @@ export default function AbbonamentiPage() {
               total_count?: number
             }>
 
-            // Usufruiti/Rimasti sempre da ledger+counter (ignora colonne RPC per coerenza)
+            // Usufruiti/Rimasti = stesso modello profilo atleta (max(ledger, contatore) e rimanenti = acquistate − usate)
             const rpcAthleteIds = [
               ...new Set(typedRpcData.map((r) => r.athlete_id).filter(Boolean)),
             ]
-            const [countersRes, ledgerDebitRes, ledgerCreditRes] = await Promise.all([
-              rpcAthleteIds.length > 0
-                ? supabaseClient
-                    .from('lesson_counters')
-                    .select('athlete_id, count')
-                    .in('athlete_id', rpcAthleteIds)
-                    .eq('lesson_type', currentServiceType)
-                : Promise.resolve({ data: [], error: null }),
-              rpcAthleteIds.length > 0
-                ? supabaseClient
-                    .from('credit_ledger')
-                    .select('athlete_id, entry_type, qty')
-                    .in('athlete_id', rpcAthleteIds)
-                    .eq('entry_type', 'DEBIT')
-                    .eq('service_type', currentServiceType)
-                : Promise.resolve({ data: [], error: null }),
-              rpcAthleteIds.length > 0
-                ? supabaseClient
-                    .from('credit_ledger')
-                    .select('athlete_id, entry_type, qty')
-                    .in('athlete_id', rpcAthleteIds)
-                    .in('entry_type', ['CREDIT', 'REVERSAL'])
-                    .eq('service_type', currentServiceType)
-                : Promise.resolve({ data: [], error: null }),
-            ])
-
-            const remainingMap = new Map<string, number>()
-            const usedMap = new Map<string, number>()
-            const creditedMap = new Map<string, number>()
-            if (countersRes.data) {
-              ;(countersRes.data as { athlete_id: string; count: number | null }[]).forEach((row) =>
-                remainingMap.set(row.athlete_id, row.count ?? 0),
-              )
-            }
-            if (ledgerDebitRes.data) {
-              ;(ledgerDebitRes.data as { athlete_id: string; qty: number }[]).forEach((row) => {
-                usedMap.set(
-                  row.athlete_id,
-                  (usedMap.get(row.athlete_id) ?? 0) + Math.max(0, -row.qty),
-                )
-              })
-            }
-            if (ledgerCreditRes.data) {
-              ;(ledgerCreditRes.data as { athlete_id: string; qty: number }[]).forEach((row) => {
-                creditedMap.set(row.athlete_id, (creditedMap.get(row.athlete_id) ?? 0) + row.qty)
-              })
-            }
+            const usageByAthlete = await lessonUsageByAthleteIds(
+              supabaseClient,
+              rpcAthleteIds,
+              currentServiceType,
+            )
 
             const formatted: Abbonamento[] = typedRpcData.map((row) => {
-              const used = usedMap.get(row.athlete_id) ?? 0
-              const credited = creditedMap.get(row.athlete_id) ?? 0
-              const fromCounter = remainingMap.get(row.athlete_id)
-              const lessonsRemaining =
-                fromCounter !== undefined && fromCounter !== null
-                  ? fromCounter
-                  : Math.max(0, credited - used)
+              const u = usageByAthlete.get(row.athlete_id)
+              const used = u?.totalUsed ?? 0
+              const lessonsRemaining = u?.totalRemaining ?? 0
               return {
                 id: row.id,
                 athlete_id: row.athlete_id,
@@ -536,7 +479,6 @@ export default function AbbonamentiPage() {
 
             const total = typedRpcData[0]?.total_count ?? formatted.length
 
-            frequentQueryCache.set(cacheKey, { abbonamenti: formatted, totalCount: total })
             setAbbonamenti(formatted)
             setTotalCount(total)
             setLoading(false)
@@ -588,35 +530,25 @@ export default function AbbonamentiPage() {
       // Estrai athleteIds PRIMA delle query parallele
       const athleteIds = [...new Set(payments.map((p) => p.athlete_id).filter(Boolean))]
 
-      // Usufruiti = credit_ledger DEBIT (-qty); Rimasti = lesson_counters.count (1 riga per atleta). No appointments, no payments-based clamp.
+      // Usufruiti/Rimasti: stesso modello del tab atleta (computeAthleteTrainingLessonUsage)
       if (payments.length > 0) {
-        const [paymentsExtendedResult, profilesResult, countersResult, ledgerResult] =
-          await Promise.all([
-            supabaseClient
-              .from('payments')
-              .select('id, payment_date, status, invoice_url, lessons_purchased')
-              .in(
-                'id',
-                payments.map((p) => p.id),
-              ),
-            athleteIds.length > 0
-              ? supabaseClient.from('profiles').select('id, nome, cognome').in('id', athleteIds)
-              : Promise.resolve({ data: [], error: null }),
-            athleteIds.length > 0
-              ? supabaseClient
-                  .from('lesson_counters')
-                  .select('athlete_id, count')
-                  .in('athlete_id', athleteIds)
-                  .eq('lesson_type', currentServiceType)
-              : Promise.resolve({ data: [], error: null }),
-            athleteIds.length > 0
-              ? supabaseClient
-                  .from('credit_ledger')
-                  .select('athlete_id, entry_type, qty')
-                  .in('athlete_id', athleteIds)
-                  .eq('service_type', currentServiceType)
-              : Promise.resolve({ data: [], error: null }),
-          ])
+        const [paymentsExtendedResult, profilesResult] = await Promise.all([
+          supabaseClient
+            .from('payments')
+            .select('id, payment_date, status, invoice_url, lessons_purchased')
+            .in(
+              'id',
+              payments.map((p) => p.id),
+            ),
+          athleteIds.length > 0
+            ? supabaseClient.from('profiles').select('id, nome, cognome').in('id', athleteIds)
+            : Promise.resolve({ data: [], error: null }),
+        ])
+
+        const usageByAthlete =
+          athleteIds.length > 0
+            ? await lessonUsageByAthleteIds(supabaseClient, athleteIds, currentServiceType)
+            : new Map<string, AthleteLessonUsageRow>()
 
         // Gestione risultati Query 1 (Payments Extended)
         if (!paymentsExtendedResult.error && paymentsExtendedResult.data) {
@@ -650,43 +582,6 @@ export default function AbbonamentiPage() {
           })
         }
 
-        if (countersResult.error) {
-          logger.warn('Errore caricamento counters', countersResult.error)
-        }
-        if (ledgerResult.error) {
-          logger.warn('Errore caricamento credit_ledger', ledgerResult.error)
-        }
-
-        // Rimasti = lesson_counters.count (unica riga per atleta)
-        // Chiave normalizzata a stringa per evitare mismatch UUID/string tra query e lookup
-        const lessonsRemainingMap = new Map<string, number>()
-        if (countersResult.data) {
-          ;(countersResult.data as { athlete_id: string; count: number | null }[]).forEach(
-            (row) => {
-              lessonsRemainingMap.set(String(row.athlete_id), row.count ?? 0)
-            },
-          )
-        }
-
-        // usedMap = SUM(-qty) per entry_type='DEBIT'; creditedMap = SUM(qty) per CREDIT+REVERSAL
-        const lessonsUsedMap = new Map<string, number>()
-        const lessonsCreditedMap = new Map<string, number>()
-        if (ledgerResult.data) {
-          const rows = ledgerResult.data as {
-            athlete_id: string
-            entry_type: string
-            qty: number
-          }[]
-          rows.forEach((row) => {
-            const aid = String(row.athlete_id)
-            if (row.entry_type === 'DEBIT') {
-              lessonsUsedMap.set(aid, (lessonsUsedMap.get(aid) ?? 0) + Math.max(0, -row.qty))
-            } else if (row.entry_type === 'CREDIT' || row.entry_type === 'REVERSAL') {
-              lessonsCreditedMap.set(aid, (lessonsCreditedMap.get(aid) ?? 0) + row.qty)
-            }
-          })
-        }
-
         const formatted: Abbonamento[] = payments.map((p) => {
           const athleteId = p.athlete_id
           const athleteIdKey = String(athleteId)
@@ -695,21 +590,9 @@ export default function AbbonamentiPage() {
             ? `${athlete.nome ?? ''} ${athlete.cognome ?? ''}`.trim() || 'Sconosciuto'
             : 'Sconosciuto'
 
-          const lessonsUsed =
-            lessonsUsedMap instanceof Map
-              ? (lessonsUsedMap.get(athleteIdKey) ?? 0)
-              : ((lessonsUsedMap as Record<string, number>)[athleteIdKey] ?? 0)
-          const fromCounter =
-            lessonsRemainingMap instanceof Map
-              ? lessonsRemainingMap.get(athleteIdKey)
-              : (lessonsRemainingMap as Record<string, number>)[athleteIdKey]
-          const credited = lessonsCreditedMap.get(athleteIdKey) ?? 0
-          const lessonsRemaining =
-            fromCounter !== undefined && fromCounter !== null
-              ? fromCounter
-              : Math.max(0, credited - lessonsUsed)
-          const legacy_balance_hint =
-            lessonsRemaining > credited - lessonsUsed && (credited > 0 || lessonsUsed > 0)
+          const u = usageByAthlete.get(athleteIdKey) ?? usageByAthlete.get(athleteId)
+          const lessonsUsed = u?.totalUsed ?? 0
+          const lessonsRemaining = u?.totalRemaining ?? 0
 
           return {
             id: p.id,
@@ -720,32 +603,27 @@ export default function AbbonamentiPage() {
             lessons_used: lessonsUsed,
             lessons_remaining: lessonsRemaining,
             amount: p.amount || 0,
-            invoice_url: p.invoice_url || null,
+            invoice_url: p.invoice_url ?? null,
             status: p.status || 'completed',
             created_by_staff_id: (p as { created_by_staff_id?: string }).created_by_staff_id,
-            legacy_balance_hint: legacy_balance_hint || undefined,
           }
         })
 
         setAbbonamenti(formatted)
         setTotalCount(formatted.length)
-
-        // Salva in cache anche il fallback
-        frequentQueryCache.set(cacheKey, { abbonamenti: formatted, totalCount: formatted.length })
         return
       }
 
       // Se non ci sono payments, setta array vuoto
       setAbbonamenti([])
       setTotalCount(0)
-      frequentQueryCache.set(cacheKey, { abbonamenti: [], totalCount: 0 })
     } catch (err) {
       logger.error('Errore caricamento abbonamenti', err)
       setError(err instanceof Error ? err.message : 'Errore nel caricamento degli abbonamenti')
     } finally {
       setLoading(false)
     }
-  }, [currentPage, enablePagination, role, userId, profileId, currentServiceType, supabase])
+  }, [currentPage, enablePagination, role, profileId, currentServiceType, supabase])
 
   const loadPage = useCallback(async (page: number) => {
     setCurrentPage(page)
@@ -754,6 +632,14 @@ export default function AbbonamentiPage() {
 
   useEffect(() => {
     void loadAbbonamenti()
+  }, [loadAbbonamenti])
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void loadAbbonamenti()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [loadAbbonamenti])
 
   const handleResetFilters = useCallback(() => {
@@ -839,8 +725,7 @@ export default function AbbonamentiPage() {
           })
           return
         }
-        const safeName =
-          filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
+        const safeName = filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
         await downloadStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath, safeName)
       } catch (err) {
         logger.error('Errore download fattura', err, { invoiceUrl })

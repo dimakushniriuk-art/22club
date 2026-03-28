@@ -25,6 +25,7 @@ import {
   downloadStorageBlobViaPreview,
   resolveInvoiceDocumentsStoragePath,
 } from '@/lib/documents'
+import { computeAthleteTrainingLessonUsage } from '@/lib/credits/athlete-training-lessons-display'
 
 const logger = createLogger('components:home-profile:athlete-subscriptions-tab')
 
@@ -40,9 +41,14 @@ interface Pagamento {
 
 interface AthleteSubscriptionsTabProps {
   athleteUserId: string | null
+  /** Incrementare (es. aprendo il tab Abbonamenti) per forzare reload dopo scalatura in app. */
+  refreshKey?: number
 }
 
-export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsTabProps) {
+export function AthleteSubscriptionsTab({
+  athleteUserId,
+  refreshKey = 0,
+}: AthleteSubscriptionsTabProps) {
   const supabase = createClient()
   const [pagamenti, setPagamenti] = useState<Pagamento[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,26 +71,21 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
         .select('id, payment_date, amount, invoice_url, lessons_purchased, status, created_at')
         .eq('athlete_id', athleteProfileId)
         .eq('status', 'completed')
+        .eq('service_type', 'training')
         .order('payment_date', { ascending: false })
 
       if (paymentsError) throw paymentsError
 
-      // Carica appointments completati per calcolare lezioni usate
-      // Questo è il metodo più affidabile (stessa logica della pagina abbonamenti)
-      const { data: completedAppointments, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select('id')
-        .eq('athlete_id', athleteProfileId)
-        .eq('status', 'completato')
-
-      if (appointmentsError) throw appointmentsError
-
-      // Calcola lezioni totali acquistate e usate
       const totalPurchased = (payments || []).reduce(
         (sum: number, p: { lessons_purchased?: number | null }) => sum + (p.lessons_purchased || 0),
         0,
       )
-      const totalUsed = completedAppointments?.length || 0
+
+      const { totalUsed, totalRemaining } = await computeAthleteTrainingLessonUsage(
+        supabase,
+        athleteProfileId,
+        totalPurchased,
+      )
 
       // Distribuisci lezioni usate proporzionalmente tra i pagamenti
       type PaymentRow = {
@@ -99,17 +100,9 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
 
       const paymentRows = (payments ?? []) as PaymentRow[]
 
-      // Calcola lezioni rimanenti aggregate per l'atleta
-      // Le lezioni rimanenti = totale acquistato - totale usato (può essere negativo)
-      const totalRemaining = totalPurchased - totalUsed
-
       const formatted: Pagamento[] = paymentRows.map((p) => {
         const lessonsPurchased = p.lessons_purchased ?? 0
-        // Per ogni pagamento, mostriamo:
-        // - lessons_purchased: lezioni acquistate in quel pagamento (specifico)
-        // - lessons_used: totale appointments completati per l'atleta (aggregato, stesso per tutti)
-        // - lessons_remaining: totale rimanenti per l'atleta (aggregato, stesso per tutti)
-        // Questa è la stessa logica della pagina abbonamenti
+        // Per ogni pagamento: lessons_used / lessons_remaining = aggregati atleta (ledger + lesson_counters; fallback appuntamenti)
         return {
           id: p.id,
           payment_date: p.payment_date ?? p.created_at ?? new Date().toISOString(),
@@ -134,6 +127,24 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
     if (athleteProfileId) {
       void loadPagamenti()
     }
+  }, [athleteProfileId, loadPagamenti, refreshKey])
+
+  useEffect(() => {
+    if (!athleteProfileId) return
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void loadPagamenti()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [athleteProfileId, loadPagamenti])
+
+  useEffect(() => {
+    if (!athleteProfileId) return
+    const onLessonsRefresh = () => {
+      void loadPagamenti()
+    }
+    window.addEventListener('22club:athlete-lessons-refresh', onLessonsRefresh)
+    return () => window.removeEventListener('22club:athlete-lessons-refresh', onLessonsRefresh)
   }, [athleteProfileId, loadPagamenti])
 
   const formatDate = (dateString: string) => {
@@ -158,8 +169,7 @@ export function AthleteSubscriptionsTab({ athleteUserId }: AthleteSubscriptionsT
         notifyError('Download non disponibile', 'Percorso fattura non valido.')
         return
       }
-      const safeName =
-        filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
+      const safeName = filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
       await downloadStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath, safeName)
     } catch (err) {
       logger.error('Errore download fattura', err, { invoiceUrl })

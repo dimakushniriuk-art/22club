@@ -59,7 +59,10 @@ export default function AtletaProgressiPage() {
   if (!id) {
     return (
       <div className="p-6">
-        <ErrorState message="ID atleta mancante" onRetry={() => router.push('/dashboard/clienti')} />
+        <ErrorState
+          message="ID atleta mancante"
+          onRetry={() => router.push('/dashboard/clienti')}
+        />
       </div>
     )
   }
@@ -158,9 +161,7 @@ export default function AtletaProgressiPage() {
                           year: 'numeric',
                         })}
                       </td>
-                      <td className="p-3">
-                        {row.weight_kg != null ? String(row.weight_kg) : '—'}
-                      </td>
+                      <td className="p-3">{row.weight_kg != null ? String(row.weight_kg) : '—'}</td>
                       <td className="p-3">{row.imc != null ? String(row.imc) : '—'}</td>
                     </tr>
                   ))}

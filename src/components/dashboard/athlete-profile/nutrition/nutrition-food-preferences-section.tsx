@@ -70,9 +70,7 @@ export function NutritionFoodPreferencesSection({
               <Button
                 type="button"
                 size="icon"
-                onClick={() =>
-                  newAlimentoPreferito && onAlimentoPreferitoAdd(newAlimentoPreferito)
-                }
+                onClick={() => newAlimentoPreferito && onAlimentoPreferitoAdd(newAlimentoPreferito)}
                 className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />

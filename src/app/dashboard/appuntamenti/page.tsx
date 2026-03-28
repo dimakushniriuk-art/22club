@@ -9,8 +9,7 @@ import type {
   EditAppointmentData,
 } from '@/types/appointment'
 import { useStaffAppointmentsTable } from '@/hooks/appointments/useStaffAppointmentsTable'
-import { useLessonCounters } from '@/hooks/use-lesson-counters'
-import { useLessonStatsBulk } from '@/hooks/use-lesson-stats-bulk'
+import { useLessonUsageByAthleteIds } from '@/hooks/use-lesson-usage-by-athlete-ids'
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -114,19 +113,12 @@ export default function AppuntamentiPage() {
     () => [...new Set(appointments.map((a) => a.athlete_id).filter(Boolean))] as string[],
     [appointments],
   )
-  const rimastiMap = useLessonCounters(athleteIds, lessonRefetchKey)
-  const lessonStatsMap = useLessonStatsBulk(athleteIds, lessonRefetchKey)
+  const lessonUsageMap = useLessonUsageByAthleteIds(athleteIds, 'training', lessonRefetchKey)
   const lessonsRemainingMap = useMemo(() => {
     const m = new Map<string, number>()
-    athleteIds.forEach((id) => {
-      const fromCounter = rimastiMap.get(id)
-      const stats = lessonStatsMap.get(id)
-      const computed = stats != null ? stats.acquired - stats.used : undefined
-      const value = fromCounter !== undefined ? fromCounter : computed
-      if (value !== undefined) m.set(id, value)
-    })
+    lessonUsageMap.forEach((row, id) => m.set(id, row.totalRemaining))
     return m
-  }, [athleteIds, rimastiMap, lessonStatsMap])
+  }, [lessonUsageMap])
 
   const athleteEmailMap = useMemo(() => new Map(athletes.map((a) => [a.id, a.email])), [athletes])
 

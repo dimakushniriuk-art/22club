@@ -2,16 +2,28 @@
 
 import { useCallback, useRef, useState } from 'react'
 import Image from 'next/image'
+import { Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Exercise } from '@/types/workout'
 
-export interface StripEntry {
-  exerciseId: string
-  exercise: Exercise | undefined
-  sequence: number
-  /** Target personalizzato rispetto ai default del wizard */
-  configured?: boolean
-}
+export type StripEntry =
+  | {
+      kind: 'exercise'
+      exerciseId: string
+      exercise: Exercise | undefined
+      sequence: number
+      /** Target personalizzato rispetto ai default del wizard */
+      configured?: boolean
+    }
+  | {
+      kind: 'circuit'
+      circuitId: string
+      sequence: number
+      exerciseCount: number
+      /** Anteprima: primo esercizio del circuito */
+      primaryExercise: Exercise | undefined
+      configured?: boolean
+    }
 
 function SmallExerciseMedia({ exercise }: { exercise: Exercise | undefined }) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -157,7 +169,7 @@ export function SelectedExercisesVerticalStrip({
       <ul className="flex flex-row gap-2 overflow-x-auto pb-1 md:flex-col md:overflow-x-visible md:space-y-0 md:gap-3 md:pb-0 scrollbar-thin">
         {entries.map((row, index) => (
           <li
-            key={row.exerciseId}
+            key={row.kind === 'circuit' ? `circuit-${row.circuitId}` : row.exerciseId}
             draggable
             onDragStart={(e) => handleDragStart(e, index)}
             onDragEnd={handleDragEnd}
@@ -169,21 +181,45 @@ export function SelectedExercisesVerticalStrip({
               onItemClick(index)
             }}
             className={cn(
-              'flex min-w-[7.5rem] shrink-0 cursor-grab flex-col gap-1.5 rounded-lg border border-white/10 bg-black/20 p-2 transition-colors active:cursor-grabbing md:min-w-0',
-              onItemClick && 'hover:border-white/20',
+              'flex min-w-[7.5rem] shrink-0 cursor-grab flex-col gap-1.5 rounded-lg border bg-black/20 p-2 transition-colors active:cursor-grabbing md:min-w-0',
+              row.kind === 'circuit'
+                ? 'border-amber-500/35 hover:border-amber-400/45'
+                : 'border-white/10',
+              onItemClick &&
+                (row.kind === 'circuit' ? 'hover:border-amber-400/50' : 'hover:border-white/20'),
               draggedIndex === index && 'opacity-50',
               dragOverIndex === index && 'border-primary/50 ring-1 ring-primary/30',
             )}
           >
             <div className="relative h-20 w-full overflow-hidden rounded-md bg-background-tertiary">
-              <SmallExerciseMedia exercise={row.exercise} />
+              {row.kind === 'circuit' ? (
+                <>
+                  <SmallExerciseMedia exercise={row.primaryExercise} />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/25 text-amber-300 ring-2 ring-amber-400/40">
+                      <Zap className="h-4 w-4" aria-hidden />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <SmallExerciseMedia exercise={row.exercise} />
+              )}
             </div>
             <div className="flex items-start gap-1.5 min-w-0">
               <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded bg-green-500/90 text-[10px] font-bold text-white">
                 {row.sequence}
               </span>
               <span className="line-clamp-2 text-[11px] font-medium leading-tight text-text-primary">
-                {row.exercise?.name ?? `Esercizio (${row.exerciseId.slice(0, 8)}…)`}
+                {row.kind === 'circuit' ? (
+                  <>
+                    <span className="text-amber-200/95">Circuito</span>
+                    <span className="block text-[10px] font-normal text-text-tertiary">
+                      {row.exerciseCount} esercizi
+                    </span>
+                  </>
+                ) : (
+                  (row.exercise?.name ?? `Esercizio (${row.exerciseId.slice(0, 8)}…)`)
+                )}
               </span>
             </div>
             <span

@@ -6983,13 +6983,15 @@ export type Database = {
       }
       workout_plans: {
         Row: {
-          athlete_id: string
+          athlete_id: string | null
           created_at: string | null
           created_by_profile_id: string
           description: string | null
+          difficulty: string | null
           end_date: string | null
           id: string
           is_active: boolean | null
+          is_draft: boolean
           name: string
           objective: string | null
           start_date: string | null
@@ -6997,13 +6999,15 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          athlete_id: string
+          athlete_id?: string | null
           created_at?: string | null
           created_by_profile_id: string
           description?: string | null
+          difficulty?: string | null
           end_date?: string | null
           id?: string
           is_active?: boolean | null
+          is_draft?: boolean
           name: string
           objective?: string | null
           start_date?: string | null
@@ -7011,13 +7015,15 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          athlete_id?: string
+          athlete_id?: string | null
           created_at?: string | null
           created_by_profile_id?: string
           description?: string | null
+          difficulty?: string | null
           end_date?: string | null
           id?: string
           is_active?: boolean | null
+          is_draft?: boolean
           name?: string
           objective?: string | null
           start_date?: string | null

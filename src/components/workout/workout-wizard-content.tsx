@@ -37,12 +37,11 @@ import { isWorkoutPlanRealAthleteId } from '@/lib/constants/workout-plan-wizard'
 import { validateWorkoutTarget, type WorkoutTarget } from '@/lib/validations/workout-target'
 import { WorkoutExerciseTargetPanel } from './workout-exercise-target-panel'
 
-function itemIndexForStandaloneStripSlot(
-  day: WorkoutDayData,
-  stripIndex: number,
-  circuitList: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
+/** Indici in `items` che compaiono nella strip verticale (circuiti + esercizi non nel circuito). */
+function buildStripToItemIndices(
   items: DayItem[],
-): number | null {
+  circuitList: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
+): number[] {
   const circuitExerciseIdsInDay = new Set<string>()
   for (const item of items) {
     if (item.type === 'circuit') {
@@ -50,15 +49,27 @@ function itemIndexForStandaloneStripSlot(
       c?.params.forEach((p) => circuitExerciseIdsInDay.add(p.exercise_id))
     }
   }
-  let n = 0
+  const out: number[] = []
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
-    if (item.type !== 'exercise') continue
+    if (item.type === 'circuit') {
+      out.push(i)
+      continue
+    }
     if (circuitExerciseIdsInDay.has(item.exercise.exercise_id)) continue
-    if (n === stripIndex) return i
-    n++
+    out.push(i)
   }
-  return null
+  return out
+}
+
+function itemIndexForStripSlot(
+  stripIndex: number,
+  items: DayItem[],
+  circuitList: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
+): number | null {
+  const map = buildStripToItemIndices(items, circuitList)
+  const idx = map[stripIndex]
+  return idx === undefined ? null : idx
 }
 
 interface WorkoutWizardContentProps {
@@ -126,7 +137,6 @@ export function WorkoutWizardContent({
     updateExercise,
     removeExercise,
     reorderDayItems,
-    reorderStandaloneExercisesInDay,
     canProceed,
     getDayItems,
   } = useWorkoutWizard({
@@ -260,19 +270,38 @@ export function WorkoutWizardContent({
     setExerciseTargetModalDraft(null)
   }, [])
 
-  const openStripExerciseTargetModal = useCallback(
+  const handleStripItemClick = useCallback(
     (stripIndex: number) => {
       const day = wizardData.days[selectedDayIndex]
       if (!day) return
       const items = getDayItems(day)
-      const itemIndex = itemIndexForStandaloneStripSlot(day, stripIndex, circuitList, items)
+      const itemIndex = itemIndexForStripSlot(stripIndex, items, circuitList)
       if (itemIndex == null) return
       const item = items[itemIndex]
-      if (item.type !== 'exercise') return
+      if (item.type === 'circuit') {
+        const c = circuitList.find((x) => x.id === item.circuitId)
+        if (c) editCircuit(c)
+        return
+      }
       setExerciseTargetModalDraft(structuredClone(item.exercise))
       setStripTargetItemModalIndex(itemIndex)
     },
-    [wizardData.days, selectedDayIndex, circuitList, getDayItems],
+    [wizardData.days, selectedDayIndex, circuitList, getDayItems, editCircuit],
+  )
+
+  const handleReorderStripItems = useCallback(
+    (fromStrip: number, toStrip: number) => {
+      if (fromStrip === toStrip) return
+      const day = wizardData.days[selectedDayIndex]
+      if (!day) return
+      const items = getDayItems(day)
+      const map = buildStripToItemIndices(items, circuitList)
+      const fromItem = map[fromStrip]
+      const toItem = map[toStrip]
+      if (fromItem === undefined || toItem === undefined) return
+      reorderDayItems(selectedDayIndex, fromItem, toItem)
+    },
+    [wizardData.days, selectedDayIndex, circuitList, getDayItems, reorderDayItems],
   )
 
   const saveStripExerciseTargetModal = useCallback(() => {
@@ -607,10 +636,8 @@ export function WorkoutWizardContent({
             getDayItems={getDayItemsForStep}
             selectedDayIndex={selectedDayIndex}
             circuitSection={renderCircuitSection()}
-            onReorderStandaloneExercises={(circuitIds, from, to) =>
-              reorderStandaloneExercisesInDay(selectedDayIndex, circuitIds, from, to)
-            }
-            onStripOpenTargetStep={openStripExerciseTargetModal}
+            onReorderStripItems={handleReorderStripItems}
+            onStripItemClick={handleStripItemClick}
           />
         )
       case 4:
@@ -618,11 +645,11 @@ export function WorkoutWizardContent({
           <WorkoutWizardStep4
             wizardData={wizardData}
             exercises={exercises}
+            selectedDayIndex={selectedDayIndex}
             circuitList={circuitList}
             getDayItems={getDayItemsForStep}
             onExerciseUpdate={updateExercise}
             onExerciseRemove={removeExercise}
-            onReorderItem={reorderDayItems}
           />
         )
       case 5:
@@ -660,7 +687,7 @@ export function WorkoutWizardContent({
             Nuova Scheda Allenamento{headerAthleteSuffix}
           </h1>
 
-          <div className="flex items-center justify-between gap-4 min-w-0">
+          <div className="flex items-center justify-between gap-4 min-w-0 pt-[10px]">
             <Button
               variant="outline"
               onClick={handlePrevious}
@@ -681,7 +708,7 @@ export function WorkoutWizardContent({
                 return (
                   <div
                     key={step.id}
-                    className="flex flex-1 items-center min-w-0 max-w-[72px] sm:max-w-none"
+                    className="flex flex-1 items-center min-w-0 max-w-[72px] sm:max-w-none pt-[10px]"
                   >
                     <div className="flex flex-col items-center flex-1 min-w-0">
                       <div
@@ -781,9 +808,9 @@ export function WorkoutWizardContent({
 
       {/* Tab giorni (step 3, 4, 5: quantità da wizardData.days aggiunti in step 2) */}
       {currentStep >= 3 && wizardData.days.length > 0 && (
-        <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-3">
-          <div className="max-w-3xl mx-auto w-full">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+        <div className="relative flex-shrink-0 border-b border-white/10 bg-background px-4 sm:px-6 py-3 w-full min-w-0">
+          <div className="w-full min-w-0">
+            <div className="flex flex-wrap items-stretch gap-2 gap-y-2 justify-center pb-1 w-full min-w-0">
               {wizardData.days.map((day, index) => {
                 const isActive = selectedDayIndex === index
                 const label = day.title?.trim() || `Giorno ${day.day_number}`

@@ -11,6 +11,14 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('lib:api-client')
 
+export type ApiCallOptions = {
+  /**
+   * Su web: se l'API risponde con errore HTTP o `{ error }` nel body, lancia invece
+   * di usare il fallback Supabase (evita PGRST116 / RLS quando il server ha già risposto).
+   */
+  throwIfApiError?: boolean
+}
+
 /**
  * Verifica se siamo su piattaforma nativa (Capacitor)
  */
@@ -55,11 +63,36 @@ export function isApiAvailable(): boolean {
  * )
  * ```
  */
+function messageFromApiErrorBody(text: string, status: number): string {
+  let msg = `Richiesta fallita (${status})`
+  try {
+    const j = JSON.parse(text) as {
+      error?: unknown
+      supabase?: { code?: string; message?: string; details?: string | null }
+    }
+    if (j?.error != null) {
+      msg = typeof j.error === 'string' ? j.error : JSON.stringify(j.error)
+    }
+    const sb = j?.supabase
+    if (sb && (sb.code || sb.message || sb.details)) {
+      const extra = [sb.code, sb.message, sb.details].filter(Boolean).join(' — ')
+      if (extra) msg = `${msg} (${extra})`
+    }
+  } catch {
+    const t = text?.trim()
+    if (t) msg = t.length > 300 ? `${t.slice(0, 300)}…` : t
+  }
+  return msg
+}
+
 export async function apiCall<T>(
   endpoint: string,
   options: RequestInit = {},
   fallbackFn: () => Promise<T>,
+  callOpts?: ApiCallOptions,
 ): Promise<T> {
+  const strictApi = Boolean(callOpts?.throwIfApiError && isApiAvailable())
+
   // Se siamo su mobile o API non disponibili, usa fallback
   if (!isApiAvailable()) {
     logger.debug('API non disponibile, usando fallback Supabase', { endpoint })
@@ -78,7 +111,10 @@ export async function apiCall<T>(
     })
 
     if (!response.ok) {
-      // Se API fallisce, prova fallback
+      if (strictApi) {
+        const errText = await response.text()
+        throw new Error(messageFromApiErrorBody(errText, response.status))
+      }
       logger.warn('API call failed, using fallback', {
         endpoint,
         status: response.status,
@@ -89,6 +125,9 @@ export async function apiCall<T>(
 
     const text = await response.text()
     if (!text || text.trim().length === 0) {
+      if (strictApi) {
+        throw new Error('Risposta API vuota')
+      }
       logger.warn('API returned empty response, using fallback', { endpoint })
       return fallbackFn()
     }
@@ -97,6 +136,11 @@ export async function apiCall<T>(
 
     // Gestisci risposte con struttura { data, error }
     if (data.error) {
+      if (strictApi) {
+        const msg =
+          typeof data.error === 'string' ? data.error : JSON.stringify(data.error)
+        throw new Error(msg)
+      }
       logger.warn('API returned error, using fallback', {
         endpoint,
         error: data.error,
@@ -107,7 +151,9 @@ export async function apiCall<T>(
     // Restituisci data se presente, altrimenti l'intero oggetto
     return (data.data !== undefined ? data.data : data) as T
   } catch (error) {
-    // Se c'è un errore (rete, parsing, ecc.), usa fallback
+    if (strictApi) {
+      throw error instanceof Error ? error : new Error(String(error))
+    }
     logger.warn('API call error, using fallback', {
       endpoint,
       error: error instanceof Error ? error.message : String(error),
@@ -152,6 +198,7 @@ export async function apiPost<T>(
   endpoint: string,
   body: unknown | (() => Promise<T>),
   fallbackFn?: () => Promise<T>,
+  callOpts?: ApiCallOptions,
 ): Promise<T> {
   // Supporta entrambi gli ordini: (endpoint, body, fallback) o (endpoint, fallback)
   let finalBody: unknown = body
@@ -172,6 +219,7 @@ export async function apiPost<T>(
       body: finalBody ? JSON.stringify(finalBody) : undefined,
     },
     finalFallbackFn,
+    callOpts,
   )
 }
 
@@ -182,6 +230,7 @@ export async function apiPut<T>(
   endpoint: string,
   body: unknown | (() => Promise<T>),
   fallbackFn?: () => Promise<T>,
+  callOpts?: ApiCallOptions,
 ): Promise<T> {
   // Supporta entrambi gli ordini: (endpoint, body, fallback) o (endpoint, fallback)
   let finalBody: unknown = body
@@ -202,6 +251,7 @@ export async function apiPut<T>(
       body: finalBody ? JSON.stringify(finalBody) : undefined,
     },
     finalFallbackFn,
+    callOpts,
   )
 }
 

@@ -109,7 +109,9 @@ export function AthleteFitnessTab({ athleteId }: AthleteFitnessTabProps) {
       </div>
 
       <CardContent className="space-y-0 p-0">
-        <AthleteProfileSectionHeading icon={Target}>Esperienza e obiettivi</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={Target}>
+          Esperienza e obiettivi
+        </AthleteProfileSectionHeading>
         <div className="px-4 py-4 sm:px-5 sm:py-5">
           <FitnessExperienceGoalsSection
             isEditing={isEditing}
@@ -120,7 +122,9 @@ export function AthleteFitnessTab({ athleteId }: AthleteFitnessTabProps) {
           />
         </div>
 
-        <AthleteProfileSectionHeading icon={Calendar}>Programma di allenamento</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={Calendar}>
+          Programma di allenamento
+        </AthleteProfileSectionHeading>
         <div className="px-4 py-4 sm:px-5 sm:py-5">
           <FitnessTrainingProgramSection
             isEditing={isEditing}

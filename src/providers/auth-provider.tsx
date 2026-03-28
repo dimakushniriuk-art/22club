@@ -378,6 +378,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const msg = reason instanceof Error ? reason.message : String(reason ?? '')
       const name = reason instanceof Error ? reason.name : ''
       const isAuthNetworkFailure = msg === 'Failed to fetch' || name === 'AuthRetryableFetchError'
+      const loweredMsg = msg.toLowerCase()
+      const isSupabaseLockAbort =
+        name === 'AbortError' &&
+        (loweredMsg.includes('lock broken') || loweredMsg.includes("'steal' option"))
       const isRefreshTokenRejection =
         name === 'AuthApiError' &&
         (msg.includes('Invalid Refresh Token') ||
@@ -390,6 +394,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return
       }
       if (isAuthNetworkFailure) {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+      if (isSupabaseLockAbort) {
+        if (process.env.NODE_ENV !== 'production') {
+          logger.debug('[auth] Suppress AbortError lock contention (steal)', {
+            errorName: name,
+            errorMessage: msg,
+          })
+        }
         event.preventDefault()
         event.stopPropagation()
       }

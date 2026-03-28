@@ -7,6 +7,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { addDebitFromAppointment } from '@/lib/credits/ledger'
+import { hasOverlappingAppCoachedWorkoutDebit } from '@/lib/credits/session-debit-dedup'
+import { coerceLedgerServiceType } from '@/lib/abbonamenti-service-type'
 
 import type {
   AppointmentTable,
@@ -423,7 +425,7 @@ export function useStaffAppointmentsTable() {
         // Prima recupera l'appuntamento per ottenere l'athlete_id
         const { data: appointment, error: fetchError } = await supabase
           .from('appointments')
-          .select('id, athlete_id')
+          .select('id, athlete_id, starts_at, ends_at, service_type')
           .eq('id', appointmentId)
           .single()
 
@@ -439,13 +441,25 @@ export function useStaffAppointmentsTable() {
 
         if (updateError) throw updateError
 
-        // Ledger: unica scalata crediti al completamento (idempotenza gestita in addDebitFromAppointment)
         if (appointment?.athlete_id) {
           try {
-            await addDebitFromAppointment(
-              { id: appointmentId, athlete_id: appointment.athlete_id },
-              staffId,
+            const skipForAppCoached = await hasOverlappingAppCoachedWorkoutDebit(
+              supabase,
+              appointment.athlete_id,
+              appointment.starts_at,
+              appointment.ends_at,
+              appointment.service_type,
             )
+            if (!skipForAppCoached) {
+              await addDebitFromAppointment(
+                {
+                  id: appointmentId,
+                  athlete_id: appointment.athlete_id,
+                  service_type: coerceLedgerServiceType(appointment.service_type),
+                },
+                staffId,
+              )
+            }
           } catch (ledgerErr) {
             logger.warn('Errore insert credit_ledger DEBIT', ledgerErr, {
               appointmentId,

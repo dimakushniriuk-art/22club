@@ -55,9 +55,7 @@ function isRemoteOrPathImage(u: string | null | undefined): u is string {
 
 function isStreamableVideoUrl(u: string | null | undefined): u is string {
   return (
-    typeof u === 'string' &&
-    u.length > 0 &&
-    (u.startsWith('http://') || u.startsWith('https://'))
+    typeof u === 'string' && u.length > 0 && (u.startsWith('http://') || u.startsWith('https://'))
   )
 }
 
@@ -76,8 +74,7 @@ function ExercisePreviewMedia({
   const thumbUrl = exercise?.thumb_url
   const imageUrl = exercise?.image_url
   const posterRaw = thumbUrl || imageUrl || undefined
-  const poster =
-    posterRaw && isStreamableVideoUrl(posterRaw) ? posterRaw : undefined
+  const poster = posterRaw && isStreamableVideoUrl(posterRaw) ? posterRaw : undefined
   const hasVideo = isStreamableVideoUrl(videoUrl)
   const imageSrc = thumbUrl || imageUrl
   const showImage = isRemoteOrPathImage(imageSrc) && !hasVideo
@@ -372,171 +369,169 @@ function GiornoPreviewContent() {
             Controlla esercizi e serie; quando sei pronto avvia l&apos;allenamento.
           </p>
 
-        {rows.length === 0 ? (
-          <Card className={`${CARD_DS} border-dashed`}>
-            <CardContent className="p-4 sm:p-5">
-              <p className="text-sm text-text-secondary">Nessun esercizio in questo giorno.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {blocks.map((block, bi) => {
-              if (block.kind === 'circuit') {
-                return (
-                  <Card key={`c-${bi}`} className={`relative overflow-hidden ${CARD_DS}`}>
-                    <CardContent className="relative z-10 space-y-2 p-4 sm:p-5">
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cyan-400">
-                        <Layers className="h-3.5 w-3.5" />
-                        Circuito
-                      </div>
-                      <ul className="space-y-2.5">
-                        {block.rows.map((r) => {
-                          const name = r.exercises?.name?.trim() || 'Esercizio'
-                          const mg = r.exercises?.muscle_group?.trim()
-                          const desc = r.exercises?.description?.trim() ?? ''
-                          const detailHref = r.exercises?.id
-                            ? `/home/allenamenti/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
-                            : null
-                          const isOpen = expandedRowIds.has(r.id)
-                          const canAct = Boolean(desc) || Boolean(detailHref)
-                          return (
-                            <li
-                              key={r.id}
-                              className={`flex flex-col border-b border-white/5 pb-3 last:border-0 last:pb-0 ${canAct ? `cursor-pointer touch-manipulation active:opacity-90 ${INTERACTIVE_FOCUS}` : ''}`}
-                              onClick={() => {
-                                if (desc) toggleRowExpanded(r.id)
-                                else if (detailHref) void router.push(detailHref)
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key !== 'Enter' && e.key !== ' ') return
-                                e.preventDefault()
-                                if (desc) toggleRowExpanded(r.id)
-                                else if (detailHref) void router.push(detailHref)
-                              }}
-                              tabIndex={canAct ? 0 : undefined}
-                              role={canAct ? 'button' : undefined}
-                              aria-expanded={desc ? isOpen : undefined}
-                            >
-                              <div className="flex gap-2.5 sm:gap-3">
-                                <ExercisePreviewMedia
-                                  exercise={r.exercises}
-                                  name={name}
-                                  href={null}
-                                  compact
-                                />
-                                <div className="min-w-0 flex-1 space-y-0.5">
-                                  <div className="flex min-w-0 items-start justify-between gap-2">
-                                    <span className="min-w-0 text-sm font-medium text-cyan-400">
-                                      {name}
-                                    </span>
-                                    <span className="shrink-0 tabular-nums text-xs text-text-secondary">
-                                      {formatTargets(r)}
-                                    </span>
+          {rows.length === 0 ? (
+            <Card className={`${CARD_DS} border-dashed`}>
+              <CardContent className="p-4 sm:p-5">
+                <p className="text-sm text-text-secondary">Nessun esercizio in questo giorno.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {blocks.map((block, bi) => {
+                if (block.kind === 'circuit') {
+                  return (
+                    <Card key={`c-${bi}`} className={`relative overflow-hidden ${CARD_DS}`}>
+                      <CardContent className="relative z-10 space-y-2 p-4 sm:p-5">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cyan-400">
+                          <Layers className="h-3.5 w-3.5" />
+                          Circuito
+                        </div>
+                        <ul className="space-y-2.5">
+                          {block.rows.map((r) => {
+                            const name = r.exercises?.name?.trim() || 'Esercizio'
+                            const mg = r.exercises?.muscle_group?.trim()
+                            const desc = r.exercises?.description?.trim() ?? ''
+                            const detailHref = r.exercises?.id
+                              ? `/home/allenamenti/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
+                              : null
+                            const isOpen = expandedRowIds.has(r.id)
+                            const canAct = Boolean(desc) || Boolean(detailHref)
+                            return (
+                              <li
+                                key={r.id}
+                                className={`flex flex-col border-b border-white/5 pb-3 last:border-0 last:pb-0 ${canAct ? `cursor-pointer touch-manipulation active:opacity-90 ${INTERACTIVE_FOCUS}` : ''}`}
+                                onClick={() => {
+                                  if (desc) toggleRowExpanded(r.id)
+                                  else if (detailHref) void router.push(detailHref)
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key !== 'Enter' && e.key !== ' ') return
+                                  e.preventDefault()
+                                  if (desc) toggleRowExpanded(r.id)
+                                  else if (detailHref) void router.push(detailHref)
+                                }}
+                                tabIndex={canAct ? 0 : undefined}
+                                role={canAct ? 'button' : undefined}
+                                aria-expanded={desc ? isOpen : undefined}
+                              >
+                                <div className="flex gap-2.5 sm:gap-3">
+                                  <ExercisePreviewMedia
+                                    exercise={r.exercises}
+                                    name={name}
+                                    href={null}
+                                    compact
+                                  />
+                                  <div className="min-w-0 flex-1 space-y-0.5">
+                                    <div className="flex min-w-0 items-start justify-between gap-2">
+                                      <span className="min-w-0 text-sm font-medium text-cyan-400">
+                                        {name}
+                                      </span>
+                                      <span className="shrink-0 tabular-nums text-xs text-text-secondary">
+                                        {formatTargets(r)}
+                                      </span>
+                                    </div>
+                                    {mg ? (
+                                      <span className="text-[11px] text-text-tertiary">{mg}</span>
+                                    ) : null}
+                                    {r.note?.trim() ? (
+                                      <p className="text-[11px] text-text-tertiary">
+                                        {r.note.trim()}
+                                      </p>
+                                    ) : null}
+                                    {r.rest_timer_sec != null && r.rest_timer_sec > 0 ? (
+                                      <p className="text-[11px] text-text-tertiary">
+                                        Recupero indicativo: {r.rest_timer_sec}s
+                                      </p>
+                                    ) : null}
                                   </div>
-                                  {mg ? (
-                                    <span className="text-[11px] text-text-tertiary">{mg}</span>
-                                  ) : null}
-                                  {r.note?.trim() ? (
-                                    <p className="text-[11px] text-text-tertiary">{r.note.trim()}</p>
-                                  ) : null}
-                                  {r.rest_timer_sec != null && r.rest_timer_sec > 0 ? (
-                                    <p className="text-[11px] text-text-tertiary">
-                                      Recupero indicativo: {r.rest_timer_sec}s
-                                    </p>
-                                  ) : null}
                                 </div>
-                              </div>
-                              {isOpen && desc ? (
-                                <ExerciseExecutionExpand
-                                  description={desc}
-                                  detailHref={detailHref}
-                                />
-                              ) : null}
-                            </li>
-                          )
-                        })}
-                      </ul>
+                                {isOpen && desc ? (
+                                  <ExerciseExecutionExpand
+                                    description={desc}
+                                    detailHref={detailHref}
+                                  />
+                                ) : null}
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )
+                }
+
+                const r = block.rows[0]
+                const name = r.exercises?.name?.trim() || 'Esercizio'
+                const mg = r.exercises?.muscle_group?.trim()
+                const desc = r.exercises?.description?.trim() ?? ''
+                const detailHref = r.exercises?.id
+                  ? `/home/allenamenti/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
+                  : null
+                const isOpen = expandedRowIds.has(r.id)
+                const canAct = Boolean(desc) || Boolean(detailHref)
+
+                return (
+                  <Card
+                    key={r.id}
+                    className={`relative overflow-hidden ${CARD_DS} ${canAct ? `cursor-pointer touch-manipulation active:opacity-90 ${INTERACTIVE_FOCUS}` : ''}`}
+                    onClick={() => {
+                      if (desc) toggleRowExpanded(r.id)
+                      else if (detailHref) void router.push(detailHref)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter' && e.key !== ' ') return
+                      e.preventDefault()
+                      if (desc) toggleRowExpanded(r.id)
+                      else if (detailHref) void router.push(detailHref)
+                    }}
+                    tabIndex={canAct ? 0 : undefined}
+                    role={canAct ? 'button' : undefined}
+                    aria-expanded={desc ? isOpen : undefined}
+                  >
+                    <CardContent className="relative z-10 p-4 sm:p-5">
+                      <div className="flex gap-3 sm:gap-4">
+                        <ExercisePreviewMedia exercise={r.exercises} name={name} href={null} />
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex min-w-0 items-start justify-between gap-2">
+                            <span className="min-w-0 text-sm font-semibold text-cyan-400 sm:text-base">
+                              {name}
+                            </span>
+                            <span className="shrink-0 tabular-nums text-xs text-text-secondary sm:text-sm">
+                              {formatTargets(r)}
+                            </span>
+                          </div>
+                          {mg ? <p className="text-xs text-text-tertiary">{mg}</p> : null}
+                          {r.note?.trim() ? (
+                            <p className="text-xs text-text-tertiary">{r.note.trim()}</p>
+                          ) : null}
+                          {r.rest_timer_sec != null && r.rest_timer_sec > 0 ? (
+                            <p className="text-[11px] text-text-tertiary">
+                              Recupero indicativo: {r.rest_timer_sec}s
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                      {isOpen && desc ? (
+                        <ExerciseExecutionExpand description={desc} detailHref={detailHref} />
+                      ) : null}
                     </CardContent>
                   </Card>
                 )
-              }
+              })}
+            </div>
+          )}
 
-              const r = block.rows[0]
-              const name = r.exercises?.name?.trim() || 'Esercizio'
-              const mg = r.exercises?.muscle_group?.trim()
-              const desc = r.exercises?.description?.trim() ?? ''
-              const detailHref = r.exercises?.id
-                ? `/home/allenamenti/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
-                : null
-              const isOpen = expandedRowIds.has(r.id)
-              const canAct = Boolean(desc) || Boolean(detailHref)
-
-              return (
-                <Card
-                  key={r.id}
-                  className={`relative overflow-hidden ${CARD_DS} ${canAct ? `cursor-pointer touch-manipulation active:opacity-90 ${INTERACTIVE_FOCUS}` : ''}`}
-                  onClick={() => {
-                    if (desc) toggleRowExpanded(r.id)
-                    else if (detailHref) void router.push(detailHref)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key !== 'Enter' && e.key !== ' ') return
-                    e.preventDefault()
-                    if (desc) toggleRowExpanded(r.id)
-                    else if (detailHref) void router.push(detailHref)
-                  }}
-                  tabIndex={canAct ? 0 : undefined}
-                  role={canAct ? 'button' : undefined}
-                  aria-expanded={desc ? isOpen : undefined}
-                >
-                  <CardContent className="relative z-10 p-4 sm:p-5">
-                    <div className="flex gap-3 sm:gap-4">
-                      <ExercisePreviewMedia
-                        exercise={r.exercises}
-                        name={name}
-                        href={null}
-                      />
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex min-w-0 items-start justify-between gap-2">
-                          <span className="min-w-0 text-sm font-semibold text-cyan-400 sm:text-base">
-                            {name}
-                          </span>
-                          <span className="shrink-0 tabular-nums text-xs text-text-secondary sm:text-sm">
-                            {formatTargets(r)}
-                          </span>
-                        </div>
-                        {mg ? <p className="text-xs text-text-tertiary">{mg}</p> : null}
-                        {r.note?.trim() ? (
-                          <p className="text-xs text-text-tertiary">{r.note.trim()}</p>
-                        ) : null}
-                        {r.rest_timer_sec != null && r.rest_timer_sec > 0 ? (
-                          <p className="text-[11px] text-text-tertiary">
-                            Recupero indicativo: {r.rest_timer_sec}s
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                    {isOpen && desc ? (
-                      <ExerciseExecutionExpand description={desc} detailHref={detailHref} />
-                    ) : null}
-                  </CardContent>
-                </Card>
-              )
-            })}
+          <div className="pt-2">
+            <Button
+              asChild
+              className="h-12 min-h-[48px] w-full gap-2 touch-manipulation rounded-xl bg-cyan-500 text-sm font-semibold text-white hover:bg-cyan-400"
+            >
+              <Link href={startHref} prefetch={true}>
+                <Play className="h-4 w-4" />
+                Inizia allenamento
+              </Link>
+            </Button>
           </div>
-        )}
-
-        <div className="pt-2">
-          <Button
-            asChild
-            className="h-12 min-h-[48px] w-full gap-2 touch-manipulation rounded-xl bg-cyan-500 text-sm font-semibold text-white hover:bg-cyan-400"
-          >
-            <Link href={startHref} prefetch={true}>
-              <Play className="h-4 w-4" />
-              Inizia allenamento
-            </Link>
-          </Button>
-        </div>
         </div>
       </div>
     </div>

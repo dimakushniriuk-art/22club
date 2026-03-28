@@ -156,7 +156,10 @@ export default function PagamentiPage() {
           onBack={handleBack}
           icon={<Euro className="h-5 w-5 text-cyan-400" />}
         />
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom" aria-hidden />
+        <div
+          className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom"
+          aria-hidden
+        />
       </div>
     )
   }

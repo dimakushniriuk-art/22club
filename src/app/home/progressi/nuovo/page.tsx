@@ -244,7 +244,9 @@ export default function NuovoProgressoPage() {
         }
 
         // Stesso filtro RLS del client: se la policy SELECT usa profiles.id = athlete_id invece di athlete_id = auth.uid(), la lista è vuota finché non si applica la migrazione progress_logs SELECT.
-        const res = await fetch('/api/athlete/progress-logs?limit=50', { credentials: 'same-origin' })
+        const res = await fetch('/api/athlete/progress-logs?limit=50', {
+          credentials: 'same-origin',
+        })
         if (!res.ok) {
           const errBody = (await res.json().catch(() => ({}))) as { error?: string; code?: string }
           logger.warn('Errore nel caricare ultima misurazione', errBody, {
@@ -269,7 +271,11 @@ export default function NuovoProgressoPage() {
           (acc, current) => {
             const result = { ...acc }
             for (const [key, value] of Object.entries(current as Record<string, unknown>)) {
-              if ((result[key] === null || result[key] === undefined) && value !== null && value !== undefined) {
+              if (
+                (result[key] === null || result[key] === undefined) &&
+                value !== null &&
+                value !== undefined
+              ) {
                 result[key] = value
               }
             }
@@ -292,21 +298,37 @@ export default function NuovoProgressoPage() {
           massa_grassa_percentuale: numberToString(
             mergedMeasurement.massa_grassa_percentuale as number | null | undefined,
           ),
-          massa_grassa_kg: numberToString(mergedMeasurement.massa_grassa_kg as number | null | undefined),
-          massa_magra_kg: numberToString(mergedMeasurement.massa_magra_kg as number | null | undefined),
-          massa_muscolare_kg: numberToString(mergedMeasurement.massa_muscolare_kg as number | null | undefined),
+          massa_grassa_kg: numberToString(
+            mergedMeasurement.massa_grassa_kg as number | null | undefined,
+          ),
+          massa_magra_kg: numberToString(
+            mergedMeasurement.massa_magra_kg as number | null | undefined,
+          ),
+          massa_muscolare_kg: numberToString(
+            mergedMeasurement.massa_muscolare_kg as number | null | undefined,
+          ),
           massa_muscolare_scheletrica_kg: numberToString(
             mergedMeasurement.massa_muscolare_scheletrica_kg as number | null | undefined,
           ),
 
           // Misure antropometriche aggiuntive
-          statura_allungata_cm: numberToString(mergedMeasurement.statura_allungata_cm as number | null | undefined),
-          statura_seduto_cm: numberToString(mergedMeasurement.statura_seduto_cm as number | null | undefined),
-          apertura_braccia_cm: numberToString(mergedMeasurement.apertura_braccia_cm as number | null | undefined),
+          statura_allungata_cm: numberToString(
+            mergedMeasurement.statura_allungata_cm as number | null | undefined,
+          ),
+          statura_seduto_cm: numberToString(
+            mergedMeasurement.statura_seduto_cm as number | null | undefined,
+          ),
+          apertura_braccia_cm: numberToString(
+            mergedMeasurement.apertura_braccia_cm as number | null | undefined,
+          ),
 
           // Composizione corporea aggiuntiva
-          massa_ossea_kg: numberToString(mergedMeasurement.massa_ossea_kg as number | null | undefined),
-          massa_residuale_kg: numberToString(mergedMeasurement.massa_residuale_kg as number | null | undefined),
+          massa_ossea_kg: numberToString(
+            mergedMeasurement.massa_ossea_kg as number | null | undefined,
+          ),
+          massa_residuale_kg: numberToString(
+            mergedMeasurement.massa_residuale_kg as number | null | undefined,
+          ),
 
           // Circonferenze
           collo_cm: numberToString(mergedMeasurement.collo_cm as number | null | undefined),
@@ -315,40 +337,68 @@ export default function NuovoProgressoPage() {
           torace_inspirazione_cm: numberToString(
             mergedMeasurement.torace_inspirazione_cm as number | null | undefined,
           ),
-          braccio_rilassato_cm: numberToString(mergedMeasurement.braccio_rilassato_cm as number | null | undefined),
-          braccio_contratto_cm: numberToString(mergedMeasurement.braccio_contratto_cm as number | null | undefined),
-          avambraccio_cm: numberToString(mergedMeasurement.avambraccio_cm as number | null | undefined),
+          braccio_rilassato_cm: numberToString(
+            mergedMeasurement.braccio_rilassato_cm as number | null | undefined,
+          ),
+          braccio_contratto_cm: numberToString(
+            mergedMeasurement.braccio_contratto_cm as number | null | undefined,
+          ),
+          avambraccio_cm: numberToString(
+            mergedMeasurement.avambraccio_cm as number | null | undefined,
+          ),
           polso_cm: numberToString(mergedMeasurement.polso_cm as number | null | undefined),
           vita_alta_cm: numberToString(mergedMeasurement.vita_alta_cm as number | null | undefined),
           vita_cm: numberToString(mergedMeasurement.waist_cm as number | null | undefined),
-          addome_basso_cm: numberToString(mergedMeasurement.addome_basso_cm as number | null | undefined),
+          addome_basso_cm: numberToString(
+            mergedMeasurement.addome_basso_cm as number | null | undefined,
+          ),
           fianchi_cm: numberToString(mergedMeasurement.hips_cm as number | null | undefined),
           glutei_cm: numberToString(mergedMeasurement.glutei_cm as number | null | undefined),
-          coscia_alta_cm: numberToString(mergedMeasurement.coscia_alta_cm as number | null | undefined),
+          coscia_alta_cm: numberToString(
+            mergedMeasurement.coscia_alta_cm as number | null | undefined,
+          ),
           coscia_media_cm: numberToString(
             (mergedMeasurement.coscia_media_cm as number | null | undefined) ||
               (mergedMeasurement.thighs_cm as number | null | undefined),
           ),
-          coscia_bassa_cm: numberToString(mergedMeasurement.coscia_bassa_cm as number | null | undefined),
+          coscia_bassa_cm: numberToString(
+            mergedMeasurement.coscia_bassa_cm as number | null | undefined,
+          ),
           ginocchio_cm: numberToString(mergedMeasurement.ginocchio_cm as number | null | undefined),
           polpaccio_cm: numberToString(mergedMeasurement.polpaccio_cm as number | null | undefined),
           caviglia_cm: numberToString(mergedMeasurement.caviglia_cm as number | null | undefined),
 
           // Perimetri corretti
-          braccio_corretto_cm: numberToString(mergedMeasurement.braccio_corretto_cm as number | null | undefined),
-          coscia_corretta_cm: numberToString(mergedMeasurement.coscia_corretta_cm as number | null | undefined),
-          gamba_corretta_cm: numberToString(mergedMeasurement.gamba_corretta_cm as number | null | undefined),
+          braccio_corretto_cm: numberToString(
+            mergedMeasurement.braccio_corretto_cm as number | null | undefined,
+          ),
+          coscia_corretta_cm: numberToString(
+            mergedMeasurement.coscia_corretta_cm as number | null | undefined,
+          ),
+          gamba_corretta_cm: numberToString(
+            mergedMeasurement.gamba_corretta_cm as number | null | undefined,
+          ),
 
           // Indici principali
           imc: numberToString(mergedMeasurement.imc as number | null | undefined),
-          indice_vita_fianchi: numberToString(mergedMeasurement.indice_vita_fianchi as number | null | undefined),
+          indice_vita_fianchi: numberToString(
+            mergedMeasurement.indice_vita_fianchi as number | null | undefined,
+          ),
           indice_adiposo_muscolare: numberToString(
             mergedMeasurement.indice_adiposo_muscolare as number | null | undefined,
           ),
-          indice_muscolo_osseo: numberToString(mergedMeasurement.indice_muscolo_osseo as number | null | undefined),
-          indice_conicita: numberToString(mergedMeasurement.indice_conicita as number | null | undefined),
-          indice_manouvrier: numberToString(mergedMeasurement.indice_manouvrier as number | null | undefined),
-          indice_cormico: numberToString(mergedMeasurement.indice_cormico as number | null | undefined),
+          indice_muscolo_osseo: numberToString(
+            mergedMeasurement.indice_muscolo_osseo as number | null | undefined,
+          ),
+          indice_conicita: numberToString(
+            mergedMeasurement.indice_conicita as number | null | undefined,
+          ),
+          indice_manouvrier: numberToString(
+            mergedMeasurement.indice_manouvrier as number | null | undefined,
+          ),
+          indice_cormico: numberToString(
+            mergedMeasurement.indice_cormico as number | null | undefined,
+          ),
           area_superficie_corporea_m2: numberToString(
             mergedMeasurement.area_superficie_corporea_m2 as number | null | undefined,
           ),
@@ -368,32 +418,47 @@ export default function NuovoProgressoPage() {
           ectomorfia: numberToString(mergedMeasurement.ectomorfia as number | null | undefined),
 
           // Pliche cutanee
-          plica_tricipite_mm: numberToString(mergedMeasurement.plica_tricipite_mm as number | null | undefined),
+          plica_tricipite_mm: numberToString(
+            mergedMeasurement.plica_tricipite_mm as number | null | undefined,
+          ),
           plica_sottoscapolare_mm: numberToString(
             mergedMeasurement.plica_sottoscapolare_mm as number | null | undefined,
           ),
-          plica_bicipite_mm: numberToString(mergedMeasurement.plica_bicipite_mm as number | null | undefined),
+          plica_bicipite_mm: numberToString(
+            mergedMeasurement.plica_bicipite_mm as number | null | undefined,
+          ),
           plica_cresta_iliaca_mm: numberToString(
             mergedMeasurement.plica_cresta_iliaca_mm as number | null | undefined,
           ),
           plica_sopraspinale_mm: numberToString(
             mergedMeasurement.plica_sopraspinale_mm as number | null | undefined,
           ),
-          plica_addominale_mm: numberToString(mergedMeasurement.plica_addominale_mm as number | null | undefined),
-          plica_coscia_mm: numberToString(mergedMeasurement.plica_coscia_mm as number | null | undefined),
-          plica_gamba_mm: numberToString(mergedMeasurement.plica_gamba_mm as number | null | undefined),
+          plica_addominale_mm: numberToString(
+            mergedMeasurement.plica_addominale_mm as number | null | undefined,
+          ),
+          plica_coscia_mm: numberToString(
+            mergedMeasurement.plica_coscia_mm as number | null | undefined,
+          ),
+          plica_gamba_mm: numberToString(
+            mergedMeasurement.plica_gamba_mm as number | null | undefined,
+          ),
 
           // Diametri ossei
-          diametro_omero_cm: numberToString(mergedMeasurement.diametro_omero_cm as number | null | undefined),
+          diametro_omero_cm: numberToString(
+            mergedMeasurement.diametro_omero_cm as number | null | undefined,
+          ),
           diametro_bistiloideo_cm: numberToString(
             mergedMeasurement.diametro_bistiloideo_cm as number | null | undefined,
           ),
-          diametro_femore_cm: numberToString(mergedMeasurement.diametro_femore_cm as number | null | undefined),
+          diametro_femore_cm: numberToString(
+            mergedMeasurement.diametro_femore_cm as number | null | undefined,
+          ),
 
           // Osservazioni cliniche
           rischio_cardiometabolico:
             (mergedMeasurement.rischio_cardiometabolico as string | null | undefined) || '',
-          adiposita_centrale: (mergedMeasurement.adiposita_centrale as string | null | undefined) || '',
+          adiposita_centrale:
+            (mergedMeasurement.adiposita_centrale as string | null | undefined) || '',
           struttura_muscolo_scheletrica:
             (mergedMeasurement.struttura_muscolo_scheletrica as string | null | undefined) || '',
           capacita_dispersione_calore:
@@ -512,7 +577,7 @@ export default function NuovoProgressoPage() {
         athlete_id: profile.user_id ?? authUser.id,
         created_by_profile_id: profile.id,
         date: formData.date,
-        // Valori principali - mappa peso_kg a weight_kg per compatibilitÃ 
+        // Valori principali - mappa peso_kg a weight_kg per compatibilitÃ
         weight_kg: parseNumber(formData.peso_kg),
         massa_grassa_percentuale: parseNumber(formData.massa_grassa_percentuale),
         massa_grassa_kg: parseNumber(formData.massa_grassa_kg),
@@ -529,14 +594,14 @@ export default function NuovoProgressoPage() {
         massa_ossea_kg: parseNumber(formData.massa_ossea_kg),
         massa_residuale_kg: parseNumber(formData.massa_residuale_kg),
 
-        // Circonferenze - mappa torace_cm a chest_cm, vita_cm a waist_cm, fianchi_cm a hips_cm per compatibilitÃ 
+        // Circonferenze - mappa torace_cm a chest_cm, vita_cm a waist_cm, fianchi_cm a hips_cm per compatibilitÃ
         collo_cm: parseNumber(formData.collo_cm),
         spalle_cm: parseNumber(formData.spalle_cm),
         chest_cm: parseNumber(formData.torace_cm), // Mappa a chest_cm esistente
         torace_inspirazione_cm: parseNumber(formData.torace_inspirazione_cm),
         braccio_rilassato_cm: parseNumber(formData.braccio_rilassato_cm),
         braccio_contratto_cm: parseNumber(formData.braccio_contratto_cm),
-        biceps_cm: parseNumber(formData.braccio_contratto_cm), // Mappa anche a biceps_cm per compatibilitÃ 
+        biceps_cm: parseNumber(formData.braccio_contratto_cm), // Mappa anche a biceps_cm per compatibilitÃ
         avambraccio_cm: parseNumber(formData.avambraccio_cm),
         polso_cm: parseNumber(formData.polso_cm),
         vita_alta_cm: parseNumber(formData.vita_alta_cm),
@@ -546,7 +611,7 @@ export default function NuovoProgressoPage() {
         glutei_cm: parseNumber(formData.glutei_cm),
         coscia_alta_cm: parseNumber(formData.coscia_alta_cm),
         coscia_media_cm: parseNumber(formData.coscia_media_cm),
-        thighs_cm: parseNumber(formData.coscia_media_cm), // Mappa anche a thighs_cm per compatibilitÃ 
+        thighs_cm: parseNumber(formData.coscia_media_cm), // Mappa anche a thighs_cm per compatibilitÃ
         coscia_bassa_cm: parseNumber(formData.coscia_bassa_cm),
         ginocchio_cm: parseNumber(formData.ginocchio_cm),
         polpaccio_cm: parseNumber(formData.polpaccio_cm),

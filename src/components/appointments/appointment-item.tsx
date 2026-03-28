@@ -89,16 +89,22 @@ export function AppointmentItem({
       <div className="relative flex items-center gap-4 p-4">
         {/* Rimasti - centrato orizzontalmente e verticalmente nella riga */}
         {typeof lessonsRemaining === 'number' && (
-          <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5"
+            aria-label={`Lezioni rimanenti: ${lessonsRemaining}`}
+          >
             <span
               className={cn(
-                'text-2xl font-bold tabular-nums',
+                'text-2xl font-bold tabular-nums leading-none',
                 lessonsRemaining >= 6 && 'text-[#00C781]',
                 lessonsRemaining >= 2 && lessonsRemaining <= 4 && 'text-[#FFC107]',
                 lessonsRemaining <= 1 && 'text-[#FF3B30]',
               )}
             >
               {lessonsRemaining}
+            </span>
+            <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
+              rimasti
             </span>
           </div>
         )}

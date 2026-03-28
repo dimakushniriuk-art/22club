@@ -107,7 +107,9 @@ function ChatLoadingFullPage({ footerChildren }: { footerChildren?: ReactNode })
           aria-hidden
         />
         <div className="relative z-10 w-full">
-          {footerChildren ?? <div className="h-10 min-[834px]:h-11 rounded-xl border border-white/5 bg-white/5" />}
+          {footerChildren ?? (
+            <div className="h-10 min-[834px]:h-11 rounded-xl border border-white/5 bg-white/5" />
+          )}
         </div>
       </footer>
     </div>
@@ -151,13 +153,7 @@ function ChatRecipientSecondaryRow({
             >
               <div className="relative h-9 w-9 min-[834px]:h-10 min-[834px]:w-10 shrink-0 rounded-full overflow-hidden border border-white/10 bg-white/5">
                 {r.avatar_url ? (
-                  <Image
-                    src={r.avatar_url}
-                    alt={name}
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
+                  <Image src={r.avatar_url} alt={name} fill className="object-cover" sizes="40px" />
                 ) : (
                   <span className="absolute inset-0 flex items-center justify-center text-cyan-400">
                     <User className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
@@ -179,13 +175,7 @@ function ChatRecipientSecondaryRow({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {avatarUrl ? (
             <div className="relative h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-full overflow-hidden border border-white/10 bg-white/5">
-              <Image
-                src={avatarUrl}
-                alt={displayName}
-                fill
-                className="object-cover"
-                sizes="40px"
-              />
+              <Image src={avatarUrl} alt={displayName} fill className="object-cover" sizes="40px" />
             </div>
           ) : (
             <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
@@ -193,8 +183,12 @@ function ChatRecipientSecondaryRow({
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-sm min-[834px]:text-base font-semibold text-text-primary truncate">{displayName}</p>
-            <p className="text-text-tertiary text-[10px] min-[834px]:text-xs truncate">{displayRole}</p>
+            <p className="text-sm min-[834px]:text-base font-semibold text-text-primary truncate">
+              {displayName}
+            </p>
+            <p className="text-text-tertiary text-[10px] min-[834px]:text-xs truncate">
+              {displayRole}
+            </p>
           </div>
         </div>
       )}
@@ -569,10 +563,7 @@ function AthleteChatPageContent() {
   const loadingRecipients = loadingPT
 
   const setTopBarConfig = useContext(AthleteTopBarContext)?.setConfig
-  const chatIcon = useMemo(
-    () => <MessageCircle className="h-5 w-5 text-cyan-400" />,
-    [],
-  )
+  const chatIcon = useMemo(() => <MessageCircle className="h-5 w-5 text-cyan-400" />, [])
 
   const chatSecondaryRow = useMemo(() => {
     if (!effectiveConversation) return null

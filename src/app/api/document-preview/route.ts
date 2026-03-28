@@ -5,8 +5,7 @@ import { normalizeRole } from '@/lib/utils/role-normalizer'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Bucket serviti dal proxy (allineare a `STORAGE_PREVIEW_BUCKETS` in `lib/documents`). */
 const ALLOWED_BUCKETS = new Set([

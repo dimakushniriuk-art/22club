@@ -9,7 +9,6 @@ import { Button } from '@/components/ui'
 import { TrendingUp, Award, Activity } from 'lucide-react'
 import { useAuth } from '@/providers/auth-provider'
 import { AllenamentiPageHeader } from './AllenamentiPageHeader'
-import { AllenamentoOggiCard } from './AllenamentoOggiCard'
 import { WorkoutPlanCard } from './WorkoutPlanCard'
 import { useAllenamenti } from '@/hooks/use-allenamenti'
 import { useWorkouts } from '@/hooks/use-workouts'
@@ -23,49 +22,6 @@ const logger = createLogger('app:home:allenamenti:page')
 
 const CARD_DS =
   'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md transition-colors duration-200 hover:border-white/20'
-
-// Funzione helper per formattare la data in italiano
-function formatAppointmentDate(dateString: string): { day: string; time: string } {
-  try {
-    // Gestisce sia DATE che TIMESTAMP
-    const date = new Date(dateString)
-
-    // Verifica che la data sia valida
-    if (isNaN(date.getTime())) {
-      return { day: 'Data non valida', time: '' }
-    }
-
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const appointmentDay = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-
-    let day: string
-    if (appointmentDay.getTime() === today.getTime()) {
-      day = 'Oggi'
-    } else if (appointmentDay.getTime() === tomorrow.getTime()) {
-      day = 'Domani'
-    } else {
-      day = date.toLocaleDateString('it-IT', { weekday: 'long' })
-      day = day.charAt(0).toUpperCase() + day.slice(1)
-    }
-
-    // Se la data ha un'ora, mostra l'ora, altrimenti mostra solo la data
-    const hasTime = dateString.includes('T') || dateString.includes(' ')
-    const time = hasTime
-      ? date.toLocaleTimeString('it-IT', {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : ''
-
-    return { day, time }
-  } catch (err) {
-    logger.warn('Errore formattazione data', err, { dateString })
-    return { day: 'Data non valida', time: '' }
-  }
-}
 
 // Funzione per calcolare lo streak (giorni consecutivi con allenamenti completati)
 function calculateStreak(allenamenti: Array<{ data: string; stato: string }>): number {
@@ -168,125 +124,10 @@ function computeStatsFromLogs(
   return { settimana: questaSettimana, mese: questoMese, streak, volume_medio: volumeMedio }
 }
 
-/** Organizza logs in oggi / programmati / completati (funzione pura per useMemo). */
-function organizeWorkoutLogs(
-  workoutLogs: Array<{
-    id: string
-    data?: string
-    stato?: string
-    scheda_nome?: string | null
-    note?: string | null
-    durata_minuti?: number | null
-    esercizi_totali?: number | null
-    esercizi_completati?: number | null
-    volume_totale?: number | null
-    trainer_name?: string | null
-  }>,
-) {
-  if (!workoutLogs || workoutLogs.length === 0) {
-    return { oggi: null, programmati: [], completati: [] }
-  }
-  const validLogs = workoutLogs.filter(
-    (log): log is typeof log & { data: string; stato: string } => {
-      try {
-        if (typeof log.data !== 'string' || typeof log.stato !== 'string') return false
-        const date = new Date(log.data)
-        return !isNaN(date.getTime())
-      } catch {
-        return false
-      }
-    },
-  )
-  if (validLogs.length === 0) {
-    return { oggi: null, programmati: [], completati: [] }
-  }
-  const oggi = new Date()
-  oggi.setHours(0, 0, 0, 0)
-  const oggiEnd = new Date(oggi)
-  oggiEnd.setHours(23, 59, 59, 999)
-  const allenamentoOggi = validLogs.find((a) => {
-    try {
-      const data = new Date(a.data!)
-      if (isNaN(data.getTime())) return false
-      data.setHours(0, 0, 0, 0)
-      return (
-        data.getTime() === oggi.getTime() && (a.stato === 'programmato' || a.stato === 'in_corso')
-      )
-    } catch {
-      return false
-    }
-  })
-  const programmati = validLogs
-    .filter((a) => {
-      try {
-        const data = new Date(a.data!)
-        if (isNaN(data.getTime())) return false
-        return data > oggiEnd && a.stato === 'programmato'
-      } catch {
-        return false
-      }
-    })
-    .slice(0, 5)
-  const completati = validLogs
-    .filter((a) => a.stato === 'completato')
-    .sort((a, b) => {
-      try {
-        const dateA = new Date(a.data!).getTime()
-        const dateB = new Date(b.data!).getTime()
-        if (isNaN(dateA) || isNaN(dateB)) return 0
-        return dateB - dateA
-      } catch {
-        return 0
-      }
-    })
-    .slice(0, 5)
-  return {
-    oggi: allenamentoOggi
-      ? {
-          id: allenamentoOggi.id,
-          titolo: allenamentoOggi.scheda_nome || 'Allenamento',
-          descrizione: allenamentoOggi.note || 'Sessione di allenamento',
-          durata: allenamentoOggi.durata_minuti || 60,
-          esercizi_totali: allenamentoOggi.esercizi_totali || 0,
-          esercizi_completati: allenamentoOggi.esercizi_completati || 0,
-          pt: allenamentoOggi.trainer_name || 'Trainer',
-          orario: formatAppointmentDate(allenamentoOggi.data!).time,
-        }
-      : null,
-    programmati: programmati.map((a) => {
-      const { day, time } = formatAppointmentDate(a.data!)
-      return {
-        id: a.id,
-        titolo: a.scheda_nome || 'Allenamento',
-        data: day,
-        orario: time,
-        durata: a.durata_minuti || 60,
-        esercizi: a.esercizi_totali || 0,
-        pt: a.trainer_name || 'Trainer',
-      }
-    }),
-    completati: completati.map((a) => ({
-      id: a.id,
-      titolo: a.scheda_nome || 'Allenamento',
-      data: a.data!,
-      durata: a.durata_minuti || 0,
-      esercizi_completati: a.esercizi_completati || 0,
-      esercizi_totali: a.esercizi_totali || 0,
-      volume: a.volume_totale || 0,
-      note: a.note || '',
-    })),
-  }
-}
-
 function AllenamentiHomePageContent() {
   const router = useRouter()
   const { user } = useAuth()
   const supabase = useSupabaseClient()
-  const [oggiMedia, setOggiMedia] = useState<{
-    video_url: string | null
-    thumb_url: string | null
-    image_url: string | null
-  } | null>(null)
   const [trainerAvatarUrl, setTrainerAvatarUrl] = useState<string | null>(null)
 
   // Type guard per user
@@ -302,7 +143,7 @@ function AllenamentiHomePageContent() {
 
   // Normalizza il ruolo usando utility function centralizzata
   const normalizedRoleRaw = useNormalizedRole(user?.role)
-  // Converte in formato legacy per compatibilitÃ 
+  // Converte in formato legacy per compatibilitÃ
   const normalizedRole = useMemo(() => {
     return toLegacyRole(normalizedRoleRaw)
   }, [normalizedRoleRaw])
@@ -355,130 +196,11 @@ function AllenamentiHomePageContent() {
   const stats = useMemo(() => computeStatsFromLogs(workoutLogs ?? []), [workoutLogs])
 
   const handleBack = useCallback(() => router.push('/home'), [router])
-  const handleStartOggi = useCallback(() => router.push('/home/allenamenti/oggi'), [router])
-
-  // Recupera media (video/thumbnail) per l'allenamento di oggi
-  useEffect(() => {
-    let cancelled = false
-    const fetchOggiMedia = async () => {
-      if (!workoutLogs || workoutLogs.length === 0) {
-        if (!cancelled) setOggiMedia(null)
-        return
-      }
-
-      const oggi = new Date()
-      oggi.setHours(0, 0, 0, 0)
-
-      const allenamentoOggi = workoutLogs.find((a) => {
-        try {
-          const data = new Date(a.data)
-          if (isNaN(data.getTime())) return false
-          data.setHours(0, 0, 0, 0)
-          return (
-            data.getTime() === oggi.getTime() &&
-            (a.stato === 'programmato' || a.stato === 'in_corso')
-          )
-        } catch {
-          return false
-        }
-      })
-
-      if (!allenamentoOggi?.scheda_id) {
-        if (!cancelled) setOggiMedia(null)
-        return
-      }
-
-      try {
-        // Recupera il primo esercizio del workout plan per ottenere video/thumbnail
-        const { data: workoutDay, error: dayError } = await supabase
-          .from('workout_days')
-          .select('id')
-          .eq('workout_plan_id', allenamentoOggi.scheda_id)
-          .order('day_number', { ascending: true })
-          .limit(1)
-          .single()
-
-        if (cancelled) return
-        if (dayError || !workoutDay) {
-          setOggiMedia(null)
-          return
-        }
-
-        const workoutDayId = (workoutDay as { id?: string })?.id
-        if (!workoutDayId) {
-          setOggiMedia(null)
-          return
-        }
-
-        const { data: exercise, error: exerciseError } = await supabase
-          .from('workout_day_exercises')
-          .select('exercise_id')
-          .eq('workout_day_id', workoutDayId)
-          .order('order_index', { ascending: true })
-          .limit(1)
-          .single()
-
-        if (cancelled) return
-        if (exerciseError || !exercise) {
-          setOggiMedia(null)
-          return
-        }
-
-        const exerciseId = (exercise as { exercise_id?: string })?.exercise_id
-        if (!exerciseId) {
-          setOggiMedia(null)
-          return
-        }
-
-        const { data: exerciseDetails, error: detailsError } = await supabase
-          .from('exercises')
-          .select('video_url, thumb_url, image_url')
-          .eq('id', exerciseId)
-          .single()
-
-        if (cancelled) return
-        if (detailsError || !exerciseDetails) {
-          setOggiMedia(null)
-          return
-        }
-
-        setOggiMedia({
-          video_url: (exerciseDetails as { video_url?: string | null })?.video_url ?? null,
-          thumb_url: (exerciseDetails as { thumb_url?: string | null })?.thumb_url ?? null,
-          image_url: (exerciseDetails as { image_url?: string | null })?.image_url ?? null,
-        })
-      } catch (error) {
-        if (!cancelled) {
-          logger.warn('Errore recupero media allenamento oggi', error, {
-            scheda_id: allenamentoOggi.scheda_id,
-          })
-          setOggiMedia(null)
-        }
-      }
-    }
-
-    fetchOggiMedia()
-    return () => {
-      cancelled = true
-    }
-  }, [workoutLogs, supabase])
-
-  const organizedAllenamenti = useMemo(() => organizeWorkoutLogs(workoutLogs ?? []), [workoutLogs])
 
   const workoutsAttivi = useMemo(
     () => (workouts ?? []).filter((w) => w.status === 'attivo'),
     [workouts],
   )
-
-  const handleVideoPlay = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
-    e.currentTarget.play().catch(() => {})
-  }, [])
-  const handleVideoPause = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
-    const video = e.currentTarget
-    video.pause()
-    video.currentTime = 0
-  }, [])
-  const handleVideoError = useCallback(() => setOggiMedia(null), [])
 
   // Una sola notifica per tipo di errore (evita toast multipli da re-render/remount)
   const lastNotifiedAllenamentiRef = useRef<string | null>(null)
@@ -536,59 +258,48 @@ function AllenamentiHomePageContent() {
         <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
-            <CardContent className="flex items-center gap-2.5 p-0">
+              <CardContent className="flex items-center gap-2.5 p-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                   <Activity className="h-4 w-4 text-cyan-400" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                  Questa settimana
                 </div>
-                <div className="text-base font-bold leading-tight text-text-primary">
-                  {stats.settimana}
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Questa settimana
+                  </div>
+                  <div className="text-base font-bold leading-tight text-text-primary">
+                    {stats.settimana}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
             <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
               <CardContent className="flex items-center gap-2.5 p-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                   <TrendingUp className="h-4 w-4 text-cyan-400" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                  Questo mese
                 </div>
-                <div className="text-base font-bold leading-tight text-text-primary">
-                  {stats.mese}
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                    Questo mese
+                  </div>
+                  <div className="text-base font-bold leading-tight text-text-primary">
+                    {stats.mese}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </div>
-
-          {organizedAllenamenti.oggi && (
-          <AllenamentoOggiCard
-            oggi={organizedAllenamenti.oggi}
-            oggiMedia={oggiMedia}
-            onStart={handleStartOggi}
-            onVideoPlay={handleVideoPlay}
-            onVideoPause={handleVideoPause}
-            onVideoError={handleVideoError}
-          />
-          )}
 
           {workoutsAttivi.length > 0 && (
-          <div className="space-y-3 sm:space-y-4">
-            <h2 className="text-base font-semibold tracking-tight text-text-primary sm:text-lg">
-              Schede Assegnate
-            </h2>
-            <div className="space-y-3">
-              {workoutsAttivi.map((workout) => (
-                <WorkoutPlanCard key={workout.id} workout={workout} />
-              ))}
+            <div className="space-y-3 sm:space-y-4">
+              <h2 className="text-base font-semibold tracking-tight text-text-primary sm:text-lg">
+                Schede Assegnate
+              </h2>
+              <div className="space-y-3">
+                {workoutsAttivi.map((workout) => (
+                  <WorkoutPlanCard key={workout.id} workout={workout} />
+                ))}
+              </div>
             </div>
-          </div>
           )}
         </div>
 
@@ -633,7 +344,11 @@ function AllenamentiHomePageContent() {
                 )}
               </div>
             </div>
-            <Link href="/home/progressi" prefetch={true} className="block w-full touch-manipulation">
+            <Link
+              href="/home/progressi"
+              prefetch={true}
+              className="block w-full touch-manipulation"
+            >
               <Button className="h-10 min-h-[44px] w-full gap-1.5 rounded-xl bg-cyan-500 text-xs font-medium text-white hover:bg-cyan-400 sm:h-10 sm:text-sm">
                 <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Vedi i tuoi progressi

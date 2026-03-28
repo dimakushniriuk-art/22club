@@ -25,8 +25,7 @@ const HEADER_BASE =
 const HEADER_BASE_CHAT = 'overflow-hidden bg-black border-b border-white/10 p-3 min-[834px]:p-4'
 const HEADER_FIXED_TOP = 'fixed inset-x-0 z-20 border-x-0 border-t-0'
 const HEADER_FIXED_PT_SAFE = 'top-0 pt-[calc(10px+env(safe-area-inset-top,0px))]'
-const HEADER_FIXED_PT_STACKED =
-  'top-[var(--home-athlete-brand-top,0px)] pt-[10px] min-[834px]:pt-3'
+const HEADER_FIXED_PT_STACKED = 'top-[var(--home-athlete-brand-top,0px)] pt-[10px] min-[834px]:pt-3'
 const HEADER_STATIC = 'relative rounded-lg pt-3 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]'
 
 const CYAN_LINE_STYLE = {
@@ -63,15 +62,7 @@ export function PageHeaderFixed({
       icon: iconRef.current,
     })
     return () => setTopBarConfig(null)
-  }, [
-    setTopBarConfig,
-    stackBelowBrand,
-    isStatic,
-    title,
-    subtitle,
-    backHref,
-    hasOnBackHandler,
-  ])
+  }, [setTopBarConfig, stackBelowBrand, isStatic, title, subtitle, backHref, hasOnBackHandler])
 
   if (topBarCtx && stackBelowBrand && !isStatic) {
     return null
@@ -81,8 +72,7 @@ export function PageHeaderFixed({
   const fixedPosition = isStatic
     ? HEADER_STATIC
     : `${HEADER_FIXED_TOP} ${stackBelowBrand ? HEADER_FIXED_PT_STACKED : HEADER_FIXED_PT_SAFE}`
-  const headerClass =
-    `${base} ${fixedPosition}${className ? ` ${className}` : ''}`.trim()
+  const headerClass = `${base} ${fixedPosition}${className ? ` ${className}` : ''}`.trim()
   const hasBack = backHref != null || onBack != null
   const backContent =
     hasBack &&

@@ -179,8 +179,12 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
             trailing={
               certificatoStatus ? (
                 <Badge variant={certificatoStatus.color as BadgeProps['variant']} size="sm">
-                  {certificatoStatus.status === 'scaduto' && <AlertCircle className="mr-1 h-3 w-3" />}
-                  {certificatoStatus.status === 'valido' && <CheckCircle className="mr-1 h-3 w-3" />}
+                  {certificatoStatus.status === 'scaduto' && (
+                    <AlertCircle className="mr-1 h-3 w-3" />
+                  )}
+                  {certificatoStatus.status === 'valido' && (
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                  )}
                   {certificatoStatus.text}
                 </Badge>
               ) : undefined
@@ -210,14 +214,21 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      openPrivateStorageFile('athlete-certificates', medical.certificato_medico_url!)
+                      openPrivateStorageFile(
+                        'athlete-certificates',
+                        medical.certificato_medico_url!,
+                      )
                     }
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Apri
                   </Button>
                   {isEditing && (
-                    <Button variant="outline" size="sm" onClick={() => setShowUploadCertificato(true)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowUploadCertificato(true)}
+                    >
                       <Upload className="mr-2 h-4 w-4" />
                       Sostituisci
                     </Button>
@@ -229,7 +240,10 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                 <FileText className="mx-auto mb-4 h-12 w-12 text-text-tertiary" aria-hidden />
                 <p className="mb-4 text-text-secondary">Nessun certificato caricato</p>
                 {isEditing && (
-                  <Button onClick={() => setShowUploadCertificato(true)} className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setShowUploadCertificato(true)}
+                    className="flex items-center gap-2"
+                  >
                     <Upload className="h-4 w-4" />
                     Carica certificato
                   </Button>
@@ -299,7 +313,9 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
             )}
           </div>
 
-          <AthleteProfileSectionHeading icon={AlertCircle}>Allergie e patologie</AthleteProfileSectionHeading>
+          <AthleteProfileSectionHeading icon={AlertCircle}>
+            Allergie e patologie
+          </AthleteProfileSectionHeading>
           <div className="px-4 py-4 sm:px-5 sm:py-5">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-3">
@@ -388,21 +404,23 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                 )}
                 {(isEditing ? patologieList : medical?.patologie || []).length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {(isEditing ? patologieList : medical?.patologie || []).map((patologia, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] text-primary"
-                      >
-                        {patologia}
-                        {isEditing && (
-                          <X
-                            className="h-3 w-3 cursor-pointer opacity-80 hover:opacity-100"
-                            onClick={() => removeArrayItem('patologie', index)}
-                          />
-                        )}
-                      </Badge>
-                    ))}
+                    {(isEditing ? patologieList : medical?.patologie || []).map(
+                      (patologia, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] text-primary"
+                        >
+                          {patologia}
+                          {isEditing && (
+                            <X
+                              className="h-3 w-3 cursor-pointer opacity-80 hover:opacity-100"
+                              onClick={() => removeArrayItem('patologie', index)}
+                            />
+                          )}
+                        </Badge>
+                      ),
+                    )}
                   </div>
                 ) : (
                   <p className="text-xs text-text-tertiary">
@@ -467,9 +485,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
       {showUploadCertificato && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-3"
-          onClick={() =>
-            !uploadCertificatoMutation.isPending && setShowUploadCertificato(false)
-          }
+          onClick={() => !uploadCertificatoMutation.isPending && setShowUploadCertificato(false)}
         >
           <Card
             variant="default"
@@ -528,9 +544,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                   id="tipo-certificato"
                   value={uploadTipo}
                   onChange={(e) =>
-                    setUploadTipo(
-                      e.target.value as 'agonistico' | 'non_agonistico' | 'sportivo',
-                    )
+                    setUploadTipo(e.target.value as 'agonistico' | 'non_agonistico' | 'sportivo')
                   }
                   className="w-full rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-2 text-xs text-text-primary focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
                   disabled={uploadCertificatoMutation.isPending}

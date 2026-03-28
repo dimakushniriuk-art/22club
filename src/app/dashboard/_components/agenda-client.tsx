@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useToast } from '@/components/ui/toast'
 import { addDebitFromAppointment } from '@/lib/credits/ledger'
+import { hasOverlappingAppCoachedWorkoutDebit } from '@/lib/credits/session-debit-dedup'
+import { coerceLedgerServiceType } from '@/lib/abbonamenti-service-type'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 
 const logger = createLogger('app:dashboard:_components:agenda-client')
@@ -130,15 +132,30 @@ export function AgendaClient({
         return
       }
 
-      // Ledger: scalata credito (idempotenza gestita in addDebitFromAppointment)
       const { data: apt } = await supabase
         .from('appointments')
-        .select('id, athlete_id')
+        .select('id, athlete_id, starts_at, ends_at, service_type')
         .eq('id', eventId)
         .single()
       if (apt?.athlete_id) {
         try {
-          await addDebitFromAppointment({ id: eventId, athlete_id: apt.athlete_id }, null)
+          const skipForAppCoached = await hasOverlappingAppCoachedWorkoutDebit(
+            supabase,
+            apt.athlete_id,
+            apt.starts_at,
+            apt.ends_at,
+            apt.service_type,
+          )
+          if (!skipForAppCoached) {
+            await addDebitFromAppointment(
+              {
+                id: eventId,
+                athlete_id: apt.athlete_id,
+                service_type: coerceLedgerServiceType(apt.service_type),
+              },
+              null,
+            )
+          }
         } catch (ledgerErr) {
           logger.warn('Errore insert credit_ledger DEBIT', ledgerErr, { eventId })
           // Non bloccare: appuntamento già completato

@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import { fetchAthleteTrainingLessonsSnapshot } from '@/lib/credits/athlete-training-lessons-display'
 import { calculateStreakDays, calculateStreakFromLogs } from '@/lib/streak-calculator'
 
 const logger = createLogger('hooks:home-profile:use-athlete-stats')
@@ -71,12 +72,27 @@ export function useAthleteStats({
 
       const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const monthStartStr = startOfMonth.toISOString().split('T')[0]
+      // Data locale (YYYY-MM-DD) per allineare il filtro mese a workout_logs.data (date)
+      const monthStartStr = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-01`
+
+      const { data: profileResolveRow, error: profileResolveErr } = await supabase
+        .from('profiles')
+        .select('id')
+        .or(`id.eq.${athleteUserId},user_id.eq.${athleteUserId}`)
+        .maybeSingle()
+
+      if (profileResolveErr) {
+        logger.warn('Risoluzione profilo per conteggi workout', profileResolveErr, {
+          athleteUserId,
+        })
+      }
+
+      const profileRowTyped = profileResolveRow as { id?: string } | null
+      const workoutOwnerId = profileRowTyped?.id ?? athleteUserId
 
       const [
         profileCompleteResult,
         progressScoreResult,
-        profileResolveResult,
         totalAthlete,
         totalAtleta,
         monthAthlete,
@@ -87,27 +103,22 @@ export function useAthleteStats({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.rpc as any)('calculate_athlete_progress_score', { athlete_uuid: athleteUserId }),
         supabase
-          .from('profiles')
-          .select('id')
-          .or(`id.eq.${athleteUserId},user_id.eq.${athleteUserId}`)
-          .maybeSingle(),
+          .from('workout_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('athlete_id', workoutOwnerId),
         supabase
           .from('workout_logs')
           .select('*', { count: 'exact', head: true })
-          .eq('athlete_id', athleteUserId),
+          .eq('atleta_id', workoutOwnerId),
         supabase
           .from('workout_logs')
           .select('*', { count: 'exact', head: true })
-          .eq('atleta_id', athleteUserId),
-        supabase
-          .from('workout_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('athlete_id', athleteUserId)
+          .eq('athlete_id', workoutOwnerId)
           .gte('data', monthStartStr),
         supabase
           .from('workout_logs')
           .select('*', { count: 'exact', head: true })
-          .eq('atleta_id', athleteUserId)
+          .eq('atleta_id', workoutOwnerId)
           .gte('data', monthStartStr),
       ])
 
@@ -142,13 +153,7 @@ export function useAthleteStats({
       const pesoAttuale = fitness?.peso_attuale_kg || smartTracking?.peso_kg || null
       const obiettivoPeso = fitness?.obiettivo_peso_kg || null
 
-      if (profileResolveResult.error) {
-        logger.warn('Risoluzione profile id (lezioni/streak)', profileResolveResult.error, {
-          athleteUserId,
-        })
-      }
-      const profileRow = profileResolveResult.data as { id?: string } | null
-      const profileId = profileRow?.id ?? null
+      const profileId = profileRowTyped?.id ?? null
 
       const progressScoreValue =
         typeof progressScore === 'object' && progressScore !== null
@@ -161,117 +166,21 @@ export function useAthleteStats({
           return administrative?.lezioni_rimanenti || 0
         }
 
-        const loadPayments = async (): Promise<Array<{ lessons_purchased?: number }>> => {
-          try {
-            let result = await supabase
-              .from('payments')
-              .select('lessons_purchased')
-              .eq('athlete_id', profileId)
-              .eq('status', 'completed')
-
-            if (result.error && result.error.code !== 'PGRST116') {
-              logger.debug('Tentativo con profileId ha dato errore, provo con user_id', undefined, {
-                profileId,
-                athleteUserId,
-                error: result.error,
-              })
-              const fallbackResult = await supabase
-                .from('payments')
-                .select('lessons_purchased')
-                .eq('athlete_id', athleteUserId)
-                .eq('status', 'completed')
-              if (!fallbackResult.error) {
-                result = fallbackResult
-              }
-            }
-
-            if (result.error) {
-              if (result.error.code === '42703' || result.error.message?.includes('column')) {
-                return []
-              }
-              logger.warn('Errore caricamento payments', result.error, {
-                profileId,
-                athleteUserId,
-              })
-              return []
-            }
-            return result.data || []
-          } catch (err) {
-            logger.warn('Errore caricamento payments (catch)', err, { profileId, athleteUserId })
-            return []
-          }
-        }
-
-        const loadAppointments = async (): Promise<Array<{ id: string }> | null> => {
-          try {
-            let result = await supabase
-              .from('appointments')
-              .select('id')
-              .eq('athlete_id', profileId)
-              .eq('status', 'completato')
-
-            if (result.error && result.error.code !== 'PGRST116') {
-              const fallbackResult = await supabase
-                .from('appointments')
-                .select('id')
-                .eq('athlete_id', athleteUserId)
-                .eq('status', 'completato')
-              if (!fallbackResult.error) {
-                result = fallbackResult
-              }
-            }
-
-            if (result.error) {
-              logger.warn('Errore caricamento appointments', result.error, {
-                profileId,
-                athleteUserId,
-              })
-              return null
-            }
-            return result.data
-          } catch (err) {
-            logger.warn('Errore caricamento appointments (catch)', err, {
-              profileId,
-              athleteUserId,
-            })
-            return null
-          }
-        }
-
-        const [payments, completedAppointments] = await Promise.all([
-          loadPayments(),
-          loadAppointments(),
-        ])
-
-        const totalPurchased = (payments || []).reduce(
-          (sum, p) => sum + (p.lessons_purchased || 0),
-          0,
-        )
-        const totalUsed = completedAppointments?.length || 0
-        const lezioniRim = Math.max(0, totalPurchased - totalUsed)
-
-        logger.debug('Lezioni rimanenti calcolate', undefined, {
-          profileId,
-          athleteUserId,
-          totalPurchased,
-          totalUsed,
-          lezioniRim,
-          paymentsCount: payments?.length || 0,
-          appointmentsCount: completedAppointments?.length || 0,
-          paymentsData: payments,
-        })
-
-        if (lezioniRim === 0 && (payments?.length || 0) > 0) {
-          logger.warn('Lezioni rimanenti = 0 ma ci sono pagamenti', undefined, {
+        try {
+          const snap = await fetchAthleteTrainingLessonsSnapshot(supabase, profileId)
+          logger.debug('Lezioni rimanenti (ledger + contatori)', undefined, {
             profileId,
             athleteUserId,
-            paymentsCount: payments?.length || 0,
-            totalPurchased,
-            totalUsed,
+            ...snap,
           })
+          return snap.totalRemaining
+        } catch (err) {
+          logger.warn('Errore snapshot lezioni PT, fallback amministrativo', err, {
+            profileId,
+            athleteUserId,
+          })
+          return administrative?.lezioni_rimanenti || 0
         }
-
-        return lezioniRim
       }
 
       let lezioniRim = administrative?.lezioni_rimanenti || 0
@@ -283,11 +192,9 @@ export function useAthleteStats({
           calculateStreakFromLogs(supabase, athleteUserId, profileId),
         ])
       } catch (lezioniError) {
-        logger.warn(
-          'Errore calcolo lezioni/streak parallelo, uso fallback lezioni',
-          lezioniError,
-          { athleteUserId },
-        )
+        logger.warn('Errore calcolo lezioni/streak parallelo, uso fallback lezioni', lezioniError, {
+          athleteUserId,
+        })
         lezioniRim = administrative?.lezioni_rimanenti || 0
         try {
           streakGiorni = await calculateStreakFromLogs(supabase, athleteUserId, profileId)
@@ -365,6 +272,24 @@ export function useAthleteStats({
     smartTracking?.peso_kg,
     administrative?.lezioni_rimanenti,
   ])
+
+  useEffect(() => {
+    if (authLoading || !athleteUserId) return
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void loadStats()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [authLoading, athleteUserId, loadStats])
+
+  useEffect(() => {
+    if (authLoading || !athleteUserId) return
+    const onLessonsRefresh = () => {
+      void loadStats()
+    }
+    window.addEventListener('22club:athlete-lessons-refresh', onLessonsRefresh)
+    return () => window.removeEventListener('22club:athlete-lessons-refresh', onLessonsRefresh)
+  }, [authLoading, athleteUserId, loadStats])
 
   const calculateProgress = useMemo(() => {
     return () => {

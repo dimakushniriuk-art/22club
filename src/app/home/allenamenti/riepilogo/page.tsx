@@ -34,6 +34,12 @@ import {
   X,
 } from 'lucide-react'
 import { formatDateTime } from '@/lib/format'
+import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
+import { useToast } from '@/components/ui/toast'
+import {
+  WORKOUT_REPS_MAX_SENTINEL,
+  formatWorkoutRepsLabel,
+} from '@/lib/constants/workout-reps-select'
 
 const logger = createLogger('app:home:allenamenti:riepilogo:page')
 
@@ -43,6 +49,11 @@ const CARD_DS =
 function formatVolumeIt(kg: number): string {
   const n = Math.round(kg)
   return new Intl.NumberFormat('it-IT').format(n)
+}
+
+/** Ripetizioni MAX (-1) non contribuiscono al volume kg·rep. */
+function repsForVolumeKgRep(reps: number): number {
+  return reps === WORKOUT_REPS_MAX_SENTINEL ? 0 : reps
 }
 
 function difficultyLabelIt(code: string): string {
@@ -118,6 +129,7 @@ function RiepilogoPageContent() {
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
   const supabase = useSupabaseClient()
+  const { addToast } = useToast()
 
   // Type guard per user
   const isValidUser = user && isValidProfile(user)
@@ -298,6 +310,7 @@ function RiepilogoPageContent() {
           Tables<'workout_logs'>,
           'id' | 'scheda_id' | 'data' | 'created_at' | 'durata_minuti'
         > & {
+          stato?: string | null
           note?: string | null
           workout_day_id?: string | null
           completed_at?: string | null
@@ -419,7 +432,8 @@ function RiepilogoPageContent() {
 
         // Set salvati ma non collegati al log (o log senza workout_day_id su scheda multi-giorno): cerca su TUTTA la scheda nella finestra di chiusura sessione
         const allWdeIdsOnPlan = days.flatMap(
-          (d) => d.workout_day_exercises?.map((w) => w.id).filter((x): x is string => Boolean(x)) ?? [],
+          (d) =>
+            d.workout_day_exercises?.map((w) => w.id).filter((x): x is string => Boolean(x)) ?? [],
         )
         if (workoutLogId && setsByWdeId.size === 0 && allWdeIdsOnPlan.length > 0) {
           const anchor =
@@ -567,7 +581,7 @@ function RiepilogoPageContent() {
                 updated_at: exerciseData.updated_at || new Date().toISOString(),
               },
               target_sets: ex.target_sets || 0,
-              target_reps: ex.target_reps || 0,
+              target_reps: ex.target_reps ?? 0,
               target_weight: ex.target_weight || 0,
               sets,
               is_completed: sets.length > 0 && sets.every((s) => s.is_completed),
@@ -581,9 +595,7 @@ function RiepilogoPageContent() {
           (activeDay?.day_number != null ? `Giorno ${activeDay.day_number}` : '') ||
           ''
         const planTitle = scheda?.name?.trim() || 'Allenamento'
-        const workoutTitleCombined = dayLabel
-          ? `${planTitle} — ${dayLabel}`
-          : planTitle
+        const workoutTitleCombined = dayLabel ? `${planTitle} — ${dayLabel}` : planTitle
 
         const totalExercises = exercises.length
         const completedExercises = exercises.filter((ex) => ex.is_completed).length
@@ -594,7 +606,11 @@ function RiepilogoPageContent() {
         )
         const totalVolumeFromSets = exercises.reduce(
           (sum, ex) =>
-            sum + ex.sets.reduce((s, set) => s + set.performed_weight * set.performed_reps, 0),
+            sum +
+            ex.sets.reduce(
+              (acc, set) => acc + set.performed_weight * repsForVolumeKgRep(set.performed_reps),
+              0,
+            ),
           0,
         )
 
@@ -644,6 +660,25 @@ function RiepilogoPageContent() {
         }
 
         if (cancelled) return
+
+        const stLog = String(typedWorkoutLog.stato ?? '').toLowerCase()
+        const logCompleted = stLog === 'completato' || stLog === 'completed'
+        const logCoached =
+          Boolean(typedWorkoutLog.is_coached) ||
+          String(typedWorkoutLog.execution_mode ?? '').toLowerCase() === 'coached'
+        if (logCompleted && logCoached && typedWorkoutLog.id) {
+          const debit = await requestCoachedSessionDebitClient(typedWorkoutLog.id)
+          if (!debit.ok && !cancelled) {
+            addToast({
+              title: 'Attenzione',
+              message:
+                'Se le lezioni non risultano aggiornate dopo questa sessione con trainer, contatta la reception.',
+              variant: 'warning',
+            })
+          }
+        }
+
+        if (cancelled) return
         setSummary(summaryData)
       } catch (err) {
         if (cancelled) return
@@ -679,7 +714,7 @@ function RiepilogoPageContent() {
     return () => {
       cancelled = true
     }
-  }, [authLoading, athleteProfileId, workoutIdFromParams, supabase])
+  }, [authLoading, athleteProfileId, workoutIdFromParams, supabase, addToast])
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
@@ -894,386 +929,401 @@ function RiepilogoPageContent() {
             icon={<Trophy className="h-5 w-5 text-cyan-400" />}
           />
 
-        <Card className={CARD_DS}>
-          <CardContent className="relative z-10 space-y-4 p-4 sm:p-6">
-            <div className="text-center sm:space-y-1">
-              <div className="mb-3 flex justify-center sm:mb-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-inner sm:h-14 sm:w-14">
-                  <Trophy className="h-6 w-6 text-cyan-400 sm:h-7 sm:w-7" />
+          <Card className={CARD_DS}>
+            <CardContent className="relative z-10 space-y-4 p-4 sm:p-6">
+              <div className="text-center sm:space-y-1">
+                <div className="mb-3 flex justify-center sm:mb-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-inner sm:h-14 sm:w-14">
+                    <Trophy className="h-6 w-6 text-cyan-400 sm:h-7 sm:w-7" />
+                  </div>
                 </div>
-              </div>
-              <h2 className="text-balance text-lg font-semibold leading-snug text-text-primary min-[834px]:text-xl">
-                {summary.workout_title}
-              </h2>
-              <p className="mt-1 text-text-tertiary text-xs min-[834px]:text-sm">
-                Completato il {formatDateTime(summary.completed_at)}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                {summary.is_coached ? (
-                  <Badge
-                    variant="info"
-                    size="sm"
-                    className="rounded-full border-cyan-400/40 bg-cyan-500/15 text-[11px] text-cyan-200"
-                  >
-                    <UserRound className="mr-1 h-3 w-3" aria-hidden />
-                    Con trainer
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full border-white/15 text-[11px] text-text-secondary"
-                  >
-                    In autonomia
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {summary.session_note ? (
-              <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left">
-                <p className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
-                  Nota sessione
+                <h2 className="text-balance text-lg font-semibold leading-snug text-text-primary min-[834px]:text-xl">
+                  {summary.workout_title}
+                </h2>
+                <p className="mt-1 text-text-tertiary text-xs min-[834px]:text-sm">
+                  Completato il {formatDateTime(summary.completed_at)}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-text-secondary">
-                  {summary.session_note}
-                </p>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  {summary.is_coached ? (
+                    <Badge
+                      variant="info"
+                      size="sm"
+                      className="rounded-full border-cyan-400/40 bg-cyan-500/15 text-[11px] text-cyan-200"
+                    >
+                      <UserRound className="mr-1 h-3 w-3" aria-hidden />
+                      Con trainer
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full border-white/15 text-[11px] text-text-secondary"
+                    >
+                      In autonomia
+                    </Badge>
+                  )}
+                </div>
               </div>
-            ) : null}
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 min-[1100px]:gap-4">
-              <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                  <Activity className="h-4 w-4 text-cyan-400" />
+              {summary.session_note ? (
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
+                    Nota sessione
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+                    {summary.session_note}
+                  </p>
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                    Esercizi
-                  </div>
-                  <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                    {summary.completed_exercises}/{summary.total_exercises}
-                  </div>
-                  <div className="text-[10px] text-text-tertiary">completati</div>
-                </div>
-              </div>
-              <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                  <ListOrdered className="h-4 w-4 text-cyan-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Serie</div>
-                  <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                    {summary.completed_sets}/{summary.total_sets}
-                  </div>
-                  <div className="text-[10px] text-text-tertiary">registrate</div>
-                </div>
-              </div>
-              <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                  <Clock className="h-4 w-4 text-cyan-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Durata</div>
-                  <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                    {formatTime(summary.total_time)}
-                  </div>
-                  <div className="text-[10px] text-text-tertiary">in sala</div>
-                </div>
-              </div>
-              <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                  <Weight className="h-4 w-4 text-cyan-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">Volume</div>
-                  <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                    {formatVolumeIt(summary.performance_stats.total_volume)}
-                  </div>
-                  <div className="text-[10px] text-text-tertiary">kg (serie)</div>
-                </div>
-              </div>
-            </div>
+              ) : null}
 
-            <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-4">
-              <Progress value={completionPct} className="h-2 w-full max-w-xs" />
-              <div className="flex w-full max-w-xs items-center justify-between">
-                <span className="text-xs text-text-tertiary">{completionLabel}</span>
-                <span className="text-xs font-semibold tabular-nums text-text-primary">
-                  {completionPct}%
-                </span>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 min-[1100px]:gap-4">
+                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                    <Activity className="h-4 w-4 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Esercizi
+                    </div>
+                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
+                      {summary.completed_exercises}/{summary.total_exercises}
+                    </div>
+                    <div className="text-[10px] text-text-tertiary">completati</div>
+                  </div>
+                </div>
+                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                    <ListOrdered className="h-4 w-4 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Serie
+                    </div>
+                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
+                      {summary.completed_sets}/{summary.total_sets}
+                    </div>
+                    <div className="text-[10px] text-text-tertiary">registrate</div>
+                  </div>
+                </div>
+                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                    <Clock className="h-4 w-4 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Durata
+                    </div>
+                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
+                      {formatTime(summary.total_time)}
+                    </div>
+                    <div className="text-[10px] text-text-tertiary">in sala</div>
+                  </div>
+                </div>
+                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                    <Weight className="h-4 w-4 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Volume
+                    </div>
+                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
+                      {formatVolumeIt(summary.performance_stats.total_volume)}
+                    </div>
+                    <div className="text-[10px] text-text-tertiary">kg (serie)</div>
+                  </div>
+                </div>
               </div>
-              <Badge
-                variant={completionPct >= 100 ? 'success' : completionPct >= 50 ? 'warning' : 'secondary'}
-                size="sm"
-                className="rounded-full text-xs"
+
+              <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-4">
+                <Progress value={completionPct} className="h-2 w-full max-w-xs" />
+                <div className="flex w-full max-w-xs items-center justify-between">
+                  <span className="text-xs text-text-tertiary">{completionLabel}</span>
+                  <span className="text-xs font-semibold tabular-nums text-text-primary">
+                    {completionPct}%
+                  </span>
+                </div>
+                <Badge
+                  variant={
+                    completionPct >= 100 ? 'success' : completionPct >= 50 ? 'warning' : 'secondary'
+                  }
+                  size="sm"
+                  className="rounded-full text-xs"
+                >
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  {completionPct >= 100
+                    ? 'Sessione registrata al completo'
+                    : `Sessione al ${completionPct}% sulle metriche principali`}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className={CARD_DS}>
+            <CardHeader className="relative z-10 border-b border-white/10 py-3 min-[834px]:py-4">
+              <CardTitle
+                size="md"
+                className="flex flex-col gap-1 text-sm font-semibold text-text-primary min-[834px]:text-base sm:flex-row sm:items-center sm:gap-2"
               >
-                <CheckCircle2 className="mr-1 h-3 w-3" />
-                {completionPct >= 100
-                  ? 'Sessione registrata al completo'
-                  : `Sessione al ${completionPct}% sulle metriche principali`}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className={CARD_DS}>
-          <CardHeader className="relative z-10 border-b border-white/10 py-3 min-[834px]:py-4">
-            <CardTitle
-              size="md"
-              className="flex flex-col gap-1 text-sm font-semibold text-text-primary min-[834px]:text-base sm:flex-row sm:items-center sm:gap-2"
-            >
-              <span className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                  <Dumbbell className="h-4 w-4 text-cyan-400" />
+                <span className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                    <Dumbbell className="h-4 w-4 text-cyan-400" />
+                  </span>
+                  Dettaglio esercizi
                 </span>
-                Dettaglio esercizi
-              </span>
-              <span className="text-[11px] font-normal text-text-tertiary sm:ml-auto">
-                Solo serie salvate per questo giorno
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative z-10 space-y-3 pt-3 min-[834px]:space-y-4 min-[834px]:pt-4">
-            {summary.exercises.length === 0 ? (
-              <p className="text-sm leading-relaxed text-text-secondary">
-                Nessuna serie trovata per questo log: compaiono qui solo peso e ripetizioni salvate
-                in questa sessione (stesso giorno di scheda).
-              </p>
-            ) : (
-              summary.exercises.map((exercise) => {
-                const exVol = exercise.sets.reduce(
-                  (acc, s) => acc + s.performed_weight * s.performed_reps,
-                  0,
-                )
-                const targetParts = [
-                  `${exercise.target_sets}×${exercise.target_reps}`,
-                  exercise.target_weight && exercise.target_weight > 0
-                    ? `${exercise.target_weight} kg`
-                    : null,
-                ].filter(Boolean)
-                return (
-                  <div
-                    key={exercise.id}
-                    className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:p-4"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                          {createElement(getMuscleGroupIcon(exercise.exercise.muscle_group), {
-                            className: 'h-5 w-5 text-cyan-400',
-                            'aria-hidden': true,
-                          })}
-                        </div>
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <h4 className="text-sm font-semibold leading-tight text-text-primary sm:text-base">
-                            {exercise.exercise.name}
-                          </h4>
-                          <p className="text-xs text-text-tertiary">
-                            {muscleLabelIt(exercise.exercise.muscle_group)}
-                            {exercise.exercise.equipment && exercise.exercise.equipment !== 'unknown'
-                              ? ` · ${exercise.exercise.equipment}`
-                              : ''}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <Badge
-                              variant={
-                                getDifficultyColor(exercise.exercise.difficulty) as
-                                  | 'default'
-                                  | 'success'
-                                  | 'warning'
-                                  | 'error'
-                                  | 'info'
-                                  | 'outline'
-                                  | 'secondary'
-                              }
-                              size="sm"
-                              className="rounded-full text-[10px]"
-                            >
-                              {difficultyLabelIt(exercise.exercise.difficulty)}
-                            </Badge>
-                            <span className="text-[11px] text-text-tertiary">
-                              Obiettivo scheda: {targetParts.join(' · ')}
-                            </span>
+                <span className="text-[11px] font-normal text-text-tertiary sm:ml-auto">
+                  Solo serie salvate per questo giorno
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative z-10 space-y-3 pt-3 min-[834px]:space-y-4 min-[834px]:pt-4">
+              {summary.exercises.length === 0 ? (
+                <p className="text-sm leading-relaxed text-text-secondary">
+                  Nessuna serie trovata per questo log: compaiono qui solo peso e ripetizioni
+                  salvate in questa sessione (stesso giorno di scheda).
+                </p>
+              ) : (
+                summary.exercises.map((exercise) => {
+                  const exVol = exercise.sets.reduce(
+                    (acc, s) => acc + s.performed_weight * repsForVolumeKgRep(s.performed_reps),
+                    0,
+                  )
+                  const targetParts = [
+                    `${exercise.target_sets}×${formatWorkoutRepsLabel(exercise.target_reps)}`,
+                    exercise.target_weight && exercise.target_weight > 0
+                      ? `${exercise.target_weight} kg`
+                      : null,
+                  ].filter(Boolean)
+                  return (
+                    <div
+                      key={exercise.id}
+                      className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:p-4"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                            {createElement(getMuscleGroupIcon(exercise.exercise.muscle_group), {
+                              className: 'h-5 w-5 text-cyan-400',
+                              'aria-hidden': true,
+                            })}
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <h4 className="text-sm font-semibold leading-tight text-text-primary sm:text-base">
+                              {exercise.exercise.name}
+                            </h4>
+                            <p className="text-xs text-text-tertiary">
+                              {muscleLabelIt(exercise.exercise.muscle_group)}
+                              {exercise.exercise.equipment &&
+                              exercise.exercise.equipment !== 'unknown'
+                                ? ` · ${exercise.exercise.equipment}`
+                                : ''}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              <Badge
+                                variant={
+                                  getDifficultyColor(exercise.exercise.difficulty) as
+                                    | 'default'
+                                    | 'success'
+                                    | 'warning'
+                                    | 'error'
+                                    | 'info'
+                                    | 'outline'
+                                    | 'secondary'
+                                }
+                                size="sm"
+                                className="rounded-full text-[10px]"
+                              >
+                                {difficultyLabelIt(exercise.exercise.difficulty)}
+                              </Badge>
+                              <span className="text-[11px] text-text-tertiary">
+                                Obiettivo scheda: {targetParts.join(' · ')}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <Badge
-                        variant={exercise.is_completed ? 'success' : 'warning'}
-                        size="sm"
-                        className="shrink-0 rounded-full text-[10px]"
-                      >
-                        {exercise.is_completed ? 'Serie ok' : 'Da chiudere'}
-                      </Badge>
-                    </div>
-                    {exVol > 0 ? (
-                      <p className="mb-2 mt-3 text-[11px] text-text-tertiary">
-                        Volume esercizio:{' '}
-                        <span className="font-medium text-text-secondary">
-                          {formatVolumeIt(exVol)} kg
-                        </span>
-                      </p>
-                    ) : null}
-                    <div className="mt-2 space-y-1.5">
-                      <div className="grid grid-cols-[2.5rem_1fr_1fr_auto] gap-1 border-b border-white/10 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-text-tertiary sm:grid-cols-[3rem_1fr_1fr_auto]">
-                        <span>N°</span>
-                        <span className="text-center sm:text-left">Peso</span>
-                        <span className="text-center sm:text-left">Ripetizioni</span>
-                        <span className="sr-only sm:not-sr-only sm:w-8">Stato</span>
-                      </div>
-                      {exercise.sets.map((set, setIndex) => (
-                        <div
-                          key={setIndex}
-                          className="grid grid-cols-[2.5rem_1fr_1fr_auto] items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-2 sm:grid-cols-[3rem_1fr_1fr_auto]"
+                        <Badge
+                          variant={exercise.is_completed ? 'success' : 'warning'}
+                          size="sm"
+                          className="shrink-0 rounded-full text-[10px]"
                         >
-                          <span className="text-xs font-semibold tabular-nums text-text-primary">
-                            {set.set_number}
+                          {exercise.is_completed ? 'Serie ok' : 'Da chiudere'}
+                        </Badge>
+                      </div>
+                      {exVol > 0 ? (
+                        <p className="mb-2 mt-3 text-[11px] text-text-tertiary">
+                          Volume esercizio:{' '}
+                          <span className="font-medium text-text-secondary">
+                            {formatVolumeIt(exVol)} kg
                           </span>
-                          <div className="flex items-center justify-center gap-1 sm:justify-start">
-                            <Weight className="hidden h-3.5 w-3.5 text-cyan-400 sm:block" aria-hidden />
-                            <span className="text-xs font-semibold tabular-nums text-text-primary">
-                              {set.performed_weight > 0
-                                ? `${formatVolumeIt(set.performed_weight)} kg`
-                                : '—'}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-center gap-1 sm:justify-start">
-                            <Target className="hidden h-3.5 w-3.5 text-cyan-400 sm:block" aria-hidden />
-                            <span className="text-xs font-semibold tabular-nums text-text-primary">
-                              {set.performed_reps}
-                            </span>
-                          </div>
-                          <div className="flex justify-end">
-                            <Badge
-                              variant={set.is_completed ? 'success' : 'neutral'}
-                              size="sm"
-                              className="rounded-full px-1.5 py-0"
-                            >
-                              {set.is_completed ? (
-                                <CheckCircle2 className="h-3 w-3" aria-label="Serie completata" />
-                              ) : (
-                                <span className="text-[9px]">…</span>
-                              )}
-                            </Badge>
-                          </div>
+                        </p>
+                      ) : null}
+                      <div className="mt-2 space-y-1.5">
+                        <div className="grid grid-cols-[2.5rem_1fr_1fr_auto] gap-1 border-b border-white/10 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-text-tertiary sm:grid-cols-[3rem_1fr_1fr_auto]">
+                          <span>N°</span>
+                          <span className="text-center sm:text-left">Peso</span>
+                          <span className="text-center sm:text-left">Ripetizioni</span>
+                          <span className="sr-only sm:not-sr-only sm:w-8">Stato</span>
                         </div>
-                      ))}
+                        {exercise.sets.map((set, setIndex) => (
+                          <div
+                            key={setIndex}
+                            className="grid grid-cols-[2.5rem_1fr_1fr_auto] items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-2 sm:grid-cols-[3rem_1fr_1fr_auto]"
+                          >
+                            <span className="text-xs font-semibold tabular-nums text-text-primary">
+                              {set.set_number}
+                            </span>
+                            <div className="flex items-center justify-center gap-1 sm:justify-start">
+                              <Weight
+                                className="hidden h-3.5 w-3.5 text-cyan-400 sm:block"
+                                aria-hidden
+                              />
+                              <span className="text-xs font-semibold tabular-nums text-text-primary">
+                                {set.performed_weight > 0
+                                  ? `${formatVolumeIt(set.performed_weight)} kg`
+                                  : '—'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-center gap-1 sm:justify-start">
+                              <Target
+                                className="hidden h-3.5 w-3.5 text-cyan-400 sm:block"
+                                aria-hidden
+                              />
+                              <span className="text-xs font-semibold tabular-nums text-text-primary">
+                                {formatWorkoutRepsLabel(set.performed_reps)}
+                              </span>
+                            </div>
+                            <div className="flex justify-end">
+                              <Badge
+                                variant={set.is_completed ? 'success' : 'neutral'}
+                                size="sm"
+                                className="rounded-full px-1.5 py-0"
+                              >
+                                {set.is_completed ? (
+                                  <CheckCircle2 className="h-3 w-3" aria-label="Serie completata" />
+                                ) : (
+                                  <span className="text-[9px]">…</span>
+                                )}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={CARD_DS}>
+            <CardHeader className="relative z-10 border-b border-white/10 py-3 min-[834px]:py-4">
+              <CardTitle
+                size="md"
+                className="flex items-center gap-2 text-sm font-semibold text-text-primary min-[834px]:text-base"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                  <Activity className="h-4 w-4 text-cyan-400" />
+                </span>
+                Sintesi numerica
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative z-10 space-y-4 pt-3 min-[834px]:pt-4">
+              <div className="grid grid-cols-2 gap-3 min-[834px]:grid-cols-4 min-[1100px]:gap-4">
+                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2">
+                    <Weight className="h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Volume totale
                     </div>
                   </div>
-                )
-              })
-            )}
-          </CardContent>
-        </Card>
+                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                    {formatVolumeIt(summary.performance_stats.total_volume)}{' '}
+                    <span className="text-sm font-medium text-text-tertiary">kg</span>
+                  </div>
+                  <p className="text-[10px] leading-snug text-text-tertiary">
+                    Somma carichi delle serie registrate (kg × ripetizioni).
+                  </p>
+                </div>
+                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Intensità media
+                    </div>
+                  </div>
+                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                    {summary.total_sets > 0
+                      ? formatVolumeIt(summary.performance_stats.average_load_per_set)
+                      : '—'}
+                    {summary.total_sets > 0 ? (
+                      <span className="text-sm font-medium text-text-tertiary"> kg/serie</span>
+                    ) : null}
+                  </div>
+                  <p className="text-[10px] leading-snug text-text-tertiary">
+                    Volume diviso per il numero di serie salvate.
+                  </p>
+                </div>
+                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Esercizi al completo
+                    </div>
+                  </div>
+                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                    {summary.performance_stats.consistency_score}
+                    <span className="text-sm font-medium text-text-tertiary">%</span>
+                  </div>
+                  <p className="text-[10px] leading-snug text-text-tertiary">
+                    Quota di esercizi con tutte le serie segnate come completate.
+                  </p>
+                </div>
+                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                      Record personali
+                    </div>
+                  </div>
+                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                    {summary.performance_stats.personal_records > 0
+                      ? summary.performance_stats.personal_records
+                      : '—'}
+                  </div>
+                  <p className="text-[10px] leading-snug text-text-tertiary">
+                    Confronto con lo storico in arrivo; per ora non calcolato.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className={CARD_DS}>
-          <CardHeader className="relative z-10 border-b border-white/10 py-3 min-[834px]:py-4">
-            <CardTitle
-              size="md"
-              className="flex items-center gap-2 text-sm font-semibold text-text-primary min-[834px]:text-base"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <Activity className="h-4 w-4 text-cyan-400" />
-              </span>
-              Sintesi numerica
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative z-10 space-y-4 pt-3 min-[834px]:pt-4">
-            <div className="grid grid-cols-2 gap-3 min-[834px]:grid-cols-4 min-[1100px]:gap-4">
-              <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex items-center gap-2">
-                  <Weight className="h-4 w-4 shrink-0 text-cyan-400" />
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                    Volume totale
-                  </div>
-                </div>
-                <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
-                  {formatVolumeIt(summary.performance_stats.total_volume)}{' '}
-                  <span className="text-sm font-medium text-text-tertiary">kg</span>
-                </div>
-                <p className="text-[10px] leading-snug text-text-tertiary">
-                  Somma carichi delle serie registrate (kg × ripetizioni).
-                </p>
-              </div>
-              <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 shrink-0 text-cyan-400" />
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                    Intensità media
-                  </div>
-                </div>
-                <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
-                  {summary.total_sets > 0
-                    ? formatVolumeIt(summary.performance_stats.average_load_per_set)
-                    : '—'}
-                  {summary.total_sets > 0 ? (
-                    <span className="text-sm font-medium text-text-tertiary"> kg/serie</span>
-                  ) : null}
-                </div>
-                <p className="text-[10px] leading-snug text-text-tertiary">
-                  Volume diviso per il numero di serie salvate.
-                </p>
-              </div>
-              <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" />
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                    Esercizi al completo
-                  </div>
-                </div>
-                <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
-                  {summary.performance_stats.consistency_score}
-                  <span className="text-sm font-medium text-text-tertiary">%</span>
-                </div>
-                <p className="text-[10px] leading-snug text-text-tertiary">
-                  Quota di esercizi con tutte le serie segnate come completate.
-                </p>
-              </div>
-              <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 shrink-0 text-cyan-400" />
-                  <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
-                    Record personali
-                  </div>
-                </div>
-                <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
-                  {summary.performance_stats.personal_records > 0
-                    ? summary.performance_stats.personal_records
-                    : '—'}
-                </div>
-                <p className="text-[10px] leading-snug text-text-tertiary">
-                  Confronto con lo storico in arrivo; per ora non calcolato.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div
-          className={`${CARD_DS} flex gap-3 p-3 sm:gap-4 sm:p-4`}
-          role="region"
-          aria-label="Messaggio motivazionale"
-        >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-            <Sparkles className="h-5 w-5 text-cyan-400" aria-hidden />
-          </div>
-          <div className="min-w-0 space-y-1">
-            <h3 className="text-sm font-semibold text-text-primary">{motivTitle}</h3>
-            <p className="text-xs leading-relaxed text-text-secondary">{motivBody}</p>
-            <p className="text-[10px] italic leading-relaxed text-text-tertiary">
-              «Il progresso è ciò che resta quando la costanza batte la perfezione.»
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <Button
-            onClick={() => router.push('/home')}
-            variant="outline"
-            className="min-h-10 w-full rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 hover:border-white/20"
+          <div
+            className={`${CARD_DS} flex gap-3 p-3 sm:gap-4 sm:p-4`}
+            role="region"
+            aria-label="Messaggio motivazionale"
           >
-            Torna alla home
-          </Button>
-        </div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+              <Sparkles className="h-5 w-5 text-cyan-400" aria-hidden />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <h3 className="text-sm font-semibold text-text-primary">{motivTitle}</h3>
+              <p className="text-xs leading-relaxed text-text-secondary">{motivBody}</p>
+              <p className="text-[10px] italic leading-relaxed text-text-tertiary">
+                «Il progresso è ciò che resta quando la costanza batte la perfezione.»
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              onClick={() => router.push('/home')}
+              variant="outline"
+              className="min-h-10 w-full rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 hover:border-white/20"
+            >
+              Torna alla home
+            </Button>
+          </div>
         </div>
       </div>
     </div>

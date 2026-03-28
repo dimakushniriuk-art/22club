@@ -9,7 +9,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { ExerciseCatalog } from '../exercise-catalog'
-import { SelectedExercisesVerticalStrip } from '../selected-exercises-vertical-strip'
+import {
+  SelectedExercisesVerticalStrip,
+  type StripEntry,
+} from '../selected-exercises-vertical-strip'
 import type { WorkoutWizardData, Exercise, WorkoutDayExerciseData } from '@/types/workout'
 import type { DayItem } from '@/types/workout'
 import { isWorkoutExerciseConfigured } from '@/lib/validations/workout-target'
@@ -28,14 +31,10 @@ interface WorkoutWizardStep3Props {
   selectedDayIndex?: number
   /** Sezione Circuito da mostrare subito sotto l'header del giorno */
   circuitSection?: React.ReactNode
-  /** Riordino esercizi liberi (stessa sequenza del catalogo con numeri) */
-  onReorderStandaloneExercises: (
-    circuitExerciseIds: Set<string>,
-    fromIndex: number,
-    toIndex: number,
-  ) => void
-  /** Clic su voce strip: apre il modale di configurazione target (stesso form del passo Target) */
-  onStripOpenTargetStep: (stripIndex: number) => void
+  /** Riordino voci strip (esercizi + circuiti) → stessa sequenza del giorno */
+  onReorderStripItems: (fromStripIndex: number, toStripIndex: number) => void
+  /** Clic su voce strip: target esercizio o modifica circuito */
+  onStripItemClick: (stripIndex: number) => void
 }
 
 function getDayItemsFallback(day: {
@@ -54,8 +53,8 @@ export function WorkoutWizardStep3({
   getDayItems = getDayItemsFallback,
   selectedDayIndex = 0,
   circuitSection,
-  onReorderStandaloneExercises,
-  onStripOpenTargetStep,
+  onReorderStripItems,
+  onStripItemClick,
 }: WorkoutWizardStep3Props) {
   const dayIndex = Math.min(selectedDayIndex, Math.max(0, wizardData.days.length - 1))
   const day = wizardData.days[dayIndex]
@@ -73,22 +72,41 @@ export function WorkoutWizardStep3({
     .map((ex) => ex.exercise_id)
     .filter((id) => !circuitExerciseIdsInDay.has(id))
 
-  const standaloneExerciseRows = day.exercises.filter(
-    (ex) => !circuitExerciseIdsInDay.has(ex.exercise_id),
-  )
-  const stripEntries = standaloneExerciseRows.map((ex, i) => ({
-    exerciseId: ex.exercise_id,
-    exercise: exercises.find((e) => e.id === ex.exercise_id),
-    sequence: i + 1,
-    configured: isWorkoutExerciseConfigured(ex),
-  }))
+  const stripEntries: StripEntry[] = []
+  let stripSeq = 1
+  for (const item of dayItems) {
+    if (item.type === 'circuit') {
+      const circuit = circuitList.find((c) => c.id === item.circuitId)
+      if (!circuit) continue
+      const firstId = circuit.params[0]?.exercise_id
+      const primaryExercise = firstId ? exercises.find((e) => e.id === firstId) : undefined
+      stripEntries.push({
+        kind: 'circuit',
+        circuitId: item.circuitId,
+        sequence: stripSeq++,
+        exerciseCount: circuit.params.length,
+        primaryExercise,
+        configured:
+          circuit.params.length > 0 && circuit.params.every((p) => isWorkoutExerciseConfigured(p)),
+      })
+      continue
+    }
+    if (circuitExerciseIdsInDay.has(item.exercise.exercise_id)) continue
+    stripEntries.push({
+      kind: 'exercise',
+      exerciseId: item.exercise.exercise_id,
+      exercise: exercises.find((e) => e.id === item.exercise.exercise_id),
+      sequence: stripSeq++,
+      configured: isWorkoutExerciseConfigured(item.exercise),
+    })
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-4 md:flex-row md:items-start">
       <SelectedExercisesVerticalStrip
         entries={stripEntries}
-        onReorder={(from, to) => onReorderStandaloneExercises(circuitExerciseIdsInDay, from, to)}
-        onItemClick={onStripOpenTargetStep}
+        onReorder={onReorderStripItems}
+        onItemClick={onStripItemClick}
         className="md:sticky md:top-4 md:self-start md:-mt-4"
       />
       <Card

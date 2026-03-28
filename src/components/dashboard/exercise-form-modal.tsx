@@ -48,6 +48,7 @@ import {
   Target,
 } from 'lucide-react'
 
+import type { Database } from '@/lib/supabase/types'
 import type { Exercise } from '@/types/exercise'
 
 interface ExerciseFormModalProps {
@@ -609,6 +610,7 @@ export function ExerciseFormModal({
             if (error) throw error
             return { data }
           },
+          { throwIfApiError: true },
         )
       } else {
         await apiPut(
@@ -617,16 +619,42 @@ export function ExerciseFormModal({
           // Fallback Supabase (usato su mobile o se API fallisce)
           async () => {
             type RequestBodyWithId = typeof requestBody & { id: string }
-            const requestBodyWithId = requestBody as RequestBodyWithId
+            const rb = requestBody as RequestBodyWithId
+            const exerciseId = rb.id
+
+            type ExerciseUpdate = Database['public']['Tables']['exercises']['Update']
+            const updatePayload: ExerciseUpdate = {}
+            const rbRecord = rb as Record<string, unknown>
+            if (rb.name !== undefined) updatePayload.name = rb.name
+            if (rb.description !== undefined) updatePayload.description = rb.description
+            if (Array.isArray(rbRecord.muscle_groups)) {
+              updatePayload.muscle_group = (rbRecord.muscle_groups as string[]).join(', ')
+            } else if (rbRecord.muscle_groups !== undefined) {
+              updatePayload.muscle_group = String(rbRecord.muscle_groups)
+            } else if (rb.muscle_group !== undefined) {
+              updatePayload.muscle_group =
+                typeof rb.muscle_group === 'string' ? rb.muscle_group : String(rb.muscle_group)
+            }
+            if (rb.equipment !== undefined) updatePayload.equipment = rb.equipment
+            if (rb.difficulty !== undefined) updatePayload.difficulty = rb.difficulty
+            if (rb.video_url !== undefined) updatePayload.video_url = rb.video_url
+            if (rb.image_url !== undefined) updatePayload.image_url = rb.image_url
+            if (rb.thumb_url !== undefined) updatePayload.thumb_url = rb.thumb_url
+            if (rb.category !== undefined) updatePayload.category = rb.category
+            if (rb.duration_seconds !== undefined) {
+              updatePayload.duration_seconds = rb.duration_seconds
+            }
+
             const { data, error } = await supabaseClient
               .from('exercises')
-              .update(requestBody)
-              .eq('id', requestBodyWithId.id)
+              .update(updatePayload)
+              .eq('id', exerciseId)
               .select()
               .single()
             if (error) throw error
             return { data }
           },
+          { throwIfApiError: true },
         )
       }
 
@@ -638,12 +666,18 @@ export function ExerciseFormModal({
       onOpenChange(false)
       onSuccess?.()
     } catch (e) {
+      const supaCode =
+        typeof e === 'object' && e !== null && 'code' in e
+          ? String((e as { code: unknown }).code)
+          : ''
       const message =
-        e instanceof Error
-          ? e.message
-          : typeof e === 'object' && e !== null && 'message' in e
-            ? String((e as { message: unknown }).message)
-            : 'Salvataggio fallito. Riprova.'
+        supaCode === 'PGRST116'
+          ? 'Esercizio non aggiornato (non trovato o permessi insufficienti).'
+          : e instanceof Error
+            ? e.message
+            : typeof e === 'object' && e !== null && 'message' in e
+              ? String((e as { message: unknown }).message)
+              : 'Salvataggio fallito. Riprova.'
       logger.error('Errore salvataggio esercizio', e, { editing: !!editing })
       addToast({
         title: 'Errore',

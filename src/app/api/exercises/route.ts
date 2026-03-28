@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type { Database } from '@/lib/supabase/types'
@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Ottieni il profilo dello staff corrente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id'>
+    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'org_id_text'>
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, org_id')
+      .select('id, org_id, org_id_text')
       .eq('user_id', session.user.id)
       .single()
 
@@ -98,6 +98,10 @@ export async function POST(request: NextRequest) {
       thumb_url: body.thumb_url || null,
       created_by_profile_id: profileTyped.id,
       org_id: profileTyped.org_id ?? undefined,
+      org_id_text:
+        profileTyped.org_id_text != null && profileTyped.org_id_text !== ''
+          ? profileTyped.org_id_text
+          : null,
     }
 
     const { data: exercise, error } = await supabase
@@ -141,10 +145,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verifica che l'esercizio esista e appartenga all'organizzazione dell'utente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id'>
+    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'org_id_text'>
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, org_id')
+      .select('id, org_id, org_id_text')
       .eq('user_id', session.user.id)
       .single()
 
@@ -153,10 +157,10 @@ export async function PUT(request: NextRequest) {
     }
     const profileTyped = profile as ProfileRow
 
-    type ExerciseRow = Pick<Tables<'exercises'>, 'id' | 'org_id'>
+    type ExerciseRow = Pick<Tables<'exercises'>, 'id' | 'org_id' | 'org_id_text'>
     const { data: existingExercise, error: fetchError } = await supabase
       .from('exercises')
-      .select('id, org_id')
+      .select('id, org_id, org_id_text')
       .eq('id', body.id)
       .single()
 
@@ -188,20 +192,88 @@ export async function PUT(request: NextRequest) {
     if (body.video_url !== undefined) updateData.video_url = body.video_url
     if (body.image_url !== undefined) updateData.image_url = body.image_url
     if (body.thumb_url !== undefined) updateData.thumb_url = body.thumb_url
+    if (body.category !== undefined) updateData.category = body.category
+    if (body.duration_seconds !== undefined) {
+      updateData.duration_seconds = body.duration_seconds
+    }
 
-    const { data: exercise, error } = await supabase
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'Nessun campo da aggiornare' }, { status: 400 })
+    }
+
+    // Allinea sempre org_id_text al profilo quando valorizzato: le policy spesso confrontano
+    // exercises.org_id_text con profiles.org_id_text; senza questo campo nell'UPDATE il WITH CHECK può fallire (PGRST116).
+    if (profileTyped.org_id_text != null && profileTyped.org_id_text !== '') {
+      updateData.org_id_text = profileTyped.org_id_text
+    }
+
+    const updatePayload = updateData as Database['public']['Tables']['exercises']['Update']
+
+    // 1) Client sessione: niente service role se le policy RLS sono corrette.
+    let { data: exercise, error: updateError } = await supabase
       .from('exercises')
-      .update(updateData as Database['public']['Tables']['exercises']['Update'])
+      .update(updatePayload)
       .eq('id', body.id)
       .select()
       .single()
 
-    if (error) {
-      logger.error("Errore durante l'aggiornamento dell'esercizio", error, {
+    // 2) Solo se RLS restituisce 0 righe (PGRST116): ripiego admin dopo stesso controllo org in app.
+    if (updateError?.code === 'PGRST116') {
+      try {
+        const admin = createAdminClient()
+        const retry = await admin
+          .from('exercises')
+          .update(updatePayload)
+          .eq('id', body.id)
+          .select()
+          .single()
+        exercise = retry.data
+        updateError = retry.error
+      } catch (e) {
+        logger.error('PUT exercises: PGRST116 e createAdminClient fallito (chiave mancante?)', e)
+        return NextResponse.json(
+          {
+            error:
+              'Aggiornamento bloccato da RLS (nessuna riga). Correggi le policy UPDATE su public.exercises (vedi supabase/manual_exercises_update_rls.sql) oppure imposta SUPABASE_SERVICE_ROLE_KEY valida in .env.local per il ripiego server-side.',
+          },
+          { status: 503 },
+        )
+      }
+    }
+
+    if (updateError) {
+      logger.error("Errore durante l'aggiornamento dell'esercizio", updateError, {
         exerciseId: body.id,
         updateData,
       })
-      return NextResponse.json({ error: "Errore durante l'aggiornamento" }, { status: 500 })
+      const msg = (updateError.message ?? '').toLowerCase()
+      if (msg.includes('invalid api key') || msg.includes('jwt')) {
+        return NextResponse.json(
+          {
+            error:
+              'Service role non valida dopo errore RLS: controlla SUPABASE_SERVICE_ROLE_KEY in .env.local oppure correggi le policy su public.exercises così il primo passaggio (sessione) riesce.',
+          },
+          { status: 503 },
+        )
+      }
+      const resBody: {
+        error: string
+        supabase?: {
+          code?: string
+          message?: string
+          details?: string | null
+          hint?: string | null
+        }
+      } = { error: "Errore durante l'aggiornamento" }
+      if (process.env.NODE_ENV === 'development') {
+        resBody.supabase = {
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details ?? null,
+          hint: updateError.hint ?? null,
+        }
+      }
+      return NextResponse.json(resBody, { status: 500 })
     }
 
     return NextResponse.json({ data: exercise })

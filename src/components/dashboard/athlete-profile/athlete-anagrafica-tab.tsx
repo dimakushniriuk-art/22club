@@ -34,7 +34,8 @@ const FIELD_GRID =
 const LABEL_CLS = 'text-[10px] uppercase tracking-wide text-text-tertiary sm:pt-1.5'
 const INPUT_CLS = 'h-9 w-full min-w-0 text-xs'
 /** Nessun break-words: in colonne strette spezzava “182 cm” lettera per lettera. */
-const VALUE_CLS = 'text-sm font-medium text-text-primary min-w-0 [overflow-wrap:anywhere] [word-break:normal]'
+const VALUE_CLS =
+  'text-sm font-medium text-text-primary min-w-0 [overflow-wrap:anywhere] [word-break:normal]'
 const VALUE_EMAIL_CLS =
   'text-sm font-medium text-text-primary min-w-0 break-all [word-break:break-all]'
 const EMPTY_CLS = 'text-sm text-text-tertiary'
@@ -54,10 +55,7 @@ function FieldRow({
   const gridClass = layout === 'stacked' ? 'grid grid-cols-1 gap-1.5' : FIELD_GRID
   return (
     <div className={gridClass}>
-      <Label
-        htmlFor={htmlFor}
-        className={cn(LABEL_CLS, layout === 'stacked' && 'pt-0 sm:pt-0')}
-      >
+      <Label htmlFor={htmlFor} className={cn(LABEL_CLS, layout === 'stacked' && 'pt-0 sm:pt-0')}>
         {label}
       </Label>
       <div className="min-w-0">{children}</div>
@@ -77,7 +75,11 @@ function ReadValue({
 }) {
   if (empty) return <span className={EMPTY_CLS}>—</span>
   const cls =
-    variant === 'email' ? VALUE_EMAIL_CLS : variant === 'metric' ? cn(VALUE_CLS, 'tabular-nums whitespace-nowrap') : VALUE_CLS
+    variant === 'email'
+      ? VALUE_EMAIL_CLS
+      : variant === 'metric'
+        ? cn(VALUE_CLS, 'tabular-nums whitespace-nowrap')
+        : VALUE_CLS
   return <span className={cls}>{children}</span>
 }
 
@@ -166,7 +168,9 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
 
       <CardContent className="space-y-0 p-0">
         {/* — Informazioni personali */}
-        <AthleteProfileSectionHeading icon={User}>Informazioni personali</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={User}>
+          Informazioni personali
+        </AthleteProfileSectionHeading>
         <div className="space-y-3 px-4 py-4 sm:space-y-3.5 sm:px-5 sm:py-5">
           <FieldRow label="Nome" htmlFor="nome">
             {isEditing ? (
@@ -260,9 +264,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 id="data_nascita"
                 type="date"
                 value={formData.data_nascita || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, data_nascita: e.target.value || null })
-                }
+                onChange={(e) => setFormData({ ...formData, data_nascita: e.target.value || null })}
                 className={INPUT_CLS}
               />
             ) : (
@@ -310,7 +312,9 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
         </div>
 
         {/* — Residenza e altri dati */}
-        <AthleteProfileSectionHeading icon={MapPin}>Residenza e altri dati</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={MapPin}>
+          Residenza e altri dati
+        </AthleteProfileSectionHeading>
         <div className="space-y-3 px-4 py-4 sm:space-y-3.5 sm:px-5 sm:py-5">
           <FieldRow label="Codice fiscale" htmlFor="codice_fiscale">
             {isEditing ? (
@@ -529,11 +533,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 }}
                 onBlur={() => {
                   const num = parseFloat(pesoInizialeKgString)
-                  if (
-                    isNaN(num) ||
-                    pesoInizialeKgString === '' ||
-                    pesoInizialeKgString === '-'
-                  ) {
+                  if (isNaN(num) || pesoInizialeKgString === '' || pesoInizialeKgString === '-') {
                     setPesoInizialeKgString('')
                     setFormData({ ...formData, peso_iniziale_kg: null })
                   } else {
@@ -546,9 +546,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
               />
             ) : (
               <ReadValue variant="metric" empty={anagrafica.peso_iniziale_kg == null}>
-                {anagrafica.peso_iniziale_kg != null
-                  ? `${anagrafica.peso_iniziale_kg} kg`
-                  : null}
+                {anagrafica.peso_iniziale_kg != null ? `${anagrafica.peso_iniziale_kg} kg` : null}
               </ReadValue>
             )}
           </FieldRow>
@@ -577,7 +575,9 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
         </div>
 
         {/* — Emergenza */}
-        <AthleteProfileSectionHeading icon={AlertCircle}>Contatto di emergenza</AthleteProfileSectionHeading>
+        <AthleteProfileSectionHeading icon={AlertCircle}>
+          Contatto di emergenza
+        </AthleteProfileSectionHeading>
         <div className="space-y-3 px-4 py-4 sm:space-y-3.5 sm:px-5 sm:py-5">
           <FieldRow label="Nome" htmlFor="contatto_emergenza_nome">
             {isEditing ? (

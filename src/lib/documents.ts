@@ -178,7 +178,10 @@ export function documentsFilePreviewHref(
   return storagePreviewHref(DOCUMENTS_STORAGE_BUCKET, path)
 }
 
-export async function fetchStorageBlobViaPreview(bucket: string, storagePath: string): Promise<Blob> {
+export async function fetchStorageBlobViaPreview(
+  bucket: string,
+  storagePath: string,
+): Promise<Blob> {
   const href = storagePreviewHref(bucket, storagePath)
   const res = await fetch(href, { credentials: 'include' })
   if (!res.ok) {

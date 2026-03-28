@@ -187,7 +187,6 @@ describe('useAthleteMotivational', () => {
 
       expect(result.current.data).toBeNull()
     })
-
   })
 
   describe('UPDATE - useUpdateAthleteMotivational', () => {

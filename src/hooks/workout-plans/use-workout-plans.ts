@@ -34,9 +34,19 @@ type WorkoutRowSelected = {
   objective?: string | null
   is_active: boolean | null
   is_draft?: boolean | null
+  difficulty?: string | null
   created_by_profile_id: string | null
   created_at: string | null
   updated_at: string | null
+}
+
+function isLockAbortError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const msg = error.message.toLowerCase()
+  return (
+    error.name === 'AbortError' &&
+    (msg.includes('lock broken') || msg.includes("'steal' option") || msg.includes('steal option'))
+  )
 }
 
 function mapWorkoutPlanStatus(row: {
@@ -45,17 +55,6 @@ function mapWorkoutPlanStatus(row: {
 }): NonNullable<Workout['status']> {
   if (row.is_draft) return 'bozza'
   return row.is_active ? 'attivo' : 'completato'
-}
-
-// Nota: difficultyUiToDbMap potrebbe essere usato in futuro per conversioni
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const difficultyUiToDbMap: Record<
-  WorkoutWizardData['difficulty'],
-  'beginner' | 'intermediate' | 'advanced'
-> = {
-  bassa: 'beginner',
-  media: 'intermediate',
-  alta: 'advanced',
 }
 
 const difficultyDbToUi = (value?: string | null): Workout['difficulty'] => {
@@ -76,6 +75,24 @@ const difficultyDbToUi = (value?: string | null): Workout['difficulty'] => {
 function getDayItems(day: WorkoutDayData): DayItem[] {
   if (day.items && day.items.length > 0) return day.items
   return (day.exercises || []).map((e) => ({ type: 'exercise' as const, exercise: e }))
+}
+
+/** DB CHECK workout_plans: bassa | media | alta (vedi migration). */
+function messageFromUnknownError(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (err !== null && typeof err === 'object' && 'message' in err) {
+    const m = (err as { message?: unknown }).message
+    if (typeof m === 'string' && m.trim() !== '') return m
+  }
+  try {
+    return JSON.stringify(err)
+  } catch {
+    return 'Errore sconosciuto'
+  }
+}
+
+function asError(err: unknown): Error {
+  return err instanceof Error ? err : new Error(messageFromUnknownError(err))
 }
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -107,6 +124,71 @@ function getExercisesWithCircuitBlock(
   return result
 }
 
+function buildWorkoutDayExerciseInsertPayload(
+  workoutDayId: string,
+  orderIndex: number,
+  exercise: WorkoutDayExerciseData,
+  circuit_block_id: string | null,
+): Record<string, unknown> {
+  const targetSets = exercise.target_sets || exercise.sets || 3
+  const targetReps = exercise.target_reps || exercise.reps_min || 10
+  const executionTimeSec = exercise.execution_time_sec || null
+  const restTimerSec = exercise.rest_timer_sec ?? exercise.rest_seconds ?? 60
+
+  const insertPayload: Record<string, unknown> = {
+    workout_day_id: workoutDayId,
+    exercise_id: exercise.exercise_id,
+    sets: targetSets,
+    reps: targetReps,
+    rest_seconds: restTimerSec,
+    order_num: orderIndex,
+    target_sets: targetSets,
+    target_reps: targetReps,
+    target_weight: exercise.target_weight ?? exercise.weight_kg ?? null,
+    execution_time_sec: executionTimeSec,
+    rest_timer_sec: restTimerSec,
+    order_index: orderIndex,
+    note: exercise.note ?? null,
+  }
+  if (circuit_block_id != null) insertPayload.circuit_block_id = circuit_block_id
+  return insertPayload
+}
+
+function buildSetsRowsForExercise(
+  workoutDayExerciseId: string,
+  exercise: WorkoutDayExerciseData,
+): Array<{
+  workout_day_exercise_id: string
+  set_number: number
+  reps: number | null
+  weight_kg: number | null
+  execution_time_sec: number | null
+  rest_timer_sec: number | null
+}> {
+  const targetSets = exercise.target_sets || exercise.sets || 3
+  const rows: Array<{
+    workout_day_exercise_id: string
+    set_number: number
+    reps: number | null
+    weight_kg: number | null
+    execution_time_sec: number | null
+    rest_timer_sec: number | null
+  }> = []
+  if (targetSets <= 0) return rows
+  for (let setNum = 1; setNum <= targetSets; setNum++) {
+    const setDetail = exercise.sets_detail?.find((s) => s.set_number === setNum)
+    rows.push({
+      workout_day_exercise_id: workoutDayExerciseId,
+      set_number: setNum,
+      reps: setDetail?.reps ?? exercise.target_reps ?? null,
+      weight_kg: setDetail?.weight_kg ?? exercise.target_weight ?? null,
+      execution_time_sec: setDetail?.execution_time_sec ?? exercise.execution_time_sec ?? null,
+      rest_timer_sec: setDetail?.rest_timer_sec ?? exercise.rest_timer_sec ?? null,
+    })
+  }
+  return rows
+}
+
 const WORKOUT_PLAN_NAME_MAX_LEN = 200
 const DUPLICATE_WORKOUT_NAME_SUFFIX = ' (copia)'
 
@@ -118,7 +200,13 @@ function duplicateWorkoutPlanName(sourceName: string): string {
   return `${base.slice(0, Math.max(0, maxBase))}${DUPLICATE_WORKOUT_NAME_SUFFIX}`
 }
 
-export function useWorkoutPlans() {
+export type UseWorkoutPlansOptions = {
+  /** Se true, non caricare la lista schede (es. pagina modifica: evita doppio fetch). */
+  skipWorkoutList?: boolean
+}
+
+export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
+  const skipWorkoutList = options?.skipWorkoutList === true
   const searchParams = useSearchParams()
 
   const [workouts, setWorkouts] = useState<Workout[]>([])
@@ -127,7 +215,8 @@ export function useWorkoutPlans() {
   const [statusFilter, setStatusFilter] = useState('')
   const [athleteFilter, setAthleteFilter] = useState('')
   const [objectiveFilter, setObjectiveFilter] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!skipWorkoutList)
+  const [wizardDataLoading, setWizardDataLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [athletes, setAthletes] = useState<Array<{ id: string; name: string; email: string }>>([])
   const [exercises, setExercises] = useState<Exercise[]>([])
@@ -136,24 +225,70 @@ export function useWorkoutPlans() {
   // Carica atleti ed esercizi per il wizard
   useEffect(() => {
     async function fetchWizardData() {
+      setWizardDataLoading(true)
       try {
         setExercisesLoadError(null)
 
         const {
-          data: { user },
-        } = await supabase.auth.getUser()
+          data: { session },
+        } = await supabase.auth.getSession()
+        const user = session?.user
         if (!user?.id) {
           setAthletes([])
           setExercises([])
+          setWizardDataLoading(false)
           return
         }
 
-        // Recupera atleti
-        const { data: athletesData, error: athletesError } = await supabase
+        const athletesQuery = supabase
           .from('profiles')
           .select('id, nome, cognome, email')
           .in('role', ['athlete'])
           .order('nome', { ascending: true })
+
+        const loadExercisesCatalog = async (): Promise<{
+          rows: ExerciseRow[]
+          loadError: string | null
+        }> => {
+          try {
+            const rows = await apiGet<ExerciseRow[]>('/api/exercises', {}, async () => {
+              const { data: exercisesData, error: exercisesError } = await supabase
+                .from('exercises')
+                .select('*')
+                .order('name', { ascending: true })
+              if (exercisesError) throw exercisesError
+              return (exercisesData ?? []) as ExerciseRow[]
+            })
+            return { rows, loadError: null }
+          } catch (exercisesErr) {
+            try {
+              const { data: exercisesData, error: exercisesError } = await supabase
+                .from('exercises')
+                .select('*')
+                .order('name', { ascending: true })
+              if (exercisesError) throw exercisesError
+              logger.warn('Caricamento esercizi (wizard): usato Supabase diretto dopo errore API')
+              return { rows: (exercisesData ?? []) as ExerciseRow[], loadError: null }
+            } catch (fallbackErr) {
+              logger.warn('Fallback Supabase fallito per esercizi (wizard)', undefined, {
+                exercisesErr:
+                  exercisesErr instanceof Error ? exercisesErr.message : String(exercisesErr),
+                fallbackErr:
+                  fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr),
+              })
+              const errMsg =
+                exercisesErr instanceof Error
+                  ? exercisesErr.message
+                  : 'Impossibile caricare il catalogo esercizi. Controlla permessi e policy RLS su public.exercises.'
+              return { rows: [], loadError: errMsg }
+            }
+          }
+        }
+
+        const [{ data: athletesData, error: athletesError }, exercisesOutcome] = await Promise.all([
+          athletesQuery,
+          loadExercisesCatalog(),
+        ])
 
         if (!athletesError && athletesData) {
           const typedAthletes = (athletesData ?? []) as Pick<
@@ -169,71 +304,55 @@ export function useWorkoutPlans() {
           setAthletes(formattedAthletes)
         }
 
-        // Recupera esercizi (web: /api/exercises con sessione server; mobile: Supabase dopo auth)
-        let typedExercises: ExerciseRow[] = []
-        try {
-          typedExercises = await apiGet<ExerciseRow[]>(
-            '/api/exercises',
-            {},
-            async () => {
-              const { data: exercisesData, error: exercisesError } = await supabase
-                .from('exercises')
-                .select('*')
-                .order('name', { ascending: true })
-              if (exercisesError) throw exercisesError
-              return (exercisesData ?? []) as ExerciseRow[]
-            },
-          )
-        } catch (exercisesErr) {
-          const errMsg =
-            exercisesErr &&
-            typeof exercisesErr === 'object' &&
-            'message' in exercisesErr &&
-            typeof (exercisesErr as { message: unknown }).message === 'string'
-              ? (exercisesErr as { message: string }).message
-              : exercisesErr instanceof Error
-                ? exercisesErr.message
-                : 'Impossibile caricare il catalogo esercizi. Controlla permessi e policy RLS su public.exercises.'
-          logger.error('Caricamento esercizi (wizard)', exercisesErr)
+        const typedExercises = exercisesOutcome.rows
+        if (exercisesOutcome.loadError) {
+          logger.error('Caricamento esercizi (wizard)', undefined, {
+            message: exercisesOutcome.loadError,
+          })
           setExercises([])
-          setExercisesLoadError(errMsg)
-          return
+          setExercisesLoadError(exercisesOutcome.loadError)
+        } else {
+          const formattedExercises: Exercise[] = typedExercises.map((exercise) => ({
+            id: exercise.id,
+            org_id: exercise.org_id?.trim() || '',
+            name: exercise.name,
+            category: exercise.category || exercise.muscle_group || '',
+            muscle_group: exercise.muscle_group || '',
+            equipment: exercise.equipment || '',
+            difficulty: difficultyDbToUi(exercise.difficulty),
+            video_url: exercise.video_url || null,
+            description: exercise.description || null,
+            image_url: exercise.image_url || null,
+            thumb_url: exercise.thumb_url || null,
+            created_at: exercise.created_at ?? new Date().toISOString(),
+          }))
+          setExercises(formattedExercises)
         }
-
-        const formattedExercises: Exercise[] = typedExercises.map((exercise) => ({
-          id: exercise.id,
-          org_id: exercise.org_id || 'default-org',
-          name: exercise.name,
-          category: exercise.category || exercise.muscle_group || '',
-          muscle_group: exercise.muscle_group || '',
-          equipment: exercise.equipment || '',
-          difficulty: difficultyDbToUi(exercise.difficulty),
-          video_url: exercise.video_url || null,
-          description: exercise.description || null,
-          image_url: exercise.image_url || null,
-          thumb_url: exercise.thumb_url || null,
-          created_at: exercise.created_at ?? new Date().toISOString(),
-        }))
-        setExercises(formattedExercises)
       } catch (error) {
         logger.error('Errore caricamento dati wizard', error)
+      } finally {
+        setWizardDataLoading(false)
       }
     }
 
-    fetchWizardData()
+    void fetchWizardData()
   }, [])
 
   // Carica le schede dal database
   useEffect(() => {
+    if (skipWorkoutList) {
+      setLoading(false)
+      return
+    }
     async function fetchWorkouts() {
       try {
         setLoading(true)
         setError(null)
 
         const {
-          data: { user },
-        } = await supabase.auth.getUser()
-
+          data: { session },
+        } = await supabase.auth.getSession()
+        const user = session?.user
         if (!user?.id) {
           setWorkouts([])
           return
@@ -241,10 +360,13 @@ export function useWorkoutPlans() {
 
         const { data: currentProfile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, org_id')
           .eq('user_id', user.id)
           .single()
-        const profileId = (currentProfile as { id?: string } | null)?.id
+        type ProfileWithOrg = Pick<ProfileRow, 'id'> & { org_id?: string | null }
+        const typedProfile = currentProfile as ProfileWithOrg | null
+        const profileId = typedProfile?.id
+        const staffOrgId = typedProfile?.org_id?.trim() || ''
         if (!profileId) {
           setWorkouts([])
           return
@@ -277,20 +399,33 @@ export function useWorkoutPlans() {
 
         let athleteSelection: Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[] = []
         if (athleteIds.length > 0) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('id, nome, cognome')
-            .in('id', athleteIds)
-          athleteSelection = (data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]
+          try {
+            const { data } = await supabase
+              .from('profiles')
+              .select('id, nome, cognome')
+              .in('id', athleteIds)
+            athleteSelection = (data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]
+          } catch (selectionErr) {
+            logger.warn(
+              'Timeout/errore caricamento profili atleti nella lista schede',
+              selectionErr,
+            )
+            athleteSelection = []
+          }
         }
 
         let staffSelection: Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[] = []
         if (staffProfileIds.length > 0) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('id, nome, cognome')
-            .in('id', staffProfileIds)
-          staffSelection = (data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]
+          try {
+            const { data } = await supabase
+              .from('profiles')
+              .select('id, nome, cognome')
+              .in('id', staffProfileIds)
+            staffSelection = (data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]
+          } catch (selectionErr) {
+            logger.warn('Timeout/errore caricamento profili staff nella lista schede', selectionErr)
+            staffSelection = []
+          }
         }
 
         const athletesMap = new Map(athleteSelection.map((athlete) => [athlete.id, athlete]))
@@ -308,13 +443,13 @@ export function useWorkoutPlans() {
 
           return {
             id: workout.id,
-            org_id: 'default-org',
+            org_id: staffOrgId,
             athlete_id: aid ?? '',
             name: workout.name,
             description: workout.description,
             objective: workoutObjective || null,
             status: mapWorkoutPlanStatus(workout),
-            difficulty: difficultyDbToUi(null),
+            difficulty: difficultyDbToUi(workout.difficulty ?? null),
             created_at: workout.created_at ?? new Date().toISOString(),
             updated_at: workout.updated_at ?? workout.created_at ?? new Date().toISOString(),
             created_by_staff_id: workout.created_by_profile_id ?? undefined,
@@ -329,6 +464,13 @@ export function useWorkoutPlans() {
 
         setWorkouts(transformedData)
       } catch (error) {
+        if (isLockAbortError(error)) {
+          logger.warn('Caricamento schede abortito per lock Supabase (transiente)', undefined, {
+            message: error instanceof Error ? error.message : String(error),
+          })
+          setError(null)
+          return
+        }
         logger.error('Errore caricamento schede', error)
         setError(error instanceof Error ? error.message : 'Errore nel caricamento delle schede')
       } finally {
@@ -336,8 +478,8 @@ export function useWorkoutPlans() {
       }
     }
 
-    fetchWorkouts()
-  }, [])
+    void fetchWorkouts()
+  }, [skipWorkoutList])
 
   // Inizializza il filtro da query params
   useEffect(() => {
@@ -445,9 +587,10 @@ export function useWorkoutPlans() {
       try {
         const isDraft = options?.draft === true
         const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (!user) {
+          data: { session },
+        } = await supabase.auth.getSession()
+        const user = session?.user
+        if (!user?.id) {
           throw new Error('Utente non autenticato')
         }
 
@@ -465,16 +608,18 @@ export function useWorkoutPlans() {
 
         const { data: currentProfile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, org_id')
           .eq('user_id', user.id)
           .single()
 
-        type ProfileIdRow = Pick<ProfileRow, 'id'>
-        const typedCurrentProfile = currentProfile as ProfileIdRow | null
+        type ProfileIdOrgRow = Pick<ProfileRow, 'id'> & { org_id?: string | null }
+        const typedCurrentProfile = currentProfile as ProfileIdOrgRow | null
 
         if (!typedCurrentProfile?.id) {
           throw new Error('Profilo staff non trovato')
         }
+
+        const staffOrgIdCreate = typedCurrentProfile.org_id?.trim() || ''
 
         const planName = workoutData.title.trim() || (isDraft ? 'Bozza' : workoutData.title)
 
@@ -485,6 +630,8 @@ export function useWorkoutPlans() {
           is_active: !isDraft,
           is_draft: isDraft,
           created_by_profile_id: typedCurrentProfile.id,
+          trainer_id: typedCurrentProfile.id,
+          difficulty: workoutData.difficulty,
         }
 
         if (workoutData.objective) {
@@ -513,36 +660,36 @@ export function useWorkoutPlans() {
           throw new Error(errMsg)
         }
 
-        // Inserisci giorni ed esercizi
+        const dayInsertsCreate = workoutData.days.map((day, dayIndex) => ({
+          workout_plan_id: newWorkout.id,
+          day_number: dayIndex + 1,
+          order_num: dayIndex + 1,
+          title: day.title || day.name || `Giorno ${dayIndex + 1}`,
+          day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
+        }))
+
+        type WorkoutDayIdRow = Pick<Tables<'workout_days'>, 'id'>
+        let newDayRowsCreate: WorkoutDayIdRow[] = []
+        if (dayInsertsCreate.length > 0) {
+          const { data: insertedDays, error: daysErr } =
+            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (supabase.from('workout_days') as any).insert(dayInsertsCreate).select('id')
+
+          newDayRowsCreate = (insertedDays ?? []) as WorkoutDayIdRow[]
+          if (daysErr || newDayRowsCreate.length !== dayInsertsCreate.length) {
+            const msg = daysErr?.message ?? 'Inserimento giorni non valido'
+            logger.error('Error batch creating workout_days', daysErr ?? undefined)
+            throw new Error(`Errore creazione giorni: ${msg}`)
+          }
+        }
+
+        const exercisePayloadsAllCreate: Record<string, unknown>[] = []
+        const exercisesForSetsAllCreate: WorkoutDayExerciseData[] = []
         for (let dayIndex = 0; dayIndex < workoutData.days.length; dayIndex++) {
           const day = workoutData.days[dayIndex]
+          const typedNewDay = newDayRowsCreate[dayIndex]
+          if (!typedNewDay) continue
 
-          const { data: newDay, error: dayError } =
-            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_days') as any)
-              .insert({
-                workout_plan_id: newWorkout.id,
-                day_number: dayIndex + 1,
-                order_num: dayIndex + 1,
-                title: day.title || day.name || `Giorno ${dayIndex + 1}`,
-                day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
-              })
-              .select('id')
-              .single()
-
-          type WorkoutDayIdRow = Pick<Tables<'workout_days'>, 'id'>
-          const typedNewDay = newDay as WorkoutDayIdRow | null
-
-          if (dayError || !typedNewDay) {
-            const msg = dayError?.message ?? 'Giorno non creato'
-            logger.error('Error creating workout day', dayError ?? undefined, {
-              dayIndex: dayIndex + 1,
-              code: (dayError as { code?: string } | null)?.code,
-            })
-            throw new Error(`Errore creazione giorno ${dayIndex + 1}: ${msg}`)
-          }
-
-          // Inserisci esercizi per questo giorno (con circuit_block_id se circuitList fornita)
           const exercisesToInsert =
             circuitList && circuitList.length > 0
               ? getExercisesWithCircuitBlock(day, circuitList)
@@ -553,97 +700,56 @@ export function useWorkoutPlans() {
 
           for (let exIndex = 0; exIndex < exercisesToInsert.length; exIndex++) {
             const { exercise, circuit_block_id } = exercisesToInsert[exIndex]
+            if (!exercise.exercise_id?.trim()) continue
+            exercisePayloadsAllCreate.push(
+              buildWorkoutDayExerciseInsertPayload(
+                typedNewDay.id,
+                exIndex,
+                exercise,
+                circuit_block_id,
+              ),
+            )
+            exercisesForSetsAllCreate.push(exercise)
+          }
+        }
 
-            if (!exercise.exercise_id?.trim()) {
-              continue
-            }
+        if (exercisePayloadsAllCreate.length > 0) {
+          const { data: insertedExercises, error: exBatchError } =
+            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (supabase.from('workout_day_exercises') as any)
+              .insert(exercisePayloadsAllCreate)
+              .select('id')
 
-            const targetSets = exercise.target_sets || exercise.sets || 3
-            const targetReps = exercise.target_reps || exercise.reps_min || 10
-            const executionTimeSec = exercise.execution_time_sec || null
-            const restTimerSec = exercise.rest_timer_sec ?? exercise.rest_seconds ?? 60
+          type WdeIdRow = Pick<Tables<'workout_day_exercises'>, 'id'>
+          const typedInserted = (insertedExercises ?? []) as WdeIdRow[]
 
-            const insertPayload: Record<string, unknown> = {
-              workout_day_id: typedNewDay.id,
-              exercise_id: exercise.exercise_id,
-              sets: targetSets,
-              reps: targetReps,
-              rest_seconds: restTimerSec,
-              order_num: exIndex,
-              target_sets: targetSets,
-              target_reps: targetReps,
-              target_weight: exercise.target_weight ?? exercise.weight_kg ?? null,
-              execution_time_sec: executionTimeSec,
-              rest_timer_sec: restTimerSec,
-              order_index: exIndex,
-              note: exercise.note ?? null,
-            }
-            if (circuit_block_id != null) insertPayload.circuit_block_id = circuit_block_id
+          if (exBatchError || typedInserted.length !== exercisePayloadsAllCreate.length) {
+            const msg = exBatchError?.message ?? 'Inserimento esercizi batch non valido'
+            logger.error('Error batch creating workout_day_exercises', exBatchError ?? undefined)
+            throw new Error(`Errore aggiunta esercizi: ${msg}`)
+          }
 
-            const { data: newExercise, error: exError } =
-              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (supabase.from('workout_day_exercises') as any)
-                .insert(insertPayload)
-                .select('id')
-                .single()
-
-            type WorkoutDayExerciseIdRow = Pick<Tables<'workout_day_exercises'>, 'id'>
-            const typedNewExercise = newExercise as WorkoutDayExerciseIdRow | null
-
-            if (exError || !typedNewExercise) {
-              const msg = exError?.message ?? 'Esercizio non inserito'
-              logger.error('Error creating workout_day_exercise', exError ?? undefined, {
-                dayIndex: dayIndex + 1,
-                code: (exError as { code?: string } | null)?.code,
-              })
-              throw new Error(`Errore aggiunta esercizio al giorno ${dayIndex + 1}: ${msg}`)
-            }
-
-            // Salva i set in workout_sets
-            // Inserisci tutti i set da 1 a target_sets
-            const setsToInsert: Array<{
-              workout_day_exercise_id: string
-              set_number: number
-              reps: number | null
-              weight_kg: number | null
-              execution_time_sec: number | null
-              rest_timer_sec: number | null
-            }> = []
-
-            // Crea tutti i set da 1 a target_sets
-            if (targetSets > 0) {
-              for (let setNum = 1; setNum <= targetSets; setNum++) {
-                // Cerca se esiste un set con questo numero in sets_detail
-                const setDetail = exercise.sets_detail?.find((s) => s.set_number === setNum)
-
-                setsToInsert.push({
-                  workout_day_exercise_id: typedNewExercise.id,
-                  set_number: setNum,
-                  reps: setDetail?.reps ?? exercise.target_reps ?? null,
-                  weight_kg: setDetail?.weight_kg ?? exercise.target_weight ?? null,
-                  execution_time_sec:
-                    setDetail?.execution_time_sec ?? exercise.execution_time_sec ?? null,
-                  rest_timer_sec: setDetail?.rest_timer_sec ?? exercise.rest_timer_sec ?? null,
-                })
-              }
-            }
-
-            // Inserisci tutti i set se ce ne sono
-            if (setsToInsert.length > 0) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
-                setsToInsert,
-              )
-
-              if (setsError) {
-                logger.error('Error creating workout_sets', setsError, {
-                  dayIndex: dayIndex + 1,
-                  code: (setsError as { code?: string })?.code,
-                })
-                throw new Error(
-                  `Errore aggiunta set per esercizio al giorno ${dayIndex + 1}: ${setsError.message}`,
-                )
-              }
+          const allSetsToInsertCreate: Array<{
+            workout_day_exercise_id: string
+            set_number: number
+            reps: number | null
+            weight_kg: number | null
+            execution_time_sec: number | null
+            rest_timer_sec: number | null
+          }> = []
+          for (let i = 0; i < typedInserted.length; i++) {
+            allSetsToInsertCreate.push(
+              ...buildSetsRowsForExercise(typedInserted[i].id, exercisesForSetsAllCreate[i]),
+            )
+          }
+          if (allSetsToInsertCreate.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
+              allSetsToInsertCreate,
+            )
+            if (setsError) {
+              logger.error('Error creating workout_sets (batch)', setsError)
+              throw new Error(`Errore aggiunta set: ${setsError.message}`)
             }
           }
         }
@@ -672,16 +778,21 @@ export function useWorkoutPlans() {
           type StaffProfileRow = Pick<ProfileRow, 'id' | 'nome' | 'cognome'>
           const typedStaffProfile = staffProfile as StaffProfileRow | null
 
+          const nw = newWorkout as WorkoutRow & { difficulty?: string | null }
           const transformedWorkout: Workout = {
             id: newWorkout.id,
-            org_id: 'default-org',
+            org_id: staffOrgIdCreate,
             athlete_id: newWorkout.athlete_id ?? '',
             name: newWorkout.name,
             description: newWorkout.description,
+            objective:
+              'objective' in newWorkout
+                ? ((newWorkout as { objective?: string | null }).objective ?? null)
+                : null,
             status: mapWorkoutPlanStatus(
               newWorkout as { is_active?: boolean | null; is_draft?: boolean | null },
             ),
-            difficulty: difficultyDbToUi(null),
+            difficulty: difficultyDbToUi(nw.difficulty ?? null),
             created_at: newWorkout.created_at ?? new Date().toISOString(),
             updated_at: newWorkout.updated_at ?? newWorkout.created_at ?? new Date().toISOString(),
             created_by_staff_id: newWorkout.created_by_profile_id ?? undefined,
@@ -725,9 +836,10 @@ export function useWorkoutPlans() {
       try {
         const isDraft = options?.draft === true
         const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (!user) {
+          data: { session },
+        } = await supabase.auth.getSession()
+        const user = session?.user
+        if (!user?.id) {
           throw new Error('Utente non autenticato')
         }
 
@@ -739,6 +851,18 @@ export function useWorkoutPlans() {
           throw new Error('Seleziona un atleta per aggiornare la scheda')
         }
 
+        const { data: updaterProfile } = await supabase
+          .from('profiles')
+          .select('id, org_id')
+          .eq('user_id', user.id)
+          .single()
+        type UpdaterRow = { id: string; org_id?: string | null }
+        const updater = updaterProfile as UpdaterRow | null
+        if (!updater?.id) {
+          throw new Error('Profilo staff non trovato')
+        }
+        const updaterOrgId = updater.org_id?.trim() ?? ''
+
         // 1. Aggiorna workout_plans
         const updateData: Record<string, unknown> = {
           name: workoutData.title.trim() || (isDraft ? 'Bozza' : workoutData.title),
@@ -746,6 +870,8 @@ export function useWorkoutPlans() {
           athlete_id: dbAthleteIdUpdate,
           is_active: !isDraft,
           is_draft: isDraft,
+          trainer_id: updater.id,
+          difficulty: workoutData.difficulty,
         }
 
         // Aggiungi objective se presente
@@ -760,7 +886,10 @@ export function useWorkoutPlans() {
           (supabase.from('workout_plans') as any).update(updateData).eq('id', workoutId)
 
         if (updateError) {
-          throw updateError
+          throw new Error(
+            updateError.message ||
+              'Aggiornamento scheda rifiutato dal database (verifica vincoli o permessi).',
+          )
         }
 
         // 2. Elimina giorni ed esercizi esistenti
@@ -778,31 +907,34 @@ export function useWorkoutPlans() {
           await supabase.from('workout_days').delete().eq('workout_plan_id', workoutId)
         }
 
-        // 3. Inserisci nuovi giorni ed esercizi
+        const dayInsertsUpdate = workoutData.days.map((day, dayIndex) => ({
+          workout_plan_id: workoutId,
+          day_number: dayIndex + 1,
+          order_num: dayIndex + 1,
+          title: day.title || day.name || `Giorno ${dayIndex + 1}`,
+          day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
+        }))
+
+        type WorkoutDayIdRowUp = Pick<Tables<'workout_days'>, 'id'>
+        let newDayRowsUpdate: WorkoutDayIdRowUp[] = []
+        if (dayInsertsUpdate.length > 0) {
+          const { data: insertedDaysUp, error: daysErrUp } =
+            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (supabase.from('workout_days') as any).insert(dayInsertsUpdate).select('id')
+
+          newDayRowsUpdate = (insertedDaysUp ?? []) as WorkoutDayIdRowUp[]
+          if (daysErrUp || newDayRowsUpdate.length !== dayInsertsUpdate.length) {
+            throw new Error(`Errore creazione giorni: ${daysErrUp?.message ?? 'batch non valido'}`)
+          }
+        }
+
+        const exercisePayloadsAllUpdate: Record<string, unknown>[] = []
+        const exercisesForSetsAllUpdate: WorkoutDayExerciseData[] = []
         for (let dayIndex = 0; dayIndex < workoutData.days.length; dayIndex++) {
           const day = workoutData.days[dayIndex]
+          const typedNewDayUp = newDayRowsUpdate[dayIndex]
+          if (!typedNewDayUp) continue
 
-          const { data: newDay, error: dayError } =
-            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_days') as any)
-              .insert({
-                workout_plan_id: workoutId,
-                day_number: dayIndex + 1,
-                order_num: dayIndex + 1,
-                title: day.title || day.name || `Giorno ${dayIndex + 1}`,
-                day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
-              })
-              .select('id')
-              .single()
-
-          type WorkoutDayIdRow = Pick<Tables<'workout_days'>, 'id'>
-          const typedNewDay = newDay as WorkoutDayIdRow | null
-
-          if (dayError || !typedNewDay) {
-            throw new Error(`Errore creazione giorno ${dayIndex + 1}: ${dayError?.message}`)
-          }
-
-          // Inserisci esercizi per questo giorno (con circuit_block_id se circuitList fornita)
           const exercisesToInsertUpdate =
             circuitList && circuitList.length > 0
               ? getExercisesWithCircuitBlock(day, circuitList)
@@ -813,90 +945,58 @@ export function useWorkoutPlans() {
 
           for (let exIndex = 0; exIndex < exercisesToInsertUpdate.length; exIndex++) {
             const { exercise, circuit_block_id } = exercisesToInsertUpdate[exIndex]
+            if (!exercise.exercise_id?.trim()) continue
+            exercisePayloadsAllUpdate.push(
+              buildWorkoutDayExerciseInsertPayload(
+                typedNewDayUp.id,
+                exIndex,
+                exercise,
+                circuit_block_id,
+              ),
+            )
+            exercisesForSetsAllUpdate.push(exercise)
+          }
+        }
 
-            if (!exercise.exercise_id?.trim()) {
-              continue
-            }
+        if (exercisePayloadsAllUpdate.length > 0) {
+          const { data: insertedExercisesUpdate, error: exBatchErrorUpdate } =
+            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (supabase.from('workout_day_exercises') as any)
+              .insert(exercisePayloadsAllUpdate)
+              .select('id')
 
-            const targetSets = exercise.target_sets || exercise.sets || 3
-            const targetReps = exercise.target_reps || exercise.reps_min || 10
-            const executionTimeSec = exercise.execution_time_sec || null
-            const restTimerSec = exercise.rest_timer_sec ?? exercise.rest_seconds ?? 60
+          type WdeIdRowUp = Pick<Tables<'workout_day_exercises'>, 'id'>
+          const typedInsertedUpdate = (insertedExercisesUpdate ?? []) as WdeIdRowUp[]
 
-            const insertPayloadUpdate: Record<string, unknown> = {
-              workout_day_id: typedNewDay.id,
-              exercise_id: exercise.exercise_id,
-              sets: targetSets,
-              reps: targetReps,
-              rest_seconds: restTimerSec,
-              order_num: exIndex,
-              target_sets: targetSets,
-              target_reps: targetReps,
-              target_weight: exercise.target_weight ?? exercise.weight_kg ?? null,
-              execution_time_sec: executionTimeSec,
-              rest_timer_sec: restTimerSec,
-              order_index: exIndex,
-              note: exercise.note ?? null,
-            }
-            if (circuit_block_id != null) insertPayloadUpdate.circuit_block_id = circuit_block_id
+          if (
+            exBatchErrorUpdate ||
+            typedInsertedUpdate.length !== exercisePayloadsAllUpdate.length
+          ) {
+            throw new Error(
+              `Errore aggiunta esercizi: ${exBatchErrorUpdate?.message ?? 'batch non valido'}`,
+            )
+          }
 
-            const { data: newExercise, error: exError } =
-              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (supabase.from('workout_day_exercises') as any)
-                .insert(insertPayloadUpdate)
-                .select('id')
-                .single()
-
-            type WorkoutDayExerciseIdRow = Pick<Tables<'workout_day_exercises'>, 'id'>
-            const typedNewExercise = newExercise as WorkoutDayExerciseIdRow | null
-
-            if (exError || !typedNewExercise) {
-              throw new Error(
-                `Errore aggiunta esercizio al giorno ${dayIndex + 1}: ${exError?.message}`,
-              )
-            }
-
-            // Salva i set in workout_sets
-            // Inserisci tutti i set da 1 a target_sets
-            const setsToInsert: Array<{
-              workout_day_exercise_id: string
-              set_number: number
-              reps: number | null
-              weight_kg: number | null
-              execution_time_sec: number | null
-              rest_timer_sec: number | null
-            }> = []
-
-            // Crea tutti i set da 1 a target_sets
-            if (targetSets > 0) {
-              for (let setNum = 1; setNum <= targetSets; setNum++) {
-                // Cerca se esiste un set con questo numero in sets_detail
-                const setDetail = exercise.sets_detail?.find((s) => s.set_number === setNum)
-
-                setsToInsert.push({
-                  workout_day_exercise_id: typedNewExercise.id,
-                  set_number: setNum,
-                  reps: setDetail?.reps ?? exercise.target_reps ?? null,
-                  weight_kg: setDetail?.weight_kg ?? exercise.target_weight ?? null,
-                  execution_time_sec:
-                    setDetail?.execution_time_sec ?? exercise.execution_time_sec ?? null,
-                  rest_timer_sec: setDetail?.rest_timer_sec ?? exercise.rest_timer_sec ?? null,
-                })
-              }
-            }
-
-            // Inserisci tutti i set se ce ne sono
-            if (setsToInsert.length > 0) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
-                setsToInsert,
-              )
-
-              if (setsError) {
-                throw new Error(
-                  `Errore aggiunta set per esercizio al giorno ${dayIndex + 1}: ${setsError.message}`,
-                )
-              }
+          const allSetsToInsertUpdate: Array<{
+            workout_day_exercise_id: string
+            set_number: number
+            reps: number | null
+            weight_kg: number | null
+            execution_time_sec: number | null
+            rest_timer_sec: number | null
+          }> = []
+          for (let i = 0; i < typedInsertedUpdate.length; i++) {
+            allSetsToInsertUpdate.push(
+              ...buildSetsRowsForExercise(typedInsertedUpdate[i].id, exercisesForSetsAllUpdate[i]),
+            )
+          }
+          if (allSetsToInsertUpdate.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
+              allSetsToInsertUpdate,
+            )
+            if (setsError) {
+              throw new Error(`Errore aggiunta set: ${setsError.message}`)
             }
           }
         }
@@ -937,7 +1037,7 @@ export function useWorkoutPlans() {
 
           const transformedWorkout: Workout = {
             id: typedUpdatedWorkout.id,
-            org_id: 'default-org',
+            org_id: updaterOrgId,
             athlete_id: typedUpdatedWorkout.athlete_id ?? '',
             name: typedUpdatedWorkout.name,
             description: typedUpdatedWorkout.description,
@@ -945,7 +1045,7 @@ export function useWorkoutPlans() {
             status: mapWorkoutPlanStatus(
               typedUpdatedWorkout as { is_active?: boolean | null; is_draft?: boolean | null },
             ),
-            difficulty: difficultyDbToUi(null),
+            difficulty: difficultyDbToUi(typedUpdatedWorkout.difficulty ?? null),
             created_at: typedUpdatedWorkout.created_at ?? new Date().toISOString(),
             updated_at:
               typedUpdatedWorkout.updated_at ??
@@ -967,9 +1067,10 @@ export function useWorkoutPlans() {
           setWorkouts((prev) => prev.map((w) => (w.id === workoutId ? transformedWorkout : w)))
         }
       } catch (error) {
-        logger.error('Error updating workout', error, { workoutId })
-        setError(error instanceof Error ? error.message : "Errore nell'aggiornamento della scheda")
-        throw error
+        const err = asError(error)
+        logger.error('Error updating workout', error, { workoutId, message: err.message })
+        setError(err.message)
+        throw err
       }
     },
     [],
@@ -978,23 +1079,25 @@ export function useWorkoutPlans() {
   const handleDuplicateWorkout = useCallback(async (workoutId: string) => {
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
+        data: { session },
+      } = await supabase.auth.getSession()
+      const user = session?.user
+      if (!user?.id) {
         throw new Error('Utente non autenticato')
       }
 
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, org_id')
         .eq('user_id', user.id)
         .single()
 
-      type ProfileIdRow = Pick<ProfileRow, 'id'>
-      const typedCurrentProfile = currentProfile as ProfileIdRow | null
+      type ProfileIdOrgDup = Pick<ProfileRow, 'id'> & { org_id?: string | null }
+      const typedCurrentProfile = currentProfile as ProfileIdOrgDup | null
       if (!typedCurrentProfile?.id) {
         throw new Error('Profilo staff non trovato')
       }
+      const dupOrgId = typedCurrentProfile.org_id?.trim() ?? ''
 
       const { data: sourcePlanData, error: sourceErr } =
         await // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1019,6 +1122,8 @@ export function useWorkoutPlans() {
         is_active: false,
         is_draft: true,
         created_by_profile_id: typedCurrentProfile.id,
+        trainer_id: typedCurrentProfile.id,
+        difficulty: sourcePlan.difficulty ?? null,
         objective: sourceObjective ?? null,
       }
 
@@ -1084,7 +1189,7 @@ export function useWorkoutPlans() {
         // Nessun giorno: aggiorna solo lista con piano vuoto
         const transformedEmpty: Workout = {
           id: newPlan.id,
-          org_id: 'default-org',
+          org_id: dupOrgId,
           athlete_id: '',
           name: newPlan.name,
           description: newPlan.description,
@@ -1092,7 +1197,9 @@ export function useWorkoutPlans() {
           status: mapWorkoutPlanStatus(
             newPlan as { is_active?: boolean | null; is_draft?: boolean | null },
           ),
-          difficulty: difficultyDbToUi(null),
+          difficulty: difficultyDbToUi(
+            (newPlan as { difficulty?: string | null }).difficulty ?? null,
+          ),
           created_at: newPlan.created_at ?? new Date().toISOString(),
           updated_at: newPlan.updated_at ?? newPlan.created_at ?? new Date().toISOString(),
           created_by_staff_id: newPlan.created_by_profile_id ?? undefined,
@@ -1273,7 +1380,7 @@ export function useWorkoutPlans() {
 
       const transformedWorkout: Workout = {
         id: newPlan.id,
-        org_id: 'default-org',
+        org_id: dupOrgId,
         athlete_id: '',
         name: newPlan.name,
         description: newPlan.description,
@@ -1281,7 +1388,9 @@ export function useWorkoutPlans() {
         status: mapWorkoutPlanStatus(
           newPlan as { is_active?: boolean | null; is_draft?: boolean | null },
         ),
-        difficulty: difficultyDbToUi(null),
+        difficulty: difficultyDbToUi(
+          (newPlan as { difficulty?: string | null }).difficulty ?? null,
+        ),
         created_at: newPlan.created_at ?? new Date().toISOString(),
         updated_at: newPlan.updated_at ?? newPlan.created_at ?? new Date().toISOString(),
         created_by_staff_id: newPlan.created_by_profile_id ?? undefined,
@@ -1326,6 +1435,7 @@ export function useWorkoutPlans() {
   return {
     workouts: filteredWorkouts,
     loading,
+    wizardDataLoading,
     error,
     exercisesLoadError,
     athletes,

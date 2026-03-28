@@ -345,191 +345,193 @@ function DocumentiPageContent() {
       />
       <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
         <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button
-            onClick={() => handleUploadDocument()}
-            disabled={uploading}
-            className="min-h-[44px] touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Caricamento...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4" />
-                Carica
-              </>
-            )}
-          </Button>
-        </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Button
+              onClick={() => handleUploadDocument()}
+              disabled={uploading}
+              className="min-h-[44px] touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Caricamento...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  Carica
+                </>
+              )}
+            </Button>
+          </div>
 
-        {/* Stats - card compatte */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <CheckCircle className="h-4 w-4 text-cyan-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                  Validi
-                </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl">
-                  {validCount}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <Clock className="h-4 w-4 text-state-warn" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                  In scadenza
-                </p>
-                <p className="text-xl font-bold tabular-nums leading-tight text-state-warn sm:text-2xl">
-                  {expiringCount}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Lista documenti */}
-        {allDocuments.length === 0 ? (
-          <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <CardContent className="relative z-10 px-4 py-8 text-center sm:px-6 sm:py-10">
-              <div className="mb-3 flex justify-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                  <FileText className="h-8 w-8 text-cyan-400" aria-hidden />
+          {/* Stats - card compatte */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <Card className={`relative overflow-hidden ${CARD_DS}`}>
+              <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                  <CheckCircle className="h-4 w-4 text-cyan-400" />
                 </div>
-              </div>
-              <h3 className="mb-1.5 text-base font-bold text-text-primary md:text-lg">
-                Nessun documento caricato
-              </h3>
-              <p className="mb-4 text-sm text-text-secondary">Caricane uno ora per iniziare</p>
-              <Button
-                onClick={() => handleUploadDocument()}
-                disabled={uploading}
-                className="min-h-[44px] touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Caricamento...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4" />
-                    Carica primo documento
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3 sm:space-y-4">
-            {allDocuments.map((item) => (
-              <Card key={item.id} className={`relative overflow-hidden ${CARD_DS}`}>
-                <CardContent className="relative z-10 p-4 sm:p-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                    <div className="flex min-w-0 flex-1 items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                        {getCategoryIcon(item.categoryKey)}
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate text-sm font-semibold text-text-primary md:text-base">
-                            {item.source === 'documents'
-                              ? getCategoryText(item.categoryKey)
-                              : item.category}
-                          </h3>
-                          {item.status != null && (
-                            <Badge
-                              variant={getStatusColor(item.status as DocStatus)}
-                              size="sm"
-                              className="shrink-0 text-xs"
-                            >
-                              {getStatusIcon(item.status)}
-                              {getStatusText(item.status)}
-                            </Badge>
-                          )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+                    Validi
+                  </p>
+                  <p className="text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl">
+                    {validCount}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className={`relative overflow-hidden ${CARD_DS}`}>
+              <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                  <Clock className="h-4 w-4 text-state-warn" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+                    In scadenza
+                  </p>
+                  <p className="text-xl font-bold tabular-nums leading-tight text-state-warn sm:text-2xl">
+                    {expiringCount}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Lista documenti */}
+          {allDocuments.length === 0 ? (
+            <Card className={`relative overflow-hidden ${CARD_DS}`}>
+              <CardContent className="relative z-10 px-4 py-8 text-center sm:px-6 sm:py-10">
+                <div className="mb-3 flex justify-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                    <FileText className="h-8 w-8 text-cyan-400" aria-hidden />
+                  </div>
+                </div>
+                <h3 className="mb-1.5 text-base font-bold text-text-primary md:text-lg">
+                  Nessun documento caricato
+                </h3>
+                <p className="mb-4 text-sm text-text-secondary">Caricane uno ora per iniziare</p>
+                <Button
+                  onClick={() => handleUploadDocument()}
+                  disabled={uploading}
+                  className="min-h-[44px] touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Caricamento...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      Carica primo documento
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
+              {allDocuments.map((item) => (
+                <Card key={item.id} className={`relative overflow-hidden ${CARD_DS}`}>
+                  <CardContent className="relative z-10 p-4 sm:p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                          {getCategoryIcon(item.categoryKey)}
                         </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 shrink-0 text-cyan-400" />
-                            <p className="truncate text-xs text-text-secondary">{item.label}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 shrink-0 text-text-tertiary" />
-                            <p className="truncate text-xs text-text-tertiary">
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="truncate text-sm font-semibold text-text-primary md:text-base">
                               {item.source === 'documents'
-                                ? `Caricato il ${formatDate(item.date)}`
-                                : formatDate(item.date)}
-                            </p>
+                                ? getCategoryText(item.categoryKey)
+                                : item.category}
+                            </h3>
+                            {item.status != null && (
+                              <Badge
+                                variant={getStatusColor(item.status as DocStatus)}
+                                size="sm"
+                                className="shrink-0 text-xs"
+                              >
+                                {getStatusIcon(item.status)}
+                                {getStatusText(item.status)}
+                              </Badge>
+                            )}
                           </div>
-                          {item.expires_at && (
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 shrink-0 text-text-tertiary" />
-                              <span className="text-xs text-text-tertiary">
-                                Scade il {formatDate(item.expires_at)}
-                              </span>
+                              <FileText className="h-4 w-4 shrink-0 text-cyan-400" />
+                              <p className="truncate text-xs text-text-secondary">{item.label}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 shrink-0 text-text-tertiary" />
+                              <p className="truncate text-xs text-text-tertiary">
+                                {item.source === 'documents'
+                                  ? `Caricato il ${formatDate(item.date)}`
+                                  : formatDate(item.date)}
+                              </p>
+                            </div>
+                            {item.expires_at && (
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 shrink-0 text-text-tertiary" />
+                                <span className="text-xs text-text-tertiary">
+                                  Scade il {formatDate(item.expires_at)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {item.notes && (
+                            <div className="mt-2 rounded-xl border border-white/10 bg-white/5 p-2">
+                              <p className="line-clamp-2 text-xs text-text-secondary">
+                                {item.notes}
+                              </p>
                             </div>
                           )}
                         </div>
-                        {item.notes && (
-                          <div className="mt-2 rounded-xl border border-white/10 bg-white/5 p-2">
-                            <p className="line-clamp-2 text-xs text-text-secondary">{item.notes}</p>
-                          </div>
+                      </div>
+                      <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                        <Button
+                          onClick={() => openDocument(item)}
+                          className="min-h-[44px] w-full touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Visualizza
+                        </Button>
+                        {item.canReplace && (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleUploadNew(item)}
+                            className="min-h-[44px] w-full touch-manipulation shrink-0 rounded-xl border border-white/10 text-text-primary hover:bg-white/5 sm:w-auto"
+                          >
+                            <Upload className="h-4 w-4" />
+                            Nuovo
+                          </Button>
                         )}
                       </div>
                     </div>
-                    <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                      <Button
-                        onClick={() => openDocument(item)}
-                        className="min-h-[44px] w-full touch-manipulation gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
-                      >
-                        <Eye className="h-4 w-4" />
-                        Visualizza
-                      </Button>
-                      {item.canReplace && (
-                        <Button
-                          variant="outline"
-                          onClick={() => handleUploadNew(item)}
-                          className="min-h-[44px] w-full touch-manipulation shrink-0 rounded-xl border border-white/10 text-text-primary hover:bg-white/5 sm:w-auto"
-                        >
-                          <Upload className="h-4 w-4" />
-                          Nuovo
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-        {/* Info compatta */}
-        <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-              <AlertTriangle className="h-4 w-4 text-state-warn" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h4 className="truncate text-sm font-bold text-text-primary md:text-base">
-                Informazioni importanti
-              </h4>
-              <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-text-secondary md:text-sm">
-                Certificati annuali, liberatorie 2 anni, contratti a scadenza. Carica PDF o JPG.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Info compatta */}
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <CardContent className="relative z-10 flex items-center gap-3 p-3 sm:p-3.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                <AlertTriangle className="h-4 w-4 text-state-warn" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate text-sm font-bold text-text-primary md:text-base">
+                  Informazioni importanti
+                </h4>
+                <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-text-secondary md:text-sm">
+                  Certificati annuali, liberatorie 2 anni, contratti a scadenza. Carica PDF o JPG.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

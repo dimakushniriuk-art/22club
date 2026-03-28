@@ -146,7 +146,9 @@ export function AthleteExercisePrivateNoteBlock({
           className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left transition-colors hover:border-white/15 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
           aria-expanded={false}
           aria-label={
-            hasSaved ? 'Apri per modificare o eliminare la nota privata' : 'Apri per aggiungere una nota privata'
+            hasSaved
+              ? 'Apri per modificare o eliminare la nota privata'
+              : 'Apri per aggiungere una nota privata'
           }
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
@@ -157,7 +159,9 @@ export function AthleteExercisePrivateNoteBlock({
               {hasSaved ? 'Nota privata' : 'Aggiungi nota privata'}
             </span>
             {hasSaved ? (
-              <span className="mt-0.5 block truncate text-[11px] text-text-tertiary">{preview}</span>
+              <span className="mt-0.5 block truncate text-[11px] text-text-tertiary">
+                {preview}
+              </span>
             ) : (
               <span className="mt-0.5 block text-[11px] text-text-tertiary">
                 Solo tu la vedi, legata a questo esercizio

@@ -20,6 +20,8 @@ import type {
 import type { Tables } from '@/types/supabase'
 import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
 import { addDebitFromAppointment } from '@/lib/credits/ledger'
+import { hasOverlappingAppCoachedWorkoutDebit } from '@/lib/credits/session-debit-dedup'
+import { coerceLedgerServiceType } from '@/lib/abbonamenti-service-type'
 import { getCurrentStaffProfileClient } from '@/lib/supabase/get-current-staff-profile-client'
 import {
   appointmentSlotOverlapsAnyCalendarBlock,
@@ -32,6 +34,7 @@ import {
   listMergedStaffCalendarAppointments,
   type StaffCalendarAppointmentListRow,
 } from '@/lib/appointments/queries'
+import { lessonUsageByAthleteIds } from '@/lib/credits/athlete-training-lessons-display'
 import type { CalendarBlock } from '@/types/calendar-block'
 import {
   requireCurrentOrgId,
@@ -188,13 +191,17 @@ export function useCalendarPage() {
         ...new Set(mergedRows.map((apt) => apt.athlete_id).filter(Boolean)),
       ] as string[]
 
-      // Carica nomi atleti e lezioni rimanenti
+      // Carica nomi atleti e lezioni rimanenti (stesso modello abbonamenti, per service_type)
       const athleteNamesMap = new Map<string, string>()
-      const lessonsRemainingMap = new Map<string, number>()
+      const lessonsRemainingTraining = new Map<string, number>()
+      const lessonsRemainingNutrition = new Map<string, number>()
+      const lessonsRemainingMassage = new Map<string, number>()
       if (athleteIds.length > 0) {
-        const [profilesRes, countersRes] = await Promise.all([
+        const [profilesRes, usageTraining, usageNutrition, usageMassage] = await Promise.all([
           supabase.from('profiles').select('id, nome, cognome').in('id', athleteIds),
-          supabase.from('lesson_counters').select('athlete_id, count').in('athlete_id', athleteIds),
+          lessonUsageByAthleteIds(supabase, athleteIds, 'training'),
+          lessonUsageByAthleteIds(supabase, athleteIds, 'nutrition'),
+          lessonUsageByAthleteIds(supabase, athleteIds, 'massage'),
         ])
         const profilesError = profilesRes.error
         if (profilesError) {
@@ -207,9 +214,19 @@ export function useCalendarPage() {
             athleteNamesMap.set(p.id, fullName || 'Atleta')
           },
         )
-        ;(countersRes.data ?? []).forEach((r: { athlete_id: string; count: number | null }) => {
-          lessonsRemainingMap.set(r.athlete_id, r.count ?? 0)
-        })
+        usageTraining.forEach((v, k) => lessonsRemainingTraining.set(k, v.totalRemaining))
+        usageNutrition.forEach((v, k) => lessonsRemainingNutrition.set(k, v.totalRemaining))
+        usageMassage.forEach((v, k) => lessonsRemainingMassage.set(k, v.totalRemaining))
+      }
+
+      const lessonsRemainingForAthlete = (aid: string, st: string): number | undefined => {
+        const map =
+          st === 'nutrition'
+            ? lessonsRemainingNutrition
+            : st === 'massage'
+              ? lessonsRemainingMassage
+              : lessonsRemainingTraining
+        return map.get(aid)
       }
 
       const mappedAppointments: AppointmentUI[] = mergedRows.map((apt: AppointmentRowWithColor) => {
@@ -270,7 +287,9 @@ export function useCalendarPage() {
           created_at: apt.created_at ?? new Date().toISOString(),
           is_open_booking_day: isOpenSlot,
           created_by_role: (apt.created_by_role as 'athlete' | 'trainer' | 'admin') ?? undefined,
-          lessons_remaining: apt.athlete_id ? lessonsRemainingMap.get(apt.athlete_id) : undefined,
+          lessons_remaining: apt.athlete_id
+            ? lessonsRemainingForAthlete(apt.athlete_id, serviceType)
+            : undefined,
         }
       })
       setAppointments(mappedAppointments)
@@ -1034,6 +1053,14 @@ export function useCalendarPage() {
     async (appointmentId: string) => {
       setLoading(true)
       try {
+        const { data: apt, error: fetchErr } = await supabase
+          .from('appointments')
+          .select('id, athlete_id, starts_at, ends_at, service_type')
+          .eq('id', appointmentId)
+          .single()
+
+        if (fetchErr) throw fetchErr
+
         const { error } = await supabase
           .from('appointments')
           .update({ status: 'completato' })
@@ -1041,8 +1068,39 @@ export function useCalendarPage() {
 
         if (error) throw error
 
+        let successMsg = 'Seduta completata.'
+        if (apt?.athlete_id) {
+          try {
+            const skipForAppCoached = await hasOverlappingAppCoachedWorkoutDebit(
+              supabase,
+              apt.athlete_id,
+              apt.starts_at,
+              apt.ends_at,
+              apt.service_type,
+            )
+            if (!skipForAppCoached) {
+              await addDebitFromAppointment(
+                {
+                  id: appointmentId,
+                  athlete_id: apt.athlete_id,
+                  service_type: coerceLedgerServiceType(apt.service_type),
+                },
+                staffProfileId,
+              )
+              successMsg = 'Seduta completata. È stato scalato 1 credito.'
+            } else {
+              successMsg =
+                'Seduta completata. Il credito risulta già scalato dall’allenamento con trainer in app.'
+            }
+          } catch (ledgerErr) {
+            logger.warn('Errore insert credit_ledger DEBIT (completamento calendario)', ledgerErr, {
+              appointmentId,
+            })
+          }
+        }
+
         await fetchAppointments()
-        notify('Seduta completata. È stato scalato 1 credito.', 'success', 'Completato')
+        notify(successMsg, 'success', 'Completato')
       } catch (err) {
         logger.error('Errore completamento seduta', err, { appointmentId })
         const msg = err instanceof Error ? err.message : (err as { message?: string })?.message
@@ -1051,7 +1109,7 @@ export function useCalendarPage() {
         setLoading(false)
       }
     },
-    [fetchAppointments, notify],
+    [fetchAppointments, notify, staffProfileId],
   )
 
   const handleNoShow = useCallback(

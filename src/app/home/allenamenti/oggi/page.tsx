@@ -38,6 +38,8 @@ import { AthleteTopBarContext } from '@/components/athlete'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
+import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
+import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
 import type { WorkoutSession, WorkoutSetData } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 
@@ -55,6 +57,17 @@ function resolveSetWeightKgForPicker(
   if (sw !== null && sw !== undefined && Number.isFinite(sw)) return sw
   if (tw !== null && tw !== undefined && Number.isFinite(tw)) return tw
   return 0
+}
+
+/** Target o ripetizioni eseguite: mostra MAX se il trainer ha impostato il sentinel -1. */
+function displayWorkoutRepsCell(
+  setReps: number | null | undefined,
+  targetReps: number | null | undefined,
+): string | number {
+  const resolved = setReps ?? targetReps
+  if (resolved == null) return 0
+  if (resolved === WORKOUT_REPS_MAX_SENTINEL) return 'MAX'
+  return resolved
 }
 
 /** Suono timer: crea e avvia un tono con Web Audio API (durata in ms, volume 0-1, frequenza Hz) */
@@ -339,6 +352,30 @@ function AllenamentiOggiPageContent() {
   const { addToast } = useToast()
   const supabase = useSupabaseClient()
 
+  const requestCoachedSessionDebit = useCallback(
+    async (workoutLogId: string) => {
+      const debit = await requestCoachedSessionDebitClient(workoutLogId)
+      if (!debit.ok) {
+        addToast({
+          title: 'Attenzione',
+          message:
+            'Allenamento salvato. Se le lezioni non risultano aggiornate, contatta la reception.',
+          variant: 'warning',
+        })
+        return
+      }
+      if (debit.skipped_duplicate_calendar) {
+        addToast({
+          title: 'Lezione non scalata da app',
+          message:
+            'Risulta già una seduta in calendario vicina a questo orario conteggiata come scalata. Se non è il tuo caso, scrivi in reception.',
+          variant: 'info',
+        })
+      }
+    },
+    [addToast],
+  )
+
   // Type guard per user
   const isValidUser = user && isValidProfile(user)
 
@@ -346,21 +383,18 @@ function AllenamentiOggiPageContent() {
   // useWorkoutSession usa athlete_id che Ã¨ FK a profiles.id
   const athleteProfileId = isValidUser && isValidUUID(user.id) ? user.id : null
 
-  const [privateNotesByWdeId, setPrivateNotesByWdeId] = useState<
-    Record<string, AthleteWdeNoteRow>
-  >({})
-
-  const handlePrivateNoteSaved = useCallback(
-    (wdeId: string, row: AthleteWdeNoteRow | null) => {
-      setPrivateNotesByWdeId((prev) => {
-        const next = { ...prev }
-        if (row === null) delete next[wdeId]
-        else next[wdeId] = row
-        return next
-      })
-    },
-    [],
+  const [privateNotesByWdeId, setPrivateNotesByWdeId] = useState<Record<string, AthleteWdeNoteRow>>(
+    {},
   )
+
+  const handlePrivateNoteSaved = useCallback((wdeId: string, row: AthleteWdeNoteRow | null) => {
+    setPrivateNotesByWdeId((prev) => {
+      const next = { ...prev }
+      if (row === null) delete next[wdeId]
+      else next[wdeId] = row
+      return next
+    })
+  }, [])
 
   // Recupera parametri dalla query string
   const workoutPlanId = searchParams?.get('workout_plan_id')
@@ -495,9 +529,7 @@ function AllenamentiOggiPageContent() {
     setTopBarConfig({
       title: workoutSession.plan_name?.trim() || 'Allenamento',
       subtitle:
-        workoutSession.day_title?.trim() ||
-        workoutSession.plan_description?.trim() ||
-        undefined,
+        workoutSession.day_title?.trim() || workoutSession.plan_description?.trim() || undefined,
       backHref: allenamentiHeaderBackHref,
       icon,
     })
@@ -1110,8 +1142,7 @@ function AllenamentiOggiPageContent() {
     setInlineExecutionTimerSeconds(null)
     setInlineExecutionTimerRunning(false)
     setInlineExecutionPreRollRemaining(null)
-    const restSec =
-      ((set.rest_timer_sec ?? exercise.rest_timer_sec ?? null) as number | null) ?? 0
+    const restSec = ((set.rest_timer_sec ?? exercise.rest_timer_sec ?? null) as number | null) ?? 0
     const finalRest = restSec > 0 ? restSec : 60
     playTimerTone(timerAudioContextRef, 700, 0.5)
     restTimerTargetRef.current = {
@@ -1314,37 +1345,34 @@ function AllenamentiOggiPageContent() {
     }
     const interval = setInterval(() => {
       setInlineExecutionTimerSeconds((prev) => {
-          if (prev === null || prev <= 1) {
-            setInlineExecutionTimerRunning(false)
-            if ('vibrate' in navigator) {
-              navigator.vibrate([200, 100, 200])
-            }
-            if (
-              timerChainModeRef.current === 'execution_then_rest' &&
-              restTimerTargetRef.current
-            ) {
-              const b = restTimerTargetRef.current
-              const ex = workoutSessionRef.current?.exercises?.find(
-                (e) => (e as { id?: string }).id === b.exerciseId,
-              ) as Record<string, unknown> | undefined
-              if (ex) {
-                const setList = (ex.sets as Record<string, unknown>[]) || []
-                const st =
-                  setList.find((s) => (s.set_number as number) === b.setNumber) ??
-                  setList[setList.length - 1]
-                const restSec =
-                  ((st?.rest_timer_sec ?? ex.rest_timer_sec ?? null) as number | null) ?? 0
-                const finalRest = restSec > 0 ? restSec : 60
-                setInlineTimerSeconds(finalRest)
-                setInlineTimerRunning(true)
-                playTimerTone(timerAudioContextRef, 700, 0.5)
-              }
-            }
-            return 0
+        if (prev === null || prev <= 1) {
+          setInlineExecutionTimerRunning(false)
+          if ('vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200])
           }
-          return prev - 1
-        })
-      }, 1000)
+          if (timerChainModeRef.current === 'execution_then_rest' && restTimerTargetRef.current) {
+            const b = restTimerTargetRef.current
+            const ex = workoutSessionRef.current?.exercises?.find(
+              (e) => (e as { id?: string }).id === b.exerciseId,
+            ) as Record<string, unknown> | undefined
+            if (ex) {
+              const setList = (ex.sets as Record<string, unknown>[]) || []
+              const st =
+                setList.find((s) => (s.set_number as number) === b.setNumber) ??
+                setList[setList.length - 1]
+              const restSec =
+                ((st?.rest_timer_sec ?? ex.rest_timer_sec ?? null) as number | null) ?? 0
+              const finalRest = restSec > 0 ? restSec : 60
+              setInlineTimerSeconds(finalRest)
+              setInlineTimerRunning(true)
+              playTimerTone(timerAudioContextRef, 700, 0.5)
+            }
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
 
     return () => clearInterval(interval)
   }, [inlineExecutionTimerRunning, inlineExecutionTimerSeconds, inlineExecutionPreRollRemaining])
@@ -1445,6 +1473,10 @@ function AllenamentiOggiPageContent() {
         }
 
         activeWorkoutLogIdRef.current = null
+
+        if (withTrainer) {
+          await requestCoachedSessionDebit(existingLogId)
+        }
 
         addToast({
           title: 'Successo',
@@ -1568,6 +1600,10 @@ function AllenamentiOggiPageContent() {
         })
       }
 
+      if (withTrainer && workoutLogId) {
+        await requestCoachedSessionDebit(workoutLogId)
+      }
+
       addToast({
         title: 'Successo',
         message: 'Allenamento completato!',
@@ -1633,40 +1669,40 @@ function AllenamentiOggiPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
           <div className="mx-auto w-full max-w-lg space-y-4 min-[834px]:space-y-5 min-[1100px]:max-w-3xl">
-          <Card className={CARD_DS}>
-            <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
-              <div className="mb-3 flex justify-center opacity-50" aria-hidden>
-                <Dumbbell className="h-10 w-10 text-text-tertiary" />
-              </div>
-              <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
-                {isSpecificWorkout
-                  ? 'Scheda senza esercizi configurati'
-                  : 'Nessun allenamento programmato per oggi'}
-              </h3>
-              <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-3">
-                {isSpecificWorkout
-                  ? 'Questa scheda non ha ancora esercizi configurati. Contatta il tuo trainer per completare la configurazione.'
-                  : 'Contatta il tuo trainer per ricevere una scheda di allenamento'}
-              </p>
-              <div className="flex gap-2 justify-center flex-wrap">
-                <Button
-                  onClick={() => router.push('/home/allenamenti')}
-                  className="min-h-[44px] h-9 touch-manipulation rounded-xl bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10"
-                >
-                  Vai agli Allenamenti
-                </Button>
-                {isSpecificWorkout && (
+            <Card className={CARD_DS}>
+              <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
+                <div className="mb-3 flex justify-center opacity-50" aria-hidden>
+                  <Dumbbell className="h-10 w-10 text-text-tertiary" />
+                </div>
+                <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
+                  {isSpecificWorkout
+                    ? 'Scheda senza esercizi configurati'
+                    : 'Nessun allenamento programmato per oggi'}
+                </h3>
+                <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-3">
+                  {isSpecificWorkout
+                    ? 'Questa scheda non ha ancora esercizi configurati. Contatta il tuo trainer per completare la configurazione.'
+                    : 'Contatta il tuo trainer per ricevere una scheda di allenamento'}
+                </p>
+                <div className="flex gap-2 justify-center flex-wrap">
                   <Button
-                    variant="outline"
-                    onClick={() => router.back()}
-                    className="min-h-[44px] h-9 touch-manipulation rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 sm:h-10"
+                    onClick={() => router.push('/home/allenamenti')}
+                    className="min-h-[44px] h-9 touch-manipulation rounded-xl bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10"
                   >
-                    Indietro
+                    Vai agli Allenamenti
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  {isSpecificWorkout && (
+                    <Button
+                      variant="outline"
+                      onClick={() => router.back()}
+                      className="min-h-[44px] h-9 touch-manipulation rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 sm:h-10"
+                    >
+                      Indietro
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -1679,28 +1715,28 @@ function AllenamentiOggiPageContent() {
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
           <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
-          <Card className="relative overflow-hidden border border-state-error/50 bg-background-secondary/50">
-            <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
-              <div className="mb-3 flex justify-center opacity-50" aria-hidden>
-                <X className="h-10 w-10 text-state-error" />
-              </div>
-              <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
-                Errore nel caricamento
-              </h3>
-              <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-3">
-                {error}
-              </p>
-              <Button
-                onClick={() => {
-                  setError(null)
-                  if (athleteProfileId) fetchCurrentWorkout(athleteProfileId)
-                }}
-                className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-medium"
-              >
-                Riprova
-              </Button>
-            </CardContent>
-          </Card>
+            <Card className="relative overflow-hidden border border-state-error/50 bg-background-secondary/50">
+              <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
+                <div className="mb-3 flex justify-center opacity-50" aria-hidden>
+                  <X className="h-10 w-10 text-state-error" />
+                </div>
+                <h3 className="text-text-primary mb-2 text-base min-[834px]:text-lg font-medium">
+                  Errore nel caricamento
+                </h3>
+                <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm line-clamp-3">
+                  {error}
+                </p>
+                <Button
+                  onClick={() => {
+                    setError(null)
+                    if (athleteProfileId) fetchCurrentWorkout(athleteProfileId)
+                  }}
+                  className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-medium"
+                >
+                  Riprova
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -1718,54 +1754,598 @@ function AllenamentiOggiPageContent() {
         }}
       >
         <div className="mx-auto w-full max-w-lg space-y-3 min-[834px]:space-y-4 min-[1100px]:max-w-3xl">
-        {/* Esercizio corrente */}
-        {currentExercise
-          ? ((): React.ReactElement | null => {
-              const exercise = currentExercise.exercise as Record<string, unknown>
-              const exerciseVideoUrl = exercise.video_url as string | undefined | null
-              const exerciseThumbUrl = exercise.thumb_url as string | undefined | null
-              const exerciseNote = currentExercise.note as string | null | undefined
+          {/* Esercizio corrente */}
+          {currentExercise
+            ? ((): React.ReactElement | null => {
+                const exercise = currentExercise.exercise as Record<string, unknown>
+                const exerciseVideoUrl = exercise.video_url as string | undefined | null
+                const exerciseThumbUrl = exercise.thumb_url as string | undefined | null
+                const exerciseNote = currentExercise.note as string | null | undefined
 
-              // Validazione URL video (deve essere una stringa non vuota e valida)
-              // Verifica anche che non sia un URL malformato o un placeholder
-              const isValidVideoUrl: boolean = Boolean(
-                exerciseVideoUrl &&
-                typeof exerciseVideoUrl === 'string' &&
-                exerciseVideoUrl.trim() !== '' &&
-                exerciseVideoUrl.trim() !== 'null' &&
-                exerciseVideoUrl.trim() !== 'undefined' &&
-                (exerciseVideoUrl.startsWith('http://') ||
-                  exerciseVideoUrl.startsWith('https://')) &&
-                // Verifica che l'URL non contenga caratteri problematici
-                !exerciseVideoUrl.includes('{{') &&
-                !exerciseVideoUrl.includes('${'),
-              )
+                // Validazione URL video (deve essere una stringa non vuota e valida)
+                // Verifica anche che non sia un URL malformato o un placeholder
+                const isValidVideoUrl: boolean = Boolean(
+                  exerciseVideoUrl &&
+                  typeof exerciseVideoUrl === 'string' &&
+                  exerciseVideoUrl.trim() !== '' &&
+                  exerciseVideoUrl.trim() !== 'null' &&
+                  exerciseVideoUrl.trim() !== 'undefined' &&
+                  (exerciseVideoUrl.startsWith('http://') ||
+                    exerciseVideoUrl.startsWith('https://')) &&
+                  // Verifica che l'URL non contenga caratteri problematici
+                  !exerciseVideoUrl.includes('{{') &&
+                  !exerciseVideoUrl.includes('${'),
+                )
 
-              // Validazione URL thumbnail (deve essere una stringa non vuota)
-              const isValidThumbUrl: boolean = Boolean(
-                exerciseThumbUrl &&
-                typeof exerciseThumbUrl === 'string' &&
-                exerciseThumbUrl.trim() !== '',
-              )
+                // Validazione URL thumbnail (deve essere una stringa non vuota)
+                const isValidThumbUrl: boolean = Boolean(
+                  exerciseThumbUrl &&
+                  typeof exerciseThumbUrl === 'string' &&
+                  exerciseThumbUrl.trim() !== '',
+                )
 
-              // Debug: log temporaneo per verificare i dati
-              if (process.env.NODE_ENV === 'development') {
-                console.log('Exercise data:', {
-                  hasVideoUrl: !!exerciseVideoUrl,
-                  videoUrl: exerciseVideoUrl,
-                  hasThumbUrl: !!exerciseThumbUrl,
-                  thumbUrl: exerciseThumbUrl,
-                  isValidVideoUrl,
-                  isValidThumbUrl,
-                  exerciseName: exercise.name,
-                })
-              }
+                // Debug: log temporaneo per verificare i dati
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('Exercise data:', {
+                    hasVideoUrl: !!exerciseVideoUrl,
+                    videoUrl: exerciseVideoUrl,
+                    hasThumbUrl: !!exerciseThumbUrl,
+                    thumbUrl: exerciseThumbUrl,
+                    isValidVideoUrl,
+                    isValidThumbUrl,
+                    exerciseName: exercise.name,
+                  })
+                }
 
-              // Estrai la condizione per evitare problemi di inferenza tipo
-              const shouldShowMedia = Boolean(isValidVideoUrl || isValidThumbUrl)
+                // Estrai la condizione per evitare problemi di inferenza tipo
+                const shouldShowMedia = Boolean(isValidVideoUrl || isValidThumbUrl)
 
-              // Vista circuito: griglia 3x3 video + lista info per ogni esercizio
-              if (circuitGroup.length > 0) {
+                // Vista circuito: griglia 3x3 video + lista info per ogni esercizio
+                if (circuitGroup.length > 0) {
+                  return (
+                    <Card className={`${CARD_DS} p-2.5`}>
+                      <CardHeader
+                        className="relative z-10 border-b border-white/10 px-3 py-1.5"
+                        padding="sm"
+                      >
+                        <CardTitle
+                          size="md"
+                          className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary"
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                            <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
+                          </span>
+                          {`Circuito \u00b7 ${circuitGroup.length} esercizi`}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="relative z-10 space-y-2 pt-2 p-0">
+                        <div
+                          className={`grid gap-2 ${circuitGroup.length <= 5 ? 'grid-cols-2' : 'grid-cols-3'}`}
+                        >
+                          {circuitGroup.slice(0, 9).map((item) => {
+                            const ex = (item.exercise ?? {}) as Record<string, unknown>
+                            const vUrl = ex.video_url as string | undefined | null
+                            const tUrl = ex.thumb_url as string | undefined | null
+                            const validV = Boolean(
+                              vUrl &&
+                              typeof vUrl === 'string' &&
+                              vUrl.trim() !== '' &&
+                              (vUrl.startsWith('http://') || vUrl.startsWith('https://')),
+                            )
+                            const validT = Boolean(
+                              tUrl && typeof tUrl === 'string' && tUrl.trim() !== '',
+                            )
+                            const name = (ex.name as string) ?? 'Esercizio'
+                            const canEnlarge = validV || validT
+                            return (
+                              <div
+                                key={String(item.id)}
+                                className={`relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-white/5 ${canEnlarge ? 'cursor-pointer transition-all hover:border-white/20 hover:ring-2 hover:ring-white/20' : ''}`}
+                                role={canEnlarge ? 'button' : undefined}
+                                tabIndex={canEnlarge ? 0 : undefined}
+                                onClick={() =>
+                                  canEnlarge &&
+                                  setEnlargedCircuitVideo({
+                                    videoUrl: (vUrl as string) || '',
+                                    thumbUrl: tUrl ?? undefined,
+                                    name,
+                                  })
+                                }
+                                onKeyDown={(e) =>
+                                  canEnlarge &&
+                                  (e.key === 'Enter' || e.key === ' ') &&
+                                  setEnlargedCircuitVideo({
+                                    videoUrl: (vUrl as string) || '',
+                                    thumbUrl: tUrl ?? undefined,
+                                    name,
+                                  })
+                                }
+                                aria-label={canEnlarge ? `Ingrandisci video: ${name}` : undefined}
+                              >
+                                <ExerciseMediaDisplay
+                                  exercise={ex}
+                                  videoUrl={vUrl ?? undefined}
+                                  thumbUrl={tUrl ?? undefined}
+                                  isValidVideoUrl={validV}
+                                  isValidThumbUrl={validT}
+                                />
+                                {canEnlarge && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
+                                    <span className="text-[10px] font-medium text-white uppercase tracking-wider bg-black/50 px-2 py-1 rounded">
+                                      Ingrandisci
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                        <div className="space-y-2 pt-2">
+                          {(() => {
+                            const hasReps = true
+                            const hasWeight = true
+                            const hasTime = circuitGroup.some((item) => {
+                              const sets =
+                                (item.sets as Record<string, unknown>[] | undefined) ?? []
+                              return sets.some(
+                                (s) =>
+                                  (s.execution_time_sec as number | null) != null &&
+                                  (s.execution_time_sec as number) > 0,
+                              )
+                            })
+                            const hasRest = circuitGroup.some(
+                              (item) => (item.rest_timer_sec as number | null) != null,
+                            )
+                            const visibleColumns = [
+                              {
+                                key: 'weight',
+                                show: hasWeight,
+                                label: 'Peso (kg)',
+                                field: 'weight_kg' as const,
+                              },
+                              {
+                                key: 'reps',
+                                show: hasReps,
+                                label: 'Ripetizioni',
+                                field: 'reps' as const,
+                              },
+                              {
+                                key: 'time',
+                                show: hasTime,
+                                label: 'Tempo (sec)',
+                                field: 'execution_time_sec' as const,
+                              },
+                              {
+                                key: 'rest',
+                                show: hasRest,
+                                label: 'Recupero (sec)',
+                                field: 'rest_timer_sec' as const,
+                              },
+                            ].filter((col) => col.show)
+                            const columnCount = visibleColumns.length
+                            const columnsMain = visibleColumns.filter((c) => c.key !== 'rest')
+                            const restColumn = visibleColumns.find((c) => c.key === 'rest')
+                            return (
+                              <>
+                                <div
+                                  className="grid gap-1.5 mb-0.5"
+                                  style={{
+                                    gridTemplateColumns: '32px 1fr',
+                                  }}
+                                >
+                                  <div />
+                                  <div
+                                    className="grid gap-1 md:gap-2"
+                                    style={{
+                                      gridTemplateColumns: hasRest
+                                        ? `repeat(${columnCount - 1}, minmax(50px, 1fr)) minmax(50px, 1fr) 40px`
+                                        : `repeat(${columnCount}, minmax(50px, 1fr))`,
+                                    }}
+                                  >
+                                    {columnsMain.map((col) => (
+                                      <div key={col.key} className="text-center">
+                                        <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide whitespace-nowrap truncate">
+                                          {col.label}
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {hasRest && restColumn ? (
+                                      <div className="col-span-2 text-center">
+                                        <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide whitespace-nowrap truncate">
+                                          {restColumn.label}
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                {circuitGroup.map((item) => {
+                                  const ex = (item.exercise ?? {}) as Record<string, unknown>
+                                  const name = (ex.name as string) ?? 'Esercizio'
+                                  const sets = (item.sets as Record<string, unknown>[]) ?? []
+                                  return (
+                                    <div key={String(item.id)} className="space-y-1.5">
+                                      <div className="text-text-primary text-xs font-medium truncate pl-0.5">
+                                        {name}
+                                      </div>
+                                      {sets.map((set: Record<string, unknown>, index: number) => (
+                                        <div
+                                          key={index}
+                                          role="button"
+                                          tabIndex={0}
+                                          onClick={() => {
+                                            if (set.completed as boolean) {
+                                              updateSet(
+                                                item.id as string,
+                                                set.set_number as number,
+                                                {
+                                                  completed: false,
+                                                },
+                                              )
+                                              setInlineTimerSeconds(null)
+                                              setInlineTimerRunning(false)
+                                              restTimerTargetRef.current = null
+                                              return
+                                            }
+                                            updateSet(item.id as string, set.set_number as number, {
+                                              completed: true,
+                                            })
+                                            restTimerTargetRef.current = {
+                                              exerciseId: item.id as string,
+                                              setNumber: set.set_number as number,
+                                            }
+                                            const restSec =
+                                              ((set.rest_timer_sec ??
+                                                item.rest_timer_sec ??
+                                                null) as number | null) ?? 0
+                                            const finalRest = restSec > 0 ? restSec : 60
+                                            playTimerTone(timerAudioContextRef, 700, 0.5)
+                                            setInlineTimerSeconds(finalRest)
+                                            setInlineTimerRunning(true)
+                                          }}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                              e.preventDefault()
+                                              ;(e.currentTarget as HTMLElement).click()
+                                            }
+                                          }}
+                                          className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 cursor-pointer hover:border-white/20 hover:bg-white/10 ${
+                                            set.completed
+                                              ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
+                                              : weightPicker?.exerciseId === (item.id as string) &&
+                                                  weightPicker?.setNumber ===
+                                                    (set.set_number as number)
+                                                ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                                                : 'border-white/10 bg-white/5'
+                                          }`}
+                                        >
+                                          <div
+                                            className="grid gap-2 items-center"
+                                            style={{
+                                              gridTemplateColumns: '40px 1fr',
+                                            }}
+                                          >
+                                            <div
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                if (!(set.completed as boolean)) {
+                                                  setWeightPicker({
+                                                    exerciseId: item.id as string,
+                                                    setNumber: set.set_number as number,
+                                                    initialKg: resolveSetWeightKgForPicker(
+                                                      set,
+                                                      item as Record<string, unknown>,
+                                                    ),
+                                                  })
+                                                }
+                                              }}
+                                              className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
+                                                set.completed
+                                                  ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
+                                                  : weightPicker?.exerciseId ===
+                                                        (item.id as string) &&
+                                                      weightPicker?.setNumber ===
+                                                        (set.set_number as number)
+                                                    ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
+                                                    : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
+                                              }`}
+                                              title={
+                                                set.completed
+                                                  ? 'Set completato'
+                                                  : 'Tocca per scegliere il peso'
+                                              }
+                                            >
+                                              {!set.completed && (
+                                                <Edit2
+                                                  className={`h-3 w-3 ${
+                                                    weightPicker?.exerciseId ===
+                                                      (item.id as string) &&
+                                                    weightPicker?.setNumber ===
+                                                      (set.set_number as number)
+                                                      ? 'text-orange-400'
+                                                      : 'text-text-tertiary'
+                                                  }`}
+                                                />
+                                              )}
+                                              <span>{set.set_number as number}</span>
+                                            </div>
+                                            <div
+                                              className="grid gap-2 md:gap-3 items-center min-w-0"
+                                              style={{
+                                                gridTemplateColumns: hasRest
+                                                  ? `repeat(${columnCount - 1}, minmax(60px, 1fr)) minmax(60px, 1fr) 40px`
+                                                  : `repeat(${columnCount}, minmax(60px, 1fr))`,
+                                              }}
+                                            >
+                                              {columnsMain.map((col) => {
+                                                const execSecForPlay =
+                                                  ((set.execution_time_sec ??
+                                                    item.execution_time_sec ??
+                                                    null) as number | null) ?? 0
+                                                return (
+                                                  <div
+                                                    key={col.key}
+                                                    className="text-center flex items-center justify-center min-h-[2rem] min-w-0"
+                                                  >
+                                                    {col.field === 'execution_time_sec' ? (
+                                                      execSecForPlay > 0 ? (
+                                                        <div className="flex items-center justify-center">
+                                                          <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation()
+                                                              startExecutionThenRestFromSet(
+                                                                set,
+                                                                item as Record<string, unknown>,
+                                                              )
+                                                            }}
+                                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orange-400/35 bg-orange-500/15 text-orange-400 transition-colors hover:bg-orange-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
+                                                              (set.completed as boolean)
+                                                                ? 'opacity-60'
+                                                                : ''
+                                                            }`}
+                                                            aria-label={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
+                                                            title={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
+                                                          >
+                                                            <Play className="h-4 w-4 fill-current" />
+                                                          </button>
+                                                        </div>
+                                                      ) : (
+                                                        <div
+                                                          className={`text-base font-bold text-white text-center whitespace-nowrap min-h-[2rem] flex items-center justify-center ${
+                                                            (set.completed as boolean)
+                                                              ? 'opacity-70'
+                                                              : 'opacity-100'
+                                                          }`}
+                                                        >
+                                                          {execSecForPlay}
+                                                        </div>
+                                                      )
+                                                    ) : (
+                                                      <div
+                                                        className={`text-base font-bold text-white text-center whitespace-nowrap ${
+                                                          (set.completed as boolean)
+                                                            ? 'opacity-70'
+                                                            : 'opacity-100'
+                                                        }`}
+                                                      >
+                                                        {col.field === 'reps'
+                                                          ? displayWorkoutRepsCell(
+                                                              set.reps as number | null | undefined,
+                                                              item.target_reps as
+                                                                | number
+                                                                | null
+                                                                | undefined,
+                                                            )
+                                                          : col.field === 'weight_kg'
+                                                            ? (() => {
+                                                                const setWeight = set.weight_kg as
+                                                                  | number
+                                                                  | null
+                                                                  | undefined
+                                                                const exerciseWeight =
+                                                                  item.target_weight as
+                                                                    | number
+                                                                    | null
+                                                                    | undefined
+                                                                if (
+                                                                  setWeight !== null &&
+                                                                  setWeight !== undefined
+                                                                )
+                                                                  return setWeight
+                                                                if (
+                                                                  exerciseWeight !== null &&
+                                                                  exerciseWeight !== undefined
+                                                                )
+                                                                  return exerciseWeight
+                                                                return '-'
+                                                              })()
+                                                            : ((set[
+                                                                (col as { field: string }).field
+                                                              ] as number | null | undefined) ??
+                                                              '-')}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                )
+                                              })}
+                                              {hasRest
+                                                ? (() => {
+                                                    const restSec =
+                                                      ((set.rest_timer_sec ??
+                                                        item.rest_timer_sec ??
+                                                        null) as number | null) ?? 0
+                                                    const execSec =
+                                                      ((set.execution_time_sec ??
+                                                        item.execution_time_sec ??
+                                                        null) as number | null) ?? 0
+                                                    const recoveryPlayDisabledByExecution =
+                                                      execSec > 0
+                                                    const restPlayBlockedClass =
+                                                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/30 text-text-tertiary/50 opacity-40 pointer-events-none'
+                                                    const showRestPlayOnly = restSec > 0
+                                                    if (showRestPlayOnly) {
+                                                      return (
+                                                        <div
+                                                          className="flex items-center justify-center min-h-[2rem]"
+                                                          style={{ gridColumn: 'span 2' }}
+                                                        >
+                                                          {recoveryPlayDisabledByExecution ? (
+                                                            <div
+                                                              role="img"
+                                                              aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
+                                                              title="Recupero automatico dopo il timer di esecuzione"
+                                                              className={`${restPlayBlockedClass} ${
+                                                                (set.completed as boolean)
+                                                                  ? 'opacity-50'
+                                                                  : ''
+                                                              }`}
+                                                            >
+                                                              <Play className="h-4 w-4 fill-current" />
+                                                            </div>
+                                                          ) : (
+                                                            <button
+                                                              type="button"
+                                                              onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                startRestTimerFromSet(
+                                                                  set,
+                                                                  item as Record<string, unknown>,
+                                                                )
+                                                              }}
+                                                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
+                                                                (set.completed as boolean)
+                                                                  ? 'opacity-60'
+                                                                  : ''
+                                                              }`}
+                                                              aria-label={`Avvia timer recupero (${restSec} sec.)`}
+                                                              title={`Avvia timer recupero (${restSec} sec.)`}
+                                                            >
+                                                              <Play className="h-4 w-4 fill-current" />
+                                                            </button>
+                                                          )}
+                                                        </div>
+                                                      )
+                                                    }
+                                                    return (
+                                                      <>
+                                                        <div className="text-center flex items-center justify-center min-h-[2rem]">
+                                                          <div
+                                                            className={`text-base font-bold text-white text-center whitespace-nowrap ${
+                                                              (set.completed as boolean)
+                                                                ? 'opacity-70'
+                                                                : 'opacity-100'
+                                                            }`}
+                                                          >
+                                                            {restSec}
+                                                          </div>
+                                                        </div>
+                                                        {!(set.completed as boolean) && (
+                                                          <div className="flex items-center justify-center">
+                                                            {recoveryPlayDisabledByExecution ? (
+                                                              <div
+                                                                role="img"
+                                                                aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
+                                                                title="Recupero automatico dopo il timer di esecuzione"
+                                                                className={restPlayBlockedClass}
+                                                              >
+                                                                <Play className="h-4 w-4 fill-current" />
+                                                              </div>
+                                                            ) : (
+                                                              <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                  e.stopPropagation()
+                                                                  startRestTimerFromSet(
+                                                                    set,
+                                                                    item as Record<string, unknown>,
+                                                                  )
+                                                                }}
+                                                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                                                                aria-label={`Avvia timer recupero (${restSec > 0 ? restSec : 60} sec.)`}
+                                                                title="Avvia timer recupero"
+                                                              >
+                                                                <Play className="h-4 w-4 fill-current" />
+                                                              </button>
+                                                            )}
+                                                          </div>
+                                                        )}
+                                                      </>
+                                                    )
+                                                  })()
+                                                : null}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      {athleteProfileId ? (
+                                        <AthleteExercisePrivateNoteBlock
+                                          workoutDayExerciseId={item.id as string}
+                                          athleteProfileId={athleteProfileId}
+                                          savedRow={privateNotesByWdeId[item.id as string]}
+                                          onSaved={handlePrivateNoteSaved}
+                                        />
+                                      ) : null}
+                                    </div>
+                                  )
+                                })}
+                              </>
+                            )
+                          })()}
+                        </div>
+                        <div className="space-y-2 pt-2.5">
+                          {(() => {
+                            const block = blocks[currentBlockIndex]
+                            const blockExercises = block
+                              ? (workoutSession?.exercises ?? []).slice(
+                                  block.startIndex,
+                                  block.endIndex + 1,
+                                )
+                              : []
+                            const allSetsCompletedForBlock =
+                              blockExercises.length > 0 &&
+                              blockExercises.every((ex) => {
+                                const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
+                                return (
+                                  sets.length === 0 ||
+                                  sets.every((s: Record<string, unknown>) => s.completed === true)
+                                )
+                              })
+                            const isBlockCompleted = block
+                              ? blockExercises.every(
+                                  (ex) => (ex as { is_completed?: boolean }).is_completed === true,
+                                )
+                              : false
+                            if (!allSetsCompletedForBlock) return null
+                            return (
+                              <Button
+                                onClick={() => completeBlock(currentBlockIndex)}
+                                variant={isBlockCompleted ? 'success' : 'default'}
+                                className={
+                                  isBlockCompleted
+                                    ? 'h-9 text-xs rounded-xl bg-green-500 hover:bg-emerald-500 text-white font-semibold w-full transition-all duration-200'
+                                    : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'
+                                }
+                              >
+                                <Check className="mr-1.5 h-3.5 w-3.5" />
+                                {isBlockCompleted ? 'Esercizio completato' : 'Completa esercizio'}
+                              </Button>
+                            )
+                          })()}
+                          {workoutSession && isWorkoutComplete && (
+                            <Button
+                              onClick={finishWorkout}
+                              className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200"
+                            >
+                              <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                              Completa allenamento
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                }
+
                 return (
                   <Card className={`${CARD_DS} p-2.5`}>
                     <CardHeader
@@ -1779,303 +2359,435 @@ function AllenamentiOggiPageContent() {
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                           <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
                         </span>
-                        {`Circuito \u00b7 ${circuitGroup.length} esercizi`}
+                        <span className="truncate flex-1">{exercise.name as string}</span>
+                        {Boolean(exercise.description) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 shrink-0 rounded-full p-0 text-cyan-400 hover:bg-white/5 hover:text-cyan-300"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedExerciseDescription({
+                                name: (exercise.name as string) || 'Esercizio',
+                                description: (exercise.description as string) || '',
+                              })
+                            }}
+                            aria-label="Mostra descrizione esercizio"
+                          >
+                            <Info className="h-4 w-4" />
+                          </Button>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10 space-y-2 pt-2 p-0">
-                      <div
-                        className={`grid gap-2 ${circuitGroup.length <= 5 ? 'grid-cols-2' : 'grid-cols-3'}`}
-                      >
-                        {circuitGroup.slice(0, 9).map((item) => {
-                          const ex = (item.exercise ?? {}) as Record<string, unknown>
-                          const vUrl = ex.video_url as string | undefined | null
-                          const tUrl = ex.thumb_url as string | undefined | null
-                          const validV = Boolean(
-                            vUrl &&
-                            typeof vUrl === 'string' &&
-                            vUrl.trim() !== '' &&
-                            (vUrl.startsWith('http://') || vUrl.startsWith('https://')),
-                          )
-                          const validT = Boolean(
-                            tUrl && typeof tUrl === 'string' && tUrl.trim() !== '',
-                          )
-                          const name = (ex.name as string) ?? 'Esercizio'
-                          const canEnlarge = validV || validT
-                          return (
-                            <div
-                              key={String(item.id)}
-                              className={`relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-white/5 ${canEnlarge ? 'cursor-pointer transition-all hover:border-white/20 hover:ring-2 hover:ring-white/20' : ''}`}
-                              role={canEnlarge ? 'button' : undefined}
-                              tabIndex={canEnlarge ? 0 : undefined}
-                              onClick={() =>
-                                canEnlarge &&
-                                setEnlargedCircuitVideo({
-                                  videoUrl: (vUrl as string) || '',
-                                  thumbUrl: tUrl ?? undefined,
-                                  name,
-                                })
-                              }
-                              onKeyDown={(e) =>
-                                canEnlarge &&
-                                (e.key === 'Enter' || e.key === ' ') &&
-                                setEnlargedCircuitVideo({
-                                  videoUrl: (vUrl as string) || '',
-                                  thumbUrl: tUrl ?? undefined,
-                                  name,
-                                })
-                              }
-                              aria-label={canEnlarge ? `Ingrandisci video: ${name}` : undefined}
-                            >
-                              <ExerciseMediaDisplay
-                                exercise={ex}
-                                videoUrl={vUrl ?? undefined}
-                                thumbUrl={tUrl ?? undefined}
-                                isValidVideoUrl={validV}
-                                isValidThumbUrl={validT}
-                              />
-                              {canEnlarge && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
-                                  <span className="text-[10px] font-medium text-white uppercase tracking-wider bg-black/50 px-2 py-1 rounded">
-                                    Ingrandisci
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                      <div className="space-y-2 pt-2">
-                        {(() => {
-                          const hasReps = true
-                          const hasWeight = true
-                          const hasTime = circuitGroup.some((item) => {
-                            const sets = (item.sets as Record<string, unknown>[] | undefined) ?? []
-                            return sets.some(
+                      {/* Video/Immagine esercizio - Componente interno per gestire lo stato */}
+                      {shouldShowMedia ? (
+                        <ExerciseMediaDisplay
+                          exercise={exercise}
+                          videoUrl={exerciseVideoUrl || undefined}
+                          thumbUrl={exerciseThumbUrl || undefined}
+                          isValidVideoUrl={isValidVideoUrl}
+                          isValidThumbUrl={isValidThumbUrl}
+                        />
+                      ) : null}
+
+                      {/* Nota esercizio - Visualizzata sotto il video */}
+                      {exerciseNote ? (
+                        <div className="mt-3 border-t border-white/10 pt-3">
+                          <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+                            <span className="flex h-6 w-6 items-center justify-center rounded border border-white/10 bg-white/5">
+                              <Target className="h-2.5 w-2.5 shrink-0 text-cyan-400" />
+                            </span>
+                            <span>Note</span>
+                          </div>
+                          <p className="text-text-primary text-xs leading-relaxed whitespace-pre-wrap break-words">
+                            {exerciseNote}
+                          </p>
+                        </div>
+                      ) : null}
+
+                      {/* Set - Design Moderno e Uniforme */}
+                      <div className="space-y-2">
+                        <div className="space-y-1.5">
+                          {(() => {
+                            const sets = currentExercise.sets as Record<string, unknown>[]
+
+                            // Debug: log dei dati per verificare la struttura
+                            if (process.env.NODE_ENV === 'development') {
+                              console.log('Current Exercise Data:', {
+                                exerciseId: currentExercise.id,
+                                target_weight: currentExercise.target_weight,
+                                target_reps: currentExercise.target_reps,
+                                rest_timer_sec: currentExercise.rest_timer_sec,
+                                sets: sets.map((s) => ({
+                                  set_number: s.set_number,
+                                  weight_kg: s.weight_kg,
+                                  reps: s.reps,
+                                  rest_timer_sec: s.rest_timer_sec,
+                                })),
+                              })
+                            }
+
+                            // Calcola quali colonne mostrare:
+                            // - Ripetizioni: sempre mostrata (campo standard per tutti gli esercizi)
+                            // - Peso: sempre mostrata (campo standard per tutti gli esercizi)
+                            // - Tempo: mostrata solo se almeno un set ha execution_time_sec > 0
+                            // - Recupero: sempre mostrata se l'esercizio ha rest_timer_sec (anche se 0, l'utente puÃ² inserire)
+                            const hasReps = true // Sempre mostrata perchÃ© Ã¨ un campo standard
+                            const hasWeight = true // Sempre mostrata perchÃ© Ã¨ un campo standard
+                            const hasTime = sets.some(
                               (s) =>
-                                (s.execution_time_sec as number | null) != null &&
+                                (s.execution_time_sec as number | null) !== null &&
                                 (s.execution_time_sec as number) > 0,
                             )
-                          })
-                          const hasRest = circuitGroup.some(
-                            (item) => (item.rest_timer_sec as number | null) != null,
-                          )
-                          const visibleColumns = [
-                            {
-                              key: 'weight',
-                              show: hasWeight,
-                              label: 'Peso (kg)',
-                              field: 'weight_kg' as const,
-                            },
-                            {
-                              key: 'reps',
-                              show: hasReps,
-                              label: 'Ripetizioni',
-                              field: 'reps' as const,
-                            },
-                            {
-                              key: 'time',
-                              show: hasTime,
-                              label: 'Tempo (sec)',
-                              field: 'execution_time_sec' as const,
-                            },
-                            {
-                              key: 'rest',
-                              show: hasRest,
-                              label: 'Recupero (sec)',
-                              field: 'rest_timer_sec' as const,
-                            },
-                          ].filter((col) => col.show)
-                          const columnCount = visibleColumns.length
-                          const columnsMain = visibleColumns.filter((c) => c.key !== 'rest')
-                          const restColumn = visibleColumns.find((c) => c.key === 'rest')
-                          return (
-                            <>
-                              <div
-                                className="grid gap-1.5 mb-0.5"
-                                style={{
-                                  gridTemplateColumns: '32px 1fr',
-                                }}
-                              >
-                                <div />
+                            const hasRest =
+                              sets.length > 0 &&
+                              (sets.some(
+                                (s) =>
+                                  (s.rest_timer_sec as number | null) !== null &&
+                                  (s.rest_timer_sec as number) > 0,
+                              ) ||
+                                ((currentExercise.rest_timer_sec as number | null | undefined) !==
+                                  null &&
+                                  (currentExercise.rest_timer_sec as number | null | undefined) !==
+                                    undefined))
+
+                            const visibleColumns = [
+                              {
+                                key: 'weight',
+                                show: hasWeight,
+                                label: 'Peso (kg)',
+                                field: 'weight_kg',
+                              },
+                              { key: 'reps', show: hasReps, label: 'Ripetizioni', field: 'reps' },
+                              {
+                                key: 'time',
+                                show: hasTime,
+                                label: 'Tempo (sec)',
+                                field: 'execution_time_sec',
+                              },
+                              {
+                                key: 'rest',
+                                show: hasRest,
+                                label: 'Recupero (sec)',
+                                field: 'rest_timer_sec',
+                              },
+                            ].filter((col) => col.show)
+
+                            const columnCount = visibleColumns.length
+                            const columnsMain = visibleColumns.filter((c) => c.key !== 'rest')
+                            const restColumn = visibleColumns.find((c) => c.key === 'rest')
+
+                            return (
+                              <>
+                                {/* Header delle colonne (solo per la prima riga) */}
                                 <div
-                                  className="grid gap-1 md:gap-2"
+                                  className="grid gap-2 mb-1"
                                   style={{
-                                    gridTemplateColumns: hasRest
-                                      ? `repeat(${columnCount - 1}, minmax(50px, 1fr)) minmax(50px, 1fr) 40px`
-                                      : `repeat(${columnCount}, minmax(50px, 1fr))`,
+                                    gridTemplateColumns: '40px 1fr',
                                   }}
                                 >
-                                  {columnsMain.map((col) => (
-                                    <div key={col.key} className="text-center">
-                                      <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide whitespace-nowrap truncate">
-                                        {col.label}
+                                  <div></div>
+                                  <div
+                                    className="grid gap-2 md:gap-3"
+                                    style={{
+                                      gridTemplateColumns: hasRest
+                                        ? `repeat(${columnCount - 1}, minmax(60px, 1fr)) minmax(60px, 1fr) 40px`
+                                        : `repeat(${columnCount}, minmax(60px, 1fr))`,
+                                    }}
+                                  >
+                                    {columnsMain.map((col) => (
+                                      <div key={col.key} className="text-center">
+                                        <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide mb-0.5 whitespace-nowrap truncate">
+                                          {col.label}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                  {hasRest && restColumn ? (
-                                    <div className="col-span-2 text-center">
-                                      <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide whitespace-nowrap truncate">
-                                        {restColumn.label}
+                                    ))}
+                                    {hasRest && restColumn ? (
+                                      <div className="col-span-2 text-center">
+                                        <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide mb-0.5 whitespace-nowrap truncate">
+                                          {restColumn.label}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ) : null}
+                                    ) : null}
+                                  </div>
                                 </div>
-                              </div>
-                              {circuitGroup.map((item) => {
-                                const ex = (item.exercise ?? {}) as Record<string, unknown>
-                                const name = (ex.name as string) ?? 'Esercizio'
-                                const sets = (item.sets as Record<string, unknown>[]) ?? []
-                                return (
-                                  <div key={String(item.id)} className="space-y-1.5">
-                                    <div className="text-text-primary text-xs font-medium truncate pl-0.5">
-                                      {name}
-                                    </div>
-                                    {sets.map((set: Record<string, unknown>, index: number) => (
+                                {sets.map((set: Record<string, unknown>, index: number) => (
+                                  <div
+                                    key={index}
+                                    role={circuitGroup.length === 0 ? 'button' : undefined}
+                                    tabIndex={circuitGroup.length === 0 ? 0 : undefined}
+                                    onClick={() => {
+                                      if (circuitGroup.length !== 0) return
+                                      if (set.completed as boolean) {
+                                        updateSet(
+                                          currentExercise.id as string,
+                                          set.set_number as number,
+                                          { completed: false },
+                                        )
+                                        setInlineTimerSeconds(null)
+                                        setInlineTimerRunning(false)
+                                        restTimerTargetRef.current = null
+                                        return
+                                      }
+                                      updateSet(
+                                        currentExercise.id as string,
+                                        set.set_number as number,
+                                        { completed: true },
+                                      )
+                                      restTimerTargetRef.current = {
+                                        exerciseId: currentExercise.id as string,
+                                        setNumber: set.set_number as number,
+                                      }
+                                      const restSec =
+                                        ((set.rest_timer_sec ??
+                                          currentExercise.rest_timer_sec ??
+                                          null) as number | null) ?? 0
+                                      const finalRest = restSec > 0 ? restSec : 60
+                                      playTimerTone(timerAudioContextRef, 700, 0.5)
+                                      setInlineTimerSeconds(finalRest)
+                                      setInlineTimerRunning(true)
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (
+                                        circuitGroup.length === 0 &&
+                                        (e.key === 'Enter' || e.key === ' ')
+                                      ) {
+                                        e.preventDefault()
+                                        ;(e.currentTarget as HTMLElement).click()
+                                      }
+                                    }}
+                                    className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
+                                      set.completed
+                                        ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
+                                        : weightPicker?.exerciseId ===
+                                              (currentExercise.id as string) &&
+                                            weightPicker?.setNumber === (set.set_number as number)
+                                          ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                                          : 'border-white/10 bg-white/5'
+                                    } ${circuitGroup.length === 0 ? 'cursor-pointer hover:border-white/20 hover:bg-white/10' : ''}`}
+                                  >
+                                    <div
+                                      className="grid gap-2 items-center"
+                                      style={{
+                                        gridTemplateColumns: '40px 1fr',
+                                      }}
+                                    >
                                       <div
-                                        key={index}
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() => {
-                                          if (set.completed as boolean) {
-                                            updateSet(item.id as string, set.set_number as number, {
-                                              completed: false,
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          if (!(set.completed as boolean)) {
+                                            setWeightPicker({
+                                              exerciseId: currentExercise.id as string,
+                                              setNumber: set.set_number as number,
+                                              initialKg: resolveSetWeightKgForPicker(
+                                                set,
+                                                currentExercise as Record<string, unknown>,
+                                              ),
                                             })
-                                            setInlineTimerSeconds(null)
-                                            setInlineTimerRunning(false)
-                                            restTimerTargetRef.current = null
-                                            return
-                                          }
-                                          updateSet(item.id as string, set.set_number as number, {
-                                            completed: true,
-                                          })
-                                          restTimerTargetRef.current = {
-                                            exerciseId: item.id as string,
-                                            setNumber: set.set_number as number,
-                                          }
-                                          const restSec =
-                                            ((set.rest_timer_sec ?? item.rest_timer_sec ?? null) as
-                                              | number
-                                              | null) ?? 0
-                                          const finalRest = restSec > 0 ? restSec : 60
-                                          playTimerTone(timerAudioContextRef, 700, 0.5)
-                                          setInlineTimerSeconds(finalRest)
-                                          setInlineTimerRunning(true)
-                                        }}
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault()
-                                            ;(e.currentTarget as HTMLElement).click()
                                           }
                                         }}
-                                        className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 cursor-pointer hover:border-white/20 hover:bg-white/10 ${
+                                        className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
                                           set.completed
-                                            ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
-                                            : weightPicker?.exerciseId === (item.id as string) &&
-                                                weightPicker?.setNumber === (set.set_number as number)
-                                              ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
-                                              : 'border-white/10 bg-white/5'
+                                            ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
+                                            : weightPicker?.exerciseId ===
+                                                  (currentExercise.id as string) &&
+                                                weightPicker?.setNumber ===
+                                                  (set.set_number as number)
+                                              ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
+                                              : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
                                         }`}
+                                        title={
+                                          set.completed
+                                            ? 'Set completato'
+                                            : 'Tocca per scegliere il peso'
+                                        }
                                       >
-                                        <div
-                                          className="grid gap-2 items-center"
-                                          style={{
-                                            gridTemplateColumns: '40px 1fr',
-                                          }}
-                                        >
-                                          <div
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              if (!(set.completed as boolean)) {
-                                                setWeightPicker({
-                                                  exerciseId: item.id as string,
-                                                  setNumber: set.set_number as number,
-                                                  initialKg: resolveSetWeightKgForPicker(
-                                                    set,
-                                                    item as Record<string, unknown>,
-                                                  ),
-                                                })
-                                              }
-                                            }}
-                                            className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
-                                              set.completed
-                                                ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
-                                                : weightPicker?.exerciseId === (item.id as string) &&
-                                                    weightPicker?.setNumber ===
-                                                      (set.set_number as number)
-                                                  ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
-                                                  : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
+                                        {!set.completed && (
+                                          <Edit2
+                                            className={`h-3 w-3 ${
+                                              weightPicker?.exerciseId ===
+                                                (currentExercise.id as string) &&
+                                              weightPicker?.setNumber === (set.set_number as number)
+                                                ? 'text-orange-400'
+                                                : 'text-text-tertiary'
                                             }`}
-                                            title={
-                                              set.completed
-                                                ? 'Set completato'
-                                                : 'Tocca per scegliere il peso'
-                                            }
-                                          >
-                                            {!set.completed && (
-                                              <Edit2
-                                                className={`h-3 w-3 ${
-                                                  weightPicker?.exerciseId === (item.id as string) &&
-                                                  weightPicker?.setNumber === (set.set_number as number)
-                                                    ? 'text-orange-400'
-                                                    : 'text-text-tertiary'
-                                                }`}
-                                              />
-                                            )}
-                                            <span>{set.set_number as number}</span>
-                                          </div>
-                                          <div
-                                            className="grid gap-2 md:gap-3 items-center min-w-0"
-                                            style={{
-                                              gridTemplateColumns: hasRest
-                                                ? `repeat(${columnCount - 1}, minmax(60px, 1fr)) minmax(60px, 1fr) 40px`
-                                                : `repeat(${columnCount}, minmax(60px, 1fr))`,
-                                            }}
-                                          >
-                                            {columnsMain.map((col) => {
-                                              const execSecForPlay =
-                                                ((set.execution_time_sec ??
-                                                  item.execution_time_sec ??
-                                                  null) as number | null) ?? 0
-                                              return (
+                                          />
+                                        )}
+                                        <span>{set.set_number as number}</span>
+                                      </div>
+
+                                      <div
+                                        className="grid gap-2 md:gap-3 items-center min-w-0"
+                                        style={{
+                                          gridTemplateColumns: hasRest
+                                            ? `repeat(${columnCount - 1}, minmax(60px, 1fr)) minmax(60px, 1fr) 40px`
+                                            : `repeat(${columnCount}, minmax(60px, 1fr))`,
+                                        }}
+                                      >
+                                        {columnsMain.map((col) => {
+                                          const execSecForPlay =
+                                            ((set.execution_time_sec ??
+                                              currentExercise.execution_time_sec ??
+                                              null) as number | null) ?? 0
+                                          return (
+                                            <div
+                                              key={col.key}
+                                              className="text-center flex items-center justify-center min-h-[2rem] min-w-0"
+                                            >
+                                              {col.field === 'execution_time_sec' ? (
+                                                execSecForPlay > 0 ? (
+                                                  <div className="flex items-center justify-center">
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        startExecutionThenRestFromSet(
+                                                          set,
+                                                          currentExercise as Record<
+                                                            string,
+                                                            unknown
+                                                          >,
+                                                        )
+                                                      }}
+                                                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orange-400/35 bg-orange-500/15 text-orange-400 transition-colors hover:bg-orange-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
+                                                        (set.completed as boolean)
+                                                          ? 'opacity-60'
+                                                          : ''
+                                                      }`}
+                                                      aria-label={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
+                                                      title={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
+                                                    >
+                                                      <Play className="h-4 w-4 fill-current" />
+                                                    </button>
+                                                  </div>
+                                                ) : (
+                                                  <div
+                                                    className={`text-base font-bold text-white text-center whitespace-nowrap min-h-[2rem] flex items-center justify-center ${
+                                                      (set.completed as boolean)
+                                                        ? 'opacity-70'
+                                                        : 'opacity-100'
+                                                    }`}
+                                                  >
+                                                    {execSecForPlay}
+                                                  </div>
+                                                )
+                                              ) : (
                                                 <div
-                                                  key={col.key}
-                                                  className="text-center flex items-center justify-center min-h-[2rem] min-w-0"
+                                                  className={`text-base font-bold text-white text-center whitespace-nowrap ${
+                                                    (set.completed as boolean)
+                                                      ? 'opacity-70'
+                                                      : 'opacity-100'
+                                                  }`}
                                                 >
-                                                  {col.field === 'execution_time_sec' ? (
-                                                    execSecForPlay > 0 ? (
-                                                      <div className="flex items-center justify-center">
-                                                        <button
-                                                          type="button"
-                                                          onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            startExecutionThenRestFromSet(
-                                                              set,
-                                                              item as Record<string, unknown>,
-                                                            )
-                                                          }}
-                                                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orange-400/35 bg-orange-500/15 text-orange-400 transition-colors hover:bg-orange-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
-                                                            (set.completed as boolean)
-                                                              ? 'opacity-60'
-                                                              : ''
-                                                          }`}
-                                                          aria-label={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
-                                                          title={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
-                                                        >
-                                                          <Play className="h-4 w-4 fill-current" />
-                                                        </button>
-                                                      </div>
-                                                    ) : (
+                                                  {col.field === 'reps'
+                                                    ? displayWorkoutRepsCell(
+                                                        set.reps as number | null | undefined,
+                                                        currentExercise.target_reps as
+                                                          | number
+                                                          | null
+                                                          | undefined,
+                                                      )
+                                                    : col.field === 'weight_kg'
+                                                      ? (() => {
+                                                          const setWeight = set.weight_kg as
+                                                            | number
+                                                            | null
+                                                            | undefined
+                                                          const exerciseWeight =
+                                                            currentExercise.target_weight as
+                                                              | number
+                                                              | null
+                                                              | undefined
+
+                                                          if (
+                                                            setWeight !== null &&
+                                                            setWeight !== undefined
+                                                          ) {
+                                                            return setWeight
+                                                          }
+
+                                                          if (
+                                                            exerciseWeight !== null &&
+                                                            exerciseWeight !== undefined
+                                                          ) {
+                                                            return exerciseWeight
+                                                          }
+
+                                                          return '-'
+                                                        })()
+                                                      : ((set[(col as { field: string }).field] as
+                                                          | number
+                                                          | null
+                                                          | undefined) ?? '-')}
+                                                </div>
+                                              )}
+                                            </div>
+                                          )
+                                        })}
+                                        {hasRest
+                                          ? (() => {
+                                              const restSec =
+                                                ((set.rest_timer_sec ??
+                                                  currentExercise.rest_timer_sec ??
+                                                  null) as number | null) ?? 0
+                                              const execSec =
+                                                ((set.execution_time_sec ??
+                                                  currentExercise.execution_time_sec ??
+                                                  null) as number | null) ?? 0
+                                              const recoveryPlayDisabledByExecution = execSec > 0
+                                              const restPlayBlockedClass =
+                                                'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/30 text-text-tertiary/50 opacity-40 pointer-events-none'
+                                              const showRestPlayOnly = restSec > 0
+                                              if (showRestPlayOnly) {
+                                                return (
+                                                  <div
+                                                    className="flex items-center justify-center min-h-[2rem]"
+                                                    style={{ gridColumn: 'span 2' }}
+                                                  >
+                                                    {recoveryPlayDisabledByExecution ? (
                                                       <div
-                                                        className={`text-base font-bold text-white text-center whitespace-nowrap min-h-[2rem] flex items-center justify-center ${
+                                                        role="img"
+                                                        aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
+                                                        title="Recupero automatico dopo il timer di esecuzione"
+                                                        className={`${restPlayBlockedClass} ${
                                                           (set.completed as boolean)
-                                                            ? 'opacity-70'
-                                                            : 'opacity-100'
+                                                            ? 'opacity-50'
+                                                            : ''
                                                         }`}
                                                       >
-                                                        {execSecForPlay}
+                                                        <Play className="h-4 w-4 fill-current" />
                                                       </div>
-                                                    )
-                                                  ) : (
+                                                    ) : (
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation()
+                                                          startRestTimerFromSet(
+                                                            set,
+                                                            currentExercise as Record<
+                                                              string,
+                                                              unknown
+                                                            >,
+                                                          )
+                                                        }}
+                                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
+                                                          (set.completed as boolean)
+                                                            ? 'opacity-60'
+                                                            : ''
+                                                        }`}
+                                                        aria-label={`Avvia timer recupero (${restSec} sec.)`}
+                                                        title={`Avvia timer recupero (${restSec} sec.)`}
+                                                      >
+                                                        <Play className="h-4 w-4 fill-current" />
+                                                      </button>
+                                                    )}
+                                                  </div>
+                                                )
+                                              }
+                                              return (
+                                                <>
+                                                  <div className="text-center flex items-center justify-center min-h-[2rem]">
                                                     <div
                                                       className={`text-base font-bold text-white text-center whitespace-nowrap ${
                                                         (set.completed as boolean)
@@ -2083,79 +2795,17 @@ function AllenamentiOggiPageContent() {
                                                           : 'opacity-100'
                                                       }`}
                                                     >
-                                                      {col.field === 'reps'
-                                                        ? ((set.reps as
-                                                            | number
-                                                            | null
-                                                            | undefined) ??
-                                                          (item.target_reps as
-                                                            | number
-                                                            | null
-                                                            | undefined) ??
-                                                          0)
-                                                        : col.field === 'weight_kg'
-                                                          ? (() => {
-                                                              const setWeight =
-                                                                set.weight_kg as
-                                                                  | number
-                                                                  | null
-                                                                  | undefined
-                                                              const exerciseWeight =
-                                                                item.target_weight as
-                                                                  | number
-                                                                  | null
-                                                                  | undefined
-                                                              if (
-                                                                setWeight !== null &&
-                                                                setWeight !== undefined
-                                                              )
-                                                                return setWeight
-                                                              if (
-                                                                exerciseWeight !== null &&
-                                                                exerciseWeight !== undefined
-                                                              )
-                                                                return exerciseWeight
-                                                              return '-'
-                                                            })()
-                                                          : ((set[
-                                                              (col as { field: string }).field
-                                                            ] as number | null | undefined) ??
-                                                            '-')}
+                                                      {restSec}
                                                     </div>
-                                                  )}
-                                                </div>
-                                              )
-                                            })}
-                                            {hasRest ? (
-                                              (() => {
-                                                const restSec =
-                                                  (((set.rest_timer_sec ??
-                                                    item.rest_timer_sec ??
-                                                    null) as number | null) ?? 0)
-                                                const execSec =
-                                                  (((set.execution_time_sec ??
-                                                    item.execution_time_sec ??
-                                                    null) as number | null) ?? 0)
-                                                const recoveryPlayDisabledByExecution = execSec > 0
-                                                const restPlayBlockedClass =
-                                                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/30 text-text-tertiary/50 opacity-40 pointer-events-none'
-                                                const showRestPlayOnly = restSec > 0
-                                                if (showRestPlayOnly) {
-                                                  return (
-                                                    <div
-                                                      className="flex items-center justify-center min-h-[2rem]"
-                                                      style={{ gridColumn: 'span 2' }}
-                                                    >
+                                                  </div>
+                                                  {!(set.completed as boolean) && (
+                                                    <div className="flex items-center justify-center">
                                                       {recoveryPlayDisabledByExecution ? (
                                                         <div
                                                           role="img"
                                                           aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
                                                           title="Recupero automatico dopo il timer di esecuzione"
-                                                          className={`${restPlayBlockedClass} ${
-                                                            (set.completed as boolean)
-                                                              ? 'opacity-50'
-                                                              : ''
-                                                          }`}
+                                                          className={restPlayBlockedClass}
                                                         >
                                                           <Play className="h-4 w-4 fill-current" />
                                                         </div>
@@ -2166,89 +2816,44 @@ function AllenamentiOggiPageContent() {
                                                             e.stopPropagation()
                                                             startRestTimerFromSet(
                                                               set,
-                                                              item as Record<string, unknown>,
+                                                              currentExercise as Record<
+                                                                string,
+                                                                unknown
+                                                              >,
                                                             )
                                                           }}
-                                                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
-                                                            (set.completed as boolean)
-                                                              ? 'opacity-60'
-                                                              : ''
-                                                          }`}
-                                                          aria-label={`Avvia timer recupero (${restSec} sec.)`}
-                                                          title={`Avvia timer recupero (${restSec} sec.)`}
+                                                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                                                          aria-label={`Avvia timer recupero (${restSec > 0 ? restSec : 60} sec.)`}
+                                                          title="Avvia timer recupero"
                                                         >
                                                           <Play className="h-4 w-4 fill-current" />
                                                         </button>
                                                       )}
                                                     </div>
-                                                  )
-                                                }
-                                                return (
-                                                  <>
-                                                    <div className="text-center flex items-center justify-center min-h-[2rem]">
-                                                      <div
-                                                        className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                          (set.completed as boolean)
-                                                            ? 'opacity-70'
-                                                            : 'opacity-100'
-                                                        }`}
-                                                      >
-                                                        {restSec}
-                                                      </div>
-                                                    </div>
-                                                    {!(set.completed as boolean) && (
-                                                      <div className="flex items-center justify-center">
-                                                        {recoveryPlayDisabledByExecution ? (
-                                                          <div
-                                                            role="img"
-                                                            aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
-                                                            title="Recupero automatico dopo il timer di esecuzione"
-                                                            className={restPlayBlockedClass}
-                                                          >
-                                                            <Play className="h-4 w-4 fill-current" />
-                                                          </div>
-                                                        ) : (
-                                                          <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                              e.stopPropagation()
-                                                              startRestTimerFromSet(
-                                                                set,
-                                                                item as Record<string, unknown>,
-                                                              )
-                                                            }}
-                                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
-                                                            aria-label={`Avvia timer recupero (${restSec > 0 ? restSec : 60} sec.)`}
-                                                            title="Avvia timer recupero"
-                                                          >
-                                                            <Play className="h-4 w-4 fill-current" />
-                                                          </button>
-                                                        )}
-                                                      </div>
-                                                    )}
-                                                  </>
-                                                )
-                                              })()
-                                            ) : null}
-                                          </div>
-                                        </div>
+                                                  )}
+                                                </>
+                                              )
+                                            })()
+                                          : null}
                                       </div>
-                                    ))}
-                                    {athleteProfileId ? (
-                                      <AthleteExercisePrivateNoteBlock
-                                        workoutDayExerciseId={item.id as string}
-                                        athleteProfileId={athleteProfileId}
-                                        savedRow={privateNotesByWdeId[item.id as string]}
-                                        onSaved={handlePrivateNoteSaved}
-                                      />
-                                    ) : null}
+                                    </div>
                                   </div>
-                                )
-                              })}
-                            </>
-                          )
-                        })()}
+                                ))}
+                              </>
+                            )
+                          })()}
+                        </div>
+                        {athleteProfileId ? (
+                          <AthleteExercisePrivateNoteBlock
+                            workoutDayExerciseId={currentExercise.id as string}
+                            athleteProfileId={athleteProfileId}
+                            savedRow={privateNotesByWdeId[currentExercise.id as string]}
+                            onSaved={handlePrivateNoteSaved}
+                          />
+                        ) : null}
                       </div>
+
+                      {/* Azioni - Design Moderno e Uniforme: bottone solo quando tutte le serie sono completate */}
                       <div className="space-y-2 pt-2.5">
                         {(() => {
                           const block = blocks[currentBlockIndex]
@@ -2279,7 +2884,7 @@ function AllenamentiOggiPageContent() {
                               variant={isBlockCompleted ? 'success' : 'default'}
                               className={
                                 isBlockCompleted
-                                  ? 'h-9 text-xs rounded-xl bg-green-500 hover:bg-emerald-500 text-white font-semibold w-full transition-all duration-200'
+                                  ? 'h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold w-full transition-all duration-200 shadow-lg shadow-green-500/30 hover:shadow-green-500/40'
                                   : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'
                               }
                             >
@@ -2288,10 +2893,11 @@ function AllenamentiOggiPageContent() {
                             </Button>
                           )
                         })()}
+                        {/* Pulsante fine allenamento - Mostra solo quando tutti gli esercizi sono completati */}
                         {workoutSession && isWorkoutComplete && (
                           <Button
                             onClick={finishWorkout}
-                            className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200"
+                            className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200 hover:scale-[1.02]"
                           >
                             <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
                             Completa allenamento
@@ -2301,877 +2907,332 @@ function AllenamentiOggiPageContent() {
                     </CardContent>
                   </Card>
                 )
-              }
+              })()
+            : null}
 
-              return (
-                <Card className={`${CARD_DS} p-2.5`}>
-                  <CardHeader
-                    className="relative z-10 border-b border-white/10 px-3 py-1.5"
-                    padding="sm"
-                  >
-                    <CardTitle
-                      size="md"
-                      className="flex flex-1 items-center gap-2 truncate text-sm text-text-primary"
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                        <Dumbbell className="h-3 w-3 shrink-0 text-cyan-400" />
-                      </span>
-                      <span className="truncate flex-1">{exercise.name as string}</span>
-                      {Boolean(exercise.description) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 shrink-0 rounded-full p-0 text-cyan-400 hover:bg-white/5 hover:text-cyan-300"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedExerciseDescription({
-                              name: (exercise.name as string) || 'Esercizio',
-                              description: (exercise.description as string) || '',
-                            })
-                          }}
-                          aria-label="Mostra descrizione esercizio"
-                        >
-                          <Info className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="relative z-10 space-y-2 pt-2 p-0">
-                    {/* Video/Immagine esercizio - Componente interno per gestire lo stato */}
-                    {shouldShowMedia ? (
-                      <ExerciseMediaDisplay
-                        exercise={exercise}
-                        videoUrl={exerciseVideoUrl || undefined}
-                        thumbUrl={exerciseThumbUrl || undefined}
-                        isValidVideoUrl={isValidVideoUrl}
-                        isValidThumbUrl={isValidThumbUrl}
-                      />
-                    ) : null}
-
-                    {/* Nota esercizio - Visualizzata sotto il video */}
-                    {exerciseNote ? (
-                      <div className="mt-3 border-t border-white/10 pt-3">
-                        <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
-                          <span className="flex h-6 w-6 items-center justify-center rounded border border-white/10 bg-white/5">
-                            <Target className="h-2.5 w-2.5 shrink-0 text-cyan-400" />
-                          </span>
-                          <span>Note</span>
-                        </div>
-                        <p className="text-text-primary text-xs leading-relaxed whitespace-pre-wrap break-words">
-                          {exerciseNote}
-                        </p>
-                      </div>
-                    ) : null}
-
-                    {/* Set - Design Moderno e Uniforme */}
-                    <div className="space-y-2">
-                      <div className="space-y-1.5">
-                        {(() => {
-                          const sets = currentExercise.sets as Record<string, unknown>[]
-
-                          // Debug: log dei dati per verificare la struttura
-                          if (process.env.NODE_ENV === 'development') {
-                            console.log('Current Exercise Data:', {
-                              exerciseId: currentExercise.id,
-                              target_weight: currentExercise.target_weight,
-                              target_reps: currentExercise.target_reps,
-                              rest_timer_sec: currentExercise.rest_timer_sec,
-                              sets: sets.map((s) => ({
-                                set_number: s.set_number,
-                                weight_kg: s.weight_kg,
-                                reps: s.reps,
-                                rest_timer_sec: s.rest_timer_sec,
-                              })),
-                            })
-                          }
-
-                          // Calcola quali colonne mostrare:
-                          // - Ripetizioni: sempre mostrata (campo standard per tutti gli esercizi)
-                          // - Peso: sempre mostrata (campo standard per tutti gli esercizi)
-                          // - Tempo: mostrata solo se almeno un set ha execution_time_sec > 0
-                          // - Recupero: sempre mostrata se l'esercizio ha rest_timer_sec (anche se 0, l'utente puÃ² inserire)
-                          const hasReps = true // Sempre mostrata perchÃ© Ã¨ un campo standard
-                          const hasWeight = true // Sempre mostrata perchÃ© Ã¨ un campo standard
-                          const hasTime = sets.some(
-                            (s) =>
-                              (s.execution_time_sec as number | null) !== null &&
-                              (s.execution_time_sec as number) > 0,
-                          )
-                          const hasRest =
-                            sets.length > 0 &&
-                            (sets.some(
-                              (s) =>
-                                (s.rest_timer_sec as number | null) !== null &&
-                                (s.rest_timer_sec as number) > 0,
-                            ) ||
-                              ((currentExercise.rest_timer_sec as number | null | undefined) !==
-                                null &&
-                                (currentExercise.rest_timer_sec as number | null | undefined) !==
-                                  undefined))
-
-                          const visibleColumns = [
-                            {
-                              key: 'weight',
-                              show: hasWeight,
-                              label: 'Peso (kg)',
-                              field: 'weight_kg',
-                            },
-                            { key: 'reps', show: hasReps, label: 'Ripetizioni', field: 'reps' },
-                            {
-                              key: 'time',
-                              show: hasTime,
-                              label: 'Tempo (sec)',
-                              field: 'execution_time_sec',
-                            },
-                            {
-                              key: 'rest',
-                              show: hasRest,
-                              label: 'Recupero (sec)',
-                              field: 'rest_timer_sec',
-                            },
-                          ].filter((col) => col.show)
-
-                          const columnCount = visibleColumns.length
-                          const columnsMain = visibleColumns.filter((c) => c.key !== 'rest')
-                          const restColumn = visibleColumns.find((c) => c.key === 'rest')
-
-                          return (
-                            <>
-                              {/* Header delle colonne (solo per la prima riga) */}
-                              <div
-                                className="grid gap-2 mb-1"
-                                style={{
-                                  gridTemplateColumns: '40px 1fr',
-                                }}
-                              >
-                                <div></div>
-                                <div
-                                  className="grid gap-2 md:gap-3"
-                                  style={{
-                                    gridTemplateColumns: hasRest
-                                      ? `repeat(${columnCount - 1}, minmax(60px, 1fr)) minmax(60px, 1fr) 40px`
-                                      : `repeat(${columnCount}, minmax(60px, 1fr))`,
-                                  }}
-                                >
-                                  {columnsMain.map((col) => (
-                                    <div key={col.key} className="text-center">
-                                      <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide mb-0.5 whitespace-nowrap truncate">
-                                        {col.label}
-                                      </div>
-                                    </div>
-                                  ))}
-                                  {hasRest && restColumn ? (
-                                    <div className="col-span-2 text-center">
-                                      <div className="text-[10px] text-text-tertiary opacity-60 uppercase tracking-wide mb-0.5 whitespace-nowrap truncate">
-                                        {restColumn.label}
-                                      </div>
-                                    </div>
-                                  ) : null}
-                                </div>
-                              </div>
-                              {sets.map((set: Record<string, unknown>, index: number) => (
-                                <div
-                                  key={index}
-                                  role={circuitGroup.length === 0 ? 'button' : undefined}
-                                  tabIndex={circuitGroup.length === 0 ? 0 : undefined}
-                                  onClick={() => {
-                                    if (circuitGroup.length !== 0) return
-                                    if (set.completed as boolean) {
-                                      updateSet(
-                                        currentExercise.id as string,
-                                        set.set_number as number,
-                                        { completed: false },
-                                      )
-                                      setInlineTimerSeconds(null)
-                                      setInlineTimerRunning(false)
-                                      restTimerTargetRef.current = null
-                                      return
-                                    }
-                                    updateSet(
-                                      currentExercise.id as string,
-                                      set.set_number as number,
-                                      { completed: true },
-                                    )
-                                    restTimerTargetRef.current = {
-                                      exerciseId: currentExercise.id as string,
-                                      setNumber: set.set_number as number,
-                                    }
-                                    const restSec =
-                                      ((set.rest_timer_sec ??
-                                        currentExercise.rest_timer_sec ??
-                                        null) as number | null) ?? 0
-                                    const finalRest = restSec > 0 ? restSec : 60
-                                    playTimerTone(timerAudioContextRef, 700, 0.5)
-                                    setInlineTimerSeconds(finalRest)
-                                    setInlineTimerRunning(true)
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (
-                                      circuitGroup.length === 0 &&
-                                      (e.key === 'Enter' || e.key === ' ')
-                                    ) {
-                                      e.preventDefault()
-                                      ;(e.currentTarget as HTMLElement).click()
-                                    }
-                                  }}
-                                  className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
-                                    set.completed
-                                      ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
-                                      : weightPicker?.exerciseId === (currentExercise.id as string) &&
-                                          weightPicker?.setNumber === (set.set_number as number)
-                                        ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
-                                        : 'border-white/10 bg-white/5'
-                                  } ${circuitGroup.length === 0 ? 'cursor-pointer hover:border-white/20 hover:bg-white/10' : ''}`}
-                                >
-                                  <div
-                                    className="grid gap-2 items-center"
-                                    style={{
-                                      gridTemplateColumns: '40px 1fr',
-                                    }}
-                                  >
-                                    <div
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        if (!(set.completed as boolean)) {
-                                          setWeightPicker({
-                                            exerciseId: currentExercise.id as string,
-                                            setNumber: set.set_number as number,
-                                            initialKg: resolveSetWeightKgForPicker(
-                                              set,
-                                              currentExercise as Record<string, unknown>,
-                                            ),
-                                          })
-                                        }
-                                      }}
-                                      className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
-                                        set.completed
-                                          ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
-                                          : weightPicker?.exerciseId ===
-                                                (currentExercise.id as string) &&
-                                              weightPicker?.setNumber === (set.set_number as number)
-                                            ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
-                                            : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
-                                      }`}
-                                      title={
-                                        set.completed
-                                          ? 'Set completato'
-                                          : 'Tocca per scegliere il peso'
-                                      }
-                                    >
-                                      {!set.completed && (
-                                        <Edit2
-                                          className={`h-3 w-3 ${
-                                            weightPicker?.exerciseId ===
-                                              (currentExercise.id as string) &&
-                                            weightPicker?.setNumber === (set.set_number as number)
-                                              ? 'text-orange-400'
-                                              : 'text-text-tertiary'
-                                          }`}
-                                        />
-                                      )}
-                                      <span>{set.set_number as number}</span>
-                                    </div>
-
-                                    <div
-                                      className="grid gap-2 md:gap-3 items-center min-w-0"
-                                      style={{
-                                        gridTemplateColumns: hasRest
-                                          ? `repeat(${columnCount - 1}, minmax(60px, 1fr)) minmax(60px, 1fr) 40px`
-                                          : `repeat(${columnCount}, minmax(60px, 1fr))`,
-                                      }}
-                                    >
-                                      {columnsMain.map((col) => {
-                                        const execSecForPlay =
-                                          ((set.execution_time_sec ??
-                                            currentExercise.execution_time_sec ??
-                                            null) as number | null) ?? 0
-                                        return (
-                                          <div
-                                            key={col.key}
-                                            className="text-center flex items-center justify-center min-h-[2rem] min-w-0"
-                                          >
-                                            {col.field === 'execution_time_sec' ? (
-                                              execSecForPlay > 0 ? (
-                                                <div className="flex items-center justify-center">
-                                                  <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation()
-                                                      startExecutionThenRestFromSet(
-                                                        set,
-                                                        currentExercise as Record<string, unknown>,
-                                                      )
-                                                    }}
-                                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orange-400/35 bg-orange-500/15 text-orange-400 transition-colors hover:bg-orange-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
-                                                      (set.completed as boolean) ? 'opacity-60' : ''
-                                                    }`}
-                                                    aria-label={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
-                                                    title={`Avvia timer esecuzione e recupero (${execSecForPlay} sec.)`}
-                                                  >
-                                                    <Play className="h-4 w-4 fill-current" />
-                                                  </button>
-                                                </div>
-                                              ) : (
-                                                <div
-                                                  className={`text-base font-bold text-white text-center whitespace-nowrap min-h-[2rem] flex items-center justify-center ${
-                                                    (set.completed as boolean)
-                                                      ? 'opacity-70'
-                                                      : 'opacity-100'
-                                                  }`}
-                                                >
-                                                  {execSecForPlay}
-                                                </div>
-                                              )
-                                            ) : (
-                                              <div
-                                                className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                  (set.completed as boolean)
-                                                    ? 'opacity-70'
-                                                    : 'opacity-100'
-                                                }`}
-                                              >
-                                                {col.field === 'reps'
-                                                  ? ((set.reps as number | null | undefined) ??
-                                                    (currentExercise.target_reps as
-                                                      | number
-                                                      | null
-                                                      | undefined) ??
-                                                    0)
-                                                  : col.field === 'weight_kg'
-                                                    ? (() => {
-                                                        const setWeight = set.weight_kg as
-                                                          | number
-                                                          | null
-                                                          | undefined
-                                                        const exerciseWeight =
-                                                          currentExercise.target_weight as
-                                                            | number
-                                                            | null
-                                                            | undefined
-
-                                                        if (
-                                                          setWeight !== null &&
-                                                          setWeight !== undefined
-                                                        ) {
-                                                          return setWeight
-                                                        }
-
-                                                        if (
-                                                          exerciseWeight !== null &&
-                                                          exerciseWeight !== undefined
-                                                        ) {
-                                                          return exerciseWeight
-                                                        }
-
-                                                        return '-'
-                                                      })()
-                                                    : ((set[
-                                                        (col as { field: string }).field
-                                                      ] as number | null | undefined) ?? '-')}
-                                              </div>
-                                            )}
-                                          </div>
-                                        )
-                                      })}
-                                      {hasRest ? (
-                                        (() => {
-                                          const restSec =
-                                            (((set.rest_timer_sec ??
-                                              currentExercise.rest_timer_sec ??
-                                              null) as number | null) ?? 0)
-                                          const execSec =
-                                            (((set.execution_time_sec ??
-                                              currentExercise.execution_time_sec ??
-                                              null) as number | null) ?? 0)
-                                          const recoveryPlayDisabledByExecution = execSec > 0
-                                          const restPlayBlockedClass =
-                                            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/30 text-text-tertiary/50 opacity-40 pointer-events-none'
-                                          const showRestPlayOnly = restSec > 0
-                                          if (showRestPlayOnly) {
-                                            return (
-                                              <div
-                                                className="flex items-center justify-center min-h-[2rem]"
-                                                style={{ gridColumn: 'span 2' }}
-                                              >
-                                                {recoveryPlayDisabledByExecution ? (
-                                                  <div
-                                                    role="img"
-                                                    aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
-                                                    title="Recupero automatico dopo il timer di esecuzione"
-                                                    className={`${restPlayBlockedClass} ${
-                                                      (set.completed as boolean) ? 'opacity-50' : ''
-                                                    }`}
-                                                  >
-                                                    <Play className="h-4 w-4 fill-current" />
-                                                  </div>
-                                                ) : (
-                                                  <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation()
-                                                      startRestTimerFromSet(
-                                                        set,
-                                                        currentExercise as Record<string, unknown>,
-                                                      )
-                                                    }}
-                                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
-                                                      (set.completed as boolean) ? 'opacity-60' : ''
-                                                    }`}
-                                                    aria-label={`Avvia timer recupero (${restSec} sec.)`}
-                                                    title={`Avvia timer recupero (${restSec} sec.)`}
-                                                  >
-                                                    <Play className="h-4 w-4 fill-current" />
-                                                  </button>
-                                                )}
-                                              </div>
-                                            )
-                                          }
-                                          return (
-                                            <>
-                                              <div className="text-center flex items-center justify-center min-h-[2rem]">
-                                                <div
-                                                  className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                    (set.completed as boolean)
-                                                      ? 'opacity-70'
-                                                      : 'opacity-100'
-                                                  }`}
-                                                >
-                                                  {restSec}
-                                                </div>
-                                              </div>
-                                              {!(set.completed as boolean) && (
-                                                <div className="flex items-center justify-center">
-                                                  {recoveryPlayDisabledByExecution ? (
-                                                    <div
-                                                      role="img"
-                                                      aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
-                                                      title="Recupero automatico dopo il timer di esecuzione"
-                                                      className={restPlayBlockedClass}
-                                                    >
-                                                      <Play className="h-4 w-4 fill-current" />
-                                                    </div>
-                                                  ) : (
-                                                    <button
-                                                      type="button"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        startRestTimerFromSet(
-                                                          set,
-                                                          currentExercise as Record<string, unknown>,
-                                                        )
-                                                      }}
-                                                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
-                                                      aria-label={`Avvia timer recupero (${restSec > 0 ? restSec : 60} sec.)`}
-                                                      title="Avvia timer recupero"
-                                                    >
-                                                      <Play className="h-4 w-4 fill-current" />
-                                                    </button>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </>
-                                          )
-                                        })()
-                                      ) : null}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </>
-                          )
-                        })()}
-                      </div>
-                      {athleteProfileId ? (
-                        <AthleteExercisePrivateNoteBlock
-                          workoutDayExerciseId={currentExercise.id as string}
-                          athleteProfileId={athleteProfileId}
-                          savedRow={privateNotesByWdeId[currentExercise.id as string]}
-                          onSaved={handlePrivateNoteSaved}
-                        />
-                      ) : null}
-                    </div>
-
-                    {/* Azioni - Design Moderno e Uniforme: bottone solo quando tutte le serie sono completate */}
-                    <div className="space-y-2 pt-2.5">
-                      {(() => {
-                        const block = blocks[currentBlockIndex]
-                        const blockExercises = block
-                          ? (workoutSession?.exercises ?? []).slice(
-                              block.startIndex,
-                              block.endIndex + 1,
-                            )
-                          : []
-                        const allSetsCompletedForBlock =
-                          blockExercises.length > 0 &&
-                          blockExercises.every((ex) => {
-                            const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
-                            return (
-                              sets.length === 0 ||
-                              sets.every((s: Record<string, unknown>) => s.completed === true)
-                            )
-                          })
-                        const isBlockCompleted = block
-                          ? blockExercises.every(
-                              (ex) => (ex as { is_completed?: boolean }).is_completed === true,
-                            )
-                          : false
-                        if (!allSetsCompletedForBlock) return null
-                        return (
-                          <Button
-                            onClick={() => completeBlock(currentBlockIndex)}
-                            variant={isBlockCompleted ? 'success' : 'default'}
-                            className={
-                              isBlockCompleted
-                                ? 'h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold w-full transition-all duration-200 shadow-lg shadow-green-500/30 hover:shadow-green-500/40'
-                                : 'h-9 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold w-full transition-all duration-200'
-                            }
-                          >
-                            <Check className="mr-1.5 h-3.5 w-3.5" />
-                            {isBlockCompleted ? 'Esercizio completato' : 'Completa esercizio'}
-                          </Button>
+          {/* Timer recupero/esecuzione: solo in overlay (aperto dal Play in tabella) */}
+          {restTimersOverlayOpen && currentExercise ? (
+            <div
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Timer recupero e esecuzione"
+            >
+              <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/90 to-black/75 p-3 pt-12 shadow-2xl shadow-black/40">
+                <button
+                  type="button"
+                  onClick={dismissRestTimersOverlay}
+                  className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                  aria-label="Chiudi e annulla timer"
+                  title="Chiudi e annulla"
+                >
+                  <X className="h-5 w-5" strokeWidth={2} />
+                </button>
+                <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
+                  {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}
+                  {/* TIMER ESECUZIONE PRIMA (sinistra) */}
+                  {(() => {
+                    let executionTime: number | null = null
+                    // Per circuito: usa il primo execution_time_sec > 0 tra gli esercizi del circuito
+                    if (circuitGroup.length > 0) {
+                      for (const item of circuitGroup) {
+                        const itemSets = (item.sets as Record<string, unknown>[]) || []
+                        const setIdx = itemSets.findIndex(
+                          (s) => !(s as { completed?: boolean }).completed,
                         )
-                      })()}
-                      {/* Pulsante fine allenamento - Mostra solo quando tutti gli esercizi sono completati */}
-                      {workoutSession && isWorkoutComplete && (
-                        <Button
-                          onClick={finishWorkout}
-                          className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200 hover:scale-[1.02]"
-                        >
-                          <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                          Completa allenamento
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })()
-          : null}
-
-        {/* Timer recupero/esecuzione: solo in overlay (aperto dal Play in tabella) */}
-        {restTimersOverlayOpen && currentExercise ? (
-          <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Timer recupero e esecuzione"
-          >
-            <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/90 to-black/75 p-3 pt-12 shadow-2xl shadow-black/40">
-              <button
-                type="button"
-                onClick={dismissRestTimersOverlay}
-                className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
-                aria-label="Chiudi e annulla timer"
-                title="Chiudi e annulla"
-              >
-                <X className="h-5 w-5" strokeWidth={2} />
-              </button>
-              <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
-                {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}
-                {/* TIMER ESECUZIONE PRIMA (sinistra) */}
-                {(() => {
-                  let executionTime: number | null = null
-                  // Per circuito: usa il primo execution_time_sec > 0 tra gli esercizi del circuito
-                  if (circuitGroup.length > 0) {
-                    for (const item of circuitGroup) {
-                      const itemSets = (item.sets as Record<string, unknown>[]) || []
-                      const setIdx = itemSets.findIndex(
-                        (s) => !(s as { completed?: boolean }).completed,
-                      )
-                      const activeSet =
-                        setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
-                      const t =
-                        ((activeSet?.execution_time_sec ??
-                          (item as Record<string, unknown>).execution_time_sec ??
-                          null) as number | null) ?? null
-                      if (t != null && t > 0) {
-                        executionTime = t
-                        break
+                        const activeSet =
+                          setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
+                        const t =
+                          ((activeSet?.execution_time_sec ??
+                            (item as Record<string, unknown>).execution_time_sec ??
+                            null) as number | null) ?? null
+                        if (t != null && t > 0) {
+                          executionTime = t
+                          break
+                        }
                       }
                     }
-                  }
-                  if (executionTime === null) {
-                    const sets = (currentExercise?.sets as Record<string, unknown>[]) || []
+                    if (executionTime === null) {
+                      const sets = (currentExercise?.sets as Record<string, unknown>[]) || []
+                      const currentSetIndex = sets.findIndex((s) => !s.completed)
+                      const activeSet =
+                        currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                      executionTime =
+                        ((activeSet?.execution_time_sec ??
+                          currentExercise?.execution_time_sec ??
+                          null) as number | null) ?? null
+                    }
+                    if (executionTime === null || executionTime <= 0) {
+                      return null
+                    }
+
+                    const initialSeconds = executionTime
+                    const currentSeconds =
+                      inlineExecutionTimerSeconds !== null
+                        ? inlineExecutionTimerSeconds
+                        : initialSeconds
+                    // Calcola il progresso basato sul tempo rimanente (inverso)
+                    // Quando currentSeconds = 0, progress = 0% (cerchio vuoto/completato)
+                    const progress =
+                      inlineExecutionPreRollRemaining !== null
+                        ? 100
+                        : currentSeconds === 0
+                          ? 0
+                          : (currentSeconds / initialSeconds) * 100
+                    const circumference = 2 * Math.PI * 80
+                    const strokeDashoffset = circumference - (progress / 100) * circumference
+
+                    const formatTime = (totalSeconds: number) => {
+                      return totalSeconds.toString()
+                    }
+
+                    return (
+                      <div
+                        key="timer-esecuzione-inline"
+                        className="flex flex-col items-center justify-center gap-3"
+                      >
+                        {/* Cerchio animato esecuzione - Colore arancione/quasi rosso */}
+                        <div
+                          className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
+                          onClick={toggleInlineExecutionTimer}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              toggleInlineExecutionTimer()
+                            }
+                          }}
+                          aria-label={
+                            inlineExecutionTimerSeconds === null
+                              ? 'Avvia timer esecuzione'
+                              : currentSeconds === 0
+                                ? 'Timer esecuzione completato'
+                                : inlineExecutionPreRollRemaining !== null
+                                  ? 'Annulla conto alla rovescia prima dell’esecuzione'
+                                  : inlineExecutionTimerRunning
+                                    ? 'Resetta timer esecuzione'
+                                    : 'Avvia timer esecuzione'
+                          }
+                        >
+                          <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="80"
+                              stroke="currentColor"
+                              strokeWidth="14"
+                              fill="none"
+                              className="text-background-tertiary/20"
+                            />
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="80"
+                              stroke="currentColor"
+                              strokeWidth="14"
+                              fill="none"
+                              strokeDasharray={circumference}
+                              strokeDashoffset={strokeDashoffset}
+                              className={`transition-all duration-1000 ease-linear ${
+                                inlineExecutionTimerSeconds === null
+                                  ? 'text-orange-600/40'
+                                  : currentSeconds === 0
+                                    ? 'text-green-500'
+                                    : inlineExecutionPreRollRemaining !== null
+                                      ? 'text-orange-500'
+                                      : inlineExecutionTimerRunning
+                                        ? 'text-orange-600'
+                                        : 'text-orange-600/60'
+                              }`}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <div className="text-center space-y-0.5">
+                              {inlineExecutionTimerSeconds === null ? (
+                                <>
+                                  <div className="text-4xl font-bold text-white leading-none">
+                                    {formatTime(initialSeconds)}
+                                  </div>
+                                  <div className="text-[10px] text-orange-600/70 font-medium mt-1 uppercase tracking-wider">
+                                    ESECUZIONE
+                                  </div>
+                                </>
+                              ) : currentSeconds === 0 ? (
+                                <>
+                                  <div className="text-4xl font-bold text-green-500 leading-none">
+                                    0
+                                  </div>
+                                  <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
+                                    Completato
+                                  </div>
+                                </>
+                              ) : inlineExecutionPreRollRemaining !== null ? (
+                                <>
+                                  <div className="text-4xl font-bold text-white leading-none">
+                                    {formatTime(inlineExecutionPreRollRemaining)}
+                                  </div>
+                                  <div className="text-[10px] text-orange-500/80 font-medium mt-1 uppercase tracking-wider">
+                                    Pronti…
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-4xl font-bold text-white leading-none">
+                                    {formatTime(currentSeconds)}
+                                  </div>
+                                  <div className="text-[10px] text-orange-600/70 font-medium mt-1 uppercase tracking-wider">
+                                    SEC.
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* Timer Recupero - DOPO (destra) - SOLO UNO */}
+                  {(() => {
+                    // Controlla se currentExercise esiste
+                    if (!currentExercise) {
+                      return null
+                    }
+
+                    const sets = (currentExercise.sets as Record<string, unknown>[]) || []
                     const currentSetIndex = sets.findIndex((s) => !s.completed)
                     const activeSet =
                       currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-                    executionTime =
-                      ((activeSet?.execution_time_sec ??
-                        currentExercise?.execution_time_sec ??
-                        null) as number | null) ?? null
-                  }
-                  if (executionTime === null || executionTime <= 0) {
-                    return null
-                  }
+                    const timerValue =
+                      ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as
+                        | number
+                        | null) ?? 0
+                    const initialSeconds = timerValue > 0 ? timerValue : 60
+                    const currentSeconds =
+                      inlineTimerSeconds !== null ? inlineTimerSeconds : initialSeconds
+                    const progress = (currentSeconds / initialSeconds) * 100
+                    const circumference = 2 * Math.PI * 80
+                    const strokeDashoffset = circumference - (progress / 100) * circumference
 
-                  const initialSeconds = executionTime
-                  const currentSeconds =
-                    inlineExecutionTimerSeconds !== null
-                      ? inlineExecutionTimerSeconds
-                      : initialSeconds
-                  // Calcola il progresso basato sul tempo rimanente (inverso)
-                  // Quando currentSeconds = 0, progress = 0% (cerchio vuoto/completato)
-                  const progress =
-                    inlineExecutionPreRollRemaining !== null
-                      ? 100
-                      : currentSeconds === 0
-                        ? 0
-                        : (currentSeconds / initialSeconds) * 100
-                  const circumference = 2 * Math.PI * 80
-                  const strokeDashoffset = circumference - (progress / 100) * circumference
+                    const formatTime = (totalSeconds: number) => {
+                      return totalSeconds.toString()
+                    }
 
-                  const formatTime = (totalSeconds: number) => {
-                    return totalSeconds.toString()
-                  }
+                    const showRecoveryWaiting =
+                      inlineTimerSeconds === null &&
+                      inlineExecutionTimerSeconds !== null &&
+                      inlineExecutionTimerSeconds > 0 &&
+                      (inlineExecutionTimerRunning || inlineExecutionPreRollRemaining !== null)
 
-                  return (
-                    <div
-                      key="timer-esecuzione-inline"
-                      className="flex flex-col items-center justify-center gap-3"
-                    >
-                      {/* Cerchio animato esecuzione - Colore arancione/quasi rosso */}
+                    if (
+                      !restTimersOverlayOpen &&
+                      timerValue <= 0 &&
+                      inlineTimerSeconds === null &&
+                      inlineExecutionTimerSeconds === null
+                    ) {
+                      return null
+                    }
+
+                    return (
                       <div
-                        className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
-                        onClick={toggleInlineExecutionTimer}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            toggleInlineExecutionTimer()
-                          }
-                        }}
-                        aria-label={
-                          inlineExecutionTimerSeconds === null
-                            ? 'Avvia timer esecuzione'
-                            : currentSeconds === 0
-                              ? 'Timer esecuzione completato'
-                              : inlineExecutionPreRollRemaining !== null
-                                ? 'Annulla conto alla rovescia prima dell’esecuzione'
-                                : inlineExecutionTimerRunning
-                                  ? 'Resetta timer esecuzione'
-                                  : 'Avvia timer esecuzione'
-                        }
+                        key="timer-recupero-unico"
+                        className="flex flex-col items-center justify-center gap-3"
                       >
-                        <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
-                          <circle
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            stroke="currentColor"
-                            strokeWidth="14"
-                            fill="none"
-                            className="text-background-tertiary/20"
-                          />
-                          <circle
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            stroke="currentColor"
-                            strokeWidth="14"
-                            fill="none"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={strokeDashoffset}
-                            className={`transition-all duration-1000 ease-linear ${
-                              inlineExecutionTimerSeconds === null
-                                ? 'text-orange-600/40'
-                                : currentSeconds === 0
-                                  ? 'text-green-500'
-                                  : inlineExecutionPreRollRemaining !== null
-                                    ? 'text-orange-500'
-                                    : inlineExecutionTimerRunning
-                                      ? 'text-orange-600'
-                                      : 'text-orange-600/60'
-                            }`}
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                          <div className="text-center space-y-0.5">
-                            {inlineExecutionTimerSeconds === null ? (
-                              <>
-                                <div className="text-4xl font-bold text-white leading-none">
-                                  {formatTime(initialSeconds)}
-                                </div>
-                                <div className="text-[10px] text-orange-600/70 font-medium mt-1 uppercase tracking-wider">
-                                  ESECUZIONE
-                                </div>
-                              </>
-                            ) : currentSeconds === 0 ? (
-                              <>
-                                <div className="text-4xl font-bold text-green-500 leading-none">
-                                  0
-                                </div>
-                                <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
-                                  Completato
-                                </div>
-                              </>
-                            ) : inlineExecutionPreRollRemaining !== null ? (
-                              <>
-                                <div className="text-4xl font-bold text-white leading-none">
-                                  {formatTime(inlineExecutionPreRollRemaining)}
-                                </div>
-                                <div className="text-[10px] text-orange-500/80 font-medium mt-1 uppercase tracking-wider">
-                                  Pronti…
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-4xl font-bold text-white leading-none">
-                                  {formatTime(currentSeconds)}
-                                </div>
-                                <div className="text-[10px] text-orange-600/70 font-medium mt-1 uppercase tracking-wider">
-                                  SEC.
-                                </div>
-                              </>
-                            )}
+                        {/* Cerchio animato recupero */}
+                        <div
+                          className={`relative h-36 w-36 transition-transform duration-200 ${
+                            showRecoveryWaiting
+                              ? 'cursor-default opacity-80'
+                              : 'cursor-pointer hover:scale-105 active:scale-95'
+                          }`}
+                          onClick={showRecoveryWaiting ? undefined : toggleInlineTimer}
+                          role={showRecoveryWaiting ? undefined : 'button'}
+                          tabIndex={showRecoveryWaiting ? undefined : 0}
+                          onKeyDown={(e) => {
+                            if (showRecoveryWaiting) return
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              toggleInlineTimer()
+                            }
+                          }}
+                          aria-label={
+                            showRecoveryWaiting
+                              ? 'Recupero dopo esecuzione'
+                              : inlineTimerRunning
+                                ? 'Pausa timer recupero'
+                                : 'Avvia timer recupero'
+                          }
+                        >
+                          <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="80"
+                              stroke="currentColor"
+                              strokeWidth="14"
+                              fill="none"
+                              className="text-background-tertiary/20"
+                            />
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="80"
+                              stroke="currentColor"
+                              strokeWidth="14"
+                              fill="none"
+                              strokeDasharray={circumference}
+                              strokeDashoffset={strokeDashoffset}
+                              className={`transition-all duration-1000 ease-linear ${
+                                inlineTimerRunning ? 'text-cyan-400' : 'text-cyan-400/60'
+                              }`}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <div className="text-center space-y-0.5">
+                              {inlineTimerSeconds === null ? (
+                                <>
+                                  <div className="text-[10px] font-medium uppercase tracking-wider text-cyan-400/70 mb-1">
+                                    RECUPERO
+                                  </div>
+                                  <div className="text-4xl font-bold text-white leading-none">
+                                    {formatTime(initialSeconds)}
+                                  </div>
+                                  <div className="text-[10px] text-cyan-400/50 font-medium mt-1 uppercase tracking-wider">
+                                    {showRecoveryWaiting ? 'Dopo esecuzione' : 'Tocca per avviare'}
+                                  </div>
+                                </>
+                              ) : currentSeconds === 0 ? (
+                                <>
+                                  <div className="text-4xl font-bold text-green-500 leading-none">
+                                    0
+                                  </div>
+                                  <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
+                                    Completato
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-4xl font-bold text-white leading-none">
+                                    {formatTime(currentSeconds)}
+                                  </div>
+                                  <div className="text-[10px] text-cyan-400/70 font-medium mt-1 uppercase tracking-wider">
+                                    SEC.
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })()}
-
-                {/* Timer Recupero - DOPO (destra) - SOLO UNO */}
-                {(() => {
-                  // Controlla se currentExercise esiste
-                  if (!currentExercise) {
-                    return null
-                  }
-
-                  const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-                  const currentSetIndex = sets.findIndex((s) => !s.completed)
-                  const activeSet =
-                    currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-                  const timerValue =
-                    ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as
-                      | number
-                      | null) ?? 0
-                  const initialSeconds = timerValue > 0 ? timerValue : 60
-                  const currentSeconds =
-                    inlineTimerSeconds !== null ? inlineTimerSeconds : initialSeconds
-                  const progress = (currentSeconds / initialSeconds) * 100
-                  const circumference = 2 * Math.PI * 80
-                  const strokeDashoffset = circumference - (progress / 100) * circumference
-
-                  const formatTime = (totalSeconds: number) => {
-                    return totalSeconds.toString()
-                  }
-
-                  const showRecoveryWaiting =
-                    inlineTimerSeconds === null &&
-                    inlineExecutionTimerSeconds !== null &&
-                    inlineExecutionTimerSeconds > 0 &&
-                    (inlineExecutionTimerRunning || inlineExecutionPreRollRemaining !== null)
-
-                  if (
-                    !restTimersOverlayOpen &&
-                    timerValue <= 0 &&
-                    inlineTimerSeconds === null &&
-                    inlineExecutionTimerSeconds === null
-                  ) {
-                    return null
-                  }
-
-                  return (
-                    <div
-                      key="timer-recupero-unico"
-                      className="flex flex-col items-center justify-center gap-3"
-                    >
-                      {/* Cerchio animato recupero */}
-                      <div
-                        className={`relative h-36 w-36 transition-transform duration-200 ${
-                          showRecoveryWaiting
-                            ? 'cursor-default opacity-80'
-                            : 'cursor-pointer hover:scale-105 active:scale-95'
-                        }`}
-                        onClick={showRecoveryWaiting ? undefined : toggleInlineTimer}
-                        role={showRecoveryWaiting ? undefined : 'button'}
-                        tabIndex={showRecoveryWaiting ? undefined : 0}
-                        onKeyDown={(e) => {
-                          if (showRecoveryWaiting) return
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            toggleInlineTimer()
-                          }
-                        }}
-                        aria-label={
-                          showRecoveryWaiting
-                            ? 'Recupero dopo esecuzione'
-                            : inlineTimerRunning
-                              ? 'Pausa timer recupero'
-                              : 'Avvia timer recupero'
-                        }
-                      >
-                        <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
-                          <circle
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            stroke="currentColor"
-                            strokeWidth="14"
-                            fill="none"
-                            className="text-background-tertiary/20"
-                          />
-                          <circle
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            stroke="currentColor"
-                            strokeWidth="14"
-                            fill="none"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={strokeDashoffset}
-                            className={`transition-all duration-1000 ease-linear ${
-                              inlineTimerRunning ? 'text-cyan-400' : 'text-cyan-400/60'
-                            }`}
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                          <div className="text-center space-y-0.5">
-                            {inlineTimerSeconds === null ? (
-                              <>
-                                <div className="text-[10px] font-medium uppercase tracking-wider text-cyan-400/70 mb-1">
-                                  RECUPERO
-                                </div>
-                                <div className="text-4xl font-bold text-white leading-none">
-                                  {formatTime(initialSeconds)}
-                                </div>
-                                <div className="text-[10px] text-cyan-400/50 font-medium mt-1 uppercase tracking-wider">
-                                  {showRecoveryWaiting ? 'Dopo esecuzione' : 'Tocca per avviare'}
-                                </div>
-                              </>
-                            ) : currentSeconds === 0 ? (
-                              <>
-                                <div className="text-4xl font-bold text-green-500 leading-none">
-                                  0
-                                </div>
-                                <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
-                                  Completato
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-4xl font-bold text-white leading-none">
-                                  {formatTime(currentSeconds)}
-                                </div>
-                                <div className="text-[10px] text-cyan-400/70 font-medium mt-1 uppercase tracking-wider">
-                                  SEC.
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })()}
+                    )
+                  })()}
+                </div>
               </div>
             </div>
-          </div>
-        ) : null}
-
+          ) : null}
         </div>
 
         {/* Navigazione esercizi - stessa configurazione di PageHeaderFixed chat (sfondo nero, padding, linea cyan), visibile solo a fondo pagina */}

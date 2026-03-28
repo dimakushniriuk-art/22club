@@ -103,10 +103,19 @@ function LoginContent() {
         )
 
         if (signInError) {
-          logger.error('Errore login', signInError, {
-            message: signInError.message,
-            status: (signInError as { status?: number }).status,
-          })
+          const invalidCreds =
+            signInError.message === 'Invalid login credentials' ||
+            (signInError as { code?: string }).code === 'invalid_credentials'
+          if (invalidCreds) {
+            logger.warn('Login rifiutato: credenziali non valide', {
+              status: (signInError as { status?: number }).status,
+            })
+          } else {
+            logger.error('Errore login', signInError, {
+              message: signInError.message,
+              status: (signInError as { status?: number }).status,
+            })
+          }
           failedAttemptsRef.current += 1
           if (failedAttemptsRef.current >= RATE_LIMIT_ATTEMPTS) {
             setLockUntil(Date.now() + RATE_LIMIT_MS)

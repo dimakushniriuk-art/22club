@@ -276,7 +276,6 @@ function MisurazioniValuesContent({ data }: { data: ProgressKPI }) {
           </div>
         </div>
       ))}
-
     </div>
   )
 }

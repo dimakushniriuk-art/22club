@@ -24,6 +24,9 @@ const getStatusColor = (status: string) => {
     case 'attivo':
     case 'active':
       return 'success'
+    case 'bozza':
+    case 'draft':
+      return 'warning'
     case 'completato':
     case 'completed':
       return 'info'
@@ -42,6 +45,9 @@ const getStatusText = (status: string) => {
     case 'attivo':
     case 'active':
       return 'Attiva'
+    case 'bozza':
+    case 'draft':
+      return 'Bozza'
     case 'completato':
     case 'completed':
       return 'Completata'

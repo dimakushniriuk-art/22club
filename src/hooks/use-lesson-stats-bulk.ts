@@ -9,9 +9,9 @@ export interface LessonStats {
 }
 
 /**
- * Per una lista di athlete_id restituisce acquistati (somma lessons_purchased da payments completed)
- * e eseguiti (conteggio appointments completati), come nella sezione Abbonamento del profilo atleta.
- * refetchKey: incrementare dopo completamento/annullamento appuntamento per riaggiornare (es. Rimasti 599→598).
+ * Per una lista di athlete_id: PT (training) — acquistati da `payments` completed training,
+ * eseguiti da somma DEBIT su `credit_ledger` (stessa logica di computeAthleteTrainingLessonUsage).
+ * refetchKey: incrementare dopo pagamento / scalatura / appuntamento.
  */
 export function useLessonStatsBulk(
   athleteIds: string[],
@@ -33,13 +33,15 @@ export function useLessonStatsBulk(
         .from('payments')
         .select('athlete_id, lessons_purchased')
         .in('athlete_id', athleteIds)
-        .eq('status', 'completed'),
+        .eq('status', 'completed')
+        .eq('service_type', 'training'),
       supabase
-        .from('appointments')
-        .select('athlete_id')
+        .from('credit_ledger')
+        .select('athlete_id, qty')
         .in('athlete_id', athleteIds)
-        .eq('status', 'completato'),
-    ]).then(([paymentsRes, appointmentsRes]) => {
+        .eq('entry_type', 'DEBIT')
+        .eq('service_type', 'training'),
+    ]).then(([paymentsRes, ledgerRes]) => {
       if (cancelled) return
       const acquiredByAthlete = new Map<string, number>()
       const usedByAthlete = new Map<string, number>()
@@ -53,11 +55,11 @@ export function useLessonStatsBulk(
           acquiredByAthlete.set(id, (acquiredByAthlete.get(id) ?? 0) + (r.lessons_purchased ?? 0))
         },
       )
-      ;(Array.isArray(appointmentsRes.data) ? appointmentsRes.data : []).forEach(
-        (r: { athlete_id: string | null }) => {
+      ;(Array.isArray(ledgerRes.data) ? ledgerRes.data : []).forEach(
+        (r: { athlete_id: string; qty?: number | null }) => {
           const id = r.athlete_id
-          if (id == null) return
-          usedByAthlete.set(id, (usedByAthlete.get(id) ?? 0) + 1)
+          const q = Number(r.qty ?? 0)
+          usedByAthlete.set(id, (usedByAthlete.get(id) ?? 0) + Math.max(0, -q))
         },
       )
       const next = new Map<string, LessonStats>()

@@ -107,7 +107,10 @@ const HomeAthleteTopChrome = forwardRef<HTMLElement>(function HomeAthleteTopChro
           {config.secondaryRow}
         </div>
       ) : null}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-px" style={CYAN_LINE_STYLE} />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-px"
+        style={CYAN_LINE_STYLE}
+      />
     </header>
   )
 })

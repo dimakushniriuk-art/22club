@@ -40,45 +40,43 @@ export function FitnessInjuriesSection({
   onInfortunioAdd,
   onInfortunioRemove,
 }: FitnessInjuriesSectionProps) {
-  const listaInfortuni = isEditing
-    ? infortuni
-    : (fitness?.infortuni_pregressi ?? [])
+  const listaInfortuni = isEditing ? infortuni : (fitness?.infortuni_pregressi ?? [])
 
   return (
     <div className="space-y-3">
       {listaInfortuni.length > 0 ? (
         <div className="space-y-3">
           {listaInfortuni.map((infortunio, index) => (
-              <div
-                key={index}
-                className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="text-text-primary font-semibold">{infortunio.tipo}</p>
-                  <div className="text-text-secondary text-sm flex items-center gap-2">
-                    <span>{new Date(infortunio.data).toLocaleDateString('it-IT')}</span>
-                    {infortunio.recuperato && (
-                      <Badge variant="success" size="sm">
-                        Recuperato
-                      </Badge>
-                    )}
-                  </div>
-                  {infortunio.note && (
-                    <p className="text-text-secondary text-sm mt-1">{infortunio.note}</p>
+            <div
+              key={index}
+              className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div>
+                <p className="text-text-primary font-semibold">{infortunio.tipo}</p>
+                <div className="text-text-secondary text-sm flex items-center gap-2">
+                  <span>{new Date(infortunio.data).toLocaleDateString('it-IT')}</span>
+                  {infortunio.recuperato && (
+                    <Badge variant="success" size="sm">
+                      Recuperato
+                    </Badge>
                   )}
                 </div>
-                {isEditing && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0 border-white/10 sm:self-center"
-                    onClick={() => onInfortunioRemove(index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                {infortunio.note && (
+                  <p className="text-text-secondary text-sm mt-1">{infortunio.note}</p>
                 )}
               </div>
-            ))}
+              {isEditing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 border-white/10 sm:self-center"
+                  onClick={() => onInfortunioRemove(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
         </div>
       ) : (
         <p className="py-4 text-center text-text-secondary">Nessun infortunio pregresso</p>

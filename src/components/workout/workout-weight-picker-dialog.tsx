@@ -115,8 +115,8 @@ export function WorkoutWeightPickerDialog({
         <DialogHeader className="pr-10">
           <DialogTitle>Peso</DialogTitle>
           <DialogDescription>
-            Scorri per scegliere il peso (passo {WEIGHT_STEP_KG} kg). Il valore evidenziato al centro
-            è quello selezionato.
+            Scorri per scegliere il peso (passo {WEIGHT_STEP_KG} kg). Il valore evidenziato al
+            centro è quello selezionato.
           </DialogDescription>
         </DialogHeader>
 
@@ -158,9 +158,7 @@ export function WorkoutWeightPickerDialog({
                     className={cn(
                       'flex h-12 w-full shrink-0 snap-center items-center justify-center text-base transition-colors duration-150',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50',
-                      isCenter
-                        ? 'font-bold text-orange-400'
-                        : 'font-medium text-text-tertiary/70',
+                      isCenter ? 'font-bold text-orange-400' : 'font-medium text-text-tertiary/70',
                     )}
                   >
                     <span>{kg.toFixed(1)}</span>

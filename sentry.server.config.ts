@@ -2,10 +2,10 @@
 // The config you add here will be used whenever the server handles a request.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from "@sentry/nextjs";
-import { isConfiguredSentryDsn } from "@/lib/sentry/is-configured-dsn";
+import * as Sentry from '@sentry/nextjs'
+import { isConfiguredSentryDsn } from '@/lib/sentry/is-configured-dsn'
 
-const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
 
 if (isConfiguredSentryDsn(dsn)) {
   Sentry.init({
@@ -20,5 +20,5 @@ if (isConfiguredSentryDsn(dsn)) {
     // Enable sending user PII (Personally Identifiable Information)
     // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
     sendDefaultPii: true,
-  });
+  })
 }

@@ -282,8 +282,33 @@ class Logger {
     error?: Error | unknown,
     data?: Record<string, unknown>,
   ): void {
-    const errorObj = error instanceof Error ? error : undefined
-    const stack = errorObj?.stack
+    let errorObj: Error | undefined
+    let stack: string | undefined
+    let mergedData = data
+
+    if (error instanceof Error) {
+      errorObj = error
+      stack = error.stack
+    } else if (error !== undefined) {
+      const msg =
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message: unknown }).message === 'string'
+          ? (error as { message: string }).message
+          : String(error)
+      errorObj = new Error(msg)
+      const extra =
+        typeof error === 'object' && error !== null
+          ? Object.fromEntries(
+              Object.entries(error as Record<string, unknown>).filter(
+                ([k]) => k !== 'message' && k !== 'stack',
+              ),
+            )
+          : {}
+      mergedData =
+        Object.keys(extra).length > 0 ? { ...data, ...extra } : data
+    }
 
     this.addLog({
       level: 'error',
@@ -291,7 +316,7 @@ class Logger {
       message,
       error: errorObj,
       stack,
-      data,
+      data: mergedData,
     })
   }
 

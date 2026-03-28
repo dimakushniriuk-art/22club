@@ -323,15 +323,6 @@ export function useChatMessages(
           frequentQueryCache.set(cacheKey, combinedMessages.slice(0, 50))
         }
 
-        // #region agent log
-        console.log('[DEBUG-CHAT B] fetchMessages result', {
-          profileId,
-          otherUserId,
-          combinedMessagesLength: combinedMessages.length,
-          data1Len: data1?.length ?? 0,
-          data2Len: data2?.length ?? 0,
-        })
-        // #endregion
         // Aggiorna sempre con i messaggi combinati (nuovi + esistenti)
         // IMPORTANTE: Non sovrascrivere i messaggi esistenti se il fetch non trova risultati
         if (combinedMessages.length > 0) {

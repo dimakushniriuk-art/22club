@@ -22,9 +22,7 @@ export const AthleteTopBarContext = createContext<AthleteTopBarContextValue | nu
 export function AthleteTopBarProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AthleteTopBarConfig | null>(null)
   const value = useMemo(() => ({ config, setConfig }), [config, setConfig])
-  return (
-    <AthleteTopBarContext.Provider value={value}>{children}</AthleteTopBarContext.Provider>
-  )
+  return <AthleteTopBarContext.Provider value={value}>{children}</AthleteTopBarContext.Provider>
 }
 
 export function useAthleteTopBarConfig(): AthleteTopBarConfig | null {
