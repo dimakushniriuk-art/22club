@@ -197,7 +197,6 @@ export default function ProfiloPage() {
           title="Il mio Profilo"
           subtitle="Informazioni e statistiche"
           onBack={handleBack}
-          icon={<User className="h-5 w-5 text-cyan-400" />}
         />
         <div className="min-h-0 flex-1" aria-hidden />
       </div>
@@ -234,7 +233,6 @@ export default function ProfiloPage() {
         title="Il mio Profilo"
         subtitle="Informazioni e statistiche"
         onBack={handleBack}
-        icon={<User className="h-5 w-5 text-cyan-400" />}
       />
       <div className="min-h-0 flex-1 space-y-4 overflow-auto px-3 pb-28 pt-1 safe-area-inset-bottom sm:space-y-5 sm:px-4 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
         <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">

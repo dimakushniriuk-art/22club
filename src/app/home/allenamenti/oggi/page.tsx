@@ -14,7 +14,6 @@ import {
   DialogDescription,
 } from '@/components/ui'
 import { RestTimer } from '@/components/workout/rest-timer'
-import { TrainerSessionModal } from '@/components/workout/trainer-session-modal'
 import { AthleteExercisePrivateNoteBlock } from '@/components/workout/athlete-exercise-private-note'
 import type { AthleteWdeNoteRow } from '@/components/workout/athlete-exercise-private-note'
 import {
@@ -36,8 +35,21 @@ import { useWorkoutSession } from '@/hooks/workouts/use-workout-session'
 import { useToast } from '@/components/ui/toast'
 import { AthleteTopBarContext } from '@/components/athlete'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { notifyError } from '@/lib/notifications'
-import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
+import { isValidProfile } from '@/lib/utils/type-guards'
+import { cn } from '@/lib/utils'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
+import {
+  STAFF_WORKOUTS_EMBED_DIRTY,
+  STAFF_WORKOUTS_EMBED_AUTH_REQUIRED,
+  STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+  STAFF_WORKOUTS_EMBED_SAVE_OK,
+  STAFF_WORKOUTS_EMBED_SAVE_START,
+} from '@/lib/embed/staff-workouts-embed-events'
+import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
+import { AllenamentiPageHeader } from '@/app/home/allenamenti/AllenamentiPageHeader'
 import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
 import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
 import type { WorkoutSession, WorkoutSetData } from '@/types/workout'
@@ -115,6 +127,100 @@ function playExecutionPreRollTone(
   const idx = 5 - Math.min(5, Math.max(1, stepRemaining))
   const hz = EXECUTION_PRE_ROLL_FREQ_HZ[idx] ?? 523.25
   playTimerTone(audioContextRef, 200, 0.88, hz)
+}
+
+function workoutDayExerciseRowId(ex: unknown): string {
+  if (!ex || typeof ex !== 'object') return ''
+  const o = ex as Record<string, unknown>
+  const raw = o.id ?? o.workout_day_exercise_id ?? o.workoutDayExerciseId
+  if (raw === null || raw === undefined) return ''
+  return String(raw).trim()
+}
+
+/** Serie da persistere sul workout_log al termine (stesso shape di saveCompletedBlockToDb). */
+type SessionExerciseSetsForLog = {
+  id: string
+  sets: Array<{
+    set_number: number
+    reps?: number | null
+    weight_kg?: number | null
+    execution_time_sec?: number | null
+    rest_timer_sec?: number | null
+  }>
+}
+
+function sessionExercisesToPersistPayload(exercises: unknown[] | undefined): SessionExerciseSetsForLog[] {
+  if (!exercises?.length) return []
+  const out: SessionExerciseSetsForLog[] = []
+  for (const ex of exercises) {
+    const id = workoutDayExerciseRowId(ex)
+    if (!id) continue
+    const rec = ex as Record<string, unknown>
+    const rawSets = (rec.sets as unknown[] | undefined) ?? []
+    const sets: SessionExerciseSetsForLog['sets'] = []
+    for (const s of rawSets) {
+      if (!s || typeof s !== 'object') continue
+      const row = s as Record<string, unknown>
+      sets.push({
+        set_number: Number(row.set_number ?? 0),
+        reps: row.reps != null && row.reps !== '' ? Number(row.reps) : null,
+        weight_kg: row.weight_kg != null && row.weight_kg !== '' ? Number(row.weight_kg) : null,
+        execution_time_sec:
+          row.execution_time_sec != null && row.execution_time_sec !== ''
+            ? Number(row.execution_time_sec)
+            : null,
+        rest_timer_sec:
+          row.rest_timer_sec != null && row.rest_timer_sec !== '' ? Number(row.rest_timer_sec) : null,
+      })
+    }
+    out.push({ id, sets })
+  }
+  return out
+}
+
+/** Serie segnata come eseguita (tollerante a valori numerici da JSON/API). */
+function isWorkoutSetCompleted(s: Record<string, unknown>): boolean {
+  const c = s.completed
+  return c === true || c === 1
+}
+
+function resolveExerciseIndexInSession(exercises: unknown[] | undefined, exercise: unknown): number {
+  if (!exercises?.length) return -1
+  const id = workoutDayExerciseRowId(exercise)
+  if (!id) return -1
+  return exercises.findIndex((e) => workoutDayExerciseRowId(e) === id)
+}
+
+function applyExerciseSetPatch(
+  prev: WorkoutSession,
+  exerciseIndex: number,
+  setNumber: number,
+  updates: Partial<WorkoutSetData>,
+): WorkoutSession | null {
+  if (!prev.exercises?.length) return null
+  if (exerciseIndex < 0 || exerciseIndex >= prev.exercises.length) return null
+  const targetN = Number(setNumber)
+  const exercises = prev.exercises.map((ex, idx) => {
+    if (idx !== exerciseIndex) return ex
+    const rawSets = (ex as { sets?: unknown }).sets
+    const prevSets = Array.isArray(rawSets) ? (rawSets as Record<string, unknown>[]) : []
+    const newSets = prevSets.map((set) =>
+      Number(set.set_number) === targetN ? { ...set, ...updates } : set,
+    )
+    const allSetsDone =
+      newSets.length > 0 && newSets.every((s) => isWorkoutSetCompleted(s))
+    return { ...ex, sets: newSets, is_completed: allSetsDone }
+  })
+  const completedCount = exercises.filter(
+    (ex) => (ex as { is_completed?: boolean }).is_completed === true,
+  ).length
+  const total = Math.max(prev.total_exercises || 1, 1)
+  return {
+    ...prev,
+    exercises,
+    completed_exercises: completedCount,
+    progress_percentage: Math.round((completedCount / total) * 100),
+  }
 }
 
 // Componente per visualizzare video/immagine esercizio con gestione errori
@@ -345,12 +451,14 @@ function ExerciseMediaDisplay({
   )
 }
 
-function AllenamentiOggiPageContent() {
+export function AllenamentiOggiPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
   const { addToast } = useToast()
   const supabase = useSupabaseClient()
+  const { pathBase, isPreview } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
 
   const requestCoachedSessionDebit = useCallback(
     async (workoutLogId: string) => {
@@ -379,9 +487,92 @@ function AllenamentiOggiPageContent() {
   // Type guard per user
   const isValidUser = user && isValidProfile(user)
 
-  // user.id da useAuth() Ã¨ giÃ  profiles.id, usiamolo direttamente
-  // useWorkoutSession usa athlete_id che Ã¨ FK a profiles.id
-  const athleteProfileId = isValidUser && isValidUUID(user.id) ? user.id : null
+  const { athleteProfileId: resolvedAthleteId } = useResolvedAthleteProfileForAllenamenti()
+  const athleteProfileId = resolvedAthleteId
+
+  const embedDirtyRef = React.useRef(false)
+  const postEmbedDirty = useCallback(
+    (dirty: boolean) => {
+      if (!isPreview) return
+      if (workoutsPane?.setDirty) {
+        workoutsPane.setDirty(dirty)
+        return
+      }
+      if (typeof window === 'undefined') return
+      if (window.parent === window) return
+      if (!athleteProfileId) return
+      try {
+        window.parent.postMessage(
+          { type: STAFF_WORKOUTS_EMBED_DIRTY, athleteProfileId, dirty },
+          window.location.origin,
+        )
+      } catch {
+        /* ignore */
+      }
+    },
+    [athleteProfileId, isPreview, workoutsPane],
+  )
+
+  const postEmbedSaveEvent = useCallback(
+    (
+      event:
+        | { type: typeof STAFF_WORKOUTS_EMBED_SAVE_START; scope: 'block' | 'workout' }
+        | { type: typeof STAFF_WORKOUTS_EMBED_SAVE_OK; scope: 'block' | 'workout' }
+        | { type: typeof STAFF_WORKOUTS_EMBED_SAVE_ERROR; scope: 'block' | 'workout'; message: string },
+    ) => {
+      if (!isPreview) return
+      if (typeof window === 'undefined') return
+      if (window.parent === window) return
+      if (!athleteProfileId) return
+      try {
+        window.parent.postMessage(
+          { ...event, athleteProfileId },
+          window.location.origin,
+        )
+      } catch {
+        /* ignore */
+      }
+    },
+    [athleteProfileId, isPreview],
+  )
+
+  const requestAuthFromParent = useCallback(() => {
+    if (!isPreview) return false
+    if (typeof window === 'undefined') return false
+    if (window.parent === window) return false
+    if (!athleteProfileId) return false
+    try {
+      window.parent.postMessage(
+        { type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED, athleteProfileId, reason: 'no_session' },
+        window.location.origin,
+      )
+      return true
+    } catch {
+      return false
+    }
+  }, [athleteProfileId, isPreview])
+
+  useEffect(() => {
+    if (authLoading) return
+    if (user && isValidUser) return
+    void requestAuthFromParent()
+  }, [authLoading, isValidUser, requestAuthFromParent, user])
+
+  const markEmbedDirty = useCallback(() => {
+    if (embedDirtyRef.current) return
+    embedDirtyRef.current = true
+    postEmbedDirty(true)
+  }, [postEmbedDirty])
+
+  const clearEmbedDirty = useCallback(() => {
+    if (!embedDirtyRef.current) return
+    embedDirtyRef.current = false
+    postEmbedDirty(false)
+  }, [postEmbedDirty])
+
+  /** Evita che solo un cambio identità di clearEmbedDirty riesegua la sync da currentWorkout (reset locale serie). */
+  const clearEmbedDirtyForSyncRef = React.useRef(clearEmbedDirty)
+  clearEmbedDirtyForSyncRef.current = clearEmbedDirty
 
   const [privateNotesByWdeId, setPrivateNotesByWdeId] = useState<Record<string, AthleteWdeNoteRow>>(
     {},
@@ -397,24 +588,85 @@ function AllenamentiOggiPageContent() {
   }, [])
 
   // Recupera parametri dalla query string
-  const workoutPlanId = searchParams?.get('workout_plan_id')
-  const workoutDayId = searchParams?.get('workout_day_id')
-  const exerciseId = searchParams?.get('exercise_id')
+  const panePrefix = workoutsPane?.slotId ?? null
+  const workoutPlanId = panePrefix
+    ? searchParams?.get(`${panePrefix}workoutPlanId`)
+    : searchParams?.get('workout_plan_id')
+  const workoutDayId = panePrefix
+    ? searchParams?.get(`${panePrefix}dayId`)
+    : searchParams?.get('workout_day_id')
+  const exerciseId = panePrefix
+    ? searchParams?.get(`${panePrefix}exerciseId`)
+    : searchParams?.get('exercise_id')
   const allenamentiHeaderBackHref = useMemo(() => {
     if (workoutPlanId && workoutDayId) {
-      return `/home/allenamenti/${workoutPlanId}/giorno/${workoutDayId}`
+      return `${pathBase}/${workoutPlanId}/giorno/${workoutDayId}`
     }
     if (workoutPlanId) {
-      return `/home/allenamenti/${workoutPlanId}`
+      return `${pathBase}/${workoutPlanId}`
     }
-    return '/home/allenamenti'
-  }, [workoutPlanId, workoutDayId])
+    return pathBase
+  }, [workoutPlanId, workoutDayId, pathBase])
 
   // Recupera workout session reale dal database
   const { currentWorkout, fetchCurrentWorkout } = useWorkoutSession()
   const [workoutSession, setWorkoutSession] = useState<WorkoutSession | null>(null)
   const workoutSessionRef = React.useRef(workoutSession)
   workoutSessionRef.current = workoutSession
+
+  const handleWorkoutsPaneBackToHome = useCallback(() => {
+    if (workoutsPane) {
+      workoutsPane.navigateTo({ kind: 'home' })
+    } else {
+      router.push(pathBase)
+    }
+  }, [workoutsPane, router, pathBase])
+
+  const workoutsSplitPaneHeader = useMemo(() => {
+    if (!workoutsPane) return null
+    return (
+      <div className="w-full shrink-0 px-3 sm:px-4 min-[834px]:px-6">
+        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          <AllenamentiPageHeader
+            title={workoutSession?.plan_name?.trim() || 'Allenamento di oggi'}
+            subtitle={
+              workoutSession?.day_title?.trim() ||
+              workoutSession?.plan_description?.trim() ||
+              undefined
+            }
+            onBack={handleWorkoutsPaneBackToHome}
+          />
+        </div>
+      </div>
+    )
+  }, [
+    workoutsPane,
+    workoutSession?.plan_name,
+    workoutSession?.day_title,
+    workoutSession?.plan_description,
+    handleWorkoutsPaneBackToHome,
+  ])
+
+  useEffect(() => {
+    if (!isPreview) return
+    if (typeof window === 'undefined') return
+    if (window.parent === window) return
+    if (!athleteProfileId) return
+
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return
+      const d = e.data as unknown
+      if (!d || typeof d !== 'object') return
+      const msg = d as { type?: unknown; athleteProfileId?: unknown }
+      if (msg.type !== '22club:staff-workouts-embed-refresh') return
+      const id = typeof msg.athleteProfileId === 'string' ? msg.athleteProfileId.trim() : ''
+      if (!id || id !== athleteProfileId) return
+      void fetchCurrentWorkout(athleteProfileId, workoutPlanId ?? undefined, workoutDayId ?? undefined)
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [athleteProfileId, fetchCurrentWorkout, isPreview, workoutDayId, workoutPlanId])
 
   const privateNotesFetchKey = useMemo(() => {
     if (!workoutSession?.exercises?.length) return ''
@@ -430,7 +682,6 @@ function AllenamentiOggiPageContent() {
   const [showRestTimer, setShowRestTimer] = useState(false)
   /** Overlay centro schermo con timer recupero/esecuzione (aperto dal Play in tabella) */
   const [restTimersOverlayOpen, setRestTimersOverlayOpen] = useState(false)
-  const [showTrainerModal, setShowTrainerModal] = useState(false)
   const [inlineTimerSeconds, setInlineTimerSeconds] = useState<number | null>(null)
   const [inlineTimerRunning, setInlineTimerRunning] = useState(false)
   const [inlineExecutionTimerSeconds, setInlineExecutionTimerSeconds] = useState<number | null>(
@@ -467,7 +718,12 @@ function AllenamentiOggiPageContent() {
   /** AudioContext per suoni timer (creato al primo uso dopo gesto utente) */
   const timerAudioContextRef = React.useRef<AudioContext | null>(null)
   /** Set (esercizio + numero serie) per cui è attivo il timer recupero inline — per marcare la serie completata allo scadere */
-  const restTimerTargetRef = React.useRef<{ exerciseId: string; setNumber: number } | null>(null)
+  const restTimerTargetRef = React.useRef<{
+    exerciseId: string
+    setNumber: number
+    /** Indice in session.exercises — usato se l'id non combacia nello stato */
+    exerciseIndex: number | null
+  } | null>(null)
   /** Play colonna recupero: prima recupero poi esecuzione. Play colonna tempo: prima esecuzione poi recupero. */
   const timerChainModeRef = React.useRef<'rest_then_execution' | 'execution_then_rest' | null>(null)
   /** Ref del contenitore scrollabile per header/barra visibili solo in cima/fondo */
@@ -492,8 +748,6 @@ function AllenamentiOggiPageContent() {
   useEffect(() => {
     if (!setTopBarConfig) return
 
-    const icon = <Dumbbell className="h-5 w-5 text-cyan-400" />
-
     if (authLoading || loading) {
       setTopBarConfig(null)
       return () => setTopBarConfig(null)
@@ -503,7 +757,6 @@ function AllenamentiOggiPageContent() {
       setTopBarConfig({
         title: 'Allenamento di Oggi',
         backHref: allenamentiHeaderBackHref,
-        icon,
       })
       return () => setTopBarConfig(null)
     }
@@ -516,7 +769,6 @@ function AllenamentiOggiPageContent() {
           workoutSession?.plan_description?.trim() ||
           undefined,
         backHref: allenamentiHeaderBackHref,
-        icon,
       })
       return () => setTopBarConfig(null)
     }
@@ -531,7 +783,6 @@ function AllenamentiOggiPageContent() {
       subtitle:
         workoutSession.day_title?.trim() || workoutSession.plan_description?.trim() || undefined,
       backHref: allenamentiHeaderBackHref,
-      icon,
     })
     return () => setTopBarConfig(null)
   }, [
@@ -611,6 +862,7 @@ function AllenamentiOggiPageContent() {
   useEffect(() => {
     if (currentWorkout) {
       setWorkoutSession(currentWorkout)
+      clearEmbedDirtyForSyncRef.current()
       // Registra inizio sessione una sola volta (per durata_minuti al completamento)
       if (currentWorkout.exercises?.length && sessionStartedAtRef.current == null) {
         sessionStartedAtRef.current = Date.now()
@@ -663,6 +915,7 @@ function AllenamentiOggiPageContent() {
     } else if (!loading && !authLoading) {
       // Nessun workout disponibile
       setWorkoutSession(null)
+      clearEmbedDirtyForSyncRef.current()
     }
   }, [currentWorkout, loading, authLoading, exerciseId, workoutDayId])
 
@@ -678,21 +931,32 @@ function AllenamentiOggiPageContent() {
 
     let cancelled = false
     ;(async () => {
-      const { data, error } = await supabase
-        .from('athlete_workout_day_exercise_notes')
-        .select('id, workout_day_exercise_id, note')
-        .in('workout_day_exercise_id', ids)
+      type NoteRow = {
+        id: string
+        workout_day_exercise_id: string | null
+        note: string | null
+      }
+      const rows: NoteRow[] = []
+      for (const idChunk of chunkForSupabaseIn(ids)) {
+        const { data, error } = await supabase
+          .from('athlete_workout_day_exercise_notes')
+          .select('id, workout_day_exercise_id, note')
+          .in('workout_day_exercise_id', idChunk)
+        if (error) {
+          if (!cancelled) {
+            logger.warn('fetch note private allenamento', {
+              message: error.message,
+              code: error.code,
+            })
+          }
+          return
+        }
+        rows.push(...((data ?? []) as NoteRow[]))
+      }
 
       if (cancelled) return
-      if (error) {
-        logger.warn('fetch note private allenamento', {
-          message: error.message,
-          code: error.code,
-        })
-        return
-      }
       const next: Record<string, AthleteWdeNoteRow> = {}
-      for (const row of data ?? []) {
+      for (const row of rows) {
         const wde = row.workout_day_exercise_id
         if (wde) next[wde] = { id: row.id, note: row.note ?? '' }
       }
@@ -785,6 +1049,17 @@ function AllenamentiOggiPageContent() {
     handleScrollOggi()
   }, [handleScrollOggi, currentBlockIndex, workoutSession?.exercises?.length])
 
+  // Con barra in-flow (non fixed), quando diventa visibile aumenta scrollHeight: resta in fondo senza flicker
+  useEffect(() => {
+    if (!showBottomBarScroll) return
+    const el = scrollContainerRef.current
+    if (!el) return
+    const id = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight - el.clientHeight
+    })
+    return () => cancelAnimationFrame(id)
+  }, [showBottomBarScroll, currentBlockIndex])
+
   // Reset quando cambia il blocco (video rimosso)
   useEffect(() => {
     setInlineTimerSeconds(null)
@@ -793,28 +1068,43 @@ function AllenamentiOggiPageContent() {
     timerChainModeRef.current = null
   }, [currentBlockIndex])
 
-  const updateSet = (exerciseId: string, setNumber: number, updates: Partial<WorkoutSetData>) => {
-    setWorkoutSession((prev) => {
-      if (!prev) return prev
-      return {
-        ...prev,
-        exercises:
-          prev.exercises?.map((ex) =>
-            ex.id === exerciseId
-              ? {
-                  ...ex,
-                  sets: (ex.sets as Record<string, unknown>[]).map(
-                    (set: Record<string, unknown>) =>
-                      set.set_number === setNumber ? { ...set, ...updates } : set,
-                  ),
-                }
-              : ex,
-          ) || [],
-      }
-    })
-  }
+  const updateSetByIndex = useCallback(
+    (exerciseIndex: number, setNumber: number, updates: Partial<WorkoutSetData>) => {
+      markEmbedDirty()
+      setWorkoutSession((prev) => {
+        if (!prev) return prev
+        const next = applyExerciseSetPatch(prev, exerciseIndex, setNumber, updates)
+        return next ?? prev
+      })
+    },
+    [markEmbedDirty],
+  )
+
+  const updateSet = useCallback(
+    (exerciseId: string, setNumber: number, updates: Partial<WorkoutSetData>) => {
+      markEmbedDirty()
+      const idNorm = String(exerciseId ?? '').trim()
+      setWorkoutSession((prev) => {
+        if (!prev?.exercises?.length) return prev
+        const idx = prev.exercises.findIndex((ex) => workoutDayExerciseRowId(ex) === idNorm)
+        if (idx < 0) {
+          if (process.env.NODE_ENV === 'development') {
+            logger.warn('updateSet: id esercizio (workout_day_exercise) non trovato nella sessione', {
+              idNorm,
+              targetN: Number(setNumber),
+            })
+          }
+          return prev
+        }
+        const next = applyExerciseSetPatch(prev, idx, setNumber, updates)
+        return next ?? prev
+      })
+    },
+    [markEmbedDirty],
+  )
 
   const _completeExercise = (exerciseId: string) => {
+    markEmbedDirty()
     setWorkoutSession((prev) => {
       if (!prev) return prev
 
@@ -893,8 +1183,16 @@ function AllenamentiOggiPageContent() {
 
   const saveCompletedBlockToDb = useCallback(
     async (blockExercises: BlockExerciseForSave[]) => {
+      postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_START, scope: 'block' })
       const logId = await ensureActiveWorkoutLog()
-      if (!logId) return
+      if (!logId) {
+        postEmbedSaveEvent({
+          type: STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+          scope: 'block',
+          message: 'Impossibile salvare la sessione. Riprova.',
+        })
+        return
+      }
       const now = new Date().toISOString()
       for (const ex of blockExercises) {
         const wdeId = ex.id
@@ -924,14 +1222,62 @@ function AllenamentiOggiPageContent() {
           }
         }
       }
+      clearEmbedDirty()
+      postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'block' })
     },
-    [ensureActiveWorkoutLog, supabase],
+    [ensureActiveWorkoutLog, supabase, clearEmbedDirty, postEmbedSaveEvent],
+  )
+
+  /** Alla chiusura sessione: allinea DB a tutta la sessione (non solo blocchi marcati completati). */
+  const persistAllSessionSetsToWorkoutLog = useCallback(
+    async (logId: string, exercisesPayload: SessionExerciseSetsForLog[], completedAtIso: string) => {
+      for (const ex of exercisesPayload) {
+        const wdeId = ex.id
+        const { error: delErr } = await supabase
+          .from('workout_sets')
+          .delete()
+          .eq('workout_log_id', logId)
+          .eq('workout_day_exercise_id', wdeId)
+        if (delErr) {
+          logger.warn('Eliminazione serie prima di sync finale sessione', delErr, { wdeId, logId })
+        }
+        const sets = ex.sets ?? []
+        for (const set of sets) {
+          const { error: insErr } = await supabase.from('workout_sets').insert({
+            workout_day_exercise_id: wdeId,
+            set_number: set.set_number,
+            reps: set.reps ?? null,
+            weight_kg: set.weight_kg != null ? Number(set.weight_kg) : null,
+            execution_time_sec: set.execution_time_sec ?? null,
+            rest_timer_sec: set.rest_timer_sec ?? null,
+            completed_at: completedAtIso,
+            workout_log_id: logId,
+          } as never)
+          if (insErr) {
+            logger.error('insert set (sync finale sessione) fallito', insErr, {
+              wdeId,
+              set_number: set.set_number,
+            })
+            throw insErr
+          }
+        }
+      }
+    },
+    [supabase],
   )
 
   const removeBlockFromDb = useCallback(
     async (wdeIds: string[]) => {
+      postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_START, scope: 'block' })
       const logId = activeWorkoutLogIdRef.current
-      if (!logId || wdeIds.length === 0) return
+      if (!logId || wdeIds.length === 0) {
+        postEmbedSaveEvent({
+          type: STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+          scope: 'block',
+          message: 'Nessuna sessione attiva da aggiornare.',
+        })
+        return
+      }
       for (const wdeId of wdeIds) {
         const { error } = await supabase
           .from('workout_sets')
@@ -942,14 +1288,17 @@ function AllenamentiOggiPageContent() {
           logger.warn('Eliminazione serie su annulla completamento', error, { wdeId })
         }
       }
+      clearEmbedDirty()
+      postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'block' })
     },
-    [supabase],
+    [supabase, clearEmbedDirty, postEmbedSaveEvent],
   )
 
   /** Completa (o toglie completamento) all'intero blocco: singolo esercizio o circuito */
   const completeBlock = (blockIndex: number) => {
     const block = blocks[blockIndex]
     if (!block || !workoutSession) return
+    markEmbedDirty()
     const exercisesList = workoutSession.exercises
     if (!exercisesList) return
     const prev = workoutSession
@@ -984,6 +1333,11 @@ function AllenamentiOggiPageContent() {
           await saveCompletedBlockToDb(blockExercises)
         } catch (e) {
           logger.error('Salvataggio blocco esercizio fallito', e)
+          postEmbedSaveEvent({
+            type: STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+            scope: 'block',
+            message: 'Impossibile salvare i dati dell’esercizio.',
+          })
           addToast({
             title: 'Errore',
             message: 'Impossibile salvare i dati dell’esercizio.',
@@ -992,7 +1346,18 @@ function AllenamentiOggiPageContent() {
         }
       })()
     } else {
-      void removeBlockFromDb(blockExercises.map((e) => e.id))
+      void (async () => {
+        try {
+          await removeBlockFromDb(blockExercises.map((e) => e.id))
+        } catch (e) {
+          logger.error('Annulla completamento blocco fallito', e)
+          postEmbedSaveEvent({
+            type: STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+            scope: 'block',
+            message: 'Impossibile aggiornare i dati dell’esercizio.',
+          })
+        }
+      })()
     }
   }
 
@@ -1002,7 +1367,7 @@ function AllenamentiOggiPageContent() {
     // Controlla se l'esercizio ha execution_time_sec e mostra il timer di esecuzione
     if (currentExercise) {
       const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-      const currentSetIndex = sets.findIndex((s) => !s.completed)
+      const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
       const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
 
       // Verifica se c'Ã¨ execution_time_sec nel set o nell'esercizio
@@ -1055,7 +1420,7 @@ function AllenamentiOggiPageContent() {
       // Se il timer non Ã¨ ancora stato avviato, avvialo
       if (inlineExecutionTimerSeconds === null) {
         const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-        const currentSetIndex = sets.findIndex((s) => !s.completed)
+        const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
         const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
         const executionTime =
           ((activeSet?.execution_time_sec ?? currentExercise.execution_time_sec ?? null) as
@@ -1096,7 +1461,7 @@ function AllenamentiOggiPageContent() {
       }
 
       const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-      const currentSetIndex = sets.findIndex((s) => !s.completed)
+      const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
       const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
       // Usa la stessa logica della colonna "RECUPERO (SEC)" nella tabella: set.rest_timer_sec ?? currentExercise.rest_timer_sec ?? 0
       // Questo garantisce che il timer usi esattamente il valore mostrato nella colonna della tabella per il set corrente
@@ -1109,8 +1474,9 @@ function AllenamentiOggiPageContent() {
       if (inlineTimerSeconds === null) {
         playTimerTone(timerAudioContextRef, 700, 0.5)
         restTimerTargetRef.current = {
-          exerciseId: currentExercise.id as string,
-          setNumber: activeSet.set_number as number,
+          exerciseId: workoutDayExerciseRowId(currentExercise),
+          setNumber: Number(activeSet.set_number) || 1,
+          exerciseIndex: currentExerciseIndex,
         }
         setInlineTimerSeconds(finalValue)
         setInlineTimerRunning(true)
@@ -1145,9 +1511,11 @@ function AllenamentiOggiPageContent() {
     const restSec = ((set.rest_timer_sec ?? exercise.rest_timer_sec ?? null) as number | null) ?? 0
     const finalRest = restSec > 0 ? restSec : 60
     playTimerTone(timerAudioContextRef, 700, 0.5)
+    const exIdx = resolveExerciseIndexInSession(workoutSessionRef.current?.exercises, exercise)
     restTimerTargetRef.current = {
-      exerciseId: exercise.id as string,
-      setNumber: set.set_number as number,
+      exerciseId: workoutDayExerciseRowId(exercise),
+      setNumber: Number(set.set_number) || 1,
+      exerciseIndex: exIdx >= 0 ? exIdx : null,
     }
     setInlineTimerSeconds(finalRest)
     setInlineTimerRunning(true)
@@ -1166,9 +1534,11 @@ function AllenamentiOggiPageContent() {
     timerChainModeRef.current = 'execution_then_rest'
     setInlineTimerSeconds(null)
     setInlineTimerRunning(false)
+    const exIdx = resolveExerciseIndexInSession(workoutSessionRef.current?.exercises, exercise)
     restTimerTargetRef.current = {
-      exerciseId: exercise.id as string,
-      setNumber: set.set_number as number,
+      exerciseId: workoutDayExerciseRowId(exercise),
+      setNumber: Number(set.set_number) || 1,
+      exerciseIndex: exIdx >= 0 ? exIdx : null,
     }
     setInlineExecutionTimerSeconds(execSec)
     setInlineExecutionTimerRunning(false)
@@ -1185,7 +1555,7 @@ function AllenamentiOggiPageContent() {
       >
       if (currentExercise) {
         const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-        const currentSetIndex = sets.findIndex((s) => !s.completed)
+        const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
         const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
         // Usa la stessa logica della colonna "RECUPERO (SEC)" nella tabella
         const newTimerValue =
@@ -1205,15 +1575,9 @@ function AllenamentiOggiPageContent() {
     if (inlineTimerRunning && inlineTimerSeconds !== null && inlineTimerSeconds > 0) {
       const interval = setInterval(() => {
         setInlineTimerSeconds((prev) => {
-          if (prev === null || prev <= 1) {
-            setInlineTimerRunning(false)
-            if ('vibrate' in navigator) {
-              navigator.vibrate([200, 100, 200])
-            }
-
-            // Suoni ultimi 5 secondi: volume crescente; ultimo secondo = suono piÃ¹ prolungato
-            // (suoniamo in base al valore prima del decremento, quindi prev 2 = ultimo secondo)
-          } else if (prev <= 6) {
+          // Suoni ultimi 5 secondi: volume crescente; ultimo secondo = suono piÃ¹ prolungato
+          // (suoniamo in base al valore prima del decremento, quindi prev 2 = ultimo secondo)
+          if (prev !== null && prev > 1 && prev <= 6) {
             if (prev === 2) {
               playTimerTone(timerAudioContextRef, 500, 0.95)
             } else if (prev === 3) {
@@ -1228,57 +1592,76 @@ function AllenamentiOggiPageContent() {
           }
 
           if (prev === null || prev <= 1) {
-            const currentExerciseForTimer = workoutSession?.exercises?.[currentExerciseIndex] as
-              | Record<string, unknown>
-              | undefined
-            if (currentExerciseForTimer) {
-              const chainMode = timerChainModeRef.current
-              const sets = (currentExerciseForTimer.sets as Record<string, unknown>[]) || []
-              const currentSetIndex = sets.findIndex((s) => !s.completed)
-              const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-              const bound = restTimerTargetRef.current
-              const exId = currentExerciseForTimer.id as string
-              const setNum = (activeSet?.set_number as number) ?? 1
+            // Non chiamare setState su altri componenti o altri hook da dentro questo updater:
+            // differiamo dopo il commit (es. embed dirty su WorkoutsShell).
+            queueMicrotask(() => {
+              setInlineTimerRunning(false)
+              if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200])
+              }
 
-              if (chainMode === 'execution_then_rest') {
+              const currentExerciseForTimer = workoutSession?.exercises?.[currentExerciseIndex] as
+                | Record<string, unknown>
+                | undefined
+              if (currentExerciseForTimer) {
+                const chainMode = timerChainModeRef.current
+                const sets = (currentExerciseForTimer.sets as Record<string, unknown>[]) || []
+                const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
+                const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                const bound = restTimerTargetRef.current
+                const setNum = (activeSet?.set_number as number) ?? 1
+
+                if (chainMode === 'execution_then_rest') {
+                  if (bound) {
+                    if (bound.exerciseIndex !== null && bound.exerciseIndex >= 0) {
+                      updateSetByIndex(bound.exerciseIndex, bound.setNumber, { completed: true })
+                    } else {
+                      updateSet(bound.exerciseId, bound.setNumber, { completed: true })
+                    }
+                  } else {
+                    updateSet(workoutDayExerciseRowId(currentExerciseForTimer), setNum, {
+                      completed: true,
+                    })
+                  }
+                  restTimerTargetRef.current = null
+                  timerChainModeRef.current = null
+                  return
+                }
+
+                // rest_then_execution: dopo recupero mostra eventuale esecuzione e segna serie completata
+                const executionTime =
+                  ((activeSet?.execution_time_sec ??
+                    currentExerciseForTimer.execution_time_sec ??
+                    null) as number | null) ?? null
+
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('Timer recupero completato - Verifica execution_time_sec:', {
+                    executionTime,
+                    activeSetExecutionTime: activeSet?.execution_time_sec,
+                    exerciseExecutionTime: currentExerciseForTimer.execution_time_sec,
+                    willShowTimer: executionTime !== null && executionTime > 0,
+                  })
+                }
+
+                if (executionTime !== null && executionTime > 0) {
+                  setInlineExecutionTimerSeconds(executionTime)
+                  setInlineExecutionTimerRunning(false)
+                  setInlineExecutionPreRollRemaining(5)
+                }
                 if (bound) {
-                  updateSet(bound.exerciseId, bound.setNumber, { completed: true })
+                  if (bound.exerciseIndex !== null && bound.exerciseIndex >= 0) {
+                    updateSetByIndex(bound.exerciseIndex, bound.setNumber, { completed: true })
+                  } else {
+                    updateSet(bound.exerciseId, bound.setNumber, { completed: true })
+                  }
                 } else {
-                  updateSet(exId, setNum, { completed: true })
+                  updateSet(workoutDayExerciseRowId(currentExerciseForTimer), setNum, {
+                    completed: true,
+                  })
                 }
                 restTimerTargetRef.current = null
-                timerChainModeRef.current = null
-                return 0
               }
-
-              // rest_then_execution: dopo recupero mostra eventuale esecuzione e segna serie completata
-              const executionTime =
-                ((activeSet?.execution_time_sec ??
-                  currentExerciseForTimer.execution_time_sec ??
-                  null) as number | null) ?? null
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log('Timer recupero completato - Verifica execution_time_sec:', {
-                  executionTime,
-                  activeSetExecutionTime: activeSet?.execution_time_sec,
-                  exerciseExecutionTime: currentExerciseForTimer.execution_time_sec,
-                  willShowTimer: executionTime !== null && executionTime > 0,
-                })
-              }
-
-              if (executionTime !== null && executionTime > 0) {
-                setInlineExecutionTimerSeconds(executionTime)
-                setInlineExecutionTimerRunning(false)
-                setInlineExecutionPreRollRemaining(5)
-              }
-              if (bound) {
-                updateSet(bound.exerciseId, bound.setNumber, { completed: true })
-              } else {
-                updateSet(exId, setNum, { completed: true })
-              }
-              restTimerTargetRef.current = null
-            }
-
+            })
             return 0
           }
           return prev - 1
@@ -1288,7 +1671,14 @@ function AllenamentiOggiPageContent() {
       return () => clearInterval(interval)
     }
     return undefined
-  }, [inlineTimerRunning, inlineTimerSeconds, workoutSession?.exercises, currentExerciseIndex])
+  }, [
+    inlineTimerRunning,
+    inlineTimerSeconds,
+    workoutSession?.exercises,
+    currentExerciseIndex,
+    updateSet,
+    updateSetByIndex,
+  ])
 
   // Prima dell’esecuzione: 5 secondi con beep a frequenza crescente, poi parte il countdown
   useEffect(() => {
@@ -1352,8 +1742,11 @@ function AllenamentiOggiPageContent() {
           }
           if (timerChainModeRef.current === 'execution_then_rest' && restTimerTargetRef.current) {
             const b = restTimerTargetRef.current
-            const ex = workoutSessionRef.current?.exercises?.find(
-              (e) => (e as { id?: string }).id === b.exerciseId,
+            const list = workoutSessionRef.current?.exercises
+            const ex = (
+              b.exerciseIndex !== null && b.exerciseIndex >= 0
+                ? list?.[b.exerciseIndex]
+                : list?.find((e) => workoutDayExerciseRowId(e) === String(b.exerciseId).trim())
             ) as Record<string, unknown> | undefined
             if (ex) {
               const setList = (ex.sets as Record<string, unknown>[]) || []
@@ -1390,12 +1783,18 @@ function AllenamentiOggiPageContent() {
   }
 
   const finishWorkout = () => {
-    setShowTrainerModal(true)
+    /** Embed iframe: coachato. Dashboard Workouts: coachato solo se c'è allenamento valido in agenda per lo slot. App atleta: solo. */
+    const withTrainer =
+      workoutsPane != null
+        ? Boolean(workoutsPane.countCompletionAsCoached)
+        : Boolean(isPreview)
+    void handleTrainerSessionConfirm(withTrainer)
   }
 
   const handleTrainerSessionConfirm = async (withTrainer: boolean) => {
     try {
       setCompletingWorkout(true)
+      postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_START, scope: 'workout' })
 
       if (!athleteProfileId) {
         throw new Error('Profilo atleta non disponibile')
@@ -1404,10 +1803,24 @@ function AllenamentiOggiPageContent() {
 
       let coachedByProfileId: string | null = null
       if (withTrainer) {
-        const { data: trainerRow } = await supabase.rpc('get_my_trainer_profile')
-        const row =
-          Array.isArray(trainerRow) && trainerRow[0] ? (trainerRow[0] as { pt_id?: string }) : null
-        coachedByProfileId = row?.pt_id ?? null
+        if (isPreview) {
+          const { data: tid } = await supabase.rpc('get_current_trainer_profile_id')
+          let staffPid = typeof tid === 'string' ? tid.trim() : ''
+          if (!staffPid) {
+            const { data: sid } = await supabase.rpc('get_current_staff_profile_id')
+            staffPid = typeof sid === 'string' ? sid.trim() : ''
+          }
+          if (!staffPid) {
+            const { data: gid } = await supabase.rpc('get_profile_id')
+            staffPid = typeof gid === 'string' ? gid.trim() : ''
+          }
+          coachedByProfileId = staffPid || null
+        } else {
+          const { data: trainerRow } = await supabase.rpc('get_my_trainer_profile')
+          const row =
+            Array.isArray(trainerRow) && trainerRow[0] ? (trainerRow[0] as { pt_id?: string }) : null
+          coachedByProfileId = row?.pt_id ?? null
+        }
       }
 
       type ExWithSets = {
@@ -1433,6 +1846,20 @@ function AllenamentiOggiPageContent() {
       const existingLogId = activeWorkoutLogIdRef.current
 
       if (existingLogId) {
+        const syncPayload = sessionExercisesToPersistPayload(
+          workoutSession?.exercises as unknown[] | undefined,
+        )
+        try {
+          await persistAllSessionSetsToWorkoutLog(existingLogId, syncPayload, completedAt)
+        } catch (syncErr) {
+          logger.error('Sync finale serie sessione fallito', syncErr)
+          throw new Error(
+            syncErr instanceof Error
+              ? syncErr.message
+              : 'Impossibile salvare tutte le serie dell’allenamento.',
+          )
+        }
+
         const { data: setsRows, error: setsErr } = await supabase
           .from('workout_sets')
           .select('reps, weight_kg')
@@ -1484,7 +1911,38 @@ function AllenamentiOggiPageContent() {
           variant: 'success',
         })
 
-        router.push(`/home/allenamenti/riepilogo?workout_id=${existingLogId}`)
+        clearEmbedDirty()
+        postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'workout' })
+
+        try {
+          if (workoutsPane?.onWorkoutCompleted) {
+            await Promise.resolve(
+              workoutsPane.onWorkoutCompleted({
+                athleteProfileId: profileTyped.id,
+                withTrainer,
+                workoutLogId: existingLogId,
+              }),
+            )
+          } else if (isPreview && typeof window !== 'undefined' && window.parent !== window) {
+            window.parent.postMessage(
+              {
+                type: '22club:embed-coached-workout-done',
+                athleteProfileId: profileTyped.id,
+                withTrainer,
+                workoutLogId: existingLogId,
+              },
+              window.location.origin,
+            )
+          }
+        } catch {
+          /* ignore */
+        }
+
+        if (workoutsPane) {
+          workoutsPane.navigateTo({ kind: 'riepilogo', workoutLogId: existingLogId })
+        } else {
+          router.push(`${pathBase}/riepilogo?workout_id=${existingLogId}`)
+        }
         return
       }
 
@@ -1610,13 +2068,49 @@ function AllenamentiOggiPageContent() {
         variant: 'success',
       })
 
-      if (workoutLogId) {
-        router.push(`/home/allenamenti/riepilogo?workout_id=${workoutLogId}`)
+      clearEmbedDirty()
+      postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'workout' })
+
+      try {
+        if (workoutsPane?.onWorkoutCompleted) {
+          await Promise.resolve(
+            workoutsPane.onWorkoutCompleted({
+              athleteProfileId: profileTyped.id,
+              withTrainer,
+              workoutLogId: workoutLogId ?? undefined,
+            }),
+          )
+        } else if (isPreview && typeof window !== 'undefined' && window.parent !== window) {
+          window.parent.postMessage(
+            {
+              type: '22club:embed-coached-workout-done',
+              athleteProfileId: profileTyped.id,
+              withTrainer,
+              workoutLogId: workoutLogId ?? undefined,
+            },
+            window.location.origin,
+          )
+        }
+      } catch {
+        /* ignore */
+      }
+
+      if (workoutsPane) {
+        workoutsPane.navigateTo({ kind: 'riepilogo', workoutLogId: workoutLogId ?? undefined })
       } else {
-        router.push('/home/allenamenti/riepilogo')
+        if (workoutLogId) {
+          router.push(`${pathBase}/riepilogo?workout_id=${workoutLogId}`)
+        } else {
+          router.push(`${pathBase}/riepilogo`)
+        }
       }
     } catch (err) {
       logger.error('Errore completamento allenamento', err)
+      postEmbedSaveEvent({
+        type: STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+        scope: 'workout',
+        message: err instanceof Error ? err.message : "Errore nel completamento dell'allenamento",
+      })
       addToast({
         title: 'Errore',
         message: err instanceof Error ? err.message : "Errore nel completamento dell'allenamento",
@@ -1624,7 +2118,6 @@ function AllenamentiOggiPageContent() {
       })
     } finally {
       setCompletingWorkout(false)
-      setShowTrainerModal(false)
     }
   }
 
@@ -1632,7 +2125,8 @@ function AllenamentiOggiPageContent() {
   if (!authLoading && (!user || !isValidUser)) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24 flex items-center justify-center">
+        {workoutsSplitPaneHeader}
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6 flex items-center justify-center">
           <Card className="relative overflow-hidden border-red-500/30 bg-background-secondary/50 max-w-md w-full">
             <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
               <div className="mb-3 flex justify-center opacity-50" aria-hidden>
@@ -1642,7 +2136,10 @@ function AllenamentiOggiPageContent() {
                 Accesso richiesto
               </p>
               <Button
-                onClick={() => router.push('/login')}
+                onClick={() => {
+                  if (requestAuthFromParent()) return
+                  router.push('/login')
+                }}
                 className="min-h-[44px] h-9 min-[834px]:h-10 text-sm rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white"
               >
                 Vai al login
@@ -1657,7 +2154,8 @@ function AllenamentiOggiPageContent() {
   if (loading || authLoading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24" />
+        {workoutsSplitPaneHeader}
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6" />
       </div>
     )
   }
@@ -1667,7 +2165,8 @@ function AllenamentiOggiPageContent() {
     const isSpecificWorkout = !!workoutPlanId
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
+        {workoutsSplitPaneHeader}
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6">
           <div className="mx-auto w-full max-w-lg space-y-4 min-[834px]:space-y-5 min-[1100px]:max-w-3xl">
             <Card className={CARD_DS}>
               <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
@@ -1686,7 +2185,7 @@ function AllenamentiOggiPageContent() {
                 </p>
                 <div className="flex gap-2 justify-center flex-wrap">
                   <Button
-                    onClick={() => router.push('/home/allenamenti')}
+                    onClick={() => router.push(pathBase)}
                     className="min-h-[44px] h-9 touch-manipulation rounded-xl bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10"
                   >
                     Vai agli Allenamenti
@@ -1713,7 +2212,8 @@ function AllenamentiOggiPageContent() {
   if (error) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
+        {workoutsSplitPaneHeader}
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6">
           <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
             <Card className="relative overflow-hidden border border-state-error/50 bg-background-secondary/50">
               <CardContent className="p-5 min-[834px]:p-6 text-center relative z-10">
@@ -1744,16 +2244,19 @@ function AllenamentiOggiPageContent() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
+    <div
+      className={cn(
+        'flex min-h-0 flex-1 flex-col bg-background',
+        workoutsPane && 'relative isolate',
+      )}
+    >
+      {workoutsSplitPaneHeader}
       <div
         ref={scrollContainerRef}
         onScroll={handleScrollOggi}
-        className="min-h-0 flex-1 overflow-auto px-3 safe-area-inset-bottom sm:px-4 min-[834px]:px-6"
-        style={{
-          paddingBottom: 'calc(71px + 10px + env(safe-area-inset-bottom))',
-        }}
+        className="min-h-0 flex-1 overflow-auto px-3 pt-4 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6"
       >
-        <div className="mx-auto w-full max-w-lg space-y-3 min-[834px]:space-y-4 min-[1100px]:max-w-3xl">
+        <div className="mx-auto w-full max-w-lg space-y-4 min-[834px]:space-y-5 min-[1100px]:max-w-3xl">
           {/* Esercizio corrente */}
           {currentExercise
             ? ((): React.ReactElement | null => {
@@ -1803,9 +2306,9 @@ function AllenamentiOggiPageContent() {
                 // Vista circuito: griglia 3x3 video + lista info per ogni esercizio
                 if (circuitGroup.length > 0) {
                   return (
-                    <Card className={`${CARD_DS} p-2.5`}>
+                    <Card className={`${CARD_DS} p-3 sm:p-3.5`}>
                       <CardHeader
-                        className="relative z-10 border-b border-white/10 px-3 py-1.5"
+                        className="relative z-10 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3"
                         padding="sm"
                       >
                         <CardTitle
@@ -1818,9 +2321,9 @@ function AllenamentiOggiPageContent() {
                           {`Circuito \u00b7 ${circuitGroup.length} esercizi`}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="relative z-10 space-y-2 pt-2 p-0">
+                      <CardContent className="relative z-10 space-y-3 pt-3 p-0 sm:space-y-4">
                         <div
-                          className={`grid gap-2 ${circuitGroup.length <= 5 ? 'grid-cols-2' : 'grid-cols-3'}`}
+                          className={`grid gap-2 sm:gap-3 ${circuitGroup.length <= 5 ? 'grid-cols-2' : 'grid-cols-3'}`}
                         >
                           {circuitGroup.slice(0, 9).map((item) => {
                             const ex = (item.exercise ?? {}) as Record<string, unknown>
@@ -1930,7 +2433,7 @@ function AllenamentiOggiPageContent() {
                                 <div
                                   className="grid gap-1.5 mb-0.5"
                                   style={{
-                                    gridTemplateColumns: '32px 1fr',
+                                    gridTemplateColumns: '5.25rem 1fr',
                                   }}
                                 >
                                   <div />
@@ -1972,26 +2475,41 @@ function AllenamentiOggiPageContent() {
                                           key={index}
                                           role="button"
                                           tabIndex={0}
+                                          title={
+                                            isWorkoutSetCompleted(set)
+                                              ? 'Tocca la riga per annullare il completamento del set'
+                                              : 'Tocca la riga per completare il set (avvia il recupero). Matita: modifica il peso.'
+                                          }
                                           onClick={() => {
-                                            if (set.completed as boolean) {
-                                              updateSet(
-                                                item.id as string,
-                                                set.set_number as number,
-                                                {
+                                            const sn = Number(set.set_number) || 1
+                                            const exIdx = resolveExerciseIndexInSession(
+                                              workoutSession?.exercises,
+                                              item,
+                                            )
+                                            if (isWorkoutSetCompleted(set)) {
+                                              if (exIdx >= 0) {
+                                                updateSetByIndex(exIdx, sn, { completed: false })
+                                              } else {
+                                                updateSet(workoutDayExerciseRowId(item), sn, {
                                                   completed: false,
-                                                },
-                                              )
+                                                })
+                                              }
                                               setInlineTimerSeconds(null)
                                               setInlineTimerRunning(false)
                                               restTimerTargetRef.current = null
                                               return
                                             }
-                                            updateSet(item.id as string, set.set_number as number, {
-                                              completed: true,
-                                            })
+                                            if (exIdx >= 0) {
+                                              updateSetByIndex(exIdx, sn, { completed: true })
+                                            } else {
+                                              updateSet(workoutDayExerciseRowId(item), sn, {
+                                                completed: true,
+                                              })
+                                            }
                                             restTimerTargetRef.current = {
-                                              exerciseId: item.id as string,
-                                              setNumber: set.set_number as number,
+                                              exerciseId: workoutDayExerciseRowId(item),
+                                              setNumber: sn,
+                                              exerciseIndex: exIdx >= 0 ? exIdx : null,
                                             }
                                             const restSec =
                                               ((set.rest_timer_sec ??
@@ -2009,11 +2527,12 @@ function AllenamentiOggiPageContent() {
                                             }
                                           }}
                                           className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 cursor-pointer hover:border-white/20 hover:bg-white/10 ${
-                                            set.completed
+                                            isWorkoutSetCompleted(set)
                                               ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
-                                              : weightPicker?.exerciseId === (item.id as string) &&
+                                              : weightPicker?.exerciseId ===
+                                                    workoutDayExerciseRowId(item) &&
                                                   weightPicker?.setNumber ===
-                                                    (set.set_number as number)
+                                                    Number(set.set_number)
                                                 ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                                                 : 'border-white/10 bg-white/5'
                                           }`}
@@ -2021,52 +2540,52 @@ function AllenamentiOggiPageContent() {
                                           <div
                                             className="grid gap-2 items-center"
                                             style={{
-                                              gridTemplateColumns: '40px 1fr',
+                                              gridTemplateColumns: '5.25rem 1fr',
                                             }}
                                           >
                                             <div
-                                              onClick={(e) => {
-                                                e.stopPropagation()
-                                                if (!(set.completed as boolean)) {
-                                                  setWeightPicker({
-                                                    exerciseId: item.id as string,
-                                                    setNumber: set.set_number as number,
-                                                    initialKg: resolveSetWeightKgForPicker(
-                                                      set,
-                                                      item as Record<string, unknown>,
-                                                    ),
-                                                  })
-                                                }
-                                              }}
-                                              className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
-                                                set.completed
+                                              className={`flex h-11 w-full min-w-0 shrink-0 items-center justify-center gap-0.5 rounded-xl border-2 px-1 tabular-nums transition-all duration-200 ${
+                                                isWorkoutSetCompleted(set)
                                                   ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
                                                   : weightPicker?.exerciseId ===
-                                                        (item.id as string) &&
+                                                        workoutDayExerciseRowId(item) &&
                                                       weightPicker?.setNumber ===
-                                                        (set.set_number as number)
-                                                    ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
-                                                    : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
+                                                        Number(set.set_number)
+                                                    ? 'border-orange-400/70 bg-orange-500/[0.2] text-orange-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                                                    : 'border-white/12 bg-white/[0.06] text-text-primary'
                                               }`}
-                                              title={
-                                                set.completed
-                                                  ? 'Set completato'
-                                                  : 'Tocca per scegliere il peso'
-                                              }
                                             >
-                                              {!set.completed && (
-                                                <Edit2
-                                                  className={`h-3 w-3 ${
+                                              <span className="min-w-0 flex-1 text-center text-sm font-bold leading-none tabular-nums">
+                                                {set.set_number as number}
+                                              </span>
+                                              {!isWorkoutSetCompleted(set) && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setWeightPicker({
+                                                      exerciseId: workoutDayExerciseRowId(item),
+                                                      setNumber: Number(set.set_number) || 1,
+                                                      initialKg: resolveSetWeightKgForPicker(
+                                                        set,
+                                                        item as Record<string, unknown>,
+                                                      ),
+                                                    })
+                                                  }}
+                                                  title="Modifica peso"
+                                                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
                                                     weightPicker?.exerciseId ===
-                                                      (item.id as string) &&
+                                                      workoutDayExerciseRowId(item) &&
                                                     weightPicker?.setNumber ===
-                                                      (set.set_number as number)
-                                                      ? 'text-orange-400'
-                                                      : 'text-text-tertiary'
+                                                      Number(set.set_number)
+                                                      ? 'text-orange-300'
+                                                      : 'text-text-tertiary hover:bg-white/10 hover:text-text-primary'
                                                   }`}
-                                                />
+                                                  aria-label={`Modifica peso, set ${Number(set.set_number) || 1}`}
+                                                >
+                                                  <Edit2 className="h-3.5 w-3.5" />
+                                                </button>
                                               )}
-                                              <span>{set.set_number as number}</span>
                                             </div>
                                             <div
                                               className="grid gap-2 md:gap-3 items-center min-w-0"
@@ -2099,7 +2618,7 @@ function AllenamentiOggiPageContent() {
                                                               )
                                                             }}
                                                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orange-400/35 bg-orange-500/15 text-orange-400 transition-colors hover:bg-orange-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
-                                                              (set.completed as boolean)
+                                                              isWorkoutSetCompleted(set)
                                                                 ? 'opacity-60'
                                                                 : ''
                                                             }`}
@@ -2112,7 +2631,7 @@ function AllenamentiOggiPageContent() {
                                                       ) : (
                                                         <div
                                                           className={`text-base font-bold text-white text-center whitespace-nowrap min-h-[2rem] flex items-center justify-center ${
-                                                            (set.completed as boolean)
+                                                            isWorkoutSetCompleted(set)
                                                               ? 'opacity-70'
                                                               : 'opacity-100'
                                                           }`}
@@ -2123,7 +2642,7 @@ function AllenamentiOggiPageContent() {
                                                     ) : (
                                                       <div
                                                         className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                          (set.completed as boolean)
+                                                          isWorkoutSetCompleted(set)
                                                             ? 'opacity-70'
                                                             : 'opacity-100'
                                                         }`}
@@ -2195,7 +2714,7 @@ function AllenamentiOggiPageContent() {
                                                               aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
                                                               title="Recupero automatico dopo il timer di esecuzione"
                                                               className={`${restPlayBlockedClass} ${
-                                                                (set.completed as boolean)
+                                                                isWorkoutSetCompleted(set)
                                                                   ? 'opacity-50'
                                                                   : ''
                                                               }`}
@@ -2213,7 +2732,7 @@ function AllenamentiOggiPageContent() {
                                                                 )
                                                               }}
                                                               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
-                                                                (set.completed as boolean)
+                                                                isWorkoutSetCompleted(set)
                                                                   ? 'opacity-60'
                                                                   : ''
                                                               }`}
@@ -2231,7 +2750,7 @@ function AllenamentiOggiPageContent() {
                                                         <div className="text-center flex items-center justify-center min-h-[2rem]">
                                                           <div
                                                             className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                              (set.completed as boolean)
+                                                              isWorkoutSetCompleted(set)
                                                                 ? 'opacity-70'
                                                                 : 'opacity-100'
                                                             }`}
@@ -2239,7 +2758,7 @@ function AllenamentiOggiPageContent() {
                                                             {restSec}
                                                           </div>
                                                         </div>
-                                                        {!(set.completed as boolean) && (
+                                                        {!isWorkoutSetCompleted(set) && (
                                                           <div className="flex items-center justify-center">
                                                             {recoveryPlayDisabledByExecution ? (
                                                               <div
@@ -2292,7 +2811,7 @@ function AllenamentiOggiPageContent() {
                             )
                           })()}
                         </div>
-                        <div className="space-y-2 pt-2.5">
+                        <div className="space-y-3 pt-4 sm:space-y-4">
                           {(() => {
                             const block = blocks[currentBlockIndex]
                             const blockExercises = block
@@ -2307,7 +2826,7 @@ function AllenamentiOggiPageContent() {
                                 const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
                                 return (
                                   sets.length === 0 ||
-                                  sets.every((s: Record<string, unknown>) => s.completed === true)
+                                  sets.every((s: Record<string, unknown>) => isWorkoutSetCompleted(s))
                                 )
                               })
                             const isBlockCompleted = block
@@ -2334,6 +2853,7 @@ function AllenamentiOggiPageContent() {
                           {workoutSession && isWorkoutComplete && (
                             <Button
                               onClick={finishWorkout}
+                              disabled={completingWorkout}
                               className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200"
                             >
                               <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -2347,9 +2867,9 @@ function AllenamentiOggiPageContent() {
                 }
 
                 return (
-                  <Card className={`${CARD_DS} p-2.5`}>
+                  <Card className={`${CARD_DS} p-3 sm:p-3.5`}>
                     <CardHeader
-                      className="relative z-10 border-b border-white/10 px-3 py-1.5"
+                      className="relative z-10 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3"
                       padding="sm"
                     >
                       <CardTitle
@@ -2379,7 +2899,7 @@ function AllenamentiOggiPageContent() {
                         )}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="relative z-10 space-y-2 pt-2 p-0">
+                    <CardContent className="relative z-10 space-y-3 pt-3 p-0 sm:space-y-4">
                       {/* Video/Immagine esercizio - Componente interno per gestire lo stato */}
                       {shouldShowMedia ? (
                         <ExerciseMediaDisplay
@@ -2393,7 +2913,7 @@ function AllenamentiOggiPageContent() {
 
                       {/* Nota esercizio - Visualizzata sotto il video */}
                       {exerciseNote ? (
-                        <div className="mt-3 border-t border-white/10 pt-3">
+                        <div className="mt-4 border-t border-white/10 pt-4">
                           <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
                             <span className="flex h-6 w-6 items-center justify-center rounded border border-white/10 bg-white/5">
                               <Target className="h-2.5 w-2.5 shrink-0 text-cyan-400" />
@@ -2407,8 +2927,8 @@ function AllenamentiOggiPageContent() {
                       ) : null}
 
                       {/* Set - Design Moderno e Uniforme */}
-                      <div className="space-y-2">
-                        <div className="space-y-1.5">
+                      <div className="space-y-3">
+                        <div className="space-y-2">
                           {(() => {
                             const sets = currentExercise.sets as Record<string, unknown>[]
 
@@ -2482,9 +3002,9 @@ function AllenamentiOggiPageContent() {
                               <>
                                 {/* Header delle colonne (solo per la prima riga) */}
                                 <div
-                                  className="grid gap-2 mb-1"
+                                  className="mb-2 grid gap-2 sm:gap-3"
                                   style={{
-                                    gridTemplateColumns: '40px 1fr',
+                                    gridTemplateColumns: '5.25rem 1fr',
                                   }}
                                 >
                                   <div></div>
@@ -2517,27 +3037,31 @@ function AllenamentiOggiPageContent() {
                                     key={index}
                                     role={circuitGroup.length === 0 ? 'button' : undefined}
                                     tabIndex={circuitGroup.length === 0 ? 0 : undefined}
+                                    title={
+                                      circuitGroup.length === 0
+                                        ? isWorkoutSetCompleted(set)
+                                          ? 'Tocca la riga per annullare il completamento del set'
+                                          : 'Tocca la riga per completare il set (avvia il recupero). Matita: modifica il peso.'
+                                        : isWorkoutSetCompleted(set)
+                                          ? undefined
+                                          : 'In circuito: usa la matita per modificare il peso.'
+                                    }
                                     onClick={() => {
                                       if (circuitGroup.length !== 0) return
-                                      if (set.completed as boolean) {
-                                        updateSet(
-                                          currentExercise.id as string,
-                                          set.set_number as number,
-                                          { completed: false },
-                                        )
+                                      const sn = Number(set.set_number) || 1
+                                      const exIdx = currentExerciseIndex
+                                      if (isWorkoutSetCompleted(set)) {
+                                        updateSetByIndex(exIdx, sn, { completed: false })
                                         setInlineTimerSeconds(null)
                                         setInlineTimerRunning(false)
                                         restTimerTargetRef.current = null
                                         return
                                       }
-                                      updateSet(
-                                        currentExercise.id as string,
-                                        set.set_number as number,
-                                        { completed: true },
-                                      )
+                                      updateSetByIndex(exIdx, sn, { completed: true })
                                       restTimerTargetRef.current = {
-                                        exerciseId: currentExercise.id as string,
-                                        setNumber: set.set_number as number,
+                                        exerciseId: workoutDayExerciseRowId(currentExercise),
+                                        setNumber: sn,
+                                        exerciseIndex: exIdx,
                                       }
                                       const restSec =
                                         ((set.rest_timer_sec ??
@@ -2558,11 +3082,12 @@ function AllenamentiOggiPageContent() {
                                       }
                                     }}
                                     className={`relative overflow-hidden rounded-lg border p-2.5 transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
-                                      set.completed
+                                      isWorkoutSetCompleted(set)
                                         ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
                                         : weightPicker?.exerciseId ===
-                                              (currentExercise.id as string) &&
-                                            weightPicker?.setNumber === (set.set_number as number)
+                                              workoutDayExerciseRowId(currentExercise) &&
+                                            weightPicker?.setNumber ===
+                                              Number(set.set_number)
                                           ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                                           : 'border-white/10 bg-white/5'
                                     } ${circuitGroup.length === 0 ? 'cursor-pointer hover:border-white/20 hover:bg-white/10' : ''}`}
@@ -2570,51 +3095,51 @@ function AllenamentiOggiPageContent() {
                                     <div
                                       className="grid gap-2 items-center"
                                       style={{
-                                        gridTemplateColumns: '40px 1fr',
+                                        gridTemplateColumns: '5.25rem 1fr',
                                       }}
                                     >
                                       <div
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          if (!(set.completed as boolean)) {
-                                            setWeightPicker({
-                                              exerciseId: currentExercise.id as string,
-                                              setNumber: set.set_number as number,
-                                              initialKg: resolveSetWeightKgForPicker(
-                                                set,
-                                                currentExercise as Record<string, unknown>,
-                                              ),
-                                            })
-                                          }
-                                        }}
-                                        className={`flex h-9 w-9 shrink-0 items-center justify-center gap-1 rounded-lg border-2 text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-0 ${
-                                          set.completed
+                                        className={`flex h-11 w-full min-w-0 shrink-0 items-center justify-center gap-0.5 rounded-xl border-2 px-1 tabular-nums transition-all duration-200 ${
+                                          isWorkoutSetCompleted(set)
                                             ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
                                             : weightPicker?.exerciseId ===
-                                                  (currentExercise.id as string) &&
+                                                  workoutDayExerciseRowId(currentExercise) &&
                                                 weightPicker?.setNumber ===
-                                                  (set.set_number as number)
-                                              ? 'cursor-pointer border-white/20 bg-white/10 text-text-primary'
-                                              : 'cursor-pointer border-white/10 bg-white/5 text-text-primary hover:border-white/20 hover:bg-white/10'
+                                                  Number(set.set_number)
+                                              ? 'border-orange-400/70 bg-orange-500/[0.2] text-orange-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                                              : 'border-white/12 bg-white/[0.06] text-text-primary'
                                         }`}
-                                        title={
-                                          set.completed
-                                            ? 'Set completato'
-                                            : 'Tocca per scegliere il peso'
-                                        }
                                       >
-                                        {!set.completed && (
-                                          <Edit2
-                                            className={`h-3 w-3 ${
+                                        <span className="min-w-0 flex-1 text-center text-sm font-bold leading-none tabular-nums">
+                                          {set.set_number as number}
+                                        </span>
+                                        {!isWorkoutSetCompleted(set) && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setWeightPicker({
+                                                exerciseId: workoutDayExerciseRowId(currentExercise),
+                                                setNumber: Number(set.set_number) || 1,
+                                                initialKg: resolveSetWeightKgForPicker(
+                                                  set,
+                                                  currentExercise as Record<string, unknown>,
+                                                ),
+                                              })
+                                            }}
+                                            title="Modifica peso"
+                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
                                               weightPicker?.exerciseId ===
-                                                (currentExercise.id as string) &&
-                                              weightPicker?.setNumber === (set.set_number as number)
-                                                ? 'text-orange-400'
-                                                : 'text-text-tertiary'
+                                                workoutDayExerciseRowId(currentExercise) &&
+                                              weightPicker?.setNumber === Number(set.set_number)
+                                                ? 'text-orange-300'
+                                                : 'text-text-tertiary hover:bg-white/10 hover:text-text-primary'
                                             }`}
-                                          />
+                                            aria-label={`Modifica peso, set ${Number(set.set_number) || 1}`}
+                                          >
+                                            <Edit2 className="h-3.5 w-3.5" />
+                                          </button>
                                         )}
-                                        <span>{set.set_number as number}</span>
                                       </div>
 
                                       <div
@@ -2651,7 +3176,7 @@ function AllenamentiOggiPageContent() {
                                                         )
                                                       }}
                                                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orange-400/35 bg-orange-500/15 text-orange-400 transition-colors hover:bg-orange-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 ${
-                                                        (set.completed as boolean)
+                                                        isWorkoutSetCompleted(set)
                                                           ? 'opacity-60'
                                                           : ''
                                                       }`}
@@ -2664,7 +3189,7 @@ function AllenamentiOggiPageContent() {
                                                 ) : (
                                                   <div
                                                     className={`text-base font-bold text-white text-center whitespace-nowrap min-h-[2rem] flex items-center justify-center ${
-                                                      (set.completed as boolean)
+                                                      isWorkoutSetCompleted(set)
                                                         ? 'opacity-70'
                                                         : 'opacity-100'
                                                     }`}
@@ -2675,7 +3200,7 @@ function AllenamentiOggiPageContent() {
                                               ) : (
                                                 <div
                                                   className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                    (set.completed as boolean)
+                                                    isWorkoutSetCompleted(set)
                                                       ? 'opacity-70'
                                                       : 'opacity-100'
                                                   }`}
@@ -2751,7 +3276,7 @@ function AllenamentiOggiPageContent() {
                                                         aria-label="Recupero: si avvia dopo il timer di esecuzione (play arancione)"
                                                         title="Recupero automatico dopo il timer di esecuzione"
                                                         className={`${restPlayBlockedClass} ${
-                                                          (set.completed as boolean)
+                                                          isWorkoutSetCompleted(set)
                                                             ? 'opacity-50'
                                                             : ''
                                                         }`}
@@ -2772,7 +3297,7 @@ function AllenamentiOggiPageContent() {
                                                           )
                                                         }}
                                                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 text-cyan-400 transition-colors hover:bg-cyan-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
-                                                          (set.completed as boolean)
+                                                          isWorkoutSetCompleted(set)
                                                             ? 'opacity-60'
                                                             : ''
                                                         }`}
@@ -2790,7 +3315,7 @@ function AllenamentiOggiPageContent() {
                                                   <div className="text-center flex items-center justify-center min-h-[2rem]">
                                                     <div
                                                       className={`text-base font-bold text-white text-center whitespace-nowrap ${
-                                                        (set.completed as boolean)
+                                                        isWorkoutSetCompleted(set)
                                                           ? 'opacity-70'
                                                           : 'opacity-100'
                                                       }`}
@@ -2798,7 +3323,7 @@ function AllenamentiOggiPageContent() {
                                                       {restSec}
                                                     </div>
                                                   </div>
-                                                  {!(set.completed as boolean) && (
+                                                  {!isWorkoutSetCompleted(set) && (
                                                     <div className="flex items-center justify-center">
                                                       {recoveryPlayDisabledByExecution ? (
                                                         <div
@@ -2854,7 +3379,7 @@ function AllenamentiOggiPageContent() {
                       </div>
 
                       {/* Azioni - Design Moderno e Uniforme: bottone solo quando tutte le serie sono completate */}
-                      <div className="space-y-2 pt-2.5">
+                      <div className="space-y-3 pt-4 sm:space-y-4">
                         {(() => {
                           const block = blocks[currentBlockIndex]
                           const blockExercises = block
@@ -2869,7 +3394,7 @@ function AllenamentiOggiPageContent() {
                               const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
                               return (
                                 sets.length === 0 ||
-                                sets.every((s: Record<string, unknown>) => s.completed === true)
+                                sets.every((s: Record<string, unknown>) => isWorkoutSetCompleted(s))
                               )
                             })
                           const isBlockCompleted = block
@@ -2897,6 +3422,7 @@ function AllenamentiOggiPageContent() {
                         {workoutSession && isWorkoutComplete && (
                           <Button
                             onClick={finishWorkout}
+                            disabled={completingWorkout}
                             className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200 hover:scale-[1.02]"
                           >
                             <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -2909,338 +3435,15 @@ function AllenamentiOggiPageContent() {
                 )
               })()
             : null}
-
-          {/* Timer recupero/esecuzione: solo in overlay (aperto dal Play in tabella) */}
-          {restTimersOverlayOpen && currentExercise ? (
-            <div
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Timer recupero e esecuzione"
-            >
-              <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/90 to-black/75 p-3 pt-12 shadow-2xl shadow-black/40">
-                <button
-                  type="button"
-                  onClick={dismissRestTimersOverlay}
-                  className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
-                  aria-label="Chiudi e annulla timer"
-                  title="Chiudi e annulla"
-                >
-                  <X className="h-5 w-5" strokeWidth={2} />
-                </button>
-                <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
-                  {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}
-                  {/* TIMER ESECUZIONE PRIMA (sinistra) */}
-                  {(() => {
-                    let executionTime: number | null = null
-                    // Per circuito: usa il primo execution_time_sec > 0 tra gli esercizi del circuito
-                    if (circuitGroup.length > 0) {
-                      for (const item of circuitGroup) {
-                        const itemSets = (item.sets as Record<string, unknown>[]) || []
-                        const setIdx = itemSets.findIndex(
-                          (s) => !(s as { completed?: boolean }).completed,
-                        )
-                        const activeSet =
-                          setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
-                        const t =
-                          ((activeSet?.execution_time_sec ??
-                            (item as Record<string, unknown>).execution_time_sec ??
-                            null) as number | null) ?? null
-                        if (t != null && t > 0) {
-                          executionTime = t
-                          break
-                        }
-                      }
-                    }
-                    if (executionTime === null) {
-                      const sets = (currentExercise?.sets as Record<string, unknown>[]) || []
-                      const currentSetIndex = sets.findIndex((s) => !s.completed)
-                      const activeSet =
-                        currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-                      executionTime =
-                        ((activeSet?.execution_time_sec ??
-                          currentExercise?.execution_time_sec ??
-                          null) as number | null) ?? null
-                    }
-                    if (executionTime === null || executionTime <= 0) {
-                      return null
-                    }
-
-                    const initialSeconds = executionTime
-                    const currentSeconds =
-                      inlineExecutionTimerSeconds !== null
-                        ? inlineExecutionTimerSeconds
-                        : initialSeconds
-                    // Calcola il progresso basato sul tempo rimanente (inverso)
-                    // Quando currentSeconds = 0, progress = 0% (cerchio vuoto/completato)
-                    const progress =
-                      inlineExecutionPreRollRemaining !== null
-                        ? 100
-                        : currentSeconds === 0
-                          ? 0
-                          : (currentSeconds / initialSeconds) * 100
-                    const circumference = 2 * Math.PI * 80
-                    const strokeDashoffset = circumference - (progress / 100) * circumference
-
-                    const formatTime = (totalSeconds: number) => {
-                      return totalSeconds.toString()
-                    }
-
-                    return (
-                      <div
-                        key="timer-esecuzione-inline"
-                        className="flex flex-col items-center justify-center gap-3"
-                      >
-                        {/* Cerchio animato esecuzione - Colore arancione/quasi rosso */}
-                        <div
-                          className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
-                          onClick={toggleInlineExecutionTimer}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              toggleInlineExecutionTimer()
-                            }
-                          }}
-                          aria-label={
-                            inlineExecutionTimerSeconds === null
-                              ? 'Avvia timer esecuzione'
-                              : currentSeconds === 0
-                                ? 'Timer esecuzione completato'
-                                : inlineExecutionPreRollRemaining !== null
-                                  ? 'Annulla conto alla rovescia prima dell’esecuzione'
-                                  : inlineExecutionTimerRunning
-                                    ? 'Resetta timer esecuzione'
-                                    : 'Avvia timer esecuzione'
-                          }
-                        >
-                          <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
-                            <circle
-                              cx="100"
-                              cy="100"
-                              r="80"
-                              stroke="currentColor"
-                              strokeWidth="14"
-                              fill="none"
-                              className="text-background-tertiary/20"
-                            />
-                            <circle
-                              cx="100"
-                              cy="100"
-                              r="80"
-                              stroke="currentColor"
-                              strokeWidth="14"
-                              fill="none"
-                              strokeDasharray={circumference}
-                              strokeDashoffset={strokeDashoffset}
-                              className={`transition-all duration-1000 ease-linear ${
-                                inlineExecutionTimerSeconds === null
-                                  ? 'text-orange-600/40'
-                                  : currentSeconds === 0
-                                    ? 'text-green-500'
-                                    : inlineExecutionPreRollRemaining !== null
-                                      ? 'text-orange-500'
-                                      : inlineExecutionTimerRunning
-                                        ? 'text-orange-600'
-                                        : 'text-orange-600/60'
-                              }`}
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <div className="text-center space-y-0.5">
-                              {inlineExecutionTimerSeconds === null ? (
-                                <>
-                                  <div className="text-4xl font-bold text-white leading-none">
-                                    {formatTime(initialSeconds)}
-                                  </div>
-                                  <div className="text-[10px] text-orange-600/70 font-medium mt-1 uppercase tracking-wider">
-                                    ESECUZIONE
-                                  </div>
-                                </>
-                              ) : currentSeconds === 0 ? (
-                                <>
-                                  <div className="text-4xl font-bold text-green-500 leading-none">
-                                    0
-                                  </div>
-                                  <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
-                                    Completato
-                                  </div>
-                                </>
-                              ) : inlineExecutionPreRollRemaining !== null ? (
-                                <>
-                                  <div className="text-4xl font-bold text-white leading-none">
-                                    {formatTime(inlineExecutionPreRollRemaining)}
-                                  </div>
-                                  <div className="text-[10px] text-orange-500/80 font-medium mt-1 uppercase tracking-wider">
-                                    Pronti…
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="text-4xl font-bold text-white leading-none">
-                                    {formatTime(currentSeconds)}
-                                  </div>
-                                  <div className="text-[10px] text-orange-600/70 font-medium mt-1 uppercase tracking-wider">
-                                    SEC.
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Timer Recupero - DOPO (destra) - SOLO UNO */}
-                  {(() => {
-                    // Controlla se currentExercise esiste
-                    if (!currentExercise) {
-                      return null
-                    }
-
-                    const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-                    const currentSetIndex = sets.findIndex((s) => !s.completed)
-                    const activeSet =
-                      currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
-                    const timerValue =
-                      ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as
-                        | number
-                        | null) ?? 0
-                    const initialSeconds = timerValue > 0 ? timerValue : 60
-                    const currentSeconds =
-                      inlineTimerSeconds !== null ? inlineTimerSeconds : initialSeconds
-                    const progress = (currentSeconds / initialSeconds) * 100
-                    const circumference = 2 * Math.PI * 80
-                    const strokeDashoffset = circumference - (progress / 100) * circumference
-
-                    const formatTime = (totalSeconds: number) => {
-                      return totalSeconds.toString()
-                    }
-
-                    const showRecoveryWaiting =
-                      inlineTimerSeconds === null &&
-                      inlineExecutionTimerSeconds !== null &&
-                      inlineExecutionTimerSeconds > 0 &&
-                      (inlineExecutionTimerRunning || inlineExecutionPreRollRemaining !== null)
-
-                    if (
-                      !restTimersOverlayOpen &&
-                      timerValue <= 0 &&
-                      inlineTimerSeconds === null &&
-                      inlineExecutionTimerSeconds === null
-                    ) {
-                      return null
-                    }
-
-                    return (
-                      <div
-                        key="timer-recupero-unico"
-                        className="flex flex-col items-center justify-center gap-3"
-                      >
-                        {/* Cerchio animato recupero */}
-                        <div
-                          className={`relative h-36 w-36 transition-transform duration-200 ${
-                            showRecoveryWaiting
-                              ? 'cursor-default opacity-80'
-                              : 'cursor-pointer hover:scale-105 active:scale-95'
-                          }`}
-                          onClick={showRecoveryWaiting ? undefined : toggleInlineTimer}
-                          role={showRecoveryWaiting ? undefined : 'button'}
-                          tabIndex={showRecoveryWaiting ? undefined : 0}
-                          onKeyDown={(e) => {
-                            if (showRecoveryWaiting) return
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              toggleInlineTimer()
-                            }
-                          }}
-                          aria-label={
-                            showRecoveryWaiting
-                              ? 'Recupero dopo esecuzione'
-                              : inlineTimerRunning
-                                ? 'Pausa timer recupero'
-                                : 'Avvia timer recupero'
-                          }
-                        >
-                          <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
-                            <circle
-                              cx="100"
-                              cy="100"
-                              r="80"
-                              stroke="currentColor"
-                              strokeWidth="14"
-                              fill="none"
-                              className="text-background-tertiary/20"
-                            />
-                            <circle
-                              cx="100"
-                              cy="100"
-                              r="80"
-                              stroke="currentColor"
-                              strokeWidth="14"
-                              fill="none"
-                              strokeDasharray={circumference}
-                              strokeDashoffset={strokeDashoffset}
-                              className={`transition-all duration-1000 ease-linear ${
-                                inlineTimerRunning ? 'text-cyan-400' : 'text-cyan-400/60'
-                              }`}
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <div className="text-center space-y-0.5">
-                              {inlineTimerSeconds === null ? (
-                                <>
-                                  <div className="text-[10px] font-medium uppercase tracking-wider text-cyan-400/70 mb-1">
-                                    RECUPERO
-                                  </div>
-                                  <div className="text-4xl font-bold text-white leading-none">
-                                    {formatTime(initialSeconds)}
-                                  </div>
-                                  <div className="text-[10px] text-cyan-400/50 font-medium mt-1 uppercase tracking-wider">
-                                    {showRecoveryWaiting ? 'Dopo esecuzione' : 'Tocca per avviare'}
-                                  </div>
-                                </>
-                              ) : currentSeconds === 0 ? (
-                                <>
-                                  <div className="text-4xl font-bold text-green-500 leading-none">
-                                    0
-                                  </div>
-                                  <div className="text-[10px] text-green-500/70 font-medium mt-1 uppercase tracking-wider">
-                                    Completato
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="text-4xl font-bold text-white leading-none">
-                                    {formatTime(currentSeconds)}
-                                  </div>
-                                  <div className="text-[10px] text-cyan-400/70 font-medium mt-1 uppercase tracking-wider">
-                                    SEC.
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })()}
-                </div>
-              </div>
-            </div>
-          ) : null}
         </div>
 
-        {/* Navigazione esercizi - stessa configurazione di PageHeaderFixed chat (sfondo nero, padding, linea cyan), visibile solo a fondo pagina */}
-        {showBottomBarScroll && (
-          <header
-            className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-3 min-[834px]:p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)]"
-            style={{ paddingBottom: 'calc(10px + env(safe-area-inset-bottom))' }}
-          >
+        {/* Navigazione esercizi — stessa larghezza/centering della colonna card (max-w-lg / 3xl) */}
+        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          {showBottomBarScroll && (
+            <header
+              className="relative z-20 mt-4 w-full overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] min-[834px]:p-5"
+              style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
+            >
             <div
               className="absolute inset-x-0 top-0 h-px"
               style={{
@@ -3278,8 +3481,336 @@ function AllenamentiOggiPageContent() {
               </Button>
             </div>
           </header>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Timer recupero/esecuzione: solo in overlay (aperto dal Play in tabella) */}
+      {restTimersOverlayOpen && currentExercise ? (
+        <div
+          className={cn(
+            workoutsPane ? 'absolute inset-0 z-[100]' : 'fixed inset-0 z-[100]',
+            'flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]',
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Timer recupero e esecuzione"
+        >
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/90 to-black/75 p-3 pt-12 shadow-2xl shadow-black/40">
+            <button
+              type="button"
+              onClick={dismissRestTimersOverlay}
+              className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+              aria-label="Chiudi e annulla timer"
+              title="Chiudi e annulla"
+            >
+              <X className="h-5 w-5" strokeWidth={2} />
+            </button>
+            <div className="flex flex-row items-center justify-center gap-5 sm:gap-8">
+              {/* Timer Esecuzione - Mostrato se l'esercizio (o un esercizio del circuito) ha execution_time_sec > 0 */}
+              {/* TIMER ESECUZIONE PRIMA (sinistra) */}
+              {(() => {
+                let executionTime: number | null = null
+                // Per circuito: usa il primo execution_time_sec > 0 tra gli esercizi del circuito
+                if (circuitGroup.length > 0) {
+                  for (const item of circuitGroup) {
+                    const itemSets = (item.sets as Record<string, unknown>[]) || []
+                    const setIdx = itemSets.findIndex(
+                      (s) => !(s as { completed?: boolean }).completed,
+                    )
+                    const activeSet =
+                      setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
+                    const t =
+                      ((activeSet?.execution_time_sec ??
+                        (item as Record<string, unknown>).execution_time_sec ??
+                        null) as number | null) ?? null
+                    if (t != null && t > 0) {
+                      executionTime = t
+                      break
+                    }
+                  }
+                }
+                if (executionTime === null) {
+                  const sets = (currentExercise?.sets as Record<string, unknown>[]) || []
+                  const currentSetIndex = sets.findIndex((s) => !s.completed)
+                  const activeSet =
+                    currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                  executionTime =
+                    ((activeSet?.execution_time_sec ??
+                      currentExercise?.execution_time_sec ??
+                      null) as number | null) ?? null
+                }
+                if (executionTime === null || executionTime <= 0) {
+                  return null
+                }
+
+                const initialSeconds = executionTime
+                const currentSeconds =
+                  inlineExecutionTimerSeconds !== null
+                    ? inlineExecutionTimerSeconds
+                    : initialSeconds
+                // Calcola il progresso basato sul tempo rimanente (inverso)
+                // Quando currentSeconds = 0, progress = 0% (cerchio vuoto/completato)
+                const progress =
+                  inlineExecutionPreRollRemaining !== null
+                    ? 100
+                    : currentSeconds === 0
+                      ? 0
+                      : (currentSeconds / initialSeconds) * 100
+                const circumference = 2 * Math.PI * 80
+                const strokeDashoffset = circumference - (progress / 100) * circumference
+
+                const formatTime = (totalSeconds: number) => {
+                  return totalSeconds.toString()
+                }
+
+                return (
+                  <div
+                    key="timer-esecuzione-inline"
+                    className="flex flex-col items-center justify-center gap-3"
+                  >
+                    {/* Cerchio animato esecuzione - Colore arancione/quasi rosso */}
+                    <div
+                      className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
+                      onClick={toggleInlineExecutionTimer}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          toggleInlineExecutionTimer()
+                        }
+                      }}
+                      aria-label={
+                        inlineExecutionTimerSeconds === null
+                          ? 'Avvia timer esecuzione'
+                          : currentSeconds === 0
+                            ? 'Timer esecuzione completato'
+                            : inlineExecutionPreRollRemaining !== null
+                              ? "Annulla conto alla rovescia prima dell'esecuzione"
+                              : inlineExecutionTimerRunning
+                                ? 'Resetta timer esecuzione'
+                                : 'Avvia timer esecuzione'
+                      }
+                    >
+                      <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="80"
+                          stroke="currentColor"
+                          strokeWidth="14"
+                          fill="none"
+                          className="text-background-tertiary/20"
+                        />
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="80"
+                          stroke="currentColor"
+                          strokeWidth="14"
+                          fill="none"
+                          strokeDasharray={circumference}
+                          strokeDashoffset={strokeDashoffset}
+                          className={`transition-all duration-1000 ease-linear ${
+                            inlineExecutionTimerSeconds === null
+                              ? 'text-orange-600/40'
+                              : currentSeconds === 0
+                                ? 'text-green-500'
+                                : inlineExecutionPreRollRemaining !== null
+                                  ? 'text-orange-500'
+                                  : inlineExecutionTimerRunning
+                                    ? 'text-orange-600'
+                                    : 'text-orange-600/60'
+                          }`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-1.5 pb-1 pointer-events-none">
+                        <div className="flex flex-col items-center justify-center gap-1 text-center">
+                          {inlineExecutionTimerSeconds === null ? (
+                            <>
+                              <div className="text-4xl font-bold text-white leading-none tabular-nums">
+                                {formatTime(initialSeconds)}
+                              </div>
+                              <div className="text-[10px] text-orange-600/70 font-medium uppercase tracking-wider">
+                                ESECUZIONE
+                              </div>
+                            </>
+                          ) : currentSeconds === 0 ? (
+                            <>
+                              <div className="text-4xl font-bold text-green-500 leading-none tabular-nums">
+                                0
+                              </div>
+                              <div className="text-[10px] text-green-500/70 font-medium uppercase tracking-wider">
+                                Completato
+                              </div>
+                            </>
+                          ) : inlineExecutionPreRollRemaining !== null ? (
+                            <>
+                              <div className="text-4xl font-bold text-white leading-none tabular-nums">
+                                {formatTime(inlineExecutionPreRollRemaining)}
+                              </div>
+                              <div className="text-[10px] text-orange-500/80 font-medium uppercase tracking-wider leading-tight">
+                                {'Pronti\u2026'}
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-4xl font-bold text-white leading-none tabular-nums">
+                                {formatTime(currentSeconds)}
+                              </div>
+                              <div className="text-[10px] text-orange-600/70 font-medium uppercase tracking-wider">
+                                SEC.
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* Timer Recupero - DOPO (destra) - SOLO UNO */}
+              {(() => {
+                // Controlla se currentExercise esiste
+                if (!currentExercise) {
+                  return null
+                }
+
+                const sets = (currentExercise.sets as Record<string, unknown>[]) || []
+                const currentSetIndex = sets.findIndex((s) => !s.completed)
+                const activeSet =
+                  currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                const timerValue =
+                  ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as
+                    | number
+                    | null) ?? 0
+                const initialSeconds = timerValue > 0 ? timerValue : 60
+                const currentSeconds =
+                  inlineTimerSeconds !== null ? inlineTimerSeconds : initialSeconds
+                const progress = (currentSeconds / initialSeconds) * 100
+                const circumference = 2 * Math.PI * 80
+                const strokeDashoffset = circumference - (progress / 100) * circumference
+
+                const formatTime = (totalSeconds: number) => {
+                  return totalSeconds.toString()
+                }
+
+                const showRecoveryWaiting =
+                  inlineTimerSeconds === null &&
+                  inlineExecutionTimerSeconds !== null &&
+                  inlineExecutionTimerSeconds > 0 &&
+                  (inlineExecutionTimerRunning || inlineExecutionPreRollRemaining !== null)
+
+                if (
+                  !restTimersOverlayOpen &&
+                  timerValue <= 0 &&
+                  inlineTimerSeconds === null &&
+                  inlineExecutionTimerSeconds === null
+                ) {
+                  return null
+                }
+
+                return (
+                  <div
+                    key="timer-recupero-unico"
+                    className="flex flex-col items-center justify-center gap-3"
+                  >
+                    {/* Cerchio animato recupero */}
+                    <div
+                      className={`relative h-36 w-36 transition-transform duration-200 ${
+                        showRecoveryWaiting
+                          ? 'cursor-default opacity-80'
+                          : 'cursor-pointer hover:scale-105 active:scale-95'
+                      }`}
+                      onClick={showRecoveryWaiting ? undefined : toggleInlineTimer}
+                      role={showRecoveryWaiting ? undefined : 'button'}
+                      tabIndex={showRecoveryWaiting ? undefined : 0}
+                      onKeyDown={(e) => {
+                        if (showRecoveryWaiting) return
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          toggleInlineTimer()
+                        }
+                      }}
+                      aria-label={
+                        showRecoveryWaiting
+                          ? 'Recupero dopo esecuzione'
+                          : inlineTimerRunning
+                            ? 'Pausa timer recupero'
+                            : 'Avvia timer recupero'
+                      }
+                    >
+                      <svg className="h-36 w-36 -rotate-90 transform" viewBox="0 0 200 200">
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="80"
+                          stroke="currentColor"
+                          strokeWidth="14"
+                          fill="none"
+                          className="text-background-tertiary/20"
+                        />
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="80"
+                          stroke="currentColor"
+                          strokeWidth="14"
+                          fill="none"
+                          strokeDasharray={circumference}
+                          strokeDashoffset={strokeDashoffset}
+                          className={`transition-all duration-1000 ease-linear ${
+                            inlineTimerRunning ? 'text-cyan-400' : 'text-cyan-400/60'
+                          }`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-1.5 pb-1.5 pointer-events-none">
+                        <div className="flex max-w-[6.5rem] flex-col items-center justify-center gap-1 text-center sm:max-w-[7rem]">
+                          {inlineTimerSeconds === null ? (
+                            <>
+                              <div className="text-[10px] font-medium uppercase leading-tight tracking-wider text-cyan-400/70">
+                                RECUPERO
+                              </div>
+                              <div className="text-4xl font-bold text-white leading-none tabular-nums">
+                                {formatTime(initialSeconds)}
+                              </div>
+                              <div className="text-[9px] font-medium uppercase leading-snug tracking-wider text-cyan-400/50 sm:text-[10px]">
+                                {showRecoveryWaiting ? 'Dopo esecuzione' : 'Tocca per avviare'}
+                              </div>
+                            </>
+                          ) : currentSeconds === 0 ? (
+                            <>
+                              <div className="text-4xl font-bold text-green-500 leading-none tabular-nums">
+                                0
+                              </div>
+                              <div className="text-[10px] text-green-500/70 font-medium uppercase tracking-wider">
+                                Completato
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-4xl font-bold text-white leading-none tabular-nums">
+                                {formatTime(currentSeconds)}
+                              </div>
+                              <div className="text-[10px] text-cyan-400/70 font-medium uppercase tracking-wider">
+                                SEC.
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Rest Timer Modal */}
       {showRestTimer &&
@@ -3287,7 +3818,7 @@ function AllenamentiOggiPageContent() {
         (() => {
           // Trova il set corrente (il primo non completato o l'ultimo)
           const sets = (currentExercise.sets as Record<string, unknown>[]) || []
-          const currentSetIndex = sets.findIndex((s) => !s.completed)
+          const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
           const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
           // Usa la stessa logica della colonna "RECUPERO (SEC)" nella tabella: set.rest_timer_sec ?? currentExercise.rest_timer_sec ?? 0
           // Questo garantisce che il timer usi esattamente il valore mostrato nella colonna della tabella per il set corrente
@@ -3299,7 +3830,12 @@ function AllenamentiOggiPageContent() {
           const timerValue = timerValueFromTable > 0 ? timerValueFromTable : 60
 
           return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 ">
+            <div
+              className={cn(
+                workoutsPane ? 'absolute inset-0 z-50' : 'fixed inset-0 z-50',
+                'flex items-center justify-center bg-black/50 p-4',
+              )}
+            >
               <RestTimer
                 initialSeconds={timerValue}
                 onComplete={handleRestTimerComplete}
@@ -3314,14 +3850,6 @@ function AllenamentiOggiPageContent() {
             </div>
           )
         })()}
-
-      {/* Trainer Session Modal */}
-      <TrainerSessionModal
-        open={showTrainerModal}
-        onClose={() => !completingWorkout && setShowTrainerModal(false)}
-        onConfirm={handleTrainerSessionConfirm}
-        loading={completingWorkout}
-      />
 
       {/* Dialog video circuito ingrandito */}
       <Dialog

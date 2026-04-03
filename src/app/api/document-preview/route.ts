@@ -40,6 +40,11 @@ function extractAthleteProfileIdFromDocumentsPath(storagePath: string): string |
     }
     return null
   }
+  // nutrition-plans/{profiles.id atleta}/file.pdf (caricamento da dashboard nutrizionista)
+  if (parts[0] === 'nutrition-plans' && parts.length >= 2) {
+    if (parts[1] === '_unassigned') return null
+    return UUID_RE.test(parts[1] ?? '') ? (parts[1] as string) : null
+  }
   return UUID_RE.test(parts[0] ?? '') ? (parts[0] as string) : null
 }
 

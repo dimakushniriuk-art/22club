@@ -115,7 +115,8 @@ export function AlertDialogTitle({ children, className }: AlertDialogTitleProps)
 }
 
 export function AlertDialogDescription({ children, className }: AlertDialogDescriptionProps) {
-  return <p className={cn('text-text-secondary text-sm', className)}>{children}</p>
+  /* div: evita <p> con figli a blocco (div/checkbox) → HTML invalido e hydration error */
+  return <div className={cn('text-text-secondary text-sm', className)}>{children}</div>
 }
 
 export function AlertDialogFooter({ children, className }: AlertDialogFooterProps) {

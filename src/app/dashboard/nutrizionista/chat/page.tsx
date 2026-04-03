@@ -21,7 +21,7 @@ export default function NutrizionistaChatPage() {
   return (
     <StaffContentLayout
       title="Chat"
-      description="Comunica con gli atleti assegnati"
+      description="Messaggi con gli atleti assegnati."
       icon={<MessageSquare className="w-6 h-6" />}
       theme="teal"
     >

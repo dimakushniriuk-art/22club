@@ -25,7 +25,7 @@ export default function Page() {
   }, [])
 
   return (
-    <div>
+    <div className="min-h-dvh bg-background text-text-primary">
       <Head>
         <title>sentry-example-page</title>
         <meta name="description" content="Test Sentry for your Next.js app!" />

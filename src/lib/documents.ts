@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { requireCurrentOrgId } from '@/lib/organizations/current-org'
 import type { Tables, TablesUpdate } from '@/types/supabase'
-import type { Document as DocumentDTO } from '@/types/document'
+import type { Document as DocumentDTO, DocumentStorageOpen } from '@/types/document'
 
 const logger = createLogger('lib:documents')
 
@@ -139,6 +139,19 @@ export function resolveInvoiceDocumentsStoragePath(invoiceUrl: string): string |
   return match?.[1] ?? null
 }
 
+/** Nome file consigliato per anteprima/download da `invoice_url` (path storage o URL legacy). */
+export function invoiceDocumentSuggestedFileName(invoiceUrl: string, fallbackDateIso: string): string {
+  const filePath = resolveInvoiceDocumentsStoragePath(invoiceUrl)
+  if (filePath) {
+    const fromPath = filePath.split('/').filter(Boolean).pop()
+    if (fromPath) return fromPath
+  }
+  const parts = invoiceUrl.trim().split('/').filter(Boolean)
+  const last = parts[parts.length - 1]
+  if (last) return (last.split('?')[0] ?? last).trim() || last
+  return `Fattura ${new Date(fallbackDateIso).toLocaleDateString('it-IT')}`
+}
+
 /** URL same-origin verso `/api/document-preview` (stream inline, cookie di sessione). */
 export function storagePreviewHref(bucket: string, storagePath: string): string {
   return `/api/document-preview?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(storagePath)}`
@@ -176,6 +189,31 @@ export function documentsFilePreviewHref(
   const path = resolveDocumentsStoragePath(fileUrl)
   if (path == null) return null
   return storagePreviewHref(DOCUMENTS_STORAGE_BUCKET, path)
+}
+
+type DocumentPreviewRow = Pick<DocumentDTO, 'file_url'> & {
+  storage_open?: DocumentStorageOpen | null
+}
+
+/** Anteprima stessa scheda: tabella `documents` o riga aggregata (altri bucket / URL pubblico). */
+export function documentPreviewHrefForRow(doc: DocumentPreviewRow): string | null {
+  if (doc.storage_open?.type === 'public') return doc.storage_open.url
+  if (doc.storage_open?.type === 'signed') {
+    return storagePreviewHref(doc.storage_open.bucket, doc.storage_open.path)
+  }
+  return documentsFilePreviewHref(doc.file_url)
+}
+
+export async function fetchDocumentBlobForRow(doc: DocumentPreviewRow): Promise<Blob> {
+  if (doc.storage_open?.type === 'public') {
+    const res = await fetch(doc.storage_open.url, { credentials: 'omit', mode: 'cors' })
+    if (!res.ok) throw new Error('Download failed')
+    return res.blob()
+  }
+  if (doc.storage_open?.type === 'signed') {
+    return fetchStorageBlobViaPreview(doc.storage_open.bucket, doc.storage_open.path)
+  }
+  return fetchDocumentBlobViaPreview(doc.file_url)
 }
 
 export async function fetchStorageBlobViaPreview(
@@ -245,6 +283,18 @@ export function extractFileType(fileUrl: string): string {
     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   }
   return mimeTypes[ext] || 'application/octet-stream'
+}
+
+/** Titolo riga / drawer: preferisce `display_file_name` e `file_name`. */
+export function documentDisplayFileName(doc: Pick<DocumentDTO, 'file_url'> & {
+  display_file_name?: string | null
+  file_name?: string | null
+}): string {
+  const fromDisplay = doc.display_file_name?.trim()
+  if (fromDisplay) return fromDisplay
+  const fromMeta = doc.file_name?.trim()
+  if (fromMeta) return fromMeta
+  return extractFileName(doc.file_url)
 }
 
 function mapDocument(row: DocumentWithRelations): DocumentDTO {

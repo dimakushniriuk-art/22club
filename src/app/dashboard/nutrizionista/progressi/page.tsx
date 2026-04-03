@@ -11,7 +11,7 @@ import {
   Calendar,
   UserCheck,
   BarChart2,
-  Download,
+  FileText,
   List,
   LayoutGrid,
   Clock,
@@ -42,7 +42,10 @@ import {
   STAFF_ASSIGNMENT_STATUS_ACTIVE,
   STAFF_TYPE_NUTRIZIONISTA,
 } from '@/lib/nutrition-tables'
-import { exportToCSV } from '@/lib/export-utils'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('app:dashboard:nutrizionista:progressi')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -136,6 +139,15 @@ export default function NutrizionistaProgressiPage() {
   const { user } = useAuth()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -198,33 +210,35 @@ export default function NutrizionistaProgressiPage() {
         return
       }
 
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, user_id, nome, cognome, email, org_id')
-        .in('id', athleteIds)
+      const profilesAccum: {
+        id: string
+        user_id: string | null
+        nome: string | null
+        cognome: string | null
+        email: string | null
+        org_id: string | null
+      }[] = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, user_id, nome, cognome, email, org_id')
+          .in('id', idChunk)
+        profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
+      }
       const profilesMap = new Map(
-        (profilesData ?? []).map(
-          (p: {
-            id: string
-            user_id: string | null
-            nome: string | null
-            cognome: string | null
-            email: string | null
-            org_id: string | null
-          }) => [
-            p.id,
-            {
-              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-              email: p.email ?? null,
-              org_id: p.org_id ?? '',
-              user_id: p.user_id ?? null,
-            },
-          ],
-        ),
+        profilesAccum.map((p) => [
+          p.id,
+          {
+            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+            email: p.email ?? null,
+            org_id: p.org_id ?? '',
+            user_id: p.user_id ?? null,
+          },
+        ]),
       )
       const userIdToProfileId = new Map<string, string>()
       const athleteUserIds: string[] = []
-      for (const p of profilesData ?? []) {
+      for (const p of profilesAccum) {
         const row = p as { id: string; user_id: string | null }
         if (row.user_id) {
           userIdToProfileId.set(row.user_id, row.id)
@@ -243,30 +257,42 @@ export default function NutrizionistaProgressiPage() {
 
       let loadedFromProgressLogs = false
       if (athleteUserIds.length > 0) {
-        const { data: progressLogsData, error: plErr } = await supabase
-          .from('progress_logs')
-          .select(
-            'id, athlete_id, date, weight_kg, massa_grassa_percentuale, waist_cm, hips_cm, created_by_profile_id, source, created_at',
-          )
-          .in('athlete_id', athleteUserIds)
-          .order('created_at', { ascending: false })
-          .limit(500)
-        if (!plErr && Array.isArray(progressLogsData)) {
+        type ProgressLogDbRow = {
+          id: string
+          athlete_id: string
+          date?: string | null
+          weight_kg?: number | null
+          massa_grassa_percentuale?: number | null
+          waist_cm?: number | null
+          hips_cm?: number | null
+          created_by_profile_id?: string | null
+          source?: string | null
+          created_at?: string | null
+        }
+        const progressLogsAccum: ProgressLogDbRow[] = []
+        let plErr: { message?: string } | null = null
+        for (const uidChunk of chunkForSupabaseIn(athleteUserIds)) {
+          const { data: chunkData, error: chunkErr } = await supabase
+            .from('progress_logs')
+            .select(
+              'id, athlete_id, date, weight_kg, massa_grassa_percentuale, waist_cm, hips_cm, created_by_profile_id, source, created_at',
+            )
+            .in('athlete_id', uidChunk)
+            .order('created_at', { ascending: false })
+          if (chunkErr) {
+            plErr = chunkErr
+            break
+          }
+          progressLogsAccum.push(...((chunkData ?? []) as ProgressLogDbRow[]))
+        }
+        progressLogsAccum.sort(
+          (a, b) =>
+            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+        )
+        const progressLogsData = progressLogsAccum.slice(0, 500)
+        if (!plErr && progressLogsData.length > 0) {
           loadedFromProgressLogs = true
-          const rows: TimelineRow[] = (
-            progressLogsData as Array<{
-              id: string
-              athlete_id: string
-              date?: string | null
-              weight_kg?: number | null
-              massa_grassa_percentuale?: number | null
-              waist_cm?: number | null
-              hips_cm?: number | null
-              created_by_profile_id?: string | null
-              source?: string | null
-              created_at?: string | null
-            }>
-          ).map((r) => {
+          const rows: TimelineRow[] = progressLogsData.map((r) => {
             const profileId = userIdToProfileId.get(r.athlete_id)
             const prof = profileId ? profilesMap.get(profileId) : null
             return {
@@ -352,10 +378,27 @@ export default function NutrizionistaProgressiPage() {
               hip: number | null
             }
           >()
-          const { data: progressData } = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
-            .select('athlete_id, created_at, weight, body_fat, waist, hip, weight_kg')
-            .in('athlete_id', athleteIds)
-            .order('created_at', { ascending: false })
+          type ProgressFallbackRow = {
+            athlete_id: string
+            created_at: string
+            weight?: number | null
+            weight_kg?: number | null
+            body_fat?: number | null
+            waist?: number | null
+            hip?: number | null
+          }
+          const progressAccum: ProgressFallbackRow[] = []
+          for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+            const { data: progressData } = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
+              .select('athlete_id, created_at, weight, body_fat, waist, hip, weight_kg')
+              .in('athlete_id', idChunk)
+              .order('created_at', { ascending: false })
+            progressAccum.push(...((progressData ?? []) as ProgressFallbackRow[]))
+          }
+          progressAccum.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          )
+          const progressData = progressAccum
           const byAthlete = new Map<
             string,
             Array<{
@@ -366,26 +409,16 @@ export default function NutrizionistaProgressiPage() {
               hip: number | null
             }>
           >()
-          ;(progressData ?? []).forEach(
-            (p: {
-              athlete_id: string
-              created_at: string
-              weight?: number | null
-              weight_kg?: number | null
-              body_fat?: number | null
-              waist?: number | null
-              hip?: number | null
-            }) => {
-              if (!byAthlete.has(p.athlete_id)) byAthlete.set(p.athlete_id, [])
-              byAthlete.get(p.athlete_id)!.push({
-                created_at: p.created_at,
-                weight: p.weight ?? p.weight_kg ?? null,
-                body_fat: p.body_fat ?? null,
-                waist: p.waist ?? null,
-                hip: p.hip ?? null,
-              })
-            },
-          )
+          progressData.forEach((p) => {
+            if (!byAthlete.has(p.athlete_id)) byAthlete.set(p.athlete_id, [])
+            byAthlete.get(p.athlete_id)!.push({
+              created_at: p.created_at,
+              weight: p.weight ?? p.weight_kg ?? null,
+              body_fat: p.body_fat ?? null,
+              waist: p.waist ?? null,
+              hip: p.hip ?? null,
+            })
+          })
           const overview: AthleteOverviewRow[] = athleteIds.map((aid) => {
             const list = byAthlete.get(aid) ?? []
             const last = list[0]
@@ -555,29 +588,50 @@ export default function NutrizionistaProgressiPage() {
     setSearchInput('')
   }, [])
 
-  const handleExportCSV = useCallback(() => {
-    const data =
-      viewMode === 'timeline'
-        ? filteredTimeline.map((r) => ({
-            atleta: r.athlete_name ?? '',
-            email: r.athlete_email ?? '',
-            data_ora: r.created_at ?? '',
-            peso: r.weight ?? '',
-            bf: r.body_fat ?? '',
-            vita: r.waist ?? '',
-            fianchi: r.hip ?? '',
-            origine: r.created_by_role ?? r.source ?? '',
-          }))
-        : filteredAthletes.map((r) => ({
-            atleta: r.athlete_name ?? '',
-            email: r.athlete_email ?? '',
-            ultimo_progresso: r.last_progress_at ?? '',
-            giorni_da_ultimo: r.days_since_last_progress ?? '',
-            ultimo_peso: r.last_weight ?? '',
-            delta_peso_7gg: r.weight_delta_7d ?? '',
-          }))
-    exportToCSV(data, `progressi_nutrizione_${now.toISOString().slice(0, 10)}.csv`)
-  }, [viewMode, filteredTimeline, filteredAthletes, now])
+  const handleExportPdf = useCallback(async () => {
+    const slice = viewMode === 'timeline' ? filteredTimeline : filteredAthletes
+    if (slice.length === 0) return
+    setPdfLoading(true)
+    try {
+      const data: ExportData =
+        viewMode === 'timeline'
+          ? filteredTimeline.map((r) => ({
+              atleta: r.athlete_name ?? '',
+              email: r.athlete_email ?? '',
+              data_ora: r.created_at ?? '',
+              peso: r.weight ?? '',
+              bf: r.body_fat ?? '',
+              vita: r.waist ?? '',
+              fianchi: r.hip ?? '',
+              origine: r.created_by_role ?? r.source ?? '',
+            }))
+          : filteredAthletes.map((r) => ({
+              atleta: r.athlete_name ?? '',
+              email: r.athlete_email ?? '',
+              ultimo_progresso: r.last_progress_at ?? '',
+              giorni_da_ultimo: r.days_since_last_progress ?? '',
+              ultimo_peso: r.last_weight ?? '',
+              delta_peso_7gg: r.weight_delta_7d ?? '',
+            }))
+      const title =
+        viewMode === 'timeline'
+          ? 'Progressi nutrizione — Timeline'
+          : 'Progressi nutrizione — Atleti'
+      const blob = await buildTabularExportPdfBlob(title, data)
+      openPdfWithBlob(blob, `progressi_nutrizione_${now.toISOString().slice(0, 10)}.pdf`)
+    } catch (e) {
+      logger.error('Export PDF progressi', e)
+    } finally {
+      setPdfLoading(false)
+    }
+  }, [
+    viewMode,
+    filteredTimeline,
+    filteredAthletes,
+    now,
+    setPdfLoading,
+    openPdfWithBlob,
+  ])
 
   const handleNuovoProgressoSubmit = useCallback(async () => {
     if (!nuovoAthleteId || !profileId) return
@@ -661,7 +715,7 @@ export default function NutrizionistaProgressiPage() {
   return (
     <StaffContentLayout
       title="Progressi"
-      description="Peso, BF e misure degli atleti assegnati"
+      description="Peso, composizione corporea e misure — atleti assegnati."
       icon={<TrendingUp className="w-6 h-6" />}
       theme="teal"
       actions={
@@ -681,9 +735,18 @@ export default function NutrizionistaProgressiPage() {
             <Filter className="h-4 w-4" />
             Filtri
           </Button>
-          <Button variant="outline" onClick={handleExportCSV} className="gap-2">
-            <Download className="h-4 w-4" />
-            Esporta
+          <Button
+            variant="outline"
+            onClick={() => void handleExportPdf()}
+            disabled={
+              pdfLoading ||
+              (viewMode === 'timeline' ? filteredTimeline.length === 0 : filteredAthletes.length === 0)
+            }
+            aria-busy={pdfLoading}
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Esporta PDF
           </Button>
         </>
       }
@@ -1190,6 +1253,14 @@ export default function NutrizionistaProgressiPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Progressi"
+      />
     </StaffContentLayout>
   )
 }

@@ -104,10 +104,16 @@ export function CalendarView({
   const { slotMinTime, slotMaxTime } = useMemo(() => {
     const toFull = (t: string) =>
       t.length >= 8 ? t.slice(0, 8) : t.length === 5 ? `${t}:00` : `${t.slice(0, 5)}:00`
+    const timeRe = /^\d{1,2}:\d{2}(:\d{2})?$/
     const gridMin = settings?.grid_min_time?.trim()
     const gridMax = settings?.grid_max_time?.trim()
-    if (gridMin && gridMax) {
-      return { slotMinTime: toFull(gridMin), slotMaxTime: toFull(gridMax) }
+    const minOk = gridMin && timeRe.test(gridMin)
+    const maxOk = gridMax && timeRe.test(gridMax)
+    if (minOk || maxOk) {
+      return {
+        slotMinTime: toFull(minOk ? gridMin! : '07:00'),
+        slotMaxTime: toFull(maxOk ? gridMax! : '22:00'),
+      }
     }
     const def = { slotMinTime: '07:00:00', slotMaxTime: '22:00:00' }
     const wh = settings?.work_hours
@@ -126,8 +132,17 @@ export function CalendarView({
     return { slotMinTime: toFull(minStart), slotMaxTime: toFull(maxEnd) }
   }, [settings?.work_hours, settings?.grid_min_time, settings?.grid_max_time])
 
-  const slotDurationStr = useMemo(() => {
-    if (compactToolbar) return '01:00:00'
+  /** Griglia FC + snap: con 45/90 min il lcm con 60 porta etichette ogni 3h; griglia 15/30 + snap allo step utente */
+  const { slotDurationStr, snapDurationStr } = useMemo(() => {
+    const minsToStr = (totalMins: number) => {
+      const h = Math.floor(totalMins / 60)
+      const m = totalMins % 60
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
+    }
+    if (compactToolbar) {
+      const s = '01:00:00'
+      return { slotDurationStr: s, snapDurationStr: s }
+    }
     const min = settings?.slot_duration_minutes ?? 15
     const clamped = VALID_SLOT_MINUTES.includes(min)
       ? min
@@ -135,9 +150,9 @@ export function CalendarView({
           (best, curr) => (Math.abs(curr - min) < Math.abs(best - min) ? curr : best),
           15,
         )
-    const hours = Math.floor(clamped / 60)
-    const mins = clamped % 60
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:00`
+    const snapStr = minsToStr(clamped)
+    const gridMins = clamped === 90 ? 30 : clamped === 45 ? 15 : clamped
+    return { slotDurationStr: minsToStr(gridMins), snapDurationStr: snapStr }
   }, [compactToolbar, settings?.slot_duration_minutes])
 
   const densityClass = useMemo(() => {
@@ -226,6 +241,17 @@ export function CalendarView({
     }
     api.setOption('firstDay', initialWeekStart)
   }, [initialView, initialWeekStart, isLoaded])
+
+  // Griglia oraria: quando le impostazioni arrivano dopo il mount, aggiorna le opzioni (evita slot 00–23 finché non c’è settings)
+  useEffect(() => {
+    if (!calendarRef.current || !isLoaded) return
+    const api = calendarRef.current.getApi?.()
+    if (!api) return
+    api.setOption('slotMinTime', slotMinTime)
+    api.setOption('slotMaxTime', slotMaxTime)
+    api.setOption('slotDuration', slotDurationStr)
+    api.setOption('snapDuration', snapDurationStr)
+  }, [isLoaded, slotMinTime, slotMaxTime, slotDurationStr, snapDurationStr])
 
   // Aggiorna il titolo quando cambia la vista
   useEffect(() => {
@@ -770,7 +796,11 @@ export function CalendarView({
             densityClass,
             compactToolbar && 'fc-athlete-full-cell',
           )}
-          style={{ zoom: zoomPercent / 100 } as React.CSSProperties}
+          style={
+            {
+              ['--fc-zoom' as string]: String(zoomPercent / 100),
+            } as React.CSSProperties
+          }
         >
           <FullCalendar
             ref={(el) => {
@@ -827,6 +857,7 @@ export function CalendarView({
             }}
             slotMinTime={slotMinTime}
             slotMaxTime={slotMaxTime}
+            slotLabelInterval="01:00:00"
             allDaySlot={false}
             slotEventOverlap={false}
             nowIndicator={true}
@@ -844,7 +875,7 @@ export function CalendarView({
             noEventsContent="Nessun appuntamento in questo periodo. Prova il filtro «Tutti» o apri il pannello filtri."
             eventTextColor="#ffffff"
             slotDuration={slotDurationStr}
-            snapDuration={slotDurationStr}
+            snapDuration={snapDurationStr}
             eventMouseEnter={handleEventMouseEnter}
             eventMouseLeave={handleEventMouseLeave}
             eventContent={(arg) => {

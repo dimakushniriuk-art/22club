@@ -2,7 +2,8 @@
 
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import { ChevronLeft } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-header-back-button'
 
 export type StaffContentTheme = 'teal' | 'amber' | 'default'
 
@@ -38,7 +39,10 @@ const THEME_HEADER = {
 export type StaffContentLayoutProps = {
   /** Titolo principale (header) */
   title: string
-  /** Mostra una freccia "Indietro" a sinistra del titolo */
+  /**
+   * Mostra una freccia "Indietro" a sinistra del titolo.
+   * Se omesso, viene mostrata automaticamente nelle pagine `/dashboard/*` (escluso `/dashboard`).
+   */
   onBack?: () => void
   /** Sottotitolo/descrizione sotto il titolo */
   description?: string
@@ -52,6 +56,10 @@ export type StaffContentLayoutProps = {
   actions?: ReactNode
   /** ClassName sul contenitore interno (dopo header) */
   className?: string
+  /** ClassName sul wrapper diretto dei children (es. flex-1 min-h-0 per contenuti full-height) */
+  contentClassName?: string
+  /** Se true, non renderizza la riga titolo/descrizione/azioni */
+  hideHeader?: boolean
 }
 
 /**
@@ -63,13 +71,30 @@ export function StaffContentLayout({
   title,
   onBack,
   description,
-  icon: _icon,
+  icon,
   theme = 'teal',
   children,
   actions,
   className,
+  contentClassName,
+  hideHeader = false,
 }: StaffContentLayoutProps) {
   const _t = THEME_HEADER[theme]
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const shouldAutoBack = pathname != null && pathname.startsWith('/dashboard/') && pathname !== '/dashboard'
+  const handleAutoBack =
+    onBack ??
+    (shouldAutoBack
+      ? () => {
+          if (typeof window !== 'undefined' && window.history.length > 1) {
+            router.back()
+            return
+          }
+          router.push('/dashboard')
+        }
+      : undefined)
   return (
     <div className="relative min-h-dvh flex flex-col bg-transparent">
       <div
@@ -79,42 +104,46 @@ export function StaffContentLayout({
           className,
         )}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-              {onBack != null && (
-                <button
-                  type="button"
-                  onClick={onBack}
-                  aria-label="Indietro"
+        {hideHeader ? (
+          <h1 className="sr-only">{title}</h1>
+        ) : (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-x-2 sm:gap-x-2.5">
+              {handleAutoBack != null && <StaffHeaderBackButton onClick={handleAutoBack} />}
+              {icon != null ? (
+                <div
                   className={cn(
-                    'inline-flex items-center justify-center h-9 w-9 rounded-lg',
-                    'border border-white/10 bg-white/[0.04]',
-                    'hover:bg-white/5 transition-colors',
-                    'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-                    'focus-visible:ring-offset-background focus:outline-none',
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+                    _t.iconBox,
                   )}
+                  aria-hidden="true"
                 >
-                  <ChevronLeft className={cn('h-4 w-4', _t.iconColor)} aria-hidden="true" />
-                </button>
-              )}
-              <h1 className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight text-white break-words">
-                {title}
-              </h1>
+                  <div className={cn('text-[18px] leading-none', _t.iconColor)}>{icon}</div>
+                </div>
+              ) : null}
+              <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                <h1 className="line-clamp-1 min-w-0 text-sm font-bold leading-tight tracking-tight text-white sm:text-base md:text-xl lg:text-2xl">
+                  {title}
+                </h1>
+                {description != null && description !== '' ? (
+                  <p className="line-clamp-1 min-w-0 text-xs leading-snug text-text-secondary sm:text-sm">
+                    {description}
+                  </p>
+                ) : null}
+              </div>
             </div>
-            {description != null && description !== '' && (
-              <p className="text-white/90 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-0">
-                {description}
-              </p>
+            {actions != null && (
+              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto sm:justify-end [&_button]:min-h-[44px] [&_button]:touch-manipulation [&_a]:min-h-[44px] [&_a]:touch-manipulation">
+                {actions}
+              </div>
             )}
           </div>
-          {actions != null && (
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto [&_button]:min-h-[44px] [&_button]:touch-manipulation [&_a]:min-h-[44px] [&_a]:touch-manipulation">
-              {actions}
-            </div>
-          )}
+        )}
+        <div
+          className={cn('flex flex-col gap-4 sm:gap-6 md:gap-8', contentClassName)}
+        >
+          {children}
         </div>
-        <div className="flex flex-col gap-4 sm:gap-6 md:gap-8">{children}</div>
       </div>
     </div>
   )

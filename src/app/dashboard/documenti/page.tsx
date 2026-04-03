@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 
@@ -12,13 +12,15 @@ import { DocumentsFilters } from '@/components/dashboard/documenti/documents-fil
 import { DocumentsTable } from '@/components/dashboard/documenti/documents-table'
 import { DocumentsStatsCards } from '@/components/dashboard/documenti/documents-stats-cards'
 import {
-  documentsFilePreviewHref,
+  documentPreviewHrefForRow,
   extractFileName,
-  fetchDocumentBlobViaPreview,
+  fetchDocumentBlobForRow,
 } from '@/lib/documents'
 import { useDocuments } from '@/hooks/use-documents'
+import { useStaffAthleteUnifiedDocuments } from '@/hooks/use-staff-athlete-unified-documents'
 import { useToast } from '@/components/ui/toast'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import type { Document } from '@/types/document'
 
 // Lazy load modali per ridurre bundle size iniziale
@@ -36,14 +38,27 @@ const DocumentInvalidModal = lazy(() =>
 export default function DocumentiPage() {
   const searchParams = useSearchParams()
   const athleteIdFromQuery = searchParams.get('atleta')
+  const hasAthleteFilter = Boolean(athleteIdFromQuery)
 
-  const {
-    documents: fetchedDocuments,
-    loading,
-    error,
-  } = useDocuments({
-    athleteId: athleteIdFromQuery,
+  const unifiedQuery = useStaffAthleteUnifiedDocuments(
+    hasAthleteFilter ? athleteIdFromQuery : null,
+  )
+  const tableQuery = useDocuments({
+    enabled: !hasAthleteFilter,
   })
+
+  const loading = hasAthleteFilter ? unifiedQuery.isLoading : tableQuery.loading
+  const error = hasAthleteFilter
+    ? unifiedQuery.error
+      ? unifiedQuery.error instanceof Error
+        ? unifiedQuery.error.message
+        : 'Errore nel caricamento dei documenti'
+      : null
+    : tableQuery.error
+  const fetchedDocuments = useMemo(
+    () => (hasAthleteFilter ? (unifiedQuery.data ?? []) : tableQuery.documents),
+    [hasAthleteFilter, unifiedQuery.data, tableQuery.documents],
+  )
 
   const [documents, setDocuments] = useState<Document[]>([])
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
@@ -88,13 +103,13 @@ export default function DocumentiPage() {
   }
 
   const handlePreview = (doc: Document) => {
-    if (!doc.file_url) return
-    const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
+    const href = documentPreviewHrefForRow(doc)
     if (href) window.open(href, '_blank', 'noopener,noreferrer')
   }
 
   const handleMarkInvalid = () => {
     if (!selectedDocument || !rejectionReason.trim()) return
+    if (selectedDocument.is_db_document === false) return
 
     setDocuments((prev) =>
       prev.map((doc) =>
@@ -111,13 +126,18 @@ export default function DocumentiPage() {
   }
 
   const handleDownload = (doc: Document) => {
-    if (!doc.file_url) return
+    const previewHref = documentPreviewHrefForRow(doc)
+    if (!previewHref && !doc.file_url) return
 
-    const fileName = doc.file_name || extractFileName(doc.file_url)
+    const fileName =
+      doc.display_file_name?.trim() ||
+      doc.file_name ||
+      extractFileName(doc.file_url) ||
+      'documento'
 
     void (async () => {
       try {
-        const blob = await fetchDocumentBlobViaPreview(doc.file_url)
+        const blob = await fetchDocumentBlobForRow(doc)
         const objectUrl = window.URL.createObjectURL(blob)
 
         const a = globalThis.document.createElement('a')
@@ -130,8 +150,7 @@ export default function DocumentiPage() {
 
         window.URL.revokeObjectURL(objectUrl)
       } catch {
-        const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
-        if (href) window.open(href, '_blank', 'noopener,noreferrer')
+        if (previewHref) window.open(previewHref, '_blank', 'noopener,noreferrer')
       }
     })()
   }
@@ -140,11 +159,11 @@ export default function DocumentiPage() {
     return (
       <StaffContentLayout
         title="Documenti Atleti"
-        description="Gestisci certificati, liberatorie e contratti"
+        description="Certificati, liberatorie e contratti per atleta."
         theme="teal"
         onBack={() => window.history.back()}
       >
-        {null}
+        <StaffLazyChunkFallback className="min-h-[min(52vh,420px)] w-full" label="Caricamento documenti…" />
       </StaffContentLayout>
     )
   }
@@ -153,7 +172,7 @@ export default function DocumentiPage() {
     <>
       <StaffContentLayout
         title="Documenti Atleti"
-        description="Gestisci certificati, liberatorie e contratti"
+        description="Certificati, liberatorie e contratti per atleta."
         theme="teal"
         onBack={() => window.history.back()}
         actions={
@@ -190,7 +209,7 @@ export default function DocumentiPage() {
 
       {/* Drawer dettaglio documento - Lazy loaded solo quando aperto */}
       {showDrawer && selectedDocument && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] w-full max-w-md ml-auto" label="Caricamento…" />}>
           <DocumentDetailDrawer
             document={selectedDocument}
             open={showDrawer}
@@ -206,7 +225,7 @@ export default function DocumentiPage() {
 
       {/* Modal segnalazione non valido - Lazy loaded solo quando aperto */}
       {showInvalidModal && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[180px] max-w-md mx-auto" label="Caricamento…" />}>
           <DocumentInvalidModal
             open={showInvalidModal}
             rejectionReason={rejectionReason}

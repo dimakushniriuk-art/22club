@@ -2,6 +2,8 @@
 
 import { memo } from 'react'
 import Link from 'next/link'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
 import { Card, CardContent } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { Target, Activity } from 'lucide-react'
@@ -23,25 +25,35 @@ interface WorkoutPlanCardProps {
 }
 
 function WorkoutPlanCardComponent({ workout }: WorkoutPlanCardProps) {
+  const { pathBase } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
+  const href = workoutsPane
+    ? workoutsPane.hrefFor({ kind: 'scheda', workoutPlanId: workout.id })
+    : `${pathBase}/${workout.id}`
   return (
     <Link
-      href={`/home/allenamenti/${workout.id}`}
+      href={href}
       className="block touch-manipulation"
       prefetch={true}
+      onClick={(e) => {
+        if (!workoutsPane) return
+        e.preventDefault()
+        workoutsPane.navigateTo({ kind: 'scheda', workoutPlanId: workout.id })
+      }}
     >
       <Card className={`relative cursor-pointer overflow-hidden ${CARD_DS}`}>
-        <CardContent className="relative z-10 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-2">
+        <CardContent className="relative z-10 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
             <div className="min-w-0 flex-1">
-              <h3 className="mb-1 truncate text-sm font-semibold text-cyan-400 sm:text-base">
+              <h3 className="mb-1.5 truncate text-sm font-semibold text-cyan-400 sm:text-base">
                 {workout.name}
               </h3>
               {workout.description && (
-                <p className="mb-1.5 line-clamp-2 text-xs text-text-secondary">
+                <p className="mb-2 line-clamp-2 text-xs leading-relaxed text-text-secondary sm:text-[13px]">
                   {workout.description}
                 </p>
               )}
-              <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+              <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px]">
                 {workout.difficulty && (
                   <div className="flex items-center gap-0.5">
                     <Target className="h-3 w-3 text-cyan-400" />

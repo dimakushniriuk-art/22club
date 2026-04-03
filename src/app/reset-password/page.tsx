@@ -21,6 +21,7 @@ import {
   AUTH_ERROR_BOX_CLASS,
   AUTH_LINK_BACK_CLASS,
 } from '@/lib/auth-page-styles'
+import { AuthCardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 const logger = createLogger('app:reset-password:page')
 
@@ -710,13 +711,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-text-secondary">Caricamento...</div>
-        </div>
-      }
-    >
+    <Suspense fallback={<AuthCardSegmentSkeleton />}>
       <ResetPasswordContent />
     </Suspense>
   )

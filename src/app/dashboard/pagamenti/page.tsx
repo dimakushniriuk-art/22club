@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
@@ -11,10 +11,15 @@ import { PaymentsKPICards } from '@/components/dashboard/pagamenti/payments-kpi-
 import { PaymentsFilters } from '@/components/dashboard/pagamenti/payments-filters'
 import { PaymentsTable } from '@/components/dashboard/pagamenti/payments-table'
 import { PaymentsExportMenu } from '@/components/dashboard/pagamenti/payments-export-menu'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { useToast } from '@/components/ui/toast'
 import type { Payment } from '@/types/payment'
 import { logger } from '@/lib/logger'
+import { useRouter } from 'next/navigation'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { buildPaymentsPdfBlob } from '@/lib/export-payments'
+import { StaffDashboardSegmentSkeleton, StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 
 // Lazy load NewPaymentModal per ridurre bundle size iniziale
 const NewPaymentModal = lazy(() =>
@@ -30,6 +35,7 @@ const PaymentDetailDrawer = lazy(() =>
 )
 
 export default function PagamentiPage() {
+  const router = useRouter()
   const { user } = useAuth()
   const userId = user?.user_id || null
   const role = user?.role || null
@@ -41,6 +47,16 @@ export default function PagamentiPage() {
   const [reverseDialogOpen, setReverseDialogOpen] = useState(false)
   const [paymentToReverse, setPaymentToReverse] = useState<Payment | null>(null)
   const [isReversing, setIsReversing] = useState(false)
+
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   // Determina se abilitare paginazione (se ci sono più di 100 record)
   const [enablePagination, setEnablePagination] = useState(false)
@@ -137,6 +153,28 @@ export default function PagamentiPage() {
     }
   }
 
+  const handleExportPaymentsPdf = useCallback(async () => {
+    if (filteredPayments.length === 0) return
+    setPdfLoading(true)
+    try {
+      const blob = await buildPaymentsPdfBlob(filteredPayments)
+      openPdfWithBlob(blob, `pagamenti-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (err) {
+      logger.error(
+        'PagamentiPage.handleExportPaymentsPdf',
+        'Errore export PDF',
+        err instanceof Error ? err : new Error(String(err)),
+      )
+      addToast({
+        title: 'Errore',
+        message: 'Impossibile generare il PDF. Riprova.',
+        variant: 'error',
+      })
+    } finally {
+      setPdfLoading(false)
+    }
+  }, [filteredPayments, setPdfLoading, openPdfWithBlob, addToast])
+
   const handleNewPayment = () => {
     setShowNewPaymentModal(true)
   }
@@ -168,7 +206,7 @@ export default function PagamentiPage() {
   }
 
   if (loading) {
-    return null
+    return <StaffDashboardSegmentSkeleton />
   }
 
   return (
@@ -218,7 +256,11 @@ export default function PagamentiPage() {
             onStatusFilterChange={setStatusFilter}
             onReset={resetFilters}
           />
-          <PaymentsExportMenu payments={filteredPayments} disabled={loading} />
+          <PaymentsExportMenu
+            onExportPdf={handleExportPaymentsPdf}
+            disabled={loading || filteredPayments.length === 0}
+            isExporting={pdfLoading}
+          />
         </div>
 
         {/* Tabella pagamenti */}
@@ -226,6 +268,9 @@ export default function PagamentiPage() {
           payments={filteredPayments}
           onPaymentClick={handlePaymentClick}
           onReversePayment={handleReversePayment}
+          onAthleteClick={(athleteId) => {
+            router.push(`/dashboard/pagamenti/atleta/${athleteId}`)
+          }}
         />
 
         {/* Paginazione */}
@@ -276,7 +321,7 @@ export default function PagamentiPage() {
 
       {/* Drawer dettaglio pagamento - Lazy loaded */}
       {showDrawer && selectedPayment && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] w-full max-w-md ml-auto" label="Caricamento…" />}>
           <PaymentDetailDrawer
             payment={selectedPayment}
             open={showDrawer}
@@ -291,7 +336,7 @@ export default function PagamentiPage() {
 
       {/* Modal nuovo pagamento - Lazy loaded solo quando aperto */}
       {showNewPaymentModal && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[260px] max-w-md mx-auto" label="Caricamento modulo…" />}>
           <NewPaymentModal
             onClose={() => setShowNewPaymentModal(false)}
             onSave={handleSavePayment}
@@ -300,6 +345,14 @@ export default function PagamentiPage() {
       )}
 
       {/* Dialog conferma storno pagamento */}
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Pagamenti"
+      />
+
       {paymentToReverse && (
         <ConfirmDialog
           open={reverseDialogOpen}

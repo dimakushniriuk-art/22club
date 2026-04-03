@@ -20,7 +20,7 @@ export default function NutrizionistaCheckinPage() {
   return (
     <StaffContentLayout
       title="Check-in"
-      description="Calendario e lista check-in, filtri oggi / in ritardo / settimana. In sviluppo."
+      description="Calendario e stato check-in (funzionalità in sviluppo)."
       icon={<ClipboardCheck className="w-6 h-6" />}
       theme="teal"
     >

@@ -6,6 +6,10 @@ import { useAuth } from '@/providers/auth-provider'
 import { BarChart2, UserPlus, Percent, Megaphone, Euro, Activity, Target } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { AnalyticsPayload } from '@/app/api/marketing/analytics/route'
+import {
+  StaffMarketingDataBlockSkeleton,
+  StaffMarketingSegmentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 const FUNNEL_LABELS: Record<string, string> = {
   new: 'Nuovi',
@@ -66,11 +70,7 @@ export default function MarketingAnalyticsPage() {
   }, [role, authLoading, router])
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   return (
@@ -86,9 +86,7 @@ export default function MarketingAnalyticsPage() {
       </header>
 
       {loading ? (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+        <StaffMarketingDataBlockSkeleton />
       ) : error ? (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           {error}

@@ -87,28 +87,6 @@ export function AppointmentItem({
       }}
     >
       <div className="relative flex items-center gap-4 p-4">
-        {/* Rimasti - centrato orizzontalmente e verticalmente nella riga */}
-        {typeof lessonsRemaining === 'number' && (
-          <div
-            className="pointer-events-none absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5"
-            aria-label={`Lezioni rimanenti: ${lessonsRemaining}`}
-          >
-            <span
-              className={cn(
-                'text-2xl font-bold tabular-nums leading-none',
-                lessonsRemaining >= 6 && 'text-[#00C781]',
-                lessonsRemaining >= 2 && lessonsRemaining <= 4 && 'text-[#FFC107]',
-                lessonsRemaining <= 1 && 'text-[#FF3B30]',
-              )}
-            >
-              {lessonsRemaining}
-            </span>
-            <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
-              rimasti
-            </span>
-          </div>
-        )}
-
         {/* Time section */}
         <div className="flex min-w-[120px] flex-col items-start">
           <div className="text-text-secondary text-xs mb-1">{dateStr}</div>
@@ -128,7 +106,7 @@ export function AppointmentItem({
                 <div className="absolute -inset-0.5 rounded-full bg-gradient-to-br from-blue-500/60 via-purple-500/60 to-cyan-500/60 blur-[2px]" />
                 <div className="relative">
                   <Avatar
-                    src={null}
+                    src={appointment.athlete_avatar_url?.trim() || null}
                     alt={appointment.athlete_name || 'Atleta'}
                     fallbackText={
                       appointment.athlete_name
@@ -146,6 +124,19 @@ export function AppointmentItem({
               <div className="text-base font-bold text-text-primary truncate">
                 {appointment.athlete_name || 'Atleta'}
               </div>
+              {typeof lessonsRemaining === 'number' && (
+                <div
+                  className={cn(
+                    'mt-0.5 text-xs font-semibold tabular-nums leading-none',
+                    lessonsRemaining >= 6 && 'text-[#00C781]',
+                    lessonsRemaining >= 2 && lessonsRemaining <= 4 && 'text-[#FFC107]',
+                    lessonsRemaining <= 1 && 'text-[#FF3B30]',
+                  )}
+                  aria-label={`Allenamenti: ${lessonsRemaining}`}
+                >
+                  {lessonsRemaining} Allenamenti
+                </div>
+              )}
               <div className="text-sm text-text-secondary truncate">
                 {getAppointmentType(appointment)}
               </div>

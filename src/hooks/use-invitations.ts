@@ -6,6 +6,7 @@ import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import type { CreateInvitationData, InvitationStats, InvitationWithPT } from '@/types/invitation'
 import type { Tables } from '@/types/supabase'
 import { useCallback, useEffect, useState } from 'react'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:use-invitations')
 
@@ -260,10 +261,13 @@ export function useInvitations({
       try {
         setError(null)
 
-        // Batch DELETE usando .in() invece di loop con delete singoli
-        const { error: deleteError } = await supabase.from('inviti_atleti').delete().in('id', ids)
-
-        if (deleteError) throw deleteError
+        for (const idChunk of chunkForSupabaseIn(ids)) {
+          const { error: deleteError } = await supabase
+            .from('inviti_atleti')
+            .delete()
+            .in('id', idChunk)
+          if (deleteError) throw deleteError
+        }
 
         // Invalida cache
         if (userId) {

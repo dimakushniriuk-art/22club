@@ -28,10 +28,13 @@ import { useInvitations } from '@/hooks/use-invitations'
 import { useAuth } from '@/providers/auth-provider'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { exportToCSV } from '@/lib/export-utils'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { createInvitoSchema } from '@/lib/validations/invito'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -55,7 +58,7 @@ import {
   Mail,
   Share2,
   Search,
-  Download,
+  FileText,
   Send,
   X,
 } from 'lucide-react'
@@ -76,6 +79,15 @@ export default function InvitaAtletaPage() {
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
   const { addToast } = useToast()
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   // Redirect al login se non autenticato
   useEffect(() => {
@@ -398,19 +410,29 @@ export default function InvitaAtletaPage() {
     }
   }
 
-  const handleExportCSV = () => {
-    const data = filteredInvitations.map((inv) => ({
-      'Nome Atleta': inv.nome_atleta,
-      Email: inv.email || '',
-      Codice: inv.codice,
-      Stato: inv.stato,
-      'Data Creazione': new Date(inv.created_at).toLocaleDateString('it-IT'),
-      'Data Scadenza': inv.expires_at
-        ? new Date(inv.expires_at).toLocaleDateString('it-IT')
-        : 'N/A',
-    }))
-    exportToCSV(data, `inviti-${new Date().toISOString().split('T')[0]}.csv`)
-  }
+  const handleExportPdf = useCallback(async () => {
+    if (filteredInvitations.length === 0) return
+    setPdfLoading(true)
+    try {
+      const data: ExportData = filteredInvitations.map((inv) => ({
+        'Nome Atleta': inv.nome_atleta,
+        Email: inv.email || '',
+        Codice: inv.codice,
+        Stato: inv.stato,
+        'Data Creazione': new Date(inv.created_at).toLocaleDateString('it-IT'),
+        'Data Scadenza': inv.expires_at
+          ? new Date(inv.expires_at).toLocaleDateString('it-IT')
+          : 'N/A',
+      }))
+      const blob = await buildTabularExportPdfBlob('Inviti atleta', data)
+      openPdfWithBlob(blob, `inviti-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (e) {
+      logger.error('Export PDF inviti', e)
+      addToast({ title: 'Errore', message: 'Impossibile generare il PDF.', variant: 'error' })
+    } finally {
+      setPdfLoading(false)
+    }
+  }, [filteredInvitations, setPdfLoading, openPdfWithBlob, addToast])
 
   const getStatusIcon = useCallback((stato: string) => {
     switch (stato) {
@@ -498,7 +520,7 @@ export default function InvitaAtletaPage() {
 
   // Solo auth loading: full-page spinner; error: full-page error
   if (authLoading) {
-    return null
+    return <StaffDashboardSegmentSkeleton />
   }
 
   if (error) {
@@ -514,7 +536,7 @@ export default function InvitaAtletaPage() {
   return (
     <StaffContentLayout
       title="Invita Atleta"
-      description="Genera codici invito per i tuoi atleti"
+      description="Codici invito per registrare nuovi atleti nell’app."
       theme="teal"
       actions={
         <Button onClick={() => setShowCreateForm(true)}>
@@ -638,11 +660,12 @@ export default function InvitaAtletaPage() {
               variant="outline"
               size="sm"
               className="border-white/10 hover:border-primary/20"
-              onClick={handleExportCSV}
-              disabled={filteredInvitations.length === 0}
+              onClick={() => void handleExportPdf()}
+              disabled={filteredInvitations.length === 0 || pdfLoading}
+              aria-busy={pdfLoading}
             >
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
+              <FileText className="mr-2 h-4 w-4" />
+              Esporta PDF
             </Button>
           </div>
         </CardContent>
@@ -1001,6 +1024,14 @@ export default function InvitaAtletaPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Inviti"
+      />
     </StaffContentLayout>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 export interface LessonStats {
   acquired: number
@@ -28,20 +29,31 @@ export function useLessonStatsBulk(
     let cancelled = false
     const supabase = createClient()
 
-    Promise.all([
-      supabase
-        .from('payments')
-        .select('athlete_id, lessons_purchased')
-        .in('athlete_id', athleteIds)
-        .eq('status', 'completed')
-        .eq('service_type', 'training'),
-      supabase
-        .from('credit_ledger')
-        .select('athlete_id, qty')
-        .in('athlete_id', athleteIds)
-        .eq('entry_type', 'DEBIT')
-        .eq('service_type', 'training'),
-    ]).then(([paymentsRes, ledgerRes]) => {
+    const paymentsRows: { athlete_id: string; lessons_purchased?: number | null }[] = []
+    const ledgerRows: { athlete_id: string; qty?: number | null }[] = []
+
+    const fetchChunks = async () => {
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const [paymentsRes, ledgerRes] = await Promise.all([
+          supabase
+            .from('payments')
+            .select('athlete_id, lessons_purchased')
+            .in('athlete_id', idChunk)
+            .eq('status', 'completed')
+            .eq('service_type', 'training'),
+          supabase
+            .from('credit_ledger')
+            .select('athlete_id, qty')
+            .in('athlete_id', idChunk)
+            .eq('entry_type', 'DEBIT')
+            .eq('service_type', 'training'),
+        ])
+        paymentsRows.push(...(Array.isArray(paymentsRes.data) ? paymentsRes.data : []))
+        ledgerRows.push(...(Array.isArray(ledgerRes.data) ? ledgerRes.data : []))
+      }
+    }
+
+    fetchChunks().then(() => {
       if (cancelled) return
       const acquiredByAthlete = new Map<string, number>()
       const usedByAthlete = new Map<string, number>()
@@ -49,13 +61,13 @@ export function useLessonStatsBulk(
         acquiredByAthlete.set(id, 0)
         usedByAthlete.set(id, 0)
       })
-      ;(Array.isArray(paymentsRes.data) ? paymentsRes.data : []).forEach(
+      paymentsRows.forEach(
         (r: { athlete_id: string; lessons_purchased?: number | null }) => {
           const id = r.athlete_id
           acquiredByAthlete.set(id, (acquiredByAthlete.get(id) ?? 0) + (r.lessons_purchased ?? 0))
         },
       )
-      ;(Array.isArray(ledgerRes.data) ? ledgerRes.data : []).forEach(
+      ledgerRows.forEach(
         (r: { athlete_id: string; qty?: number | null }) => {
           const id = r.athlete_id
           const q = Number(r.qty ?? 0)

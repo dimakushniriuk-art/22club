@@ -6,6 +6,7 @@ import type { TablesUpdate } from '@/types/supabase'
 // Nota: deserializeRecurrence potrebbe essere usato in futuro per deserializzazione
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { deserializeRecurrence } from './recurrence-utils'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 /**
  * Trova tutti gli appuntamenti appartenenti alla stessa serie ricorrente
@@ -88,15 +89,17 @@ export async function cancelRecurringSeries(appointmentId: string): Promise<bool
   const supabase = createClient()
   const seriesIds = series.map((a) => a.id)
 
-  const { error } = await supabase
-    .from('appointments')
-    .update({
-      cancelled_at: new Date().toISOString(),
-      status: 'annullato',
-    })
-    .in('id', seriesIds)
-
-  return !error
+  for (const idChunk of chunkForSupabaseIn(seriesIds)) {
+    const { error } = await supabase
+      .from('appointments')
+      .update({
+        cancelled_at: new Date().toISOString(),
+        status: 'annullato',
+      })
+      .in('id', idChunk)
+    if (error) return false
+  }
+  return true
 }
 
 /**
@@ -120,15 +123,17 @@ export async function cancelFutureRecurringSeries(
     return true
   }
 
-  const { error } = await supabase
-    .from('appointments')
-    .update({
-      cancelled_at: new Date().toISOString(),
-      status: 'annullato',
-    })
-    .in('id', futureIds)
-
-  return !error
+  for (const idChunk of chunkForSupabaseIn(futureIds)) {
+    const { error } = await supabase
+      .from('appointments')
+      .update({
+        cancelled_at: new Date().toISOString(),
+        status: 'annullato',
+      })
+      .in('id', idChunk)
+    if (error) return false
+  }
+  return true
 }
 
 /**
@@ -180,9 +185,11 @@ export async function updateRecurringSeries(
     org_id: updateData.org_id ?? undefined,
   }
 
-  const { error } = await supabase.from('appointments').update(updateDataTyped).in('id', seriesIds)
-
-  return !error
+  for (const idChunk of chunkForSupabaseIn(seriesIds)) {
+    const { error } = await supabase.from('appointments').update(updateDataTyped).in('id', idChunk)
+    if (error) return false
+  }
+  return true
 }
 
 /**
@@ -217,7 +224,9 @@ export async function updateFutureRecurringSeries(
     org_id: updateData.org_id ?? undefined,
   }
 
-  const { error } = await supabase.from('appointments').update(updateDataTyped).in('id', futureIds)
-
-  return !error
+  for (const idChunk of chunkForSupabaseIn(futureIds)) {
+    const { error } = await supabase.from('appointments').update(updateDataTyped).in('id', idChunk)
+    if (error) return false
+  }
+  return true
 }

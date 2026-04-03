@@ -22,7 +22,7 @@ import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-se
 import { addDebitFromAppointment } from '@/lib/credits/ledger'
 import { hasOverlappingAppCoachedWorkoutDebit } from '@/lib/credits/session-debit-dedup'
 import { coerceLedgerServiceType } from '@/lib/abbonamenti-service-type'
-import { getCurrentStaffProfileClient } from '@/lib/supabase/get-current-staff-profile-client'
+import { useAuth } from '@/providers/auth-provider'
 import {
   appointmentSlotOverlapsAnyCalendarBlock,
   CALENDAR_BLOCK_CONFLICT_UI,
@@ -40,6 +40,8 @@ import {
   requireCurrentOrgId,
   resolveOrgIdForAppointmentWrite,
 } from '@/lib/organizations/current-org'
+import { STAFF_APPOINTMENTS_INVALIDATE_EVENT } from '@/lib/staff-cross-tab-events'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:calendar:use-calendar-page')
 
@@ -85,6 +87,13 @@ function getRecurrenceSlots(
 
 const UNTIL_LESSONS_MAX_SLOTS = 100
 
+/**
+ * Ricorrenze calendario staff: un solo `.insert(rows)` per atomicità DB (all-or-nothing su quella richiesta).
+ * |rows| è limitato dal prodotto: `until_lessons` ≤ UNTIL_LESSONS_MAX_SLOTS; altre ricorrenze settimanali
+ * ≤ ~53 (1 anno). Resta sotto soglie tipiche body/proxy PostgREST; se si alzano i cap, valutare RPC
+ * transazionale o insert a chunk con strategia di rollback (vedi `chunkForSupabaseIn` in in-query-chunks).
+ */
+
 /** Genera slot settimanali "fino a esaurimento lezioni": N = min(lesson_count, 100). */
 async function getRecurrenceSlotsUntilLessons(
   supabaseClient: SupabaseClient<Database>,
@@ -121,6 +130,9 @@ export function useCalendarPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams()
   const { notify } = useNotify()
+  const { user: authUser, actorProfile, isImpersonating, loading: authLoading } = useAuth()
+  /** Allineato a getUser()+profiles: in impersonation l’attore è lo staff che opera sul calendario. */
+  const staffSource = isImpersonating && actorProfile ? actorProfile : authUser
 
   const [appointments, setAppointments] = useState<AppointmentUI[]>([])
   const [appointmentsLoading, setAppointmentsLoading] = useState(true)
@@ -134,26 +146,29 @@ export function useCalendarPage() {
   const [calendarBlocks, setCalendarBlocks] = useState<CalendarBlock[]>([])
   const { settings: calendarSettings } = useStaffCalendarSettings()
 
-  // Carica il profilo dello staff corrente (id, org_id, role per insert e lista atleti)
   useEffect(() => {
-    async function fetchStaffProfile() {
-      try {
-        const profile = await getCurrentStaffProfileClient()
-
-        if (profile) {
-          setStaffProfileId(profile.id)
-          if (profile.org_id) setStaffOrgId(profile.org_id)
-          if (profile.role) setStaffRole(profile.role)
-          const fullName = `${profile.nome || ''} ${profile.cognome || ''}`.trim()
-          setStaffDisplayName(fullName || null)
-        }
-      } catch (err) {
-        logger.error('Errore caricamento profilo staff', err)
-      }
+    if (authLoading) return
+    if (!staffSource) {
+      setStaffProfileId(null)
+      setStaffOrgId(null)
+      setStaffRole(null)
+      setStaffDisplayName(null)
+      setAppointments([])
+      setAppointmentsLoading(false)
+      setAthletes([])
+      setAthletesLoading(false)
+      setCalendarBlocks([])
+      return
     }
-
-    fetchStaffProfile()
-  }, [])
+    setStaffProfileId(staffSource.id)
+    setStaffOrgId(staffSource.org_id ?? null)
+    setStaffRole(staffSource.role)
+    const fullName =
+      staffSource.full_name?.trim() ||
+      `${staffSource.first_name ?? ''} ${staffSource.last_name ?? ''}`.trim() ||
+      null
+    setStaffDisplayName(fullName || null)
+  }, [authLoading, staffSource])
 
   // Carica appuntamenti: propri + (se trainer/admin) Free Pass org + calendari collaboratori
   const fetchAppointments = useCallback(async () => {
@@ -197,23 +212,27 @@ export function useCalendarPage() {
       const lessonsRemainingNutrition = new Map<string, number>()
       const lessonsRemainingMassage = new Map<string, number>()
       if (athleteIds.length > 0) {
-        const [profilesRes, usageTraining, usageNutrition, usageMassage] = await Promise.all([
-          supabase.from('profiles').select('id, nome, cognome').in('id', athleteIds),
+        const [usageTraining, usageNutrition, usageMassage] = await Promise.all([
           lessonUsageByAthleteIds(supabase, athleteIds, 'training'),
           lessonUsageByAthleteIds(supabase, athleteIds, 'nutrition'),
           lessonUsageByAthleteIds(supabase, athleteIds, 'massage'),
         ])
-        const profilesError = profilesRes.error
-        if (profilesError) {
-          logger.error('Errore caricamento nomi atleti per calendario (ignorato)', profilesError)
+        for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+          const profilesRes = await supabase
+            .from('profiles')
+            .select('id, nome, cognome')
+            .in('id', idChunk)
+          if (profilesRes.error) {
+            logger.error('Errore caricamento nomi atleti per calendario (ignorato)', profilesRes.error)
+          }
+          ;(profilesRes.data ?? []).forEach(
+            (profile: { id: string; nome?: string | null; cognome?: string | null }) => {
+              const p = profile
+              const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
+              athleteNamesMap.set(p.id, fullName || 'Atleta')
+            },
+          )
         }
-        ;(profilesRes.data ?? []).forEach(
-          (profile: { id: string; nome?: string | null; cognome?: string | null }) => {
-            const p = profile
-            const fullName = `${p.nome || ''} ${p.cognome || ''}`.trim()
-            athleteNamesMap.set(p.id, fullName || 'Atleta')
-          },
-        )
         usageTraining.forEach((v, k) => lessonsRemainingTraining.set(k, v.totalRemaining))
         usageNutrition.forEach((v, k) => lessonsRemainingNutrition.set(k, v.totalRemaining))
         usageMassage.forEach((v, k) => lessonsRemainingMassage.set(k, v.totalRemaining))
@@ -318,6 +337,15 @@ export function useCalendarPage() {
   }, [fetchAppointments])
 
   useEffect(() => {
+    if (!staffProfileId) return
+    const onRemote = () => {
+      void fetchAppointments()
+    }
+    window.addEventListener(STAFF_APPOINTMENTS_INVALIDATE_EVENT, onRemote)
+    return () => window.removeEventListener(STAFF_APPOINTMENTS_INVALIDATE_EVENT, onRemote)
+  }, [staffProfileId, fetchAppointments])
+
+  useEffect(() => {
     if (!staffOrgId || !staffProfileId) return
     let cancelled = false
     void fetchStaffCalendarBlocksForUiValidation(supabase, staffOrgId, staffProfileId).then(
@@ -355,22 +383,27 @@ export function useCalendarPage() {
           setAthletes([])
           return
         }
-        const { data: profilesData, error: profilesErr } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome, email')
-          .in('id', ids)
-          .order('nome', { ascending: true })
-        if (profilesErr) {
-          logger.error('Errore caricamento profili clienti', profilesErr)
-          setAthletes([])
-          return
+        const mergedProfiles: ProfileRow[] = []
+        for (const idChunk of chunkForSupabaseIn(ids)) {
+          const { data: profilesData, error: profilesErr } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome, email')
+            .in('id', idChunk)
+          if (profilesErr) {
+            logger.error('Errore caricamento profili clienti', profilesErr)
+            setAthletes([])
+            return
+          }
+          mergedProfiles.push(...((profilesData as ProfileRow[] | null) ?? []))
         }
-        const formatted =
-          (profilesData as ProfileRow[] | null)?.map((a) => ({
-            id: a.id,
-            name: `${a.nome ?? ''} ${a.cognome ?? ''}`.trim() || 'Cliente',
-            email: a.email || '',
-          })) ?? []
+        mergedProfiles.sort((a, b) =>
+          (a.nome ?? '').localeCompare(b.nome ?? '', 'it', { sensitivity: 'base' }),
+        )
+        const formatted = mergedProfiles.map((a) => ({
+          id: a.id,
+          name: `${a.nome ?? ''} ${a.cognome ?? ''}`.trim() || 'Cliente',
+          email: a.email || '',
+        }))
         setAthletes(formatted)
       } else {
         const { data: athletesData, error: athletesError } = await supabase

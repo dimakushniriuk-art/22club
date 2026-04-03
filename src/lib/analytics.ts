@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('Analytics')
 
@@ -448,18 +449,19 @@ async function getPerformanceDataFromDB(
     })
 
     // Query workout plans per questi atleti
-    const { data: plans } = await supabase
-      .from('workout_plans')
-      .select('athlete_id, is_active')
-      .in('athlete_id', athleteIds)
-
-    // Type assertion per plans
     type WorkoutPlanRow = {
       athlete_id?: string | null
       is_active?: boolean | null
       [key: string]: unknown
     }
-    const typedPlans = (plans as WorkoutPlanRow[]) || []
+    const typedPlans: WorkoutPlanRow[] = []
+    for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+      const { data: plans } = await supabase
+        .from('workout_plans')
+        .select('athlete_id, is_active')
+        .in('athlete_id', idChunk)
+      typedPlans.push(...((plans as WorkoutPlanRow[]) || []))
+    }
 
     // Calcola statistiche per atleta
     const performance: PerformanceData[] = typedAthletes

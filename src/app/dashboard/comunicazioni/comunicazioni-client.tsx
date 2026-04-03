@@ -8,6 +8,7 @@ import { AlertCircle, Plus, FileText } from 'lucide-react'
 import { useCommunicationsPage } from '@/hooks/communications/use-communications-page'
 import { CommunicationsSearch, CommunicationsList } from '@/components/communications'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 
 // Lazy load modali per ridurre bundle size iniziale
 const NewCommunicationModal = lazy(() =>
@@ -127,7 +128,7 @@ export default function ComunicazioniPageClient() {
   return (
     <StaffContentLayout
       title="Comunicazioni"
-      description="Invia email ai tuoi atleti"
+      description="Messaggi e campagne email verso gli atleti."
       theme="teal"
       actions={
         <div className="flex items-center gap-2">
@@ -217,7 +218,7 @@ export default function ComunicazioniPageClient() {
 
       {/* Modal Dettaglio Recipients - Lazy loaded solo quando aperto */}
       {selectedCommunicationId && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
           <RecipientsDetailModal
             isOpen={showRecipientsModal}
             onClose={closeRecipientsModal}
@@ -229,7 +230,7 @@ export default function ComunicazioniPageClient() {
 
       {/* Modal Nuova/Modifica Comunicazione - Lazy loaded solo quando aperto */}
       {showNewModal && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[280px] max-w-lg mx-auto" label="Caricamento…" />}>
           <NewCommunicationModal
             isOpen={showNewModal}
             isEditing={!!editingCommunicationId}

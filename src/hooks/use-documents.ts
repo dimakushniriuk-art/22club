@@ -19,6 +19,8 @@ interface UseDocumentsProps {
     category?: string
     search?: string
   }
+  /** Se false, la query non parte (es. quando si usa la lista unificata per atleta). */
+  enabled?: boolean
 }
 
 type DocumentWithRelations = Tables<'documents'> & {
@@ -27,7 +29,7 @@ type DocumentWithRelations = Tables<'documents'> & {
   uploaded_by: Pick<Tables<'profiles'>, 'nome' | 'cognome'> | null
 }
 
-export function useDocuments({ athleteId, filters }: UseDocumentsProps = {}) {
+export function useDocuments({ athleteId, filters, enabled = true }: UseDocumentsProps = {}) {
   const queryClient = useQueryClient()
   // Create Supabase client once to avoid recreating it on every render
   // The `supabase` client is already imported from '@/lib/supabase/client'
@@ -52,6 +54,7 @@ export function useDocuments({ athleteId, filters }: UseDocumentsProps = {}) {
     refetch: refetchQuery,
   } = useQuery({
     queryKey,
+    enabled,
     queryFn: async () => {
       let query = supabase
         .from('documents')

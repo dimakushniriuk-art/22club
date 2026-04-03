@@ -19,6 +19,7 @@ import {
 import { applySegmentRules, type SegmentRules } from '@/lib/marketing/segment-rules'
 import type { Database } from '@/lib/supabase/types'
 import type { MarketingAthleteRow } from '@/app/api/marketing/athletes/route'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
 type AthleteRow = MarketingAthleteRow
@@ -62,12 +63,12 @@ export default function SegmentDetailPage() {
       setLoading(true)
       setError(null)
       try {
-        const { data: segData, error: segErr } = await supabase
-          .from('marketing_segments')
-          .select('*')
-          .eq('id', segmentId)
-          .single()
+        const [segResult, athRes] = await Promise.all([
+          supabase.from('marketing_segments').select('*').eq('id', segmentId).single(),
+          fetch('/api/marketing/athletes'),
+        ])
         if (cancelled) return
+        const { data: segData, error: segErr } = segResult
         if (segErr || !segData) {
           setError(segErr?.message ?? 'Segmento non trovato')
           setSegment(null)
@@ -76,9 +77,8 @@ export default function SegmentDetailPage() {
           return
         }
         setSegment(segData as SegmentRow)
-        const athRes = await fetch('/api/marketing/athletes')
-        if (cancelled) return
         const athJson = await athRes.json()
+        if (cancelled) return
         if (athRes.ok && athJson.data) setAthletes((athJson.data ?? []) as AthleteRow[])
       } catch {
         if (!cancelled) setError('Errore di rete')
@@ -106,19 +106,11 @@ export default function SegmentDetailPage() {
   }
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (error || !segment) {

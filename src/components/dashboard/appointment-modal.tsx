@@ -173,7 +173,7 @@ export function AppointmentModal({ open, onOpenChange, onSuccess }: AppointmentM
         appointmentsToInsert.push(baseAppointmentData)
       }
 
-      // Insert appointments
+      // Insert: singola richiesta per atomicità; le date ricorrenti sono limitate da generateRecurrenceDates (default max 100 occorrenze).
       // Workaround necessario per inferenza tipo Supabase
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: insertError } = await (supabase.from('appointments') as any).insert(

@@ -113,7 +113,7 @@ Colore unico **#0d0d0d** usato per tutto il progetto. Definito in:
 
 ### Headers
 
-- PageHeaderGlass (teal), PageHeaderCompact (cyan), PageHeaderFixed (nero + linea cyan). CardMetric con accent cyan/teal.
+- PageHeaderGlass (teal), PageHeaderCompact (cyan), PageHeaderFixed (nero + linea cyan; back + titolo/sottotitolo, **nessuna icona** a sinistra — allineato alla barra atleta `HomeAthleteTopChrome`). CardMetric con accent cyan/teal.
 
 ### Design Home
 

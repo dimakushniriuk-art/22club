@@ -2,8 +2,8 @@
 import React from 'react'
 import { Sidebar } from './sidebar'
 import { DashboardMobileNav } from './dashboard-mobile-nav'
-import { TransitionWrapper, FadeInWrapper } from '@/components/shared/ui/transition-wrapper'
 
+// Nessun wrapper motion qui: il passaggio div→motion al mount di framer rimontava sidebar + main.
 type Props = {
   role: 'athlete' | 'staff'
   children: React.ReactNode
@@ -11,7 +11,7 @@ type Props = {
 
 export const RoleLayout: React.FC<Props> = ({ role, children }) => {
   return (
-    <TransitionWrapper className="w-full min-w-0">
+    <div className="w-full min-w-0">
       <div
         className="flex flex-col md:flex-row min-h-screen w-full min-w-0 text-text-primary transition-all duration-300"
         suppressHydrationWarning
@@ -19,9 +19,7 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
         {role === 'staff' && (
           <>
             <DashboardMobileNav />
-            <FadeInWrapper delay={0.1}>
-              <Sidebar role={role} />
-            </FadeInWrapper>
+            <Sidebar role={role} />
           </>
         )}
 
@@ -33,16 +31,16 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
           }}
           suppressHydrationWarning
         >
-          <FadeInWrapper delay={0.2} className="flex-1 flex flex-col min-h-0 min-w-0 w-full">
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 w-full">
             <div
               className="flex-1 min-h-0 min-w-0 w-full flex flex-col overflow-auto pb-[env(safe-area-inset-bottom,0px)]"
               suppressHydrationWarning
             >
               {children}
             </div>
-          </FadeInWrapper>
+          </div>
         </main>
       </div>
-    </TransitionWrapper>
+    </div>
   )
 }

@@ -10,9 +10,15 @@ interface PaymentsTableProps {
   payments: Payment[]
   onPaymentClick: (payment: Payment) => void
   onReversePayment: (payment: Payment) => void
+  onAthleteClick?: (athleteId: string) => void
 }
 
-export function PaymentsTable({ payments, onPaymentClick, onReversePayment }: PaymentsTableProps) {
+export function PaymentsTable({
+  payments,
+  onPaymentClick,
+  onReversePayment,
+  onAthleteClick,
+}: PaymentsTableProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('it-IT', {
       style: 'currency',
@@ -85,7 +91,18 @@ export function PaymentsTable({ payments, onPaymentClick, onReversePayment }: Pa
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <User className="text-text-tertiary h-4 w-4" />
-                      <span className="text-text-primary font-medium">{payment.athlete_name}</span>
+                      <button
+                        type="button"
+                        className="text-text-primary font-medium hover:underline underline-offset-4 text-left"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (!onAthleteClick) return
+                          if (!payment.athlete_id) return
+                          onAthleteClick(payment.athlete_id)
+                        }}
+                      >
+                        {payment.athlete_name}
+                      </button>
                     </div>
                   </td>
                   <td className="p-3">

@@ -4,7 +4,9 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
-import { getDocuments } from '@/lib/documents'
+import { getDocuments, resolveDocumentsStoragePath } from '@/lib/documents'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import type { Document } from '@/types/document'
 
 export type UnifiedDocumentSource =
   | 'documents'
@@ -12,6 +14,8 @@ export type UnifiedDocumentSource =
   | 'medical_referto'
   | 'contract'
   | 'invoice'
+  | 'nutrition_plan_pdf'
+  | 'chat_attachment'
 
 export interface UnifiedDocumentItem {
   id: string
@@ -27,6 +31,9 @@ export interface UnifiedDocumentItem {
   canReplace?: boolean
   /** Se presente, usato come fallback se la signed URL fallisce (es. bucket pubblico) */
   publicUrlFallback?: string
+  /** Solo `source === 'documents'`: metadati riga DB. */
+  uploaded_by_profile_id?: string | null
+  uploaded_by_name?: string | null
 }
 
 /**
@@ -80,7 +87,39 @@ function parseStorageUrl(url: string): { bucket: string; path: string } | null {
 }
 
 /**
- * Aggrega documenti da: tabella documents, certificato/referti medici, documenti contrattuali, fatture.
+ * Path bucket `documents` per PDF piano nutrizionale: solo cartelle assegnate all'atleta (`nutrition-plans/{profileId}/…`).
+ */
+function documentsPathFromNutritionPdfRef(
+  pdfRef: string,
+  athleteProfileId: string,
+): { path: string; publicFallback?: string } | null {
+  const t = pdfRef.trim()
+  if (!t) return null
+  let pathInBucket: string | null = null
+  let publicFallback: string | undefined
+  if (/^https?:\/\//i.test(t)) {
+    publicFallback = t
+    pathInBucket = resolveDocumentsStoragePath(t)
+    if (!pathInBucket) {
+      const m = t.match(/\/object\/[^/]+\/documents\/(.+?)(?:\?|$)/i)
+      if (m) pathInBucket = decodeURIComponent(m[1])
+    }
+  } else {
+    pathInBucket = t.replace(/^\/+/, '')
+  }
+  if (!pathInBucket) return null
+  pathInBucket = normalizeDocumentsStoragePath(pathInBucket.replace(/^\/+/, ''))
+  const segs = pathInBucket.split('/').filter(Boolean)
+  if (segs[0] === 'nutrition-plans') {
+    if (segs[1] === '_unassigned') return null
+    if (segs[1]?.toLowerCase() !== athleteProfileId.toLowerCase()) return null
+    return { path: pathInBucket, publicFallback }
+  }
+  return null
+}
+
+/**
+ * Aggrega documenti da: documents, medico, amministrativo, fatture, PDF piani nutrizionali, allegati chat.
  * @param profileId - profiles.id (per documents e payments)
  * @param userId - profiles.user_id / auth.uid() (per athlete_medical_data e athlete_administrative_data); opzionale
  */
@@ -108,6 +147,8 @@ export async function getAllAthleteDocuments(
       source: 'documents',
       canReplace: d.status === 'scaduto' || d.status === 'in_scadenza' || d.status === 'non_valido',
       publicUrlFallback: d.file_url,
+      uploaded_by_profile_id: d.uploaded_by_profile_id ?? null,
+      uploaded_by_name: d.uploaded_by_name ?? d.staff_name ?? null,
     })
   }
 
@@ -249,7 +290,200 @@ export async function getAllAthleteDocuments(
     })
   })
 
+  // 5. PDF piani nutrizionali (nutrition_plan_versions + legacy), path storage nutrition-plans/{profileId}/…
+  const { data: nutritionGroups } = await supabase
+    .from('nutrition_plan_groups')
+    .select('id, title')
+    .eq('athlete_id', profileId)
+  const groupRows = (nutritionGroups ?? []) as { id: string; title: string | null }[]
+  const groupTitleById = new Map(groupRows.map((g) => [g.id, g.title?.trim() || 'Piano nutrizionale']))
+
+  for (const idChunk of chunkForSupabaseIn(groupRows.map((g) => g.id))) {
+    if (idChunk.length === 0) continue
+
+    const { data: versNew } = await supabase
+      .from('nutrition_plan_versions')
+      .select('id, plan_id, version_number, status, pdf_file_path, created_at, start_date')
+      .in('plan_id', idChunk)
+      .not('pdf_file_path', 'is', null)
+
+    for (const row of versNew ?? []) {
+      const r = row as {
+        id: string
+        plan_id: string
+        version_number: number
+        status: string
+        pdf_file_path: string
+        created_at: string
+        start_date: string | null
+      }
+      const resolved = documentsPathFromNutritionPdfRef(r.pdf_file_path, profileId)
+      if (!resolved) continue
+      const title = groupTitleById.get(r.plan_id) ?? 'Piano nutrizionale'
+      items.push({
+        id: `nutrition-plan-${r.id}`,
+        category: 'Piano nutrizionale',
+        categoryKey: 'piano_nutrizionale',
+        label: `${title} · v${r.version_number} (${r.status})`,
+        date: r.start_date ?? r.created_at ?? new Date().toISOString(),
+        notes: null,
+        open: { type: 'signed', bucket: 'documents', path: resolved.path },
+        source: 'nutrition_plan_pdf',
+        publicUrlFallback: resolved.publicFallback,
+      })
+    }
+
+    const { data: versLegacy } = await supabase
+      .from('nutrition_plan_versions_legacy')
+      .select('id, plan_group_id, version_number, status, pdf_file_path, created_at, start_date')
+      .in('plan_group_id', idChunk)
+      .not('pdf_file_path', 'is', null)
+
+    for (const row of versLegacy ?? []) {
+      const r = row as {
+        id: string
+        plan_group_id: string
+        version_number: number
+        status: string
+        pdf_file_path: string
+        created_at: string
+        start_date: string | null
+      }
+      const resolved = documentsPathFromNutritionPdfRef(r.pdf_file_path, profileId)
+      if (!resolved) continue
+      const title = groupTitleById.get(r.plan_group_id) ?? 'Piano nutrizionale'
+      items.push({
+        id: `nutrition-plan-legacy-${r.id}`,
+        category: 'Piano nutrizionale',
+        categoryKey: 'piano_nutrizionale',
+        label: `${title} · v${r.version_number} (${r.status})`,
+        date: r.start_date ?? r.created_at ?? new Date().toISOString(),
+        notes: null,
+        open: { type: 'signed', bucket: 'documents', path: resolved.path },
+        source: 'nutrition_plan_pdf',
+        publicUrlFallback: resolved.publicFallback,
+      })
+    }
+  }
+
+  // 6. Allegati file nei messaggi chat (bucket documents, path chat_files/…)
+  const { data: chatAttachments } = await supabase
+    .from('chat_messages')
+    .select('id, created_at, file_url, file_name, message, sender_id, receiver_id')
+    .or(`sender_id.eq.${profileId},receiver_id.eq.${profileId}`)
+    .not('file_url', 'is', null)
+    .order('created_at', { ascending: false })
+
+  for (const msg of chatAttachments ?? []) {
+    const row = msg as {
+      id: string
+      created_at: string | null
+      file_url: string
+      file_name: string | null
+      message: string
+    }
+    const path = resolveDocumentsStoragePath(row.file_url)
+    if (!path) continue
+    items.push({
+      id: `chat-file-${row.id}`,
+      category: 'Allegato chat',
+      categoryKey: 'allegato_chat',
+      label: row.file_name?.trim() || path.split('/').pop() || 'Allegato',
+      date: row.created_at ?? new Date().toISOString(),
+      notes: row.message?.trim() ? row.message.trim().slice(0, 240) : null,
+      open: { type: 'signed', bucket: 'documents', path },
+      source: 'chat_attachment',
+      publicUrlFallback: row.file_url,
+    })
+  }
+
   // Ordina per data (più recenti prima)
   items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   return items
+}
+
+function staffUploaderForSource(source: UnifiedDocumentSource): string {
+  switch (source) {
+    case 'medical_certificate':
+    case 'medical_referto':
+      return 'Profilo medico (atleta / staff)'
+    case 'contract':
+      return 'Documenti contrattuali (profilo)'
+    case 'invoice':
+      return 'Fatturazione'
+    case 'nutrition_plan_pdf':
+      return 'Piano nutrizionale (PDF)'
+    case 'chat_attachment':
+      return 'Chat'
+    default:
+      return '—'
+  }
+}
+
+function toStaffDocumentStatus(s: UnifiedDocumentItem['status']): Document['status'] {
+  if (
+    s === 'valido' ||
+    s === 'scaduto' ||
+    s === 'in-revisione' ||
+    s === 'in_scadenza' ||
+    s === 'non_valido'
+  ) {
+    return s
+  }
+  return 'valido'
+}
+
+/**
+ * Righe per dashboard staff (`/dashboard/documenti?atleta=`) allineate al tipo `Document`.
+ */
+export function mapUnifiedItemsToStaffDocuments(
+  items: UnifiedDocumentItem[],
+  athleteProfileId: string,
+  athleteDisplayName: string | null,
+): Document[] {
+  return items.map((item) => {
+    const status = toStaffDocumentStatus(item.status ?? null)
+
+    if (item.source === 'documents') {
+      return {
+        id: item.id,
+        athlete_id: athleteProfileId,
+        file_url: item.publicUrlFallback ?? '',
+        category: item.categoryKey,
+        status,
+        expires_at: item.expires_at ?? null,
+        uploaded_by_profile_id: item.uploaded_by_profile_id ?? '',
+        uploaded_by_name: item.uploaded_by_name ?? null,
+        notes: item.notes ?? null,
+        created_at: item.date,
+        updated_at: null,
+        athlete_name: athleteDisplayName,
+        staff_name: item.uploaded_by_name ?? null,
+        display_file_name: item.label,
+        storage_open: null,
+        is_db_document: true,
+      }
+    }
+
+    const fileUrl = item.open.type === 'public' ? item.open.url : ''
+
+    return {
+      id: item.id,
+      athlete_id: athleteProfileId,
+      file_url: fileUrl,
+      category: item.categoryKey,
+      status,
+      expires_at: item.expires_at ?? null,
+      uploaded_by_profile_id: '',
+      uploaded_by_name: staffUploaderForSource(item.source),
+      notes: item.notes ?? null,
+      created_at: item.date,
+      updated_at: null,
+      athlete_name: athleteDisplayName,
+      staff_name: staffUploaderForSource(item.source),
+      display_file_name: item.label,
+      storage_open: item.open,
+      is_db_document: false,
+    }
+  })
 }

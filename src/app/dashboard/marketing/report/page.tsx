@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { FileText } from 'lucide-react'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 export default function MarketingReportPage() {
   const router = useRouter()
@@ -18,11 +19,7 @@ export default function MarketingReportPage() {
   }, [loading, role, router])
 
   if (loading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   return (

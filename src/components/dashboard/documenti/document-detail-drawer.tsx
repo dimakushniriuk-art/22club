@@ -11,7 +11,7 @@ import {
   getCategoryText,
   formatDocumentDate,
 } from '@/lib/document-utils'
-import { extractFileName, extractFileType } from '@/lib/documents'
+import { documentDisplayFileName, extractFileType } from '@/lib/documents'
 import type { Document } from '@/types/document'
 
 interface DocumentDetailDrawerProps {
@@ -33,7 +33,7 @@ export function DocumentDetailDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onClose} side="right">
-      <DrawerContent title={`Documento: ${extractFileName(document.file_url)}`} onClose={onClose}>
+      <DrawerContent title={`Documento: ${documentDisplayFileName(document)}`} onClose={onClose}>
         <div className="space-y-6">
           {/* Info documento */}
           <div className="space-y-4">
@@ -58,7 +58,7 @@ export function DocumentDetailDrawer({
               <div className="flex justify-between">
                 <span className="text-text-secondary">File:</span>
                 <span className="text-text-primary font-medium">
-                  {extractFileName(document.file_url)}
+                  {documentDisplayFileName(document)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -91,7 +91,9 @@ export function DocumentDetailDrawer({
               <div className="text-center">
                 <FileText className="text-text-tertiary mx-auto mb-2 h-12 w-12" />
                 <p className="text-text-secondary text-sm">Anteprima non disponibile</p>
-                <p className="text-text-tertiary text-xs">{extractFileType(document.file_url)}</p>
+                <p className="text-text-tertiary text-xs">
+                  {extractFileType(document.file_url || documentDisplayFileName(document))}
+                </p>
               </div>
             </div>
           </div>
@@ -103,7 +105,7 @@ export function DocumentDetailDrawer({
               Scarica documento
             </Button>
 
-            {document.status !== 'non_valido' && (
+            {document.is_db_document !== false && document.status !== 'non_valido' && (
               <Button
                 variant="outline"
                 onClick={onMarkInvalid}

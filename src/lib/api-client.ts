@@ -137,8 +137,7 @@ export async function apiCall<T>(
     // Gestisci risposte con struttura { data, error }
     if (data.error) {
       if (strictApi) {
-        const msg =
-          typeof data.error === 'string' ? data.error : JSON.stringify(data.error)
+        const msg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error)
         throw new Error(msg)
       }
       logger.warn('API returned error, using fallback', {

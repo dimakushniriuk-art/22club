@@ -8,6 +8,156 @@ import { sendEmailViaResendWithAttachments } from '@/lib/communications/email-re
 
 const logger = createLogger('lib:calendar:appointment-reminder-email')
 
+/** Design system email dark premium 22Club — vedi `docs/22club-email-master-spec.md`. */
+const EMAIL_FONT =
+  '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif'
+
+const LOGO_22CLUB_EMAIL_URL =
+  'https://icibqnmtacibgnhaidlz.supabase.co/storage/v1/object/public/logo/LOGO%2022club%20per%20sfondo%20nero.png'
+
+const E = {
+  outer: '#000000',
+  card: '#0f1115',
+  border: '#1d2430',
+  block: '#12161c',
+  primary: '#02B3BF',
+  textMain: '#f5f7fa',
+  textSec: '#a7b0bc',
+  muted: '#6b7280',
+  micro: '#7c8796',
+} as const
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function renderKvRows(rows: { k: string; v: string }[]): string {
+  return rows
+    .map((row, i) => {
+      const bottom = i < rows.length - 1 ? `border-bottom:1px solid ${E.border};` : ''
+      return `<tr>
+  <td style="padding:12px 0;${bottom}font-family:${EMAIL_FONT};font-size:13px;color:${E.micro};vertical-align:top;width:42%;">${escapeHtml(row.k)}</td>
+  <td align="right" style="padding:12px 0;${bottom}font-family:${EMAIL_FONT};font-size:16px;font-weight:600;color:${E.textMain};text-align:right;vertical-align:top;">${escapeHtml(row.v)}</td>
+</tr>`
+    })
+    .join('')
+}
+
+function renderKvInfoCard(rows: { k: string; v: string }[]): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 24px 0;background-color:${E.block};border:1px solid ${E.border};border-radius:14px;">
+<tr><td style="padding:18px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${renderKvRows(rows)}</table>
+</td></tr></table>`
+}
+
+function renderSubsectionKvCard(heading: string, rows: { k: string; v: string }[]): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 20px 0;background-color:${E.block};border:1px solid ${E.border};border-radius:14px;">
+<tr><td style="padding:18px;">
+<p style="margin:0 0 14px;font-family:${EMAIL_FONT};font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${E.primary};">${escapeHtml(heading)}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${renderKvRows(rows)}</table>
+</td></tr></table>`
+}
+
+/**
+ * Wrapper master: table layout, stili inline, card dark premium (spec 22Club email).
+ */
+function wrap22ClubMasterEmail(opts: {
+  metaTitle: string
+  label: string
+  title: string
+  introHtml: string
+  mainHtml: string
+  cta?: { href: string; label: string }
+  linkFallbackUrl?: string
+  preFooterHtml?: string
+}): string {
+  const f = EMAIL_FONT
+  const ctaAndFallback = opts.cta
+    ? `<tr>
+  <td align="center" style="padding:12px 28px 16px 28px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;">
+      <tr>
+        <td align="center" bgcolor="${E.primary}" style="border-radius:12px;background-color:${E.primary};">
+          <a href="${escapeHtml(opts.cta.href)}" style="display:inline-block;padding:14px 26px;font-family:${f};font-size:16px;font-weight:700;line-height:1.2;color:#ffffff !important;text-decoration:none;border-radius:12px;">${escapeHtml(opts.cta.label)}</a>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+${
+  opts.linkFallbackUrl
+    ? `<tr>
+  <td style="padding:0 28px 28px 28px;">
+    <p style="margin:0 0 10px;font-family:${f};font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${E.micro};">Link diretto</p>
+    <p style="margin:0 0 10px;font-family:${f};font-size:15px;line-height:1.7;color:${E.textSec};">Se il pulsante non funziona, copia e incolla questo indirizzo nel browser.</p>
+    <p style="margin:0;word-break:break-all;font-family:${f};font-size:13px;line-height:1.5;">
+      <a href="${escapeHtml(opts.linkFallbackUrl)}" style="color:${E.primary};text-decoration:underline;">${escapeHtml(opts.linkFallbackUrl)}</a>
+    </p>
+  </td>
+</tr>`
+    : ''
+}`
+    : ''
+
+  const preFooter = opts.preFooterHtml
+    ? `<tr><td style="padding:0 28px 28px 28px;">${opts.preFooterHtml}</td></tr>`
+    : ''
+
+  const footerRow = `<tr>
+  <td style="padding:24px 28px 32px 28px;border-top:1px solid ${E.border};">
+    <p style="margin:0 0 12px;font-family:${f};font-size:12px;line-height:1.65;color:${E.muted};text-align:center;">Questa è un'email automatica di sistema. Ti chiediamo di non rispondere a questo messaggio, salvo diversa indicazione.</p>
+    <p style="margin:0;font-family:${f};font-size:12px;font-weight:600;color:${E.primary};text-align:center;">22Club</p>
+  </td>
+</tr>`
+
+  return `<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>${escapeHtml(opts.metaTitle)}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${E.outer};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background-color:${E.outer};">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;max-width:560px;width:100%;background-color:${E.card};border:1px solid ${E.border};border-radius:20px;overflow:hidden;">
+          <tr>
+            <td align="center" style="padding:32px 28px 8px 28px;">
+              <img src="${LOGO_22CLUB_EMAIL_URL}" width="140" height="auto" alt="22Club" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;max-width:140px;height:auto;">
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:8px 28px 12px 28px;">
+              <p style="margin:0;font-family:${f};font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:${E.primary};">${escapeHtml(opts.label)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 28px 20px 28px;">
+              <h1 style="margin:0;font-family:${f};font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-0.02em;color:${E.textMain};">${escapeHtml(opts.title)}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 16px 28px;">${opts.introHtml}</td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 0 28px;">${opts.mainHtml}</td>
+          </tr>
+          ${ctaAndFallback}
+          ${preFooter}
+          ${footerRow}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
 /** Escape per contenuti testo in .ics (CRLF, virgole, backslash). */
 function icsEscape(s: string): string {
   return s
@@ -120,9 +270,28 @@ function buildReminderHtml(params: {
     lessonsRemaining,
     lessonsCompleted = 0,
   } = params
-  const noteBlock = notes?.trim()
-    ? `<p style="margin:0 0 12px;color:#666;font-size:14px;"><strong>Note:</strong> ${escapeHtml(notes.trim())}</p>`
-    : ''
+  const f = EMAIL_FONT
+
+  const introHtml = `<p style="margin:0 0 18px;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Ciao ${escapeHtml(athleteName)},</p>
+<p style="margin:0;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Ti confermiamo il seguente appuntamento.</p>`
+
+  const detailCard = renderKvInfoCard([
+    { k: 'Servizio', v: typeLabel },
+    { k: 'Data', v: dateFormatted },
+    { k: 'Ora', v: timeFormatted },
+    { k: 'Luogo', v: location },
+    { k: 'Referente', v: staffName },
+  ])
+
+  const thanksBlock =
+    lessonsCompleted > 0
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 24px 0;background-color:${E.block};border:1px solid ${E.border};border-left:3px solid ${E.primary};border-radius:14px;">
+<tr><td style="padding:18px;">
+<p style="margin:0 0 10px;font-family:${f};font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${E.primary};">Messaggio dal trainer</p>
+<p style="margin:0;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Un messaggio da <strong style="color:${E.textMain};">${escapeHtml(staffName)}</strong>. Grazie per l'impegno: hai già completato <strong style="color:${E.textMain};">${String(lessonsCompleted)}</strong> allenament${lessonsCompleted === 1 ? 'o' : 'i'}. Continua così.</p>
+</td></tr></table>`
+      : ''
+
   const hasCount = lessonsRemaining !== undefined
   const isLowCredits = hasCount && lessonsRemaining <= 1
   const refDate =
@@ -133,57 +302,47 @@ function buildReminderHtml(params: {
       month: 'long',
       year: 'numeric',
     })
-  const creditsLine = hasCount
-    ? `Ad oggi (${escapeHtml(refDate)}) ti rimangono <strong>${lessonsRemaining}</strong> allenamenti.`
+  const creditsMain = hasCount
+    ? `Ad oggi (${escapeHtml(refDate)}) ti rimangono <strong style="color:${E.textMain};">${String(lessonsRemaining)}</strong> allenamenti.`
     : `Ad oggi (${escapeHtml(refDate)}) il numero di allenamenti rimasti non è al momento disponibile.`
-  const thanksBlock =
-    lessonsCompleted > 0
-      ? `
-  <div style="background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border:1px solid #86efac;border-radius:8px;padding:16px;margin-bottom:20px;">
-    <p style="margin:0 0 6px;font-size:15px;font-weight:600;color:#166534;">Un messaggio da ${escapeHtml(staffName)}</p>
-    <p style="margin:0;font-size:14px;color:#1a1a1a;line-height:1.5;">Grazie per l'impegno e i progressi fatti finora: hai già portato a termine <strong>${lessonsCompleted}</strong> allenament${lessonsCompleted === 1 ? 'o' : 'i'}. Continua così!</p>
-  </div>`
-      : ''
-  const creditsBlock = `
-  <div style="background:${isLowCredits ? '#fef3c7' : hasCount ? '#ecfdf5' : '#f3f4f6'};border:1px solid ${isLowCredits ? '#f59e0b' : hasCount ? '#10b981' : '#d1d5db'};border-radius:8px;padding:16px;margin-bottom:20px;">
-    ${isLowCredits ? '<p style="margin:0 0 8px;font-size:14px;color:#92400e;"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#f59e0b;color:#fff;border-radius:4px;font-weight:700;margin-right:8px;">!</span><strong>Attenzione</strong></p>' : ''}
-    <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#1a1a1a;">${creditsLine}</p>
-    <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Il numero non include gli appuntamenti già prenotati e si riferisce ai crediti al momento dell'invio di questa email.</p>
-  </div>`
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.5;color:#1a1a1a;max-width:560px;margin:0 auto;padding:24px;">
-  <p style="margin:0 0 16px;">Ciao ${escapeHtml(athleteName)},</p>
-  <p style="margin:0 0 20px;">Ti confermiamo il seguente appuntamento:</p>
-  <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin-bottom:20px;">
-    <p style="margin:0 0 8px;"><strong>${escapeHtml(typeLabel)}</strong></p>
-    <p style="margin:0 0 8px;">📅 ${escapeHtml(dateFormatted)}</p>
-    <p style="margin:0 0 8px;">🕐 ${escapeHtml(timeFormatted)}</p>
-    <p style="margin:0 0 8px;">📍 ${escapeHtml(location)}</p>
-    <p style="margin:0;">👤 ${escapeHtml(staffName)}</p>
-  </div>
-  ${thanksBlock}
-  ${creditsBlock}
-  ${noteBlock}
-  <p style="margin:0 0 16px;">Puoi aggiungere l'evento al tuo calendario:</p>
-  <p style="margin:0 0 24px;">
-    <a href="${escapeHtml(googleCalendarUrl)}" style="display:inline-block;background:#14b8a6;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;">Aggiungi a Google Calendar</a>
-  </p>
-  <p style="margin:0;font-size:12px;color:#888;">In allegato trovi anche il file .ics da importare in qualsiasi calendario (Google, Apple, Outlook).</p>
-  <p style="margin:24px 0 0;font-size:13px;color:#666;">A presto,<br><strong>22Club</strong></p>
-</body>
-</html>
-`.trim()
-}
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  const creditsLeftRule = isLowCredits ? `border-left:3px solid #f59e0b;` : ''
+  const creditsTitle = isLowCredits
+    ? `<p style="margin:0 0 10px;font-family:${f};font-size:13px;font-weight:700;color:${E.textMain};">Attenzione</p>`
+    : ''
+
+  const creditsBlock = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 24px 0;background-color:${E.block};border:1px solid ${E.border};${creditsLeftRule}border-radius:14px;">
+<tr><td style="padding:18px;">
+${creditsTitle}
+<p style="margin:0 0 8px;font-family:${f};font-size:16px;line-height:1.65;color:${E.textSec};">${creditsMain}</p>
+<p style="margin:0;font-family:${f};font-size:12px;line-height:1.5;color:${E.muted};">Il numero non include gli appuntamenti già prenotati e si riferisce ai crediti al momento dell'invio di questa email.</p>
+</td></tr></table>`
+
+  const noteBlock = notes?.trim()
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 24px 0;background-color:${E.block};border:1px solid ${E.border};border-radius:14px;">
+<tr><td style="padding:18px;">
+<p style="margin:0 0 10px;font-family:${f};font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${E.primary};">Note</p>
+<p style="margin:0;font-family:${f};font-size:15px;line-height:1.65;color:${E.textSec};">${escapeHtml(notes.trim())}</p>
+</td></tr></table>`
+    : ''
+
+  const calendarIntro = `<p style="margin:0 0 20px;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Puoi aggiungere l'evento al calendario con il pulsante qui sotto.</p>`
+
+  const mainHtml =
+    detailCard + thanksBlock + creditsBlock + noteBlock + calendarIntro
+
+  const preFooterHtml = `<p style="margin:0;font-family:${f};font-size:13px;line-height:1.65;color:${E.muted};text-align:center;">In allegato trovi il file <strong style="color:${E.textSec};">.ics</strong> per importare l'evento in Google Calendar, Apple Calendar o Outlook.</p>`
+
+  return wrap22ClubMasterEmail({
+    metaTitle: `Promemoria appuntamento — 22Club`,
+    label: 'Promemoria',
+    title: 'Il tuo appuntamento',
+    introHtml,
+    mainHtml,
+    cta: { href: googleCalendarUrl, label: 'Aggiungi a Google Calendar' },
+    linkFallbackUrl: googleCalendarUrl,
+    preFooterHtml,
+  })
 }
 
 export interface SendAppointmentReminderParams {
@@ -323,41 +482,69 @@ function buildAppointmentChangeHtml(params: SendAppointmentChangeParams): string
     newTypeLabel,
     newLocation,
   } = params
+  const f = EMAIL_FONT
   const calendarUrl = 'https://calendar.google.com/calendar/u/0/r'
+
   const titleMap: Record<AppointmentChangeAction, string> = {
     cancelled: 'Appuntamento annullato',
     modified: 'Appuntamento modificato',
     deleted: 'Appuntamento eliminato',
   }
-  const introMap: Record<AppointmentChangeAction, string> = {
-    cancelled: `Il tuo appuntamento del <strong>${escapeHtml(dateFormatted)}</strong> alle <strong>${escapeHtml(timeFormatted)}</strong> (${escapeHtml(typeLabel)} con ${escapeHtml(staffName)}) è stato <strong>annullato</strong>.`,
-    deleted: `Il tuo appuntamento del <strong>${escapeHtml(dateFormatted)}</strong> alle <strong>${escapeHtml(timeFormatted)}</strong> (${escapeHtml(typeLabel)} con ${escapeHtml(staffName)}) è stato <strong>eliminato definitivamente</strong>.`,
-    modified: `Il tuo appuntamento è stato <strong>modificato</strong> da ${escapeHtml(staffName)}.<br><br>Prima: ${escapeHtml(dateFormatted)} – ${escapeHtml(timeFormatted)}, ${escapeHtml(typeLabel)}${location ? `, ${escapeHtml(location)}` : ''}.<br>Nuova data/ora: <strong>${escapeHtml(newDateFormatted ?? dateFormatted)}</strong> – <strong>${escapeHtml(newTimeFormatted ?? timeFormatted)}</strong>${newTypeLabel ? `, ${escapeHtml(newTypeLabel)}` : ''}${newLocation !== undefined && newLocation ? `, ${escapeHtml(newLocation)}` : ''}.`,
+
+  const baseRows = [
+    { k: 'Data', v: dateFormatted },
+    { k: 'Ora', v: timeFormatted },
+    { k: 'Servizio', v: typeLabel },
+    { k: 'Luogo', v: location || '—' },
+    { k: 'Referente', v: staffName },
+  ]
+
+  let introSecond = ''
+  let mainHtml = ''
+
+  if (action === 'modified') {
+    introSecond = `L'appuntamento è stato aggiornato da <strong style="color:${E.textMain};">${escapeHtml(staffName)}</strong>. Qui sotto trovi il riepilogo prima e dopo la modifica.`
+    const afterRows = [
+      { k: 'Data', v: newDateFormatted ?? dateFormatted },
+      { k: 'Ora', v: newTimeFormatted ?? timeFormatted },
+      { k: 'Servizio', v: newTypeLabel ?? typeLabel },
+      {
+        k: 'Luogo',
+        v:
+          newLocation !== undefined && newLocation.trim()
+            ? newLocation.trim()
+            : location || '—',
+      },
+      { k: 'Referente', v: staffName },
+    ]
+    mainHtml =
+      renderSubsectionKvCard('Situazione precedente', baseRows) +
+      renderSubsectionKvCard('Nuovo appuntamento', afterRows) +
+      `<p style="margin:0;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Aggiorna o crea l'evento nel calendario con le nuove informazioni.</p>`
+  } else if (action === 'cancelled') {
+    introSecond = `Il seguente appuntamento è stato <strong style="color:${E.textMain};">annullato</strong>.`
+    mainHtml =
+      renderKvInfoCard(baseRows) +
+      `<p style="margin:0;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Se avevi salvato l'evento, ti invitiamo a <strong style="color:${E.textMain};">rimuoverlo</strong> da Google Calendar.</p>`
+  } else {
+    introSecond = `Il seguente appuntamento è stato <strong style="color:${E.textMain};">eliminato definitivamente</strong>.`
+    mainHtml =
+      renderKvInfoCard(baseRows) +
+      `<p style="margin:0;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Se era presente sul calendario, ti invitiamo a <strong style="color:${E.textMain};">rimuovere l'evento</strong>.</p>`
   }
-  const ctaMap: Record<AppointmentChangeAction, string> = {
-    cancelled: "Ti invitiamo a <strong>rimuovere l'evento</strong> dal tuo Google Calendar.",
-    deleted: "Ti invitiamo a <strong>rimuovere l'evento</strong> dal tuo Google Calendar.",
-    modified:
-      "Ti invitiamo ad <strong>aggiornare l'evento</strong> nel tuo Google Calendar con le nuove date e orari.",
-  }
-  const _title = titleMap[action]
-  const intro = introMap[action]
-  const cta = ctaMap[action]
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.5;color:#1a1a1a;max-width:560px;margin:0 auto;padding:24px;">
-  <p style="margin:0 0 16px;">Ciao ${escapeHtml(athleteName)},</p>
-  <p style="margin:0 0 20px;">${intro}</p>
-  <p style="margin:0 0 20px;">${cta}</p>
-  <p style="margin:0 0 24px;">
-    <a href="${escapeHtml(calendarUrl)}" style="display:inline-block;background:#14b8a6;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;">Apri Google Calendar</a>
-  </p>
-  <p style="margin:24px 0 0;font-size:13px;color:#666;">A presto,<br><strong>22Club</strong></p>
-</body>
-</html>
-`.trim()
+
+  const introHtml = `<p style="margin:0 0 18px;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Ciao ${escapeHtml(athleteName)},</p>
+<p style="margin:0;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">${introSecond}</p>`
+
+  return wrap22ClubMasterEmail({
+    metaTitle: `${titleMap[action]} — 22Club`,
+    label: 'Appuntamento',
+    title: titleMap[action],
+    introHtml,
+    mainHtml,
+    cta: { href: calendarUrl, label: 'Apri Google Calendar' },
+    linkFallbackUrl: calendarUrl,
+  })
 }
 
 export async function sendAppointmentChangeEmail(

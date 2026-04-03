@@ -6,8 +6,11 @@
 
 'use client'
 
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
+import { AthleteProgressiNavSection } from '@/components/dashboard/athlete-profile/athlete-progressi-nav-section'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import {
   User,
@@ -15,18 +18,11 @@ import {
   BarChart3,
   FileText,
   Heart,
+  History,
   Target,
   Utensils,
   Hand,
-  CreditCard,
-  Brain,
-  Activity as ActivityIcon,
 } from 'lucide-react'
-const AthleteWorkoutsTab = lazy(() =>
-  import('./athlete-workouts-tab').then((mod) => ({
-    default: mod.AthleteWorkoutsTab,
-  })),
-)
 const AthleteProgressTab = lazy(() =>
   import('./athlete-progress-tab').then((mod) => ({
     default: mod.AthleteProgressTab,
@@ -69,21 +65,6 @@ const AthleteMassageTab = lazy(() =>
     default: mod.AthleteMassageTab,
   })),
 )
-const AthleteAdministrativeTab = lazy(() =>
-  import('@/components/dashboard/athlete-profile').then((mod) => ({
-    default: mod.AthleteAdministrativeTab,
-  })),
-)
-const AthleteSmartTrackingTab = lazy(() =>
-  import('@/components/dashboard/athlete-profile').then((mod) => ({
-    default: mod.AthleteSmartTrackingTab,
-  })),
-)
-const AthleteAIDataTab = lazy(() =>
-  import('@/components/dashboard/athlete-profile').then((mod) => ({
-    default: mod.AthleteAIDataTab,
-  })),
-)
 
 interface AthleteProfileTabsProps {
   athleteId: string
@@ -95,8 +76,9 @@ interface AthleteProfileTabsProps {
     documenti_scadenza: number
     peso_attuale: number | null
   }
-  /** Errori RLS/rete sul caricamento statistiche (tab Progressi / header KPI) */
   statsError?: string | null
+  /** Nome per sottotitoli sezioni (es. Foto progressi) */
+  athleteDisplayName?: string
   onPrefetchTab: (tabName: string) => void
 }
 
@@ -104,36 +86,69 @@ const DS_TABS_LIST =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-2'
 const TAB_TRIGGER =
   'rounded-lg px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-white/[0.04] transition data-[state=active]:font-extrabold data-[state=active]:text-text-primary data-[state=active]:bg-white/[0.06] data-[state=active]:border data-[state=active]:border-white/10'
+/** Voce della barra principale: una sola riga anche su mobile (flex-1 + nowrap sul contenitore). */
+const MAIN_TAB_ROW_TRIGGER = `${TAB_TRIGGER} flex flex-1 min-w-0 items-center justify-center whitespace-nowrap`
+
+type AthleteMainTab = 'profilo' | 'progressi' | 'documenti'
+
+function initialMainTabFromSearch(searchParams: ReturnType<typeof useSearchParams>): AthleteMainTab {
+  const t = searchParams.get('tab')
+  if (t === 'allenamenti') return 'progressi'
+  if (t === 'profilo' || t === 'progressi' || t === 'documenti') return t
+  return 'profilo'
+}
 
 export function AthleteProfileTabs({
   athleteId,
   athleteUserId,
   stats,
   statsError = null,
+  athleteDisplayName,
   onPrefetchTab,
 }: AthleteProfileTabsProps) {
-  const [activeTab, setActiveTab] = useState('profilo')
+  const searchParams = useSearchParams()
+  const storicoHref = `/dashboard/atleti/${athleteId}/progressi/storico`
+  const [activeTab, setActiveTab] = useState<AthleteMainTab>(() => initialMainTabFromSearch(searchParams))
   const [activeProfileTab, setActiveProfileTab] = useState('anagrafica')
 
+  const tabParam = searchParams.get('tab')
+  useEffect(() => {
+    if (tabParam === 'allenamenti') {
+      setActiveTab('progressi')
+      return
+    }
+    if (tabParam === 'profilo' || tabParam === 'progressi' || tabParam === 'documenti') {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
+
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs
+      value={activeTab}
+      onValueChange={(v) => setActiveTab(v as AthleteMainTab)}
+      className="w-full"
+    >
       <TabsList
-        className={`grid w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-6 ${DS_TABS_LIST} h-auto min-h-10 items-center justify-items-center`}
+        className={`flex w-full min-w-0 flex-row flex-nowrap gap-2 mb-6 max-[851px]:flex-nowrap ${DS_TABS_LIST} h-auto min-h-10 items-center overflow-x-auto`}
       >
-        <TabsTrigger value="profilo" className={TAB_TRIGGER}>
-          <User className="mr-2 h-4 w-4" />
+        <TabsTrigger value="profilo" className={MAIN_TAB_ROW_TRIGGER}>
+          <User className="mr-2 h-4 w-4 shrink-0" />
           Profilo
         </TabsTrigger>
-        <TabsTrigger value="allenamenti" className={TAB_TRIGGER}>
-          <Dumbbell className="mr-2 h-4 w-4" />
-          Allenamenti
-        </TabsTrigger>
-        <TabsTrigger value="progressi" className={TAB_TRIGGER}>
-          <BarChart3 className="mr-2 h-4 w-4" />
+        <TabsTrigger value="progressi" className={MAIN_TAB_ROW_TRIGGER}>
+          <BarChart3 className="mr-2 h-4 w-4 shrink-0" />
           Progressi
         </TabsTrigger>
-        <TabsTrigger value="documenti" className={TAB_TRIGGER}>
-          <FileText className="mr-2 h-4 w-4" />
+        <Link
+          href={storicoHref}
+          aria-label="Apri pagina allenamenti e storico completati"
+          className={`${MAIN_TAB_ROW_TRIGGER} no-underline`}
+        >
+          <History className="mr-2 h-4 w-4 shrink-0" />
+          Storico
+        </Link>
+        <TabsTrigger value="documenti" className={MAIN_TAB_ROW_TRIGGER}>
+          <FileText className="mr-2 h-4 w-4 shrink-0" />
           Documenti
         </TabsTrigger>
       </TabsList>
@@ -142,7 +157,7 @@ export function AthleteProfileTabs({
         {athleteUserId ? (
           <Tabs value={activeProfileTab} onValueChange={setActiveProfileTab} className="w-full">
             <TabsList
-              className={`grid w-full grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 mb-6 ${DS_TABS_LIST} overflow-x-auto h-auto min-h-10 items-center justify-items-center`}
+              className={`grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-6 ${DS_TABS_LIST} overflow-x-auto h-auto min-h-10 items-center justify-items-center`}
             >
               <TabsTrigger
                 value="anagrafica"
@@ -192,30 +207,6 @@ export function AthleteProfileTabs({
                 <Hand className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Massaggio</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="amministrativo"
-                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
-                onMouseEnter={() => onPrefetchTab('amministrativo')}
-              >
-                <CreditCard className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Amministrativo</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="smart-tracking"
-                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
-                onMouseEnter={() => onPrefetchTab('smart-tracking')}
-              >
-                <ActivityIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Smart Tracking</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="ai-data"
-                className={`${TAB_TRIGGER} px-3 py-1.5 text-xs sm:text-sm`}
-                onMouseEnter={() => onPrefetchTab('ai-data')}
-              >
-                <Brain className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">AI Data</span>
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="anagrafica" className="mt-0">
@@ -253,40 +244,29 @@ export function AthleteProfileTabs({
                 <AthleteMassageTab athleteId={athleteUserId} />
               </Suspense>
             </TabsContent>
-
-            <TabsContent value="amministrativo" className="mt-0">
-              <Suspense fallback={<LoadingState message="Caricamento tab amministrativo..." />}>
-                <AthleteAdministrativeTab athleteId={athleteUserId} />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="smart-tracking" className="mt-0">
-              <Suspense fallback={<LoadingState message="Caricamento tab smart tracking..." />}>
-                <AthleteSmartTrackingTab athleteId={athleteUserId} />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="ai-data" className="mt-0">
-              <Suspense fallback={<LoadingState message="Caricamento tab AI data..." />}>
-                <AthleteAIDataTab athleteId={athleteUserId} />
-              </Suspense>
-            </TabsContent>
           </Tabs>
         ) : (
           <LoadingState message="Caricamento dati profilo..." />
         )}
       </TabsContent>
 
-      <TabsContent value="allenamenti" className="mt-0">
-        <Suspense fallback={<LoadingState message="Caricamento allenamenti..." />}>
-          <AthleteWorkoutsTab athleteId={athleteId} schedeAttive={stats.schede_attive} />
-        </Suspense>
-      </TabsContent>
-
-      <TabsContent value="progressi" className="mt-0">
+      <TabsContent value="progressi" className="mt-0 space-y-4 sm:space-y-6">
         <Suspense fallback={<LoadingState message="Caricamento progressi..." />}>
-          <AthleteProgressTab athleteId={athleteId} stats={stats} loadError={statsError} />
+          <AthleteProgressTab
+            athleteId={athleteId}
+            stats={{
+              peso_attuale: stats.peso_attuale,
+              allenamenti_totali: stats.allenamenti_totali,
+              allenamenti_mese: stats.allenamenti_mese,
+            }}
+            loadError={statsError}
+            showDetailLinksBelowKpi
+          />
         </Suspense>
+        <AthleteProgressiNavSection
+          athleteProfileId={athleteId}
+          athleteDisplayName={athleteDisplayName}
+        />
       </TabsContent>
 
       <TabsContent value="documenti" className="mt-0">

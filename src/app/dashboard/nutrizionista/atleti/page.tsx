@@ -52,6 +52,7 @@ import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-
 import { InvitaClienteModal } from '@/components/dashboard/invita-cliente-modal'
 import { createLogger } from '@/lib/logger'
 import { NUTRITION_TABLES, nutritionFrom } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 const logger = createLogger('app:dashboard:nutrizionista:atleti')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 const DEBOUNCE_MS = 300
@@ -330,15 +331,23 @@ export default function NutrizionistaAtletiPage() {
         created_at: string
       }> = []
       if (inviteRows.length > 0) {
-        const { data: inviteProfiles } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome, email')
-          .in(
-            'id',
-            inviteRows.map((r) => r.athlete_id),
+        const inviteProfileRows: Array<{
+          id: string
+          nome: string | null
+          cognome: string | null
+          email: string | null
+        }> = []
+        for (const idChunk of chunkForSupabaseIn(inviteRows.map((r) => r.athlete_id))) {
+          const { data: inviteProfiles } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome, email')
+            .in('id', idChunk)
+          inviteProfileRows.push(
+            ...((inviteProfiles ?? []) as (typeof inviteProfileRows)[number][]),
           )
+        }
         const profileMap = new Map(
-          (inviteProfiles ?? []).map(
+          inviteProfileRows.map(
             (p: {
               id: string
               nome: string | null
@@ -402,16 +411,21 @@ export default function NutrizionistaAtletiPage() {
           return
         }
         const ids = staffData.map((r) => (r as { atleta_id: string }).atleta_id)
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome, email')
-          .in('id', ids)
-        const profiles = (profilesData ?? []) as Array<{
+        const profiles: Array<{
           id: string
           nome: string | null
           cognome: string | null
           email: string | null
-        }>
+        }> = []
+        for (const idChunk of chunkForSupabaseIn(ids)) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome, email')
+            .in('id', idChunk)
+          profiles.push(
+            ...((profilesData ?? []) as (typeof profiles)[number][]),
+          )
+        }
         setRows(
           profiles.map((p) => ({
             staff_id: profileId,
@@ -722,7 +736,7 @@ export default function NutrizionistaAtletiPage() {
   return (
     <StaffContentLayout
       title="Clienti"
-      description="Gestisci piani, progressi e analisi dei clienti assegnati"
+      description="Clienti assegnati: piani, progressi e analisi."
       icon={<Users className="w-6 h-6" />}
       theme="teal"
       actions={

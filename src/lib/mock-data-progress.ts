@@ -306,4 +306,5 @@ export const mockProgressKPI: ProgressKPI = {
     max_squat_kg: 130,
     max_deadlift_kg: 150,
   },
+  progressLogRows: [],
 }

@@ -1,9 +1,18 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { Badge } from '@/components/ui'
-import { Button } from '@/components/ui'
-import { FileText, Calendar, User, Download, Eye } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui'
+import { Calendar, ChevronDown, FileText, User } from 'lucide-react'
 import {
   getStatusColor,
   getStatusText,
@@ -11,7 +20,7 @@ import {
   getCategoryText,
   formatDocumentDate,
 } from '@/lib/document-utils'
-import { extractFileName } from '@/lib/documents'
+import { documentDisplayFileName } from '@/lib/documents'
 import type { Document } from '@/types/document'
 
 interface DocumentsTableProps {
@@ -90,7 +99,7 @@ export function DocumentsTable({
                       <FileText className="text-text-tertiary h-4 w-4" />
                       <div>
                         <div className="text-text-primary text-sm font-medium">
-                          {extractFileName(document.file_url)}
+                          {documentDisplayFileName(document)}
                         </div>
                       </div>
                     </div>
@@ -111,32 +120,37 @@ export function DocumentsTable({
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onDownload(document)
-                        }}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (onPreview != null) {
-                            onPreview(document)
-                          } else {
-                            onDocumentClick(document)
-                          }
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          className="gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FileText className="h-4 w-4 shrink-0" />
+                          File
+                          <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-[10rem]">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (onPreview != null) {
+                              onPreview(document)
+                            } else {
+                              onDocumentClick(document)
+                            }
+                          }}
+                        >
+                          Visualizza
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDownload(document)}>
+                          Scarica
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}

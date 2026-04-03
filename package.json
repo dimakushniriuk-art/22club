@@ -78,6 +78,7 @@
     "dev:noturbo": "cross-env PORT=3001 next dev",
     "health": "curl http://localhost:3001/api/health",
     "postbuild": "node scripts/build-optimization.js",
+    "pwa:assets": "node scripts/generate-pwa-assets.mjs",
     "test": "node scripts/run-vitest.js",
     "test:ui": "node scripts/run-vitest.js --ui",
     "test:run": "node scripts/run-vitest.js run",

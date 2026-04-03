@@ -25,7 +25,7 @@ export const STAFF_TODAY_APPOINTMENTS_SELECT = `
   type,
   status,
   athlete_id,
-  athlete:profiles!athlete_id(avatar, avatar_url, nome, cognome)
+  athlete:profiles!appointments_athlete_id_fkey(id, avatar, avatar_url, nome, cognome)
 `
 
 export function formatStaffDayAthleteDisplayName(athlete: unknown): string {

@@ -9,8 +9,8 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
+import { StaffAthleteSubpageHeader } from '@/components/shared/dashboard/staff-athlete-subpage-header'
 import {
-  ArrowLeft,
   Mail,
   Phone,
   Calendar,
@@ -55,47 +55,31 @@ export function AthleteProfileHeader({
 
   return (
     <>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/clienti">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-primary/10 hover:text-primary transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Profilo Atleta
-            </h1>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Dettagli completi e statistiche di {athlete.nome} {athlete.cognome}
-            </p>
-            <div className="mt-2 h-[3px] w-28 rounded-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Link href={`/dashboard/chat?with=${athleteId}`}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full border border-white/10 text-text-primary hover:border-primary/20 hover:bg-white/[0.04] transition"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Chat
-            </Button>
-          </Link>
-          {showEditButton && (
-            <Button variant="default" onClick={onEditClick} size="sm">
-              <Edit className="mr-2 h-4 w-4" />
-              Modifica
-            </Button>
-          )}
-        </div>
-      </div>
+      <StaffAthleteSubpageHeader
+        backHref="/dashboard/clienti"
+        title="Profilo Atleta"
+        description={`Dettagli completi e statistiche di ${athlete.nome} ${athlete.cognome}`.trim()}
+        actions={
+          <>
+            <Link href={`/dashboard/chat?with=${athleteId}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border border-white/10 text-text-primary hover:border-primary/20 hover:bg-white/[0.04] transition"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Chat
+              </Button>
+            </Link>
+            {showEditButton ? (
+              <Button variant="default" onClick={onEditClick} size="sm">
+                <Edit className="mr-2 h-4 w-4" />
+                Modifica
+              </Button>
+            ) : null}
+          </>
+        }
+      />
 
       {/* Card profilo principale */}
       <div className={`relative overflow-hidden ${DS_CARD} p-6 sm:p-8`}>

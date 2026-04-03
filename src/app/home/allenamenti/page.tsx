@@ -15,8 +15,11 @@ import { useWorkouts } from '@/hooks/use-workouts'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
 import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer-client'
-import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
+import { isValidProfile } from '@/lib/utils/type-guards'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
 
 const logger = createLogger('app:home:allenamenti:page')
 
@@ -124,22 +127,17 @@ function computeStatsFromLogs(
   return { settimana: questaSettimana, mese: questoMese, streak, volume_medio: volumeMedio }
 }
 
-function AllenamentiHomePageContent() {
+export function AllenamentiHomePageContent() {
   const router = useRouter()
   const { user } = useAuth()
   const supabase = useSupabaseClient()
+  const { isPreview, pathBase } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
+  const { athleteProfileId, authLoading } = useResolvedAthleteProfileForAllenamenti()
   const [trainerAvatarUrl, setTrainerAvatarUrl] = useState<string | null>(null)
 
   // Type guard per user
   const isValidUser = user && isValidProfile(user)
-
-  // Helper per ID mapping: chiarisce quale ID usare per ogni query
-  // profileId = profiles.id (corretto per workout_logs.atleta_id)
-  // NOTA: Tutti gli hooks devono essere chiamati prima di qualsiasi early return
-  const profileId = useMemo(() => {
-    if (!isValidUser || !user?.id) return null
-    return isValidUUID(user.id) ? user.id : null
-  }, [user?.id, isValidUser]) // profiles.id
 
   // Normalizza il ruolo usando utility function centralizzata
   const normalizedRoleRaw = useNormalizedRole(user?.role)
@@ -148,9 +146,9 @@ function AllenamentiHomePageContent() {
     return toLegacyRole(normalizedRoleRaw)
   }, [normalizedRoleRaw])
 
-  // Carica avatar del trainer assegnato (per card motivazionale)
+  // Carica avatar del trainer assegnato (per card motivazionale) — solo vista atleta
   useEffect(() => {
-    if (!user?.id) return
+    if (isPreview || !user?.id) return
     let cancelled = false
     supabase.rpc('get_my_trainer_profile').then((res: { data: unknown; error: unknown }) => {
       const { data, error } = res
@@ -163,16 +161,16 @@ function AllenamentiHomePageContent() {
     return () => {
       cancelled = true
     }
-  }, [user?.id, supabase])
+  }, [user?.id, supabase, isPreview])
 
   // Stabilizza filters per evitare re-fetch continui
-  // Usa profileId (profiles.id) per workout_logs.atleta_id
+  // Usa athleteProfileId (profiles.id) per workout_logs.atleta_id
   const stableFilters = useMemo(
     () => ({
-      atleta_id: profileId, // âœ… Corretto: workout_logs.atleta_id = profiles.id
+      atleta_id: athleteProfileId ?? undefined,
       stato: 'tutti' as const,
     }),
-    [profileId],
+    [athleteProfileId],
   )
 
   // Recupera workout logs (allenamenti)
@@ -180,7 +178,7 @@ function AllenamentiHomePageContent() {
     allenamenti: workoutLogs,
     loading: _allenamentiLoading,
     error: allenamentiError,
-  } = useAllenamenti(stableFilters)
+  } = useAllenamenti(stableFilters, undefined, { enabled: Boolean(athleteProfileId) })
 
   // Recupera workout plans attivi (schede di allenamento)
   const {
@@ -188,14 +186,25 @@ function AllenamentiHomePageContent() {
     loading: _workoutsLoading,
     error: workoutsError,
   } = useWorkouts({
-    userId: profileId,
+    userId: athleteProfileId,
     role: normalizedRole,
     plansListOnly: true,
+    athleteSubjectProfileId: isPreview ? athleteProfileId : null,
   })
 
   const stats = useMemo(() => computeStatsFromLogs(workoutLogs ?? []), [workoutLogs])
 
-  const handleBack = useCallback(() => router.push('/home'), [router])
+  const handleBack = useCallback(() => {
+    if (isPreview) {
+      if (workoutsPane) {
+        workoutsPane.navigateTo({ kind: 'oggi' })
+        return
+      }
+      router.push(`${pathBase}/oggi`)
+      return
+    }
+    router.push('/home')
+  }, [router, isPreview, pathBase, workoutsPane])
 
   const workoutsAttivi = useMemo(
     () => (workouts ?? []).filter((w) => w.status === 'attivo'),
@@ -251,14 +260,37 @@ function AllenamentiHomePageContent() {
     )
   }
 
+  if (!athleteProfileId && !authLoading) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col bg-background">
+        <AllenamentiPageHeader onBack={handleBack} />
+        <div className="min-h-0 flex-1 overflow-auto px-3 py-4">
+          <p className="text-sm text-text-secondary">Profilo atleta non disponibile.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <AllenamentiPageHeader onBack={handleBack} />
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-[calc(9.5rem+env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
-        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
-              <CardContent className="flex items-center gap-2.5 p-0">
+      <div
+        className={
+          isPreview
+            ? 'min-h-0 flex-1 overflow-auto px-3 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6'
+            : 'min-h-0 flex-1 overflow-auto px-3 pb-[calc(9.5rem+env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 min-[834px]:px-6'
+        }
+      >
+        <div
+          className={
+            isPreview
+              ? 'mx-auto w-full max-w-none space-y-4 sm:space-y-6'
+              : 'mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl'
+          }
+        >
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
+            <Card className={`relative overflow-hidden p-3.5 sm:p-4 ${CARD_DS}`}>
+              <CardContent className="flex items-center gap-3 p-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                   <Activity className="h-4 w-4 text-cyan-400" />
                 </div>
@@ -272,8 +304,8 @@ function AllenamentiHomePageContent() {
                 </div>
               </CardContent>
             </Card>
-            <Card className={`relative overflow-hidden p-3 ${CARD_DS}`}>
-              <CardContent className="flex items-center gap-2.5 p-0">
+            <Card className={`relative overflow-hidden p-3.5 sm:p-4 ${CARD_DS}`}>
+              <CardContent className="flex items-center gap-3 p-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                   <TrendingUp className="h-4 w-4 text-cyan-400" />
                 </div>
@@ -290,11 +322,11 @@ function AllenamentiHomePageContent() {
           </div>
 
           {workoutsAttivi.length > 0 && (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4">
               <h2 className="text-base font-semibold tracking-tight text-text-primary sm:text-lg">
                 Schede Assegnate
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 {workoutsAttivi.map((workout) => (
                   <WorkoutPlanCard key={workout.id} workout={workout} />
                 ))}
@@ -303,59 +335,61 @@ function AllenamentiHomePageContent() {
           )}
         </div>
 
-        <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/95 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 min-[834px]:px-5">
-          <CardContent className="flex flex-col gap-2.5 p-0 sm:gap-3">
-            <div className="mx-auto h-0.5 w-8 rounded-full bg-cyan-400/70" aria-hidden />
-            <div className="flex items-center justify-center gap-3 sm:gap-3.5">
-              {trainerAvatarUrl ? (
-                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full ring-1 ring-white/10 sm:h-12 sm:w-12">
-                  <Image
-                    src={trainerAvatarUrl}
-                    alt="Il tuo trainer"
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                    unoptimized={trainerAvatarUrl.startsWith('http')}
-                  />
-                </div>
-              ) : (
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl sm:h-12 sm:w-12">
-                  🏆
-                </div>
-              )}
-              <div className="min-w-0 max-w-[min(100%,20rem)] text-center">
-                {stats.settimana > 0 ? (
-                  <>
-                    <h3 className="break-words text-sm font-semibold leading-tight text-text-primary sm:text-base">
-                      Ottimo lavoro questa settimana!
-                    </h3>
-                    <p className="break-words mt-0.5 text-[11px] leading-snug text-text-secondary sm:text-xs">
-                      Hai completato{' '}
-                      <span className="font-bold tabular-nums text-cyan-400">
-                        {stats.settimana}
-                      </span>{' '}
-                      {stats.settimana === 1 ? 'allenamento' : 'allenamenti'}. Continua così!
-                    </p>
-                  </>
+        {!isPreview ? (
+          <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/95 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 min-[834px]:px-5">
+            <CardContent className="flex flex-col gap-2.5 p-0 sm:gap-3">
+              <div className="mx-auto h-0.5 w-8 rounded-full bg-cyan-400/70" aria-hidden />
+              <div className="flex items-center justify-center gap-3 sm:gap-3.5">
+                {trainerAvatarUrl ? (
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full ring-1 ring-white/10 sm:h-12 sm:w-12">
+                    <Image
+                      src={trainerAvatarUrl}
+                      alt="Il tuo trainer"
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                      unoptimized={trainerAvatarUrl.startsWith('http')}
+                    />
+                  </div>
                 ) : (
-                  <h3 className="break-words text-sm font-semibold leading-snug text-text-primary sm:text-base">
-                    Nessun allenamento questa settimana. Torna in 22 Club per riprendere!
-                  </h3>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl sm:h-12 sm:w-12">
+                    🏆
+                  </div>
                 )}
+                <div className="min-w-0 max-w-[min(100%,20rem)] text-center">
+                  {stats.settimana > 0 ? (
+                    <>
+                      <h3 className="break-words text-sm font-semibold leading-tight text-text-primary sm:text-base">
+                        Ottimo lavoro questa settimana!
+                      </h3>
+                      <p className="break-words mt-0.5 text-[11px] leading-snug text-text-secondary sm:text-xs">
+                        Hai completato{' '}
+                        <span className="font-bold tabular-nums text-cyan-400">
+                          {stats.settimana}
+                        </span>{' '}
+                        {stats.settimana === 1 ? 'allenamento' : 'allenamenti'}. Continua così!
+                      </p>
+                    </>
+                  ) : (
+                    <h3 className="break-words text-sm font-semibold leading-snug text-text-primary sm:text-base">
+                      Nessun allenamento questa settimana. Torna in 22 Club per riprendere!
+                    </h3>
+                  )}
+                </div>
               </div>
-            </div>
-            <Link
-              href="/home/progressi"
-              prefetch={true}
-              className="block w-full touch-manipulation"
-            >
-              <Button className="h-10 min-h-[44px] w-full gap-1.5 rounded-xl bg-cyan-500 text-xs font-medium text-white hover:bg-cyan-400 sm:h-10 sm:text-sm">
-                <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Vedi i tuoi progressi
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+              <Link
+                href="/home/progressi"
+                prefetch={true}
+                className="block w-full touch-manipulation"
+              >
+                <Button className="h-10 min-h-[44px] w-full gap-1.5 rounded-xl bg-cyan-500 text-xs font-medium text-white hover:bg-cyan-400 sm:h-10 sm:text-sm">
+                  <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Vedi i tuoi progressi
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </div>
   )

@@ -1,8 +1,8 @@
 /**
- * Utility per export pagamenti in CSV/PDF
+ * Utility per export pagamenti (PDF unificato con anteprima lato pagina).
  */
 
-import { exportToCSV, exportToPDF } from './export-utils'
+import { exportToCSV, exportToPDF, buildTabularExportPdfBlob, type ExportData } from './export-utils'
 import type { Payment } from '@/types/payment'
 
 export type PaymentExportData = Record<string, string | number | boolean | null>[]
@@ -29,8 +29,14 @@ export function formatPaymentsForExport(payments: Payment[]): PaymentExportData 
   })
 }
 
+export async function buildPaymentsPdfBlob(payments: Payment[]): Promise<Blob> {
+  const data = formatPaymentsForExport(payments) as ExportData
+  return buildTabularExportPdfBlob('Pagamenti', data)
+}
+
 /**
  * Esporta pagamenti in CSV
+ * @deprecated Usare `buildPaymentsPdfBlob` + anteprima PDF; mantenuto solo se serve script legacy.
  */
 export function exportPaymentsToCSV(payments: Payment[], filename?: string) {
   const data = formatPaymentsForExport(payments)
@@ -39,7 +45,8 @@ export function exportPaymentsToCSV(payments: Payment[], filename?: string) {
 }
 
 /**
- * Esporta pagamenti in PDF
+ * Esporta pagamenti in PDF (download diretto, senza logo/anteprima unificata).
+ * @deprecated Usare `buildPaymentsPdfBlob` + `PdfCanvasPreviewDialog`.
  */
 export function exportPaymentsToPDF(payments: Payment[], filename?: string) {
   const data = formatPaymentsForExport(payments)

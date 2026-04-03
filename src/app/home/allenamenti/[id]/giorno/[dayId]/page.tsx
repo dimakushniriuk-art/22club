@@ -12,7 +12,10 @@ import { useAuth } from '@/providers/auth-provider'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { notifyError } from '@/lib/notifications'
 import { createLogger } from '@/lib/logger'
-import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
+import { isValidUUID } from '@/lib/utils/type-guards'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
 
 const logger = createLogger('app:home:allenamenti:giorno:page')
 
@@ -194,15 +197,22 @@ function ExerciseExecutionExpand({
   )
 }
 
-function GiornoPreviewContent() {
+export function GiornoPreviewContent({
+  workoutPlanIdOverride,
+  dayIdOverride,
+}: {
+  workoutPlanIdOverride?: string
+  dayIdOverride?: string
+} = {}) {
   const router = useRouter()
   const params = useParams()
-  const planId = typeof params?.id === 'string' ? params.id : null
-  const dayId = typeof params?.dayId === 'string' ? params.dayId : null
-  const { user, loading: authLoading } = useAuth()
+  const planId = workoutPlanIdOverride ?? (typeof params?.id === 'string' ? params.id : null)
+  const dayId = dayIdOverride ?? (typeof params?.dayId === 'string' ? params.dayId : null)
+  const { loading: authLoading } = useAuth()
   const supabase = useSupabaseClient()
-
-  const athleteProfileId = user && isValidProfile(user) && isValidUUID(user.id) ? user.id : null
+  const { pathBase } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
+  const { athleteProfileId } = useResolvedAthleteProfileForAllenamenti()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -325,21 +335,26 @@ function GiornoPreviewContent() {
     }
   }, [authLoading, athleteProfileId, planId, dayId, supabase])
 
-  const startHref = useMemo(
-    () =>
-      `/home/allenamenti/oggi?workout_plan_id=${encodeURIComponent(planId ?? '')}&workout_day_id=${encodeURIComponent(dayId ?? '')}`,
-    [planId, dayId],
-  )
+  const startHref = useMemo(() => {
+    if (workoutsPane && planId && dayId) return workoutsPane.hrefFor({ kind: 'oggi', workoutPlanId: planId, dayId })
+    return `${pathBase}/oggi?workout_plan_id=${encodeURIComponent(planId ?? '')}&workout_day_id=${encodeURIComponent(dayId ?? '')}`
+  }, [planId, dayId, pathBase, workoutsPane])
 
   const blocks = useMemo(() => groupExerciseRows(rows), [rows])
 
-  const backToScheda = () => router.push(`/home/allenamenti/${planId}`)
+  const backToScheda = () => {
+    if (workoutsPane && planId) {
+      workoutsPane.navigateTo({ kind: 'scheda', workoutPlanId: planId })
+      return
+    }
+    router.push(`${pathBase}/${planId}`)
+  }
 
   if (authLoading || loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
         <AllenamentiPageHeader onBack={backToScheda} />
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24" />
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6" />
       </div>
     )
   }
@@ -347,8 +362,8 @@ function GiornoPreviewContent() {
   if (error || !planId || !dayId) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <AllenamentiPageHeader onBack={() => router.push('/home/allenamenti')} />
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
+        <AllenamentiPageHeader onBack={() => router.push(pathBase)} />
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6">
           <p className="pt-2 text-sm text-text-secondary">{error ?? 'Contenuto non disponibile'}</p>
         </div>
       </div>
@@ -363,9 +378,9 @@ function GiornoPreviewContent() {
         onBack={backToScheda}
         withBottomMargin
       />
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
-        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
-          <p className="text-xs text-text-secondary">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6">
+        <div className="mx-auto w-full max-w-lg space-y-5 sm:space-y-6 min-[1100px]:max-w-3xl">
+          <p className="text-xs leading-relaxed text-text-secondary sm:mb-0.5 sm:text-sm">
             Controlla esercizi e serie; quando sei pronto avvia l&apos;allenamento.
           </p>
 
@@ -376,7 +391,7 @@ function GiornoPreviewContent() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4 sm:space-y-5">
               {blocks.map((block, bi) => {
                 if (block.kind === 'circuit') {
                   return (
@@ -392,7 +407,9 @@ function GiornoPreviewContent() {
                             const mg = r.exercises?.muscle_group?.trim()
                             const desc = r.exercises?.description?.trim() ?? ''
                             const detailHref = r.exercises?.id
-                              ? `/home/allenamenti/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
+                              ? workoutsPane
+                                ? workoutsPane.hrefFor({ kind: 'esercizio', exerciseId: r.exercises.id })
+                                : `${pathBase}/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
                               : null
                             const isOpen = expandedRowIds.has(r.id)
                             const canAct = Boolean(desc) || Boolean(detailHref)
@@ -465,7 +482,9 @@ function GiornoPreviewContent() {
                 const mg = r.exercises?.muscle_group?.trim()
                 const desc = r.exercises?.description?.trim() ?? ''
                 const detailHref = r.exercises?.id
-                  ? `/home/allenamenti/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
+                  ? workoutsPane
+                    ? workoutsPane.hrefFor({ kind: 'esercizio', exerciseId: r.exercises.id })
+                    : `${pathBase}/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
                   : null
                 const isOpen = expandedRowIds.has(r.id)
                 const canAct = Boolean(desc) || Boolean(detailHref)
@@ -521,12 +540,20 @@ function GiornoPreviewContent() {
             </div>
           )}
 
-          <div className="pt-2">
+          <div className="pt-4 pb-2 sm:pt-5 sm:pb-3">
             <Button
               asChild
               className="h-12 min-h-[48px] w-full gap-2 touch-manipulation rounded-xl bg-cyan-500 text-sm font-semibold text-white hover:bg-cyan-400"
             >
-              <Link href={startHref} prefetch={true}>
+              <Link
+                href={startHref}
+                prefetch={true}
+                onClick={(e) => {
+                  if (!workoutsPane || !planId || !dayId) return
+                  e.preventDefault()
+                  workoutsPane.navigateTo({ kind: 'oggi', workoutPlanId: planId, dayId })
+                }}
+              >
                 <Play className="h-4 w-4" />
                 Inizia allenamento
               </Link>

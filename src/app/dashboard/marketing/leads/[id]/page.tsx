@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'Nuovo',
@@ -202,19 +203,11 @@ export default function LeadDetailPage() {
   }
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (error || !lead) {

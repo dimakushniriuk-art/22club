@@ -8,7 +8,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Badge } from '@/components/ui'
-import { Check, List, User, Calendar, Dumbbell, Goal } from 'lucide-react'
+import { Check, List, User, Calendar, Dumbbell, Goal, RefreshCw } from 'lucide-react'
 import type { WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
 import { getObjectiveLabel } from '@/lib/constants/workout-objectives'
 
@@ -117,6 +117,30 @@ export function WorkoutWizardStep5({
                     >
                       {wizardData.days.length}
                     </Badge>
+                  </div>
+                  <div className="space-y-2 pb-3 border-b border-white/10">
+                    <span className="text-text-secondary flex items-center gap-2 text-sm">
+                      <RefreshCw className="h-4 w-4 text-cyan-400" />
+                      Sessioni prima della revisione (per giorno):
+                    </span>
+                    <ul className="space-y-1.5 pl-6 text-sm">
+                      {wizardData.days.map((day, idx) => (
+                        <li
+                          key={idx}
+                          className="text-text-primary list-disc marker:text-cyan-400/80"
+                        >
+                          <span className="font-medium">
+                            Giorno {day.day_number ?? idx + 1}
+                            {day.title ? ` · ${day.title}` : ''}:
+                          </span>{' '}
+                          {day.sessions_until_refresh != null && day.sessions_until_refresh >= 1 ? (
+                            <span>{day.sessions_until_refresh}</span>
+                          ) : (
+                            <span className="text-text-tertiary italic">non indicato</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-text-secondary flex items-center gap-2">

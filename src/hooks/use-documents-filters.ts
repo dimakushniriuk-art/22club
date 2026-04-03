@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { extractFileName } from '@/lib/documents'
+import { documentDisplayFileName } from '@/lib/documents'
 import type { Document } from '@/types/document'
 
 export function useDocumentsFilters(documents: Document[]) {
@@ -15,7 +15,7 @@ export function useDocumentsFilters(documents: Document[]) {
       filtered = filtered.filter(
         (doc) =>
           doc.athlete_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          extractFileName(doc.file_url).toLowerCase().includes(searchTerm.toLowerCase()) ||
+          documentDisplayFileName(doc).toLowerCase().includes(searchTerm.toLowerCase()) ||
           doc.category.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     }

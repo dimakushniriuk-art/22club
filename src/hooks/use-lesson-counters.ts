@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 /**
  * Restituisce una mappa athlete_id -> count (lezioni rimanenti) per gli atleti indicati.
@@ -18,19 +19,23 @@ export function useLessonCounters(athleteIds: string[], refetchKey?: number): Ma
     }
     let cancelled = false
     const supabase = createClient()
-    supabase
-      .from('lesson_counters')
-      .select('athlete_id, count')
-      .in('athlete_id', athleteIds)
-      .then((res: { data: unknown }) => {
-        if (cancelled) return
-        const data = res.data
-        const m = new Map<string, number>()
-        ;(Array.isArray(data) ? data : []).forEach(
-          (r: { athlete_id: string; count: number | null }) => m.set(r.athlete_id, r.count ?? 0),
-        )
-        setRimastiMap(m)
-      })
+    const mergeCounters = async () => {
+      const rows: { athlete_id: string; count: number | null }[] = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const res = await supabase
+          .from('lesson_counters')
+          .select('athlete_id, count')
+          .in('athlete_id', idChunk)
+        rows.push(...(Array.isArray(res.data) ? res.data : []))
+      }
+      if (cancelled) return
+      const m = new Map<string, number>()
+      rows.forEach((r: { athlete_id: string; count: number | null }) =>
+        m.set(r.athlete_id, r.count ?? 0),
+      )
+      setRimastiMap(m)
+    }
+    void mergeCounters()
     return () => {
       cancelled = true
     }

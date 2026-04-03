@@ -1,6 +1,6 @@
 'use client'
 
-import { Activity, BarChart3, Layout, Dumbbell, TrendingUp } from 'lucide-react'
+import { Activity, BarChart3, Layout, TrendingUp } from 'lucide-react'
 import { PageHeaderGlass, PageHeaderCompact, PageHeaderFixed } from '@/components/layout'
 import { CardMetric } from '@/components/ui/card-metric'
 import {
@@ -51,14 +51,13 @@ export function PatternsHeaders() {
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>PageHeaderFixed</h3>
           <p className={DS_LABEL_CLASS}>
-            Nero, linea cyan in basso. Allenamenti, Appuntamenti, Foto.
+            Nero, linea cyan in basso. Back + titolo (stesso schema della barra atleta unificata, senza icona).
           </p>
           <div className={DS_CARD_FRAME_CLASS}>
             <PageHeaderFixed
               title="I miei Allenamenti"
               subtitle="Programma e monitora i tuoi progressi"
               onBack={() => {}}
-              icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
               static
             />
           </div>

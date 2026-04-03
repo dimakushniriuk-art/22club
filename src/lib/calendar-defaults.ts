@@ -4,6 +4,58 @@
  */
 
 import type { AppointmentColor } from '@/types/appointment'
+import type { StaffCalendarSettings } from '@/types/staff-calendar-settings'
+
+export type StaffCalendarSettingsPickForTypes = Pick<
+  StaffCalendarSettings,
+  'enabled_appointment_types' | 'custom_appointment_types'
+>
+
+/**
+ * Tipi ordine: lista salvata in impostazioni + chiavi custom in coda.
+ * Se `enabled_appointment_types` è vuoto o assente, usa i default per ruolo (come form).
+ */
+export function getEnabledAppointmentTypeKeys(
+  settings: StaffCalendarSettingsPickForTypes | null | undefined,
+  role: string | null | undefined,
+): string[] {
+  let system: string[]
+  if (settings?.enabled_appointment_types?.length) {
+    system = settings.enabled_appointment_types
+  } else if (role === 'trainer' || role === 'admin')
+    system = [
+      'allenamento_singolo',
+      'allenamento_doppio',
+      'programma',
+      'prova',
+      'riunione',
+      'privato',
+      'allenamento',
+    ]
+  else if (role === 'nutrizionista')
+    system = [
+      'appuntamento_normale',
+      'prova',
+      'controllo',
+      'riunione',
+      'privato',
+      'nutrizionista',
+    ]
+  else if (role === 'massaggiatore')
+    system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'massaggio']
+  else
+    system = [
+      'appuntamento_normale',
+      'prova',
+      'controllo',
+      'riunione',
+      'privato',
+      'massaggio',
+      'nutrizionista',
+    ]
+  const customKeys = (settings?.custom_appointment_types ?? []).map((c) => c.key)
+  return [...system, ...customKeys]
+}
 
 /** Tutti i tipi con label per UI (form e impostazioni). */
 export const APPOINTMENT_TYPE_LABELS: Record<string, string> = {

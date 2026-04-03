@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button'
 import { applySegmentRules, type SegmentRules } from '@/lib/marketing/segment-rules'
 import type { Database } from '@/lib/supabase/types'
 import type { MarketingAthleteRow } from '@/app/api/marketing/athletes/route'
+import {
+  StaffMarketingDataBlockSkeleton,
+  StaffMarketingSegmentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
 type AthleteRow = MarketingAthleteRow
@@ -79,11 +83,7 @@ export default function MarketingSegmentsPage() {
     applySegmentRules(athletes, rules ?? undefined).length
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   return (
@@ -107,9 +107,7 @@ export default function MarketingSegmentsPage() {
       </header>
 
       {loading ? (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+        <StaffMarketingDataBlockSkeleton />
       ) : error ? (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           {error}

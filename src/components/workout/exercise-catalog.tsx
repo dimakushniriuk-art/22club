@@ -11,6 +11,7 @@ import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { SimpleSelect } from '@/components/ui/simple-select'
 import { useIcon } from '@/components/ui/professional-icons'
+import { ViewModeToggle } from '@/components/shared/ui/view-mode-toggle'
 import {
   MuscleGroupFilter,
   muscleGroupFilterToDbValue,
@@ -551,32 +552,14 @@ export function ExerciseCatalog({
                 <Filter className="h-4 w-4 mr-2" />
                 Filtri
               </Button>
-              <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
-                <Button
-                  onClick={() => setViewMode('grid')}
-                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-                  size="sm"
-                  className={
-                    viewMode === 'grid'
-                      ? 'bg-cyan-500 text-white border-cyan-400/80 hover:bg-cyan-400 active:bg-cyan-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
-                      : 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent'
-                  }
-                >
-                  <Grid3x3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={() => setViewMode('list')}
-                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
-                  size="sm"
-                  className={
-                    viewMode === 'list'
-                      ? 'bg-cyan-500 text-white border-cyan-400/80 hover:bg-cyan-400 active:bg-cyan-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]'
-                      : 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent'
-                  }
-                >
-                  <ListIcon className="h-4 w-4" />
-                </Button>
-              </div>
+              <ViewModeToggle
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { value: 'grid', ariaLabel: 'Vista griglia', Icon: Grid3x3 },
+                  { value: 'list', ariaLabel: 'Vista lista', Icon: ListIcon },
+                ]}
+              />
             </div>
           </div>
 

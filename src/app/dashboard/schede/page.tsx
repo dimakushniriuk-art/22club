@@ -7,6 +7,7 @@ import { ErrorState } from '@/components/dashboard/error-state'
 import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
 import { SchedeHeaderActions, WorkoutPlansList } from '@/components/workout-plans'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { useToast } from '@/components/ui/toast'
 import type { Workout } from '@/types/workout'
 
@@ -116,7 +117,7 @@ export default function SchedePage() {
     return (
       <StaffContentLayout
         title="Schede"
-        description="Gestisci le schede di allenamento per i tuoi atleti"
+        description="Schede allenamento: creazione, assegnazione e stato."
         theme="teal"
       >
         {null}
@@ -128,7 +129,7 @@ export default function SchedePage() {
     return (
       <StaffContentLayout
         title="Schede"
-        description="Gestisci le schede di allenamento per i tuoi atleti"
+        description="Schede allenamento: creazione, assegnazione e stato."
         theme="teal"
       >
         <ErrorState title="Impossibile caricare le schede" message={error} onRetry={handleRetry} />
@@ -139,7 +140,7 @@ export default function SchedePage() {
   return (
     <StaffContentLayout
       title="Schede"
-      description="Gestisci le schede di allenamento per i tuoi atleti"
+      description="Schede allenamento: creazione, assegnazione e stato."
       theme="teal"
       actions={
         <SchedeHeaderActions
@@ -153,7 +154,7 @@ export default function SchedePage() {
       }
     >
       {showFilters && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="w-full" label="Caricamento filtri…" />}>
           <WorkoutPlansFilters
             searchTerm={searchTerm}
             statusFilter={statusFilter}
@@ -187,7 +188,9 @@ export default function SchedePage() {
 
       {/* Workout Detail Modal - Lazy loaded solo quando aperto */}
       {selectedWorkoutId && (
-        <Suspense fallback={<div className="hidden" />}>
+        <Suspense
+          fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-lg mx-auto" label="Caricamento scheda…" />}
+        >
           <WorkoutDetailModal
             workoutId={selectedWorkoutId}
             open={selectedWorkoutId !== null}

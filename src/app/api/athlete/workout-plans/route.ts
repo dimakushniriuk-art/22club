@@ -11,6 +11,7 @@ import { getDifficultyFromDb } from '@/lib/workouts/workout-transformers'
 import type { Workout } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('api:athlete:workout-plans')
 
@@ -67,14 +68,16 @@ export async function GET() {
     const createdByProfiles: Record<string, { nome?: string | null; cognome?: string | null }> = {}
 
     if (createdByProfileIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nome, cognome')
-        .in('id', createdByProfileIds)
-      if (profilesData?.length) {
-        profilesData.forEach((p: { id: string; nome?: string | null; cognome?: string | null }) => {
-          createdByProfiles[p.id] = { nome: p.nome, cognome: p.cognome }
-        })
+      for (const idChunk of chunkForSupabaseIn(createdByProfileIds)) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome')
+          .in('id', idChunk)
+        if (profilesData?.length) {
+          profilesData.forEach((p: { id: string; nome?: string | null; cognome?: string | null }) => {
+            createdByProfiles[p.id] = { nome: p.nome, cognome: p.cognome }
+          })
+        }
       }
     }
 

@@ -10,8 +10,11 @@ import type { Exercise } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 import { transformExercises } from '@/lib/workouts/workout-transformers'
 import { createLogger } from '@/lib/logger'
+import { isSupabaseAuthLockStealAbortError } from '@/lib/supabase/supabase-lock-abort'
 
 const logger = createLogger('hooks:workouts:use-workout-exercises')
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 type ExerciseRow = Tables<'exercises'>
 
@@ -28,23 +31,35 @@ export function useWorkoutExercises(options?: UseWorkoutExercisesOptions) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchExercises = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select('*')
-        .order('name', { ascending: true })
-        .returns<ExerciseRow[]>()
+    setLoading(true)
+    let stealAttempts = 0
+    const maxStealRetries = 20
+    while (true) {
+      try {
+        const { data, error } = await supabase
+          .from('exercises')
+          .select('*')
+          .order('name', { ascending: true })
+          .returns<ExerciseRow[]>()
 
-      if (error) throw error
+        if (error) throw error
 
-      const safeData = transformExercises(data ?? [])
-      setExercises(safeData)
-      setError(null)
-    } catch (err) {
-      logger.error('Error fetching exercises', err)
-      setError('Errore nel caricamento degli esercizi')
-    } finally {
-      setLoading(false)
+        const safeData = transformExercises(data ?? [])
+        setExercises(safeData)
+        setError(null)
+        setLoading(false)
+        return
+      } catch (err) {
+        if (isSupabaseAuthLockStealAbortError(err) && stealAttempts < maxStealRetries) {
+          stealAttempts++
+          await sleep(80)
+          continue
+        }
+        logger.error('Error fetching exercises', err)
+        setError('Errore nel caricamento degli esercizi')
+        setLoading(false)
+        return
+      }
     }
   }, [])
 

@@ -2,24 +2,34 @@
 // Service Worker per Push Notifications (PWA)
 // =====================================================
 
-const CACHE_NAME = '22club-v1'
-const urlsToCache = ['/', '/login', '/home', '/dashboard', '/notifiche', '/manifest.json']
+const CACHE_NAME = '22club-v2'
+/** Precache minimo: nessun URL inesistente; fallimenti singoli non bloccano install */
+const URLS_TO_PRECACHE = ['/', '/login', '/home', '/manifest.json']
 
 // Install event
 self.addEventListener('install', (event) => {
   console.log('🔧 Service Worker installing...')
 
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => {
-        console.log('📦 Caching app shell...')
-        return cache.addAll(urlsToCache)
-      })
-      .then(() => {
-        console.log('✅ Service Worker installed')
-        return self.skipWaiting()
-      }),
+    (async () => {
+      const cache = await caches.open(CACHE_NAME)
+      await Promise.all(
+        URLS_TO_PRECACHE.map(async (url) => {
+          try {
+            const res = await fetch(url, { cache: 'reload' })
+            if (res.ok) {
+              await cache.put(url, res)
+            } else {
+              console.warn('Precache skip (non-OK):', url, res.status)
+            }
+          } catch (e) {
+            console.warn('Precache skip:', url, e)
+          }
+        }),
+      )
+      console.log('✅ Service Worker installed')
+      await self.skipWaiting()
+    })(),
   )
 })
 
@@ -95,18 +105,6 @@ self.addEventListener('push', (event) => {
       badge: notificationData.badge,
       tag: notificationData.tag,
       data: notificationData.data,
-      actions: [
-        {
-          action: 'view',
-          title: 'Visualizza',
-          icon: '/action-view.png',
-        },
-        {
-          action: 'dismiss',
-          title: 'Ignora',
-          icon: '/action-dismiss.png',
-        },
-      ],
       requireInteraction: false,
       silent: false,
       vibrate: [200, 100, 200],
@@ -133,13 +131,8 @@ self.addEventListener('notificationclick', (event) => {
   const notificationData = event.notification.data || {}
   const action = event.action
 
-  if (action === 'dismiss') {
-    // Notifica ignorata, non fare nulla
-    return
-  }
-
   // Determina l'URL di destinazione
-  let targetUrl = '/'
+  let targetUrl = '/home'
 
   if (notificationData.link) {
     targetUrl = notificationData.link
@@ -161,7 +154,7 @@ self.addEventListener('notificationclick', (event) => {
         targetUrl = '/dashboard/statistiche'
         break
       default:
-        targetUrl = '/notifiche'
+        targetUrl = '/home'
     }
   }
 

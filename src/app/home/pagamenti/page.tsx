@@ -8,8 +8,16 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { createLogger } from '@/lib/logger'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { PageHeaderFixed } from '@/components/layout'
-import { Euro, FileText, Download, Eye, X } from 'lucide-react'
+import { Euro, Eye } from 'lucide-react'
 import { useAuth } from '@/providers/auth-provider'
+import {
+  DOCUMENTS_STORAGE_BUCKET,
+  fetchStorageBlobViaPreview,
+  invoiceDocumentSuggestedFileName,
+  resolveInvoiceDocumentsStoragePath,
+} from '@/lib/documents'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('app:home:pagamenti:page')
 
@@ -30,7 +38,14 @@ export default function PagamentiPage() {
   const [pagamenti, setPagamenti] = useState<Pagamento[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null)
+  const {
+    open: invoicePdfOpen,
+    blob: invoicePdfBlob,
+    filename: invoicePdfFilename,
+    openWithBlob: openInvoicePdfWithBlob,
+    onOpenChange: onInvoicePdfOpenChange,
+  } = usePdfPreviewDialog()
+  const [invoicePreviewLoadingId, setInvoicePreviewLoadingId] = useState<string | null>(null)
 
   const handleBack = useCallback(() => {
     router.back()
@@ -146,6 +161,29 @@ export default function PagamentiPage() {
     }).format(amount)
   }
 
+  const openInvoicePdfPreview = useCallback(
+    async (paymentId: string, invoiceUrl: string, paymentDate: string) => {
+      const filePath = resolveInvoiceDocumentsStoragePath(invoiceUrl)
+      if (!filePath) {
+        setError('Percorso fattura non valido.')
+        return
+      }
+      const safeName = invoiceDocumentSuggestedFileName(invoiceUrl, paymentDate)
+      setError(null)
+      setInvoicePreviewLoadingId(paymentId)
+      try {
+        const blob = await fetchStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath)
+        openInvoicePdfWithBlob(blob, safeName)
+      } catch (err) {
+        logger.error('Errore anteprima fattura PDF', err, { paymentId })
+        setError(err instanceof Error ? err.message : 'Impossibile aprire la fattura.')
+      } finally {
+        setInvoicePreviewLoadingId(null)
+      }
+    },
+    [openInvoicePdfWithBlob],
+  )
+
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
@@ -154,7 +192,6 @@ export default function PagamentiPage() {
           title="Pagamenti"
           subtitle="I tuoi abbonamenti e pagamenti"
           onBack={handleBack}
-          icon={<Euro className="h-5 w-5 text-cyan-400" />}
         />
         <div
           className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom"
@@ -172,7 +209,6 @@ export default function PagamentiPage() {
           title="Pagamenti"
           subtitle="I tuoi abbonamenti e pagamenti"
           onBack={handleBack}
-          icon={<Euro className="h-5 w-5 text-cyan-400" />}
         />
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-auto px-4 pb-24 safe-area-inset-bottom">
           <ErrorState message={error} onRetry={loadPagamenti} />
@@ -188,7 +224,6 @@ export default function PagamentiPage() {
         title="Pagamenti"
         subtitle="I tuoi abbonamenti e pagamenti"
         onBack={handleBack}
-        icon={<Euro className="h-5 w-5 text-cyan-400" />}
       />
 
       <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-[1800px] flex-1 flex-col space-y-4 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:space-y-6 sm:px-6">
@@ -262,25 +297,19 @@ export default function PagamentiPage() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           {pag.invoice_url ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedInvoice(pag.invoice_url!)}
-                                className="border-green-500/30 text-green-400 hover:bg-green-500/10"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Visualizza
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.open(pag.invoice_url!, '_blank')}
-                                className="border-blue-500/30 text-white hover:bg-blue-500/10"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                void openInvoicePdfPreview(pag.id, pag.invoice_url!, pag.payment_date)
+                              }
+                              disabled={invoicePreviewLoadingId === pag.id}
+                              className="gap-1.5 border-cyan-400/70 text-cyan-300 hover:border-cyan-300/80 hover:bg-cyan-500/15"
+                              title="Anteprima fattura PDF"
+                            >
+                              <Eye className="h-4 w-4 shrink-0" />
+                              <span className="text-xs font-semibold">PDF</span>
+                            </Button>
                           ) : (
                             <span className="text-text-tertiary text-sm">Non disponibile</span>
                           )}
@@ -295,34 +324,12 @@ export default function PagamentiPage() {
         </Card>
       </div>
 
-      {/* Modal Preview Fattura */}
-      {selectedInvoice && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
-          <div className="relative w-full h-full max-w-4xl max-h-[90vh] m-4 bg-background-secondary rounded-lg border border-blue-500/30 shadow-xl">
-            <div className="flex items-center justify-between p-4 border-b border-blue-500/20">
-              <h3 className="text-text-primary text-lg font-semibold flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-400" />
-                Fattura
-              </h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedInvoice(null)}
-                className="border-blue-500/30 text-white hover:bg-blue-500/10"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="p-4 h-[calc(90vh-80px)] overflow-auto">
-              <iframe
-                src={selectedInvoice}
-                className="w-full h-full rounded border border-blue-500/20"
-                title="Fattura PDF"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <PdfCanvasPreviewDialog
+        open={invoicePdfOpen}
+        onOpenChange={onInvoicePdfOpenChange}
+        blob={invoicePdfBlob}
+        filename={invoicePdfFilename}
+      />
     </div>
   )
 }

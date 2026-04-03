@@ -4,6 +4,8 @@ import { useState, lazy, Suspense } from 'react'
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { ErrorState } from '@/components/dashboard/error-state'
+import { LoadingState } from '@/components/dashboard/loading-state'
+import { StaffAthleteSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 import { useAthleteProfileData } from '@/hooks/athlete-profile/use-athlete-profile-data'
 import { AthleteProfileHeader, AthleteProfileTabs } from '@/components/dashboard/athlete-profile'
 import { useAvatarInitials } from '@/components/ui/avatar'
@@ -53,7 +55,7 @@ export default function AtletaPage() {
   }
 
   if (loading && !athlete) {
-    return null
+    return <StaffAthleteSegmentSkeleton />
   }
 
   if (error || !athlete) {
@@ -77,6 +79,8 @@ export default function AtletaPage() {
     peso_attuale: stats.peso_attuale,
   }
 
+  const athleteDisplayName = [athlete.nome, athlete.cognome].filter(Boolean).join(' ').trim()
+
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
       <AthleteProfileHeader
@@ -91,13 +95,16 @@ export default function AtletaPage() {
         formatDate={formatDate}
         showEditButton={canEdit}
       />
-      <AthleteProfileTabs
-        athleteId={id}
-        athleteUserId={athleteUserId}
-        stats={tabStats}
-        statsError={statsError}
-        onPrefetchTab={() => {}}
-      />
+      <Suspense fallback={<LoadingState message="Caricamento scheda atleta..." />}>
+        <AthleteProfileTabs
+          athleteId={id}
+          athleteUserId={athleteUserId}
+          stats={tabStats}
+          statsError={statsError}
+          athleteDisplayName={athleteDisplayName || undefined}
+          onPrefetchTab={() => {}}
+        />
+      </Suspense>
 
       {canEdit && showModifica && (
         <Suspense fallback={null}>

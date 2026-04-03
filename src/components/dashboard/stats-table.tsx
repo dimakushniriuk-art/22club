@@ -38,7 +38,7 @@ export interface AthleteStats {
 
 interface StatsTableProps {
   data: AthleteStats[]
-  onExport: () => void
+  onExport: () => void | Promise<void>
 }
 
 type SortField = keyof AthleteStats
@@ -168,7 +168,7 @@ export function StatsTable({ data, onExport }: StatsTableProps) {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={onExport}
+            onClick={() => void onExport()}
             className="flex items-center gap-2 bg-background-secondary border-background-tertiary/50 hover:border-blue-500/50 hover:bg-background-tertiary/50 transition-all duration-200"
           >
             <Download className="h-4 w-4" />
@@ -337,7 +337,7 @@ export function StatsTable({ data, onExport }: StatsTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={onExport}
+            onClick={() => void onExport()}
             className="flex items-center gap-2 bg-background-secondary border-background-tertiary/50 hover:border-blue-500/50 hover:bg-background-tertiary/50 transition-all duration-200"
           >
             <Download className="h-4 w-4" />

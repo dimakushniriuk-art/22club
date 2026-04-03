@@ -5,6 +5,7 @@ import { Input } from '@/components/ui'
 import { Filter, Grid3x3, TableIcon } from 'lucide-react'
 import { ClientiExportMenu } from '@/components/dashboard/clienti-export-menu'
 import { cn } from '@/lib/utils'
+import { ViewModeToggle } from '@/components/shared/ui/view-mode-toggle'
 
 interface ClientiToolbarProps {
   searchTerm: string
@@ -14,8 +15,7 @@ interface ClientiToolbarProps {
   onStatoFilterChange: (value: 'tutti' | 'attivo' | 'inattivo' | 'sospeso') => void
   onViewModeChange: (mode: 'table' | 'grid') => void
   onShowFiltriAvanzati: () => void
-  onExportCSV: () => void
-  onExportPDF: () => void
+  onExportPdf: () => void | Promise<void>
   hasClienti: boolean
   /** Sotto 852px: nasconde tabella, pulsanti min-h 44px */
   isMobile?: boolean
@@ -33,13 +33,20 @@ export function ClientiToolbar({
   onStatoFilterChange,
   onViewModeChange,
   onShowFiltriAvanzati,
-  onExportCSV,
-  onExportPDF,
+  onExportPdf,
   hasClienti,
   isMobile = false,
   isExporting = false,
 }: ClientiToolbarProps) {
   const btnClass = isMobile ? 'min-h-[44px] touch-manipulation' : ''
+  const viewOptions: Array<{
+    value: 'grid' | 'table'
+    ariaLabel: string
+    Icon: typeof Grid3x3
+  }> = [
+    { value: 'grid', ariaLabel: 'Vista griglia', Icon: Grid3x3 },
+    ...(!isMobile ? [{ value: 'table' as const, ariaLabel: 'Vista tabella', Icon: TableIcon }] : []),
+  ]
   return (
     <>
       <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
@@ -102,42 +109,15 @@ export function ClientiToolbar({
       </div>
 
       <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap">
-        <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
-          <Button
-            variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => onViewModeChange('grid')}
-            aria-label="Vista griglia"
-            className={cn(
-              'rounded-md',
-              viewMode !== 'grid' && 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent',
-              btnClass,
-            )}
-          >
-            <Grid3x3 className="mr-2 h-4 w-4" />
-            Griglia
-          </Button>
-          {!isMobile && (
-            <Button
-              variant={viewMode === 'table' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => onViewModeChange('table')}
-              aria-label="Vista tabella"
-              className={cn(
-                'rounded-md',
-                viewMode !== 'table' && 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent',
-                btnClass,
-              )}
-            >
-              <TableIcon className="mr-2 h-4 w-4" />
-              Tabella
-            </Button>
-          )}
-        </div>
+        <ViewModeToggle
+          value={viewMode}
+          onChange={onViewModeChange}
+          buttonClassName={btnClass}
+          options={viewOptions}
+        />
 
         <ClientiExportMenu
-          onExportCSV={onExportCSV}
-          onExportPDF={onExportPDF}
+          onExportPdf={onExportPdf}
           disabled={!hasClienti || isExporting}
           isExporting={isExporting}
           isMobile={isMobile}

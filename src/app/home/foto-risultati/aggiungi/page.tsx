@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { PageHeaderFixed } from '@/components/layout'
-import { Camera, CheckCircle2, Image as ImageIcon, ImagePlus, Loader2 } from 'lucide-react'
+import { Camera, CheckCircle2, ImagePlus, Loader2 } from 'lucide-react'
 import {
   Button,
   Dialog,
@@ -254,7 +254,6 @@ export default function AggiungiFotoPage() {
           title="Aggiungi foto"
           subtitle="Scegli la vista e scatta: si aprirÃ  la fotocamera"
           backHref="/home/foto-risultati"
-          icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
         />
 
         <input

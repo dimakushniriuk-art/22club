@@ -14,13 +14,81 @@ import type {
   WorkoutWizardData,
   WorkoutDayData,
   WorkoutDayExerciseData,
+  WorkoutDaySessionsPreview,
   DayItem,
   Exercise,
 } from '@/types/workout'
 import type { Tables, TablesInsert } from '@/types/supabase'
 import { isWorkoutPlanRealAthleteId } from '@/lib/constants/workout-plan-wizard'
+import { isSupabaseAuthLockStealAbortError } from '@/lib/supabase/supabase-lock-abort'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:workout-plans:use-workout-plans')
+
+function isWorkoutLogStatoCompleted(stato: string | null | undefined): boolean {
+  const s = String(stato ?? '').toLowerCase()
+  return s === 'completato' || s === 'completed'
+}
+
+function isWorkoutLogRowCompleted(row: {
+  stato?: string | null
+  completato?: boolean | null
+}): boolean {
+  if (row.completato === true) return true
+  return isWorkoutLogStatoCompleted(row.stato)
+}
+
+function buildDaysSessionsPreviewFromWizard(days: WorkoutDayData[]): WorkoutDaySessionsPreview[] {
+  return days.map((day, idx) => {
+    const sur = day.sessions_until_refresh
+    return {
+      day_number: day.day_number ?? idx + 1,
+      title: day.title ?? day.name ?? null,
+      sessions_until_refresh:
+        typeof sur === 'number' && Number.isFinite(sur) && sur >= 1 ? sur : null,
+      sessions_completed_count: 0,
+    }
+  })
+}
+
+/** Numerazione stabile tra le schede dello staff: ordine per `created_at` crescente, tie-break su `id`. */
+function assignCreationOrderNumbers(items: Workout[]): Workout[] {
+  if (items.length === 0) return items
+  const sorted = [...items].sort((a, b) => {
+    const ta = new Date(a.created_at).getTime()
+    const tb = new Date(b.created_at).getTime()
+    if (ta !== tb) return ta - tb
+    return a.id.localeCompare(b.id)
+  })
+  const idToNum = new Map<string, number>()
+  for (let i = 0; i < sorted.length; i++) {
+    idToNum.set(sorted[i].id, i + 1)
+  }
+  return items.map((w) => ({
+    ...w,
+    creation_order_number: idToNum.get(w.id) ?? 1,
+  }))
+}
+
+function buildDaysSessionsPreviewFromDuplicateSource(
+  days: Array<{
+    day_number: number
+    title: string | null
+    day_name: string
+    sessions_until_refresh?: number | null
+  }>,
+): WorkoutDaySessionsPreview[] {
+  return days.map((d) => {
+    const sur = d.sessions_until_refresh
+    return {
+      day_number: d.day_number,
+      title: d.title ?? d.day_name ?? null,
+      sessions_until_refresh:
+        typeof sur === 'number' && Number.isFinite(sur) && sur >= 1 ? sur : null,
+      sessions_completed_count: 0,
+    }
+  })
+}
 
 type ProfileRow = Tables<'profiles'>
 type ExerciseRow = Tables<'exercises'>
@@ -38,15 +106,6 @@ type WorkoutRowSelected = {
   created_by_profile_id: string | null
   created_at: string | null
   updated_at: string | null
-}
-
-function isLockAbortError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false
-  const msg = error.message.toLowerCase()
-  return (
-    error.name === 'AbortError' &&
-    (msg.includes('lock broken') || msg.includes("'steal' option") || msg.includes('steal option'))
-  )
 }
 
 function mapWorkoutPlanStatus(row: {
@@ -400,11 +459,15 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         let athleteSelection: Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[] = []
         if (athleteIds.length > 0) {
           try {
-            const { data } = await supabase
-              .from('profiles')
-              .select('id, nome, cognome')
-              .in('id', athleteIds)
-            athleteSelection = (data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]
+            const merged: Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[] = []
+            for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+              const { data } = await supabase
+                .from('profiles')
+                .select('id, nome, cognome')
+                .in('id', idChunk)
+              merged.push(...((data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]))
+            }
+            athleteSelection = merged
           } catch (selectionErr) {
             logger.warn(
               'Timeout/errore caricamento profili atleti nella lista schede',
@@ -417,11 +480,15 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         let staffSelection: Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[] = []
         if (staffProfileIds.length > 0) {
           try {
-            const { data } = await supabase
-              .from('profiles')
-              .select('id, nome, cognome')
-              .in('id', staffProfileIds)
-            staffSelection = (data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]
+            const merged: Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[] = []
+            for (const idChunk of chunkForSupabaseIn(staffProfileIds)) {
+              const { data } = await supabase
+                .from('profiles')
+                .select('id, nome, cognome')
+                .in('id', idChunk)
+              merged.push(...((data ?? []) as Pick<ProfileRow, 'id' | 'nome' | 'cognome'>[]))
+            }
+            staffSelection = merged
           } catch (selectionErr) {
             logger.warn('Timeout/errore caricamento profili staff nella lista schede', selectionErr)
             staffSelection = []
@@ -430,6 +497,117 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
 
         const athletesMap = new Map(athleteSelection.map((athlete) => [athlete.id, athlete]))
         const staffMap = new Map(staffSelection.map((staff) => [staff.id, staff]))
+
+        const planIdsForDays = workoutRows.map((w) => w.id).filter((id): id is string => Boolean(id))
+        const daysPreviewByPlan = new Map<string, WorkoutDaySessionsPreview[]>()
+        if (planIdsForDays.length > 0) {
+          type DayRow = {
+            id: string
+            workout_plan_id: string | null
+            day_number: number | null
+            title: string | null
+            sessions_until_refresh: number | null
+          }
+          const daysMerged: DayRow[] = []
+          let daysBatchErr: { message: string } | null = null
+          for (const planChunk of chunkForSupabaseIn(planIdsForDays)) {
+            const { data: daysBatch, error: chunkErr } = await supabase
+              .from('workout_days')
+              .select('id, workout_plan_id, day_number, title, sessions_until_refresh')
+              .in('workout_plan_id', planChunk)
+              .order('day_number', { ascending: true })
+            if (chunkErr) {
+              daysBatchErr = chunkErr
+              break
+            }
+            daysMerged.push(...((daysBatch ?? []) as DayRow[]))
+          }
+          if (daysBatchErr) {
+            logger.warn('Anteprima sessioni per giorno (lista schede) non caricata', undefined, {
+              message: daysBatchErr.message,
+            })
+          } else {
+            const daysBatch = daysMerged
+            const dayIdToPlanId = new Map<string, string>()
+            const allDayIds: string[] = []
+            for (const row of daysBatch ?? []) {
+              const pid = row.workout_plan_id as string | null
+              const did = typeof row.id === 'string' ? row.id : ''
+              if (pid && did) {
+                dayIdToPlanId.set(did, pid)
+                allDayIds.push(did)
+              }
+            }
+
+            const planIdToAthleteId = new Map<string, string>()
+            for (const w of workoutRows) {
+              const pid = w.id
+              const aid = w.athlete_id
+              if (pid && aid && aid.trim() !== '') planIdToAthleteId.set(pid, aid.trim())
+            }
+
+            const completedByDayId = new Map<string, number>()
+            if (allDayIds.length > 0) {
+              type WorkoutLogFetchRow = {
+                workout_day_id?: string | null
+                stato?: string | null
+                atleta_id?: string | null
+                athlete_id?: string | null
+                completato?: boolean | null
+              }
+              const logsMerged: WorkoutLogFetchRow[] = []
+              let logsErr: { message: string } | null = null
+              for (const dayChunk of chunkForSupabaseIn(allDayIds)) {
+                const { data: logsRows, error: chunkLogErr } = await supabase
+                  .from('workout_logs')
+                  .select('workout_day_id, stato, atleta_id, athlete_id, completato')
+                  .in('workout_day_id', dayChunk)
+                if (chunkLogErr) {
+                  logsErr = chunkLogErr
+                  break
+                }
+                logsMerged.push(...((logsRows ?? []) as WorkoutLogFetchRow[]))
+              }
+
+              if (logsErr) {
+                logger.warn('Conteggio sessioni completate (lista schede) non caricato', undefined, {
+                  message: logsErr.message,
+                })
+              } else {
+                for (const log of logsMerged) {
+                  const dayId = log.workout_day_id as string | null
+                  if (!dayId || !dayIdToPlanId.has(dayId)) continue
+                  if (!isWorkoutLogRowCompleted(log)) continue
+                  const planId = dayIdToPlanId.get(dayId)
+                  if (!planId) continue
+                  const planAthleteId = planIdToAthleteId.get(planId)
+                  if (!planAthleteId) continue
+                  const logAthleteId = (log.atleta_id as string) || (log.athlete_id as string | null)
+                  if (!logAthleteId || logAthleteId !== planAthleteId) continue
+                  completedByDayId.set(dayId, (completedByDayId.get(dayId) ?? 0) + 1)
+                }
+              }
+            }
+
+            for (const row of daysBatch ?? []) {
+              const pid = row.workout_plan_id as string | null
+              if (!pid) continue
+              const sur = row.sessions_until_refresh
+              const did = typeof row.id === 'string' ? row.id : ''
+              const entry: WorkoutDaySessionsPreview = {
+                workout_day_id: did || undefined,
+                day_number: typeof row.day_number === 'number' ? row.day_number : 0,
+                title: row.title ?? null,
+                sessions_until_refresh:
+                  typeof sur === 'number' && Number.isFinite(sur) && sur >= 1 ? sur : null,
+                sessions_completed_count: did ? (completedByDayId.get(did) ?? 0) : 0,
+              }
+              const list = daysPreviewByPlan.get(pid) ?? []
+              list.push(entry)
+              daysPreviewByPlan.set(pid, list)
+            }
+          }
+        }
 
         const transformedData: Workout[] = workoutRows.map((workout) => {
           const aid = workout.athlete_id
@@ -459,12 +637,13 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
                 : 'Sconosciuto'
               : 'Nessun atleta',
             staff_name: staff ? `${staff.nome || ''} ${staff.cognome || ''}`.trim() : 'Sconosciuto',
+            workout_days_sessions_preview: daysPreviewByPlan.get(workout.id) ?? [],
           }
         })
 
-        setWorkouts(transformedData)
+        setWorkouts(assignCreationOrderNumbers(transformedData))
       } catch (error) {
-        if (isLockAbortError(error)) {
+        if (isSupabaseAuthLockStealAbortError(error)) {
           logger.warn('Caricamento schede abortito per lock Supabase (transiente)', undefined, {
             message: error instanceof Error ? error.message : String(error),
           })
@@ -660,26 +839,43 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
           throw new Error(errMsg)
         }
 
-        const dayInsertsCreate = workoutData.days.map((day, dayIndex) => ({
-          workout_plan_id: newWorkout.id,
-          day_number: dayIndex + 1,
-          order_num: dayIndex + 1,
-          title: day.title || day.name || `Giorno ${dayIndex + 1}`,
-          day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
-        }))
+        const dayInsertsCreate = workoutData.days.map((day, dayIndex) => {
+          const sur = day.sessions_until_refresh
+          const sessionsUntilRefresh =
+            typeof sur === 'number' && Number.isFinite(sur) && sur >= 1
+              ? Math.min(Math.floor(sur), 999)
+              : null
+          return {
+            workout_plan_id: newWorkout.id,
+            day_number: dayIndex + 1,
+            order_num: dayIndex + 1,
+            title: day.title || day.name || `Giorno ${dayIndex + 1}`,
+            day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
+            sessions_until_refresh: sessionsUntilRefresh,
+          }
+        })
 
         type WorkoutDayIdRow = Pick<Tables<'workout_days'>, 'id'>
-        let newDayRowsCreate: WorkoutDayIdRow[] = []
+        const newDayRowsCreate: WorkoutDayIdRow[] = []
+        // Nota atomicità: giorni/esercizi/set sono persistiti a chunk separati; errore a metà può lasciare scheda parziale (no transazione client).
         if (dayInsertsCreate.length > 0) {
-          const { data: insertedDays, error: daysErr } =
-            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_days') as any).insert(dayInsertsCreate).select('id')
-
-          newDayRowsCreate = (insertedDays ?? []) as WorkoutDayIdRow[]
-          if (daysErr || newDayRowsCreate.length !== dayInsertsCreate.length) {
-            const msg = daysErr?.message ?? 'Inserimento giorni non valido'
-            logger.error('Error batch creating workout_days', daysErr ?? undefined)
-            throw new Error(`Errore creazione giorni: ${msg}`)
+          for (const dayChunk of chunkForSupabaseIn(dayInsertsCreate)) {
+            const { data: insertedDays, error: daysErr } =
+              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (supabase.from('workout_days') as any).insert(dayChunk).select('id')
+            if (daysErr) {
+              const msg = daysErr.message ?? 'Inserimento giorni non valido'
+              logger.error('Error batch creating workout_days', daysErr)
+              throw new Error(`Errore creazione giorni: ${msg}`)
+            }
+            newDayRowsCreate.push(...((insertedDays ?? []) as WorkoutDayIdRow[]))
+          }
+          if (newDayRowsCreate.length !== dayInsertsCreate.length) {
+            logger.error('Error batch creating workout_days: count mismatch', undefined, {
+              expected: dayInsertsCreate.length,
+              got: newDayRowsCreate.length,
+            })
+            throw new Error('Errore creazione giorni: conteggio righe inatteso')
           }
         }
 
@@ -714,19 +910,26 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         }
 
         if (exercisePayloadsAllCreate.length > 0) {
-          const { data: insertedExercises, error: exBatchError } =
-            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_day_exercises') as any)
-              .insert(exercisePayloadsAllCreate)
-              .select('id')
-
           type WdeIdRow = Pick<Tables<'workout_day_exercises'>, 'id'>
-          const typedInserted = (insertedExercises ?? []) as WdeIdRow[]
-
-          if (exBatchError || typedInserted.length !== exercisePayloadsAllCreate.length) {
-            const msg = exBatchError?.message ?? 'Inserimento esercizi batch non valido'
-            logger.error('Error batch creating workout_day_exercises', exBatchError ?? undefined)
-            throw new Error(`Errore aggiunta esercizi: ${msg}`)
+          const typedInserted: WdeIdRow[] = []
+          for (const exChunk of chunkForSupabaseIn(exercisePayloadsAllCreate)) {
+            const { data: insertedExercises, error: exBatchError } =
+              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (supabase.from('workout_day_exercises') as any).insert(exChunk).select('id')
+            if (exBatchError) {
+              logger.error('Error batch creating workout_day_exercises', exBatchError)
+              throw new Error(
+                `Errore aggiunta esercizi: ${exBatchError.message ?? 'batch non valido'}`,
+              )
+            }
+            typedInserted.push(...((insertedExercises ?? []) as WdeIdRow[]))
+          }
+          if (typedInserted.length !== exercisePayloadsAllCreate.length) {
+            logger.error('Error batch creating workout_day_exercises: count mismatch', undefined, {
+              expected: exercisePayloadsAllCreate.length,
+              got: typedInserted.length,
+            })
+            throw new Error('Errore aggiunta esercizi: conteggio righe inatteso')
           }
 
           const allSetsToInsertCreate: Array<{
@@ -743,13 +946,15 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
             )
           }
           if (allSetsToInsertCreate.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
-              allSetsToInsertCreate,
-            )
-            if (setsError) {
-              logger.error('Error creating workout_sets (batch)', setsError)
-              throw new Error(`Errore aggiunta set: ${setsError.message}`)
+            for (const setChunk of chunkForSupabaseIn(allSetsToInsertCreate)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
+                setChunk,
+              )
+              if (setsError) {
+                logger.error('Error creating workout_sets (batch)', setsError)
+                throw new Error(`Errore aggiunta set: ${setsError.message}`)
+              }
             }
           }
         }
@@ -806,9 +1011,10 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
               ? `${typedStaffProfile.nome || ''} ${typedStaffProfile.cognome || ''}`.trim() ||
                 'Sconosciuto'
               : 'Sconosciuto',
+            workout_days_sessions_preview: buildDaysSessionsPreviewFromWizard(workoutData.days),
           }
 
-          setWorkouts((prev) => [transformedWorkout, ...prev])
+          setWorkouts((prev) => assignCreationOrderNumbers([transformedWorkout, ...prev]))
         }
 
         return newWorkout.id
@@ -903,28 +1109,43 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
 
         if (typedExistingDays && typedExistingDays.length > 0) {
           const dayIds = typedExistingDays.map((d) => d.id)
-          await supabase.from('workout_day_exercises').delete().in('workout_day_id', dayIds)
+          for (const dayChunk of chunkForSupabaseIn(dayIds)) {
+            await supabase.from('workout_day_exercises').delete().in('workout_day_id', dayChunk)
+          }
           await supabase.from('workout_days').delete().eq('workout_plan_id', workoutId)
         }
 
-        const dayInsertsUpdate = workoutData.days.map((day, dayIndex) => ({
-          workout_plan_id: workoutId,
-          day_number: dayIndex + 1,
-          order_num: dayIndex + 1,
-          title: day.title || day.name || `Giorno ${dayIndex + 1}`,
-          day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
-        }))
+        const dayInsertsUpdate = workoutData.days.map((day, dayIndex) => {
+          const sur = day.sessions_until_refresh
+          const sessionsUntilRefresh =
+            typeof sur === 'number' && Number.isFinite(sur) && sur >= 1
+              ? Math.min(Math.floor(sur), 999)
+              : null
+          return {
+            workout_plan_id: workoutId,
+            day_number: dayIndex + 1,
+            order_num: dayIndex + 1,
+            title: day.title || day.name || `Giorno ${dayIndex + 1}`,
+            day_name: day.name || day.title || `Giorno ${dayIndex + 1}`,
+            sessions_until_refresh: sessionsUntilRefresh,
+          }
+        })
 
         type WorkoutDayIdRowUp = Pick<Tables<'workout_days'>, 'id'>
-        let newDayRowsUpdate: WorkoutDayIdRowUp[] = []
+        const newDayRowsUpdate: WorkoutDayIdRowUp[] = []
+        // Stesso rischio atomicità del create: round-trip multipli su giorni/esercizi/set.
         if (dayInsertsUpdate.length > 0) {
-          const { data: insertedDaysUp, error: daysErrUp } =
-            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_days') as any).insert(dayInsertsUpdate).select('id')
-
-          newDayRowsUpdate = (insertedDaysUp ?? []) as WorkoutDayIdRowUp[]
-          if (daysErrUp || newDayRowsUpdate.length !== dayInsertsUpdate.length) {
-            throw new Error(`Errore creazione giorni: ${daysErrUp?.message ?? 'batch non valido'}`)
+          for (const dayChunk of chunkForSupabaseIn(dayInsertsUpdate)) {
+            const { data: insertedDaysUp, error: daysErrUp } =
+              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (supabase.from('workout_days') as any).insert(dayChunk).select('id')
+            if (daysErrUp) {
+              throw new Error(`Errore creazione giorni: ${daysErrUp.message ?? 'batch non valido'}`)
+            }
+            newDayRowsUpdate.push(...((insertedDaysUp ?? []) as WorkoutDayIdRowUp[]))
+          }
+          if (newDayRowsUpdate.length !== dayInsertsUpdate.length) {
+            throw new Error('Errore creazione giorni: conteggio righe inatteso')
           }
         }
 
@@ -959,22 +1180,21 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         }
 
         if (exercisePayloadsAllUpdate.length > 0) {
-          const { data: insertedExercisesUpdate, error: exBatchErrorUpdate } =
-            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase.from('workout_day_exercises') as any)
-              .insert(exercisePayloadsAllUpdate)
-              .select('id')
-
           type WdeIdRowUp = Pick<Tables<'workout_day_exercises'>, 'id'>
-          const typedInsertedUpdate = (insertedExercisesUpdate ?? []) as WdeIdRowUp[]
-
-          if (
-            exBatchErrorUpdate ||
-            typedInsertedUpdate.length !== exercisePayloadsAllUpdate.length
-          ) {
-            throw new Error(
-              `Errore aggiunta esercizi: ${exBatchErrorUpdate?.message ?? 'batch non valido'}`,
-            )
+          const typedInsertedUpdate: WdeIdRowUp[] = []
+          for (const exChunk of chunkForSupabaseIn(exercisePayloadsAllUpdate)) {
+            const { data: insertedExercisesUpdate, error: exBatchErrorUpdate } =
+              await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (supabase.from('workout_day_exercises') as any).insert(exChunk).select('id')
+            if (exBatchErrorUpdate) {
+              throw new Error(
+                `Errore aggiunta esercizi: ${exBatchErrorUpdate.message ?? 'batch non valido'}`,
+              )
+            }
+            typedInsertedUpdate.push(...((insertedExercisesUpdate ?? []) as WdeIdRowUp[]))
+          }
+          if (typedInsertedUpdate.length !== exercisePayloadsAllUpdate.length) {
+            throw new Error('Errore aggiunta esercizi: conteggio righe inatteso')
           }
 
           const allSetsToInsertUpdate: Array<{
@@ -991,12 +1211,14 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
             )
           }
           if (allSetsToInsertUpdate.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
-              allSetsToInsertUpdate,
-            )
-            if (setsError) {
-              throw new Error(`Errore aggiunta set: ${setsError.message}`)
+            for (const setChunk of chunkForSupabaseIn(allSetsToInsertUpdate)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const { error: setsError } = await (supabase.from('workout_sets') as any).insert(
+                setChunk,
+              )
+              if (setsError) {
+                throw new Error(`Errore aggiunta set: ${setsError.message}`)
+              }
             }
           }
         }
@@ -1062,9 +1284,12 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
               ? `${typedStaffProfile.nome || ''} ${typedStaffProfile.cognome || ''}`.trim() ||
                 'Sconosciuto'
               : 'Sconosciuto',
+            workout_days_sessions_preview: buildDaysSessionsPreviewFromWizard(workoutData.days),
           }
 
-          setWorkouts((prev) => prev.map((w) => (w.id === workoutId ? transformedWorkout : w)))
+          setWorkouts((prev) =>
+            assignCreationOrderNumbers(prev.map((w) => (w.id === workoutId ? transformedWorkout : w))),
+          )
         }
       } catch (error) {
         const err = asError(error)
@@ -1142,7 +1367,7 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
 
       const { data: sourceDaysData, error: daysErr } = await supabase
         .from('workout_days')
-        .select('id, day_number, order_num, title, day_name, description')
+        .select('id, day_number, order_num, title, day_name, description, sessions_until_refresh')
         .eq('workout_plan_id', workoutId)
         .order('day_number', { ascending: true })
 
@@ -1157,6 +1382,7 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         title: string | null
         day_name: string
         description: string | null
+        sessions_until_refresh?: number | null
       }
       const sourceDays = (sourceDaysData ?? []) as SourceDayRow[]
       const oldDayIdToNewDayId = new Map<string, string>()
@@ -1172,6 +1398,12 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
               title: d.title,
               day_name: d.day_name,
               description: d.description ?? null,
+              sessions_until_refresh:
+                typeof d.sessions_until_refresh === 'number' &&
+                Number.isFinite(d.sessions_until_refresh) &&
+                d.sessions_until_refresh >= 1
+                  ? Math.min(Math.floor(d.sessions_until_refresh), 999)
+                  : null,
             })
             .select('id')
             .single()
@@ -1205,6 +1437,7 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
           created_by_staff_id: newPlan.created_by_profile_id ?? undefined,
           athlete_name: 'Nessun atleta',
           staff_name: 'Sconosciuto',
+          workout_days_sessions_preview: [],
         }
         const { data: staffOnly } = newPlan.created_by_profile_id
           ? await supabase
@@ -1219,19 +1452,8 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
           transformedEmpty.staff_name =
             `${sp.nome || ''} ${sp.cognome || ''}`.trim() || 'Sconosciuto'
         }
-        setWorkouts((prev) => [transformedEmpty, ...prev])
+        setWorkouts((prev) => assignCreationOrderNumbers([transformedEmpty, ...prev]))
         return newPlan.id
-      }
-
-      const { data: sourceExercisesData, error: exFetchErr } = await supabase
-        .from('workout_day_exercises')
-        .select(
-          'id, workout_day_id, exercise_id, sets, reps, rest_seconds, order_num, order_index, target_sets, target_reps, target_weight, rest_timer_sec, note, execution_time_sec, circuit_block_id',
-        )
-        .in('workout_day_id', oldDayIds)
-
-      if (exFetchErr) {
-        throw new Error(exFetchErr.message)
       }
 
       type SourceWdeRow = {
@@ -1252,7 +1474,21 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         circuit_block_id: string | null
       }
 
-      const sourceExercises = (sourceExercisesData ?? []) as SourceWdeRow[]
+      const sourceExercisesMerged: SourceWdeRow[] = []
+      for (const dayChunk of chunkForSupabaseIn(oldDayIds)) {
+        const { data: sourceExercisesData, error: exFetchErr } = await supabase
+          .from('workout_day_exercises')
+          .select(
+            'id, workout_day_id, exercise_id, sets, reps, rest_seconds, order_num, order_index, target_sets, target_reps, target_weight, rest_timer_sec, note, execution_time_sec, circuit_block_id',
+          )
+          .in('workout_day_id', dayChunk)
+        if (exFetchErr) {
+          throw new Error(exFetchErr.message)
+        }
+        sourceExercisesMerged.push(...((sourceExercisesData ?? []) as SourceWdeRow[]))
+      }
+
+      const sourceExercises = sourceExercisesMerged
       const dayNumberByOldId = new Map(sourceDays.map((d) => [d.id, d.day_number]))
 
       sourceExercises.sort((a, b) => {
@@ -1312,18 +1548,6 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
 
       const oldWdeIds = [...oldWdeIdToNewWdeId.keys()]
       if (oldWdeIds.length > 0) {
-        const { data: setsData, error: setsFetchErr } = await supabase
-          .from('workout_sets')
-          .select(
-            'workout_day_exercise_id, set_number, reps, weight_kg, execution_time_sec, rest_timer_sec',
-          )
-          .in('workout_day_exercise_id', oldWdeIds)
-          .order('set_number', { ascending: true })
-
-        if (setsFetchErr) {
-          throw new Error(setsFetchErr.message)
-        }
-
         type SetRow = {
           workout_day_exercise_id: string
           set_number: number
@@ -1333,7 +1557,26 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
           rest_timer_sec: number | null
         }
 
-        const setsRows = (setsData ?? []) as SetRow[]
+        const setsRowsMerged: SetRow[] = []
+        for (const wdeChunk of chunkForSupabaseIn(oldWdeIds)) {
+          const { data: setsData, error: setsFetchErr } = await supabase
+            .from('workout_sets')
+            .select(
+              'workout_day_exercise_id, set_number, reps, weight_kg, execution_time_sec, rest_timer_sec',
+            )
+            .in('workout_day_exercise_id', wdeChunk)
+            .order('set_number', { ascending: true })
+          if (setsFetchErr) {
+            throw new Error(setsFetchErr.message)
+          }
+          setsRowsMerged.push(...((setsData ?? []) as SetRow[]))
+        }
+        setsRowsMerged.sort((a, b) => {
+          const c = a.workout_day_exercise_id.localeCompare(b.workout_day_exercise_id)
+          if (c !== 0) return c
+          return a.set_number - b.set_number
+        })
+        const setsRows = setsRowsMerged
         const setsToInsert: Array<{
           workout_day_exercise_id: string
           set_number: number
@@ -1357,12 +1600,14 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         }
 
         if (setsToInsert.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error: setsInsErr } = await (supabase.from('workout_sets') as any).insert(
-            setsToInsert,
-          )
-          if (setsInsErr) {
-            throw new Error(setsInsErr.message)
+          for (const setChunk of chunkForSupabaseIn(setsToInsert)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { error: setsInsErr } = await (supabase.from('workout_sets') as any).insert(
+              setChunk,
+            )
+            if (setsInsErr) {
+              throw new Error(setsInsErr.message)
+            }
           }
         }
       }
@@ -1399,9 +1644,10 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
           ? `${typedStaffProfile.nome || ''} ${typedStaffProfile.cognome || ''}`.trim() ||
             'Sconosciuto'
           : 'Sconosciuto',
+        workout_days_sessions_preview: buildDaysSessionsPreviewFromDuplicateSource(sourceDays),
       }
 
-      setWorkouts((prev) => [transformedWorkout, ...prev])
+      setWorkouts((prev) => assignCreationOrderNumbers([transformedWorkout, ...prev]))
       return newPlan.id
     } catch (error) {
       const errMsg =
@@ -1424,7 +1670,7 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
       }
 
       // Rimuovi la scheda dalla lista locale
-      setWorkouts((prev) => prev.filter((workout) => workout.id !== workoutId))
+      setWorkouts((prev) => assignCreationOrderNumbers(prev.filter((workout) => workout.id !== workoutId)))
     } catch (error) {
       logger.error('Errore eliminazione scheda', error, { workoutId })
       setError(error instanceof Error ? error.message : "Errore nell'eliminazione della scheda")

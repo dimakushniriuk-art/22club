@@ -16,6 +16,7 @@ import type {
 } from '@/types/appointment'
 import type { Tables } from '@/types/supabase'
 import { normalizeAppointmentStatus } from '@/lib/appointment-utils'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:calendar:use-athlete-calendar-page')
 
@@ -179,35 +180,39 @@ export function useAthleteCalendarPage(profileId: string | null) {
       const staffNamesMap = new Map<string, string>()
       const athleteNamesMap = new Map<string, string>()
       if (staffIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome')
-          .in('id', staffIds)
-        profiles?.forEach((p: { id: string; nome?: string | null; cognome?: string | null }) => {
-          staffNamesMap.set(p.id, [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Trainer')
-        })
+        for (const idChunk of chunkForSupabaseIn(staffIds)) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome')
+            .in('id', idChunk)
+          profiles?.forEach((p: { id: string; nome?: string | null; cognome?: string | null }) => {
+            staffNamesMap.set(p.id, [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Trainer')
+          })
+        }
       }
       const athleteAvatarMap = new Map<string, string | null>()
       if (athleteIds.length > 0) {
-        const { data: athleteProfiles } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome, avatar, avatar_url')
-          .in('id', athleteIds)
-        athleteProfiles?.forEach(
-          (p: {
-            id: string
-            nome?: string | null
-            cognome?: string | null
-            avatar?: string | null
-            avatar_url?: string | null
-          }) => {
-            athleteNamesMap.set(
-              p.id,
-              [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Atleta',
-            )
-            athleteAvatarMap.set(p.id, p.avatar_url ?? p.avatar ?? null)
-          },
-        )
+        for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+          const { data: athleteProfiles } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome, avatar, avatar_url')
+            .in('id', idChunk)
+          athleteProfiles?.forEach(
+            (p: {
+              id: string
+              nome?: string | null
+              cognome?: string | null
+              avatar?: string | null
+              avatar_url?: string | null
+            }) => {
+              athleteNamesMap.set(
+                p.id,
+                [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Atleta',
+              )
+              athleteAvatarMap.set(p.id, p.avatar_url ?? p.avatar ?? null)
+            },
+          )
+        }
       }
 
       const mapped: AppointmentUI[] = rows.map((apt) => {

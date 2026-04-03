@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation'
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { PageHeaderFixed } from '@/components/layout'
 import { ErrorState } from '@/components/dashboard/error-state'
-import { Calendar, Dumbbell, Clock, History, Download, User, Users } from 'lucide-react'
+import { Calendar, Dumbbell, Clock, FileText, User, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useNotify } from '@/lib/ui/notify'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import { buildStandardPdfBlob } from '@/lib/pdf'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 interface WorkoutLog {
   id: string
@@ -65,6 +66,15 @@ function parseDisplayInstant(iso: string): Date {
 export default function StoricoAllenamentiAtletaPage() {
   const router = useRouter()
   const { notify } = useNotify()
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [workouts, setWorkouts] = useState<WorkoutLog[]>([])
@@ -236,7 +246,7 @@ export default function StoricoAllenamentiAtletaPage() {
     loadData()
   }, [loadData])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return parseDisplayInstant(dateString).toLocaleDateString('it-IT', {
       day: 'numeric',
       month: 'long',
@@ -244,9 +254,9 @@ export default function StoricoAllenamentiAtletaPage() {
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
+  }, [])
 
-  const formatDuration = (minutes: number | null | undefined) => {
+  const formatDuration = useCallback((minutes: number | null | undefined) => {
     if (minutes === null || minutes === undefined) return '—'
     if (minutes === 0) return '0 min'
     const hours = Math.floor(minutes / 60)
@@ -255,124 +265,121 @@ export default function StoricoAllenamentiAtletaPage() {
       return `${hours}h ${mins}min`
     }
     return `${mins}min`
-  }
+  }, [])
 
-  const displayDurationForWorkout = (w: WorkoutLog) => {
-    if (w.duration_minutes != null && w.duration_minutes > 0) {
-      return formatDuration(w.duration_minutes)
-    }
-    if (w.duration_minutes === 0) return '0 min'
-    if (w.completed_at && w.created_at) {
-      const a = new Date(w.completed_at).getTime()
-      const b = new Date(w.created_at).getTime()
-      const diffMin = Math.round((a - b) / 60000)
-      if (diffMin > 0 && diffMin < 24 * 60) return formatDuration(diffMin)
-    }
-    return '—'
-  }
+  const displayDurationForWorkout = useCallback(
+    (w: WorkoutLog) => {
+      if (w.duration_minutes != null && w.duration_minutes > 0) {
+        return formatDuration(w.duration_minutes)
+      }
+      if (w.duration_minutes === 0) return '0 min'
+      if (w.completed_at && w.created_at) {
+        const a = new Date(w.completed_at).getTime()
+        const b = new Date(w.created_at).getTime()
+        const diffMin = Math.round((a - b) / 60000)
+        if (diffMin > 0 && diffMin < 24 * 60) return formatDuration(diffMin)
+      }
+      return '—'
+    },
+    [formatDuration],
+  )
 
-  const handleExportPDF = () => {
+  const handleExportPDF = useCallback(async () => {
+    const periodLabels = {
+      '7d': 'Ultimi 7 giorni',
+      '30d': 'Ultimi 30 giorni',
+      '90d': 'Ultimi 90 giorni',
+      all: 'Tutti gli allenamenti',
+    } as const
+    const safeAthlete = (userProfile?.nome || 'atleta')
+      .replace(/[^\p{L}\p{N}\s_-]+/gu, '')
+      .trim()
+      .replace(/\s+/g, '_')
+    const fileName = `storico-allenamenti-${safeAthlete || 'atleta'}-${new Date().toISOString().split('T')[0]}.pdf`
+
+    setPdfLoading(true)
     try {
-      const doc = new jsPDF()
+      const blob = await buildStandardPdfBlob({
+        orientation: 'portrait',
+        render: ({ doc, margin, autoTable, headStyles, docWithAuto }) => {
+          let y = margin
+          doc.setFontSize(16)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Storico allenamenti', margin, y)
+          y += 7
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'normal')
+          if (userProfile) {
+            doc.text(`${userProfile.nome} ${userProfile.cognome}`, margin, y)
+            y += 5
+          }
+          doc.text(`Periodo: ${periodLabels[selectedPeriod]}`, margin, y)
+          y += 5
+          doc.text(`Generato: ${new Date().toLocaleString('it-IT')}`, margin, y)
+          y += 8
 
-      // Intestazione
-      doc.setFontSize(20)
-      doc.setTextColor(20, 184, 166) // Teal
-      doc.text('Storico Allenamenti', 14, 20)
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Statistiche riepilogative', margin, y)
+          y += 6
+          doc.setFont('helvetica', 'normal')
+          autoTable(doc, {
+            startY: y,
+            head: [['Metrica', 'Valore']],
+            body: [
+              ['In autonomia', String(stats.solo_count)],
+              ['Con trainer', String(stats.coached_count)],
+              ['Ore totali allenamento', `${stats.total_hours}h`],
+            ],
+            styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
+            headStyles,
+            margin: { left: margin, right: margin },
+          })
+          y = (docWithAuto.lastAutoTable?.finalY ?? y) + 10
 
-      // Info atleta e periodo
-      doc.setFontSize(12)
-      doc.setTextColor(100, 100, 100)
-      if (userProfile) {
-        doc.text(`${userProfile.nome} ${userProfile.cognome}`, 14, 30)
-      }
-      doc.setFontSize(10)
-      const periodLabels = {
-        '7d': 'Ultimi 7 giorni',
-        '30d': 'Ultimi 30 giorni',
-        '90d': 'Ultimi 90 giorni',
-        all: 'Tutti gli allenamenti',
-      }
-      doc.text(`Periodo: ${periodLabels[selectedPeriod]}`, 14, 36)
-      doc.text(`Generato il: ${new Date().toLocaleDateString('it-IT')}`, 14, 42)
-
-      // KPI Stats
-      doc.setFontSize(14)
-      doc.setTextColor(0, 0, 0)
-      doc.text('Statistiche Riepilogative', 14, 52)
-
-      const statsData = [
-        ['In autonomia', stats.solo_count.toString()],
-        ['Con trainer', stats.coached_count.toString()],
-        ['Ore totali allenamento', `${stats.total_hours}h`],
-      ]
-
-      autoTable(doc, {
-        startY: 56,
-        head: [['Metrica', 'Valore']],
-        body: statsData,
-        theme: 'grid',
-        headStyles: { fillColor: [20, 184, 166], textColor: [255, 255, 255] },
-        margin: { left: 14 },
-        styles: { fontSize: 10 },
+          if (workouts.length > 0) {
+            doc.setFontSize(12)
+            doc.setFont('helvetica', 'bold')
+            doc.text('Dettaglio allenamenti', margin, y)
+            y += 6
+            doc.setFont('helvetica', 'normal')
+            autoTable(doc, {
+              startY: y,
+              head: [['Data', 'Scheda', 'Durata', 'Stato', 'Note']],
+              body: workouts.map((w) => [
+                formatDate(w.completed_at ?? w.started_at),
+                w.workout?.titolo || 'Allenamento',
+                displayDurationForWorkout(w),
+                'Completato',
+                w.note || '—',
+              ]),
+              styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+              headStyles,
+              margin: { left: margin, right: margin },
+            })
+          }
+        },
       })
-
-      // Lista Allenamenti
-      if (workouts.length > 0) {
-        doc.setFontSize(14)
-        // jsPDF typing issue - lastAutoTable Ã¨ aggiunto da autoTable plugin
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        doc.text('Dettaglio Allenamenti', 14, (doc as any).lastAutoTable.finalY + 10)
-
-        const workoutsData = workouts.map((w) => [
-          formatDate(w.completed_at ?? w.started_at),
-          w.workout?.titolo || 'Allenamento',
-          displayDurationForWorkout(w),
-          'Completato',
-          w.note || '—',
-        ])
-
-        autoTable(doc, {
-          // jsPDF typing issue - lastAutoTable Ã¨ aggiunto da autoTable plugin
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          startY: (doc as any).lastAutoTable.finalY + 14,
-          head: [['Data', 'Scheda', 'Durata', 'Stato', 'Note']],
-          body: workoutsData,
-          theme: 'striped',
-          headStyles: { fillColor: [20, 184, 166], textColor: [255, 255, 255] },
-          margin: { left: 14, right: 14 },
-          styles: { fontSize: 9, cellPadding: 3 },
-          columnStyles: {
-            0: { cellWidth: 40 },
-            1: { cellWidth: 40 },
-            2: { cellWidth: 25 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 'auto' },
-          },
-        })
-      }
-
-      // Footer
-      const pageCount = doc.getNumberOfPages()
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i)
-        doc.setFontSize(8)
-        doc.setTextColor(150, 150, 150)
-        const pageWidth = doc.internal.pageSize.getWidth()
-        const pageHeight = doc.internal.pageSize.getHeight()
-        doc.text(`Pagina ${i} di ${pageCount} - 22Club`, pageWidth / 2, pageHeight - 10, {
-          align: 'center',
-        })
-      }
-
-      // Salva PDF
-      const fileName = `storico-allenamenti-${userProfile?.nome || 'athlete'}-${new Date().toISOString().split('T')[0]}.pdf`
-      doc.save(fileName)
+      openPdfWithBlob(blob, fileName)
     } catch (err) {
       console.error('Errore generazione PDF:', err)
-      notify('Errore durante la generazione del PDF. Riprova piÃ¹ tardi.', 'error', 'Errore PDF')
+      notify('Errore durante la generazione del PDF. Riprova più tardi.', 'error', 'Errore PDF')
+    } finally {
+      setPdfLoading(false)
     }
-  }
+  }, [
+    userProfile,
+    selectedPeriod,
+    stats.solo_count,
+    stats.coached_count,
+    stats.total_hours,
+    workouts,
+    formatDate,
+    displayDurationForWorkout,
+    setPdfLoading,
+    openPdfWithBlob,
+    notify,
+  ])
 
   const handleBack = useCallback(() => router.back(), [router])
 
@@ -395,12 +402,13 @@ export default function StoricoAllenamentiAtletaPage() {
     'rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-md'
 
   return (
-    <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div
-        className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
-        style={{ minHeight: 'calc(100dvh - var(--nav-height, 56px))' }}
-      >
-        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+    <>
+      <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
+        <div
+          className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
+          style={{ minHeight: 'calc(100dvh - var(--nav-height, 56px))' }}
+        >
+          <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
           <PageHeaderFixed
             variant="chat"
             title="Storico Allenamenti"
@@ -410,7 +418,6 @@ export default function StoricoAllenamentiAtletaPage() {
                 : 'Visualizza allenamenti completati e statistiche'
             }
             onBack={handleBack}
-            icon={<History className="h-5 w-5 text-cyan-400" />}
           />
 
           <div className="grid grid-cols-3 gap-1.5 min-[834px]:gap-3">
@@ -496,11 +503,13 @@ export default function StoricoAllenamentiAtletaPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleExportPDF}
+                  onClick={() => void handleExportPDF()}
+                  disabled={pdfLoading}
+                  aria-busy={pdfLoading}
                   className="col-span-2 min-h-[44px] w-full touch-manipulation rounded-xl border border-white/10 p-0 hover:bg-white/5 text-text-primary active:scale-[0.98] min-[480px]:col-span-1 min-[480px]:h-9 min-[480px]:w-9 min-[480px]:min-h-9 min-[480px]:min-w-9 min-[480px]:rounded-lg"
                   title="Esporta PDF"
                 >
-                  <Download className="h-4 w-4" />
+                  <FileText className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
@@ -563,8 +572,17 @@ export default function StoricoAllenamentiAtletaPage() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
-    </div>
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Storico allenamenti"
+      />
+    </>
   )
 }

@@ -104,7 +104,6 @@ export default function FotoRisultatiPage() {
           title="Foto / Risultati"
           subtitle="Aggiungi foto e visualizza la galleria nel tempo"
           backHref="/home"
-          icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
         />
 
         {/* Bottone azione centrale: carica foto */}

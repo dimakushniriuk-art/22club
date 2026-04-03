@@ -6,6 +6,7 @@
 
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { createLogger } from '@/lib/logger'
 import type { WorkoutSession } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
@@ -206,27 +207,31 @@ export function useWorkoutSession() {
         >()
 
         if (exerciseIds.length > 0) {
-          const { data: exercisesDetails, error: exercisesDetailsError } = await supabase
-            .from('exercises')
-            .select(
-              'id, name, muscle_group, difficulty, video_url, image_url, thumb_url, description',
-            )
-            .in('id', exerciseIds)
-
-          if (!exercisesDetailsError && exercisesDetails) {
-            type ExerciseDetailsRow = Pick<
-              Tables<'exercises'>,
-              | 'id'
-              | 'name'
-              | 'muscle_group'
-              | 'difficulty'
-              | 'video_url'
-              | 'image_url'
-              | 'thumb_url'
-              | 'description'
-            >
-            const typedExercisesDetails = (exercisesDetails ?? []) as ExerciseDetailsRow[]
-            exercisesMap = new Map(typedExercisesDetails.map((ex) => [ex.id, ex]))
+          type ExerciseDetailsRow = Pick<
+            Tables<'exercises'>,
+            | 'id'
+            | 'name'
+            | 'muscle_group'
+            | 'difficulty'
+            | 'video_url'
+            | 'image_url'
+            | 'thumb_url'
+            | 'description'
+          >
+          const mergedDetails: ExerciseDetailsRow[] = []
+          for (const idChunk of chunkForSupabaseIn(exerciseIds)) {
+            const { data: exercisesDetails, error: exercisesDetailsError } = await supabase
+              .from('exercises')
+              .select(
+                'id, name, muscle_group, difficulty, video_url, image_url, thumb_url, description',
+              )
+              .in('id', idChunk)
+            if (!exercisesDetailsError && exercisesDetails) {
+              mergedDetails.push(...((exercisesDetails ?? []) as ExerciseDetailsRow[]))
+            }
+          }
+          if (mergedDetails.length > 0) {
+            exercisesMap = new Map(mergedDetails.map((ex) => [ex.id, ex]))
           }
         }
 
@@ -259,14 +264,17 @@ export function useWorkoutSession() {
         >()
 
         if (exerciseIdsForSets.length > 0) {
-          const { data: setsData, error: setsError } = await supabase
-            .from('workout_sets')
-            .select('*')
-            .in('workout_day_exercise_id', exerciseIdsForSets)
-
-          if (!setsError && setsData) {
-            // Raggruppa i sets per workout_day_exercise_id
-            const typedSetsData = (setsData ?? []) as WorkoutSetRow[]
+          const typedSetsData: WorkoutSetRow[] = []
+          for (const wdeChunk of chunkForSupabaseIn(exerciseIdsForSets)) {
+            const { data: setsData, error: setsError } = await supabase
+              .from('workout_sets')
+              .select('*')
+              .in('workout_day_exercise_id', wdeChunk)
+            if (!setsError && setsData) {
+              typedSetsData.push(...((setsData ?? []) as WorkoutSetRow[]))
+            }
+          }
+          if (typedSetsData.length > 0) {
             typedSetsData.forEach((set) => {
               const exerciseId = set.workout_day_exercise_id
               if (exerciseId) {

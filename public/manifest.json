@@ -2,7 +2,7 @@
   "name": "22Club - Fitness Management",
   "short_name": "22Club",
   "description": "Gestione completa per centri fitness: atleti, allenamenti, documenti e pagamenti",
-  "start_url": "/",
+  "start_url": "/home",
   "display": "standalone",
   "background_color": "#0A0F12",
   "theme_color": "#02B3BF",
@@ -23,29 +23,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Home atleta - Allenamenti"
     },
     {
-      "src": "/screenshot-mobile-2.png",
-      "sizes": "390x844",
+      "src": "/icon-maskable-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Dashboard staff - Statistiche"
-    },
-    {
-      "src": "/screenshot-tablet-1.png",
-      "sizes": "1024x768",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Dashboard staff - Tablet"
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -89,13 +72,13 @@
       ]
     },
     {
-      "name": "Notifiche",
-      "short_name": "Notifiche",
-      "description": "Vedi le tue notifiche",
-      "url": "/notifiche",
+      "name": "Chat",
+      "short_name": "Chat",
+      "description": "Scrivi al tuo trainer",
+      "url": "/home/chat",
       "icons": [
         {
-          "src": "/shortcut-notifications.png",
+          "src": "/shortcut-chat.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -116,31 +99,5 @@
       "protocol": "web+22club",
       "url": "/?action=%s"
     }
-  ],
-  "file_handlers": [
-    {
-      "action": "/home/documenti/upload",
-      "accept": {
-        "application/pdf": [".pdf"],
-        "image/jpeg": [".jpg", ".jpeg"],
-        "image/png": [".png"]
-      }
-    }
-  ],
-  "share_target": {
-    "action": "/home/documenti/share",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url",
-      "files": [
-        {
-          "name": "file",
-          "accept": ["application/pdf", "image/jpeg", "image/png"]
-        }
-      ]
-    }
-  }
+  ]
 }

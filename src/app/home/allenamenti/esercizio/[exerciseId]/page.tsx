@@ -9,6 +9,8 @@ import Image from 'next/image'
 import { Dumbbell, Target, Activity } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
 
 type ExerciseRow = {
   id: string
@@ -22,13 +24,26 @@ type ExerciseRow = {
   muscle_group: string
 }
 
-export default function EsercizioDetailPage() {
+export function EsercizioDetailPageContent({
+  exerciseIdOverride,
+}: {
+  exerciseIdOverride?: string
+} = {}) {
   const params = useParams()
   const searchParams = useSearchParams()
   const supabase = useSupabaseClient()
   const { loading: authLoading } = useAuth()
-  const exerciseId = typeof params?.exerciseId === 'string' ? params.exerciseId : null
+  const { pathBase } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
+  const exerciseId =
+    exerciseIdOverride ?? (typeof params?.exerciseId === 'string' ? params.exerciseId : null)
   const planId = searchParams.get('planId')
+
+  const backHref = workoutsPane
+    ? workoutsPane.hrefFor({ kind: 'home' })
+    : planId
+      ? `${pathBase}/${planId}`
+      : pathBase
 
   const [exercise, setExercise] = useState<ExerciseRow | null>(null)
   const [, setLoading] = useState(true)
@@ -62,12 +77,11 @@ export default function EsercizioDetailPage() {
     }
   }, [exerciseId, supabase])
 
-  const backHref = planId ? `/home/allenamenti/${planId}` : '/home/allenamenti'
 
   if (authLoading || !exerciseId) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 flex items-center justify-center">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-28 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6 flex items-center justify-center">
           <p className="text-text-secondary text-sm">Caricamento...</p>
         </div>
       </div>
@@ -77,13 +91,12 @@ export default function EsercizioDetailPage() {
   if (error || !exercise) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pt-4 pb-28 safe-area-inset-bottom sm:px-5 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6">
           <PageHeaderFixed
             variant="chat"
             title="Esercizio"
             subtitle="Dettaglio esercizio"
             backHref={backHref}
-            icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
           />
           <Card className="rounded-lg border border-state-error/20 bg-state-error/10">
             <CardContent className="pt-6 sm:pt-8">
@@ -105,13 +118,12 @@ export default function EsercizioDetailPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-5 min-[834px]:px-6">
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pt-4 pb-28 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 min-[834px]:pt-6">
         <PageHeaderFixed
           variant="chat"
           title={exercise.name}
           subtitle="Dettaglio esercizio"
           backHref={backHref}
-          icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
         />
 
         <Card className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
@@ -205,4 +217,8 @@ export default function EsercizioDetailPage() {
       </div>
     </div>
   )
+}
+
+export default function EsercizioDetailPage() {
+  return <EsercizioDetailPageContent />
 }

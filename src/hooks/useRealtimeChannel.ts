@@ -65,36 +65,6 @@ export function useRealtimeNotifications(userId?: string) {
   )
 }
 
-export function useAppointmentsRealtime(orgId?: string) {
-  useRealtimeChannel(
-    'appointments',
-    (payload) => {
-      const newAppointment = payload.new as
-        | SupabaseDatabase['public']['Tables']['appointments']['Row']
-        | null
-      if (newAppointment && newAppointment.org_id === orgId) {
-        // Gestisci aggiornamento appuntamento
-      }
-    },
-    '*',
-  )
-}
-
-export function useDocumentsRealtime(orgId?: string) {
-  useRealtimeChannel(
-    'documents',
-    (payload) => {
-      const newDocument = payload.new as
-        | SupabaseDatabase['public']['Tables']['documents']['Row']
-        | null
-      if (newDocument && newDocument.org_id === orgId) {
-        // Gestisci aggiornamento documento
-      }
-    },
-    '*',
-  )
-}
-
 export interface ChatMessagePayload {
   id: string
   message: string

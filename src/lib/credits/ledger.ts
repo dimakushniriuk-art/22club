@@ -127,6 +127,43 @@ export async function addDebitFromAppointment(
  * Chiamare dopo aver impostato payments.status = 'cancelled'.
  * Se insert fallisce per unique (reversal già eseguito), ignora.
  */
+export type ManualCreditLedgerInsert = {
+  athleteId: string
+  entryType: 'CREDIT' | 'DEBIT' | 'REVERSAL'
+  qty: number
+  serviceType: ServiceType
+  reason: string | null
+  createdAtIso: string
+  createdByProfileId: string | null
+  paymentId?: string | null
+  appointmentId?: string | null
+  appliesToCounter?: boolean
+}
+
+/**
+ * Inserimento manuale da staff (nessun record `payments` / `appointments` obbligatorio).
+ * `org_id` è allineato al profilo atleta (trigger `trg_credit_ledger_athlete_org_match`).
+ */
+export async function insertManualCreditLedgerRow(payload: ManualCreditLedgerInsert): Promise<void> {
+  const org_id = await orgIdForAthleteProfile(payload.athleteId)
+
+  const { error } = await supabase.from('credit_ledger').insert({
+    athlete_id: payload.athleteId,
+    org_id,
+    entry_type: payload.entryType,
+    qty: payload.qty,
+    service_type: payload.serviceType,
+    reason: payload.reason,
+    created_at: payload.createdAtIso,
+    created_by_profile_id: payload.createdByProfileId,
+    payment_id: payload.paymentId ?? null,
+    appointment_id: payload.appointmentId ?? null,
+    applies_to_counter: payload.appliesToCounter ?? true,
+  })
+
+  if (error) throw error
+}
+
 export async function addReversalFromPayment(
   payment: PaymentForReversal,
   createdBy: string | null,

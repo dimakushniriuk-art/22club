@@ -7,7 +7,6 @@ export type AthleteTopBarConfig = {
   subtitle?: string
   backHref?: string
   onBack?: () => void
-  icon?: ReactNode
   /** Seconda riga sotto titolo/logo (es. selettore destinatari chat) */
   secondaryRow?: ReactNode
 }

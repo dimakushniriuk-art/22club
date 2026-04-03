@@ -22,6 +22,7 @@ import {
   TableCell,
 } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { useToast } from '@/components/ui/toast'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import {
@@ -48,6 +49,7 @@ import {
   XCircle,
   Filter,
 } from 'lucide-react'
+import { ViewModeToggle } from '@/components/shared/ui/view-mode-toggle'
 
 import type { Exercise } from '@/types/exercise'
 
@@ -447,7 +449,7 @@ export default function EserciziPage() {
   return (
     <StaffContentLayout
       title="Esercizi"
-      description="Catalogo esercizi per piani di allenamento"
+      description="Catalogo esercizi per costruire e aggiornare le schede."
       theme="teal"
       actions={
         <div className="flex gap-2">
@@ -521,32 +523,14 @@ export default function EserciziPage() {
                     <Filter className="h-4 w-4 mr-2" />
                     Filtri
                   </Button>
-                  <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
-                    <button
-                      type="button"
-                      onClick={() => setView('grid')}
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-                        view === 'grid'
-                          ? 'bg-cyan-500 text-white border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:bg-cyan-400 active:bg-cyan-600'
-                          : 'bg-transparent text-cyan-300/80 hover:bg-cyan-500/10 border border-transparent'
-                      }`}
-                    >
-                      <Grid3x3 className="h-4 w-4" />
-                      Griglia
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setView('table')}
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-                        view === 'table'
-                          ? 'bg-cyan-500 text-white border border-cyan-400/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:bg-cyan-400 active:bg-cyan-600'
-                          : 'bg-transparent text-cyan-300/80 hover:bg-cyan-500/10 border border-transparent'
-                      }`}
-                    >
-                      <TableIcon className="h-4 w-4" />
-                      Tabella
-                    </button>
-                  </div>
+                  <ViewModeToggle
+                    value={view}
+                    onChange={setView}
+                    options={[
+                      { value: 'grid', ariaLabel: 'Vista griglia', Icon: Grid3x3 },
+                      { value: 'table', ariaLabel: 'Vista tabella', Icon: TableIcon },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -938,7 +922,9 @@ export default function EserciziPage() {
 
         {/* Modal per creare/modificare esercizio - Lazy loaded solo quando aperto */}
         {showForm && (
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={<StaffLazyChunkFallback className="min-h-[280px] max-w-lg mx-auto" label="Caricamento modulo…" />}
+          >
             <ExerciseFormModal
               open={showForm}
               onOpenChange={(open) => {

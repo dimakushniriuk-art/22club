@@ -6,6 +6,7 @@ import { createLogger } from '@/lib/logger'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { ClientiToolbar } from '@/components/dashboard/clienti/clienti-toolbar'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { ClientiHeaderActions } from '@/components/dashboard/clienti/clienti-header-actions'
 import { ClientiTableView } from '@/components/dashboard/clienti/clienti-table-view'
 import { ClientiGridView } from '@/components/dashboard/clienti/clienti-grid-view'
@@ -17,10 +18,12 @@ import { useClientiPageGuard } from '@/hooks/use-clienti-page-guard'
 import { useClientiSelection } from '@/hooks/use-clienti-selection'
 import { useLessonUsageByAthleteIds } from '@/hooks/use-lesson-usage-by-athlete-ids'
 import { useInvitiClientePendentiStaff } from '@/hooks/use-inviti-cliente'
-import { exportToCSV, exportToPDF, formatClientiForExport } from '@/lib/export-utils'
+import { buildClientiPdfBlob } from '@/lib/export-utils'
 import { useNotify } from '@/lib/ui/notify'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/providers/auth-provider'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { UserPlus, Users, UserCheck, UserRoundPlus } from 'lucide-react'
 import type { ClienteFilters, Cliente, ClienteStats } from '@/types/cliente'
 
@@ -136,7 +139,15 @@ export default function ClientiPage() {
   const [atletaToEdit, setAtletaToEdit] = useState<Cliente | null>(null)
   const [showInvitaCliente, setShowInvitaCliente] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfGenLoading,
+    setLoading: setPdfGenLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   const searchParamsRef = useRef(searchParams)
   searchParamsRef.current = searchParams
@@ -144,6 +155,13 @@ export default function ClientiPage() {
 
   const openCreaAtleta = useCallback(() => setShowCreaAtleta(true), [])
   const openInvitaCliente = useCallback(() => setShowInvitaCliente(true), [])
+  const handleBack = useCallback(() => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+      return
+    }
+    router.push('/dashboard')
+  }, [router])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 851px)')
@@ -329,19 +347,19 @@ export default function ClientiPage() {
     }
   }, [selectedIds, deleteCliente, clearSelection, refetch, notify])
 
-  const handleExportCSV = useCallback(() => {
-    setIsExporting(true)
-    const data = formatClientiForExport(clienti)
-    exportToCSV(data, `clienti-${new Date().toISOString().split('T')[0]}.csv`)
-    setTimeout(() => setIsExporting(false), 1500)
-  }, [clienti])
-
-  const handleExportPDF = useCallback(() => {
-    setIsExporting(true)
-    const data = formatClientiForExport(clienti)
-    exportToPDF(data, `clienti-${new Date().toISOString().split('T')[0]}.pdf`)
-    setTimeout(() => setIsExporting(false), 1500)
-  }, [clienti])
+  const handleExportPdf = useCallback(async () => {
+    if (clienti.length === 0) return
+    setPdfGenLoading(true)
+    try {
+      const blob = await buildClientiPdfBlob(clienti)
+      openPdfWithBlob(blob, `clienti-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (err) {
+      logger.error('Errore export PDF clienti', err)
+      notify('Impossibile generare il PDF. Riprova.', 'error', 'Errore')
+    } finally {
+      setPdfGenLoading(false)
+    }
+  }, [clienti, openPdfWithBlob, setPdfGenLoading, notify])
 
   const handleEdit = useCallback((cliente: Cliente) => {
     setAtletaToEdit(cliente)
@@ -433,7 +451,8 @@ export default function ClientiPage() {
     return (
       <StaffContentLayout
         title="Clienti"
-        description="Gestisci i tuoi atleti e monitora i progressi"
+        onBack={handleBack}
+        description="Anagrafica, stato account e accesso al profilo atleta."
         theme="teal"
       >
         <div className="flex min-h-[50vh] items-center justify-center">
@@ -447,7 +466,8 @@ export default function ClientiPage() {
     return (
       <StaffContentLayout
         title="Clienti"
-        description="Gestisci i tuoi atleti e monitora i progressi"
+        onBack={handleBack}
+        description="Anagrafica, stato account e accesso al profilo atleta."
         theme="teal"
       >
         {null}
@@ -459,7 +479,8 @@ export default function ClientiPage() {
     return (
       <StaffContentLayout
         title="Clienti"
-        description="Gestisci i tuoi atleti e monitora i progressi"
+        onBack={handleBack}
+        description="Anagrafica, stato account e accesso al profilo atleta."
         theme="teal"
       >
         <ErrorState
@@ -474,7 +495,8 @@ export default function ClientiPage() {
   return (
     <StaffContentLayout
       title="Clienti"
-      description="Gestisci i tuoi atleti e monitora i progressi"
+      onBack={handleBack}
+      description="Anagrafica, stato account e accesso al profilo atleta."
       theme="teal"
       actions={
         <ClientiHeaderActions
@@ -495,11 +517,10 @@ export default function ClientiPage() {
         onStatoFilterChange={updateStatoFilter}
         onViewModeChange={setViewMode}
         onShowFiltriAvanzati={openFiltriAvanzati}
-        onExportCSV={handleExportCSV}
-        onExportPDF={handleExportPDF}
+        onExportPdf={handleExportPdf}
         hasClienti={displayClienti.length > 0}
         isMobile={isMobile}
-        isExporting={isExporting}
+        isExporting={pdfGenLoading}
       />
 
       {/* Announce per screen reader */}
@@ -562,7 +583,7 @@ export default function ClientiPage() {
       </section>
 
       {/* Modali e Azioni Bulk - Lazy loaded */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<StaffLazyChunkFallback className="w-full max-w-lg" label="Caricamento filtri…" />}>
         <ClientiFiltriAvanzati
           open={showFiltriAvanzati}
           onOpenChange={setShowFiltriAvanzati}
@@ -571,7 +592,7 @@ export default function ClientiPage() {
         />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<StaffLazyChunkFallback className="w-full max-w-md" label="Caricamento azioni…" />}>
         <ClientiBulkActions
           selectedCount={selectedIds.size}
           onSendEmail={handleBulkEmail}
@@ -581,7 +602,7 @@ export default function ClientiPage() {
       </Suspense>
 
       {showCreaAtleta && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
           <CreaAtletaModal
             open={showCreaAtleta}
             onOpenChange={handleCloseCreaAtleta}
@@ -591,7 +612,7 @@ export default function ClientiPage() {
       )}
 
       {showModificaAtleta && atletaToEdit && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
           <ModificaAtletaModal
             open={showModificaAtleta}
             onOpenChange={setShowModificaAtleta}
@@ -602,7 +623,7 @@ export default function ClientiPage() {
       )}
 
       {showInvitaCliente && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
           <InvitaClienteModal
             open={showInvitaCliente}
             onOpenChange={setShowInvitaCliente}
@@ -610,6 +631,14 @@ export default function ClientiPage() {
           />
         </Suspense>
       )}
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Clienti"
+      />
     </StaffContentLayout>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
+import { StaffDashboardSegmentSkeleton, StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { useRouter } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 
@@ -64,7 +65,11 @@ function NuovaSchedaContent() {
   }
 
   if (loading || wizardDataLoading) {
-    return null
+    return (
+      <div className="relative flex min-h-[50vh] flex-col items-center justify-center p-6">
+        <StaffLazyChunkFallback className="w-full max-w-sm border-white/5 bg-transparent" label="Caricamento dati wizard…" />
+      </div>
+    )
   }
 
   if (error || exercisesLoadError) {
@@ -88,7 +93,7 @@ function NuovaSchedaContent() {
 
 export default function NuovaSchedaPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<StaffDashboardSegmentSkeleton />}>
       <NuovaSchedaContent />
     </Suspense>
   )

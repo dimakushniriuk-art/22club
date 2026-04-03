@@ -90,18 +90,14 @@ test.describe('Allenamenti Page', () => {
     }
   })
 
-  test('should export allenamenti to CSV', async ({ page }) => {
+  test('should offer export when present (PDF unificato)', async ({ page }) => {
     const exportBtn = page.getByRole('button', { name: /Export/i })
-    const menuItem = page.getByRole('menuitem', { name: /Esporta come CSV/i })
-    if ((await exportBtn.count()) && (await menuItem.count())) {
-      const downloadPromise = page.waitForEvent('download')
-      await exportBtn.click().catch(() => {})
-      await menuItem.click().catch(() => {})
-      const download = await downloadPromise.catch(() => null)
-      if (download) {
-        expect(download.suggestedFilename()).toContain('allenamenti_')
-        expect(download.suggestedFilename()).toContain('.csv')
-      }
+    if (!(await exportBtn.count())) return
+    await exportBtn.click().catch(() => {})
+    const pdfItem = page.getByRole('menuitem', { name: /Esporta come PDF|PDF/i })
+    if (await pdfItem.count()) {
+      await pdfItem.first().click().catch(() => {})
+      await softVisible(page.getByText(/Anteprima PDF/i), 5000)
     }
   })
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui'
 import { Textarea } from '@/components/ui/textarea'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -9,6 +9,14 @@ import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
 import { ChevronDown, ChevronUp, Lock, Trash2 } from 'lucide-react'
 import type { TablesInsert } from '@/types/supabase'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
+import {
+  STAFF_WORKOUTS_EMBED_DIRTY,
+  STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+  STAFF_WORKOUTS_EMBED_SAVE_OK,
+  STAFF_WORKOUTS_EMBED_SAVE_START,
+} from '@/lib/embed/staff-workouts-embed-events'
 
 const logger = createLogger('workout:athlete-exercise-private-note')
 
@@ -35,6 +43,8 @@ export function AthleteExercisePrivateNoteBlock({
 }: Props) {
   const supabase = useSupabaseClient()
   const { addToast } = useToast()
+  const { isPreview } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
   const [draft, setDraft] = useState(savedRow?.note ?? '')
   const [saving, setSaving] = useState(false)
   const [open, setOpen] = useState(false)
@@ -46,6 +56,51 @@ export function AthleteExercisePrivateNoteBlock({
   useEffect(() => {
     setOpen(false)
   }, [workoutDayExerciseId])
+
+  const postToParent = useCallback(
+    (payload: Record<string, unknown>) => {
+      if (!isPreview) return
+      if (typeof window === 'undefined') return
+      if (window.parent === window) return
+      try {
+        window.parent.postMessage(payload, window.location.origin)
+      } catch {
+        /* ignore */
+      }
+    },
+    [isPreview],
+  )
+
+  const emitDirty = useCallback(
+    (dirty: boolean) => {
+      if (workoutsPane?.setDirty) {
+        workoutsPane.setDirty(dirty)
+        return
+      }
+      postToParent({ type: STAFF_WORKOUTS_EMBED_DIRTY, athleteProfileId, dirty })
+    },
+    [athleteProfileId, postToParent, workoutsPane],
+  )
+
+  const emitSaveStart = useCallback(() => {
+    postToParent({ type: STAFF_WORKOUTS_EMBED_SAVE_START, athleteProfileId, scope: 'block' })
+  }, [athleteProfileId, postToParent])
+
+  const emitSaveOk = useCallback(() => {
+    postToParent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, athleteProfileId, scope: 'block' })
+  }, [athleteProfileId, postToParent])
+
+  const emitSaveError = useCallback(
+    (message: string) => {
+      postToParent({
+        type: STAFF_WORKOUTS_EMBED_SAVE_ERROR,
+        athleteProfileId,
+        scope: 'block',
+        message,
+      })
+    },
+    [athleteProfileId, postToParent],
+  )
 
   const persistDelete = async (noteId: string) => {
     const { error } = await supabase
@@ -64,12 +119,15 @@ export function AthleteExercisePrivateNoteBlock({
     const trimmed = draft.trim()
     if (trimmed === '') {
       if (savedRow?.id) {
+        emitSaveStart()
         setSaving(true)
         try {
           const ok = await persistDelete(savedRow.id)
           if (ok) {
             onSaved(workoutDayExerciseId, null)
             addToast({ title: 'Nota rimossa', message: '', variant: 'success' })
+            emitDirty(false)
+            emitSaveOk()
             setOpen(false)
           }
         } finally {
@@ -79,6 +137,7 @@ export function AthleteExercisePrivateNoteBlock({
       return
     }
 
+    emitSaveStart()
     setSaving(true)
     try {
       const payload: TablesInsert<'athlete_workout_day_exercise_notes'> = {
@@ -97,11 +156,14 @@ export function AthleteExercisePrivateNoteBlock({
       if (error) {
         logger.error('upsert athlete note', error, { workoutDayExerciseId })
         notifyError('Errore', 'Impossibile salvare la nota.')
+        emitSaveError('Impossibile salvare la nota.')
         return
       }
       if (data) {
         onSaved(workoutDayExerciseId, { id: data.id, note: data.note ?? trimmed })
         addToast({ title: 'Nota salvata', message: '', variant: 'success' })
+        emitDirty(false)
+        emitSaveOk()
       }
     } finally {
       setSaving(false)
@@ -113,6 +175,7 @@ export function AthleteExercisePrivateNoteBlock({
       setDraft('')
       return
     }
+    emitSaveStart()
     setSaving(true)
     try {
       const ok = await persistDelete(savedRow.id)
@@ -120,6 +183,8 @@ export function AthleteExercisePrivateNoteBlock({
         setDraft('')
         onSaved(workoutDayExerciseId, null)
         addToast({ title: 'Nota eliminata', message: '', variant: 'success' })
+        emitDirty(false)
+        emitSaveOk()
         setOpen(false)
       }
     } finally {
@@ -137,13 +202,18 @@ export function AthleteExercisePrivateNoteBlock({
   const hasSaved = Boolean(savedText)
   const preview = hasSaved ? notePreview(savedRow?.note ?? '') : ''
 
+  useEffect(() => {
+    if (!open) return
+    emitDirty(dirty)
+  }, [dirty, emitDirty, open])
+
   return (
-    <div className="mt-3 border-t border-white/10 pt-3">
+    <div className="mt-4 border-t border-white/10 pt-4">
       {!open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left transition-colors hover:border-white/15 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
+          className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left transition-colors hover:border-white/15 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 sm:px-4"
           aria-expanded={false}
           aria-label={
             hasSaved
@@ -171,8 +241,8 @@ export function AthleteExercisePrivateNoteBlock({
           <ChevronDown className="h-4 w-4 shrink-0 text-text-tertiary" aria-hidden />
         </button>
       ) : (
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
-          <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="mb-3 flex items-start justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                 <Lock className="h-3.5 w-3.5 shrink-0 text-amber-400/90" aria-hidden />

@@ -28,6 +28,11 @@ import {
   DropdownMenuItem,
 } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import {
+  StaffDashboardGuardSkeleton,
+  StaffStaffPageContentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 const logger = createLogger('app:dashboard:massaggiatore:page')
 
@@ -141,15 +146,17 @@ export default function MassaggiatorePage() {
       const athleteIds = [...new Set(aptData.map((a) => a.athlete_id).filter(Boolean))] as string[]
       const profilesMap = new Map<string, { nome: string | null; cognome: string | null }>()
       if (athleteIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome')
-          .in('id', athleteIds)
-        ;(profiles ?? []).forEach(
-          (p: { id: string; nome: string | null; cognome: string | null }) => {
-            profilesMap.set(p.id, { nome: p.nome, cognome: p.cognome })
-          },
-        )
+        for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome')
+            .in('id', idChunk)
+          ;(profiles ?? []).forEach(
+            (p: { id: string; nome: string | null; cognome: string | null }) => {
+              profilesMap.set(p.id, { nome: p.nome, cognome: p.cognome })
+            },
+          )
+        }
       }
       const prossimiAppuntamenti: UpcomingAppointment[] = aptData.map((apt) => {
         const p = apt.athlete_id != null ? profilesMap.get(apt.athlete_id) : undefined
@@ -185,13 +192,13 @@ export default function MassaggiatorePage() {
   }, [loadData])
 
   if (showLoader) {
-    return null
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
     <StaffContentLayout
       title="Dashboard Massaggio"
-      description="Clienti, appuntamenti e statistiche dalla tua area."
+      description="Panoramica clienti, appuntamenti e attività professionali."
       icon={<Hand className="w-6 h-6" />}
       theme="amber"
     >
@@ -208,6 +215,8 @@ export default function MassaggiatorePage() {
           </Button>
         </div>
       )}
+
+      {loading && !error && <StaffStaffPageContentSkeleton />}
 
       {/* Vista smartphone */}
       <div className="md:hidden flex flex-col gap-4 pb-4">

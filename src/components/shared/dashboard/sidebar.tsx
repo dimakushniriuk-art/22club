@@ -27,23 +27,24 @@ import {
   Zap,
   ClipboardList,
   TrendingUp,
+  Activity,
+  Database,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Logo22Club } from '../logo-22club'
 import { useAuth } from '@/providers/auth-provider'
+import { useStaffWorkoutSlotsIndicator } from '@/hooks/use-staff-workout-slots-indicator'
 
 const staffNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard' },
-  { label: 'Clienti', icon: Users, href: '/dashboard/clienti' },
-  { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
-  { label: 'Appuntamenti', icon: CalendarCheck, href: '/dashboard/appuntamenti' },
-  { label: 'Calendario', icon: CalendarDays, href: '/dashboard/calendario' },
-  { label: 'Esercizi', icon: Dumbbell, href: '/dashboard/esercizi' },
-  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
+  { label: 'Prenotazioni', icon: ClipboardList, href: '/dashboard/prenotazioni' },
+  { label: 'Workouts', icon: Activity, href: '/dashboard/workouts' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/chat' },
+  { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
+  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
   { label: 'Comunicazioni', icon: Mail, href: '/dashboard/comunicazioni' },
-  { label: 'Invita Atleta', icon: UserPlus, href: '/dashboard/invita-atleta' },
+  { label: 'Database', icon: Database, href: '/dashboard/database' },
   { label: 'Impostazioni', icon: Settings, href: '/dashboard/impostazioni' },
 ]
 
@@ -76,6 +77,7 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
   const { role: userRole, signOut } = useAuth()
   const isAdmin = userRole === 'admin'
   const { notify } = useNotify()
+  const staffWorkoutsSlotsActive = useStaffWorkoutSlotsIndicator()
 
   // Filtra nav in base al ruolo
   let nav = staffNav
@@ -195,12 +197,18 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
               href={item.href}
               prefetch
               onClick={handleLinkClick}
-              className={`${linkBase} ${isCollapsed ? 'justify-center' : ''} ${
+              className={`${linkBase} relative ${isCollapsed ? 'justify-center' : ''} ${
                 active ? linkActive : linkInactive
               }`}
               title={isCollapsed ? item.label : undefined}
               suppressHydrationWarning
             >
+              {item.href === '/dashboard/workouts' && staffWorkoutsSlotsActive ? (
+                <span
+                  className="pointer-events-none absolute top-1.5 right-1.5 z-[1] h-2 w-2 shrink-0 rounded-full bg-amber-400 shadow-[0_0_0_2px_rgba(0,0,0,0.45)]"
+                  aria-hidden
+                />
+              ) : null}
               <Icon
                 className={`w-5 h-5 shrink-0 transition-colors ${
                   active ? 'text-primary' : 'text-text-secondary group-hover:text-primary'

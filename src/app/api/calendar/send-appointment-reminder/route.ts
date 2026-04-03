@@ -10,6 +10,7 @@ import { getServerAuthUser } from '@/lib/auth/server-user'
 import { createLogger } from '@/lib/logger'
 import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
 import { sendAppointmentReminderEmail } from '@/lib/calendar/appointment-reminder-email'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('api:calendar:send-appointment-reminder')
 
@@ -27,6 +28,7 @@ type AppointmentRow = {
 
 type ProfileRow = { email: string | null; nome: string | null; cognome: string | null }
 type CustomType = { key: string; label: string }
+type LessonCounterRow = { athlete_id: string; count: number | null; lesson_type?: string }
 
 function getTypeLabel(type: string, customTypes: CustomType[]): string {
   const custom = customTypes?.find((c) => c.key === type)
@@ -52,19 +54,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ sent: 0, skipped: 0 })
     }
 
-    const { data: appointments, error: aptError } = await supabase
-      .from('appointments')
-      .select(
-        'id, athlete_id, staff_id, starts_at, ends_at, type, location, notes, is_open_booking_day',
-      )
-      .in('id', ids)
-
-    if (aptError) {
-      logger.error('Errore fetch appuntamenti', aptError, { ids })
-      return NextResponse.json({ error: 'Errore caricamento appuntamenti' }, { status: 500 })
+    const appointmentsMerged: AppointmentRow[] = []
+    for (const idChunk of chunkForSupabaseIn(ids)) {
+      const { data: appointments, error: aptError } = await supabase
+        .from('appointments')
+        .select(
+          'id, athlete_id, staff_id, starts_at, ends_at, type, location, notes, is_open_booking_day',
+        )
+        .in('id', idChunk)
+      if (aptError) {
+        logger.error('Errore fetch appuntamenti', aptError, { ids })
+        return NextResponse.json({ error: 'Errore caricamento appuntamenti' }, { status: 500 })
+      }
+      appointmentsMerged.push(...((appointments ?? []) as AppointmentRow[]))
     }
 
-    const list = (appointments ?? []) as AppointmentRow[]
+    const list = appointmentsMerged
     const toProcess = list.filter((a) => a.athlete_id && !a.is_open_booking_day)
     if (toProcess.length === 0) {
       return NextResponse.json({ sent: 0, skipped: ids.length })
@@ -72,31 +77,84 @@ export async function POST(request: Request) {
 
     const staffIds = [...new Set(toProcess.map((a) => a.staff_id))]
     const athleteIds = [...new Set(toProcess.map((a) => a.athlete_id!).filter(Boolean))]
+    const profileIdsForFetch = [...new Set([...staffIds, ...athleteIds])]
 
-    const [profilesRes, settingsRes, countersRes, completedRes] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select('id, email, nome, cognome')
-        .in('id', [...staffIds, ...athleteIds]),
-      supabase
-        .from('staff_calendar_settings')
-        .select('staff_id, custom_appointment_types')
-        .in('staff_id', staffIds),
-      supabase
-        .from('lesson_counters')
-        .select('athlete_id, count, lesson_type')
-        .in('athlete_id', athleteIds),
-      supabase
-        .from('appointments')
-        .select('athlete_id')
-        .in('athlete_id', athleteIds)
-        .eq('status', 'completato'),
+    const profilesFetch = async (): Promise<(ProfileRow & { id: string })[]> => {
+      const merged: (ProfileRow & { id: string })[] = []
+      for (const idChunk of chunkForSupabaseIn(profileIdsForFetch)) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, email, nome, cognome')
+          .in('id', idChunk)
+        if (error) {
+          logger.error('Errore fetch profili reminder', error)
+          return []
+        }
+        merged.push(...((data ?? []) as (ProfileRow & { id: string })[]))
+      }
+      return merged
+    }
+
+    const settingsFetch = async () => {
+      const merged: {
+        staff_id: string
+        custom_appointment_types: unknown
+      }[] = []
+      for (const chunk of chunkForSupabaseIn(staffIds)) {
+        const { data, error } = await supabase
+          .from('staff_calendar_settings')
+          .select('staff_id, custom_appointment_types')
+          .in('staff_id', chunk)
+        if (error) {
+          logger.error('Errore fetch settings reminder', error)
+          return []
+        }
+        merged.push(...((data ?? []) as typeof merged))
+      }
+      return merged
+    }
+
+    const countersFetch = async () => {
+      const merged: LessonCounterRow[] = []
+      for (const chunk of chunkForSupabaseIn(athleteIds)) {
+        const { data, error } = await supabase
+          .from('lesson_counters')
+          .select('athlete_id, count, lesson_type')
+          .in('athlete_id', chunk)
+        if (error) {
+          logger.error('Errore fetch lesson_counters reminder', error)
+          return []
+        }
+        merged.push(...((data ?? []) as LessonCounterRow[]))
+      }
+      return merged
+    }
+
+    const completedFetch = async () => {
+      const merged: { athlete_id: string | null }[] = []
+      for (const chunk of chunkForSupabaseIn(athleteIds)) {
+        const { data, error } = await supabase
+          .from('appointments')
+          .select('athlete_id')
+          .in('athlete_id', chunk)
+          .eq('status', 'completato')
+        if (error) {
+          logger.error('Errore fetch appointments completati reminder', error)
+          return []
+        }
+        merged.push(...(data ?? []))
+      }
+      return merged
+    }
+
+    const [profiles, settingsList, countersRows, completedRows] = await Promise.all([
+      profilesFetch(),
+      settingsFetch(),
+      countersFetch(),
+      completedFetch(),
     ])
-
-    const profiles = (profilesRes.data ?? []) as (ProfileRow & { id: string })[]
-    type CounterRow = { athlete_id: string; count: number | null; lesson_type?: string }
-    const byAthlete = new Map<string, CounterRow[]>()
-    ;(countersRes.data ?? []).forEach((r: CounterRow) => {
+    const byAthlete = new Map<string, LessonCounterRow[]>()
+    ;(countersRows ?? []).forEach((r: LessonCounterRow) => {
       const list = byAthlete.get(r.athlete_id) ?? []
       list.push(r)
       byAthlete.set(r.athlete_id, list)
@@ -109,7 +167,7 @@ export async function POST(request: Request) {
     })
 
     const lessonsCompletedByAthlete = new Map<string, number>()
-    ;(completedRes.data ?? []).forEach((r: { athlete_id: string | null }) => {
+    ;(completedRows ?? []).forEach((r: { athlete_id: string | null }) => {
       if (r.athlete_id == null) return
       lessonsCompletedByAthlete.set(
         r.athlete_id,
@@ -120,13 +178,17 @@ export async function POST(request: Request) {
     // Fallback: stesso calcolo del tab Amministrativo (payments - appuntamenti completati) se lesson_counters vuoto
     const missingAthletes = athleteIds.filter((id) => !lessonCountMap.has(id))
     if (missingAthletes.length > 0) {
-      const payRes = await supabase
-        .from('payments')
-        .select('athlete_id, lessons_purchased')
-        .in('athlete_id', missingAthletes)
-        .eq('status', 'completed')
+      const paymentRows: { athlete_id: string; lessons_purchased?: number | null }[] = []
+      for (const chunk of chunkForSupabaseIn(missingAthletes)) {
+        const payRes = await supabase
+          .from('payments')
+          .select('athlete_id, lessons_purchased')
+          .in('athlete_id', chunk)
+          .eq('status', 'completed')
+        paymentRows.push(...((payRes.data ?? []) as typeof paymentRows))
+      }
       const purchasedByAthlete = new Map<string, number>()
-      ;(payRes.data ?? []).forEach(
+      paymentRows.forEach(
         (r: { athlete_id: string; lessons_purchased?: number | null }) => {
           const cur = purchasedByAthlete.get(r.athlete_id) ?? 0
           purchasedByAthlete.set(r.athlete_id, cur + (r.lessons_purchased ?? 0))
@@ -140,10 +202,6 @@ export async function POST(request: Request) {
     }
 
     const profileMap = new Map(profiles.map((p) => [p.id, p]))
-    const settingsList = (settingsRes.data ?? []) as {
-      staff_id: string
-      custom_appointment_types: unknown
-    }[]
     const settingsByStaff = new Map<string, CustomType[]>(
       settingsList.map((s) => [
         s.staff_id,

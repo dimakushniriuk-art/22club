@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { BarChart3, Dumbbell, UserCheck, User, Calendar } from 'lucide-react'
 import type { AthleteMarketingMetricEnriched } from '@/app/api/marketing/kpi/route'
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
+import {
+  StaffMarketingDataBlockSkeleton,
+  StaffMarketingSegmentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 export default function MarketingPage() {
   const router = useRouter()
@@ -57,11 +59,7 @@ export default function MarketingPage() {
   }, [loading, role, router])
 
   if (loading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   const totalWorkouts = data.reduce((s, r) => s + Number(r.workouts_total_count ?? 0), 0)
@@ -92,9 +90,7 @@ export default function MarketingPage() {
       </header>
 
       {loadingData ? (
-        <div className={LOADING_CLASS}>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
+        <StaffMarketingDataBlockSkeleton />
       ) : error ? (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm">
           {error}

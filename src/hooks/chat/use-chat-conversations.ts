@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import type { ConversationParticipant } from '@/types/chat'
 
 const logger = createLogger('hooks:chat:use-chat-conversations')
@@ -170,17 +171,19 @@ export function useChatConversations(
         }
 
         if (otherIdsSet.size > 0) {
-          const { data: profiles, error: profErr } = await supabase
-            .from('profiles')
-            .select('id, user_id, nome, cognome, role, avatar')
-            .in('id', Array.from(otherIdsSet))
-            .returns<ChatProfileRow[]>()
-
-          if (profErr) throw profErr
-
+          const otherIds = Array.from(otherIdsSet)
           const profileById = new Map<string, ChatProfileRow>()
-          for (const p of profiles ?? []) {
-            profileById.set(p.id, p)
+          for (const idChunk of chunkForSupabaseIn(otherIds)) {
+            const { data: profiles, error: profErr } = await supabase
+              .from('profiles')
+              .select('id, user_id, nome, cognome, role, avatar')
+              .in('id', idChunk)
+              .returns<ChatProfileRow[]>()
+
+            if (profErr) throw profErr
+            for (const p of profiles ?? []) {
+              profileById.set(p.id, p)
+            }
           }
 
           data = participantsOrder.map(({ other_user_id, last_message_at }) => {
@@ -407,13 +410,30 @@ export function useChatConversations(
             const staffIds = [
               ...new Set((staffLinks as { staff_id: string }[]).map((r) => r.staff_id)),
             ]
-            const { data: staffProfiles, error: profErr } = await supabase
-              .from('profiles')
-              .select('id, nome, cognome, role, avatar')
-              .in('id', staffIds)
+            let staffProfilesMerged: {
+              id: string
+              nome?: string | null
+              cognome?: string | null
+              role?: string | null
+              avatar?: string | null
+            }[] = []
+            let profErr: unknown = null
+            for (const idChunk of chunkForSupabaseIn(staffIds)) {
+              const { data: staffProfiles, error: chunkErr } = await supabase
+                .from('profiles')
+                .select('id, nome, cognome, role, avatar')
+                .in('id', idChunk)
+              if (chunkErr) {
+                profErr = chunkErr
+                break
+              }
+              staffProfilesMerged = staffProfilesMerged.concat(
+                (staffProfiles as typeof staffProfilesMerged | null) ?? [],
+              )
+            }
 
-            if (!profErr && staffProfiles) {
-              for (const p of staffProfiles as {
+            if (!profErr && staffProfilesMerged.length > 0) {
+              for (const p of staffProfilesMerged as {
                 id: string
                 nome?: string | null
                 cognome?: string | null

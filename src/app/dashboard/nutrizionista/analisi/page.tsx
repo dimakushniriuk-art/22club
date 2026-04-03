@@ -25,6 +25,7 @@ import {
   STAFF_ASSIGNMENT_STATUS_ACTIVE,
   STAFF_TYPE_NUTRIZIONISTA,
 } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:dashboard:nutrizionista:analisi')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -181,25 +182,27 @@ export default function NutrizionistaAnalisiPage() {
         return
       }
 
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nome, cognome, email')
-        .in('id', athleteIds)
+      const profilesAccum: {
+        id: string
+        nome: string | null
+        cognome: string | null
+        email: string | null
+      }[] = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome, email')
+          .in('id', idChunk)
+        profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
+      }
       const profilesMap = new Map(
-        (profilesData ?? []).map(
-          (p: {
-            id: string
-            nome: string | null
-            cognome: string | null
-            email: string | null
-          }) => [
-            p.id,
-            {
-              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-              email: p.email ?? null,
-            },
-          ],
-        ),
+        profilesAccum.map((p) => [
+          p.id,
+          {
+            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+            email: p.email ?? null,
+          },
+        ]),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({
@@ -218,25 +221,32 @@ export default function NutrizionistaAnalisiPage() {
       const { data: viewData, error: viewErr } = await viewRes
       if (viewErr) {
         logger.error('View weekly analysis fallback', viewErr)
-        const rawRes = await nutritionFrom(supabase, NUTRITION_TABLES.weeklyAnalysis)
-          .select('*')
-          .in('athlete_id', athleteIds)
-          .order('week_start', { ascending: false })
-          .limit(500)
-        const raw = (rawRes.data ?? []) as Array<
-          Record<string, unknown> & {
-            id: string
-            athlete_id: string
-            version_id?: string | null
-            week_start?: string | null
-            week_end?: string | null
-            avg_weight?: number | null
-            delta_weight?: number | null
-            target_delta?: number | null
-            adjustment_applied?: boolean | null
-            created_at?: string | null
-          }
-        >
+        type WeeklyRaw = Record<string, unknown> & {
+          id: string
+          athlete_id: string
+          version_id?: string | null
+          week_start?: string | null
+          week_end?: string | null
+          avg_weight?: number | null
+          delta_weight?: number | null
+          target_delta?: number | null
+          adjustment_applied?: boolean | null
+          created_at?: string | null
+        }
+        const rawAccum: WeeklyRaw[] = []
+        for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+          const rawRes = await nutritionFrom(supabase, NUTRITION_TABLES.weeklyAnalysis)
+            .select('*')
+            .in('athlete_id', idChunk)
+            .order('week_start', { ascending: false })
+          rawAccum.push(...((rawRes.data ?? []) as WeeklyRaw[]))
+        }
+        rawAccum.sort((a, b) => {
+          const wa = a.week_start ? new Date(a.week_start).getTime() : 0
+          const wb = b.week_start ? new Date(b.week_start).getTime() : 0
+          return wb - wa
+        })
+        const raw = rawAccum.slice(0, 500)
         const list: WeeklyRow[] = raw.map((r) => {
           const delta = (r.delta_weight as number | null) ?? 0
           const target = (r.target_delta as number | null) ?? 0
@@ -408,7 +418,7 @@ export default function NutrizionistaAnalisiPage() {
   return (
     <StaffContentLayout
       title="Analisi settimanale"
-      description="KPI e scostamenti da target per atleti assegnati"
+      description="Indicatori settimanali e scostamenti dagli obiettivi."
       icon={<BarChart2 className="w-6 h-6" />}
       theme="teal"
       actions={

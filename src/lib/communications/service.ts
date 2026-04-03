@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 import type { Json } from '@/lib/supabase/types'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('lib:communications:service')
 
@@ -401,14 +402,21 @@ export async function createCommunicationRecipients(
       recipient_type: r.recipient_type,
       status: 'pending',
     }))
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('communication_recipients') as any)
-      .insert(rows)
-      .select()
-
-    if (error) {
-      return { data: null, error: new Error(error.message) }
+    const insertedAll: CommunicationRecipientRow[] = []
+    // Nota atomicità: insert a chunk sequenziali — se un chunk fallisce, i precedenti restano in DB (stato intermedio).
+    for (const rowChunk of chunkForSupabaseIn(rows)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.from('communication_recipients') as any)
+        .insert(rowChunk)
+        .select()
+      if (error) {
+        return { data: null, error: new Error(error.message) }
+      }
+      if (data?.length) {
+        insertedAll.push(...(data as CommunicationRecipientRow[]))
+      }
     }
+    const data = insertedAll
 
     // Aggiorna total_recipients nella comunicazione
     // Workaround necessario per inferenza tipo Supabase

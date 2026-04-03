@@ -8,6 +8,7 @@ import {
   handleNetworkError,
 } from '@/lib/error-handler'
 import { logApiCall, logApiRetry, logApiSuccess, logApiError } from '@/lib/api-logger'
+import { isSupabaseAuthLockStealAbortError } from '@/lib/supabase/supabase-lock-abort'
 
 interface RetryOptions {
   maxAttempts?: number
@@ -35,6 +36,10 @@ const defaultRetryOptions: Required<RetryOptions> = {
   backoffMultiplier: 2,
   timeoutMs: 30000,
 }
+
+/** Retry rapidi per contesa lock auth Supabase (steal); non consumano i tentativi "business". */
+const SUPABASE_LOCK_STEAL_MAX_RETRIES = 24
+const SUPABASE_LOCK_STEAL_DELAY_MS = 80
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -104,11 +109,30 @@ export function useApiWithRetry<T>() {
             logApiRetry(callId, attempt, retryOptions.maxAttempts, lastError ?? undefined)
           }
 
-          const result = await withTimeout(apiCall(), retryOptions.timeoutMs)
+          let stealAttempts = 0
+          let result: T | undefined
+          while (true) {
+            try {
+              result = await withTimeout(apiCall(), retryOptions.timeoutMs)
+              break
+            } catch (innerErr) {
+              if (
+                isSupabaseAuthLockStealAbortError(innerErr) &&
+                stealAttempts < SUPABASE_LOCK_STEAL_MAX_RETRIES
+              ) {
+                stealAttempts++
+                await sleep(SUPABASE_LOCK_STEAL_DELAY_MS)
+                continue
+              }
+              throw innerErr
+            }
+          }
 
           logApiSuccess(
             callId,
-            result && typeof result === 'object' ? (result as Record<string, unknown>) : undefined,
+            result != null && typeof result === 'object'
+              ? (result as Record<string, unknown>)
+              : undefined,
           )
 
           if (isMountedRef.current) {
@@ -120,9 +144,34 @@ export function useApiWithRetry<T>() {
             }))
           }
 
-          return result
+          return result as T
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error))
+
+          if (isSupabaseAuthLockStealAbortError(lastError)) {
+            if (attempt < retryOptions.maxAttempts) {
+              const delay = Math.max(
+                200,
+                retryOptions.delayMs * Math.pow(retryOptions.backoffMultiplier, attempt - 1),
+              )
+              if (isMountedRef.current) {
+                setState((prev) => ({
+                  ...prev,
+                  error: `Sincronizzazione sessione… tentativo ${attempt}/${retryOptions.maxAttempts}`,
+                }))
+              }
+              await sleep(delay)
+              continue
+            }
+            if (isMountedRef.current) {
+              setState((prev) => ({
+                ...prev,
+                loading: false,
+                error: 'Connessione occupata. Aggiorna o riprova tra poco.',
+              }))
+            }
+            return null
+          }
 
           const apiError =
             lastError instanceof Error && lastError.message.includes('Timeout')

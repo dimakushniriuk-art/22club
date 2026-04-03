@@ -12,6 +12,7 @@ import { Plus, Search, Calendar, User, TrendingUp, CheckCircle, Clock } from 'lu
 import { useAllenamenti } from '@/hooks/use-allenamenti'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { ErrorState } from '@/components/dashboard/error-state'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import type { AllenamentoFilters, AllenamentoSort } from '@/types/allenamento'
 
 // Lazy load modali per ridurre bundle size iniziale
@@ -346,7 +347,7 @@ export default function AllenamentiDashboardPage() {
 
                         {/* Azioni */}
                         <div className="ml-4 flex flex-col gap-2">
-                          <Link href={`/dashboard/atleti/${allenamento.atleta_id}/progressi`}>
+                          <Link href={`/dashboard/atleti/${allenamento.atleta_id}?tab=progressi`}>
                             <Button
                               variant="outline"
                               size="sm"
@@ -416,7 +417,7 @@ export default function AllenamentiDashboardPage() {
 
       {/* Modals - Lazy loaded solo quando aperti */}
       {showFiltriAvanzati && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="w-full max-w-lg" label="Caricamento filtri…" />}>
           <AllenamentiFiltriAvanzati
             open={showFiltriAvanzati}
             onOpenChange={setShowFiltriAvanzati}
@@ -427,7 +428,7 @@ export default function AllenamentiDashboardPage() {
       )}
 
       {selectedAllenamento && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[220px] max-w-md mx-auto" label="Caricamento…" />}>
           <AllenamentoDettaglioModal
             allenamentoId={selectedAllenamento}
             open={selectedAllenamento !== null}

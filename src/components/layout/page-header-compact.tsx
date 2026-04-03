@@ -1,9 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui'
+import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-header-back-button'
 
 export interface PageHeaderCompactProps {
   title: string
@@ -22,30 +21,14 @@ export function PageHeaderCompact({
   icon,
   className,
 }: PageHeaderCompactProps) {
+  const hasBack = backHref != null || onBack != null
   const backContent =
-    backHref && !onBack ? (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
-        aria-label="Indietro"
-        asChild
-      >
-        <Link href={backHref} className="flex h-full w-full items-center justify-center">
-          <BackIcon />
-        </Link>
-      </Button>
+    hasBack &&
+    (backHref && !onBack ? (
+      <StaffHeaderBackButton href={backHref} />
     ) : (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400"
-        aria-label="Indietro"
-        onClick={onBack}
-      >
-        <BackIcon />
-      </Button>
-    )
+      <StaffHeaderBackButton onClick={onBack!} />
+    ))
 
   return (
     <header
@@ -69,19 +52,5 @@ export function PageHeaderCompact({
         </div>
       </div>
     </header>
-  )
-}
-
-function BackIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-    </svg>
   )
 }

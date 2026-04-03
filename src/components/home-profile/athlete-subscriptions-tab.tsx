@@ -9,7 +9,7 @@ import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import {
   FileText,
-  Download,
+  Eye,
   Calendar,
   Target,
   CheckCircle,
@@ -22,10 +22,13 @@ import { notifyError } from '@/lib/notifications'
 import { useProfileId } from '@/lib/utils/profile-id-utils'
 import {
   DOCUMENTS_STORAGE_BUCKET,
-  downloadStorageBlobViaPreview,
+  fetchStorageBlobViaPreview,
+  invoiceDocumentSuggestedFileName,
   resolveInvoiceDocumentsStoragePath,
 } from '@/lib/documents'
 import { computeAthleteTrainingLessonUsage } from '@/lib/credits/athlete-training-lessons-display'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('components:home-profile:athlete-subscriptions-tab')
 
@@ -54,6 +57,14 @@ export function AthleteSubscriptionsTab({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const athleteProfileId = useProfileId(athleteUserId)
+  const {
+    open: invoicePdfOpen,
+    blob: invoicePdfBlob,
+    filename: invoicePdfFilename,
+    openWithBlob: openInvoicePdfWithBlob,
+    onOpenChange: onInvoicePdfOpenChange,
+  } = usePdfPreviewDialog()
+  const [invoicePreviewLoadingId, setInvoicePreviewLoadingId] = useState<string | null>(null)
 
   const loadPagamenti = useCallback(async () => {
     try {
@@ -162,23 +173,30 @@ export function AthleteSubscriptionsTab({
     }).format(amount)
   }
 
-  const handleDownloadInvoice = async (invoiceUrl: string) => {
-    try {
+  const openInvoicePdfPreview = useCallback(
+    async (paymentId: string, invoiceUrl: string, paymentDate: string) => {
       const filePath = resolveInvoiceDocumentsStoragePath(invoiceUrl)
       if (!filePath) {
-        notifyError('Download non disponibile', 'Percorso fattura non valido.')
+        notifyError('Anteprima non disponibile', 'Percorso fattura non valido.')
         return
       }
-      const safeName = filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
-      await downloadStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath, safeName)
-    } catch (err) {
-      logger.error('Errore download fattura', err, { invoiceUrl })
-      notifyError(
-        'Errore download',
-        err instanceof Error ? err.message : 'Impossibile scaricare la fattura.',
-      )
-    }
-  }
+      const safeName = invoiceDocumentSuggestedFileName(invoiceUrl, paymentDate)
+      setInvoicePreviewLoadingId(paymentId)
+      try {
+        const blob = await fetchStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath)
+        openInvoicePdfWithBlob(blob, safeName)
+      } catch (err) {
+        logger.error('Errore anteprima fattura PDF', err, { paymentId, invoiceUrl })
+        notifyError(
+          'Errore',
+          err instanceof Error ? err.message : 'Impossibile aprire la fattura.',
+        )
+      } finally {
+        setInvoicePreviewLoadingId(null)
+      }
+    },
+    [openInvoicePdfWithBlob],
+  )
 
   const totalPurchased = pagamenti.reduce((sum, p) => sum + p.lessons_purchased, 0)
   const totalUsed = pagamenti[0]?.lessons_used ?? 0
@@ -360,12 +378,20 @@ export function AthleteSubscriptionsTab({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDownloadInvoice(pagamento.invoice_url!)}
-                        className="w-full rounded-lg border-white/15 text-text-primary hover:bg-white/5 sm:w-auto"
-                        aria-label={`Scarica fattura del ${formatDate(pagamento.payment_date)}`}
+                        onClick={() =>
+                          void openInvoicePdfPreview(
+                            pagamento.id,
+                            pagamento.invoice_url!,
+                            pagamento.payment_date,
+                          )
+                        }
+                        disabled={invoicePreviewLoadingId === pagamento.id}
+                        className="w-full gap-1.5 rounded-lg border-white/15 text-text-primary hover:bg-white/5 sm:w-auto"
+                        aria-label={`Anteprima fattura PDF del ${formatDate(pagamento.payment_date)}`}
+                        title="Anteprima fattura PDF"
                       >
-                        <Download className="mr-2 h-4 w-4" aria-hidden />
-                        Scarica fattura
+                        <Eye className="h-4 w-4 shrink-0" aria-hidden />
+                        <span className="text-xs font-semibold">PDF</span>
                       </Button>
                     ) : (
                       <p className="text-center text-xs text-text-tertiary sm:text-right">
@@ -379,6 +405,13 @@ export function AthleteSubscriptionsTab({
           ))}
         </div>
       )}
+
+      <PdfCanvasPreviewDialog
+        open={invoicePdfOpen}
+        onOpenChange={onInvoicePdfOpenChange}
+        blob={invoicePdfBlob}
+        filename={invoicePdfFilename}
+      />
     </div>
   )
 }

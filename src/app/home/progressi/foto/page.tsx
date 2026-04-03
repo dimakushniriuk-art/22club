@@ -389,7 +389,6 @@ export default function FotoProgressiPage() {
             title="Foto Progressi"
             subtitle="Visualizza e confronta le foto per angolo"
             onBack={handleBack}
-            icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
           />
         </div>
       </div>
@@ -404,7 +403,6 @@ export default function FotoProgressiPage() {
           title="Foto Progressi"
           subtitle="Visualizza e confronta le foto per angolo"
           onBack={handleBack}
-          icon={<ImageIcon className="h-5 w-5 text-cyan-400" />}
         />
 
         {/* Controlli */}

@@ -7,6 +7,10 @@ import { useCallback } from 'react'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import type { SupabaseDatabase } from '@/types/supabase'
 import { getProfileIdFromUserId } from '@/lib/utils/profile-id-utils'
+import {
+  toProgressLogMeasurementRow,
+  type ProgressLogMeasurementRow,
+} from '@/lib/progressi/misurazione-progress-log-row'
 
 const logger = createLogger('hooks:use-progress-analytics')
 
@@ -146,6 +150,9 @@ export interface ProgressKPI {
     max_deadlift_kg: number | null
     note: string | null
   }>
+
+  /** Snapshot righe progress_logs (ordine cronologico come query); per edit elenco misurazione. */
+  progressLogRows: ProgressLogMeasurementRow[]
 }
 
 /**
@@ -233,6 +240,7 @@ export function useProgressAnalytics(athleteId?: string) {
           max_deadlift_kg: null,
         },
         ultimiProgressi: [],
+        progressLogRows: [],
       }
     }
 
@@ -486,6 +494,7 @@ export function useProgressAnalytics(athleteId?: string) {
           max_deadlift_kg: null,
         },
         ultimiProgressi: [],
+        progressLogRows: [],
       }
     }
 
@@ -850,6 +859,42 @@ export function useProgressAnalytics(athleteId?: string) {
           note: log.note,
         })) || []
 
+    const progressLogRows: ProgressLogMeasurementRow[] = (progressLogsSorted ?? []).map((log) => {
+      const e = log as ProgressLogExtended
+      return toProgressLogMeasurementRow({
+        id: log.id,
+        date: log.date,
+        created_at: log.created_at,
+        weight_kg: log.weight_kg,
+        chest_cm: log.chest_cm,
+        waist_cm: log.waist_cm,
+        hips_cm: log.hips_cm,
+        thighs_cm: log.thighs_cm,
+        biceps_cm: log.biceps_cm,
+        massa_grassa_percentuale: e.massa_grassa_percentuale,
+        massa_grassa_kg: e.massa_grassa_kg,
+        massa_magra_kg: e.massa_magra_kg,
+        massa_muscolare_kg: e.massa_muscolare_kg,
+        massa_muscolare_scheletrica_kg: e.massa_muscolare_scheletrica_kg,
+        collo_cm: e.collo_cm,
+        spalle_cm: e.spalle_cm,
+        torace_inspirazione_cm: e.torace_inspirazione_cm,
+        braccio_rilassato_cm: e.braccio_rilassato_cm,
+        braccio_contratto_cm: e.braccio_contratto_cm,
+        avambraccio_cm: e.avambraccio_cm,
+        polso_cm: e.polso_cm,
+        vita_alta_cm: e.vita_alta_cm,
+        addome_basso_cm: e.addome_basso_cm,
+        glutei_cm: e.glutei_cm,
+        coscia_alta_cm: e.coscia_alta_cm,
+        coscia_media_cm: e.coscia_media_cm,
+        coscia_bassa_cm: e.coscia_bassa_cm,
+        ginocchio_cm: e.ginocchio_cm,
+        polpaccio_cm: e.polpaccio_cm,
+        caviglia_cm: e.caviglia_cm,
+      })
+    })
+
     return {
       pesoAttuale,
       variazionePeso7gg,
@@ -866,6 +911,7 @@ export function useProgressAnalytics(athleteId?: string) {
       datasetForzaDettagliata,
       valoriForzaAttuali,
       ultimiProgressi,
+      progressLogRows,
     }
   }, [athleteId])
 

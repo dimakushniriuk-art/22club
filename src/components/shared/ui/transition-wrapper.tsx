@@ -1,6 +1,5 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import type { Transition } from 'framer-motion'
 
 // Import dinamico per evitare problemi di compatibilità con React 19
@@ -29,8 +28,8 @@ interface TransitionWrapperProps {
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 20,
-    scale: 0.98,
+    y: 12,
+    scale: 0.99,
   },
   in: {
     opacity: 1,
@@ -39,15 +38,15 @@ const pageVariants = {
   },
   out: {
     opacity: 0,
-    y: -20,
-    scale: 0.98,
+    y: -12,
+    scale: 0.99,
   },
 }
 
 const pageTransition: Transition = {
   type: 'tween',
-  ease: 'anticipate',
-  duration: 0.4,
+  ease: 'easeOut',
+  duration: 0.22,
 }
 
 // Varianti per transizioni più veloci
@@ -98,7 +97,6 @@ export const TransitionWrapper: React.FC<TransitionWrapperProps> = ({
   children,
   className = '',
 }) => {
-  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [framerMotion, setFramerMotion] = useState<any>(null)
@@ -121,10 +119,10 @@ export const TransitionWrapper: React.FC<TransitionWrapperProps> = ({
 
   try {
     return (
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
-          key={pathname}
-          initial="initial"
+          key="staff-shell"
+          initial={false}
           animate="in"
           exit="out"
           variants={pageVariants}
@@ -147,7 +145,6 @@ export const QuickTransitionWrapper: React.FC<TransitionWrapperProps> = ({
   children,
   className = '',
 }) => {
-  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [framerMotion, setFramerMotion] = useState<any>(null)
@@ -169,10 +166,10 @@ export const QuickTransitionWrapper: React.FC<TransitionWrapperProps> = ({
 
   try {
     return (
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
-          key={pathname}
-          initial="initial"
+          key="staff-shell"
+          initial={false}
           animate="in"
           exit="out"
           variants={quickVariants}
@@ -194,7 +191,6 @@ export const SlideTransitionWrapper: React.FC<TransitionWrapperProps> = ({
   children,
   className = '',
 }) => {
-  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [framerMotion, setFramerMotion] = useState<any>(null)
@@ -216,10 +212,10 @@ export const SlideTransitionWrapper: React.FC<TransitionWrapperProps> = ({
 
   try {
     return (
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
-          key={pathname}
-          initial="initial"
+          key="staff-shell"
+          initial={false}
           animate="in"
           exit="out"
           variants={slideVariants}
@@ -265,7 +261,7 @@ export const FadeInWrapper: React.FC<{
   try {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{
           duration,

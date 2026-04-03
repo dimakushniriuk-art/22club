@@ -63,6 +63,11 @@ SVILUPPO
 - Niente miglioramenti non richiesti.
 - Risolvi solo problemi reali.
 
+VERIFICA STATICA (TYPECHECK + LINT)
+- Se esegui controllo o correzione con **TypeScript** (`tsc --noEmit` / `npm run typecheck`), nello **stesso ciclo** eseguire anche **ESLint** (`npm run lint`, oppure `eslint .` come in `package.json`).
+- Non considerare chiusa la verifica post-modifica se manca il lint o se il typecheck fallisce.
+- Per un check allineato allo script aggregato: `npm run check` (typecheck + `eslint . --max-warnings=0` + build senza lint duplicato).
+
 TEST
 - Analizza solo test falliti.
 - Correggi solo il punto rotto.
@@ -73,6 +78,10 @@ STILE UI
 - Dark mode.
 - Apple-like.
 - Coerenza > creatività.
+
+OUTPUT CHAT (FORMATO RISPOSTE)
+- Nelle chat rispondere **solo** con la sezione `REVIEW`.
+- Eccezione: se serve fornire SQL da eseguire manualmente, includere l’SQL completo (e solo ciò che serve per eseguirlo in sicurezza).
 
 PAGINA DESIGN SYSTEM (/design-system)
 - Ogni modifica, aggiunta o rimozione dalla pagina Design System (route /design-system, file in src/app/design-system/ e _sections/) deve essere documentata in src/app/design-system/GUIDA_DESIGN_SYSTEM.md.

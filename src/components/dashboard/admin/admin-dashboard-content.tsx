@@ -28,26 +28,21 @@ export function AdminDashboardContent() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        // Fetch statistiche globali
-        const [usersResult, profilesResult] = await Promise.all([
-          supabase.from('profiles').select('id, role, stato, created_at', { count: 'exact' }),
-          supabase.from('profiles').select('id, role, org_id', { count: 'exact' }),
-        ])
+        const { data: rows, count, error } = await supabase
+          .from('profiles')
+          .select('id, role, stato, created_at, org_id', { count: 'exact' })
 
-        if (usersResult.error || profilesResult.error) {
-          logger.error(
-            'Errore nel caricamento statistiche',
-            usersResult.error || profilesResult.error,
-          )
+        if (error) {
+          logger.error('Errore nel caricamento statistiche', error)
           return
         }
 
-        const allUsers = usersResult.data || []
+        const allUsers = rows || []
         const now = new Date()
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
         const statsData: AdminStats = {
-          totalUsers: usersResult.count || 0,
+          totalUsers: count || 0,
           activeUsers: allUsers.filter((u: { stato?: string | null }) => u.stato === 'attivo')
             .length,
           newUsersThisMonth: allUsers.filter(
@@ -55,8 +50,9 @@ export function AdminDashboardContent() {
               u.created_at && new Date(u.created_at) >= startOfMonth,
           ).length,
           totalOrganizations: new Set(
-            profilesResult.data?.map((p: { org_id?: string | null }) => p.org_id).filter(Boolean) ||
-              [],
+            allUsers
+              .map((p: { org_id?: string | null }) => p.org_id)
+              .filter((id): id is string => typeof id === 'string' && id.length > 0),
           ).size,
           totalTrainers: allUsers.filter((u: { role?: string }) => u.role === 'trainer').length,
           totalAthletes: allUsers.filter((u: { role?: string }) => u.role === 'athlete').length,

@@ -7,6 +7,7 @@ import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import type { Tables } from '@/types/supabase'
 import { STAFF_APPOINTMENTS_CORE_SELECT } from '@/lib/appointments/staff-appointments-select'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 /** Select lista tabella appuntamenti staff (pagina /dashboard/appuntamenti). */
 export const STAFF_APPOINTMENTS_TABLE_LIST_SELECT = `${STAFF_APPOINTMENTS_CORE_SELECT},updated_at`
@@ -101,17 +102,19 @@ export async function listMergedStaffCalendarAppointments(
         .map((p: { id: string }) => p.id)
         .filter((id: string) => id !== staffProfileId)
       if (collIds.length > 0) {
-        const { data: collData } = await client
-          .from('appointments')
-          .select(selectFields)
-          .in('staff_id', collIds)
-          .order('starts_at', { ascending: true })
-        const collRows = (collData ?? []) as unknown as StaffCalendarAppointmentListRow[]
         const seen = new Set(allRows.map((r) => r.id))
-        for (const r of collRows) {
-          if (!seen.has(r.id)) {
-            seen.add(r.id)
-            allRows.push(r)
+        for (const collChunk of chunkForSupabaseIn(collIds)) {
+          const { data: collData } = await client
+            .from('appointments')
+            .select(selectFields)
+            .in('staff_id', collChunk)
+            .order('starts_at', { ascending: true })
+          const collRows = (collData ?? []) as unknown as StaffCalendarAppointmentListRow[]
+          for (const r of collRows) {
+            if (!seen.has(r.id)) {
+              seen.add(r.id)
+              allRows.push(r)
+            }
           }
         }
       }

@@ -7,6 +7,7 @@ import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-se
 import { useAuth } from '@/providers/auth-provider'
 import {
   getDefaultDurationsForRole,
+  getEnabledAppointmentTypeKeys,
   DEFAULT_TYPE_COLORS,
   FREE_PASS_DURATION_MINUTES,
   APPOINTMENT_TYPE_LABELS,
@@ -145,42 +146,8 @@ export function AppointmentForm({
   )
   const enabledTypes = useMemo(() => {
     if (athleteMode) return ['allenamento']
-    let system: string[]
-    if (settings?.enabled_appointment_types?.length) system = settings.enabled_appointment_types
-    else if (role === 'trainer' || role === 'admin')
-      system = [
-        'allenamento_singolo',
-        'allenamento_doppio',
-        'programma',
-        'prova',
-        'riunione',
-        'privato',
-        'allenamento',
-      ]
-    else if (role === 'nutrizionista')
-      system = [
-        'appuntamento_normale',
-        'prova',
-        'controllo',
-        'riunione',
-        'privato',
-        'nutrizionista',
-      ]
-    else if (role === 'massaggiatore')
-      system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'massaggio']
-    else
-      system = [
-        'appuntamento_normale',
-        'prova',
-        'controllo',
-        'riunione',
-        'privato',
-        'massaggio',
-        'nutrizionista',
-      ]
-    const customKeys = (settings?.custom_appointment_types ?? []).map((c) => c.key)
-    return [...system, ...customKeys]
-  }, [athleteMode, settings?.enabled_appointment_types, settings?.custom_appointment_types, role])
+    return getEnabledAppointmentTypeKeys(settings, role)
+  }, [athleteMode, settings, role])
 
   /** Tipo di default per nuovo appuntamento: in athleteMode sempre allenamento, altrimenti primo tra abilitati. */
   const defaultTypeFromSettings = athleteMode

@@ -1,8 +1,15 @@
 import { createLogger } from '@/lib/logger'
+import { buildStandardPdfBlob } from '@/lib/pdf'
 
 const logger = createLogger('lib:export-utils')
 
 export type ExportData = Record<string, string | number | boolean | null>[]
+
+export type PdfExportOptions = {
+  title?: string
+  generatedAtLabel?: string
+  orientation?: 'portrait' | 'landscape'
+}
 
 /**
  * Esporta dati in formato CSV
@@ -51,21 +58,27 @@ export function exportToCSV(data: ExportData, filename: string) {
 }
 
 /**
- * Esporta dati in formato PDF vero usando jsPDF
+ * Genera un PDF (Blob) usando jsPDF + autoTable (senza logo unificato).
+ * @deprecated Preferire `buildStandardPdfBlob` / `buildTabularExportPdfBlob` per export UI.
  */
-export async function exportToPDF(data: ExportData, filename: string) {
+export async function buildPdfBlob(
+  data: ExportData,
+  options: PdfExportOptions = {},
+): Promise<Blob> {
   if (data.length === 0) {
-    logger.warn('Nessun dato da esportare', undefined, { filename })
-    return
+    logger.warn('Nessun dato da esportare', undefined, { options })
+    return new Blob([], { type: 'application/pdf' })
   }
 
   try {
     // Import dinamico di jsPDF per evitare problemi SSR
     const { jsPDF } = await import('jspdf')
+    const autoTableModule = await import('jspdf-autotable')
+    const autoTable = autoTableModule.default
 
     // Crea nuovo documento PDF (A4, portrait)
     const doc = new jsPDF({
-      orientation: 'landscape', // Landscape per tabelle larghe
+      orientation: options.orientation ?? 'landscape',
       unit: 'mm',
       format: 'a4',
     })
@@ -73,106 +86,72 @@ export async function exportToPDF(data: ExportData, filename: string) {
     // Intestazione documento
     doc.setFontSize(18)
     doc.setFont('helvetica', 'bold')
-    doc.text('REPORT CLIENTI', 14, 20)
+    doc.text(options.title ?? 'REPORT', 14, 20)
 
     doc.setFontSize(10)
     doc.setFont('helvetica', 'normal')
-    doc.text(`Generato il: ${new Date().toLocaleString('it-IT')}`, 14, 27)
+    doc.text(
+      `${options.generatedAtLabel ?? 'Generato il'}: ${new Date().toLocaleString('it-IT')}`,
+      14,
+      27,
+    )
     doc.text(`Totale record: ${data.length}`, 14, 32)
 
-    // Prepara i dati per la tabella
     const headers = Object.keys(data[0])
-    const tableData = data.map((row) => headers.map((header) => String(row[header] || 'N/A')))
+    const tableBody = data.map((row) =>
+      headers.map((header) => {
+        const value = row[header]
+        if (value === null || value === undefined) return ''
+        if (typeof value === 'boolean') return value ? 'Sì' : 'No'
+        return String(value)
+      }),
+    )
 
-    // Configurazione tabella
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
-    const margin = 14
-    const tableWidth = pageWidth - 2 * margin
-    const startY = 40
-
-    // Calcola larghezza colonne (distribuzione uniforme)
-    const columnWidths = headers.map(() => tableWidth / headers.length)
-
-    // Funzione per disegnare header tabella
-    let currentY = startY
-    doc.setFillColor(52, 152, 219) // Colore header (blu)
-    doc.rect(margin, currentY - 5, tableWidth, 7, 'F')
-
-    doc.setTextColor(255, 255, 255) // Testo bianco per header
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-
-    let currentX = margin
-    headers.forEach((header, index) => {
-      doc.text(header, currentX + 2, currentY, {
-        maxWidth: columnWidths[index] - 4,
-        align: 'left',
-      })
-      currentX += columnWidths[index]
+    autoTable(doc, {
+      head: [headers],
+      body: tableBody,
+      startY: 38,
+      styles: {
+        font: 'helvetica',
+        fontSize: 8,
+        cellPadding: 2,
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: [6, 182, 212], // cyan-500-ish
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      margin: { left: 14, right: 14, top: 14, bottom: 14 },
     })
 
-    currentY += 8
-    doc.setTextColor(0, 0, 0) // Testo nero per dati
-
-    // Disegna righe dati
-    doc.setFontSize(8)
-    doc.setFont('helvetica', 'normal')
-
-    const rowHeight = 7
-    let dataIndex = 0
-
-    while (dataIndex < tableData.length) {
-      // Controlla se serve nuova pagina
-      if (currentY + rowHeight > pageHeight - 10) {
-        doc.addPage()
-        currentY = margin + 10
-
-        // Ridisegna header su nuova pagina
-        doc.setFillColor(52, 152, 219)
-        doc.rect(margin, currentY - 5, tableWidth, 7, 'F')
-        doc.setTextColor(255, 255, 255)
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(9)
-
-        currentX = margin
-        headers.forEach((header, index) => {
-          doc.text(header, currentX + 2, currentY, {
-            maxWidth: columnWidths[index] - 4,
-            align: 'left',
-          })
-          currentX += columnWidths[index]
-        })
-
-        currentY += 8
-        doc.setTextColor(0, 0, 0)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'normal')
-      }
-
-      // Disegna riga dati
-      const row = tableData[dataIndex]
-      currentX = margin
-      row.forEach((cell, cellIndex) => {
-        doc.text(cell, currentX + 2, currentY, {
-          maxWidth: columnWidths[cellIndex] - 4,
-          align: 'left',
-        })
-        currentX += columnWidths[cellIndex]
-      })
-
-      currentY += rowHeight
-      dataIndex++
-    }
-
-    // Salva PDF
-    doc.save(filename)
-
-    logger.debug('PDF generato con successo', { filename, rows: data.length })
+    const blob = doc.output('blob') as Blob
+    logger.debug('PDF generato con successo', { rows: data.length })
+    return blob
   } catch (err) {
-    logger.error('Errore generazione PDF', err, { filename })
+    logger.error('Errore generazione PDF', err, { options })
     throw err
   }
+}
+
+/**
+ * Download immediato PDF da tabella generica (senza anteprima/logo unificati).
+ * @deprecated Preferire `buildTabularExportPdfBlob` + `PdfCanvasPreviewDialog`.
+ */
+export async function exportToPDF(data: ExportData, filename: string, options: PdfExportOptions = {}) {
+  const blob = await buildPdfBlob(data, options)
+  downloadBlob(blob, filename)
+}
+
+/**
+ * Crea un object URL da un Blob PDF (per preview in iframe/object).
+ * Chi chiama deve fare revokeObjectURL quando non serve più.
+ */
+export function createPdfObjectUrl(blob: Blob): string {
+  return window.URL.createObjectURL(blob)
 }
 
 /**
@@ -252,4 +231,52 @@ export function formatClientiForExport(clienti: unknown[]): ExportData {
       'Documenti in Scadenza': documentiScadenza,
     }
   })
+}
+
+/** PDF tabellare standard (logo + autoTable) da righe export già formattate. */
+export async function buildTabularExportPdfBlob(
+  title: string,
+  data: ExportData,
+  options: { orientation?: 'landscape' | 'portrait' } = {},
+): Promise<Blob> {
+  if (data.length === 0) return new Blob([], { type: 'application/pdf' })
+  const headers = Object.keys(data[0])
+  const body = data.map((row) =>
+    headers.map((h) => {
+      const v = row[h]
+      if (v === null || v === undefined) return ''
+      if (typeof v === 'boolean') return v ? 'Sì' : 'No'
+      return String(v)
+    }),
+  )
+
+  return buildStandardPdfBlob({
+    orientation: options.orientation ?? 'landscape',
+    render: ({ doc, margin, autoTable, headStyles }) => {
+      let cursorY = margin
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text(title, margin, cursorY)
+      cursorY += 7
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`Generato: ${new Date().toLocaleString('it-IT')}`, margin, cursorY)
+      cursorY += 5
+      doc.text(`Record: ${data.length}`, margin, cursorY)
+      cursorY += 8
+
+      autoTable(doc, {
+        startY: cursorY,
+        head: [headers],
+        body,
+        styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+        headStyles,
+        margin: { left: margin, right: margin },
+      })
+    },
+  })
+}
+
+export async function buildClientiPdfBlob(clienti: unknown[]): Promise<Blob> {
+  return buildTabularExportPdfBlob('Clienti', formatClientiForExport(clienti))
 }

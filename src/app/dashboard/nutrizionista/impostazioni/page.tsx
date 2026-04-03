@@ -33,6 +33,7 @@ import {
   STAFF_ASSIGNMENT_STATUS_ACTIVE,
   STAFF_TYPE_NUTRIZIONISTA,
 } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:dashboard:nutrizionista:impostazioni')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -144,25 +145,27 @@ export default function NutrizionistaImpostazioniPage() {
         return
       }
 
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nome, cognome, email')
-        .in('id', athleteIds)
+      const profilesAccum: {
+        id: string
+        nome: string | null
+        cognome: string | null
+        email: string | null
+      }[] = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome, email')
+          .in('id', idChunk)
+        profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
+      }
       const profilesMap = new Map(
-        (profilesData ?? []).map(
-          (p: {
-            id: string
-            nome: string | null
-            cognome: string | null
-            email: string | null
-          }) => [
-            p.id,
-            {
-              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-              email: p.email ?? null,
-            },
-          ],
-        ),
+        profilesAccum.map((p) => [
+          p.id,
+          {
+            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+            email: p.email ?? null,
+          },
+        ]),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({
@@ -172,10 +175,14 @@ export default function NutrizionistaImpostazioniPage() {
         })),
       )
 
-      const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
-        .select('id, athlete_id, created_at')
-        .in('athlete_id', athleteIds)
-      setPlans((groupsRes.data ?? []) as typeof plans)
+      const groupsMerged: typeof plans = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+          .select('id, athlete_id, created_at')
+          .in('athlete_id', idChunk)
+        groupsMerged.push(...((groupsRes.data ?? []) as typeof plans))
+      }
+      setPlans(groupsMerged)
     } catch (e) {
       logger.error('Caricamento atleti/piani', e)
       setError(e instanceof Error ? e.message : 'Errore caricamento')
@@ -398,7 +405,7 @@ export default function NutrizionistaImpostazioniPage() {
   return (
     <StaffContentLayout
       title="Impostazioni"
-      description="Configurazione versione piano: struttura pasti e regole adattive"
+      description="Template piano: pasti, varianti e regole adattive."
       icon={<Settings className="w-6 h-6" />}
       theme="teal"
       actions={

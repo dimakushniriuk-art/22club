@@ -101,7 +101,6 @@ test.describe('Pagina Clienti', () => {
     const exportBtn = page.getByLabel('Esporta dati clienti')
     await exportBtn.click()
 
-    await expect(page.getByText('Esporta come CSV')).toBeVisible()
     await expect(page.getByText('Esporta come PDF')).toBeVisible()
   })
 

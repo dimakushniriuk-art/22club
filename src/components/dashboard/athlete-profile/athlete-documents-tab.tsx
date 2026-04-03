@@ -10,15 +10,15 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { FileText, ArrowLeft, AlertCircle } from 'lucide-react'
-import { useDocuments } from '@/hooks/use-documents'
+import { useStaffAthleteUnifiedDocuments } from '@/hooks/use-staff-athlete-unified-documents'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { DocumentsTable } from '@/components/dashboard/documenti/documents-table'
 import type { Document } from '@/types/document'
 import {
-  documentsFilePreviewHref,
+  documentPreviewHrefForRow,
   extractFileName,
-  fetchDocumentBlobViaPreview,
+  fetchDocumentBlobForRow,
 } from '@/lib/documents'
 
 interface AthleteDocumentsTabProps {
@@ -27,25 +27,40 @@ interface AthleteDocumentsTabProps {
 }
 
 export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDocumentsTabProps) {
-  const { documents, loading, error, refetch } = useDocuments({ athleteId })
+  const {
+    data: documents = [],
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useStaffAthleteUnifiedDocuments(athleteId)
+
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : 'Errore nel caricamento dei documenti'
+    : null
 
   const handleRetry = () => {
     void refetch()
   }
 
   const handlePreview = (doc: Document) => {
-    if (!doc.file_url) return
-    const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
+    const href = documentPreviewHrefForRow(doc)
     if (href) window.open(href, '_blank', 'noopener,noreferrer')
   }
 
   const handleDownload = async (doc: Document) => {
-    if (!doc.file_url) return
+    const previewHref = documentPreviewHrefForRow(doc)
+    if (!previewHref && !doc.file_url) return
 
-    const fileName = doc.file_name || extractFileName(doc.file_url)
+    const fileName =
+      doc.display_file_name?.trim() ||
+      doc.file_name ||
+      extractFileName(doc.file_url) ||
+      'documento'
 
     try {
-      const blob = await fetchDocumentBlobViaPreview(doc.file_url)
+      const blob = await fetchDocumentBlobForRow(doc)
       const objectUrl = window.URL.createObjectURL(blob)
 
       const a = globalThis.document.createElement('a')
@@ -58,8 +73,7 @@ export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDoc
 
       window.URL.revokeObjectURL(objectUrl)
     } catch {
-      const href = documentsFilePreviewHref(doc.file_url, { redirectForNavigation: true })
-      if (href) window.open(href, '_blank', 'noopener,noreferrer')
+      if (previewHref) window.open(previewHref, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -73,7 +87,7 @@ export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDoc
               Documenti
             </h3>
             <p className="text-text-secondary text-sm">
-              Certificati, liberatorie e documenti dell&apos;atleta
+              Certificati, liberatorie, contratti, fatture, piani nutrizionali, chat e altri file
             </p>
             <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
           </div>

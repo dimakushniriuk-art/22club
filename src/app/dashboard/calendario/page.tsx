@@ -32,8 +32,10 @@ import {
   Button,
 } from '@/components/ui'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
-import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
+import { APPOINTMENT_TYPE_LABELS, getEnabledAppointmentTypeKeys } from '@/lib/calendar-defaults'
 
 type AthleteOption = { id: string; name: string }
 
@@ -523,6 +525,14 @@ export function CalendarPageContent({
     role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
   const _themeButtonClasses = CALENDAR_THEME_CLASSES[calendarTheme].button
   const { settings: calendarSettings } = useStaffCalendarSettings()
+  /** Primo tipo abilitato (stesso ordine di Impostazioni / form): usato per nuovo appuntamento. */
+  const defaultNewAppointmentType = useMemo(() => {
+    const keys = getEnabledAppointmentTypeKeys(calendarSettings, role)
+    return (
+      keys[0] ??
+      (role === 'massaggiatore' ? 'massaggio' : role === 'nutrizionista' ? 'nutrizionista' : 'allenamento')
+    )
+  }, [calendarSettings, role])
   const initialCalendarView =
     calendarSettings?.default_calendar_view === 'week'
       ? 'timeGridWeek'
@@ -688,7 +698,7 @@ export function CalendarPageContent({
     [searchQuery, selectedAthleteFilter, selectedTypeFilter, updateUrlFilters],
   )
 
-  // Tipi per il filtro: tutte le tipologie abilitate in impostazioni (come in "Tipologie abilitate")
+  // Tipi per il filtro: stessa logica di Impostazioni / form (tipi abilitati + custom)
   const typeOptions = useMemo(() => {
     const customMap: Record<string, string> = {}
     calendarSettings?.custom_appointment_types?.forEach((c) => {
@@ -697,25 +707,18 @@ export function CalendarPageContent({
     const getLabel = (key: string) =>
       customMap[key] ?? APPOINTMENT_TYPE_LABELS[key] ?? key.replace(/_/g, ' ')
 
-    const enabled = calendarSettings?.enabled_appointment_types ?? []
-    const customKeys = (calendarSettings?.custom_appointment_types ?? []).map((c) => c.key)
-    if (enabled.length > 0 || customKeys.length > 0) {
-      const keys = [...enabled, ...customKeys]
-      return keys
+    const keys = getEnabledAppointmentTypeKeys(calendarSettings, role)
+    if (keys.length > 0) {
+      return [...keys]
         .filter((k, i, arr) => arr.indexOf(k) === i)
         .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
         .map((value) => ({ value, label: getLabel(value) }))
     }
-    // Fallback: tipi presenti negli appuntamenti (es. prima del primo salvataggio impostazioni)
     const fromAppointments = Array.from(new Set(appointments.map((a) => a.type).filter(Boolean)))
     return fromAppointments
       .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
       .map((value) => ({ value, label: getLabel(value) }))
-  }, [
-    appointments,
-    calendarSettings?.enabled_appointment_types,
-    calendarSettings?.custom_appointment_types,
-  ])
+  }, [appointments, calendarSettings, role])
 
   const statusOptions: FilterOption[] = useMemo(
     () => [
@@ -878,17 +881,12 @@ export function CalendarPageContent({
         staff_id: '',
         starts_at: toLocalISOString(selectedSlot.start),
         ends_at: toLocalISOString(selectedSlot.end),
-        type:
-          role === 'massaggiatore'
-            ? 'massaggio'
-            : role === 'nutrizionista'
-              ? 'nutrizionista'
-              : 'allenamento',
+        type: defaultNewAppointmentType,
         status: 'attivo' as const,
       }
     }
     return undefined
-  }, [editingAppointment, selectedSlot, role])
+  }, [editingAppointment, selectedSlot, defaultNewAppointmentType])
 
   const handleFormSubmitClick = useCallback(
     async (data: Parameters<typeof handleFormSubmit>[0]) => {
@@ -997,7 +995,7 @@ export function CalendarPageContent({
   const closeKeyboardHelp = useCallback(() => setShowKeyboardHelp(false), [])
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex relative">
+    <div className="flex flex-1 min-h-0 relative">
       {/* Drawer filtri e prossimi - mobile (aperto da altro punto se necessario) */}
       <Drawer
         open={showFiltersDrawer}
@@ -1144,7 +1142,11 @@ export function CalendarPageContent({
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
         >
           <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
-            <Suspense fallback={null}>
+            <Suspense
+              fallback={
+                <StaffLazyChunkFallback className="min-h-[min(70dvh,520px)] w-full" label="Caricamento modulo…" />
+              }
+            >
               <AppointmentForm
                 appointment={formInitialAppointment}
                 athletes={athletes}
@@ -1316,6 +1318,9 @@ export function CalendarPageContent({
 
 export default function CalendarioPage() {
   const { showLoader: showGuardLoader } = useCalendarPageGuard()
+  const { role } = useAuth()
+  const layoutTheme =
+    role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
   if (showGuardLoader) {
     return (
       <div className={CALENDAR_LOADING_CLASS}>
@@ -1323,5 +1328,15 @@ export default function CalendarioPage() {
       </div>
     )
   }
-  return <CalendarPageContent />
+  return (
+    <StaffContentLayout
+      title="Calendario"
+      description="Pianificazione appuntamenti, disponibilità e prenotazioni."
+      theme={layoutTheme}
+      className="flex-1 min-h-0"
+      contentClassName="flex-1 min-h-0 flex flex-col"
+    >
+      <CalendarPageContent />
+    </StaffContentLayout>
+  )
 }

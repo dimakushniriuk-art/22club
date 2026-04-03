@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { Cliente } from '@/types/cliente'
+import { progressLogsAthleteIdOrFilter } from '@/lib/progress-logs-athlete-scope'
 
 const logger = createLogger('hooks:athlete-profile:use-athlete-profile-data')
 
@@ -27,6 +28,14 @@ function pushSupabaseError(messages: string[], res: { error?: { message: string 
   if (res.error?.message) {
     messages.push(res.error.message)
   }
+}
+
+/** Primo giorno del mese corrente (timezone locale), formato YYYY-MM-DD — evita shift UTC di toISOString(). */
+function startOfMonthLocalYmd(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}-01`
 }
 
 export function useAthleteProfileData(athleteId: string) {
@@ -143,10 +152,9 @@ export function useAthleteProfileData(athleteId: string) {
     }
 
     const errMsgs: string[] = []
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-      .toISOString()
-      .split('T')[0]
+    const startOfMonth = startOfMonthLocalYmd()
     const workoutLogsOr = `atleta_id.eq.${athleteId},athlete_id.eq.${athleteId}`
+    const progressOr = progressLogsAthleteIdOrFilter(athleteId, athleteUserId)
 
     try {
       setStatsError(null)
@@ -180,7 +188,7 @@ export function useAthleteProfileData(athleteId: string) {
       const progressRes = await supabase
         .from('progress_logs')
         .select('weight_kg')
-        .eq('athlete_id', athleteId)
+        .or(progressOr)
         .order('date', { ascending: false, nullsFirst: false })
         .limit(1)
         .maybeSingle()
@@ -211,7 +219,7 @@ export function useAthleteProfileData(athleteId: string) {
       const msg = err instanceof Error ? err.message : 'Errore nel caricamento delle statistiche'
       setStatsError(msg)
     }
-  }, [athlete, athleteId])
+  }, [athlete, athleteId, athleteUserId])
 
   useEffect(() => {
     if (!athleteId) {

@@ -6,7 +6,7 @@ import {
   Users,
   Search,
   RefreshCw,
-  Download,
+  FileText,
   Eye,
   User,
   Calendar,
@@ -36,6 +36,9 @@ import { Skeleton } from '@/components/shared/ui/skeleton'
 import { ModernKPICard } from '@/components/dashboard/modern-kpi-card'
 import { notifySuccess, notifyError } from '@/lib/notifications'
 import { createClient } from '@/lib/supabase/client'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 
 const logger = createLogger('AdminOrganizationsContent')
 
@@ -64,6 +67,15 @@ export function AdminOrganizationsContent() {
   const [orgUsers, setOrgUsers] = useState<OrganizationUser[]>([])
   const [loadingUsers, setLoadingUsers] = useState(false)
   const supabase = createClient()
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -211,37 +223,26 @@ export function AdminOrganizationsContent() {
     setOrgUsers([])
   }, [])
 
-  const handleExportCSV = useCallback(() => {
+  const handleExportPdf = useCallback(async () => {
+    if (filteredOrganizations.length === 0) return
+    setPdfLoading(true)
     try {
-      const headers = ['Nome Organizzazione', 'ID', 'Numero Utenti', 'Data Creazione']
-      const rows = filteredOrganizations.map((org) => [
-        org.name,
-        org.id,
-        org.user_count || 0,
-        new Date(org.created_at).toISOString().split('T')[0],
-      ])
-
-      const csvContent = [
-        headers.join(','),
-        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-      ].join('\n')
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `organizzazioni_${new Date().toISOString().split('T')[0]}.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      notifySuccess('Esportazione completata', 'File CSV scaricato con successo')
+      const data: ExportData = filteredOrganizations.map((org) => ({
+        'Nome Organizzazione': org.name,
+        ID: org.id,
+        'Numero Utenti': org.user_count ?? 0,
+        'Data Creazione': new Date(org.created_at).toISOString().split('T')[0],
+      }))
+      const blob = await buildTabularExportPdfBlob('Organizzazioni', data)
+      openPdfWithBlob(blob, `organizzazioni_${new Date().toISOString().split('T')[0]}.pdf`)
+      notifySuccess('Export', 'PDF pronto in anteprima')
     } catch (error) {
-      logger.error('Errore esportazione CSV', error)
-      notifyError('Errore', "Errore durante l'esportazione del file CSV")
+      logger.error('Errore esportazione PDF', error)
+      notifyError('Errore', "Errore durante l'esportazione del PDF")
+    } finally {
+      setPdfLoading(false)
     }
-  }, [filteredOrganizations])
+  }, [filteredOrganizations, setPdfLoading, openPdfWithBlob])
 
   if (loading) {
     return (
@@ -281,11 +282,13 @@ export function AdminOrganizationsContent() {
           </Button>
           <Button
             variant="outline"
-            onClick={handleExportCSV}
+            onClick={() => void handleExportPdf()}
             className="bg-background-secondary border-border hover:bg-background-tertiary"
+            disabled={filteredOrganizations.length === 0 || pdfLoading}
+            aria-busy={pdfLoading}
           >
-            <Download className="h-4 w-4 mr-2" />
-            Esporta CSV
+            <FileText className="h-4 w-4 mr-2" />
+            Esporta PDF
           </Button>
         </div>
       </div>
@@ -513,6 +516,14 @@ export function AdminOrganizationsContent() {
           )}
         </DialogContent>
       </Dialog>
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Organizzazioni"
+      />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { normalizeRole } from '@/lib/utils/role-normalizer'
 import { getDefaultAppPathForRole, getPostLoginRedirectPath } from '@/lib/utils/role-redirect-paths'
+import { StaffAdminSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 /**
  * Fallback client-only per /dashboard/admin (es. CAPACITOR senza middleware).
@@ -41,11 +42,7 @@ export default function DashboardAdminLayout({ children }: { children: React.Rea
   }, [loading, user, role, isAdminAccess, router])
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center" aria-busy="true">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffAdminSegmentSkeleton />
   }
 
   if (!user || !isAdminAccess) {

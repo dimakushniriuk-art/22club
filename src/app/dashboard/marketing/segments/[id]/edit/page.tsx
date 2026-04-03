@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { SegmentRules } from '@/lib/marketing/segment-rules'
 import type { Database } from '@/lib/supabase/types'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
 
@@ -65,11 +66,7 @@ export default function EditSegmentPage() {
     if (!authLoading && role !== null && role !== 'marketing' && role !== 'admin') {
       router.replace((role as string) === 'admin' ? '/dashboard/admin' : '/dashboard')
     }
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   const setRule = <K extends keyof SegmentRules>(key: K, value: SegmentRules[K]) => {
@@ -109,17 +106,16 @@ export default function EditSegmentPage() {
   }
 
   if (loading || !segment) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center bg-background">
-        {error ? (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200">
+    if (error) {
+      return (
+        <div className="flex min-h-[40vh] items-center justify-center bg-background px-4">
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
-        ) : (
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        )}
-      </div>
-    )
+        </div>
+      )
+    }
+    return <StaffMarketingSegmentSkeleton />
   }
 
   return (

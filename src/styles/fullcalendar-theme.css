@@ -180,7 +180,8 @@
 }
 
 .fc .fc-timegrid-slot {
-  height: 48px !important;
+  /* --fc-zoom da CalendarView: evita CSS zoom che rompe scroll/altezza scrollabile */
+  height: calc(48px * var(--fc-zoom, 1)) !important;
   border-color: var(--fc-border-color) !important;
   border-top-width: 1px !important;
 }
@@ -559,7 +560,7 @@
   }
 
   .fc .fc-timegrid-slot {
-    height: 40px !important;
+    height: calc(40px * var(--fc-zoom, 1)) !important;
   }
 
   .fc .fc-event {
@@ -586,7 +587,7 @@
    ======================================== */
 
 .fc-density-compact .fc-timegrid-slot {
-  min-height: 2rem !important;
+  min-height: calc(2rem * var(--fc-zoom, 1)) !important;
 }
 
 .fc-density-compact .fc-timegrid-slot-label,
@@ -604,7 +605,7 @@
 }
 
 .fc-density-spacious .fc-timegrid-slot {
-  min-height: 3.5rem !important;
+  min-height: calc(3.5rem * var(--fc-zoom, 1)) !important;
 }
 
 .fc-density-spacious .fc-timegrid-slot-label {

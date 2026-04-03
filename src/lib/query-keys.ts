@@ -17,6 +17,8 @@ export const queryKeys = {
   documents: {
     all: ['documents'] as const,
     byAthlete: (athleteId: string) => ['documents', athleteId] as const,
+    unifiedStaffByAthlete: (athleteId: string) =>
+      ['documents', 'unified-staff', athleteId] as const,
   },
   allenamenti: {
     all: ['allenamenti'] as const,

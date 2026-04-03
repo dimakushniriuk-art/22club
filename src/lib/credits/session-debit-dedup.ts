@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import type { Database } from '@/lib/supabase/types'
 import { coachedAppDebitReasonForWorkoutLog } from '@/lib/credits/coached-debit-reason'
 import { creditLedgerRowIdForCoachedWorkout } from '@/lib/credits/credit-ledger-deterministic-id'
@@ -67,21 +68,35 @@ function isLogCoachedComplete(row: {
   return completed && coached
 }
 
+export type AppointmentRowForTrainingDedup = {
+  id: string
+  starts_at: string
+  ends_at: string
+  service_type: string | null
+  status: string | null
+}
+
 /**
  * C’è già un DEBIT su `credit_ledger` legato a un appuntamento PT che copre il momento del log:
  * non inserire un secondo DEBIT da app.
+ * @param appointmentsPreloaded — se passato, evita N query ripetute sullo stesso atleta.
  */
 export async function hasOverlappingAppointmentTrainingDebit(
   client: SupabaseClient<Database>,
   athleteProfileId: string,
   log: WorkoutLogTimeFields,
+  appointmentsPreloaded?: AppointmentRowForTrainingDedup[] | null,
 ): Promise<boolean> {
-  const { data: apts, error } = await client
-    .from('appointments')
-    .select('id, starts_at, ends_at, service_type, status')
-    .eq('athlete_id', athleteProfileId)
-
-  if (error || !apts?.length) return false
+  let apts = appointmentsPreloaded
+  if (apts == null) {
+    const { data, error } = await client
+      .from('appointments')
+      .select('id, starts_at, ends_at, service_type, status')
+      .eq('athlete_id', athleteProfileId)
+    if (error || !data?.length) return false
+    apts = data as AppointmentRowForTrainingDedup[]
+  }
+  if (!apts.length) return false
 
   const overlappingIds = apts
     .filter(
@@ -96,15 +111,17 @@ export async function hasOverlappingAppointmentTrainingDebit(
 
   if (overlappingIds.length === 0) return false
 
-  const { data: led } = await client
-    .from('credit_ledger')
-    .select('id')
-    .eq('entry_type', 'DEBIT')
-    .eq('service_type', 'training')
-    .in('appointment_id', overlappingIds)
-    .limit(1)
-
-  return (led?.length ?? 0) > 0
+  for (const idChunk of chunkForSupabaseIn(overlappingIds)) {
+    const { data: led } = await client
+      .from('credit_ledger')
+      .select('id')
+      .eq('entry_type', 'DEBIT')
+      .eq('service_type', 'training')
+      .in('appointment_id', idChunk)
+      .limit(1)
+    if ((led?.length ?? 0) > 0) return true
+  }
+  return false
 }
 
 /**

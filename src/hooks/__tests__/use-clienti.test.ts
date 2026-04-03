@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import React, { type ReactNode } from 'react'
 import { useClienti } from '../use-clienti'
 
 // Mock environment variables per far credere all'hook che Supabase è configurato
@@ -13,15 +15,47 @@ Object.defineProperty(process, 'env', {
   writable: true,
 })
 
-// Mock Supabase
-const mockSupabase = {
-  from: vi.fn(),
-  rpc: vi.fn(),
-  channel: vi.fn(),
+const { mockSupabase } = vi.hoisted(() => ({
+  mockSupabase: {
+    from: vi.fn(),
+    rpc: vi.fn(),
+    channel: vi.fn(() => ({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    })),
+  },
+}))
+
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  })
+
+const QueryWrapper = ({ children }: { children: ReactNode }) => {
+  const queryClient = createTestQueryClient()
+  return React.createElement(QueryClientProvider, { client: queryClient }, children)
 }
 
-vi.mock('../use-supabase', () => ({
-  useSupabase: () => ({ supabase: mockSupabase, user: null, loading: false }),
+vi.mock('@/providers/auth-provider', () => ({
+  useAuth: () => ({
+    user: {
+      id: 'profile-test-1',
+      user_id: 'auth-user-test-1',
+      first_name: 'Test',
+      last_name: 'Trainer',
+      email: 'trainer@test.local',
+      role: 'trainer',
+      org_id: 'org-test-1',
+      created_at: new Date().toISOString(),
+    },
+    loading: false,
+  }),
+}))
+
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: mockSupabase,
 }))
 
 vi.mock('../use-api-with-retry', () => ({
@@ -68,9 +102,7 @@ describe('useClienti', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Setup default mocks - chain completa per supportare .in(), .order(), .limit()
     const mockSelect = vi.fn()
-    const mockIn = vi.fn()
     const mockOrder = vi.fn()
     const mockLimit = vi.fn()
     const mockEq = vi.fn()
@@ -78,22 +110,10 @@ describe('useClienti', () => {
     const mockGte = vi.fn()
     const mockLte = vi.fn()
 
-    // Configura chain per query principale (from -> select -> in -> order -> limit)
-    mockSelect.mockReturnValue({
-      in: mockIn,
-      eq: mockEq,
-      or: mockOr,
-      gte: mockGte,
-      lte: mockLte,
-    })
-
-    mockIn.mockReturnValue({
-      order: mockOrder,
-    })
-
-    mockOrder.mockReturnValue({
-      limit: mockLimit,
-    })
+    const countThenable = {
+      then: (onFulfilled: (v: { count: number | null; error: unknown }) => unknown) =>
+        Promise.resolve({ count: 0, error: null }).then(onFulfilled),
+    }
 
     mockLimit.mockResolvedValue({
       data: [],
@@ -101,25 +121,38 @@ describe('useClienti', () => {
       count: 0,
     })
 
-    // Configura chain per count query (from -> select -> or -> eq -> gte -> lte)
+    mockOrder.mockReturnValue({
+      limit: mockLimit,
+    })
+
     mockEq.mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
       or: mockOr,
       gte: mockGte,
       lte: mockLte,
+      ...countThenable,
     })
 
     mockOr.mockReturnValue({
       eq: mockEq,
       gte: mockGte,
       lte: mockLte,
+      ...countThenable,
     })
 
     mockGte.mockReturnValue({
       lte: mockLte,
+      ...countThenable,
     })
 
     mockLte.mockReturnValue({
-      order: mockOrder,
+      eq: mockEq,
+      ...countThenable,
+    })
+
+    mockSelect.mockReturnValue({
+      eq: mockEq,
     })
 
     mockSupabase.from.mockReturnValue({
@@ -140,7 +173,7 @@ describe('useClienti', () => {
   })
 
   it('should fetch clienti on mount', async () => {
-    const { result } = renderHook(() => useClienti())
+    const { result } = renderHook(() => useClienti(), { wrapper: QueryWrapper })
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -150,18 +183,20 @@ describe('useClienti', () => {
   })
 
   it('should apply search filter', async () => {
-    const { result } = renderHook(() =>
-      useClienti({
-        filters: {
-          search: 'mario',
-          stato: 'tutti',
-          dataIscrizioneDa: null,
-          dataIscrizioneA: null,
-          allenamenti_min: null,
-          solo_documenti_scadenza: false,
-          tags: [],
-        },
-      }),
+    const { result } = renderHook(
+      () =>
+        useClienti({
+          filters: {
+            search: 'mario',
+            stato: 'tutti',
+            dataIscrizioneDa: null,
+            dataIscrizioneA: null,
+            allenamenti_min: null,
+            solo_documenti_scadenza: false,
+            tags: [],
+          },
+        }),
+      { wrapper: QueryWrapper },
     )
 
     await waitFor(() => {
@@ -173,18 +208,20 @@ describe('useClienti', () => {
   })
 
   it('should apply stato filter', async () => {
-    const { result } = renderHook(() =>
-      useClienti({
-        filters: {
-          search: '',
-          stato: 'attivo',
-          dataIscrizioneDa: null,
-          dataIscrizioneA: null,
-          allenamenti_min: null,
-          solo_documenti_scadenza: false,
-          tags: [],
-        },
-      }),
+    const { result } = renderHook(
+      () =>
+        useClienti({
+          filters: {
+            search: '',
+            stato: 'attivo',
+            dataIscrizioneDa: null,
+            dataIscrizioneA: null,
+            allenamenti_min: null,
+            solo_documenti_scadenza: false,
+            tags: [],
+          },
+        }),
+      { wrapper: QueryWrapper },
     )
 
     await waitFor(() => {
@@ -196,35 +233,27 @@ describe('useClienti', () => {
 
   it('should handle errors gracefully', async () => {
     const mockSelect = vi.fn()
-    const mockIn = vi.fn()
     const mockOrder = vi.fn()
     const mockLimit = vi.fn()
+    const mockEq = vi.fn()
 
-    mockSelect.mockReturnValue({
-      in: mockIn,
-    })
-
-    mockIn.mockReturnValue({
-      order: mockOrder,
-    })
-
-    mockOrder.mockReturnValue({
-      limit: mockLimit,
-    })
-
-    // L'errore deve essere lanciato come eccezione, non solo ritornato
-    const dbError = { message: 'Database error', code: 'PGRST_ERROR' }
     mockLimit.mockResolvedValue({
       data: null,
-      error: dbError,
+      error: { message: 'Database error', code: 'PGRST_ERROR' },
       count: 0,
     })
+    mockOrder.mockReturnValue({ limit: mockLimit })
+    mockEq.mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
+    })
+    mockSelect.mockReturnValue({ eq: mockEq })
 
     mockSupabase.from.mockReturnValue({
       select: mockSelect,
     })
 
-    const { result } = renderHook(() => useClienti())
+    const { result } = renderHook(() => useClienti(), { wrapper: QueryWrapper })
 
     await waitFor(
       () => {
@@ -233,25 +262,12 @@ describe('useClienti', () => {
       { timeout: 5000 },
     )
 
-    // L'hook gestisce l'errore nel catch e imposta setError
-    // Ma potrebbe essere null se l'errore viene gestito silenziosamente
-    // Verifichiamo che almeno l'errore sia stato gestito (non bloccante)
-    // Se error è null, significa che l'hook ha gestito l'errore senza bloccare
-    // In questo caso, verifichiamo che loading sia false (gestione completata)
     expect(result.current.loading).toBe(false)
-    // L'errore potrebbe essere null se gestito silenziosamente, ma l'hook non dovrebbe essere in errore
-    // Verifichiamo che l'hook abbia completato il fetch (loading = false)
-    if (result.current.error) {
-      expect(result.current.error).toBeTruthy()
-    } else {
-      // Se l'errore è null, significa che è stato gestito silenziosamente
-      // Questo è accettabile per questo hook che non blocca l'UI
-      expect(result.current.error).toBeNull()
-    }
+    expect(result.current.error).toBeTruthy()
   })
 
   it('should calculate stats correctly', async () => {
-    const { result } = renderHook(() => useClienti())
+    const { result } = renderHook(() => useClienti(), { wrapper: QueryWrapper })
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)

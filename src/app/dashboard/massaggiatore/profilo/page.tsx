@@ -12,6 +12,10 @@ import { usePTSettings } from '@/hooks/use-pt-settings'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useNotifications, type Notification as ApiNotification } from '@/hooks/use-notifications'
 import { User, Bell, Shield, Check } from 'lucide-react'
+import {
+  StaffDashboardGuardSkeleton,
+  StaffStaffPageContentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 const logger = createLogger('app:dashboard:massaggiatore:profilo')
 
@@ -223,17 +227,17 @@ export default function MassaggiatoreProfiloPage() {
   }, [handleSaveSettings, addToast])
 
   if (showGuardLoader) {
-    return null
+    return <StaffDashboardGuardSkeleton />
   }
 
   if (loading) {
     return (
       <StaffContentLayout
         title="Profilo"
-        description="Gestisci il tuo profilo, notifiche e impostazioni"
+        description="Profilo professionale, notifiche e preferenze."
         theme="amber"
       >
-        {null}
+        <StaffStaffPageContentSkeleton />
       </StaffContentLayout>
     )
   }
@@ -241,7 +245,7 @@ export default function MassaggiatoreProfiloPage() {
   return (
     <StaffContentLayout
       title="Profilo"
-      description="Gestisci il tuo profilo, notifiche e impostazioni"
+      description="Profilo professionale, notifiche e preferenze."
       theme="amber"
     >
       {saveSuccess && <ProfiloSaveSuccessCard />}

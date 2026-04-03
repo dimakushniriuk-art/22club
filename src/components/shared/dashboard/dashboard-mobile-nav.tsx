@@ -24,6 +24,8 @@ import {
   Zap,
   ClipboardList,
   TrendingUp,
+  Activity,
+  Database,
 } from 'lucide-react'
 import { Logo22Club } from '../logo-22club'
 import { useAuth } from '@/providers/auth-provider'
@@ -31,20 +33,19 @@ import { useNotify } from '@/lib/ui/notify'
 import { createLogger } from '@/lib/logger'
 import { Drawer } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { useStaffWorkoutSlotsIndicator } from '@/hooks/use-staff-workout-slots-indicator'
 
 const logger = createLogger('components:shared:dashboard:mobile-nav')
 
 const staffNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard' },
-  { label: 'Clienti', icon: Users, href: '/dashboard/clienti' },
-  { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
-  { label: 'Appuntamenti', icon: Calendar, href: '/dashboard/appuntamenti' },
-  { label: 'Calendario', icon: Calendar, href: '/dashboard/calendario' },
-  { label: 'Esercizi', icon: Dumbbell, href: '/dashboard/esercizi' },
-  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
+  { label: 'Prenotazioni', icon: ClipboardList, href: '/dashboard/prenotazioni' },
+  { label: 'Workouts', icon: Activity, href: '/dashboard/workouts' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/chat' },
+  { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
+  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
   { label: 'Comunicazioni', icon: Send, href: '/dashboard/comunicazioni' },
-  { label: 'Invita Atleta', icon: UserPlus, href: '/dashboard/invita-atleta' },
+  { label: 'Database', icon: Database, href: '/dashboard/database' },
   { label: 'Impostazioni', icon: Settings, href: '/dashboard/impostazioni' },
 ]
 
@@ -77,6 +78,7 @@ export function DashboardMobileNav() {
   const { role: userRole, signOut } = useAuth()
   const { notify } = useNotify()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const staffWorkoutsSlotsActive = useStaffWorkoutSlotsIndicator()
 
   const isAdmin = userRole === 'admin'
   let nav = staffNav
@@ -177,12 +179,18 @@ export function DashboardMobileNav() {
                   href={item.href}
                   onClick={closeDrawer}
                   className={cn(
-                    'flex items-center gap-3 min-h-[44px] px-3 rounded-xl transition-colors duration-200',
+                    'relative flex items-center gap-3 min-h-[44px] px-3 rounded-xl transition-colors duration-200',
                     active
                       ? 'bg-primary/12 ring-1 ring-primary/25 text-primary font-medium'
                       : 'text-text-secondary hover:text-primary hover:bg-white/5 ring-1 ring-transparent',
                   )}
                 >
+                  {item.href === '/dashboard/workouts' && staffWorkoutsSlotsActive ? (
+                    <span
+                      className="pointer-events-none absolute top-2 right-2 z-[1] h-2 w-2 shrink-0 rounded-full bg-amber-400 shadow-[0_0_0_2px_rgba(0,0,0,0.45)]"
+                      aria-hidden
+                    />
+                  ) : null}
                   <Icon className="w-5 h-5 shrink-0" />
                   <span className="text-sm font-medium">{item.label}</span>
                   {active && <div className="ml-auto w-2 h-2 bg-primary rounded-full" />}

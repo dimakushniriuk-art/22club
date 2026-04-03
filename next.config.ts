@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
         media-src 'self' blob: data: https://*.supabase.co https://*.supabase.in https://*.public.blob.vercel-storage.com;
         font-src 'self' https://fonts.gstatic.com;
         connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co;
-        frame-ancestors 'none';
+        frame-ancestors 'self';
         form-action 'self';
         base-uri 'self';
         object-src 'none';
@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
             },
             {
               key: 'X-Frame-Options',
-              value: 'DENY',
+              value: 'SAMEORIGIN',
             },
             {
               key: 'X-XSS-Protection',

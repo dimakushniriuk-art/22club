@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 import { Filter, Grid3x3, List as ListIcon } from 'lucide-react'
+import { ViewModeToggle } from '@/components/shared/ui/view-mode-toggle'
 
 interface SchedeHeaderActionsProps {
   totalCount?: number
@@ -14,29 +15,13 @@ interface SchedeHeaderActionsProps {
 }
 
 export function SchedeHeaderActions({
-  totalCount,
-  activeCount,
   viewMode,
   onViewModeChange,
   showFilters,
   onShowFiltersChange,
 }: SchedeHeaderActionsProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-      {(totalCount !== undefined || activeCount !== undefined) && (
-        <div className="flex flex-wrap items-center gap-2">
-          {totalCount !== undefined && (
-            <span className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-medium text-text-secondary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
-              Totale: <span className="text-text-primary">{totalCount}</span>
-            </span>
-          )}
-          {activeCount !== undefined && (
-            <span className="rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
-              Attive: <span className="text-primary">{activeCount}</span>
-            </span>
-          )}
-        </div>
-      )}
+    <div className="flex flex-wrap items-stretch sm:items-center justify-center sm:justify-end gap-2 sm:gap-3">
       <Button
         variant="outline"
         size="sm"
@@ -47,26 +32,14 @@ export function SchedeHeaderActions({
         <Filter className="mr-2 h-4 w-4" />
         Filtri
       </Button>
-      <div className="flex items-center gap-1 border border-cyan-400/30 rounded-lg p-0.5 bg-cyan-500/5">
-        <Button
-          variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => onViewModeChange('grid')}
-          aria-label="Vista griglia"
-          className={`rounded-md h-8 px-2 ${viewMode !== 'grid' ? 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent' : ''}`}
-        >
-          <Grid3x3 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={viewMode === 'list' ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => onViewModeChange('list')}
-          aria-label="Vista lista"
-          className={`rounded-md h-8 px-2 ${viewMode !== 'list' ? 'text-cyan-300/80 hover:bg-cyan-500/10 border-transparent' : ''}`}
-        >
-          <ListIcon className="h-4 w-4" />
-        </Button>
-      </div>
+      <ViewModeToggle
+        value={viewMode}
+        onChange={onViewModeChange}
+        options={[
+          { value: 'grid', ariaLabel: 'Vista griglia', Icon: Grid3x3 },
+          { value: 'list', ariaLabel: 'Vista lista', Icon: ListIcon },
+        ]}
+      />
       <Button
         variant="primary"
         size="sm"

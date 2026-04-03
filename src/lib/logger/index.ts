@@ -306,8 +306,7 @@ class Logger {
               ),
             )
           : {}
-      mergedData =
-        Object.keys(extra).length > 0 ? { ...data, ...extra } : data
+      mergedData = Object.keys(extra).length > 0 ? { ...data, ...extra } : data
     }
 
     this.addLog({

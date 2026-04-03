@@ -1,9 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui'
+import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-header-back-button'
 
 export interface PageHeaderGlassProps {
   title: string
@@ -33,27 +32,9 @@ export function PageHeaderGlass({
   const backContent =
     hasBack &&
     (backHref && !onBack ? (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary"
-        aria-label="Indietro"
-        asChild
-      >
-        <Link href={backHref} className="flex h-full w-full items-center justify-center">
-          <BackIcon />
-        </Link>
-      </Button>
+      <StaffHeaderBackButton href={backHref} />
     ) : (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary"
-        aria-label="Indietro"
-        onClick={onBack}
-      >
-        <BackIcon />
-      </Button>
+      <StaffHeaderBackButton onClick={onBack!} />
     ))
 
   return (
@@ -74,19 +55,5 @@ export function PageHeaderGlass({
       </div>
       <div className="absolute inset-x-0 bottom-0 h-px" style={CYAN_LINE_STYLE} aria-hidden />
     </div>
-  )
-}
-
-function BackIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-    </svg>
   )
 }

@@ -2,6 +2,7 @@ export { Sidebar } from './sidebar'
 export { KPICard } from './kpi-card'
 export { ModernKPICard } from './modern-kpi-card'
 export { AgendaTimeline } from './agenda-timeline'
+export { AgendaTimelineCompact, AgendaSelectedAthleteSummary } from './agenda-timeline-compact'
 export { QuickActions } from './quick-actions'
 // ActionDrawers rimosso - le modali sono gestite da ModalsWrapper
 export { ProgressKPICards } from './progress-kpi-cards'

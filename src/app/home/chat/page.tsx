@@ -15,7 +15,7 @@ import { MessageList } from '@/components/chat/message-list'
 import { MessageInput } from '@/components/chat/message-input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, MessageCircle } from 'lucide-react'
+import { User } from 'lucide-react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { AthleteTopBarContext } from '@/components/athlete'
@@ -563,7 +563,6 @@ function AthleteChatPageContent() {
   const loadingRecipients = loadingPT
 
   const setTopBarConfig = useContext(AthleteTopBarContext)?.setConfig
-  const chatIcon = useMemo(() => <MessageCircle className="h-5 w-5 text-cyan-400" />, [])
 
   const chatSecondaryRow = useMemo(() => {
     if (!effectiveConversation) return null
@@ -597,8 +596,6 @@ function AthleteChatPageContent() {
 
   const handleBackRef = useRef(handleBack)
   handleBackRef.current = handleBack
-  const chatIconRef = useRef<ReactNode>(null)
-  chatIconRef.current = chatIcon
   const chatSecondaryRowRef = useRef<ReactNode>(null)
   chatSecondaryRowRef.current = chatSecondaryRow
 
@@ -612,7 +609,6 @@ function AthleteChatPageContent() {
         title: 'Chat',
         subtitle: 'Caricamento…',
         onBack,
-        icon: chatIconRef.current,
       })
       return clear
     }
@@ -625,7 +621,6 @@ function AthleteChatPageContent() {
         title: 'Chat',
         subtitle: 'Messaggi con il tuo trainer',
         onBack,
-        icon: chatIconRef.current,
       })
       return clear
     }
@@ -635,14 +630,12 @@ function AthleteChatPageContent() {
           title: 'Chat',
           subtitle: 'Caricamento…',
           onBack,
-          icon: chatIconRef.current,
         })
       } else {
         setTopBarConfig({
           title: 'Chat',
           subtitle: 'Nessun trainer assegnato',
           onBack,
-          icon: chatIconRef.current,
         })
       }
       return clear
@@ -652,7 +645,6 @@ function AthleteChatPageContent() {
         title: 'Chat',
         subtitle: 'Selezionando conversazione…',
         onBack,
-        icon: chatIconRef.current,
       })
       return clear
     }
@@ -665,7 +657,6 @@ function AthleteChatPageContent() {
       title: 'Chat',
       subtitle: sub,
       onBack,
-      icon: chatIconRef.current,
       secondaryRow: chatSecondaryRowRef.current ?? undefined,
     })
     return clear

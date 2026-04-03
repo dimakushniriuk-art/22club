@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useEffect, Suspense, createElement } from 'react'
+import { useState, useEffect, Suspense, createElement, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 import { useAuth } from '@/providers/auth-provider'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { notifyError } from '@/lib/notifications'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
+import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
 import type { Tables } from '@/types/supabase'
 import { PageHeaderFixed } from '@/components/layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -40,6 +43,7 @@ import {
   WORKOUT_REPS_MAX_SENTINEL,
   formatWorkoutRepsLabel,
 } from '@/lib/constants/workout-reps-select'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:home:allenamenti:riepilogo:page')
 
@@ -79,6 +83,8 @@ function muscleLabelIt(raw: string): string {
 }
 
 interface WorkoutSummary {
+  /** Id riga `workout_logs` (per API debito / callback dashboard). */
+  workout_log_id: string
   workout_id: string
   workout_title: string
   completed_at: string
@@ -124,26 +130,183 @@ interface WorkoutSummary {
   }
 }
 
-function RiepilogoPageContent() {
+export function RiepilogoPageContent({
+  workoutLogIdOverride,
+}: {
+  workoutLogIdOverride?: string
+} = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
   const supabase = useSupabaseClient()
   const { addToast } = useToast()
+  const { pathBase, isPreview } = useAthleteAllenamentiPaths()
+  const workoutsPane = useWorkoutsPaneOptional()
+
+  const handleRiepilogoHeaderBack = useCallback(() => {
+    if (workoutsPane) {
+      workoutsPane.navigateTo({ kind: 'home' })
+      return
+    }
+    router.back()
+  }, [workoutsPane, router])
+
+  /** In Workouts (dashboard) `isPreview` è true ma non si deve usare `router.push('/home/allenamenti')`: si resta nello slot. */
+  const goToAllenamentiHome = useCallback(() => {
+    if (workoutsPane) {
+      workoutsPane.setDirty?.(false)
+      workoutsPane.navigateTo({ kind: 'home' })
+      return
+    }
+    router.push(isPreview ? pathBase : '/home')
+  }, [workoutsPane, router, isPreview, pathBase])
 
   // Type guard per user
   const isValidUser = user && isValidProfile(user)
 
-  // user.id da useAuth() è già profiles.id, usiamolo direttamente
-  const athleteProfileId = isValidUser && isValidUUID(user.id) ? user.id : null
+  const { athleteProfileId } = useResolvedAthleteProfileForAllenamenti()
 
   const [summary, setSummary] = useState<WorkoutSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitted, _setIsSubmitted] = useState(false)
+  const [paneFinalizeLoading, setPaneFinalizeLoading] = useState(false)
+
+  /** Dashboard Workouts: testi riepilogo coerenti con sessione vista staff (non "in autonomia"). */
+  const sessionNoteForStaffPane = useMemo(() => {
+    if (!workoutsPane || !summary) return null as string | null
+    const n = summary.session_note?.trim() ?? ''
+    if (!n) return 'Registrato dalla dashboard Workouts.'
+    if (n === 'Completato da solo') return 'Completato dalla vista trainer (dashboard Workouts).'
+    return n
+  }, [workoutsPane, summary])
 
   // Recupera workout_id da query params se disponibile (passato dalla pagina precedente)
-  const workoutIdFromParams = searchParams.get('workout_id')
+  const workoutIdFromParams = workoutLogIdOverride ?? searchParams.get('workout_id')
+
+  const handleStaffPaneSaveAndComplete = useCallback(async () => {
+    if (!workoutsPane || !athleteProfileId || !summary) return
+    const logId = (summary.workout_log_id?.trim() || workoutIdFromParams?.trim() || '') as string
+    if (!logId || !isValidUUID(logId)) {
+      addToast({
+        title: 'Errore',
+        message: 'Log allenamento non valido: impossibile finalizzare.',
+        variant: 'error',
+      })
+      return
+    }
+    const coached =
+      summary.is_coached || String(summary.execution_mode ?? '').toLowerCase() === 'coached'
+
+    setPaneFinalizeLoading(true)
+    try {
+      const { data: setsRows, error: setsErr } = await supabase
+        .from('workout_sets')
+        .select('reps, weight_kg')
+        .eq('workout_log_id', logId)
+
+      if (setsErr) {
+        addToast({
+          title: 'Errore',
+          message: setsErr.message || 'Impossibile leggere le serie salvate.',
+          variant: 'error',
+        })
+        return
+      }
+
+      let volumeTotale = 0
+      for (const row of setsRows ?? []) {
+        const r = repsForVolumeKgRep(row.reps ?? 0)
+        const w = row.weight_kg != null ? Number(row.weight_kg) : 0
+        if (r > 0 && w >= 0) volumeTotale += r * w
+      }
+
+      const completedAt = new Date().toISOString()
+      const today = completedAt.split('T')[0]
+
+      const { data: logRow } = await supabase
+        .from('workout_logs')
+        .select('stato')
+        .eq('id', logId)
+        .eq('atleta_id', athleteProfileId)
+        .maybeSingle()
+
+      const stLog = String(logRow?.stato ?? '').toLowerCase()
+      const needsFirstComplete = stLog !== 'completato' && stLog !== 'completed'
+
+      const updatePayload: Record<string, unknown> = {
+        volume_totale: volumeTotale > 0 ? volumeTotale : null,
+        esercizi_completati: summary.completed_exercises,
+        esercizi_totali: summary.total_exercises,
+      }
+      if (needsFirstComplete) {
+        updatePayload.stato = 'completato'
+        updatePayload.completed_at = completedAt
+        updatePayload.data = today
+      }
+
+      const { error: updErr } = await supabase
+        .from('workout_logs')
+        .update(updatePayload as never)
+        .eq('id', logId)
+        .eq('atleta_id', athleteProfileId)
+
+      if (updErr) {
+        addToast({
+          title: 'Errore',
+          message: updErr.message || 'Aggiornamento log allenamento non riuscito.',
+          variant: 'error',
+        })
+        return
+      }
+
+      if (coached) {
+        const debit = await requestCoachedSessionDebitClient(logId)
+        if (!debit.ok) {
+          addToast({
+            title: 'Scalatura lezione',
+            message: debit.error ?? 'Operazione non riuscita. Riprova o contatta la reception.',
+            variant: 'error',
+          })
+          return
+        }
+      }
+
+      if (workoutsPane.onWorkoutCompleted) {
+        const appointmentOk = await Promise.resolve(
+          workoutsPane.onWorkoutCompleted({
+            athleteProfileId,
+            withTrainer: coached,
+            workoutLogId: logId,
+            finalizeAgendaAppointment: true,
+          }),
+        )
+        if (appointmentOk === false) {
+          return
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('22club:athlete-lessons-refresh'))
+      }
+
+      workoutsPane.setDirty?.(false)
+      if (workoutsPane.dismissSlot) {
+        workoutsPane.dismissSlot()
+      } else {
+        workoutsPane.navigateTo({ kind: 'home' })
+      }
+    } catch (e) {
+      logger.error('Finalizzazione riepilogo Workouts pane', e)
+      addToast({
+        title: 'Errore',
+        message: e instanceof Error ? e.message : 'Finalizzazione non riuscita.',
+        variant: 'error',
+      })
+    } finally {
+      setPaneFinalizeLoading(false)
+    }
+  }, [workoutsPane, athleteProfileId, summary, workoutIdFromParams, addToast, supabase])
 
   // Carica riepilogo workout
   useEffect(() => {
@@ -468,28 +631,34 @@ function RiepilogoPageContent() {
               const selectOrphan =
                 'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, workout_log_id, created_at' as const
 
-              const { data: byCompleted } = await supabase
-                .from('workout_sets')
-                .select(selectOrphan)
-                .in('workout_day_exercise_id', allWdeIdsOnPlan)
-                .gte('completed_at', winStart)
-                .lte('completed_at', winEnd)
-
-              let list = (byCompleted ?? []) as OrphanRow[]
+              const list: OrphanRow[] = []
+              for (const wdeChunk of chunkForSupabaseIn(allWdeIdsOnPlan)) {
+                const { data: byCompleted } = await supabase
+                  .from('workout_sets')
+                  .select(selectOrphan)
+                  .in('workout_day_exercise_id', wdeChunk)
+                  .gte('completed_at', winStart)
+                  .lte('completed_at', winEnd)
+                list.push(...((byCompleted ?? []) as OrphanRow[]))
+              }
 
               if (list.length === 0) {
                 const tLog = typedWorkoutLog.created_at || typedWorkoutLog.completed_at
                 if (tLog) {
                   const tc = new Date(tLog).getTime()
                   if (!Number.isNaN(tc)) {
-                    const { data: byCreated } = await supabase
-                      .from('workout_sets')
-                      .select(selectOrphan)
-                      .in('workout_day_exercise_id', allWdeIdsOnPlan)
-                      .is('workout_log_id', null)
-                      .gte('created_at', new Date(tc - 90 * 60 * 1000).toISOString())
-                      .lte('created_at', new Date(tc + 20 * 60 * 1000).toISOString())
-                    list = (byCreated ?? []) as OrphanRow[]
+                    const tMin = new Date(tc - 90 * 60 * 1000).toISOString()
+                    const tMax = new Date(tc + 20 * 60 * 1000).toISOString()
+                    for (const wdeChunk of chunkForSupabaseIn(allWdeIdsOnPlan)) {
+                      const { data: byCreated } = await supabase
+                        .from('workout_sets')
+                        .select(selectOrphan)
+                        .in('workout_day_exercise_id', wdeChunk)
+                        .is('workout_log_id', null)
+                        .gte('created_at', tMin)
+                        .lte('created_at', tMax)
+                      list.push(...((byCreated ?? []) as OrphanRow[]))
+                    }
                   }
                 }
               }
@@ -511,12 +680,15 @@ function RiepilogoPageContent() {
                 arr.sort((a, b) => a.set_number - b.set_number)
               }
               if (repairIds.length > 0) {
-                const { error: repErr } = await supabase
-                  .from('workout_sets')
-                  .update({ workout_log_id: workoutLogId })
-                  .in('id', repairIds)
-                if (repErr) {
-                  logger.warn('Repair workout_sets → workout_log fallito', repErr, { workoutLogId })
+                for (const idChunk of chunkForSupabaseIn(repairIds)) {
+                  const { error: repErr } = await supabase
+                    .from('workout_sets')
+                    .update({ workout_log_id: workoutLogId })
+                    .in('id', idChunk)
+                  if (repErr) {
+                    logger.warn('Repair workout_sets → workout_log fallito', repErr, { workoutLogId })
+                    break
+                  }
                 }
               }
             }
@@ -632,6 +804,7 @@ function RiepilogoPageContent() {
         const avgLoadPerSet = totalSets > 0 ? Math.round(totalVolumeDisplay / totalSets) : 0
 
         const summaryData: WorkoutSummary = {
+          workout_log_id: String(typedWorkoutLog.id ?? ''),
           workout_id: typedWorkoutLog.scheda_id || typedWorkoutLog.id,
           workout_title: workoutTitleCombined,
           completed_at:
@@ -666,7 +839,7 @@ function RiepilogoPageContent() {
         const logCoached =
           Boolean(typedWorkoutLog.is_coached) ||
           String(typedWorkoutLog.execution_mode ?? '').toLowerCase() === 'coached'
-        if (logCompleted && logCoached && typedWorkoutLog.id) {
+        if (logCompleted && logCoached && typedWorkoutLog.id && !workoutsPane) {
           const debit = await requestCoachedSessionDebitClient(typedWorkoutLog.id)
           if (!debit.ok && !cancelled) {
             addToast({
@@ -714,7 +887,7 @@ function RiepilogoPageContent() {
     return () => {
       cancelled = true
     }
-  }, [authLoading, athleteProfileId, workoutIdFromParams, supabase, addToast])
+  }, [authLoading, athleteProfileId, workoutIdFromParams, supabase, addToast, workoutsPane])
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
@@ -769,7 +942,7 @@ function RiepilogoPageContent() {
   if (!authLoading && (!user || !isValidUser)) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24 flex items-center justify-center">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-36 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-32 min-[834px]:pt-6 flex items-center justify-center">
           <Card className="relative max-w-md w-full overflow-hidden rounded-2xl border-red-500/30 bg-background-secondary/50">
             <CardContent className="p-6 min-[834px]:p-8 text-center relative z-10">
               <div className="mb-3 flex justify-center opacity-50" aria-hidden>
@@ -794,14 +967,14 @@ function RiepilogoPageContent() {
   if (loading || authLoading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-36 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-32 min-[834px]:pt-6">
           <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
             <PageHeaderFixed
               variant="chat"
+              embedStatic={isPreview}
               title="Riepilogo Allenamento"
               subtitle="Caricamento…"
-              onBack={() => router.back()}
-              icon={<Trophy className="h-5 w-5 text-cyan-400" />}
+              onBack={handleRiepilogoHeaderBack}
             />
             <div className={CARD_DS}>
               <div className="space-y-4 p-4 sm:p-6">
@@ -833,14 +1006,14 @@ function RiepilogoPageContent() {
   if (error || !summary) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-36 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-32 min-[834px]:pt-6">
           <div className="mx-auto w-full max-w-lg space-y-4 min-[834px]:space-y-5 min-[1100px]:max-w-3xl">
             <PageHeaderFixed
               variant="chat"
+              embedStatic={isPreview}
               title="Riepilogo Allenamento"
               subtitle="Riepilogo sessione"
-              onBack={() => router.back()}
-              icon={<Trophy className="h-5 w-5 text-cyan-400" />}
+              onBack={handleRiepilogoHeaderBack}
             />
             <Card className="relative overflow-hidden rounded-2xl border border-state-error/50 bg-background-secondary/50">
               <CardContent className="relative z-10 p-6 text-center min-[834px]:p-8">
@@ -854,7 +1027,7 @@ function RiepilogoPageContent() {
                   Completa un allenamento per vedere il riepilogo
                 </p>
                 <Button
-                  onClick={() => router.push('/home/allenamenti')}
+                  onClick={goToAllenamentiHome}
                   className="min-h-[44px] h-9 touch-manipulation rounded-xl bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:h-10"
                 >
                   Vai agli Allenamenti
@@ -870,7 +1043,7 @@ function RiepilogoPageContent() {
   if (isSubmitted) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24 flex items-center justify-center">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-36 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-32 min-[834px]:pt-6 flex items-center justify-center">
           <Card className={`relative mx-auto w-full max-w-md ${CARD_DS}`}>
             <CardContent className="relative z-10 p-6 text-center sm:p-8">
               <div className="mb-3 flex justify-center" aria-hidden>
@@ -919,20 +1092,20 @@ function RiepilogoPageContent() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
-        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-36 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-32 min-[834px]:pt-6">
+        <div className="mx-auto w-full max-w-lg space-y-5 sm:space-y-6 min-[1100px]:max-w-3xl min-[1100px]:space-y-7">
           <PageHeaderFixed
             variant="chat"
+            embedStatic={isPreview}
             title="Riepilogo Allenamento"
             subtitle={summary.workout_title}
-            onBack={() => router.back()}
-            icon={<Trophy className="h-5 w-5 text-cyan-400" />}
+            onBack={handleRiepilogoHeaderBack}
           />
 
           <Card className={CARD_DS}>
-            <CardContent className="relative z-10 space-y-4 p-4 sm:p-6">
+            <CardContent className="relative z-10 space-y-5 p-5 sm:space-y-6 sm:p-6">
               <div className="text-center sm:space-y-1">
-                <div className="mb-3 flex justify-center sm:mb-4">
+                <div className="mb-4 flex justify-center sm:mb-5">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-inner sm:h-14 sm:w-14">
                     <Trophy className="h-6 w-6 text-cyan-400 sm:h-7 sm:w-7" />
                   </div>
@@ -943,8 +1116,8 @@ function RiepilogoPageContent() {
                 <p className="mt-1 text-text-tertiary text-xs min-[834px]:text-sm">
                   Completato il {formatDateTime(summary.completed_at)}
                 </p>
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                  {summary.is_coached ? (
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:mt-5">
+                  {summary.is_coached || workoutsPane ? (
                     <Badge
                       variant="info"
                       size="sm"
@@ -965,77 +1138,77 @@ function RiepilogoPageContent() {
                 </div>
               </div>
 
-              {summary.session_note ? (
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left">
+              {(workoutsPane ? sessionNoteForStaffPane : summary.session_note) ? (
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-left sm:px-4 sm:py-4">
                   <p className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
                     Nota sessione
                   </p>
-                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">
-                    {summary.session_note}
+                  <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+                    {workoutsPane ? sessionNoteForStaffPane : summary.session_note}
                   </p>
                 </div>
               ) : null}
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 min-[1100px]:gap-4">
-                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                    <Activity className="h-4 w-4 text-cyan-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+              <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 lg:grid-cols-4 sm:gap-4 lg:gap-5">
+                <div className="relative flex min-h-[6.5rem] min-w-0 flex-col justify-between gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                      <Activity className="h-4 w-4 text-cyan-400" />
+                    </div>
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Esercizi
                     </div>
-                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                      {summary.completed_exercises}/{summary.total_exercises}
-                    </div>
-                    <div className="text-[10px] text-text-tertiary">completati</div>
                   </div>
+                  <p className="break-words text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl lg:text-xl">
+                    {summary.completed_exercises}/{summary.total_exercises}
+                  </p>
+                  <p className="text-[10px] leading-tight text-text-tertiary">completati</p>
                 </div>
-                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                    <ListOrdered className="h-4 w-4 text-cyan-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                <div className="relative flex min-h-[6.5rem] min-w-0 flex-col justify-between gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                      <ListOrdered className="h-4 w-4 text-cyan-400" />
+                    </div>
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Serie
                     </div>
-                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                      {summary.completed_sets}/{summary.total_sets}
-                    </div>
-                    <div className="text-[10px] text-text-tertiary">registrate</div>
                   </div>
+                  <p className="break-words text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl lg:text-xl">
+                    {summary.completed_sets}/{summary.total_sets}
+                  </p>
+                  <p className="text-[10px] leading-tight text-text-tertiary">registrate</p>
                 </div>
-                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                    <Clock className="h-4 w-4 text-cyan-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                <div className="relative flex min-h-[6.5rem] min-w-0 flex-col justify-between gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                      <Clock className="h-4 w-4 text-cyan-400" />
+                    </div>
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Durata
                     </div>
-                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                      {formatTime(summary.total_time)}
-                    </div>
-                    <div className="text-[10px] text-text-tertiary">in sala</div>
                   </div>
+                  <p className="break-words text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl lg:text-xl">
+                    {formatTime(summary.total_time)}
+                  </p>
+                  <p className="text-[10px] leading-tight text-text-tertiary">in sala</p>
                 </div>
-                <div className="relative flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                    <Weight className="h-4 w-4 text-cyan-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                <div className="relative flex min-h-[6.5rem] min-w-0 flex-col justify-between gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                      <Weight className="h-4 w-4 text-cyan-400" />
+                    </div>
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Volume
                     </div>
-                    <div className="truncate text-lg font-bold tabular-nums text-text-primary sm:text-xl">
-                      {formatVolumeIt(summary.performance_stats.total_volume)}
-                    </div>
-                    <div className="text-[10px] text-text-tertiary">kg (serie)</div>
                   </div>
+                  <p className="break-words text-xl font-bold tabular-nums leading-tight text-text-primary sm:text-2xl lg:text-xl">
+                    {formatVolumeIt(summary.performance_stats.total_volume)}
+                  </p>
+                  <p className="text-[10px] leading-tight text-text-tertiary">kg (serie)</p>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-4">
+              <div className="flex flex-col items-center gap-3 border-t border-white/10 pt-5 sm:gap-4 sm:pt-6">
                 <Progress value={completionPct} className="h-2 w-full max-w-xs" />
                 <div className="flex w-full max-w-xs items-center justify-between">
                   <span className="text-xs text-text-tertiary">{completionLabel}</span>
@@ -1048,7 +1221,7 @@ function RiepilogoPageContent() {
                     completionPct >= 100 ? 'success' : completionPct >= 50 ? 'warning' : 'secondary'
                   }
                   size="sm"
-                  className="rounded-full text-xs"
+                  className="mt-1 rounded-full text-xs"
                 >
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   {completionPct >= 100
@@ -1060,7 +1233,7 @@ function RiepilogoPageContent() {
           </Card>
 
           <Card className={CARD_DS}>
-            <CardHeader className="relative z-10 border-b border-white/10 py-3 min-[834px]:py-4">
+            <CardHeader className="relative z-10 border-b border-white/10 px-4 py-4 sm:px-5 sm:py-5 min-[834px]:px-6 min-[834px]:py-5">
               <CardTitle
                 size="md"
                 className="flex flex-col gap-1 text-sm font-semibold text-text-primary min-[834px]:text-base sm:flex-row sm:items-center sm:gap-2"
@@ -1076,7 +1249,7 @@ function RiepilogoPageContent() {
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10 space-y-3 pt-3 min-[834px]:space-y-4 min-[834px]:pt-4">
+            <CardContent className="relative z-10 space-y-4 px-4 pb-4 pt-4 min-[834px]:space-y-5 min-[834px]:px-6 min-[834px]:pb-5 min-[834px]:pt-5">
               {summary.exercises.length === 0 ? (
                 <p className="text-sm leading-relaxed text-text-secondary">
                   Nessuna serie trovata per questo log: compaiono qui solo peso e ripetizioni
@@ -1097,10 +1270,10 @@ function RiepilogoPageContent() {
                   return (
                     <div
                       key={exercise.id}
-                      className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:p-4"
+                      className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] p-4 sm:p-5"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3">
+                      <div className="flex flex-col gap-3 min-[480px]:flex-row min-[480px]:items-start min-[480px]:justify-between min-[480px]:gap-4">
+                        <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-3.5">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                             {createElement(getMuscleGroupIcon(exercise.exercise.muscle_group), {
                               className: 'h-5 w-5 text-cyan-400',
@@ -1108,17 +1281,17 @@ function RiepilogoPageContent() {
                             })}
                           </div>
                           <div className="min-w-0 flex-1 space-y-1">
-                            <h4 className="text-sm font-semibold leading-tight text-text-primary sm:text-base">
+                            <h4 className="text-balance text-sm font-semibold leading-snug text-text-primary sm:text-base">
                               {exercise.exercise.name}
                             </h4>
-                            <p className="text-xs text-text-tertiary">
+                            <p className="text-xs leading-snug text-text-tertiary [overflow-wrap:anywhere]">
                               {muscleLabelIt(exercise.exercise.muscle_group)}
                               {exercise.exercise.equipment &&
                               exercise.exercise.equipment !== 'unknown'
                                 ? ` · ${exercise.exercise.equipment}`
                                 : ''}
                             </p>
-                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            <div className="flex flex-col gap-1.5 pt-0.5 min-[400px]:flex-row min-[400px]:flex-wrap min-[400px]:items-center">
                               <Badge
                                 variant={
                                   getDifficultyColor(exercise.exercise.difficulty) as
@@ -1131,11 +1304,11 @@ function RiepilogoPageContent() {
                                     | 'secondary'
                                 }
                                 size="sm"
-                                className="rounded-full text-[10px]"
+                                className="w-fit rounded-full text-[10px]"
                               >
                                 {difficultyLabelIt(exercise.exercise.difficulty)}
                               </Badge>
-                              <span className="text-[11px] text-text-tertiary">
+                              <span className="text-[11px] leading-snug text-text-tertiary [overflow-wrap:anywhere]">
                                 Obiettivo scheda: {targetParts.join(' · ')}
                               </span>
                             </div>
@@ -1144,55 +1317,55 @@ function RiepilogoPageContent() {
                         <Badge
                           variant={exercise.is_completed ? 'success' : 'warning'}
                           size="sm"
-                          className="shrink-0 rounded-full text-[10px]"
+                          className="w-fit shrink-0 self-start rounded-full text-[10px] min-[480px]:self-auto"
                         >
                           {exercise.is_completed ? 'Serie ok' : 'Da chiudere'}
                         </Badge>
                       </div>
                       {exVol > 0 ? (
-                        <p className="mb-2 mt-3 text-[11px] text-text-tertiary">
+                        <p className="mb-2 mt-4 text-[11px] text-text-tertiary">
                           Volume esercizio:{' '}
                           <span className="font-medium text-text-secondary">
                             {formatVolumeIt(exVol)} kg
                           </span>
                         </p>
                       ) : null}
-                      <div className="mt-2 space-y-1.5">
-                        <div className="grid grid-cols-[2.5rem_1fr_1fr_auto] gap-1 border-b border-white/10 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-text-tertiary sm:grid-cols-[3rem_1fr_1fr_auto]">
-                          <span>N°</span>
-                          <span className="text-center sm:text-left">Peso</span>
-                          <span className="text-center sm:text-left">Ripetizioni</span>
-                          <span className="sr-only sm:not-sr-only sm:w-8">Stato</span>
+                      <div className="mt-3 min-w-0 space-y-2">
+                        <div className="grid grid-cols-[minmax(2rem,2.5rem)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-1.5 gap-y-1 border-b border-white/10 pb-2 text-[10px] font-medium uppercase tracking-wide text-text-tertiary sm:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-x-2">
+                          <span className="min-w-0">N°</span>
+                          <span className="min-w-0 text-center sm:text-left">Peso</span>
+                          <span className="min-w-0 text-center sm:text-left">Rip.</span>
+                          <span className="sr-only min-w-0 sm:not-sr-only sm:w-9 sm:shrink-0">Stato</span>
                         </div>
                         {exercise.sets.map((set, setIndex) => (
                           <div
                             key={setIndex}
-                            className="grid grid-cols-[2.5rem_1fr_1fr_auto] items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-2 sm:grid-cols-[3rem_1fr_1fr_auto]"
+                            className="grid grid-cols-[minmax(2rem,2.5rem)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-1 rounded-lg border border-white/10 bg-white/5 px-2 py-2 sm:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-x-2 sm:px-3 sm:py-2.5"
                           >
-                            <span className="text-xs font-semibold tabular-nums text-text-primary">
+                            <span className="min-w-0 text-xs font-semibold tabular-nums text-text-primary">
                               {set.set_number}
                             </span>
-                            <div className="flex items-center justify-center gap-1 sm:justify-start">
+                            <div className="flex min-w-0 items-center justify-center gap-1 sm:justify-start">
                               <Weight
-                                className="hidden h-3.5 w-3.5 text-cyan-400 sm:block"
+                                className="hidden h-3.5 w-3.5 shrink-0 text-cyan-400 sm:block"
                                 aria-hidden
                               />
-                              <span className="text-xs font-semibold tabular-nums text-text-primary">
+                              <span className="min-w-0 break-words text-xs font-semibold tabular-nums text-text-primary">
                                 {set.performed_weight > 0
                                   ? `${formatVolumeIt(set.performed_weight)} kg`
                                   : '—'}
                               </span>
                             </div>
-                            <div className="flex items-center justify-center gap-1 sm:justify-start">
+                            <div className="flex min-w-0 items-center justify-center gap-1 sm:justify-start">
                               <Target
-                                className="hidden h-3.5 w-3.5 text-cyan-400 sm:block"
+                                className="hidden h-3.5 w-3.5 shrink-0 text-cyan-400 sm:block"
                                 aria-hidden
                               />
-                              <span className="text-xs font-semibold tabular-nums text-text-primary">
+                              <span className="min-w-0 break-words text-xs font-semibold tabular-nums text-text-primary">
                                 {formatWorkoutRepsLabel(set.performed_reps)}
                               </span>
                             </div>
-                            <div className="flex justify-end">
+                            <div className="flex shrink-0 justify-end">
                               <Badge
                                 variant={set.is_completed ? 'success' : 'neutral'}
                                 size="sm"
@@ -1216,7 +1389,7 @@ function RiepilogoPageContent() {
           </Card>
 
           <Card className={CARD_DS}>
-            <CardHeader className="relative z-10 border-b border-white/10 py-3 min-[834px]:py-4">
+            <CardHeader className="relative z-10 border-b border-white/10 px-4 py-4 sm:px-5 sm:py-5 min-[834px]:px-6 min-[834px]:py-5">
               <CardTitle
                 size="md"
                 className="flex items-center gap-2 text-sm font-semibold text-text-primary min-[834px]:text-base"
@@ -1227,31 +1400,31 @@ function RiepilogoPageContent() {
                 Sintesi numerica
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10 space-y-4 pt-3 min-[834px]:pt-4">
-              <div className="grid grid-cols-2 gap-3 min-[834px]:grid-cols-4 min-[1100px]:gap-4">
-                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex items-center gap-2">
-                    <Weight className="h-4 w-4 shrink-0 text-cyan-400" />
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+            <CardContent className="relative z-10 space-y-4 px-4 pb-4 pt-4 min-[834px]:px-6 min-[834px]:pb-5 min-[834px]:pt-5">
+              <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 lg:grid-cols-4 sm:gap-4 lg:gap-5">
+                <div className="relative flex min-h-[7.5rem] min-w-0 flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <Weight className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Volume totale
                     </div>
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                  <div className="min-w-0 break-words text-lg font-bold tabular-nums leading-tight text-text-primary lg:text-xl">
                     {formatVolumeIt(summary.performance_stats.total_volume)}{' '}
                     <span className="text-sm font-medium text-text-tertiary">kg</span>
                   </div>
-                  <p className="text-[10px] leading-snug text-text-tertiary">
+                  <p className="text-[10px] leading-snug text-text-tertiary [overflow-wrap:anywhere]">
                     Somma carichi delle serie registrate (kg × ripetizioni).
                   </p>
                 </div>
-                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 shrink-0 text-cyan-400" />
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                <div className="relative flex min-h-[7.5rem] min-w-0 flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Intensità media
                     </div>
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                  <div className="min-w-0 break-words text-lg font-bold tabular-nums leading-tight text-text-primary lg:text-xl">
                     {summary.total_sets > 0
                       ? formatVolumeIt(summary.performance_stats.average_load_per_set)
                       : '—'}
@@ -1259,38 +1432,38 @@ function RiepilogoPageContent() {
                       <span className="text-sm font-medium text-text-tertiary"> kg/serie</span>
                     ) : null}
                   </div>
-                  <p className="text-[10px] leading-snug text-text-tertiary">
+                  <p className="text-[10px] leading-snug text-text-tertiary [overflow-wrap:anywhere]">
                     Volume diviso per il numero di serie salvate.
                   </p>
                 </div>
-                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" />
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                <div className="relative flex min-h-[7.5rem] min-w-0 flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Esercizi al completo
                     </div>
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                  <div className="min-w-0 text-lg font-bold tabular-nums leading-tight text-text-primary lg:text-xl">
                     {summary.performance_stats.consistency_score}
                     <span className="text-sm font-medium text-text-tertiary">%</span>
                   </div>
-                  <p className="text-[10px] leading-snug text-text-tertiary">
+                  <p className="text-[10px] leading-snug text-text-tertiary [overflow-wrap:anywhere]">
                     Quota di esercizi con tutte le serie segnate come completate.
                   </p>
                 </div>
-                <div className="relative flex min-w-0 flex-col gap-1 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-3.5">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4 shrink-0 text-cyan-400" />
-                    <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
+                <div className="relative flex min-h-[7.5rem] min-w-0 flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:min-h-0 sm:p-4">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <Trophy className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+                    <div className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-text-tertiary">
                       Record personali
                     </div>
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-text-primary min-[834px]:text-xl">
+                  <div className="min-w-0 text-lg font-bold tabular-nums leading-tight text-text-primary lg:text-xl">
                     {summary.performance_stats.personal_records > 0
                       ? summary.performance_stats.personal_records
                       : '—'}
                   </div>
-                  <p className="text-[10px] leading-snug text-text-tertiary">
+                  <p className="text-[10px] leading-snug text-text-tertiary [overflow-wrap:anywhere]">
                     Confronto con lo storico in arrivo; per ora non calcolato.
                   </p>
                 </div>
@@ -1299,14 +1472,14 @@ function RiepilogoPageContent() {
           </Card>
 
           <div
-            className={`${CARD_DS} flex gap-3 p-3 sm:gap-4 sm:p-4`}
+            className={`${CARD_DS} flex gap-3 p-4 sm:gap-4 sm:p-5`}
             role="region"
             aria-label="Messaggio motivazionale"
           >
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
               <Sparkles className="h-5 w-5 text-cyan-400" aria-hidden />
             </div>
-            <div className="min-w-0 space-y-1">
+            <div className="min-w-0 space-y-1.5">
               <h3 className="text-sm font-semibold text-text-primary">{motivTitle}</h3>
               <p className="text-xs leading-relaxed text-text-secondary">{motivBody}</p>
               <p className="text-[10px] italic leading-relaxed text-text-tertiary">
@@ -1315,13 +1488,21 @@ function RiepilogoPageContent() {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 pt-1">
             <Button
-              onClick={() => router.push('/home')}
+              type="button"
               variant="outline"
               className="min-h-10 w-full rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 hover:border-white/20"
+              disabled={paneFinalizeLoading}
+              onClick={workoutsPane ? () => void handleStaffPaneSaveAndComplete() : goToAllenamentiHome}
             >
-              Torna alla home
+              {workoutsPane
+                ? paneFinalizeLoading
+                  ? 'Salvataggio…'
+                  : 'Salva e chiudi allenamento'
+                : isPreview
+                  ? 'Completa allenamento'
+                  : 'Torna alla home'}
             </Button>
           </div>
         </div>

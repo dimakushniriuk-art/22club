@@ -7,7 +7,8 @@
 import { createLogger } from '@/lib/logger'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getCurrentOrgIdFromProfile } from '@/lib/organizations/current-org'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import type { RecipientFilter } from './service'
 
@@ -44,31 +45,7 @@ export async function getRecipientsByFilter(
 ): Promise<{ data: Recipient[] | null; error: Error | null }> {
   try {
     const supabase = getSupabaseClient()
-
-    let query = supabase
-      .from('profiles')
-      .select('id, user_id, email, telefono, role')
-      .eq('stato', 'attivo') // Filtra solo utenti attivi
-
-    // Filtro per org (stessa organizzazione del creatore)
     const orgId = resolveFilterOrgId(filter)
-    if (orgId) {
-      query = query.eq('org_id', orgId)
-    }
-
-    // Filtro per ruolo (gestisce atleta/athlete come sinonimi)
-    if (filter.role) {
-      if (filter.role === 'athlete') {
-        query = query.eq('role', 'athlete')
-      } else {
-        query = query.eq('role', filter.role)
-      }
-    }
-
-    // Filtro per atleti specifici (athlete_ids sono profile id da list-athletes)
-    if (filter.athlete_ids && filter.athlete_ids.length > 0) {
-      query = query.in('id', filter.athlete_ids)
-    }
 
     if (
       !filter.all_users &&
@@ -82,12 +59,6 @@ export async function getRecipientsByFilter(
       return { data: [], error: null }
     }
 
-    const { data: profiles, error: profilesError } = await query
-
-    if (profilesError) {
-      return { data: null, error: new Error(profilesError.message) }
-    }
-
     type ProfileRow = {
       id?: string | null
       user_id?: string | null
@@ -97,7 +68,56 @@ export async function getRecipientsByFilter(
       [key: string]: unknown
     }
 
-    const typedProfiles = (profiles as ProfileRow[]) || []
+    const runProfilesSelect = (idChunk: string[] | null) => {
+      let q = supabase
+        .from('profiles')
+        .select('id, user_id, email, telefono, role')
+        .eq('stato', 'attivo')
+      if (orgId) {
+        q = q.eq('org_id', orgId)
+      }
+      if (filter.role) {
+        if (filter.role === 'athlete') {
+          q = q.eq('role', 'athlete')
+        } else {
+          q = q.eq('role', filter.role)
+        }
+      }
+      if (idChunk && idChunk.length > 0) {
+        q = q.in('id', idChunk)
+      }
+      return q
+    }
+
+    let profiles: ProfileRow[] | null = null
+    let profilesError: PostgrestError | null = null
+
+    if (filter.athlete_ids && filter.athlete_ids.length > 0) {
+      const mergedByProfileId = new Map<string, ProfileRow>()
+      for (const chunk of chunkForSupabaseIn(filter.athlete_ids)) {
+        const { data: chunkRows, error: chunkErr } = await runProfilesSelect(chunk)
+        if (chunkErr) {
+          profilesError = chunkErr
+          break
+        }
+        for (const row of (chunkRows as ProfileRow[] | null) ?? []) {
+          if (row.id != null) {
+            mergedByProfileId.set(row.id, row)
+          }
+        }
+      }
+      profiles = profilesError ? null : Array.from(mergedByProfileId.values())
+    } else {
+      const res = await runProfilesSelect(null)
+      profiles = (res.data as ProfileRow[] | null) ?? null
+      profilesError = res.error
+    }
+
+    if (profilesError) {
+      return { data: null, error: new Error(profilesError.message) }
+    }
+
+    const typedProfiles = profiles ?? []
 
     if (!typedProfiles || typedProfiles.length === 0) {
       return { data: [], error: null }
@@ -107,18 +127,26 @@ export async function getRecipientsByFilter(
       .map((p) => p.user_id)
       .filter((id): id is string => id !== null && id !== undefined)
 
-    const { data: pushTokens, error: tokensError } = await supabase
-      .from('user_push_tokens')
-      .select('user_id')
-      .in('user_id', authUserIds)
-      .eq('is_active', true)
+    type PushTokenRow = { user_id?: string | null; [key: string]: unknown }
+    const typedPushTokens: PushTokenRow[] = []
+    let tokensError: PostgrestError | null = null
+    for (const uidChunk of chunkForSupabaseIn(authUserIds)) {
+      const { data: pushTokens, error: chunkTokErr } = await supabase
+        .from('user_push_tokens')
+        .select('user_id')
+        .in('user_id', uidChunk)
+        .eq('is_active', true)
+      if (chunkTokErr) {
+        tokensError = chunkTokErr
+        break
+      }
+      typedPushTokens.push(...((pushTokens as PushTokenRow[]) || []))
+    }
 
     if (tokensError) {
       logger.warn('Error fetching push tokens', tokensError, { userIdsCount: authUserIds.length })
     }
 
-    type PushTokenRow = { user_id?: string | null; [key: string]: unknown }
-    const typedPushTokens = (pushTokens as PushTokenRow[]) || []
     const usersWithPushTokens = new Set(
       typedPushTokens
         .map((t) => t.user_id)
@@ -265,30 +293,6 @@ export async function countRecipientsByFilter(
 
     const supabase = getSupabaseClient()
 
-    let query = supabase
-      .from('profiles')
-      // Count esatto per allineare la UI ai recipients effettivamente creati
-      .select('user_id', { count: 'exact', head: true })
-      .eq('stato', 'attivo') // Filtra solo utenti attivi
-
-    if (orgId) {
-      query = query.eq('org_id', orgId)
-    }
-
-    // Filtro per ruolo (gestisce atleta/athlete come sinonimi)
-    if (filter.role) {
-      if (filter.role === 'athlete') {
-        query = query.eq('role', 'athlete')
-      } else {
-        query = query.eq('role', filter.role)
-      }
-    }
-
-    // Allineato a getRecipientsByFilter e list-athletes: athlete_ids = profiles.id
-    if (filter.athlete_ids && filter.athlete_ids.length > 0) {
-      query = query.in('id', filter.athlete_ids)
-    }
-
     if (
       !filter.all_users &&
       !filter.role &&
@@ -297,17 +301,44 @@ export async function countRecipientsByFilter(
       return { count: 0, error: null }
     }
 
-    // Allineato a generateRecipientTypes(): conta solo chi è email-ready.
-    // generateRecipientTypes usa `if (recipient.email)`; getRecipientsByFilter mappa email vuota/null -> null.
-    query = query.neq('email', '')
-
-    const { count, error } = await query
-
-    if (error) {
-      return { count: 0, error: new Error(error.message) }
+    const applyCountFilters = (idChunk: string[] | null) => {
+      let q = supabase
+        .from('profiles')
+        .select('user_id', { count: 'exact', head: true })
+        .eq('stato', 'attivo')
+      if (orgId) {
+        q = q.eq('org_id', orgId)
+      }
+      if (filter.role) {
+        if (filter.role === 'athlete') {
+          q = q.eq('role', 'athlete')
+        } else {
+          q = q.eq('role', filter.role)
+        }
+      }
+      if (idChunk && idChunk.length > 0) {
+        q = q.in('id', idChunk)
+      }
+      return q.neq('email', '')
     }
 
-    const resultCount = count || 0
+    let resultCount = 0
+
+    if (filter.athlete_ids && filter.athlete_ids.length > 0) {
+      for (const chunk of chunkForSupabaseIn(filter.athlete_ids)) {
+        const { count, error } = await applyCountFilters(chunk)
+        if (error) {
+          return { count: 0, error: new Error(error.message) }
+        }
+        resultCount += count ?? 0
+      }
+    } else {
+      const { count, error } = await applyCountFilters(null)
+      if (error) {
+        return { count: 0, error: new Error(error.message) }
+      }
+      resultCount = count ?? 0
+    }
 
     // Salva in cache (60 secondi)
     countCache.set(cacheKey, {

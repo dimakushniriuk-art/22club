@@ -49,6 +49,7 @@ import {
   STAFF_TYPE_NUTRIZIONISTA,
   PLAN_VERSION_STATUS_ACTIVE,
 } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:dashboard:nutrizionista:piani:nuovo')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -229,14 +230,18 @@ export default function NutrizionistaPianoNuovoPage() {
           setAthletes([])
           return
         }
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome')
-          .in('id', ids)
+        const profilesMerged: { id: string; nome: string | null; cognome: string | null }[] = []
+        for (const idChunk of chunkForSupabaseIn(ids)) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome')
+            .in('id', idChunk)
+          profilesMerged.push(...((profiles ?? []) as (typeof profilesMerged)[number][]))
+        }
         if (cancelled) return
 
         const list: AthleteOption[] = await Promise.all(
-          (profiles ?? []).map(
+          profilesMerged.map(
             async (p: { id: string; nome: string | null; cognome: string | null }) => {
               const name = [p.nome, p.cognome].filter(Boolean).join(' ').trim() || p.id.slice(0, 8)
 
@@ -555,7 +560,7 @@ export default function NutrizionistaPianoNuovoPage() {
     return (
       <StaffContentLayout
         title="Nuovo piano nutrizionale"
-        description="Seleziona l'atleta per cui vuoi creare il piano"
+        description="Seleziona l’atleta per cui creare il piano."
         icon={<FilePlus className="w-6 h-6" />}
         theme="teal"
         actions={
@@ -669,7 +674,7 @@ export default function NutrizionistaPianoNuovoPage() {
   return (
     <StaffContentLayout
       title={`Nuovo piano per ${selectedAthleteName || 'atleta'}`}
-      description={`Step ${step} di 6 — ${STEPS[step - 1]?.label ?? ''}`}
+      description={`Creazione piano · passo ${step}/6 — ${STEPS[step - 1]?.label ?? ''}`}
       icon={<FilePlus className="w-6 h-6" />}
       theme="teal"
       actions={

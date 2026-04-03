@@ -25,6 +25,7 @@ import {
   STAFF_TYPE_NUTRIZIONISTA,
   PLAN_VERSION_STATUS_ACTIVE,
 } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:dashboard:nutrizionista:page')
 
@@ -252,22 +253,28 @@ export default function NutrizionistaPage() {
         return
       }
 
-      const profilesRes = await supabase
-        .from('profiles')
-        .select('id, nome, cognome')
-        .in('id', athleteIds)
-      const profiles = (profilesRes.data ?? []) as Array<{
+      const profiles: Array<{
         id: string
         nome: string | null
         cognome: string | null
-      }>
+      }> = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const profilesRes = await supabase
+          .from('profiles')
+          .select('id, nome, cognome')
+          .in('id', idChunk)
+        profiles.push(...((profilesRes.data ?? []) as typeof profiles))
+      }
       const profilesMap = new Map(profiles.map((p) => [p.id, p]))
 
       const { start: weekStart, end: weekEnd } = getCurrentWeekRange()
-      const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
-        .select('id, athlete_id')
-        .in('athlete_id', athleteIds)
-      const groups = (groupsRes.data ?? []) as Array<{ id: string; athlete_id: string }>
+      const groups: Array<{ id: string; athlete_id: string }> = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+          .select('id, athlete_id')
+          .in('athlete_id', idChunk)
+        groups.push(...((groupsRes.data ?? []) as typeof groups))
+      }
       const groupIds = groups.map((g) => g.id)
       const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
 
@@ -282,13 +289,17 @@ export default function NutrizionistaPage() {
         created_at: string | null
         version_number?: number
       }
-      let allVersions: VersionRow[] = []
+      const allVersions: VersionRow[] = []
       if (groupIds.length > 0) {
-        const versionsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-          .select('id, group_id, end_date, status, created_at, version_number')
-          .in('group_id', groupIds)
-        if (!versionsRes.error && versionsRes.data?.length) {
-          allVersions = versionsRes.data as VersionRow[]
+        for (const gidChunk of chunkForSupabaseIn(groupIds)) {
+          const versionsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+            .select('id, group_id, end_date, status, created_at, version_number')
+            .in('group_id', gidChunk)
+          if (!versionsRes.error && versionsRes.data?.length) {
+            allVersions.push(...(versionsRes.data as VersionRow[]))
+          }
+        }
+        if (allVersions.length > 0) {
           pianiAttivi = allVersions.filter((v) => v.status === PLAN_VERSION_STATUS_ACTIVE).length
           versioniMese = allVersions.filter((v) =>
             isInMonth(v.created_at, monthStart, monthEnd),
@@ -301,13 +312,23 @@ export default function NutrizionistaPage() {
       }
 
       let progressRows: Array<{ id: string; athlete_id: string; created_at: string | null }> = []
-      const progressRes = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
-        .select('id, athlete_id, created_at')
-        .in('athlete_id', athleteIds)
-        .order('created_at', { ascending: false })
-        .limit(100)
-      if (!progressRes.error) progressRows = (progressRes.data ?? []) as typeof progressRows
-      else logger.error('Query nutrition_progress (ignorata)', progressRes.error)
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const progressRes = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
+          .select('id, athlete_id, created_at')
+          .in('athlete_id', idChunk)
+          .order('created_at', { ascending: false })
+          .limit(100)
+        if (!progressRes.error) {
+          progressRows.push(...((progressRes.data ?? []) as typeof progressRows))
+        } else {
+          logger.error('Query nutrition_progress (ignorata)', progressRes.error)
+        }
+      }
+      progressRows.sort(
+        (a, b) =>
+          new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+      )
+      progressRows = progressRows.slice(0, 100)
 
       const progressiSettimana = progressRows.filter((r) =>
         isInWeek(r.created_at, weekStart, weekEnd),
@@ -375,12 +396,19 @@ export default function NutrizionistaPage() {
         adjustment_reason?: string
       }
       let adjRows: AdjRow[] = []
-      const adjRes = await nutritionFrom(supabase, NUTRITION_TABLES.adjustments)
-        .select('id, athlete_id, created_at, adjustment_reason')
-        .in('athlete_id', athleteIds)
-        .order('created_at', { ascending: false })
-        .limit(15)
-      if (!adjRes.error && adjRes.data?.length) adjRows = adjRes.data as AdjRow[]
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const adjRes = await nutritionFrom(supabase, NUTRITION_TABLES.adjustments)
+          .select('id, athlete_id, created_at, adjustment_reason')
+          .in('athlete_id', idChunk)
+          .order('created_at', { ascending: false })
+          .limit(15)
+        if (!adjRes.error && adjRes.data?.length) adjRows.push(...(adjRes.data as AdjRow[]))
+      }
+      adjRows.sort(
+        (a, b) =>
+          new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+      )
+      adjRows = adjRows.slice(0, 15)
       adjRows.forEach((a) => {
         const prof = profilesMap.get(a.athlete_id)
         const name = [prof?.nome, prof?.cognome].filter(Boolean).join(' ') || 'Atleta'
@@ -397,18 +425,21 @@ export default function NutrizionistaPage() {
 
       const scadenzaByAthlete = new Map<string, string>()
       if (groupIds.length > 0) {
-        const versionsListRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-          .select('group_id, end_date, status')
-          .in('group_id', groupIds)
-          .eq('status', PLAN_VERSION_STATUS_ACTIVE)
-        if (!versionsListRes.error && versionsListRes.data?.length) {
-          const list = versionsListRes.data as Array<{ group_id: string; end_date: string | null }>
-          list.forEach((v) => {
-            const aid = athleteByGroupId.get(v.group_id)
-            if (aid && v.end_date && !scadenzaByAthlete.has(aid))
-              scadenzaByAthlete.set(aid, v.end_date)
-          })
+        const listAccum: Array<{ group_id: string; end_date: string | null }> = []
+        for (const gidChunk of chunkForSupabaseIn(groupIds)) {
+          const versionsListRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+            .select('group_id, end_date, status')
+            .in('group_id', gidChunk)
+            .eq('status', PLAN_VERSION_STATUS_ACTIVE)
+          if (!versionsListRes.error && versionsListRes.data?.length) {
+            listAccum.push(...(versionsListRes.data as typeof listAccum))
+          }
         }
+        listAccum.forEach((v) => {
+          const aid = athleteByGroupId.get(v.group_id)
+          if (aid && v.end_date && !scadenzaByAthlete.has(aid))
+            scadenzaByAthlete.set(aid, v.end_date)
+        })
       }
 
       const atletiList = athleteIds.slice(0, 10).map((id) => {

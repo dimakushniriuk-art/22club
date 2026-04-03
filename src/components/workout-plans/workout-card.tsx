@@ -65,6 +65,57 @@ export function WorkoutCard({
   const iconClass = 'h-4 w-4 shrink-0 text-text-tertiary'
   const labelClass = 'text-xs text-text-tertiary font-medium'
   const valueClass = 'text-sm text-text-primary'
+  const actionBtnBaseClass =
+    'min-w-0 w-full min-h-[44px] sm:min-h-0 whitespace-nowrap justify-center'
+
+  const creationNum = workout.creation_order_number
+  const titleWithOrder = (
+    <>
+      {typeof creationNum === 'number' && (
+        <span className="tabular-nums text-text-tertiary font-medium">#{creationNum}</span>
+      )}
+      {typeof creationNum === 'number' && <span className="text-text-tertiary/80"> · </span>}
+      <span className="min-w-0">{workout.name}</span>
+    </>
+  )
+
+  const sessionsPreview = workout.workout_days_sessions_preview
+  const sessionsPreviewBlock =
+    sessionsPreview && sessionsPreview.length > 0 ? (
+      <div className="min-w-0 space-y-2 py-2">
+        <p className={labelClass}>Sessioni per giorno (obiettivo vs eseguite)</p>
+        <div className="overflow-x-auto rounded-md ring-1 ring-white/10">
+          <table className="w-full min-w-[200px] border-collapse text-left text-xs tabular-nums">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/[0.04] text-[11px] uppercase tracking-wide text-text-tertiary">
+                <th className="px-2 py-1.5 font-medium">Giorno</th>
+                <th className="px-2 py-1.5 text-right font-medium">Previste</th>
+                <th className="px-2 py-1.5 text-right font-medium">Eseguite</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessionsPreview.map((d) => (
+                <tr
+                  key={d.workout_day_id ?? `dn-${d.day_number}`}
+                  className="border-b border-white/[0.06] last:border-0"
+                  title={d.title ?? undefined}
+                >
+                  <td className="px-2 py-1.5 text-text-primary">G{d.day_number}</td>
+                  <td className="px-2 py-1.5 text-right text-text-primary">
+                    {d.sessions_until_refresh != null && d.sessions_until_refresh >= 1
+                      ? d.sessions_until_refresh
+                      : '—'}
+                  </td>
+                  <td className="px-2 py-1.5 text-right font-medium text-cyan-400/95">
+                    {d.sessions_completed_count ?? 0}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ) : null
 
   if (viewMode === 'list') {
     return (
@@ -74,8 +125,8 @@ export function WorkoutCard({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
               <div className="space-y-4">
                 <div>
-                  <p className="text-base font-semibold text-text-primary underline decoration-border underline-offset-2">
-                    {workout.name}
+                  <p className="flex flex-wrap items-baseline gap-x-1.5 text-base font-semibold text-text-primary underline decoration-border underline-offset-2">
+                    {titleWithOrder}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -92,6 +143,9 @@ export function WorkoutCard({
                     </span>
                   </div>
                 </div>
+                {sessionsPreviewBlock && (
+                  <div className="border-t border-white/10">{sessionsPreviewBlock}</div>
+                )}
                 {workout.description && (
                   <p className="text-sm text-text-tertiary line-clamp-2">{workout.description}</p>
                 )}
@@ -119,6 +173,7 @@ export function WorkoutCard({
               <Button
                 variant="outline"
                 size="sm"
+                className={actionBtnBaseClass}
                 onClick={(e) => {
                   e.stopPropagation()
                   onViewClick(workout)
@@ -129,6 +184,7 @@ export function WorkoutCard({
               <Button
                 variant="ghost"
                 size="sm"
+                className={actionBtnBaseClass}
                 onClick={(e) => {
                   e.stopPropagation()
                   router.push(`/dashboard/schede/${workout.id}/modifica`)
@@ -140,6 +196,7 @@ export function WorkoutCard({
                 <Button
                   variant="ghost"
                   size="sm"
+                  className={actionBtnBaseClass}
                   disabled={isDuplicating}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -160,13 +217,14 @@ export function WorkoutCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  className={`${actionBtnBaseClass} text-red-400 hover:text-red-300 hover:bg-red-500/10`}
                   onClick={(e) => {
                     e.stopPropagation()
                     setDeleteDialogOpen(true)
                   }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Elimina
                 </Button>
               )}
             </div>
@@ -206,7 +264,7 @@ export function WorkoutCard({
               size="sm"
               className="line-clamp-2 text-base font-semibold text-text-primary underline decoration-border underline-offset-2"
             >
-              {workout.name}
+              <span className="flex flex-wrap items-baseline gap-x-1.5">{titleWithOrder}</span>
             </CardTitle>
             <span className={statusBadgeClass}>{getStatusText(status)}</span>
           </div>
@@ -231,13 +289,20 @@ export function WorkoutCard({
             </div>
             <div className="flex items-center gap-2">
               <User className={iconClass} />
-              <span className={valueClass}>{workout.athlete_name || '—'}</span>
+              <span
+                className={`text-sm line-clamp-1 font-bold ${workout.athlete_name ? 'text-cyan-400' : 'text-text-tertiary font-normal italic'}`}
+              >
+                {workout.athlete_name || '—'}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className={iconClass} />
               <span className="text-sm text-text-tertiary">{formatDate(workout.created_at)}</span>
             </div>
           </div>
+          {sessionsPreviewBlock && (
+            <div className="border-b border-white/10">{sessionsPreviewBlock}</div>
+          )}
           {workout.description && (
             <p className="text-text-tertiary line-clamp-2 text-xs py-2">{workout.description}</p>
           )}
@@ -245,7 +310,7 @@ export function WorkoutCard({
             <Button
               variant="outline"
               size="sm"
-              className="min-w-0 w-full"
+              className={actionBtnBaseClass}
               onClick={(e) => {
                 e.stopPropagation()
                 onViewClick(workout)
@@ -256,7 +321,7 @@ export function WorkoutCard({
             <Button
               variant="ghost"
               size="sm"
-              className="min-w-0 w-full"
+              className={actionBtnBaseClass}
               onClick={(e) => {
                 e.stopPropagation()
                 router.push(`/dashboard/schede/${workout.id}/modifica`)
@@ -268,7 +333,7 @@ export function WorkoutCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="min-w-0 w-full"
+                className={actionBtnBaseClass}
                 disabled={isDuplicating}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -289,13 +354,14 @@ export function WorkoutCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="min-w-0 w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                className={`${actionBtnBaseClass} text-red-400 hover:text-red-300 hover:bg-red-500/10`}
                 onClick={(e) => {
                   e.stopPropagation()
                   setDeleteDialogOpen(true)
                 }}
               >
-                <Trash2 className="h-4 w-4 mx-auto" />
+                <Trash2 className="h-4 w-4 mr-2" />
+                Elimina
               </Button>
             )}
           </div>

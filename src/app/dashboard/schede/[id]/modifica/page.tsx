@@ -9,6 +9,7 @@ import { useWorkoutDetail } from '@/hooks/workout/use-workout-detail'
 import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
 import { WorkoutWizardContent } from '@/components/workout/workout-wizard-content'
 import { ErrorState } from '@/components/dashboard/error-state'
+import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 import { useToast } from '@/components/ui/toast'
 import { Loader2 } from 'lucide-react'
 import type { Workout, WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
@@ -24,6 +25,7 @@ function workoutDetailToWizardData(detail: {
   days: Array<{
     day_number: number
     title: string
+    sessions_until_refresh?: number | null
     exercises: Array<{
       exercise_id: string | null
       target_sets: number
@@ -77,6 +79,11 @@ function workoutDetailToWizardData(detail: {
       sets_detail: setsDetail,
     }
   }
+  const daySessions = (day: { sessions_until_refresh?: number | null }) => {
+    const s = day.sessions_until_refresh
+    return typeof s === 'number' && Number.isFinite(s) && s >= 1 ? s : null
+  }
+
   return {
     title: detail.name,
     notes: detail.description ?? undefined,
@@ -101,6 +108,7 @@ function workoutDetailToWizardData(detail: {
           name: day.title,
           title: day.title,
           day_number: day.day_number,
+          sessions_until_refresh: daySessions(day),
           exercises,
           items,
         }
@@ -109,6 +117,7 @@ function workoutDetailToWizardData(detail: {
         name: day.title,
         title: day.title,
         day_number: day.day_number,
+        sessions_until_refresh: daySessions(day),
         exercises: day.exercises
           .filter((ex): ex is typeof ex & { exercise_id: string } => ex.exercise_id != null)
           .map((ex) => toEx(ex)),
@@ -225,7 +234,7 @@ function ModificaSchedaContent() {
 
 export default function ModificaSchedaPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<StaffDashboardSegmentSkeleton />}>
       <ModificaSchedaContent />
     </Suspense>
   )

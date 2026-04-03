@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getServerAuthUser } from '@/lib/auth/server-user'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,17 +36,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ recipients: [] }, { status: 200 })
     }
 
-    const { data: profiles, error: profError } = await supabase
-      .from('profiles')
-      .select('id, user_id, email, first_name, last_name, nome, cognome, phone, telefono')
-      .in('id', profileIds)
+    const profilesMerged: Array<{
+      id: string
+      user_id: string | null
+      email: string | null
+      first_name: string | null
+      last_name: string | null
+      nome: string | null
+      cognome: string | null
+      phone: string | null
+      telefono: string | null
+    }> = []
 
-    if (profError) {
-      return NextResponse.json({ error: profError.message, recipients: [] }, { status: 500 })
+    for (const idChunk of chunkForSupabaseIn(profileIds)) {
+      const { data: profiles, error: profError } = await supabase
+        .from('profiles')
+        .select('id, user_id, email, first_name, last_name, nome, cognome, phone, telefono')
+        .in('id', idChunk)
+
+      if (profError) {
+        return NextResponse.json({ error: profError.message, recipients: [] }, { status: 500 })
+      }
+      profilesMerged.push(...((profiles ?? []) as typeof profilesMerged))
     }
 
     const profileMap = new Map(
-      (profiles ?? []).map((p) => [
+      profilesMerged.map((p) => [
         p.id,
         {
           user_id: p.user_id ?? '',

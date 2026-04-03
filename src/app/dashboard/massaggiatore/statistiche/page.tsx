@@ -18,6 +18,10 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/hooks/use-auth'
 import { createLogger } from '@/lib/logger'
 import { Button } from '@/components/ui'
+import {
+  StaffDashboardGuardSkeleton,
+  StaffStaffPageContentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 const logger = createLogger('app:dashboard:massaggiatore:statistiche')
 
@@ -29,8 +33,6 @@ type Stats = {
   appuntamentiOggi: number
   appuntamentiSettimana: number
 }
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 function KpiCard({
   label,
@@ -157,17 +159,13 @@ export default function MassaggiatoreStatistichePage() {
   }, [loadData])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
     <StaffContentLayout
       title="Statistiche"
-      description="Clienti seguiti, massaggi eseguiti, fatture e appuntamenti"
+      description="Clienti, trattamenti eseguiti, fatturazione e appuntamenti."
       icon={<BarChart2 className="w-6 h-6" />}
       theme="amber"
     >
@@ -184,6 +182,8 @@ export default function MassaggiatoreStatistichePage() {
           </Button>
         </div>
       )}
+
+      {loading && !error && <StaffStaffPageContentSkeleton />}
 
       {!loading && !error && (
         <div className="flex flex-col gap-4 sm:gap-6">

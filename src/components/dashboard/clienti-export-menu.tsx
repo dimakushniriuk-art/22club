@@ -1,4 +1,4 @@
-import { Download, FileText, FileSpreadsheet } from 'lucide-react'
+import { Download, FileText } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -9,8 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 
 interface ClientiExportMenuProps {
-  onExportCSV: () => void
-  onExportPDF: () => void
+  onExportPdf: () => void | Promise<void>
   disabled?: boolean
   /** Sotto 852px: trigger min-h 44px per touch */
   isMobile?: boolean
@@ -19,8 +18,7 @@ interface ClientiExportMenuProps {
 }
 
 export function ClientiExportMenu({
-  onExportCSV,
-  onExportPDF,
+  onExportPdf,
   disabled = false,
   isMobile = false,
   isExporting = false,
@@ -32,7 +30,7 @@ export function ClientiExportMenu({
           variant="outline"
           size="sm"
           disabled={disabled}
-          aria-label={isExporting ? 'Export in corso' : 'Esporta dati clienti'}
+          aria-label={isExporting ? 'Export in corso' : 'Esporta dati clienti come PDF'}
           aria-busy={isExporting}
           className={cn(
             'rounded-lg border-white/20 text-text-secondary hover:bg-white/5 hover:border-white/30',
@@ -43,13 +41,8 @@ export function ClientiExportMenu({
           {isExporting ? 'Export in corso…' : 'Export'}
         </Button>
       </DropdownMenuTrigger>
-      {/* FIX #12: Aggiunto aria-label per accessibilità */}
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onExportCSV} aria-label="Esporta clienti come file CSV">
-          <FileSpreadsheet className="mr-2 h-4 w-4" aria-hidden="true" />
-          Esporta come CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onExportPDF} aria-label="Esporta clienti come file PDF">
+        <DropdownMenuItem onClick={() => void onExportPdf()} aria-label="Esporta clienti come file PDF">
           <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
           Esporta come PDF
         </DropdownMenuItem>

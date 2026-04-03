@@ -13,7 +13,7 @@ const StatsTable = lazy(() =>
 
 interface LazyStatsTableProps {
   data: AthleteStats[]
-  onExport: () => void
+  onExport: () => void | Promise<void>
 }
 
 export function LazyStatsTable({ data, onExport }: LazyStatsTableProps) {

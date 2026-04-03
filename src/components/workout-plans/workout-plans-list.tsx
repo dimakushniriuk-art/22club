@@ -41,12 +41,19 @@ export function WorkoutPlansList({
     return <WorkoutPlansEmptyState searchTerm={searchTerm} statusFilter={statusFilter} />
   }
 
+  const activeCount = workouts.filter((w) => w.status === 'attivo').length
+
   return (
     <div className="space-y-4">
       {workouts.length > 0 && (
-        <p className="text-sm text-text-secondary">
-          {workouts.length} {workouts.length === 1 ? 'scheda trovata' : 'schede trovate'}
-        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm text-text-secondary">
+            {workouts.length} {workouts.length === 1 ? 'scheda trovata' : 'schede trovate'}
+          </p>
+          <span className="inline-flex items-center whitespace-nowrap rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            Attive: <span className="text-primary">{activeCount}</span>
+          </span>
+        </div>
       )}
 
       {viewMode === 'grid' ? (

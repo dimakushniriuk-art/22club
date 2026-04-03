@@ -1,7 +1,6 @@
 'use client'
 
 import { PageHeaderFixed } from '@/components/layout'
-import { Calendar } from 'lucide-react'
 
 interface AppuntamentiPageHeaderProps {
   title?: string
@@ -23,7 +22,6 @@ export function AppuntamentiPageHeader({
       title={title}
       subtitle={subtitle}
       onBack={onBack}
-      icon={<Calendar className="h-5 w-5 text-cyan-400" />}
     />
   )
 }

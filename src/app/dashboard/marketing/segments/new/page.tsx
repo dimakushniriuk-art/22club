@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { Database } from '@/lib/supabase/types'
 import type { SegmentRules } from '@/lib/marketing/segment-rules'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 const DEFAULT_RULES: SegmentRules = {}
 
@@ -30,11 +31,7 @@ export default function NewSegmentPage() {
     if (!authLoading && role !== null && !allowed) {
       router.replace((role as string) === 'admin' ? '/dashboard/admin' : '/dashboard')
     }
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

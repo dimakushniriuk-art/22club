@@ -1,3 +1,8 @@
+/** Anteprima/scarico per righe aggregate (medico, contratti, fatture). */
+export type DocumentStorageOpen =
+  | { type: 'signed'; bucket: string; path: string }
+  | { type: 'public'; url: string }
+
 export interface Document {
   id: string
   org_id?: string | null
@@ -16,4 +21,10 @@ export interface Document {
   updated_at?: string | null
   athlete_name?: string | null
   staff_name?: string | null
+  /** Nome file mostrato se `file_url` non è adatto a `extractFileName`. */
+  display_file_name?: string | null
+  /** Se valorizzato, ha priorità su `documentsFilePreviewHref(file_url)`. */
+  storage_open?: DocumentStorageOpen | null
+  /** Riga tabella `documents` (azioni come “non valido”). Default true se assente. */
+  is_db_document?: boolean
 }

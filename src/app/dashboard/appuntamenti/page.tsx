@@ -13,6 +13,7 @@ import { useLessonUsageByAthleteIds } from '@/hooks/use-lesson-usage-by-athlete-
 import { AppointmentsHeader, AppointmentsStats, AppointmentsList } from '@/components/appointments'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { useAuth } from '@/providers/auth-provider'
 import { resolveOrgIdForAppointmentWrite } from '@/lib/organizations/current-org'
 import { Button } from '@/components/ui'
@@ -314,7 +315,7 @@ export default function AppuntamentiPage() {
   return (
     <StaffContentLayout
       title="Appuntamenti"
-      description={`Tutti i tuoi appuntamenti e sessioni (${filteredAppointments.length})`}
+      description={`Sessioni e appuntamenti — ${filteredAppointments.length} in elenco`}
       theme="teal"
       actions={
         <Button
@@ -390,7 +391,11 @@ export default function AppuntamentiPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
         >
           <div className="w-full max-w-md">
-            <Suspense fallback={null}>
+            <Suspense
+              fallback={
+                <StaffLazyChunkFallback className="min-h-[240px] w-full max-w-md" label="Caricamento dettaglio…" />
+              }
+            >
               <AppointmentDetail
                 appointment={selectedAppointment}
                 onEdit={handleEditFromDetail}

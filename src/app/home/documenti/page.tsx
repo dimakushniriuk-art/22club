@@ -5,7 +5,8 @@
  *
  * Mostra in unâ€™unica lista tutti i documenti dellâ€™atleta: tabella documents (certificati,
  * liberatorie, contratti, dossier onboarding), certificato/referti da athlete_medical_data,
- * documenti contrattuali da athlete_administrative_data, fatture da payments (invoice_url).
+ * documenti contrattuali da athlete_administrative_data, fatture da payments (invoice_url),
+ * PDF piani nutrizionali (nutrition_plan_versions / legacy), allegati chat_messages.
  *
  * FunzionalitÃ :
  * - Lista unificata con categoria, label, date, stato (valido/in_scadenza/scaduto), note.
@@ -327,7 +328,6 @@ function DocumentiPageContent() {
           title="I miei Documenti"
           subtitle="Gestisci i tuoi certificati e documenti"
           onBack={handleBack}
-          icon={<FileText className="h-5 w-5 text-cyan-400" />}
         />
         <div className="min-h-0 flex-1" aria-hidden />
       </div>
@@ -341,7 +341,6 @@ function DocumentiPageContent() {
         title="I miei Documenti"
         subtitle="Gestisci i tuoi certificati e documenti"
         onBack={handleBack}
-        icon={<FileText className="h-5 w-5 text-cyan-400" />}
       />
       <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
         <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">

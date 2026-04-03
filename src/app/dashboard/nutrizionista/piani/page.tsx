@@ -57,7 +57,10 @@ import {
   PLAN_VERSION_STATUS_DRAFT,
   PLAN_VERSION_STATUS_ARCHIVED,
 } from '@/lib/nutrition-tables'
-import { exportToCSV } from '@/lib/export-utils'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:nutrizionista:piani')
@@ -197,6 +200,15 @@ export default function NutrizionistaPianiPage() {
   const { user, org_id: orgId } = useAuth()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -263,25 +275,27 @@ export default function NutrizionistaPianiPage() {
 
       const athleteIdsFromGroups = [...new Set(groups.map((g) => g.athlete_id).filter(Boolean))]
       const allAthleteIds = [...new Set([...athleteIds, ...athleteIdsFromGroups])]
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nome, cognome, email')
-        .in('id', allAthleteIds)
+      const profilesAccum: {
+        id: string
+        nome: string | null
+        cognome: string | null
+        email: string | null
+      }[] = []
+      for (const idChunk of chunkForSupabaseIn(allAthleteIds)) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome, email')
+          .in('id', idChunk)
+        profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
+      }
       const profilesMap = new Map(
-        (profilesData ?? []).map(
-          (p: {
-            id: string
-            nome: string | null
-            cognome: string | null
-            email: string | null
-          }) => [
-            p.id,
-            {
-              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-              email: p.email ?? null,
-            },
-          ],
-        ),
+        profilesAccum.map((p) => [
+          p.id,
+          {
+            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+            email: p.email ?? null,
+          },
+        ]),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({ id, name: profilesMap.get(id)?.name ?? id.slice(0, 8) })),
@@ -289,13 +303,6 @@ export default function NutrizionistaPianiPage() {
 
       let list: VersionRow[] = []
       if (groupIds.length > 0) {
-        const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-          .select(
-            'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
-          )
-          .in('plan_id', groupIds)
-          .order('created_at', { ascending: false })
-
         type Ver = {
           id: string
           plan_id?: string
@@ -312,7 +319,20 @@ export default function NutrizionistaPianiPage() {
           auto_generated?: boolean | null
           auto_adjustment_reason?: string | null
         }
-        const versions = (verRes.data ?? []) as Ver[]
+        const versions: Ver[] = []
+        for (const gidChunk of chunkForSupabaseIn(groupIds)) {
+          const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+            .select(
+              'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
+            )
+            .in('plan_id', gidChunk)
+            .order('created_at', { ascending: false })
+          versions.push(...((verRes.data ?? []) as Ver[]))
+        }
+        versions.sort(
+          (a, b) =>
+            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+        )
         const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
         list = versions.map((v) => {
           const gid = v.plan_id ?? ''
@@ -386,12 +406,23 @@ export default function NutrizionistaPianiPage() {
         .map((f) => (f as { name?: string }).name)
         .filter((n): n is string => !!n && n !== '_unassigned' && /^[0-9a-f-]{36}$/i.test(n))
       if (folderNames.length > 0) {
-        const { data: athleteProfiles } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome, email')
-          .in('id', folderNames)
+        const athleteProfilesMerged: {
+          id: string
+          nome: string | null
+          cognome: string | null
+          email: string | null
+        }[] = []
+        for (const idChunk of chunkForSupabaseIn(folderNames)) {
+          const { data: athleteProfiles } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome, email')
+            .in('id', idChunk)
+          athleteProfilesMerged.push(
+            ...((athleteProfiles ?? []) as (typeof athleteProfilesMerged)[number][]),
+          )
+        }
         const athleteNameById = new Map(
-          (athleteProfiles ?? []).map(
+          athleteProfilesMerged.map(
             (p: {
               id: string
               nome: string | null
@@ -401,7 +432,7 @@ export default function NutrizionistaPianiPage() {
           ),
         )
         const athleteEmailById = new Map(
-          (athleteProfiles ?? []).map((p: { id: string; email: string | null }) => [
+          athleteProfilesMerged.map((p: { id: string; email: string | null }) => [
             p.id,
             p.email ?? null,
           ]),
@@ -832,24 +863,33 @@ export default function NutrizionistaPianiPage() {
     setSearchInput('')
   }, [])
 
-  const handleExportCSV = useCallback(() => {
-    const data = filteredAndSorted.map((r) => ({
-      atleta: r.athleteName,
-      email: r.athleteEmail ?? '',
-      piano: r.groupId.slice(0, 8),
-      versione: r.versionNumber != null ? `v${r.versionNumber}` : '',
-      stato: r.status,
-      inizio: r.startDate ?? '',
-      fine: r.endDate ?? '',
-      kcal: r.caloriesTarget ?? '',
-      P: r.proteinTarget ?? '',
-      C: r.carbTarget ?? '',
-      F: r.fatTarget ?? '',
-      pdf: r.pdfFilePath ? 'sì' : 'no',
-      auto: r.autoGenerated ? 'sì' : 'no',
-    }))
-    exportToCSV(data, `piani_nutrizione_${todayStr}.csv`)
-  }, [filteredAndSorted, todayStr])
+  const handleExportPdf = useCallback(async () => {
+    if (filteredAndSorted.length === 0) return
+    setPdfLoading(true)
+    try {
+      const data: ExportData = filteredAndSorted.map((r) => ({
+        atleta: r.athleteName,
+        email: r.athleteEmail ?? '',
+        piano: r.groupId.slice(0, 8),
+        versione: r.versionNumber != null ? `v${r.versionNumber}` : '',
+        stato: r.status,
+        inizio: r.startDate ?? '',
+        fine: r.endDate ?? '',
+        kcal: r.caloriesTarget ?? '',
+        P: r.proteinTarget ?? '',
+        C: r.carbTarget ?? '',
+        F: r.fatTarget ?? '',
+        pdf: r.pdfFilePath ? 'sì' : 'no',
+        auto: r.autoGenerated ? 'sì' : 'no',
+      }))
+      const blob = await buildTabularExportPdfBlob('Piani nutrizionali', data)
+      openPdfWithBlob(blob, `piani_nutrizione_${todayStr}.pdf`)
+    } catch (e) {
+      logger.error('Export PDF piani', e)
+    } finally {
+      setPdfLoading(false)
+    }
+  }, [filteredAndSorted, todayStr, setPdfLoading, openPdfWithBlob])
 
   const openNuovoPiano = useCallback(
     (athleteId: string) => {
@@ -880,7 +920,7 @@ export default function NutrizionistaPianiPage() {
   return (
     <StaffContentLayout
       title="Piani nutrizionali"
-      description="Versioni, scadenze e struttura dettagliata per atleti assegnati"
+      description="Piani nutrizionali: versioni, scadenze e struttura."
       icon={<ClipboardList className="w-6 h-6" />}
       theme="teal"
       actions={
@@ -905,11 +945,12 @@ export default function NutrizionistaPianiPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportCSV}
-            disabled={filteredAndSorted.length === 0}
+            onClick={() => void handleExportPdf()}
+            disabled={filteredAndSorted.length === 0 || pdfLoading}
+            aria-busy={pdfLoading}
           >
-            <Download className="mr-1.5 h-4 w-4" />
-            Esporta
+            <FileText className="mr-1.5 h-4 w-4" />
+            Esporta PDF
           </Button>
           <Button
             variant="outline"
@@ -1803,6 +1844,14 @@ export default function NutrizionistaPianiPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Piani"
+      />
     </StaffContentLayout>
   )
 }

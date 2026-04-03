@@ -19,7 +19,7 @@ import { useAuth } from '@/providers/auth-provider'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
 import { LogoRefresh } from '@/components/athlete/logo-refresh'
 import { NotificationToast } from '@/components/shared/ui/notification-toast'
-import { Button } from '@/components/ui'
+import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-header-back-button'
 
 interface HomeLayoutClientProps {
   children: ReactNode
@@ -29,46 +29,17 @@ const CYAN_LINE_STYLE = {
   background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
 } as const
 
-function TopBarBackIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-    </svg>
-  )
-}
-
 /** Barra unificata: titolo/back a sinistra (da contesto pagina), logo a destra */
 const HomeAthleteTopChrome = forwardRef<HTMLElement>(function HomeAthleteTopChrome(_, ref) {
   const config = useAthleteTopBarConfig()
   const hasBack = Boolean(config && (config.backHref != null || config.onBack != null))
 
-  const backBtnClass =
-    'h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-text-secondary hover:bg-cyan-500/10 hover:text-cyan-400'
-
   const backEl =
     config && hasBack ? (
       config.backHref != null && config.onBack == null ? (
-        <Button variant="ghost" size="icon" className={backBtnClass} aria-label="Indietro" asChild>
-          <Link href={config.backHref} className="inline-flex shrink-0 items-center justify-center">
-            <TopBarBackIcon />
-          </Link>
-        </Button>
+        <StaffHeaderBackButton href={config.backHref} />
       ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className={backBtnClass}
-          aria-label="Indietro"
-          onClick={config.onBack}
-        >
-          <TopBarBackIcon />
-        </Button>
+        <StaffHeaderBackButton onClick={config.onBack!} />
       )
     ) : null
 
@@ -80,11 +51,6 @@ const HomeAthleteTopChrome = forwardRef<HTMLElement>(function HomeAthleteTopChro
       <div className="relative z-10 flex items-center gap-3 px-3 sm:px-4 min-[834px]:px-6 py-2.5 sm:py-3 min-[834px]:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {backEl}
-          {config?.icon != null && (
-            <div className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-cyan-400">
-              {config.icon}
-            </div>
-          )}
           {config != null ? (
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-lg font-semibold text-text-primary md:text-xl">

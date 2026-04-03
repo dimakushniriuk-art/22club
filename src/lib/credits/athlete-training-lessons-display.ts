@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import type { ServiceType } from '@/lib/abbonamenti-service-type'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 export type AthleteTrainingLessonsUsage = {
   totalUsed: number
@@ -35,10 +36,7 @@ export function remainingByAthleteFromLessonCounterRows(
     lesson_type: string | null
   }>,
 ): Map<string, number> {
-  const byAthlete = new Map<
-    string,
-    Array<{ count: number | null; lesson_type: string | null }>
-  >()
+  const byAthlete = new Map<string, Array<{ count: number | null; lesson_type: string | null }>>()
   for (const row of rows) {
     const list = byAthlete.get(row.athlete_id) ?? []
     list.push({ count: row.count, lesson_type: row.lesson_type })
@@ -181,19 +179,21 @@ export async function lessonUsageByAthleteIds(
   const out = new Map<string, AthleteLessonUsageRow>()
   if (athleteIds.length === 0) return out
 
-  const { data: payRows, error: payErr } = await client
-    .from('payments')
-    .select('athlete_id, lessons_purchased')
-    .in('athlete_id', athleteIds)
-    .eq('status', 'completed')
-    .eq('service_type', serviceType)
-
-  if (payErr) throw payErr
-
   const purchasedByAthlete = new Map<string, number>()
-  for (const p of payRows ?? []) {
-    const aid = p.athlete_id as string
-    purchasedByAthlete.set(aid, (purchasedByAthlete.get(aid) ?? 0) + (p.lessons_purchased ?? 0))
+  for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+    const { data: payRows, error: payErr } = await client
+      .from('payments')
+      .select('athlete_id, lessons_purchased')
+      .in('athlete_id', idChunk)
+      .eq('status', 'completed')
+      .eq('service_type', serviceType)
+
+    if (payErr) throw payErr
+
+    for (const p of payRows ?? []) {
+      const aid = p.athlete_id as string
+      purchasedByAthlete.set(aid, (purchasedByAthlete.get(aid) ?? 0) + (p.lessons_purchased ?? 0))
+    }
   }
 
   await Promise.all(

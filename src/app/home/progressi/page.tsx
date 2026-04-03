@@ -79,7 +79,6 @@ export default function ProgressiPage() {
           title="Progressi"
           subtitle="Monitora i tuoi progressi e le tue statistiche"
           backHref="/home"
-          icon={<BarChart3 className="h-5 w-5 text-cyan-400" />}
         />
 
         <div className="grid grid-cols-1 min-[834px]:grid-cols-2 gap-3 min-[834px]:gap-4">

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { PageHeaderFixed } from '@/components/layout'
-import { Activity, BarChart3 } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
 import { isValidProfile, isValidUUID } from '@/lib/utils/type-guards'
 import { useWorkoutExerciseStats } from '@/hooks/use-workout-exercise-stats'
 import dynamic from 'next/dynamic'
@@ -59,7 +59,6 @@ function StatisticheAllenamentiContent() {
             title="Statistiche Allenamenti"
             subtitle="Pesi, tempi e progressi per esercizio"
             onBack={handleBack}
-            icon={<Activity className="h-5 w-5 text-cyan-400" />}
           />
         </div>
       </div>
@@ -78,7 +77,6 @@ function StatisticheAllenamentiContent() {
           title="Statistiche Allenamenti"
           subtitle="Pesi, tempi e progressi per esercizio"
           onBack={handleBack}
-          icon={<Activity className="h-5 w-5 text-cyan-400" />}
         />
 
         <Card className={`relative overflow-hidden ${CARD_DS}`}>
@@ -114,7 +112,10 @@ function StatisticheAllenamentiContent() {
                 </p>
               </div>
             ) : (
-              <WorkoutExerciseCharts data={data} />
+              <WorkoutExerciseCharts
+                data={data}
+                detailBasePath="/home/progressi/allenamenti"
+              />
             )}
           </CardContent>
         </Card>

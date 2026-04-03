@@ -10,7 +10,7 @@ import {
   MoreVertical,
   Users,
   RefreshCw,
-  Download,
+  FileText,
   Upload,
   Key,
   ShieldCheck,
@@ -46,6 +46,9 @@ import { UserImpersonateModal } from './user-impersonate-modal'
 import { notifySuccess, notifyError } from '@/lib/notifications'
 import { createLogger } from '@/lib/logger'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 
 const logger = createLogger('AdminUsersContent')
 
@@ -100,6 +103,15 @@ export function AdminUsersContent() {
   const [verifyingLoginUser, setVerifyingLoginUser] = useState<User | null>(null)
   const [verifyingLogin, setVerifyingLogin] = useState(false)
   const [impersonatingUser, setImpersonatingUser] = useState<User | null>(null)
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   // Ref per evitare chiamate multiple durante il mount
   const fetchingRef = useRef(false)
@@ -201,57 +213,38 @@ export function AdminUsersContent() {
     }
   }, [users])
 
-  // Funzione esportazione CSV
-  const handleExportCSV = () => {
+  const handleExportPdf = useCallback(async () => {
+    if (filteredUsers.length === 0) return
+    setPdfLoading(true)
     try {
-      const headers = [
-        'Nome',
-        'Cognome',
-        'Email',
-        'Telefono',
-        'Ruolo',
-        'Stato',
-        'Trainer Assegnato',
-        'Data Iscrizione',
-      ]
-      const rows = filteredUsers.map((user) => [
-        (user.nome || '').trim(),
-        (user.cognome || '').trim(),
-        (user.email || '').trim(),
-        (user.phone || '').trim(),
-        user.role,
-        user.stato,
-        user.trainerAssegnato
+      const data: ExportData = filteredUsers.map((user) => ({
+        Nome: (user.nome || '').trim(),
+        Cognome: (user.cognome || '').trim(),
+        Email: (user.email || '').trim(),
+        Telefono: (user.phone || '').trim(),
+        Ruolo: user.role,
+        Stato: user.stato,
+        'Trainer Assegnato': user.trainerAssegnato
           ? user.trainerAssegnato.nome || user.trainerAssegnato.cognome
             ? `${user.trainerAssegnato.nome || ''} ${user.trainerAssegnato.cognome || ''}`.trim()
             : user.trainerAssegnato.email || 'N/A'
           : user.role === 'athlete'
             ? 'Nessun trainer'
             : 'N/A',
-        user.data_iscrizione ? new Date(user.data_iscrizione).toISOString().split('T')[0] : '',
-      ])
-
-      const csvContent = [
-        headers.join(','),
-        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-      ].join('\n')
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `utenti_${new Date().toISOString().split('T')[0]}.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      notifySuccess('Esportazione completata', 'File CSV scaricato con successo')
+        'Data Iscrizione': user.data_iscrizione
+          ? new Date(user.data_iscrizione).toISOString().split('T')[0]
+          : '',
+      }))
+      const blob = await buildTabularExportPdfBlob('Utenti', data)
+      openPdfWithBlob(blob, `utenti_${new Date().toISOString().split('T')[0]}.pdf`)
+      notifySuccess('Export', 'PDF pronto in anteprima')
     } catch (error) {
-      logger.error('Errore esportazione CSV', error)
-      notifyError('Errore', "Errore durante l'esportazione del file CSV")
+      logger.error('Errore esportazione PDF', error)
+      notifyError('Errore', "Errore durante l'esportazione del PDF")
+    } finally {
+      setPdfLoading(false)
     }
-  }
+  }, [filteredUsers, setPdfLoading, openPdfWithBlob])
 
   const handleEdit = (user: User) => {
     setEditingUser(user)
@@ -572,12 +565,13 @@ export function AdminUsersContent() {
           </Button>
           <Button
             variant="outline"
-            onClick={handleExportCSV}
+            onClick={() => void handleExportPdf()}
             className="bg-background-secondary border-border hover:bg-background-tertiary whitespace-nowrap"
-            disabled={filteredUsers.length === 0}
+            disabled={filteredUsers.length === 0 || pdfLoading}
+            aria-busy={pdfLoading}
           >
-            <Download className="h-4 w-4 mr-2" />
-            Esporta CSV
+            <FileText className="h-4 w-4 mr-2" />
+            Esporta PDF
           </Button>
           <Button
             variant="outline"
@@ -961,6 +955,14 @@ export function AdminUsersContent() {
           onSuccess={() => setImpersonatingUser(null)}
         />
       )}
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Utenti"
+      />
     </div>
   )
 }

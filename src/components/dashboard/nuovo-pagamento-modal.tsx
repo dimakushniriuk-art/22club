@@ -32,6 +32,10 @@ interface NuovoPagamentoModalProps {
   onSuccess?: () => void
   /** Servizio: training | nutrition | massage (payments.service_type, credit_ledger.service_type). */
   serviceType: ServiceType
+  /** Se presente, precompila l'atleta e può bloccare la selezione. */
+  defaultAthleteId?: string
+  /** Se true (default), disabilita la selezione atleta quando defaultAthleteId è presente. */
+  lockAthlete?: boolean
 }
 
 interface FormData {
@@ -47,6 +51,8 @@ export function NuovoPagamentoModal({
   onOpenChange,
   onSuccess,
   serviceType,
+  defaultAthleteId,
+  lockAthlete = true,
 }: NuovoPagamentoModalProps) {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
@@ -121,7 +127,7 @@ export function NuovoPagamentoModal({
       void loadAthletes()
       const defaultDate = new Date().toISOString().split('T')[0]
       setFormData({
-        athlete_id: '',
+        athlete_id: defaultAthleteId ?? '',
         payment_date: defaultDate,
         lessons_purchased: 1,
         amount: 0,
@@ -130,7 +136,7 @@ export function NuovoPagamentoModal({
       setInvoicePreview(null)
       setError(null)
       initialFormRef.current = {
-        athlete_id: '',
+        athlete_id: defaultAthleteId ?? '',
         payment_date: defaultDate,
         lessons_purchased: 1,
         amount: 0,
@@ -139,7 +145,7 @@ export function NuovoPagamentoModal({
     } else {
       initialFormRef.current = null
     }
-  }, [open, loadAthletes])
+  }, [open, loadAthletes, defaultAthleteId])
 
   const isDirty = useMemo(() => {
     if (!open || !initialFormRef.current) return false
@@ -327,19 +333,27 @@ export function NuovoPagamentoModal({
         paymentData.payment_date = new Date(formData.payment_date).toISOString()
       }
 
+      // org_id: preferisci RPC (RLS-safe). Fallback a profiles.org_id se disponibile.
       const orgIdRaw = (staffProfile as { org_id?: string | null }).org_id
       let orgId: string | undefined =
         orgIdRaw && String(orgIdRaw).trim() ? String(orgIdRaw).trim() : undefined
       if (!orgId) {
-        const { data: firstOrg } = await supabase
-          .from('organizations')
-          .select('id')
-          .limit(1)
-          .maybeSingle()
-        orgId = firstOrg?.id ?? undefined
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: rpcOrg, error: rpcErr } = await (supabase.rpc as any)(
+            'get_org_id_for_current_user',
+          )
+          if (!rpcErr && rpcOrg) {
+            orgId = String(rpcOrg).trim()
+          }
+        } catch {
+          /* ignora: fallback sotto */
+        }
       }
       if (!orgId || orgId.trim() === '') {
-        throw new Error('Organizzazione non configurata. Impossibile creare il pagamento.')
+        throw new Error(
+          'Organizzazione non configurata. Imposta org_id sul profilo o verifica get_org_id_for_current_user().',
+        )
       }
       const paymentPayload = {
         ...paymentData,
@@ -508,6 +522,7 @@ export function NuovoPagamentoModal({
                     setFormData((prev) => ({ ...prev, athlete_id: value || '' }))
                   }}
                   placeholder="Seleziona atleta..."
+                  disabled={Boolean(defaultAthleteId && lockAthlete)}
                   options={athletes
                     .map((athlete) => ({
                       value: athlete.id,

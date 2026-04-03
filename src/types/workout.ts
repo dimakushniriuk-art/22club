@@ -124,6 +124,8 @@ export interface WorkoutDayData {
   name: string
   title?: string
   day_number?: number
+  /** Sessioni previste per questo giorno prima di revisionarlo (opzionale) */
+  sessions_until_refresh?: number | null
   exercises: WorkoutDayExerciseData[]
   /** Ordine misto esercizi + circuiti (se presente ha priorità su exercises per visualizzazione) */
   items?: DayItem[]
@@ -139,6 +141,18 @@ export interface WorkoutWizardData {
   days: WorkoutDayData[]
 }
 
+/** Anteprima “sessioni prima della revisione” per giorno (es. lista dashboard schede) */
+export interface WorkoutDaySessionsPreview {
+  /** workout_days.id; assente nell’anteprima costruita dal wizard prima del refetch lista */
+  workout_day_id?: string
+  day_number: number
+  title: string | null
+  /** Obiettivo impostato in creazione (sessioni prima della revisione) */
+  sessions_until_refresh: number | null
+  /** Conteggio da DB: workout_logs completati per questo giorno e atleta della scheda */
+  sessions_completed_count: number
+}
+
 export interface Workout {
   id: string
   org_id: string
@@ -148,6 +162,8 @@ export interface Workout {
   name: string
   description?: string | null
   objective?: string | null
+  /** Popolato in lista schede staff quando i giorni sono caricati dal DB */
+  workout_days_sessions_preview?: WorkoutDaySessionsPreview[]
   muscle_group?: string | null
   equipment?: string | null
   difficulty: 'bassa' | 'media' | 'alta'
@@ -160,4 +176,6 @@ export interface Workout {
   created_at: string
   updated_at?: string
   created_by_staff_id?: string
+  /** Lista schede staff: progressivo 1…N per data creazione (1 = più vecchia) */
+  creation_order_number?: number
 }

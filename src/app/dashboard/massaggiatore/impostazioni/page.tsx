@@ -18,6 +18,7 @@ import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 
 const logger = createLogger('app:dashboard:massaggiatore:impostazioni')
@@ -384,13 +385,13 @@ export default function MassaggiatoreImpostazioniPage() {
   ])
 
   if (showGuardLoader) {
-    return null
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
     <StaffContentLayout
       title="Impostazioni"
-      description="Gestisci le tue preferenze e configurazioni account"
+      description="Account, sicurezza e preferenze."
       icon={<Settings className="h-6 w-6 sm:h-7 sm:w-7" />}
       theme="amber"
     >

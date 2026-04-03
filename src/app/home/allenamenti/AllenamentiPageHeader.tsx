@@ -1,7 +1,8 @@
 'use client'
 
 import { PageHeaderFixed } from '@/components/layout'
-import { Dumbbell } from 'lucide-react'
+import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
+import { cn } from '@/lib/utils'
 
 interface AllenamentiPageHeaderProps {
   title?: string
@@ -20,14 +21,15 @@ export function AllenamentiPageHeader({
   onBack,
   withBottomMargin = false,
 }: AllenamentiPageHeaderProps) {
+  const { isPreview } = useAthleteAllenamentiPaths()
   return (
     <PageHeaderFixed
       variant="chat"
       title={title}
-      subtitle={subtitle}
+      subtitle={isPreview ? undefined : subtitle}
       onBack={onBack}
-      icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
-      className={withBottomMargin ? 'mb-4' : undefined}
+      embedStatic={isPreview}
+      className={cn(withBottomMargin && !isPreview && 'mb-4')}
     />
   )
 }

@@ -98,6 +98,11 @@ const _DOCUMENT_CATEGORIES_BASE = [
   { value: 'certificato', label: 'Certificato' },
   { value: 'liberatoria', label: 'Liberatoria' },
   { value: 'contratto', label: 'Contratto' },
+  { value: 'referto', label: 'Referto medico' },
+  { value: 'fattura', label: 'Fattura' },
+  { value: 'dossier_onboarding', label: 'Dossier onboarding' },
+  { value: 'piano_nutrizionale', label: 'Piano nutrizionale' },
+  { value: 'allegato_chat', label: 'Allegato chat' },
   { value: 'altro', label: 'Altro' },
 ]
 export const DOCUMENT_CATEGORIES = [

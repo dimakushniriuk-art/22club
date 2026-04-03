@@ -18,6 +18,8 @@ import type {
 
 import type { Tables, TablesUpdate } from '@/types/supabase'
 import type { PostgrestError } from '@supabase/supabase-js'
+import { isSupabaseAuthLockStealAbortError } from '@/lib/supabase/supabase-lock-abort'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:use-allenamenti')
 
@@ -102,10 +104,21 @@ function calculateStats(allenamenti: Allenamento[]): AllenamentoStats {
   }
 }
 
-export function useAllenamenti(filters?: Partial<AllenamentoFilters>, sort?: AllenamentoSort) {
+export type UseAllenamentiQueryOptions = {
+  /** false: non eseguire la query (es. finché manca atleta_id). Default true. */
+  enabled?: boolean
+}
+
+export function useAllenamenti(
+  filters?: Partial<AllenamentoFilters>,
+  sort?: AllenamentoSort,
+  queryOptions?: UseAllenamentiQueryOptions,
+) {
   const { supabase } = useSupabase()
   const { executeSupabaseCall } = useSupabaseWithRetry<WorkoutLogWithRelations[]>()
   const queryClient = useQueryClient()
+
+  const queryEnabled = queryOptions?.enabled !== false
 
   // Query key basata su filtri e sort per cache separata
   const queryKey = useMemo(() => {
@@ -122,6 +135,7 @@ export function useAllenamenti(filters?: Partial<AllenamentoFilters>, sort?: All
     refetch: refetchQuery,
   } = useQuery({
     queryKey,
+    enabled: queryEnabled,
     queryFn: async () => {
       logger.debug('Fetching allenamenti', undefined, { filters, sort })
 
@@ -245,14 +259,19 @@ export function useAllenamenti(filters?: Partial<AllenamentoFilters>, sort?: All
           const { data: queryData, error: queryError } =
             await query.returns<WorkoutLogWithRelations[]>()
           if (queryError) {
-            // Log dettagliato per diagnosticare problemi RLS
-            logger.error('Errore query workout_logs', queryError, {
-              filters,
-              errorCode: queryError.code,
-              errorMessage: queryError.message,
-              errorDetails: queryError.details,
-              errorHint: queryError.hint,
-            })
+            if (isSupabaseAuthLockStealAbortError(queryError)) {
+              logger.debug('workout_logs: lock auth (steal), retry gestito da useApiWithRetry', {
+                filters,
+              })
+            } else {
+              logger.error('Errore query workout_logs', queryError, {
+                filters,
+                errorCode: queryError.code,
+                errorMessage: queryError.message,
+                errorDetails: queryError.details,
+                errorHint: queryError.hint,
+              })
+            }
             return { data: null, error: queryError as Error }
           }
 
@@ -310,18 +329,31 @@ export function useAllenamenti(filters?: Partial<AllenamentoFilters>, sort?: All
             cognome: string | null
           }
 
-          const trainerQueryPromise = supabase
-            .from('profiles')
-            .select('id, nome, cognome')
-            .in('id', profileIdsArray)
+          const idChunks = chunkForSupabaseIn(profileIdsArray)
+          const trainerProfilesPromise = Promise.all(
+            idChunks.map((chunk) =>
+              supabase.from('profiles').select('id, nome, cognome').in('id', chunk),
+            ),
+          ).then((rows): { data: TrainerProfile[]; error: PostgrestError | null } => {
+            const merged: TrainerProfile[] = []
+            let err: PostgrestError | null = null
+            for (const r of rows) {
+              if (r.error) {
+                err = r.error
+                break
+              }
+              if (r.data?.length) merged.push(...r.data)
+            }
+            return { data: merged, error: err }
+          })
 
-          // Timeout di 10 secondi per la query trainer (non critica)
+          // Timeout di 10 secondi per le query trainer (non critica)
           const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error('Timeout query trainer profiles')), 10000)
           })
 
           const { data: trainerProfiles, error: trainerError } = (await Promise.race([
-            trainerQueryPromise,
+            trainerProfilesPromise,
             timeoutPromise,
           ])) as { data: TrainerProfile[] | null; error: PostgrestError | null }
 

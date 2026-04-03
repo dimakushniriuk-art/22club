@@ -7,11 +7,6 @@ import {
   CardContent,
   Button,
   Input,
-  SimpleSelect,
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerBody,
 } from '@/components/ui'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
@@ -19,29 +14,25 @@ import {
   Plus,
   Euro,
   FileText,
-  Download,
-  Eye,
   Upload as _Upload,
-  Loader2,
   X,
   Search,
   Filter,
   ChevronLeft,
   ChevronRight,
-  Trash2,
-  Info,
   CreditCard,
   Package,
   CalendarCheck,
 } from 'lucide-react'
-import { exportToCSV } from '@/lib/export-utils'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { useToast } from '@/components/ui/toast'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
-import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { useAuth } from '@/hooks/use-auth'
-import { addReversalFromPayment } from '@/lib/credits/ledger'
 import {
   type ServiceType,
   SERVICE_TYPES,
@@ -49,15 +40,10 @@ import {
   defaultServiceForRole,
 } from '@/lib/abbonamenti-service-type'
 import {
-  DOCUMENTS_STORAGE_BUCKET,
-  downloadStorageBlobViaPreview,
-  resolveInvoiceDocumentsStoragePath,
-  storagePreviewHref,
-} from '@/lib/documents'
-import {
   lessonUsageByAthleteIds,
   type AthleteLessonUsageRow,
 } from '@/lib/credits/athlete-training-lessons-display'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:dashboard:abbonamenti:page')
 const ABBONAMENTI_PER_PAGE = 100 // Soglia per attivare paginazione
@@ -69,93 +55,19 @@ const NuovoPagamentoModal = lazy(() =>
   })),
 )
 
-// Anteprima fattura via proxy same-origin `/api/document-preview` (cookie di sessione).
-function InvoiceViewModal({
-  url,
-  athlete,
-  onClose,
-  theme = 'default',
-}: {
-  url: string
-  athlete: string
-  onClose: () => void
-  theme?: AbbonamentiTheme
-}) {
-  const m = ABBONAMENTI_THEME[theme]
-  const filePath = useMemo(() => resolveInvoiceDocumentsStoragePath(url), [url])
-  const previewHref =
-    filePath && filePath.length > 0 ? storagePreviewHref(DOCUMENTS_STORAGE_BUCKET, filePath) : null
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-      <div
-        className={`relative w-full h-full max-w-4xl max-h-[90vh] m-4 bg-background-secondary rounded-lg border shadow-xl ${m.modalBorder}`}
-      >
-        <div className={`flex items-center justify-between p-4 border-b ${m.modalHeader}`}>
-          <h3 className="text-text-primary text-lg font-semibold flex items-center gap-2">
-            <FileText className={`h-5 w-5 ${m.modalIcon}`} />
-            Fattura - {athlete}
-          </h3>
-          <Button variant="outline" size="sm" onClick={onClose} className={m.modalButton}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="p-4 h-[calc(90vh-80px)] overflow-auto">
-          {!previewHref ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3">
-              <p className="text-red-400">Impossibile risolvere il percorso della fattura</p>
-              <Button variant="outline" onClick={onClose}>
-                Chiudi
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col h-full gap-3">
-              <iframe
-                src={previewHref}
-                title={`Fattura - ${athlete}`}
-                className="w-full flex-1 min-h-0 rounded-lg border border-border bg-white"
-              />
-              <div className="flex justify-end shrink-0">
-                <Button asChild variant="outline" size="sm">
-                  <a href={previewHref} target="_blank" rel="noopener noreferrer">
-                    Apri in nuova scheda
-                  </a>
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-interface Abbonamento {
-  id: string
+interface AbbonamentoAthleteRow {
   athlete_id: string
   athlete_name: string
-  payment_date: string
-  lessons_purchased: number
-  lessons_used: number
-  lessons_remaining: number
-  amount: number
-  invoice_url: string | null
-  status: string
-  created_by_staff_id?: string // Campo opzionale per filtri trainer/PT
-  /** true se rimasti > (credited - used), saldo pre-ledger non tracciato */
-  legacy_balance_hint?: boolean
+  total_purchased: number
+  total_used: number
+  total_remaining: number
 }
 
-/** Nome documento fattura per visualizzazione in tabella (filename da path o "Fattura DD/MM/YYYY"). */
-function getInvoiceDocumentName(abb: {
-  invoice_url: string | null
-  payment_date?: string
-}): string | null {
-  if (!abb.invoice_url) return null
-  const path = abb.invoice_url.trim()
-  const segment = path.split('/').filter(Boolean).pop()
-  if (segment) return segment
-  return abb.payment_date ? `Fattura ${formatDate(abb.payment_date)}` : 'Fattura'
+type KpiPaymentRow = {
+  athlete_id: string
+  amount: number
+  payment_date: string
+  status: string | null
 }
 
 /** Chiave cache univoca: stessa per get/set/invalidate. Include service_type. */
@@ -169,42 +81,12 @@ function getCacheKey(
   return `abbonamenti:${serviceVal}:${page}:${enablePag}:${roleVal || 'no-role'}:${uid || 'no-user'}`
 }
 
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('it-IT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('it-IT', {
     style: 'currency',
     currency: 'EUR',
   }).format(amount)
 }
-
-const LESSONS_FILTER_OPTIONS = [
-  { value: 'all', label: 'Tutte le lezioni' },
-  { value: 'low', label: 'Basse (≤3)' },
-  { value: 'medium', label: 'Medie (4-10)' },
-  { value: 'high', label: 'Alte (>10)' },
-] as const
-
-const AMOUNT_FILTER_OPTIONS = [
-  { value: 'all', label: 'Tutti gli importi' },
-  { value: 'low', label: 'Basso (<500€)' },
-  { value: 'medium', label: 'Medio (500-1000€)' },
-  { value: 'high', label: 'Alto (>1000€)' },
-] as const
-
-const DATE_FILTER_OPTIONS = [
-  { value: 'all', label: 'Tutte le date' },
-  { value: 'today', label: 'Oggi' },
-  { value: 'week', label: 'Ultima settimana' },
-  { value: 'month', label: 'Ultimo mese' },
-  { value: 'year', label: 'Ultimo anno' },
-] as const
 
 const _DEFAULT_DATE = new Date().toISOString().split('T')[0]
 
@@ -288,35 +170,28 @@ export default function AbbonamentiPage() {
   const profileId = user?.id || null // profiles.id (per filtro trainer/athlete)
   const role = user?.role || null
   const { addToast } = useToast()
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
   const supabase = useSupabaseClient()
-  const [abbonamenti, setAbbonamenti] = useState<Abbonamento[]>([])
+  const [abbonamenti, setAbbonamenti] = useState<AbbonamentoAthleteRow[]>([])
+  const [kpiPayments, setKpiPayments] = useState<KpiPaymentRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
-  const [selectedInvoice, setSelectedInvoice] = useState<{ url: string; athlete: string } | null>(
-    null,
-  )
-  const [_uploadingInvoice, setUploadingInvoice] = useState<string | null>(null)
-  const [deletingPayment, setDeletingPayment] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
   const [enablePagination, setEnablePagination] = useState(false)
 
-  // Filtri (sync da URL al mount e quando cambia URL)
+  // Filtri (solo ricerca atleta; KPI e tab servizio restano)
   const [searchTerm, setSearchTerm] = useState('')
-  const [lessonsFilter, setLessonsFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all')
-  const [amountFilter, setAmountFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all')
-  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('all')
-  const [invoiceOnly, setInvoiceOnly] = useState(false)
   const [kpiDebitsInMonth, setKpiDebitsInMonth] = useState<number>(0)
-  const [drilldownRow, setDrilldownRow] = useState<Abbonamento | null>(null)
-  const [ledgerHistory, setLedgerHistory] = useState<
-    Array<{ entry_type: string; qty: number; created_at: string; reason?: string | null }>
-  >([])
-  const [drilldownLoading, setDrilldownLoading] = useState(false)
 
   const urlServiceParam = searchParams.get('service')
   const urlService = parseServiceFromUrl(urlServiceParam)
@@ -339,24 +214,12 @@ export default function AbbonamentiPage() {
   }, [urlService, defaultService, router])
 
   const urlSearch = searchParams.get('search') ?? ''
-  const urlLessons = (searchParams.get('lessons') as 'all' | 'low' | 'medium' | 'high') || 'all'
-  const urlAmount = (searchParams.get('amount') as 'all' | 'low' | 'medium' | 'high') || 'all'
-  const urlDate = (searchParams.get('date') as 'all' | 'today' | 'week' | 'month' | 'year') || 'all'
   useEffect(() => {
     setSearchTerm(urlSearch)
-    setLessonsFilter(urlLessons)
-    setAmountFilter(urlAmount)
-    setDateFilter(urlDate)
-  }, [urlSearch, urlLessons, urlAmount, urlDate])
+  }, [urlSearch])
 
   const updateUrlFilters = useCallback(
-    (updates: {
-      search?: string
-      lessons?: string
-      amount?: string
-      date?: string
-      service?: ServiceType
-    }) => {
+    (updates: { search?: string; service?: ServiceType }) => {
       const params = new URLSearchParams(searchParamsRef.current.toString())
       if (updates.service !== undefined) {
         if (updates.service) params.set('service', updates.service)
@@ -365,18 +228,6 @@ export default function AbbonamentiPage() {
       if (updates.search !== undefined) {
         if (updates.search.trim()) params.set('search', updates.search.trim())
         else params.delete('search')
-      }
-      if (updates.lessons !== undefined) {
-        if (updates.lessons && updates.lessons !== 'all') params.set('lessons', updates.lessons)
-        else params.delete('lessons')
-      }
-      if (updates.amount !== undefined) {
-        if (updates.amount && updates.amount !== 'all') params.set('amount', updates.amount)
-        else params.delete('amount')
-      }
-      if (updates.date !== undefined) {
-        if (updates.date && updates.date !== 'all') params.set('date', updates.date)
-        else params.delete('date')
       }
       const q = params.toString()
       router.replace(q ? `/dashboard/abbonamenti?${q}` : '/dashboard/abbonamenti', {
@@ -459,27 +310,43 @@ export default function AbbonamentiPage() {
               currentServiceType,
             )
 
-            const formatted: Abbonamento[] = typedRpcData.map((row) => {
-              const u = usageByAthlete.get(row.athlete_id)
-              const used = u?.totalUsed ?? 0
-              const lessonsRemaining = u?.totalRemaining ?? 0
-              return {
-                id: row.id,
-                athlete_id: row.athlete_id,
-                athlete_name: row.athlete_name || 'Sconosciuto',
-                payment_date: row.payment_date || row.created_at || '',
-                lessons_purchased: row.lessons_purchased || 0,
-                lessons_used: used,
-                lessons_remaining: lessonsRemaining,
-                amount: Number(row.amount) || 0,
-                invoice_url: row.invoice_url || null,
-                status: row.status || 'completed',
+            const purchasedByAthlete = new Map<string, { name: string; purchased: number }>()
+            const paymentsForKpi: KpiPaymentRow[] = []
+            for (const row of typedRpcData) {
+              const aid = row.athlete_id
+              const prev = purchasedByAthlete.get(aid) ?? {
+                name: row.athlete_name || 'Sconosciuto',
+                purchased: 0,
               }
-            })
+              purchasedByAthlete.set(aid, {
+                name: prev.name,
+                purchased: prev.purchased + (Number(row.lessons_purchased) || 0),
+              })
+              paymentsForKpi.push({
+                athlete_id: aid,
+                amount: Number(row.amount) || 0,
+                payment_date: row.payment_date || row.created_at || '',
+                status: row.status || 'completed',
+              })
+            }
+
+            const formatted: AbbonamentoAthleteRow[] = Array.from(purchasedByAthlete.entries()).map(
+              ([aid, v]) => {
+                const u = usageByAthlete.get(aid)
+                return {
+                  athlete_id: aid,
+                  athlete_name: v.name,
+                  total_purchased: v.purchased,
+                  total_used: u?.totalUsed ?? 0,
+                  total_remaining: u?.totalRemaining ?? 0,
+                }
+              },
+            )
 
             const total = typedRpcData[0]?.total_count ?? formatted.length
 
             setAbbonamenti(formatted)
+            setKpiPayments(paymentsForKpi)
             setTotalCount(total)
             setLoading(false)
             return
@@ -532,35 +399,64 @@ export default function AbbonamentiPage() {
 
       // Usufruiti/Rimasti: stesso modello del tab atleta (computeAthleteTrainingLessonUsage)
       if (payments.length > 0) {
-        const [paymentsExtendedResult, profilesResult] = await Promise.all([
-          supabaseClient
+        type PaymentExtended = {
+          id: string
+          payment_date?: string | null
+          status?: string | null
+          invoice_url?: string | null
+          lessons_purchased?: number | null
+        }
+
+        const paymentIds = payments.map((p) => p.id)
+        const extendedMap = new Map<string, PaymentExtended>()
+        let paymentsExtendedError: unknown = null
+        for (const idChunk of chunkForSupabaseIn(paymentIds)) {
+          const chunkRes = await supabaseClient
             .from('payments')
             .select('id, payment_date, status, invoice_url, lessons_purchased')
-            .in(
-              'id',
-              payments.map((p) => p.id),
-            ),
-          athleteIds.length > 0
-            ? supabaseClient.from('profiles').select('id, nome, cognome').in('id', athleteIds)
-            : Promise.resolve({ data: [], error: null }),
-        ])
+            .in('id', idChunk)
+          if (chunkRes.error) {
+            paymentsExtendedError = chunkRes.error
+            logger.error('Errore query payments estesi (chunk)', chunkRes.error)
+            break
+          }
+          for (const row of (chunkRes.data ?? []) as PaymentExtended[]) {
+            extendedMap.set(row.id, row)
+          }
+        }
+
+        const profilesMap = new Map<string, Pick<ProfileRow, 'id' | 'nome' | 'cognome'>>()
+        let profilesResultError: unknown = null
+        if (athleteIds.length > 0) {
+          for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+            const chunkRes = await supabaseClient
+              .from('profiles')
+              .select('id, nome, cognome')
+              .in('id', idChunk)
+            if (chunkRes.error) {
+              profilesResultError = chunkRes.error
+              logger.error('Errore query profili atleti abbonamenti (chunk)', chunkRes.error)
+              break
+            }
+            ;(chunkRes.data as ProfileRow[] | null)?.forEach((p) => {
+              profilesMap.set(p.id, {
+                id: p.id,
+                nome: p.nome ?? '',
+                cognome: p.cognome ?? '',
+              })
+            })
+          }
+        }
+        if (profilesResultError) {
+          profilesMap.clear()
+        }
 
         const usageByAthlete =
           athleteIds.length > 0
             ? await lessonUsageByAthleteIds(supabaseClient, athleteIds, currentServiceType)
             : new Map<string, AthleteLessonUsageRow>()
 
-        // Gestione risultati Query 1 (Payments Extended)
-        if (!paymentsExtendedResult.error && paymentsExtendedResult.data) {
-          type PaymentExtended = {
-            id: string
-            payment_date?: string | null
-            status?: string | null
-            invoice_url?: string | null
-            lessons_purchased?: number | null
-          }
-          const extendedData = paymentsExtendedResult.data as PaymentExtended[]
-          const extendedMap = new Map(extendedData.map((p) => [p.id, p]))
+        if (!paymentsExtendedError && extendedMap.size > 0) {
           payments = payments.map((p) => ({
             ...p,
             payment_date: extendedMap.get(p.id)?.payment_date ?? p.created_at ?? null,
@@ -570,52 +466,45 @@ export default function AbbonamentiPage() {
           }))
         }
 
-        // Profili atleti
-        const profilesMap = new Map<string, Pick<ProfileRow, 'id' | 'nome' | 'cognome'>>()
-        if (!profilesResult.error && profilesResult.data) {
-          ;(profilesResult.data as ProfileRow[]).forEach((p) => {
-            profilesMap.set(p.id, {
-              id: p.id,
-              nome: p.nome ?? '',
-              cognome: p.cognome ?? '',
-            })
-          })
+        const paymentsForKpi: KpiPaymentRow[] = payments.map((p) => ({
+          athlete_id: String(p.athlete_id),
+          amount: Number(p.amount) || 0,
+          payment_date: String(p.payment_date ?? p.created_at ?? ''),
+          status: p.status ?? 'completed',
+        }))
+
+        const purchasedAgg = new Map<string, number>()
+        for (const p of payments) {
+          const aid = String(p.athlete_id)
+          purchasedAgg.set(aid, (purchasedAgg.get(aid) ?? 0) + (Number(p.lessons_purchased) || 0))
         }
 
-        const formatted: Abbonamento[] = payments.map((p) => {
-          const athleteId = p.athlete_id
-          const athleteIdKey = String(athleteId)
-          const athlete = profilesMap.get(athleteId)
-          const athleteName = athlete
-            ? `${athlete.nome ?? ''} ${athlete.cognome ?? ''}`.trim() || 'Sconosciuto'
-            : 'Sconosciuto'
-
-          const u = usageByAthlete.get(athleteIdKey) ?? usageByAthlete.get(athleteId)
-          const lessonsUsed = u?.totalUsed ?? 0
-          const lessonsRemaining = u?.totalRemaining ?? 0
-
-          return {
-            id: p.id,
-            athlete_id: p.athlete_id,
-            athlete_name: athleteName,
-            payment_date: p.payment_date ?? p.created_at ?? '',
-            lessons_purchased: p.lessons_purchased || 0,
-            lessons_used: lessonsUsed,
-            lessons_remaining: lessonsRemaining,
-            amount: p.amount || 0,
-            invoice_url: p.invoice_url ?? null,
-            status: p.status || 'completed',
-            created_by_staff_id: (p as { created_by_staff_id?: string }).created_by_staff_id,
-          }
-        })
+        const formatted: AbbonamentoAthleteRow[] = Array.from(purchasedAgg.entries())
+          .map(([aid, purchased]) => {
+            const athlete = profilesMap.get(aid)
+            const athleteName = athlete
+              ? `${athlete.nome ?? ''} ${athlete.cognome ?? ''}`.trim() || 'Sconosciuto'
+              : 'Sconosciuto'
+            const u = usageByAthlete.get(aid)
+            return {
+              athlete_id: aid,
+              athlete_name: athleteName,
+              total_purchased: purchased,
+              total_used: u?.totalUsed ?? 0,
+              total_remaining: u?.totalRemaining ?? 0,
+            }
+          })
+          .sort((a, b) => a.athlete_name.localeCompare(b.athlete_name, 'it'))
 
         setAbbonamenti(formatted)
+        setKpiPayments(paymentsForKpi)
         setTotalCount(formatted.length)
         return
       }
 
       // Se non ci sono payments, setta array vuoto
       setAbbonamenti([])
+      setKpiPayments([])
       setTotalCount(0)
     } catch (err) {
       logger.error('Errore caricamento abbonamenti', err)
@@ -644,240 +533,11 @@ export default function AbbonamentiPage() {
 
   const handleResetFilters = useCallback(() => {
     setSearchTerm('')
-    setLessonsFilter('all')
-    setAmountFilter('all')
-    setDateFilter('all')
-    setInvoiceOnly(false)
-    updateUrlFilters({ search: '', lessons: 'all', amount: 'all', date: 'all' })
+    updateUrlFilters({ search: '' })
   }, [updateUrlFilters])
 
-  const _handleInvoiceUpload = useCallback(
-    async (paymentId: string, file: File) => {
-      try {
-        setUploadingInvoice(paymentId)
-
-        const payment = abbonamenti.find((a) => a.id === paymentId)
-        if (!payment) throw new Error('Pagamento non trovato')
-
-        const fileExt = file.name.split('.').pop() || 'pdf'
-        const storagePath = `fatture/${currentServiceType}/${payment.athlete_id}/${paymentId}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('documents')
-          .upload(storagePath, file, {
-            cacheControl: '3600',
-            upsert: true,
-          })
-
-        if (uploadError) throw uploadError
-
-        // Salva solo il path in DB (signed URL generato on-demand in anteprima/download)
-        const { error: updateError } = await supabase
-          .from('payments')
-          .update({ invoice_url: storagePath })
-          .eq('id', paymentId)
-
-        if (updateError) throw updateError
-
-        addToast({
-          title: 'Successo',
-          message: 'Fattura caricata con successo',
-          variant: 'success',
-        })
-
-        frequentQueryCache.invalidate(
-          getCacheKey(currentServiceType, currentPage, enablePagination, role, userId),
-        )
-        loadAbbonamenti()
-      } catch (err) {
-        logger.error('Errore upload fattura', err, { paymentId })
-        addToast({
-          title: 'Errore',
-          message: err instanceof Error ? err.message : 'Errore nel caricamento della fattura',
-          variant: 'error',
-        })
-      } finally {
-        setUploadingInvoice(null)
-      }
-    },
-    [
-      abbonamenti,
-      supabase,
-      addToast,
-      currentServiceType,
-      currentPage,
-      enablePagination,
-      role,
-      userId,
-      loadAbbonamenti,
-    ],
-  )
-
-  const handleDownloadInvoice = useCallback(
-    async (invoiceUrl: string) => {
-      try {
-        const filePath = resolveInvoiceDocumentsStoragePath(invoiceUrl)
-        if (!filePath) {
-          addToast({
-            title: 'Errore',
-            message: 'Percorso fattura non valido.',
-            variant: 'error',
-          })
-          return
-        }
-        const safeName = filePath.split('/').filter(Boolean).pop() ?? `fattura-${Date.now()}.pdf`
-        await downloadStorageBlobViaPreview(DOCUMENTS_STORAGE_BUCKET, filePath, safeName)
-      } catch (err) {
-        logger.error('Errore download fattura', err, { invoiceUrl })
-        addToast({
-          title: 'Errore',
-          message: err instanceof Error ? err.message : 'Errore nel download della fattura',
-          variant: 'error',
-        })
-      }
-    },
-    [addToast],
-  )
-
-  const handleStornoPayment = useCallback((paymentId: string) => {
-    setPaymentToDelete(paymentId)
-    setDeleteDialogOpen(true)
-  }, [])
-
-  const handleStornoConfirm = useCallback(async () => {
-    if (!paymentToDelete) return
-
-    const payment = abbonamenti.find((a) => a.id === paymentToDelete)
-    if (!payment) {
-      setDeleteDialogOpen(false)
-      setPaymentToDelete(null)
-      return
-    }
-
-    if (payment.status === 'cancelled') {
-      addToast({
-        title: 'Info',
-        message: 'Pagamento già stornato.',
-        variant: 'info',
-      })
-      setDeleteDialogOpen(false)
-      setPaymentToDelete(null)
-      return
-    }
-
-    setIsDeleting(true)
-    setDeletingPayment(paymentToDelete)
-    try {
-      // Profilo staff corrente (created_by)
-      let staffProfileId: string | null = null
-      if (userId) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', userId)
-          .maybeSingle()
-        staffProfileId = profile?.id ?? null
-      }
-
-      const { data: updatedRows, error: updateError } = await supabase
-        .from('payments')
-        .update({ status: 'cancelled' })
-        .eq('id', paymentToDelete)
-        .select('id')
-
-      if (updateError) {
-        const err: unknown = updateError
-        const msg =
-          err && typeof err === 'object' && 'message' in err
-            ? String((err as { message?: unknown }).message)
-            : err instanceof Error
-              ? err.message
-              : String(err)
-        const code =
-          err && typeof err === 'object' && 'code' in err
-            ? (err as { code?: string }).code
-            : undefined
-        logger.error('Errore aggiornamento status pagamento', updateError, {
-          paymentId: paymentToDelete,
-          message: msg,
-          code,
-        })
-        throw err instanceof Error ? err : new Error(msg || 'Aggiornamento status fallito')
-      }
-
-      if (!updatedRows?.length) {
-        addToast({
-          title: 'Pagamento non trovato',
-          message: 'Il pagamento potrebbe essere già stato eliminato. Lista aggiornata.',
-          variant: 'info',
-        })
-        frequentQueryCache.invalidate(
-          getCacheKey(currentServiceType, currentPage, enablePagination, role, userId),
-        )
-        await loadAbbonamenti()
-        setDeleteDialogOpen(false)
-        setPaymentToDelete(null)
-        return
-      }
-
-      await addReversalFromPayment(
-        {
-          id: paymentToDelete,
-          athlete_id: payment.athlete_id,
-          lessons_purchased: payment.lessons_purchased || 0,
-          serviceType: currentServiceType,
-        },
-        staffProfileId,
-      )
-
-      logger.info('Pagamento stornato con successo', { paymentId: paymentToDelete })
-
-      addToast({
-        title: 'Successo',
-        message: 'Pagamento stornato con successo',
-        variant: 'success',
-      })
-
-      frequentQueryCache.invalidate(
-        getCacheKey(currentServiceType, currentPage, enablePagination, role, userId),
-      )
-      loadAbbonamenti()
-      setDeleteDialogOpen(false)
-      setPaymentToDelete(null)
-    } catch (err) {
-      const msg =
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message?: unknown }).message)
-          : err instanceof Error
-            ? err.message
-            : String(err)
-      logger.error('Errore storno pagamento', err, {
-        paymentId: paymentToDelete,
-        message: msg,
-      })
-      addToast({
-        title: 'Errore',
-        message: msg || 'Errore durante lo storno del pagamento. Riprova più tardi.',
-        variant: 'error',
-      })
-      setDeleteDialogOpen(false)
-    } finally {
-      setIsDeleting(false)
-      setDeletingPayment(null)
-      setPaymentToDelete(null)
-    }
-  }, [
-    paymentToDelete,
-    abbonamenti,
-    supabase,
-    addToast,
-    currentServiceType,
-    currentPage,
-    enablePagination,
-    role,
-    userId,
-    loadAbbonamenti,
-  ])
+  // In questa vista aggregata non facciamo azioni su singolo pagamento (storno/fattura):
+  // la riga è per atleta; i dettagli si gestiscono nella pagina atleta.
 
   // Filtraggio abbonamenti - Combinato in unico filter per performance
   const filteredAbbonamenti = useMemo(() => {
@@ -885,70 +545,9 @@ export default function AbbonamentiPage() {
 
     return abbonamenti.filter((abb) => {
       const matchesSearch = !search || abb.athlete_name.toLowerCase().includes(search)
-      if (invoiceOnly && !abb.invoice_url) return false
-
-      let matchesLessons = true
-      if (lessonsFilter !== 'all') {
-        switch (lessonsFilter) {
-          case 'low':
-            matchesLessons = abb.lessons_remaining <= 3
-            break
-          case 'medium':
-            matchesLessons = abb.lessons_remaining > 3 && abb.lessons_remaining <= 10
-            break
-          case 'high':
-            matchesLessons = abb.lessons_remaining > 10
-            break
-          default:
-            matchesLessons = true
-        }
-      }
-
-      let matchesAmount = true
-      if (amountFilter !== 'all') {
-        switch (amountFilter) {
-          case 'low':
-            matchesAmount = abb.amount < 500
-            break
-          case 'medium':
-            matchesAmount = abb.amount >= 500 && abb.amount < 1000
-            break
-          case 'high':
-            matchesAmount = abb.amount >= 1000
-            break
-          default:
-            matchesAmount = true
-        }
-      }
-
-      let matchesDate = true
-      if (dateFilter !== 'all') {
-        const now = new Date()
-        const paymentDate = new Date(abb.payment_date)
-        switch (dateFilter) {
-          case 'today':
-            matchesDate = paymentDate.toDateString() === now.toDateString()
-            break
-          case 'week':
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            matchesDate = paymentDate >= weekAgo
-            break
-          case 'month':
-            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-            matchesDate = paymentDate >= monthAgo
-            break
-          case 'year':
-            const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
-            matchesDate = paymentDate >= yearAgo
-            break
-          default:
-            matchesDate = true
-        }
-      }
-
-      return matchesSearch && matchesLessons && matchesAmount && matchesDate
+      return matchesSearch
     })
-  }, [abbonamenti, searchTerm, lessonsFilter, amountFilter, dateFilter, invoiceOnly])
+  }, [abbonamenti, searchTerm])
 
   const { start: monthStart, end: monthEnd } = getCurrentMonthRange()
   const kpiFromFiltered = useMemo(() => {
@@ -956,21 +555,25 @@ export default function AbbonamentiPage() {
       const t = new Date(d).getTime()
       return t >= new Date(monthStart).getTime() && t <= new Date(monthEnd).getTime()
     }
-    const inMonthList = filteredAbbonamenti.filter(
-      (abb) => abb.status !== 'cancelled' && inMonth(abb.payment_date),
-    )
-    const incassoMese = inMonthList.reduce((s, abb) => s + abb.amount, 0)
-    const pacchettiMese = inMonthList.length
+    const visibleAthleteIds = new Set(filteredAbbonamenti.map((a) => a.athlete_id).filter(Boolean))
+    const eligible = kpiPayments.filter((p) => {
+      if (!visibleAthleteIds.has(p.athlete_id)) return false
+      if (p.status === 'cancelled') return false
+      if (!p.payment_date) return false
+      return inMonth(p.payment_date)
+    })
+    const incassoMese = eligible.reduce((s, p) => s + (Number(p.amount) || 0), 0)
+    const pacchettiMese = eligible.length
     const seen = new Set<string>()
     let creditiTotali = 0
     for (const abb of filteredAbbonamenti) {
       if (abb.athlete_id && !seen.has(abb.athlete_id)) {
         seen.add(abb.athlete_id)
-        creditiTotali += abb.lessons_remaining
+        creditiTotali += abb.total_remaining
       }
     }
     return { incassoMese, pacchettiMese, creditiTotali }
-  }, [filteredAbbonamenti, monthStart, monthEnd])
+  }, [filteredAbbonamenti, kpiPayments, monthStart, monthEnd])
 
   useEffect(() => {
     const ids = [
@@ -981,70 +584,53 @@ export default function AbbonamentiPage() {
       return
     }
     let cancelled = false
-    supabase
-      .from('credit_ledger')
-      .select('*', { count: 'exact', head: true })
-      .in('athlete_id', ids.slice(0, 500))
-      .eq('service_type', currentServiceType)
-      .eq('entry_type', 'DEBIT')
-      .gte('created_at', monthStart)
-      .lte('created_at', monthEnd)
-      .then(({ count }) => {
-        if (!cancelled) setKpiDebitsInMonth(count ?? 0)
-      })
+    ;(async () => {
+      let total = 0
+      for (const idChunk of chunkForSupabaseIn(ids)) {
+        const { count, error } = await supabase
+          .from('credit_ledger')
+          .select('*', { count: 'exact', head: true })
+          .in('athlete_id', idChunk)
+          .eq('service_type', currentServiceType)
+          .eq('entry_type', 'DEBIT')
+          .gte('created_at', monthStart)
+          .lte('created_at', monthEnd)
+        if (error) break
+        total += count ?? 0
+      }
+      if (!cancelled) setKpiDebitsInMonth(total)
+    })()
     return () => {
       cancelled = true
     }
   }, [filteredAbbonamenti, currentServiceType, monthStart, monthEnd, supabase])
 
-  const handleExportCSV = useCallback(() => {
-    const rows = filteredAbbonamenti.map((abb) => ({
-      payment_id: abb.id,
-      athlete_id: abb.athlete_id,
-      athlete_name: abb.athlete_name,
-      payment_date: abb.payment_date,
-      service_type: currentServiceType,
-      lessons_purchased: abb.lessons_purchased,
-      amount: abb.amount,
-      invoice_present: !!abb.invoice_url,
-      status: abb.status ?? '',
-      lessons_used: abb.lessons_used,
-      lessons_remaining: abb.lessons_remaining,
-    }))
-    const filename = `abbonamenti_${currentServiceType}_${new Date().toISOString().split('T')[0]}.csv`
-    exportToCSV(rows, filename)
-    addToast({ title: 'Export', message: `Esportate ${rows.length} righe`, variant: 'success' })
-  }, [filteredAbbonamenti, currentServiceType, addToast])
-
-  const loadDrilldownLedger = useCallback(async () => {
-    if (!drilldownRow?.athlete_id) return
-    setDrilldownLoading(true)
-    setLedgerHistory([])
+  const handleExportPdf = useCallback(async () => {
+    if (filteredAbbonamenti.length === 0) return
+    setPdfLoading(true)
     try {
-      const { data } = await supabase
-        .from('credit_ledger')
-        .select('entry_type, qty, created_at, reason')
-        .eq('athlete_id', drilldownRow.athlete_id)
-        .eq('service_type', currentServiceType)
-        .order('created_at', { ascending: false })
-        .limit(20)
-      setLedgerHistory(
-        (data ?? []) as Array<{
-          entry_type: string
-          qty: number
-          created_at: string
-          reason?: string | null
-        }>,
+      const rows: ExportData = filteredAbbonamenti.map((abb) => ({
+        'ID atleta': abb.athlete_id,
+        Atleta: abb.athlete_name,
+        Servizio: currentServiceType,
+        Acquistate: abb.total_purchased,
+        Usate: abb.total_used,
+        Residue: abb.total_remaining,
+      }))
+      const blob = await buildTabularExportPdfBlob('Abbonamenti', rows)
+      openPdfWithBlob(
+        blob,
+        `abbonamenti_${currentServiceType}_${new Date().toISOString().split('T')[0]}.pdf`,
       )
+    } catch (err) {
+      logger.error('Export PDF abbonamenti', err)
+      addToast({ title: 'Errore', message: 'Impossibile generare il PDF.', variant: 'error' })
     } finally {
-      setDrilldownLoading(false)
+      setPdfLoading(false)
     }
-  }, [drilldownRow?.athlete_id, currentServiceType, supabase])
+  }, [filteredAbbonamenti, currentServiceType, addToast, setPdfLoading, openPdfWithBlob])
 
-  useEffect(() => {
-    if (drilldownRow?.athlete_id) void loadDrilldownLedger()
-    else setLedgerHistory([])
-  }, [drilldownRow?.athlete_id, loadDrilldownLedger])
+  // Drilldown drawer rimosso: ora si usa la pagina dettaglio atleta.
 
   if (loading && abbonamenti.length === 0) {
     return null
@@ -1053,19 +639,20 @@ export default function AbbonamentiPage() {
   return (
     <StaffContentLayout
       title="Abbonamenti"
-      description="Gestione abbonamenti e pagamenti atleti"
+      description="Abbonamenti, pacchetti e incassi degli atleti."
       theme="teal"
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportCSV}
-            disabled={filteredAbbonamenti.length === 0}
+            onClick={() => void handleExportPdf()}
+            disabled={filteredAbbonamenti.length === 0 || pdfLoading}
+            aria-busy={pdfLoading}
             className="border-white/10 hover:border-primary/20"
           >
-            <Download className="mr-1.5 h-4 w-4" />
-            Esporta CSV
+            <FileText className="mr-1.5 h-4 w-4" />
+            Esporta PDF
           </Button>
           <Button onClick={() => setShowModal(true)} size="sm" variant="primary">
             <Plus className="mr-2 h-4 w-4" />
@@ -1159,91 +746,13 @@ export default function AbbonamentiPage() {
                 onChange={(e) => {
                   const v = e.target.value
                   setSearchTerm(v)
-                  updateUrlFilters({
-                    search: v,
-                    lessons: lessonsFilter,
-                    amount: amountFilter,
-                    date: dateFilter,
-                  })
+                  updateUrlFilters({ search: v })
                 }}
                 leftIcon={<Search className="h-4 w-4" />}
                 className="bg-white/[0.04] border-white/10 focus:border-primary"
               />
             </div>
-
-            {/* Filtri avanzati */}
-            <div className="w-full sm:w-auto min-w-[160px]">
-              <SimpleSelect
-                value={lessonsFilter}
-                onValueChange={(value) => {
-                  const v = value as 'all' | 'low' | 'medium' | 'high'
-                  setLessonsFilter(v)
-                  updateUrlFilters({
-                    search: searchTerm,
-                    lessons: v,
-                    amount: amountFilter,
-                    date: dateFilter,
-                  })
-                }}
-                placeholder="Lezioni rimanenti"
-                options={LESSONS_FILTER_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-                className="w-full"
-              />
-            </div>
-
-            <div className="w-full sm:w-auto min-w-[160px]">
-              <SimpleSelect
-                value={amountFilter}
-                onValueChange={(value) => {
-                  const v = value as 'all' | 'low' | 'medium' | 'high'
-                  setAmountFilter(v)
-                  updateUrlFilters({
-                    search: searchTerm,
-                    lessons: lessonsFilter,
-                    amount: v,
-                    date: dateFilter,
-                  })
-                }}
-                placeholder="Importo"
-                options={AMOUNT_FILTER_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-                className="w-full"
-              />
-            </div>
-
-            <div className="w-full sm:w-auto min-w-[160px]">
-              <SimpleSelect
-                value={dateFilter}
-                onValueChange={(value) => {
-                  const v = value as 'all' | 'today' | 'week' | 'month' | 'year'
-                  setDateFilter(v)
-                  updateUrlFilters({
-                    search: searchTerm,
-                    lessons: lessonsFilter,
-                    amount: amountFilter,
-                    date: v,
-                  })
-                }}
-                placeholder="Periodo"
-                options={DATE_FILTER_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-                className="w-full"
-              />
-            </div>
-
-            <label className="flex items-center gap-2 text-text-secondary text-sm cursor-pointer whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={invoiceOnly}
-                onChange={(e) => setInvoiceOnly(e.target.checked)}
-                className="rounded border-border bg-background-secondary"
-              />
-              Solo con fattura
-            </label>
-
-            {(searchTerm ||
-              lessonsFilter !== 'all' ||
-              amountFilter !== 'all' ||
-              dateFilter !== 'all' ||
-              invoiceOnly) && (
+            {searchTerm.trim() && (
               <Button
                 variant="outline"
                 size="sm"
@@ -1271,7 +780,7 @@ export default function AbbonamentiPage() {
             : `${filteredAbbonamenti.length} abbonamenti trovati`}
         </div>
 
-        {/* Tabella Abbonamenti */}
+        {/* Tabella Abbonamenti (1 riga per atleta) */}
         <Card variant="default" className="overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -1281,11 +790,8 @@ export default function AbbonamentiPage() {
                     <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
                       Atleta
                     </th>
-                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
-                      Data
-                    </th>
                     <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
-                      Allenamenti
+                      Totale allenamenti
                     </th>
                     <th
                       className="px-4 py-3 text-center text-text-primary text-sm font-semibold"
@@ -1300,12 +806,6 @@ export default function AbbonamentiPage() {
                       Rimasti
                     </th>
                     <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
-                      Fattura
-                    </th>
-                    <th className="px-4 py-3 text-right text-text-primary text-sm font-semibold">
-                      Pagato
-                    </th>
-                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
                       Azioni
                     </th>
                   </tr>
@@ -1313,7 +813,7 @@ export default function AbbonamentiPage() {
                 <tbody className="divide-y divide-white/10">
                   {filteredAbbonamenti.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-12 text-center text-text-secondary">
+                      <td colSpan={5} className="px-4 py-12 text-center text-text-secondary">
                         <div className="flex flex-col items-center gap-3">
                           <div
                             className={`rounded-full p-6 animate-[pulse_2s_ease-in-out_infinite] ${t.emptyIcon}`}
@@ -1354,100 +854,55 @@ export default function AbbonamentiPage() {
                     </tr>
                   ) : (
                     filteredAbbonamenti.map((abb) => (
-                      <tr
-                        key={abb.id}
-                        className="hover:bg-white/[0.04] transition-colors cursor-pointer"
-                        onClick={() => setDrilldownRow(abb)}
-                      >
+                      <tr key={abb.athlete_id} className="hover:bg-white/[0.04] transition-colors">
                         <td className="px-4 py-3 text-text-primary font-medium">
-                          {abb.athlete_name}
-                        </td>
-                        <td className="px-4 py-3 text-text-secondary">
-                          {formatDate(abb.payment_date)}
+                          <button
+                            type="button"
+                            className="hover:underline underline-offset-4 text-left"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(
+                                `/dashboard/pagamenti/atleta/${abb.athlete_id}?service=${currentServiceType}`,
+                              )
+                            }}
+                          >
+                            {abb.athlete_name}
+                          </button>
                         </td>
                         <td className="px-4 py-3 text-center text-text-primary font-semibold">
-                          {abb.lessons_purchased}
+                          {abb.total_purchased}
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className="text-orange-400 font-medium">{abb.lessons_used}</span>
+                          <span className="text-orange-400 font-medium">{abb.total_used}</span>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className="inline-flex items-center gap-1">
                             <span
                               className={`font-semibold ${
-                                abb.lessons_remaining === 0
+                                abb.total_remaining === 0
                                   ? 'text-red-400'
-                                  : abb.lessons_remaining <= 3
+                                  : abb.total_remaining <= 3
                                     ? 'text-orange-400'
                                     : 'text-green-400'
                               }`}
                             >
-                              {abb.lessons_remaining}
+                              {abb.total_remaining}
                             </span>
-                            {abb.legacy_balance_hint && (
-                              <span title="Saldo storico non tracciato">
-                                <Info
-                                  className="h-3.5 w-3.5 text-text-tertiary shrink-0"
-                                  aria-label="Saldo storico non tracciato"
-                                />
-                              </span>
-                            )}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center text-text-primary text-sm">
-                          {getInvoiceDocumentName(abb) ?? (
-                            <span className="text-text-tertiary">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right text-text-primary font-semibold">
-                          {formatCurrency(abb.amount)}
-                        </td>
-                        <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            {/* Pulsante Visualizza/Scarica Fattura */}
-                            {abb.invoice_url ? (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setSelectedInvoice({
-                                      url: abb.invoice_url!,
-                                      athlete: abb.athlete_name,
-                                    })
-                                  }
-                                  className="border-white/10 hover:border-primary/20"
-                                  title="Visualizza fattura"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDownloadInvoice(abb.invoice_url!)}
-                                  className="border-white/10 hover:border-primary/20"
-                                  title="Scarica fattura"
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </>
-                            ) : (
-                              <span className="text-text-secondary text-xs">Nessuna fattura</span>
-                            )}
-                            {/* Pulsante Storna Pagamento */}
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleStornoPayment(abb.id)}
-                              disabled={deletingPayment === abb.id || abb.status === 'cancelled'}
-                              className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
-                              title="Storna pagamento"
+                              onClick={() =>
+                                router.push(
+                                  `/dashboard/pagamenti/atleta/${abb.athlete_id}?service=${currentServiceType}`,
+                                )
+                              }
+                              className="border-white/10 hover:border-primary/20"
                             >
-                              {deletingPayment === abb.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
+                              Vai al dettaglio
                             </Button>
                           </div>
                         </td>
@@ -1503,7 +958,9 @@ export default function AbbonamentiPage() {
 
       {/* Modal Nuovo Pagamento - Lazy loaded solo quando aperto */}
       {showModal && (
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={<StaffLazyChunkFallback className="min-h-[240px] max-w-md mx-auto" label="Caricamento modulo…" />}
+        >
           <NuovoPagamentoModal
             open={showModal}
             onOpenChange={setShowModal}
@@ -1519,106 +976,15 @@ export default function AbbonamentiPage() {
         </Suspense>
       )}
 
-      {/* Modal Preview Fattura - Lazy loaded solo quando aperto */}
-      {selectedInvoice && (
-        <Suspense fallback={null}>
-          <InvoiceViewModal
-            url={selectedInvoice.url}
-            athlete={selectedInvoice.athlete}
-            onClose={() => setSelectedInvoice(null)}
-            theme={abbonamentiTheme}
-          />
-        </Suspense>
-      )}
+      {/* Preview fattura + drawer drilldown + storno rimossi in questa vista aggregata */}
 
-      {/* Drawer drilldown atleta: storico movimenti + contatore */}
-      <Drawer
-        open={!!drilldownRow}
-        onOpenChange={(open) => !open && setDrilldownRow(null)}
-        side="right"
-        size="md"
-      >
-        <DrawerContent showCloseButton onClose={() => setDrilldownRow(null)}>
-          {drilldownRow && (
-            <>
-              <DrawerHeader
-                title={`Storico ${drilldownRow.athlete_name}`}
-                description={`Service: ${currentServiceType}`}
-              />
-              <DrawerBody className="space-y-4">
-                <div className="rounded-lg border border-border bg-background-tertiary/30 p-3">
-                  <p className="text-text-secondary text-sm mb-1">Contatore attuale</p>
-                  <p className="text-xl font-bold text-text-primary">
-                    {drilldownRow.lessons_remaining}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-text-secondary text-sm mb-2">Storico movimenti (ultimi 20)</p>
-                  {drilldownLoading ? (
-                    <div className="flex items-center justify-center py-6">
-                      <Loader2 className={`h-6 w-6 animate-spin ${t.spinner}`} />
-                    </div>
-                  ) : ledgerHistory.length === 0 ? (
-                    <p className="text-text-muted text-sm">Nessun movimento</p>
-                  ) : (
-                    <div className="overflow-x-auto rounded-lg border border-border">
-                      <table className="w-full text-sm">
-                        <thead className="bg-background-tertiary/50 border-b border-border">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-text-secondary font-medium">
-                              Tipo
-                            </th>
-                            <th className="px-3 py-2 text-right text-text-secondary font-medium">
-                              Qty
-                            </th>
-                            <th className="px-3 py-2 text-left text-text-secondary font-medium">
-                              Data
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {ledgerHistory.map((row, i) => (
-                            <tr key={i} className="border-b border-border/50">
-                              <td className="px-3 py-2 text-text-primary">{row.entry_type}</td>
-                              <td className="px-3 py-2 text-right text-text-primary">{row.qty}</td>
-                              <td className="px-3 py-2 text-text-muted">
-                                {formatDate(row.created_at)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </DrawerBody>
-            </>
-          )}
-        </DrawerContent>
-      </Drawer>
-
-      {/* Dialog conferma storno pagamento */}
-      {paymentToDelete &&
-        (() => {
-          const paymentForDialog = abbonamenti.find((a) => a.id === paymentToDelete)
-          const credits = paymentForDialog?.lessons_purchased ?? 0
-          return (
-            <ConfirmDialog
-              open={deleteDialogOpen}
-              onOpenChange={(open) => {
-                setDeleteDialogOpen(open)
-                if (!open) setPaymentToDelete(null)
-              }}
-              title="Storna pagamento"
-              description={`Vuoi stornare questo pagamento? Verranno rimossi ${credits} crediti.`}
-              confirmText="Storna"
-              cancelText="Annulla"
-              variant="destructive"
-              onConfirm={handleStornoConfirm}
-              loading={isDeleting}
-            />
-          )
-        })()}
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Abbonamenti"
+      />
     </StaffContentLayout>
   )
 }

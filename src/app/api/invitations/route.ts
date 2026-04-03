@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getServerAuthUser } from '@/lib/auth/server-user'
 import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import type { Tables } from '@/types/supabase'
 
 const logger = createLogger('api:invitations:list')
@@ -70,14 +71,18 @@ export async function GET(request: NextRequest) {
 
     let filtered = rows
     if (registratiEmails.length > 0) {
-      const { data: existingProfiles } = await supabase
-        .from('profiles')
-        .select('email')
-        .in('email', registratiEmails)
-        .or('is_deleted.eq.false,is_deleted.is.null')
-      const existingEmails = new Set(
-        (existingProfiles ?? []).map((p) => (p as { email: string }).email),
-      )
+      const existingEmails = new Set<string>()
+      for (const emailChunk of chunkForSupabaseIn(registratiEmails)) {
+        const { data: existingProfiles } = await supabase
+          .from('profiles')
+          .select('email')
+          .in('email', emailChunk)
+          .or('is_deleted.eq.false,is_deleted.is.null')
+        for (const p of existingProfiles ?? []) {
+          const em = (p as { email: string }).email
+          if (em) existingEmails.add(em)
+        }
+      }
       filtered = rows.filter((r) => {
         const isRegistrato =
           r.status === 'accepted' || (r.stato && String(r.stato).toLowerCase() === 'registrato')

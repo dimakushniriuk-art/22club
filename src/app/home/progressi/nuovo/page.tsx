@@ -755,7 +755,6 @@ export default function NuovoProgressoPage() {
             title="Nuova Misurazione"
             subtitle="Caricamento ultima misurazione..."
             onBack={handleBack}
-            icon={<Scale className="h-5 w-5 text-cyan-400" />}
           />
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <CardContent className="p-12 text-center relative z-10">
@@ -780,7 +779,6 @@ export default function NuovoProgressoPage() {
               : 'Registra i tuoi progressi completi'
           }
           onBack={handleBack}
-          icon={<Scale className="h-5 w-5 text-cyan-400" />}
         />
 
         <form onSubmit={handleSubmit} className="space-y-4">

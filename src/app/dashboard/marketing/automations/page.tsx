@@ -9,6 +9,10 @@ import { Zap, Plus, ToggleLeft, ToggleRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Database } from '@/lib/supabase/types'
+import {
+  StaffMarketingDataBlockSkeleton,
+  StaffMarketingSegmentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 type AutomationRow = Database['public']['Tables']['marketing_automations']['Row']
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
@@ -95,11 +99,7 @@ export default function MarketingAutomationsPage() {
     segments.find((s) => s.id === segmentId)?.name ?? segmentId
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   return (
@@ -123,9 +123,7 @@ export default function MarketingAutomationsPage() {
       </header>
 
       {loading ? (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+        <StaffMarketingDataBlockSkeleton />
       ) : error ? (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           {error}

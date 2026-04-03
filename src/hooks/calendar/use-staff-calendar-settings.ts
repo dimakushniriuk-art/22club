@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
-import { getCurrentStaffProfileClient } from '@/lib/supabase/get-current-staff-profile-client'
+import { useAuth } from '@/providers/auth-provider'
 import { DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT } from '@/lib/calendar-defaults'
 import type { Database, Json } from '@/lib/supabase/types'
 import type {
@@ -59,6 +59,9 @@ function mapRowToSettings(row: Record<string, unknown>): StaffCalendarSettings {
 }
 
 export function useStaffCalendarSettings() {
+  const { user: authUser, actorProfile, isImpersonating, loading: authLoading } = useAuth()
+  const staffSource = isImpersonating && actorProfile ? actorProfile : authUser
+
   const [settings, setSettings] = useState<StaffCalendarSettings | null>(null)
   const [staffProfileId, setStaffProfileId] = useState<string | null>(null)
   const [orgId, setOrgId] = useState<string | null>(null)
@@ -67,29 +70,32 @@ export function useStaffCalendarSettings() {
 
   useEffect(() => {
     let cancelled = false
+
     async function load() {
+      if (authLoading) return
+
+      if (!staffSource) {
+        setStaffProfileId(null)
+        setOrgId(null)
+        setSettings(null)
+        setLoading(false)
+        return
+      }
+
+      setStaffProfileId(staffSource.id)
+      setOrgId(staffSource.org_id ?? null)
+      setLoading(true)
+
       try {
-        const profile = await getCurrentStaffProfileClient()
-        if (!profile) {
-          setLoading(false)
-          return
-        }
-        if (cancelled || !profile) {
-          setLoading(false)
-          return
-        }
-        setStaffProfileId(profile.id)
-        setOrgId(profile.org_id ?? null)
         const { data: row, error } = await supabase
           .from('staff_calendar_settings')
           .select('*')
-          .eq('staff_id', profile.id)
+          .eq('staff_id', staffSource.id)
           .maybeSingle()
         if (cancelled) return
         if (error) {
           logger.error('Errore fetch staff_calendar_settings', error)
           setSettings(null)
-          setLoading(false)
           return
         }
         setSettings(row ? mapRowToSettings(row as Record<string, unknown>) : null)
@@ -100,11 +106,12 @@ export function useStaffCalendarSettings() {
         if (!cancelled) setLoading(false)
       }
     }
-    load()
+
+    void load()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [authLoading, staffSource])
 
   const mutate = useCallback(
     async (updates: StaffCalendarSettingsUpdate) => {

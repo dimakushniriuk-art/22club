@@ -47,6 +47,7 @@ import {
   PLAN_VERSION_STATUS_ACTIVE,
   PLAN_VERSION_STATUS_DRAFT,
 } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:nutrizionista:atleti:[id]')
@@ -256,14 +257,15 @@ export default function NutrizionistaAtletaProfilePage() {
 
       const verList: PlanVersionRow[] = []
       if (groupIds.length > 0) {
-        const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-          .select(
-            'id, plan_id, version_number, status, start_date, end_date, calories_target, protein_target, carb_target, fat_target, pdf_file_path',
-          )
-          .in('plan_id', groupIds)
-          .order('created_at', { ascending: false })
-        const fromDb = (verRes.data ?? []) as PlanVersionRow[]
-        verList.push(...fromDb)
+        for (const gidChunk of chunkForSupabaseIn(groupIds)) {
+          const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+            .select(
+              'id, plan_id, version_number, status, start_date, end_date, calories_target, protein_target, carb_target, fat_target, pdf_file_path',
+            )
+            .in('plan_id', gidChunk)
+            .order('created_at', { ascending: false })
+          verList.push(...((verRes.data ?? []) as PlanVersionRow[]))
+        }
       }
       const prefix = 'nutrition-plans'
       const dbPaths = new Set(
@@ -663,7 +665,7 @@ export default function NutrizionistaAtletaProfilePage() {
   return (
     <StaffContentLayout
       title={displayName}
-      description="Profilo nutrizionale"
+      description="Profilo, piano e follow-up nutrizionale."
       icon={<User className="w-6 h-6" />}
       theme="teal"
       actions={

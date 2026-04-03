@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type { DayItem, Workout, WorkoutDayExerciseData } from '@/types/workout'
@@ -59,6 +60,7 @@ interface WorkoutDetail {
       }>
     }>
     items?: DayItem[]
+    sessions_until_refresh: number | null
   }>
   circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>
 }
@@ -71,6 +73,7 @@ type WorkoutDayRow = {
   title?: string | null
   order_index?: number | null
   created_at?: string | null
+  sessions_until_refresh?: number | null
 }
 
 type WorkoutDayExerciseJoined = {
@@ -116,7 +119,14 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
 
       type WorkoutDayRowFromDb = Pick<
         Tables<'workout_days'>,
-        'id' | 'workout_plan_id' | 'day_number' | 'day_name' | 'title' | 'order_num' | 'created_at'
+        | 'id'
+        | 'workout_plan_id'
+        | 'day_number'
+        | 'day_name'
+        | 'title'
+        | 'order_num'
+        | 'created_at'
+        | 'sessions_until_refresh'
       >
       type WorkoutPlanRow = Pick<
         Tables<'workout_plans'>,
@@ -259,20 +269,36 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
         }
 
         try {
-          const exercisesResult = await supabase
-            .from('workout_day_exercises')
-            .select('*')
-            .in('workout_day_id', dayIds)
-            .order('order_index', { ascending: true })
+          let batchErrorMsg: string | null = null
+          const workoutDayExercises: WorkoutDayExerciseRow[] = []
+          for (const dayChunk of chunkForSupabaseIn(dayIds)) {
+            const exercisesResult = await supabase
+              .from('workout_day_exercises')
+              .select('*')
+              .in('workout_day_id', dayChunk)
+              .order('order_index', { ascending: true })
+            if (exercisesResult.error) {
+              batchErrorMsg = exercisesResult.error.message
+              break
+            }
+            workoutDayExercises.push(...((exercisesResult.data ?? []) as WorkoutDayExerciseRow[]))
+          }
+          workoutDayExercises.sort((a, b) => {
+            const da = a.workout_day_id ?? ''
+            const db = b.workout_day_id ?? ''
+            if (da !== db) return da.localeCompare(db)
+            const oa = typeof a.order_index === 'number' ? a.order_index : 0
+            const ob = typeof b.order_index === 'number' ? b.order_index : 0
+            return oa - ob
+          })
 
-          if (exercisesResult.error) {
+          if (batchErrorMsg) {
             logger.warn('Errore recupero workout_day_exercises batch', undefined, {
               workoutId,
-              message: exercisesResult.error.message,
+              message: batchErrorMsg,
             })
             await fillPerDayFallback()
           } else {
-            const workoutDayExercises = (exercisesResult.data ?? []) as WorkoutDayExerciseRow[]
             const exerciseIds = [
               ...new Set(
                 workoutDayExercises
@@ -282,32 +308,34 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
             ]
             const wdeIds = workoutDayExercises.map((ex) => ex.id)
 
-            const [exercisesDetailsResult, setsResult] = await Promise.all([
-              exerciseIds.length > 0
-                ? supabase
-                    .from('exercises')
-                    .select('id, name, video_url, image_url')
-                    .in('id', exerciseIds)
-                : Promise.resolve({ data: [] as ExerciseDetailsRow[], error: null }),
-              wdeIds.length > 0
-                ? supabase
-                    .from('workout_sets')
-                    .select(
-                      'id, workout_day_exercise_id, set_number, reps, weight_kg, execution_time_sec, rest_timer_sec, completed_at',
-                    )
-                    .in('workout_day_exercise_id', wdeIds)
-                    .order('set_number', { ascending: true })
-                : Promise.resolve({ data: [] as WorkoutSetRow[], error: null }),
-            ])
-
-            let exercisesMap = new Map<string, ExerciseDetailsRow>()
-            if (!exercisesDetailsResult.error && exercisesDetailsResult.data) {
-              const typedExercisesDetails = (exercisesDetailsResult.data ??
-                []) as ExerciseDetailsRow[]
-              exercisesMap = new Map(typedExercisesDetails.map((ex) => [ex.id, ex]))
+            const exercisesDetailsData: ExerciseDetailsRow[] = []
+            for (const exChunk of chunkForSupabaseIn(exerciseIds)) {
+              const r = await supabase
+                .from('exercises')
+                .select('id, name, video_url, image_url')
+                .in('id', exChunk)
+              if (!r.error && r.data) {
+                exercisesDetailsData.push(...((r.data ?? []) as ExerciseDetailsRow[]))
+              }
             }
 
-            let setsMap = new Map<
+            const typedSetsData: WorkoutSetRow[] = []
+            for (const wChunk of chunkForSupabaseIn(wdeIds)) {
+              const setsResult = await supabase
+                .from('workout_sets')
+                .select(
+                  'id, workout_day_exercise_id, set_number, reps, weight_kg, execution_time_sec, rest_timer_sec, completed_at',
+                )
+                .in('workout_day_exercise_id', wChunk)
+                .order('set_number', { ascending: true })
+              if (!setsResult.error && setsResult.data) {
+                typedSetsData.push(...((setsResult.data ?? []) as WorkoutSetRow[]))
+              }
+            }
+
+            const exercisesMap = new Map(exercisesDetailsData.map((ex) => [ex.id, ex]))
+
+            const setsMap = new Map<
               string,
               Array<{
                 id: string
@@ -317,25 +345,21 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
                 execution_time_sec: number | null
                 rest_timer_sec: number | null
               }>
-            >()
-            if (!setsResult.error && setsResult.data) {
-              const typedSetsData = (setsResult.data ?? []) as WorkoutSetRow[]
-              setsMap = new Map(
-                wdeIds.map((exId) => [
-                  exId,
-                  typedSetsData
-                    .filter((s) => s.workout_day_exercise_id === exId)
-                    .map((s) => ({
-                      id: s.id,
-                      set_number: s.set_number,
-                      reps: (s.reps ?? 0) as number,
-                      weight_kg: (s.weight_kg ?? null) as number | null,
-                      execution_time_sec: (s.execution_time_sec ?? null) as number | null,
-                      rest_timer_sec: (s.rest_timer_sec ?? null) as number | null,
-                    })),
-                ]),
-              )
-            }
+            >(
+              wdeIds.map((exId) => [
+                exId,
+                typedSetsData
+                  .filter((s) => s.workout_day_exercise_id === exId)
+                  .map((s) => ({
+                    id: s.id,
+                    set_number: s.set_number,
+                    reps: (s.reps ?? 0) as number,
+                    weight_kg: (s.weight_kg ?? null) as number | null,
+                    execution_time_sec: (s.execution_time_sec ?? null) as number | null,
+                    rest_timer_sec: (s.rest_timer_sec ?? null) as number | null,
+                  })),
+              ]),
+            )
 
             for (const row of workoutDayExercises) {
               const list = exercisesByDay.get(row.workout_day_id ?? '') ?? []
@@ -394,6 +418,11 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
             day.title ||
             (day as WorkoutDayRow & { day_name?: string }).day_name ||
             `Giorno ${day.day_number || 0}`,
+          sessions_until_refresh:
+            typeof day.sessions_until_refresh === 'number' &&
+            Number.isFinite(day.sessions_until_refresh)
+              ? day.sessions_until_refresh
+              : null,
           exercises: (day.exercises ?? [])
             .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
             .map((wde) => {

@@ -305,13 +305,12 @@ export function DesignHomeSection({ pathMeta, accentiAtleta, iconByName }: Desig
           <div>
             <h3 className={DS_BLOCK_TITLE_CLASS}>Header pagina — Fisso (nero + linea cyan)</h3>
             <p className={DS_LABEL_CLASS}>
-              Allenamenti, Appuntamenti, Foto. PageHeaderFixed. Vedi Patterns Headers.
+              PageHeaderFixed (back + titolo, senza icona). Vedi Patterns Headers.
             </p>
             <PageHeaderFixed
               title="I miei Allenamenti"
               subtitle="Programma e monitora i tuoi progressi"
               onBack={() => {}}
-              icon={<Dumbbell className="h-5 w-5 text-cyan-400" />}
               static
             />
           </div>

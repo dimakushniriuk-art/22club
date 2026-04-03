@@ -23,7 +23,6 @@ import {
   Brain,
   Activity as ActivityIcon,
 } from 'lucide-react'
-import { AthleteWorkoutsTab } from './athlete-workouts-tab'
 import { AthleteProgressTab } from './athlete-progress-tab'
 import { AthleteDocumentsTab } from './athlete-documents-tab'
 
@@ -166,6 +165,7 @@ interface AthleteProfileTabsProps {
     documenti_scadenza: number
     peso_attuale: number | null
   }
+  athleteDisplayName?: string
   onPrefetchTab?: (tabName: string) => void
 }
 
@@ -173,6 +173,7 @@ export function AthleteProfileTabsOptimized({
   athleteId,
   athleteUserId,
   stats,
+  athleteDisplayName: _athleteDisplayName,
   onPrefetchTab,
 }: AthleteProfileTabsProps) {
   const [activeTab, setActiveTab] = useState('profilo')
@@ -239,20 +240,13 @@ export function AthleteProfileTabsOptimized({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-6 border border-teal-500/10 p-1 rounded-xl !bg-transparent">
+      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-2 mb-6 border border-teal-500/10 p-1 rounded-xl !bg-transparent">
         <TabsTrigger
           value="profilo"
           className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/30 transition-all"
         >
           <User className="mr-2 h-4 w-4" />
           Profilo
-        </TabsTrigger>
-        <TabsTrigger
-          value="allenamenti"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/30 transition-all"
-        >
-          <Dumbbell className="mr-2 h-4 w-4" />
-          Allenamenti
         </TabsTrigger>
         <TabsTrigger
           value="progressi"
@@ -361,12 +355,16 @@ export function AthleteProfileTabsOptimized({
         )}
       </TabsContent>
 
-      <TabsContent value="allenamenti" className="mt-0">
-        <AthleteWorkoutsTab athleteId={athleteId} schedeAttive={stats.schede_attive} />
-      </TabsContent>
-
-      <TabsContent value="progressi" className="mt-0">
-        <AthleteProgressTab athleteId={athleteId} stats={stats} />
+      <TabsContent value="progressi" className="mt-0 space-y-4 sm:space-y-6">
+        <AthleteProgressTab
+          athleteId={athleteId}
+          stats={{
+            peso_attuale: stats.peso_attuale,
+            allenamenti_totali: stats.allenamenti_totali,
+            allenamenti_mese: stats.allenamenti_mese,
+          }}
+          showDetailLinksBelowKpi
+        />
       </TabsContent>
 
       <TabsContent value="documenti" className="mt-0">

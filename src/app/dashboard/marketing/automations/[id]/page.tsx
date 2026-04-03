@@ -8,6 +8,7 @@ import { Zap, ArrowLeft, Play } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Database } from '@/lib/supabase/types'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 type AutomationRow = Database['public']['Tables']['marketing_automations']['Row']
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
@@ -100,19 +101,11 @@ export default function AutomationDetailPage() {
   }
 
   if (authLoading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (error || !automation) {

@@ -65,6 +65,30 @@ const WORK_DAYS: { key: string; label: string }[] = [
 
 const DEFAULT_WORK_SLOT = { start: '09:00', end: '18:00' }
 
+const GRID_HOURS_24 = Array.from({ length: 24 }, (_, i) => i)
+const GRID_MINUTES_60 = Array.from({ length: 60 }, (_, i) => i)
+
+function parseTimeHHmm(s: string): { h: number; m: number } {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(s.trim())
+  if (!match) return { h: 7, m: 0 }
+  let h = Number(match[1])
+  let m = Number(match[2])
+  if (Number.isNaN(h) || h < 0) h = 0
+  if (h > 23) h = 23
+  if (Number.isNaN(m) || m < 0) m = 0
+  if (m > 59) m = 59
+  return { h, m }
+}
+
+function formatTimeHHmm(h: number, m: number): string {
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+function normalizeTimeHHmm(s: string): string {
+  const { h, m } = parseTimeHHmm(s)
+  return formatTimeHHmm(h, m)
+}
+
 /** Etichette leggibili per i colori (utente finale, nessun codice) */
 const COLOR_LABELS: Record<string, string> = {
   azzurro: 'Azzurro',
@@ -239,8 +263,8 @@ export default function CalendarioImpostazioniPage() {
     )
     const gMin = settings.grid_min_time?.trim()
     const gMax = settings.grid_max_time?.trim()
-    setGridMinTime(gMin && /^\d{1,2}:\d{2}$/.test(gMin) ? gMin : '07:00')
-    setGridMaxTime(gMax && /^\d{1,2}:\d{2}$/.test(gMax) ? gMax : '22:00')
+    setGridMinTime(gMin && /^\d{1,2}:\d{2}$/.test(gMin) ? normalizeTimeHHmm(gMin) : '07:00')
+    setGridMaxTime(gMax && /^\d{1,2}:\d{2}$/.test(gMax) ? normalizeTimeHHmm(gMax) : '22:00')
     const wh =
       settings.work_hours && typeof settings.work_hours === 'object' ? settings.work_hours : {}
     const merged: Record<string, { start: string; end: string } | null> = {}
@@ -345,8 +369,8 @@ export default function CalendarioImpostazioniPage() {
         }),
         recurrence_options: recurrenceOptions,
         slot_duration_minutes: slotDuration,
-        grid_min_time: gridMinTime,
-        grid_max_time: gridMaxTime,
+        grid_min_time: normalizeTimeHHmm(gridMinTime),
+        grid_max_time: normalizeTimeHHmm(gridMaxTime),
         max_free_pass_athletes_per_slot: maxFreePassAthletes,
         work_hours: workHoursToSave,
         view_density: viewDensity,
@@ -384,7 +408,7 @@ export default function CalendarioImpostazioniPage() {
   return (
     <StaffContentLayout
       title="Impostazioni calendario"
-      description="Tipologie, durate, colori e preferenze vista."
+      description="Tipi di appuntamento, durate, colori e vista predefinita."
       icon={<Settings className="h-8 w-8" />}
       theme="default"
       actions={
@@ -626,16 +650,20 @@ export default function CalendarioImpostazioniPage() {
           <div>
             <h2 className={sectionTitleClass}>Vista e griglia</h2>
             <p className={sectionDescClass + ' mt-1'}>
-              Vista iniziale del calendario e step della griglia oraria.
+              Vista iniziale del calendario e step della griglia oraria. Orari griglia in formato 24 ore
+              (es. 07:00–22:00).
             </p>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-4">
-            <div className="flex flex-col gap-1.5">
-              <Label className={labelClass}>Vista predefinita</Label>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <Label className={labelClass} htmlFor="calendar-default-view">
+                Vista predefinita
+              </Label>
               <select
+                id="calendar-default-view"
                 value={defaultView}
                 onChange={(e) => setDefaultView(e.target.value as CalendarViewType)}
-                className={`min-h-[44px] w-40 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                className={`min-h-[44px] w-full max-w-[280px] rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
               >
                 {VIEW_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -644,12 +672,15 @@ export default function CalendarioImpostazioniPage() {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className={labelClass}>Inizio settimana</Label>
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <Label className={labelClass} htmlFor="calendar-week-start">
+                Inizio settimana
+              </Label>
               <select
+                id="calendar-week-start"
                 value={defaultWeekStart}
                 onChange={(e) => setDefaultWeekStart(e.target.value as WeekStartType)}
-                className={`min-h-[44px] w-40 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                className={`min-h-[44px] w-full max-w-[280px] rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
               >
                 {WEEK_START_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -658,12 +689,15 @@ export default function CalendarioImpostazioniPage() {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className={labelClass}>Step griglia (min)</Label>
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <Label className={labelClass} htmlFor="calendar-slot-duration">
+                Step griglia (min)
+              </Label>
               <select
+                id="calendar-slot-duration"
                 value={slotDuration}
                 onChange={(e) => setSlotDuration(Number(e.target.value))}
-                className={`min-h-[44px] w-24 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                className={`min-h-[44px] w-full max-w-[160px] rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
               >
                 {[15, 30, 45, 60, 90].map((m) => (
                   <option key={m} value={m}>
@@ -672,23 +706,97 @@ export default function CalendarioImpostazioniPage() {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className={labelClass}>Griglia dalle</Label>
-              <input
-                type="time"
-                value={gridMinTime}
-                onChange={(e) => setGridMinTime(e.target.value)}
-                className={`min-h-[44px] w-32 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
-              />
+            <div className="flex flex-col gap-1.5 min-w-0 sm:col-span-2 lg:col-span-1">
+              <span className={labelClass} id="calendar-grid-min-label">
+                Griglia dalle
+              </span>
+              <div
+                className="flex flex-wrap items-center gap-2"
+                role="group"
+                aria-labelledby="calendar-grid-min-label"
+              >
+                <select
+                  id="calendar-grid-min-hour"
+                  aria-label="Ora inizio griglia (24 h)"
+                  value={parseTimeHHmm(gridMinTime).h}
+                  onChange={(e) => {
+                    const p = parseTimeHHmm(gridMinTime)
+                    setGridMinTime(formatTimeHHmm(Number(e.target.value), p.m))
+                  }}
+                  className={`min-h-[44px] w-[4.75rem] shrink-0 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-2 text-sm tabular-nums focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                >
+                  {GRID_HOURS_24.map((h) => (
+                    <option key={h} value={h}>
+                      {String(h).padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-sm text-text-tertiary select-none" aria-hidden>
+                  :
+                </span>
+                <select
+                  id="calendar-grid-min-minute"
+                  aria-label="Minuti inizio griglia"
+                  value={parseTimeHHmm(gridMinTime).m}
+                  onChange={(e) => {
+                    const p = parseTimeHHmm(gridMinTime)
+                    setGridMinTime(formatTimeHHmm(p.h, Number(e.target.value)))
+                  }}
+                  className={`min-h-[44px] w-[4.75rem] shrink-0 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-2 text-sm tabular-nums focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                >
+                  {GRID_MINUTES_60.map((m) => (
+                    <option key={m} value={m}>
+                      {String(m).padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className={labelClass}>Griglia alle</Label>
-              <input
-                type="time"
-                value={gridMaxTime}
-                onChange={(e) => setGridMaxTime(e.target.value)}
-                className={`min-h-[44px] w-32 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
-              />
+            <div className="flex flex-col gap-1.5 min-w-0 sm:col-span-2 lg:col-span-1">
+              <span className={labelClass} id="calendar-grid-max-label">
+                Griglia alle
+              </span>
+              <div
+                className="flex flex-wrap items-center gap-2"
+                role="group"
+                aria-labelledby="calendar-grid-max-label"
+              >
+                <select
+                  id="calendar-grid-max-hour"
+                  aria-label="Ora fine griglia (24 h)"
+                  value={parseTimeHHmm(gridMaxTime).h}
+                  onChange={(e) => {
+                    const p = parseTimeHHmm(gridMaxTime)
+                    setGridMaxTime(formatTimeHHmm(Number(e.target.value), p.m))
+                  }}
+                  className={`min-h-[44px] w-[4.75rem] shrink-0 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-2 text-sm tabular-nums focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                >
+                  {GRID_HOURS_24.map((h) => (
+                    <option key={h} value={h}>
+                      {String(h).padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-sm text-text-tertiary select-none" aria-hidden>
+                  :
+                </span>
+                <select
+                  id="calendar-grid-max-minute"
+                  aria-label="Minuti fine griglia"
+                  value={parseTimeHHmm(gridMaxTime).m}
+                  onChange={(e) => {
+                    const p = parseTimeHHmm(gridMaxTime)
+                    setGridMaxTime(formatTimeHHmm(p.h, Number(e.target.value)))
+                  }}
+                  className={`min-h-[44px] w-[4.75rem] shrink-0 rounded-md border border-white/10 bg-white/[0.04] text-text-primary px-2 text-sm tabular-nums focus:ring-2 focus:ring-primary/20 focus:border-primary/30 ${inputClass}`}
+                >
+                  {GRID_MINUTES_60.map((m) => (
+                    <option key={m} value={m}>
+                      {String(m).padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>

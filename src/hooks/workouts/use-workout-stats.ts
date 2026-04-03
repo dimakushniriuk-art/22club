@@ -7,6 +7,7 @@
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import type { WorkoutStats } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 
@@ -52,21 +53,32 @@ export function useWorkoutStats() {
 
         if (workoutPlanIds.length > 0) {
           try {
-            // Prova prima con workout_plan_id (nuova struttura)
-            const { data: workoutDays, error: daysError } = await supabase
-              .from('workout_days')
-              .select(
-                `
+            const workoutDays: Array<{
+              workout_plan_id?: string | null
+              workout_day_exercises?: unknown
+            }> = []
+            let daysError: { message?: string } | null = null
+            for (const idChunk of chunkForSupabaseIn(workoutPlanIds)) {
+              const { data: chunkDays, error: chunkErr } = await supabase
+                .from('workout_days')
+                .select(
+                  `
                   workout_plan_id,
                   workout_day_exercises(
                     exercise_id,
                     workout_sets(*)
                   )
                 `,
-              )
-              .in('workout_plan_id', workoutPlanIds)
+                )
+                .in('workout_plan_id', idChunk)
+              if (chunkErr) {
+                daysError = chunkErr
+                break
+              }
+              workoutDays.push(...(chunkDays ?? []))
+            }
 
-            if (!daysError && workoutDays) {
+            if (!daysError && workoutDays.length > 0) {
               workoutDays.forEach(
                 (day: { workout_plan_id?: string | null; workout_day_exercises?: unknown }) => {
                   if (day.workout_plan_id) {

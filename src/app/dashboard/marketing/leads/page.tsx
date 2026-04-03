@@ -18,6 +18,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Select, SelectItem } from '@/components/ui/select'
+import {
+  StaffMarketingDataBlockSkeleton,
+  StaffMarketingSegmentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'Nuovo',
@@ -90,11 +94,7 @@ export default function MarketingLeadsPage() {
   })
 
   if (loading || (role !== null && role !== 'marketing' && role !== 'admin')) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   return (
@@ -134,9 +134,7 @@ export default function MarketingLeadsPage() {
       </div>
 
       {loadingData ? (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
+        <StaffMarketingDataBlockSkeleton />
       ) : error ? (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm">
           {error}

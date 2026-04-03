@@ -1,48 +1,33 @@
 'use client'
 
-import { Download, FileSpreadsheet, FileText } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  Button,
-} from '@/components/ui'
-import { exportPaymentsToCSV, exportPaymentsToPDF } from '@/lib/export-payments'
-import type { Payment } from '@/types/payment'
+import { FileText } from 'lucide-react'
+import { Button } from '@/components/ui'
+import { cn } from '@/lib/utils'
 
 interface PaymentsExportMenuProps {
-  payments: Payment[]
+  onExportPdf: () => void | Promise<void>
   disabled?: boolean
+  isExporting?: boolean
 }
 
-export function PaymentsExportMenu({ payments, disabled = false }: PaymentsExportMenuProps) {
-  const handleExportCSV = () => {
-    exportPaymentsToCSV(payments)
-  }
-
-  const handleExportPDF = () => {
-    exportPaymentsToPDF(payments)
-  }
-
+export function PaymentsExportMenu({
+  onExportPdf,
+  disabled = false,
+  isExporting = false,
+}: PaymentsExportMenuProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled || payments.length === 0}>
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleExportCSV}>
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Esporta come CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExportPDF}>
-          <FileText className="mr-2 h-4 w-4" />
-          Esporta come PDF
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled={disabled || isExporting}
+      aria-busy={isExporting}
+      aria-label={isExporting ? 'Generazione PDF in corso' : 'Esporta pagamenti come PDF'}
+      className={cn(isExporting && 'opacity-80')}
+      onClick={() => void onExportPdf()}
+    >
+      <FileText className="mr-2 h-4 w-4" aria-hidden />
+      {isExporting ? 'PDF…' : 'Esporta PDF'}
+    </Button>
   )
 }

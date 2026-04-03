@@ -6729,6 +6729,7 @@ export type Database = {
           description: string | null
           id: string
           order_num: number
+          sessions_until_refresh: number | null
           title: string | null
           updated_at: string | null
           workout_plan_id: string | null
@@ -6740,6 +6741,7 @@ export type Database = {
           description?: string | null
           id?: string
           order_num: number
+          sessions_until_refresh?: number | null
           title?: string | null
           updated_at?: string | null
           workout_plan_id?: string | null
@@ -6751,6 +6753,7 @@ export type Database = {
           description?: string | null
           id?: string
           order_num?: number
+          sessions_until_refresh?: number | null
           title?: string | null
           updated_at?: string | null
           workout_plan_id?: string | null
@@ -6788,6 +6791,7 @@ export type Database = {
           updated_at: string | null
           user_id: string | null
           volume_totale: number | null
+          workout_day_id: string | null
           workout_id: string | null
         }
         Insert: {
@@ -6812,6 +6816,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
           volume_totale?: number | null
+          workout_day_id?: string | null
           workout_id?: string | null
         }
         Update: {
@@ -6836,6 +6841,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
           volume_totale?: number | null
+          workout_day_id?: string | null
           workout_id?: string | null
         }
         Relationships: [
@@ -9072,6 +9078,22 @@ export type Database = {
           p_reason?: string
         }
         Returns: Json
+      }
+      staff_delete_credit_ledger_movement: {
+        Args: { p_athlete_id: string; p_id: string; p_service_type: string }
+        Returns: undefined
+      }
+      staff_update_credit_ledger_movement: {
+        Args: {
+          p_athlete_id: string
+          p_created_at: string
+          p_entry_type: string
+          p_id: string
+          p_qty: number
+          p_reason: string | null
+          p_service_type: string
+        }
+        Returns: undefined
       }
       staff_requests_apply_transition: {
         Args: { p_new_status: string; p_request_id: string }

@@ -1,7 +1,6 @@
-/**
- * Nessun UI di transizione: il segmento /home monta direttamente la pagina
- * (niente skeleton tra una route e l’altra).
- */
+import { HomeAthletePageContentSkeleton } from '@/components/layout/route-loading-skeletons'
+
+/** Skeleton nel fallback Suspense sotto `HomeLayoutClient` (chrome reale già montata). */
 export default function HomeSegmentLoading() {
-  return null
+  return <HomeAthletePageContentSkeleton />
 }

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { Database } from '@/lib/supabase/types'
+import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 type CampaignRow = Database['public']['Tables']['marketing_campaigns']['Row']
 
@@ -96,11 +97,7 @@ export default function EditCampaignPage() {
     if (!authLoading && role !== null && !allowed) {
       router.replace((role as string) === 'admin' ? '/dashboard/admin' : '/dashboard')
     }
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,11 +127,7 @@ export default function EditCampaignPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
+    return <StaffMarketingSegmentSkeleton />
   }
 
   if (error && !campaign) {

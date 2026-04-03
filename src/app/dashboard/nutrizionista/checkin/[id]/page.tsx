@@ -24,7 +24,7 @@ export default function NutrizionistaCheckinDetailPage() {
   return (
     <StaffContentLayout
       title="Dettaglio check-in"
-      description="Risposte questionario, misure, aderenza, note, prossime azioni. In sviluppo."
+      description="Dettaglio giornata, questionario e misure (in sviluppo)."
       icon={<ClipboardCheck className="w-6 h-6" />}
       theme="teal"
       actions={

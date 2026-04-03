@@ -17,6 +17,7 @@ import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { Calendar, Hand } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 
 const logger = createLogger('app:dashboard:massaggiatore:appuntamenti')
 
@@ -70,8 +71,6 @@ function toEditData(apt: AppointmentTable): EditAppointmentData {
     type: apt.type,
   }
 }
-
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 export default function MassaggiatoreAppuntamentiPage() {
   const { showLoader: showGuardLoader } = useStaffDashboardGuard('massaggiatore')
@@ -247,17 +246,13 @@ export default function MassaggiatoreAppuntamentiPage() {
   )
 
   if (showGuardLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
     <StaffContentLayout
       title="Appuntamenti"
-      description="Lista massaggi e appuntamenti. Crea e gestisci dal calendario."
+      description="Elenco trattamenti; creazione e modifica dal calendario."
       icon={<Hand className="w-6 h-6" />}
       theme="amber"
       actions={

@@ -13,6 +13,15 @@ const logger = createLogger('middleware')
 
 const COOKIE_IMPERSONATE_PROFILE = 'impersonate_profile_id'
 
+/** Propaga Set-Cookie dal client Supabase SSR (getUser / signOut) sulla risposta inviata al browser. */
+function withMiddlewareSupabaseCookies(supabaseRes: NextResponse | undefined, res: NextResponse): NextResponse {
+  if (!supabaseRes?.cookies) return res
+  for (const cookie of supabaseRes.cookies.getAll()) {
+    res.cookies.set(cookie)
+  }
+  return res
+}
+
 // Applica clear cookie impersonation e/o header x-impersonating (solo profile_id; redirect/role lasciati ad auth context)
 function applyImpersonationToResponse(
   res: NextResponse,
@@ -120,38 +129,21 @@ export async function middleware(request: NextRequest) {
   // Capture audit context
   const auditContext = getAuditContext(request)
 
-  const { supabase } = createClient(request)
+  const { supabase, response: supabaseCookieResponse } = createClient(request)
+  const withSb = (res: NextResponse) => withMiddlewareSupabaseCookies(supabaseCookieResponse, res)
 
   // Ottieni l'utente autenticato: getUser() valida con il server (getSession() è solo da storage).
   let session: { user: { id: string } } | null = null
+  let authUserError: { message?: string; code?: string; status?: number } | null = null
+
   try {
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser()
+    authUserError = userError ?? null
 
-    if (userError) {
-      const code = (userError as { code?: string }).code
-      const status = (userError as { status?: number }).status
-      const is429 = code === 'over_request_rate_limit' || status === 429
-      const isRefreshTokenError =
-        (userError.message || '').includes('Invalid Refresh Token') ||
-        (userError.message || '').includes('Refresh Token Not Found') ||
-        code === 'refresh_token_not_found'
-
-      if (is429) {
-        logger.debug('Middleware: 429 over_request_rate_limit, nessun retry', {
-          code,
-          status,
-          message: userError.message,
-        })
-      } else if (!isRefreshTokenError) {
-        logger.debug('Errore recupero utente nel middleware', {
-          errorCode: code,
-          errorMessage: userError.message,
-        })
-      }
-    } else if (user) {
+    if (!userError && user) {
       session = { user: { id: user.id } }
     }
   } catch (error) {
@@ -159,16 +151,43 @@ export async function middleware(request: NextRequest) {
     session = null
   }
 
+  if (authUserError) {
+    const code = authUserError.code
+    const status = authUserError.status
+    const is429 = code === 'over_request_rate_limit' || status === 429
+    const isRefreshTokenError =
+      (authUserError.message || '').includes('Invalid Refresh Token') ||
+      (authUserError.message || '').includes('Refresh Token Not Found') ||
+      code === 'refresh_token_not_found'
+
+    if (is429) {
+      logger.debug('Middleware: 429 over_request_rate_limit, nessun retry', {
+        code,
+        status,
+        message: authUserError.message,
+      })
+    } else if (!isRefreshTokenError) {
+      logger.debug('Errore recupero utente nel middleware', {
+        errorCode: code,
+        errorMessage: authUserError.message,
+      })
+    }
+
+    if (isRefreshTokenError && !is429) {
+      await supabase.auth.signOut()
+    }
+  }
+
   // Fallback per icona 144x144 richiesta dal manifest
   if (pathname === '/icon-144x144.png') {
     const url = request.nextUrl.clone()
     url.pathname = '/icon-144x144.png'
-    return NextResponse.rewrite(url)
+    return withSb(NextResponse.rewrite(url))
   }
 
   // File pubblici/statici che devono essere accessibili senza autenticazione
   if (pathname === '/manifest.json' || pathname.startsWith('/icon-')) {
-    return NextResponse.next()
+    return withSb(NextResponse.next())
   }
 
   // Route pubbliche che non richiedono autenticazione
@@ -218,17 +237,17 @@ export async function middleware(request: NextRequest) {
           const is429 = err?.code === 'over_request_rate_limit' || err?.status === 429
           const isNoProfile = err?.code === 'PGRST116'
           if (pathname === '/welcome' && isNoProfile) {
-            return NextResponse.next()
+            return withSb(NextResponse.next())
           }
           if (isNoProfile) {
-            return NextResponse.redirect(new URL('/welcome', request.url))
+            return withSb(NextResponse.redirect(new URL('/welcome', request.url)))
           }
           const redirectUrl = request.nextUrl.clone()
           redirectUrl.pathname = '/login'
           if (!is429) {
             redirectUrl.searchParams.set('error', 'profilo')
           }
-          return NextResponse.redirect(redirectUrl)
+          return withSb(NextResponse.redirect(redirectUrl))
         }
 
         const { role, first_login: profileFirstLogin } = profile
@@ -260,10 +279,12 @@ export async function middleware(request: NextRequest) {
         const path = getPostLoginRedirectPath(normalizedRole, firstLogin)
         const redirectUrl = path ? new URL(path, request.url) : null
         if (redirectUrl) {
-          return applyImpersonationToResponse(
-            NextResponse.redirect(redirectUrl),
-            clearImpersonationCookies,
-            isImpersonating,
+          return withSb(
+            applyImpersonationToResponse(
+              NextResponse.redirect(redirectUrl),
+              clearImpersonationCookies,
+              isImpersonating,
+            ),
           )
         }
       }
@@ -272,10 +293,12 @@ export async function middleware(request: NextRequest) {
       if (pathname === '/') {
         const redirectUrl = request.nextUrl.clone()
         redirectUrl.pathname = '/login'
-        return applyImpersonationToResponse(
-          NextResponse.redirect(redirectUrl),
-          clearImpersonationCookies,
-          isImpersonating,
+        return withSb(
+          applyImpersonationToResponse(
+            NextResponse.redirect(redirectUrl),
+            clearImpersonationCookies,
+            isImpersonating,
+          ),
         )
       }
 
@@ -291,10 +314,12 @@ export async function middleware(request: NextRequest) {
               redirectUrl.pathname = '/login'
               redirectUrl.searchParams.set('error', 'accesso_negato')
             }
-            return applyImpersonationToResponse(
-              NextResponse.redirect(redirectUrl),
-              clearImpersonationCookies,
-              isImpersonating,
+            return withSb(
+              applyImpersonationToResponse(
+                NextResponse.redirect(redirectUrl),
+                clearImpersonationCookies,
+                isImpersonating,
+              ),
             )
           }
         }
@@ -303,18 +328,22 @@ export async function middleware(request: NextRequest) {
           if (normalizedRole === 'athlete') {
             const redirectUrl = request.nextUrl.clone()
             redirectUrl.pathname = '/home'
-            return applyImpersonationToResponse(
-              NextResponse.redirect(redirectUrl),
-              clearImpersonationCookies,
-              isImpersonating,
+            return withSb(
+              applyImpersonationToResponse(
+                NextResponse.redirect(redirectUrl),
+                clearImpersonationCookies,
+                isImpersonating,
+              ),
             )
           }
           if (pathname.startsWith('/dashboard/admin') && normalizedRole !== 'admin') {
             const path = getDefaultAppPathForRole(normalizedRole) ?? '/dashboard'
-            return applyImpersonationToResponse(
-              NextResponse.redirect(new URL(path, request.url)),
-              clearImpersonationCookies,
-              isImpersonating,
+            return withSb(
+              applyImpersonationToResponse(
+                NextResponse.redirect(new URL(path, request.url)),
+                clearImpersonationCookies,
+                isImpersonating,
+              ),
             )
           }
           if (normalizedRole === 'nutrizionista') {
@@ -325,10 +354,12 @@ export async function middleware(request: NextRequest) {
             if (!isAllowed) {
               const redirectUrl = request.nextUrl.clone()
               redirectUrl.pathname = '/dashboard/nutrizionista'
-              return applyImpersonationToResponse(
-                NextResponse.redirect(redirectUrl),
-                clearImpersonationCookies,
-                isImpersonating,
+              return withSb(
+                applyImpersonationToResponse(
+                  NextResponse.redirect(redirectUrl),
+                  clearImpersonationCookies,
+                  isImpersonating,
+                ),
               )
             }
           }
@@ -345,10 +376,12 @@ export async function middleware(request: NextRequest) {
             if (!isAllowed) {
               const redirectUrl = request.nextUrl.clone()
               redirectUrl.pathname = '/dashboard/massaggiatore'
-              return applyImpersonationToResponse(
-                NextResponse.redirect(redirectUrl),
-                clearImpersonationCookies,
-                isImpersonating,
+              return withSb(
+                applyImpersonationToResponse(
+                  NextResponse.redirect(redirectUrl),
+                  clearImpersonationCookies,
+                  isImpersonating,
+                ),
               )
             }
           }
@@ -372,10 +405,12 @@ export async function middleware(request: NextRequest) {
             if (!isAllowed) {
               const redirectUrl = request.nextUrl.clone()
               redirectUrl.pathname = '/dashboard/marketing'
-              return applyImpersonationToResponse(
-                NextResponse.redirect(redirectUrl),
-                clearImpersonationCookies,
-                isImpersonating,
+              return withSb(
+                applyImpersonationToResponse(
+                  NextResponse.redirect(redirectUrl),
+                  clearImpersonationCookies,
+                  isImpersonating,
+                ),
               )
             }
           }
@@ -391,10 +426,39 @@ export async function middleware(request: NextRequest) {
               redirectUrl.pathname = '/login'
               redirectUrl.searchParams.set('error', 'accesso_negato')
             }
-            return applyImpersonationToResponse(
-              NextResponse.redirect(redirectUrl),
-              clearImpersonationCookies,
-              isImpersonating,
+            return withSb(
+              applyImpersonationToResponse(
+                NextResponse.redirect(redirectUrl),
+                clearImpersonationCookies,
+                isImpersonating,
+              ),
+            )
+          }
+        }
+
+        /** Vista allenamenti atleta in embed: solo trainer e admin (RLS sui dati). */
+        if (pathname.startsWith('/embed/athlete-allenamenti')) {
+          if (normalizedRole === 'athlete') {
+            const redirectUrl = request.nextUrl.clone()
+            redirectUrl.pathname = '/home/allenamenti'
+            return withSb(
+              applyImpersonationToResponse(
+                NextResponse.redirect(redirectUrl),
+                clearImpersonationCookies,
+                isImpersonating,
+              ),
+            )
+          }
+          if (normalizedRole !== 'trainer' && normalizedRole !== 'admin') {
+            const path = getDashboardEntryPathForNonAthleteRole(normalizedRole) ?? '/dashboard'
+            const redirectUrl = request.nextUrl.clone()
+            redirectUrl.pathname = path
+            return withSb(
+              applyImpersonationToResponse(
+                NextResponse.redirect(redirectUrl),
+                clearImpersonationCookies,
+                isImpersonating,
+              ),
             )
           }
         }
@@ -404,7 +468,7 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
       redirectUrl.searchParams.set('error', 'errore_server')
-      return NextResponse.redirect(redirectUrl)
+      return withSb(NextResponse.redirect(redirectUrl))
     }
   }
 
@@ -414,30 +478,30 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/') {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
-      return NextResponse.redirect(redirectUrl)
+      return withSb(NextResponse.redirect(redirectUrl))
     }
 
     // Route pubbliche: permetti il passaggio
     if (isPublicRoute) {
-      return NextResponse.next()
+      return withSb(NextResponse.next())
     }
 
     // Route protette note: reindirizza a login
     // Queste route sono sicuramente protette e richiedono autenticazione
-    const PROTECTED_ROUTES = ['/dashboard', '/home', '/api', '/welcome']
+    const PROTECTED_ROUTES = ['/dashboard', '/home', '/embed', '/api', '/welcome']
     const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
       redirectUrl.searchParams.set('redirectedFrom', pathname)
-      return NextResponse.redirect(redirectUrl)
+      return withSb(NextResponse.redirect(redirectUrl))
     }
 
     // Per altre route non pubbliche: permettere a Next.js di gestire
     // Next.js mostrerà not-found.tsx se la route non esiste
     // Se la route esiste ma è protetta, il componente stesso gestirà l'autenticazione
-    return NextResponse.next()
+    return withSb(NextResponse.next())
   }
 
   // Add audit context to response headers (e applica impersonation se in sessione)
@@ -450,7 +514,9 @@ export async function middleware(request: NextRequest) {
       }),
     },
   })
-  return applyImpersonationToResponse(responseWithAudit, clearImpersonationCookies, isImpersonating)
+  return withSb(
+    applyImpersonationToResponse(responseWithAudit, clearImpersonationCookies, isImpersonating),
+  )
 }
 
 export const config = {

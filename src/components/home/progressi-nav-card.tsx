@@ -51,6 +51,8 @@ export interface ProgressiNavCardProps {
   description: string
   ctaText: string
   ctaIcon: ReactNode
+  /** Layout più denso (es. dashboard staff) */
+  density?: 'default' | 'compact'
 }
 
 function ProgressiNavCardComponent({
@@ -61,8 +63,10 @@ function ProgressiNavCardComponent({
   description,
   ctaText,
   ctaIcon,
+  density = 'default',
 }: ProgressiNavCardProps) {
   const s = ACCENT_STYLES[accent]
+  const compact = density === 'compact'
   return (
     <Link
       href={href}
@@ -72,31 +76,59 @@ function ProgressiNavCardComponent({
     >
       <Card
         variant="default"
-        className="relative overflow-hidden transition-all duration-200 hover:border-white/20"
+        className={`relative overflow-hidden transition-all duration-200 hover:border-white/20 ${
+          compact ? 'border-white/[0.08]' : ''
+        }`}
       >
-        <CardHeader className="relative z-10 pb-2.5 px-4 min-[834px]:px-5 pt-4 min-[834px]:pt-5">
-          <div className="flex items-center gap-2">
+        <CardHeader
+          className={`relative z-10 px-4 min-[834px]:px-5 ${
+            compact
+              ? 'pb-2 pt-3.5 min-[834px]:pt-4'
+              : 'pb-2.5 pt-4 min-[834px]:pt-5'
+          }`}
+        >
+          <div className="flex items-start gap-3">
             <div
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${s.iconBoxClass}`}
+              className={`flex shrink-0 items-center justify-center rounded-lg border ${s.iconBoxClass} ${
+                compact ? 'h-8 w-8' : 'h-9 w-9'
+              }`}
             >
               {icon}
             </div>
-            <CardTitle
-              size="sm"
-              className="text-text-primary text-sm min-[834px]:text-base font-bold flex-1 min-w-0 truncate"
-            >
-              {title}
-            </CardTitle>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <CardTitle
+                size="sm"
+                className={`text-text-primary font-semibold flex-1 min-w-0 truncate ${
+                  compact ? 'text-sm' : 'text-sm min-[834px]:text-base font-bold'
+                }`}
+              >
+                {title}
+              </CardTitle>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="relative z-10 pt-0 pb-3 min-[834px]:pb-4 px-4 min-[834px]:px-5">
-          <p className="text-text-secondary mb-2 text-xs min-[834px]:text-sm line-clamp-3 leading-relaxed">
+        <CardContent
+          className={`relative z-10 pt-0 px-4 min-[834px]:px-5 ${
+            compact ? 'pb-3.5' : 'pb-3 min-[834px]:pb-4'
+          }`}
+        >
+          <p
+            className={`mb-2.5 text-text-secondary/95 ${
+              compact
+                ? 'text-xs line-clamp-2 leading-snug'
+                : 'text-xs min-[834px]:text-sm line-clamp-3 leading-relaxed'
+            }`}
+          >
             {description}
           </p>
           <div
             className={`flex items-center gap-1.5 group-hover:opacity-90 transition-colors ${s.ctaClass}`}
           >
-            <span className="text-[10px] min-[834px]:text-xs font-medium uppercase tracking-wide">
+            <span
+              className={`font-medium uppercase tracking-wide ${
+                compact ? 'text-[10px]' : 'text-[10px] min-[834px]:text-xs'
+              }`}
+            >
               {ctaText}
             </span>
             {ctaIcon}

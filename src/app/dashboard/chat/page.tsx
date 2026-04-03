@@ -15,7 +15,7 @@ import { MessageInput } from '@/components/chat/message-input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
-import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 
 const logger = createLogger('app:dashboard:chat:page')
 const CHAT_LAST_WITH_KEY = 'chat-last-with'
@@ -27,6 +27,8 @@ const PLACEHOLDER_BY_ROLE: Record<string, string> = {
 const DEFAULT_PLACEHOLDER = 'Scrivi un consiglio motivazionale...'
 
 import { CHAT_THEME_CLASSES, type ChatTheme } from '@/components/chat/chat-theme'
+import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-header-back-button'
+import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 
 const DS_PANEL_CLASS =
   'overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]'
@@ -306,7 +308,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
   const handleRetry = useCallback(() => router.refresh(), [router])
 
   if (isLoading && conversations.length === 0) {
-    return null
+    return <StaffDashboardSegmentSkeleton />
   }
 
   return (
@@ -329,15 +331,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
       {/* Header - compatto, back 44px su mobile, fisso in alto allo scroll */}
       <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-6 bg-gradient-to-b from-zinc-950 to-black border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleHeaderBack}
-            className={`min-h-[44px] min-w-[44px] transition-colors touch-manipulation shrink-0 ${t.backButton}`}
-            aria-label="Indietro"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+          <StaffHeaderBackButton onClick={handleHeaderBack} className="touch-manipulation" />
           <div className="min-w-0">
             <h1 className="text-text-primary text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
               Chat
@@ -381,15 +375,11 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
           <div className={`flex-1 flex flex-col min-w-0 min-h-0 ${DS_PANEL_CLASS}`}>
             {showConversationOnly && (
               <div className="flex items-center gap-2 shrink-0 px-3 py-2 border-b border-white/10 min-h-[44px]">
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <StaffHeaderBackButton
                   onClick={handleBackToList}
-                  className={`min-h-[44px] min-w-[44px] ${t.backButton}`}
                   aria-label="Torna alla lista"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
+                  className="touch-manipulation"
+                />
                 <span className="text-sm font-medium text-text-primary truncate">
                   {currentConversation?.participant.other_user_name ?? 'Chat'}
                 </span>
@@ -450,7 +440,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
 export default function StaffChatPage() {
   const { showLoader: showGuardLoader } = useChatPageGuard()
   if (showGuardLoader) {
-    return null
+    return <StaffDashboardSegmentSkeleton />
   }
   return <ChatPageContent />
 }

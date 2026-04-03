@@ -120,13 +120,9 @@ test.describe('Pagina Invita Atleta', () => {
     await softVisible(page.getByText(/QR Code Invito/i))
   })
 
-  test('should export CSV', async ({ page }) => {
-    const exportBtn = page.getByRole('button', { name: /Export CSV/i })
-    if (!(await exportBtn.count())) return
-    await exportBtn
-      .first()
-      .click()
-      .catch(() => {})
+  test('should offer PDF export', async ({ page }) => {
+    const exportBtn = page.getByRole('button', { name: /Esporta PDF/i })
+    await softVisible(exportBtn)
   })
 
   test('should have breadcrumb navigation', async ({ page }) => {

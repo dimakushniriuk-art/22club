@@ -70,6 +70,19 @@ export function getCategoryText(category: string | undefined): string {
       return 'Contratto'
     case 'altro':
       return 'Altro'
+    case 'referto':
+      return 'Referto medico'
+    case 'fattura':
+      return 'Fattura'
+    case 'dossier_onboarding':
+    case 'onboarding':
+      return 'Dossier onboarding'
+    case 'nutrition_plan':
+    case 'piano_nutrizionale':
+    case 'diet_plan':
+      return 'Piano nutrizionale'
+    case 'allegato_chat':
+      return 'Allegato chat'
     default:
       return category
   }

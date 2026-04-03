@@ -10,6 +10,7 @@ import type { Workout } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
 import { getDifficultyFromDb } from '@/lib/workouts/workout-transformers'
 import { createLogger } from '@/lib/logger'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:workouts:use-workout-plans-list')
 
@@ -19,17 +20,43 @@ type WorkoutPlanWithRelations = WorkoutPlanRow & {
   athlete: Pick<ProfileRow, 'nome' | 'cognome' | 'user_id'> | null
 }
 
+export type FetchWorkoutPlansOptions = {
+  /** Vista trainer su atleta assegnato: usa API staff + RLS. */
+  athleteSubjectProfileId?: string | null
+}
+
 export function useWorkoutPlansList() {
   const [workouts, setWorkouts] = useState<Workout[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchWorkouts = useCallback(async (userId: string, role: string | null) => {
+  const fetchWorkouts = useCallback(
+    async (userId: string, role: string | null, options?: FetchWorkoutPlansOptions) => {
     try {
       setLoading(true)
       setError(null)
 
       if (!userId) return
+
+      const subjectId = options?.athleteSubjectProfileId?.trim() || null
+      // Preview embed / staff su atleta: non dipendere da `role` lato client (può essere null al primo paint).
+      // L’API `/api/staff/athlete-workout-plans` verifica trainer/admin e RLS sull’atleta.
+      if (subjectId) {
+        logger.debug('Fetch workout_plans staff per atleta (subjectId)', undefined, { subjectId })
+        const res = await fetch(
+          `/api/staff/athlete-workout-plans?atleta_id=${encodeURIComponent(subjectId)}`,
+        )
+        const json = (await res.json().catch(() => ({}))) as {
+          workouts?: Workout[]
+          error?: string
+        }
+        if (!res.ok) {
+          throw new Error(json.error ?? 'Errore nel caricamento delle schede')
+        }
+        setWorkouts(json.workouts ?? [])
+        setLoading(false)
+        return
+      }
 
       const isAthlete = role === 'athlete' || role === 'atleta'
       if (isAthlete) {
@@ -114,20 +141,22 @@ export function useWorkoutPlansList() {
 
       if (createdByProfileIds.length > 0) {
         type ProfileSelect = Pick<ProfileRow, 'id' | 'nome' | 'cognome'>
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, nome, cognome')
-          .in('id', createdByProfileIds)
-          .returns<ProfileSelect[]>()
-
-        if (profilesError) {
-          logger.error('Errore query profiles per created_by_profile_id', profilesError)
+        const profilesAccum: ProfileSelect[] = []
+        for (const idChunk of chunkForSupabaseIn(createdByProfileIds)) {
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, nome, cognome')
+            .in('id', idChunk)
+            .returns<ProfileSelect[]>()
+          if (profilesError) {
+            logger.error('Errore query profiles per created_by_profile_id', profilesError)
+            break
+          }
+          if (profilesData?.length) profilesAccum.push(...profilesData)
         }
-        if (profilesData?.length) {
-          profilesData.forEach((profile: ProfileSelect) => {
-            createdByProfiles[profile.id] = { nome: profile.nome, cognome: profile.cognome }
-          })
-        }
+        profilesAccum.forEach((profile: ProfileSelect) => {
+          createdByProfiles[profile.id] = { nome: profile.nome, cognome: profile.cognome }
+        })
       }
 
       const transformedData: Workout[] =

@@ -15,9 +15,16 @@ interface UseWorkoutsProps {
    * che non servono alla UI e duplicano query pesanti.
    */
   plansListOnly?: boolean
+  /** Trainer/admin: carica schede dell’atleta (profiles.id) via API staff. */
+  athleteSubjectProfileId?: string | null
 }
 
-export function useWorkouts({ userId, role, plansListOnly = false }: UseWorkoutsProps) {
+export function useWorkouts({
+  userId,
+  role,
+  plansListOnly = false,
+  athleteSubjectProfileId = null,
+}: UseWorkoutsProps) {
   const isAthleteRole = role === 'athlete' || role === 'atleta'
   const {
     exercises,
@@ -42,27 +49,33 @@ export function useWorkouts({ userId, role, plansListOnly = false }: UseWorkouts
   // Usa useRef per tracciare i valori precedenti e evitare fetch inutili
   const prevUserIdRef = useRef<string | null | undefined>(undefined)
   const prevRoleRef = useRef<string | null | undefined>(undefined)
+  const prevSubjectRef = useRef<string | null | undefined>(undefined)
 
-  // Carica dati quando userId cambia
+  // Carica dati quando userId / ruolo / preview atleta cambiano
   useEffect(() => {
-    // Se userId o role non sono cambiati, non fare fetch
-    if (prevUserIdRef.current === userId && prevRoleRef.current === role) {
+    if (
+      prevUserIdRef.current === userId &&
+      prevRoleRef.current === role &&
+      prevSubjectRef.current === athleteSubjectProfileId
+    ) {
       return
     }
 
-    // Aggiorna i ref
     prevUserIdRef.current = userId
     prevRoleRef.current = role
+    prevSubjectRef.current = athleteSubjectProfileId
 
     if (userId) {
-      void fetchWorkouts(userId, role || null)
-      if (role === 'athlete' && !plansListOnly) {
+      void fetchWorkouts(userId, role || null, {
+        athleteSubjectProfileId,
+      })
+      if (role === 'athlete' && !plansListOnly && !athleteSubjectProfileId) {
         void fetchCurrentWorkout(userId)
         void fetchStats(userId)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, role, plansListOnly]) // Rimossi fetch* dalle dipendenze per evitare loop
+  }, [userId, role, plansListOnly, athleteSubjectProfileId]) // Rimossi fetch* dalle dipendenze per evitare loop
 
   return {
     workouts,
@@ -71,12 +84,14 @@ export function useWorkouts({ userId, role, plansListOnly = false }: UseWorkouts
     stats,
     loading,
     error,
-    fetchWorkouts: () => userId && fetchWorkouts(userId, role || null),
+    fetchWorkouts: () =>
+      userId && fetchWorkouts(userId, role || null, { athleteSubjectProfileId }),
     fetchCurrentWorkout: () => userId && role === 'athlete' && fetchCurrentWorkout(userId),
     fetchExercises,
     createWorkout,
     updateWorkoutSet,
     completeExercise,
-    refetch: () => userId && fetchWorkouts(userId, role || null),
+    refetch: () =>
+      userId && fetchWorkouts(userId, role || null, { athleteSubjectProfileId }),
   }
 }

@@ -6,7 +6,6 @@ import {
   FileText,
   Upload,
   Filter,
-  Download,
   ArrowRight,
   MoreVertical,
   AlertCircle,
@@ -43,8 +42,11 @@ import {
   STAFF_ASSIGNMENT_STATUS_ACTIVE,
   STAFF_TYPE_NUTRIZIONISTA,
 } from '@/lib/nutrition-tables'
+import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { extractFileName } from '@/lib/documents'
-import { exportToCSV } from '@/lib/export-utils'
+import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
+import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
+import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('app:dashboard:nutrizionista:documenti')
 const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
@@ -128,6 +130,15 @@ export default function NutrizionistaDocumentiPage() {
   const { user } = useAuth()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
+  const {
+    open: pdfOpen,
+    blob: pdfBlob,
+    filename: pdfFilename,
+    loading: pdfLoading,
+    setLoading: setPdfLoading,
+    openWithBlob: openPdfWithBlob,
+    onOpenChange: onPdfOpenChange,
+  } = usePdfPreviewDialog()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -195,25 +206,27 @@ export default function NutrizionistaDocumentiPage() {
         return
       }
 
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nome, cognome, email')
-        .in('id', athleteIds)
+      const profilesAccum: {
+        id: string
+        nome: string | null
+        cognome: string | null
+        email: string | null
+      }[] = []
+      for (const idChunk of chunkForSupabaseIn(athleteIds)) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome, email')
+          .in('id', idChunk)
+        profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
+      }
       const profilesMap = new Map(
-        (profilesData ?? []).map(
-          (p: {
-            id: string
-            nome: string | null
-            cognome: string | null
-            email: string | null
-          }) => [
-            p.id,
-            {
-              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-              email: p.email ?? null,
-            },
-          ],
-        ),
+        profilesAccum.map((p) => [
+          p.id,
+          {
+            name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+            email: p.email ?? null,
+          },
+        ]),
       )
       setAssignedAthletes(
         athleteIds.map((id) => ({
@@ -402,18 +415,27 @@ export default function NutrizionistaDocumentiPage() {
     [editNoteValue, supabase, loadData],
   )
 
-  const handleExportCSV = useCallback(() => {
-    const data = filteredRows.map((r) => ({
-      atleta: r.athlete_name ?? '',
-      email: r.athlete_email ?? '',
-      categoria: r.category ?? '',
-      stato: r.status ?? '',
-      scadenza: r.expires_at ?? '',
-      creato: r.created_at ?? '',
-      filename: r.file_url ? extractFileName(r.file_url) : '',
-    }))
-    exportToCSV(data, `documenti_nutrizione_${now.toISOString().slice(0, 10)}.csv`)
-  }, [filteredRows, now])
+  const handleExportPdf = useCallback(async () => {
+    if (filteredRows.length === 0) return
+    setPdfLoading(true)
+    try {
+      const data: ExportData = filteredRows.map((r) => ({
+        atleta: r.athlete_name ?? '',
+        email: r.athlete_email ?? '',
+        categoria: r.category ?? '',
+        stato: r.status ?? '',
+        scadenza: r.expires_at ?? '',
+        creato: r.created_at ?? '',
+        filename: r.file_url ? extractFileName(r.file_url) : '',
+      }))
+      const blob = await buildTabularExportPdfBlob('Documenti nutrizione', data)
+      openPdfWithBlob(blob, `documenti_nutrizione_${now.toISOString().slice(0, 10)}.pdf`)
+    } catch (e) {
+      logger.error('Export PDF documenti', e)
+    } finally {
+      setPdfLoading(false)
+    }
+  }, [filteredRows, now, setPdfLoading, openPdfWithBlob])
 
   const copyLink = useCallback((url: string) => {
     navigator.clipboard.writeText(url).catch(() => {})
@@ -436,7 +458,7 @@ export default function NutrizionistaDocumentiPage() {
   return (
     <StaffContentLayout
       title="Documenti"
-      description="File e PDF degli atleti assegnati"
+      description="Documenti e PDF degli atleti assegnati."
       icon={<FileText className="w-6 h-6" />}
       theme="teal"
       actions={
@@ -456,9 +478,15 @@ export default function NutrizionistaDocumentiPage() {
             <Filter className="h-4 w-4" />
             Filtri
           </Button>
-          <Button variant="outline" onClick={handleExportCSV} className="gap-2">
-            <Download className="h-4 w-4" />
-            Esporta
+          <Button
+            variant="outline"
+            onClick={() => void handleExportPdf()}
+            disabled={filteredRows.length === 0 || pdfLoading}
+            aria-busy={pdfLoading}
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Esporta PDF
           </Button>
         </>
       }
@@ -836,6 +864,14 @@ export default function NutrizionistaDocumentiPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Documenti"
+      />
     </StaffContentLayout>
   )
 }

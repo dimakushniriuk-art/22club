@@ -4,8 +4,6 @@ import {
   useRealtimeChannel,
   useCustomChannel,
   useRealtimeNotifications,
-  useAppointmentsRealtime,
-  useDocumentsRealtime,
   useChatRealtime,
 } from '@/hooks/useRealtimeChannel'
 
@@ -83,30 +81,6 @@ describe('Realtime Hooks', () => {
         expect.any(Function),
         'INSERT',
       )
-    })
-  })
-
-  describe('useAppointmentsRealtime', () => {
-    it('should subscribe to appointments', () => {
-      const mockUnsubscribe = vi.fn()
-
-      subscribeToTableMock.mockReturnValue(mockUnsubscribe)
-
-      renderHook(() => useAppointmentsRealtime('test-org-id'))
-
-      expect(subscribeToTableMock).toHaveBeenCalledWith('appointments', expect.any(Function), '*')
-    })
-  })
-
-  describe('useDocumentsRealtime', () => {
-    it('should subscribe to documents', () => {
-      const mockUnsubscribe = vi.fn()
-
-      subscribeToTableMock.mockReturnValue(mockUnsubscribe)
-
-      renderHook(() => useDocumentsRealtime('test-org-id'))
-
-      expect(subscribeToTableMock).toHaveBeenCalledWith('documents', expect.any(Function), '*')
     })
   })
 

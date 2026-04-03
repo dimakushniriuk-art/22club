@@ -34,6 +34,7 @@ const eslintConfig = [
       '.dynamic-routes-backup/**',
       // Script Node CommonJS (.cjs)
       'scripts/**/*.cjs',
+      'public/pdf.worker.min.mjs',
     ],
   },
   {

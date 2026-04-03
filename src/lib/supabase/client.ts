@@ -9,6 +9,9 @@ const logger = createLogger('lib:supabase:client')
 
 let browserSingleton: SupabaseClient<Database> | null = null
 
+/** Evita tempeste di signOut/redirect quando più promise falliscono sullo stesso refresh invalido. */
+let refreshTokenErrorHandling = false
+
 // Mock client per sviluppo quando Supabase non è configurato
 const createMockClient = () => {
   return {
@@ -109,15 +112,22 @@ export function handleRefreshTokenError(error: unknown): boolean {
     (error instanceof Error && error.name === 'AuthApiError' && errorMessage.includes('refresh'))
 
   if (isRefreshTokenError) {
+    if (refreshTokenErrorHandling) return true
+    refreshTokenErrorHandling = true
     logger.warn('Errore refresh token rilevato, disconnessione automatica', error, {
       errorMessage,
       errorName: error instanceof Error ? error.name : 'Unknown',
     })
     // scope: 'local' evita un altro round-trip auth con refresh token già invalido
-    void supabase.auth.signOut({ scope: 'local' })
+    void supabase.auth.signOut({ scope: 'local' }).finally(() => {
+      refreshTokenErrorHandling = false
+    })
     // Reindirizza al login se siamo in un contesto client-side
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      const path = window.location.pathname
+      if (path !== '/login' && !path.startsWith('/auth')) {
+        window.location.href = '/login'
+      }
     }
     return true
   }
