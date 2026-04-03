@@ -96,7 +96,7 @@ describe('Dashboard Components', () => {
       )
 
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
-      expect(screen.getByText('Clienti')).toBeInTheDocument()
+      expect(screen.getByText('Prenotazioni')).toBeInTheDocument()
       expect(screen.getByText('Schede')).toBeInTheDocument()
     })
 
