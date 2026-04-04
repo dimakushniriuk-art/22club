@@ -29,16 +29,16 @@ Nelle regole di progetto compaiono percorsi generici (`app/`, `components/`, `li
 
 ## Cartelle top-level (codice vivo)
 
-| Percorso          | Contenuto                                                       |
-| ----------------- | --------------------------------------------------------------- |
-| `src/app/`        | App Router: `page.tsx`, `layout.tsx`, `api/`                    |
-| `src/components/` | UI per dominio (dashboard, chat, workout, …)                    |
-| `src/hooks/`      | Hook React (root + sottocartelle per dominio)                   |
-| `src/lib/`        | Logica condivisa, Supabase client/server, validazioni, email, … |
-| `src/types/`      | Tipi TypeScript                                                 |
-| `supabase/`       | `migrations/`, `functions/` (Edge), `config.toml`               |
-| `e2e/`            | Playwright                                                      |
-| `tests/`          | Test unitari / integrazione                                     |
+| Percorso          | Contenuto                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| `src/app/`        | App Router: `page.tsx`, `layout.tsx`, `api/`                                                           |
+| `src/components/` | UI per dominio (dashboard, chat, workout, …)                                                           |
+| `src/hooks/`      | Hook React (root + sottocartelle per dominio)                                                          |
+| `src/lib/`        | Logica condivisa, Supabase client/server, validazioni, email, …                                        |
+| `src/types/`      | Tipi TypeScript                                                                                        |
+| `supabase/`       | `migrations/`, `functions/` (Edge), `config.toml`                                                      |
+| `e2e/`            | Playwright                                                                                             |
+| `tests/`          | Test unitari / integrazione                                                                            |
 | `scripts/`        | Automazione (verify, prepush, **upload** `git-upload-deploy.mjs`, …); piano publish: `PUBLISH_PLAN.md` |
 
 **Componenti (cartelle principali in `src/components/`):** `appointments`, `athlete`, `auth`, `calendar`, `charts`, `chat`, `communications`, `dashboard`, `documents`, `home`, `home-profile`, `invitations`, `layout` (incl. `route-loading-skeletons.tsx`: `HomeAthletePageContentSkeleton` (`src/app/home/loading.tsx`), `HomeAthleteSegmentSkeleton`, `StaffDashboardSegmentSkeleton`, `StaffDashboardGuardSkeleton`, `StaffStaffPageContentSkeleton`, `StaffAthleteSegmentSkeleton`, `StaffAdminSegmentSkeleton`, `StaffMarketingSegmentSkeleton`, `StaffMarketingDataBlockSkeleton` + `src/app/dashboard/atleti/[id]/loading.tsx`, `src/app/dashboard/admin/loading.tsx`, `src/app/dashboard/massaggiatore/loading.tsx`, `src/app/dashboard/marketing/loading.tsx`, `EmbedAthleteAllenamentiPageSkeleton` + `src/app/embed/athlete-allenamenti/[athleteProfileId]/loading.tsx`, `StaffLazyChunkFallback`, `loading.tsx` App Router, fallback Suspense in `src/app/dashboard/layout.tsx` e in pagine staff con chunk lazy), `settings`, `shared` (incl. `shared/dashboard/role-layout.tsx` — guscio staff stabile senza animazione che rimonta l’albero), `ui`, `workout`, `workout-plans`, …

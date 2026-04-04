@@ -128,8 +128,18 @@ const main = () => {
     },
     { name: 'Lint check', fn: () => runCommand('npm run lint', 'ESLint validation') },
     { name: 'Test run', fn: () => runCommand('npm run test:run', 'Unit tests') },
-    { name: 'Build check', fn: () => runCommand('npm run build', 'Production build') },
   ]
+
+  if (process.env.PRE_DEPLOY_SKIP_BUILD === '1') {
+    console.log(
+      '⏭️ Build check saltato (PRE_DEPLOY_SKIP_BUILD=1: build già eseguito nello stesso flusso pre-push)',
+    )
+  } else {
+    checks.push({
+      name: 'Build check',
+      fn: () => runCommand('npm run build', 'Production build'),
+    })
+  }
 
   const results = checks.map((check) => ({
     name: check.name,

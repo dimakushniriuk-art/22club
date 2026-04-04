@@ -16,10 +16,12 @@ import process from 'node:process'
 const rawArgs = process.argv.slice(2)
 const noVercel = rawArgs.includes('--no-vercel')
 const noPush = rawArgs.includes('--no-push')
-const message = rawArgs.filter((a) => !a.startsWith('--')).join(' ').trim()
+const message = rawArgs
+  .filter((a) => !a.startsWith('--'))
+  .join(' ')
+  .trim()
 const commitMessage =
-  message ||
-  `chore: sync ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`
+  message || `chore: sync ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`
 
 function runGit(args) {
   const r = spawnSync('git', args, { stdio: 'inherit' })

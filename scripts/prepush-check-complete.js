@@ -30,12 +30,13 @@ const log = {
   },
 }
 
-function runCommand(command, description, optional = false) {
+function runCommand(command, description, optional = false, extraEnv = null) {
   try {
     log.info(`${description}...`)
     execSync(command, {
       stdio: 'inherit',
       cwd: process.cwd(),
+      ...(extraEnv ? { env: { ...process.env, ...extraEnv } } : {}),
     })
     log.success(`${description} - OK`)
     return { success: true, optional }
@@ -117,7 +118,11 @@ function main() {
   // ============================================
   log.section('🎯 CATEGORIA 4: Pre-Deploy Check Finale')
 
-  results.push(runCommand('npm run pre-deploy', 'Pre-Deploy Check Completo', false))
+  results.push(
+    runCommand('npm run pre-deploy', 'Pre-Deploy Check Completo', false, {
+      PRE_DEPLOY_SKIP_BUILD: '1',
+    }),
+  )
 
   // ============================================
   // RIEPILOGO FINALE
