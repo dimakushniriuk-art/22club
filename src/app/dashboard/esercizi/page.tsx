@@ -923,7 +923,12 @@ export default function EserciziPage() {
         {/* Modal per creare/modificare esercizio - Lazy loaded solo quando aperto */}
         {showForm && (
           <Suspense
-            fallback={<StaffLazyChunkFallback className="min-h-[280px] max-w-lg mx-auto" label="Caricamento modulo…" />}
+            fallback={
+              <StaffLazyChunkFallback
+                className="min-h-[280px] max-w-lg mx-auto"
+                label="Caricamento modulo…"
+              />
+            }
           >
             <ExerciseFormModal
               open={showForm}

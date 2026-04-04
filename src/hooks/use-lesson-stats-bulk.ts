@@ -61,19 +61,15 @@ export function useLessonStatsBulk(
         acquiredByAthlete.set(id, 0)
         usedByAthlete.set(id, 0)
       })
-      paymentsRows.forEach(
-        (r: { athlete_id: string; lessons_purchased?: number | null }) => {
-          const id = r.athlete_id
-          acquiredByAthlete.set(id, (acquiredByAthlete.get(id) ?? 0) + (r.lessons_purchased ?? 0))
-        },
-      )
-      ledgerRows.forEach(
-        (r: { athlete_id: string; qty?: number | null }) => {
-          const id = r.athlete_id
-          const q = Number(r.qty ?? 0)
-          usedByAthlete.set(id, (usedByAthlete.get(id) ?? 0) + Math.max(0, -q))
-        },
-      )
+      paymentsRows.forEach((r: { athlete_id: string; lessons_purchased?: number | null }) => {
+        const id = r.athlete_id
+        acquiredByAthlete.set(id, (acquiredByAthlete.get(id) ?? 0) + (r.lessons_purchased ?? 0))
+      })
+      ledgerRows.forEach((r: { athlete_id: string; qty?: number | null }) => {
+        const id = r.athlete_id
+        const q = Number(r.qty ?? 0)
+        usedByAthlete.set(id, (usedByAthlete.get(id) ?? 0) + Math.max(0, -q))
+      })
       const next = new Map<string, LessonStats>()
       athleteIds.forEach((id) => {
         next.set(id, {

@@ -141,7 +141,11 @@ export async function buildPdfBlob(
  * Download immediato PDF da tabella generica (senza anteprima/logo unificati).
  * @deprecated Preferire `buildTabularExportPdfBlob` + `PdfCanvasPreviewDialog`.
  */
-export async function exportToPDF(data: ExportData, filename: string, options: PdfExportOptions = {}) {
+export async function exportToPDF(
+  data: ExportData,
+  filename: string,
+  options: PdfExportOptions = {},
+) {
   const blob = await buildPdfBlob(data, options)
   downloadBlob(blob, filename)
 }

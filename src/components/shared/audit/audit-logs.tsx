@@ -163,7 +163,9 @@ export function AuditLogs({ limit = 50, showFilters = true, showExport = true }:
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Log di Audit</CardTitle>
-              <CardDescription>Tracciamento delle azioni utente e eventi di sistema</CardDescription>
+              <CardDescription>
+                Tracciamento delle azioni utente e eventi di sistema
+              </CardDescription>
             </div>
             <div className="flex gap-2">
               {showExport && (
@@ -219,54 +221,54 @@ export function AuditLogs({ limit = 50, showFilters = true, showExport = true }:
           )}
 
           <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Utente</TableHead>
-                <TableHead>Evento</TableHead>
-                <TableHead>Dettagli</TableHead>
-                <TableHead>IP</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLogs.length === 0 ? (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    Nessun log trovato
-                  </TableCell>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Utente</TableHead>
+                  <TableHead>Evento</TableHead>
+                  <TableHead>Dettagli</TableHead>
+                  <TableHead>IP</TableHead>
                 </TableRow>
-              ) : (
-                filteredLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="text-sm">
-                      {formatDistanceToNow(new Date(log.created_at), {
-                        addSuffix: true,
-                        locale: it,
-                      })}
-                    </TableCell>
-                    <TableCell className="text-sm">{log.email || 'Sistema'}</TableCell>
-                    <TableCell>
-                      <Badge variant={getEventBadgeVariant(log.event)}>{log.event}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm max-w-xs truncate">
-                      {log.details ? (
-                        <pre className="text-xs bg-muted p-2 rounded">
-                          {JSON.stringify(log.details, null, 2)}
-                        </pre>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {log.ip_address || '-'}
+              </TableHeader>
+              <TableBody>
+                {filteredLogs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Nessun log trovato
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : (
+                  filteredLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="text-sm">
+                        {formatDistanceToNow(new Date(log.created_at), {
+                          addSuffix: true,
+                          locale: it,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-sm">{log.email || 'Sistema'}</TableCell>
+                      <TableCell>
+                        <Badge variant={getEventBadgeVariant(log.event)}>{log.event}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm max-w-xs truncate">
+                        {log.details ? (
+                          <pre className="text-xs bg-muted p-2 rounded">
+                            {JSON.stringify(log.details, null, 2)}
+                          </pre>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {log.ip_address || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
           {filteredLogs.length > 0 && (
             <div className="mt-4 text-sm text-muted-foreground text-center">

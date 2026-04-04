@@ -123,7 +123,9 @@ export function DashboardWidgetColumns() {
   const { user } = useAuth()
   const staffProfileId = user?.id
   const { expiring, athletes, loading, error } = useStaffDashboardWidgets(staffProfileId)
-  const { items: unreadChats, loading: chatLoading } = useStaffChatUnreadPreview(Boolean(staffProfileId))
+  const { items: unreadChats, loading: chatLoading } = useStaffChatUnreadPreview(
+    Boolean(staffProfileId),
+  )
 
   return (
     <>
@@ -131,7 +133,11 @@ export function DashboardWidgetColumns() {
         <ColumnPanel
           title="Schede in scadenza"
           badge={!loading && error == null && expiring.length > 0 ? expiring.length : undefined}
-          footer={<DashboardColumnFooterLink href="/dashboard/schede">Vai alle schede</DashboardColumnFooterLink>}
+          footer={
+            <DashboardColumnFooterLink href="/dashboard/schede">
+              Vai alle schede
+            </DashboardColumnFooterLink>
+          }
         >
           {loading ? (
             <ListSkeleton />
@@ -160,7 +166,9 @@ export function DashboardWidgetColumns() {
                       ) : null}
                       {p.name}
                     </div>
-                    <div className="truncate text-xs text-text-secondary">{p.athlete_display_name}</div>
+                    <div className="truncate text-xs text-text-secondary">
+                      {p.athlete_display_name}
+                    </div>
                     <div className="mt-0.5 text-[11px] text-amber-400/85">{p.subtitle}</div>
                   </Link>
                 </li>
@@ -175,7 +183,9 @@ export function DashboardWidgetColumns() {
           title="Lezioni in esaurimento"
           badge={!loading && error == null && athletes.length > 0 ? athletes.length : undefined}
           footer={
-            <DashboardColumnFooterLink href="/dashboard/abbonamenti">Abbonamenti</DashboardColumnFooterLink>
+            <DashboardColumnFooterLink href="/dashboard/abbonamenti">
+              Abbonamenti
+            </DashboardColumnFooterLink>
           }
         >
           {loading ? (
@@ -200,7 +210,10 @@ export function DashboardWidgetColumns() {
                       {a.display_name}
                     </span>
                     <span
-                      className={cn('shrink-0 text-xs font-semibold tabular-nums', remainingTone(a.total_remaining))}
+                      className={cn(
+                        'shrink-0 text-xs font-semibold tabular-nums',
+                        remainingTone(a.total_remaining),
+                      )}
                     >
                       {a.total_remaining} rimanenti
                     </span>
@@ -220,7 +233,9 @@ export function DashboardWidgetColumns() {
               ? unreadChats.reduce((n, c) => n + c.unread_count, 0)
               : undefined
           }
-          footer={<DashboardColumnFooterLink href="/dashboard/chat">Apri chat</DashboardColumnFooterLink>}
+          footer={
+            <DashboardColumnFooterLink href="/dashboard/chat">Apri chat</DashboardColumnFooterLink>
+          }
         >
           {chatLoading ? (
             <ListSkeleton />

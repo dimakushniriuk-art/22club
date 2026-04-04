@@ -89,7 +89,12 @@ export function RangeStatusMeter({
           </div>
           {detailHref && (
             <div className="col-start-2 row-start-1 row-span-2 justify-self-end self-start">
-              <Button variant="ghost" size="sm" className="shrink-0 h-8 px-2.5 text-xs text-primary" asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 h-8 px-2.5 text-xs text-primary"
+                asChild
+              >
                 <Link href={detailHref} aria-label={`Dettagli ${title}`}>
                   Dettagli
                 </Link>
@@ -148,7 +153,10 @@ export function RangeStatusMeter({
                   />
                   <Tooltip
                     labelFormatter={(raw: string | number) => formatDate(String(raw))}
-                    formatter={(raw: number | string) => [formatValue(Number(raw)), title ?? 'Valore']}
+                    formatter={(raw: number | string) => [
+                      formatValue(Number(raw)),
+                      title ?? 'Valore',
+                    ]}
                     contentStyle={{
                       backgroundColor: 'rgba(7,7,9,0.95)',
                       border: '1px solid rgba(255,255,255,0.18)',
@@ -173,9 +181,7 @@ export function RangeStatusMeter({
                   href={detailHref}
                   className="block cursor-pointer rounded-sm outline-none ring-offset-2 ring-offset-background transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label={
-                    title
-                      ? `Apri elenco valori per data: ${title}`
-                      : 'Apri elenco valori per data'
+                    title ? `Apri elenco valori per data: ${title}` : 'Apri elenco valori per data'
                   }
                 >
                   {chart}

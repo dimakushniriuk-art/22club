@@ -325,8 +325,7 @@ export default function NutrizionistaPage() {
         }
       }
       progressRows.sort(
-        (a, b) =>
-          new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+        (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
       )
       progressRows = progressRows.slice(0, 100)
 
@@ -405,8 +404,7 @@ export default function NutrizionistaPage() {
         if (!adjRes.error && adjRes.data?.length) adjRows.push(...(adjRes.data as AdjRow[]))
       }
       adjRows.sort(
-        (a, b) =>
-          new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+        (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
       )
       adjRows = adjRows.slice(0, 15)
       adjRows.forEach((a) => {

@@ -54,10 +54,7 @@ export function AthleteDocumentsTab({ athleteId, documentiScadenza }: AthleteDoc
     if (!previewHref && !doc.file_url) return
 
     const fileName =
-      doc.display_file_name?.trim() ||
-      doc.file_name ||
-      extractFileName(doc.file_url) ||
-      'documento'
+      doc.display_file_name?.trim() || doc.file_name || extractFileName(doc.file_url) || 'documento'
 
     try {
       const blob = await fetchDocumentBlobForRow(doc)

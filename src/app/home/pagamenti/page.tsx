@@ -301,7 +301,11 @@ export default function PagamentiPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                void openInvoicePdfPreview(pag.id, pag.invoice_url!, pag.payment_date)
+                                void openInvoicePdfPreview(
+                                  pag.id,
+                                  pag.invoice_url!,
+                                  pag.payment_date,
+                                )
                               }
                               disabled={invoicePreviewLoadingId === pag.id}
                               className="gap-1.5 border-cyan-400/70 text-cyan-300 hover:border-cyan-300/80 hover:bg-cyan-500/15"

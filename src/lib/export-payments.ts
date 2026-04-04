@@ -2,7 +2,12 @@
  * Utility per export pagamenti (PDF unificato con anteprima lato pagina).
  */
 
-import { exportToCSV, exportToPDF, buildTabularExportPdfBlob, type ExportData } from './export-utils'
+import {
+  exportToCSV,
+  exportToPDF,
+  buildTabularExportPdfBlob,
+  type ExportData,
+} from './export-utils'
 import type { Payment } from '@/types/payment'
 
 export type PaymentExportData = Record<string, string | number | boolean | null>[]

@@ -3,7 +3,13 @@ import { localStorageCache } from '@/lib/cache/local-storage-cache'
 import { statsCache, frequentQueryCache } from '@/lib/cache/cache-strategies'
 import { createLogger } from '@/lib/logger'
 import type { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js'
-import type { Cliente, ClienteFilters, ClienteSort, ClienteStats, ClienteTag } from '@/types/cliente'
+import type {
+  Cliente,
+  ClienteFilters,
+  ClienteSort,
+  ClienteStats,
+  ClienteTag,
+} from '@/types/cliente'
 
 const logger = createLogger('fetchClienti')
 
@@ -37,9 +43,9 @@ type ProfileSummary = Record<string, unknown> & {
 function isSupabaseConfigured(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://mock-project.supabase.co' &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'mock-anon-key-for-development',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://mock-project.supabase.co' &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'mock-anon-key-for-development',
   )
 }
 
@@ -67,9 +73,7 @@ export async function fetchClientiStats(): Promise<ClienteStats> {
     try {
       const rpcResponse = (await Promise.race([
         supabase.rpc('get_clienti_stats'),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('RPC timeout')), 3000),
-        ),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('RPC timeout')), 3000)),
       ])) as PostgrestSingleResponse<ClientStatsRecord>
 
       const { data, error } = rpcResponse
@@ -535,9 +539,7 @@ export async function fetchClientiList(
 
   let filteredClienti = clientiWithStats
   if (typeof filters?.allenamenti_min === 'number' && filters.allenamenti_min > 0) {
-    filteredClienti = clientiWithStats.filter(
-      (c) => c.allenamenti_mese >= filters.allenamenti_min!,
-    )
+    filteredClienti = clientiWithStats.filter((c) => c.allenamenti_mese >= filters.allenamenti_min!)
   }
 
   if (filters.tags && filters.tags.length > 0) {

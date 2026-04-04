@@ -12,10 +12,7 @@ export default function WorkoutsSlot1Page() {
     () => agendaEventAllowsCoachedWorkoutCompletion(eventForSlot1),
     [eventForSlot1],
   )
-  const onDirtyChange = useCallback(
-    (dirty: boolean) => setSlotDirty('p1', dirty),
-    [setSlotDirty],
-  )
+  const onDirtyChange = useCallback((dirty: boolean) => setSlotDirty('p1', dirty), [setSlotDirty])
   const onDismissSlot = useCallback(() => dismissWorkoutsSlot('p1'), [dismissWorkoutsSlot])
   if (!p1) return null
   return (

@@ -91,10 +91,7 @@ export function useStaffTodayAgenda() {
       if (document.visibilityState !== 'visible') return
       const hiddenAt = hiddenAtRef.current
       hiddenAtRef.current = null
-      if (
-        hiddenAt != null &&
-        Date.now() - hiddenAt < MIN_HIDDEN_MS_BEFORE_VISIBILITY_REFETCH
-      ) {
+      if (hiddenAt != null && Date.now() - hiddenAt < MIN_HIDDEN_MS_BEFORE_VISIBILITY_REFETCH) {
         return
       }
       void run()

@@ -3,31 +3,36 @@ import { createClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/health
- * Health check endpoint per verificare lo stato dell'applicazione
+ * Indica che il processo Next risponde (HTTP 200). Lo stato DB è nel body, così
+ * script tipo verify-all-services possono distinguere "server su" da "DB non verificabile".
  */
 export async function GET() {
-  try {
-    // Verifica connessione Supabase
-    const supabase = await createClient()
-    const { error } = await supabase.from('profiles').select('count').limit(1)
+  let database: 'connected' | 'error' | 'unavailable' = 'unavailable'
 
-    return NextResponse.json(
-      {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        database: error ? 'error' : 'connected',
-        version: process.env.npm_package_version || '1.0.0',
-      },
-      { status: 200 },
-    )
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.from('profiles').select('id').limit(1)
+    if (error) {
+      database = 'error'
+    } else {
+      database = 'connected'
+    }
   } catch {
-    return NextResponse.json(
-      {
-        status: 'error',
-        timestamp: new Date().toISOString(),
-        database: 'error',
-      },
-      { status: 500 },
-    )
+    database = 'unavailable'
   }
+
+  const ok = database === 'connected'
+
+  return NextResponse.json(
+    {
+      status: ok ? 'ok' : 'degraded',
+      timestamp: new Date().toISOString(),
+      database,
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV ?? 'development',
+      version: process.env.npm_package_version || '1.0.0',
+      checks: { supabase: database },
+    },
+    { status: 200 },
+  )
 }

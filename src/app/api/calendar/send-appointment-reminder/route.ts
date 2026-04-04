@@ -188,12 +188,10 @@ export async function POST(request: Request) {
         paymentRows.push(...((payRes.data ?? []) as typeof paymentRows))
       }
       const purchasedByAthlete = new Map<string, number>()
-      paymentRows.forEach(
-        (r: { athlete_id: string; lessons_purchased?: number | null }) => {
-          const cur = purchasedByAthlete.get(r.athlete_id) ?? 0
-          purchasedByAthlete.set(r.athlete_id, cur + (r.lessons_purchased ?? 0))
-        },
-      )
+      paymentRows.forEach((r: { athlete_id: string; lessons_purchased?: number | null }) => {
+        const cur = purchasedByAthlete.get(r.athlete_id) ?? 0
+        purchasedByAthlete.set(r.athlete_id, cur + (r.lessons_purchased ?? 0))
+      })
       missingAthletes.forEach((aid) => {
         const used = lessonsCompletedByAthlete.get(aid) ?? 0
         const purchased = purchasedByAthlete.get(aid) ?? 0

@@ -30,9 +30,17 @@ import {
   Plus,
 } from 'lucide-react'
 import { COACHED_APP_DEBIT_REASON_PREFIX } from '@/lib/credits/coached-debit-reason'
-import { parseServiceFromUrl, SERVICE_TYPES, type ServiceType } from '@/lib/abbonamenti-service-type'
+import {
+  parseServiceFromUrl,
+  SERVICE_TYPES,
+  type ServiceType,
+} from '@/lib/abbonamenti-service-type'
 import { lessonUsageByAthleteIds } from '@/lib/credits/athlete-training-lessons-display'
-import { addCreditFromPayment, addReversalFromPayment, insertManualCreditLedgerRow } from '@/lib/credits/ledger'
+import {
+  addCreditFromPayment,
+  addReversalFromPayment,
+  insertManualCreditLedgerRow,
+} from '@/lib/credits/ledger'
 import {
   Dialog,
   DialogContent,
@@ -54,8 +62,7 @@ import {
 
 const logger = createLogger('app:dashboard:pagamenti:atleta:page')
 
-const UUID_LOOSE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const UUID_LOOSE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 type AthleteHeader = { id: string; nome: string | null; cognome: string | null }
 
@@ -179,9 +186,11 @@ export default function PagamentiAtletaPage() {
 
   const [athlete, setAthlete] = useState<AthleteHeader | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
-  const [counter, setCounter] = useState<{ remaining: number; used: number; purchased: number } | null>(
-    null,
-  )
+  const [counter, setCounter] = useState<{
+    remaining: number
+    used: number
+    purchased: number
+  } | null>(null)
   const [movements, setMovements] = useState<LedgerMovementUi[]>([])
   const [ledgerEditOpen, setLedgerEditOpen] = useState(false)
   const [ledgerEditingId, setLedgerEditingId] = useState<string | null>(null)
@@ -240,7 +249,9 @@ export default function PagamentiAtletaPage() {
   const invoiceOnlyFileInputRef = useRef<HTMLInputElement>(null)
   const invoiceOnlyPaymentRef = useRef<PaymentRow | null>(null)
   const [invoiceOnlyUploadingId, setInvoiceOnlyUploadingId] = useState<string | null>(null)
-  const [invoicePreviewLoadingPaymentId, setInvoicePreviewLoadingPaymentId] = useState<string | null>(null)
+  const [invoicePreviewLoadingPaymentId, setInvoicePreviewLoadingPaymentId] = useState<
+    string | null
+  >(null)
 
   const athleteName = useMemo(() => {
     if (!athlete) return 'Atleta'
@@ -274,7 +285,10 @@ export default function PagamentiAtletaPage() {
   const handleExportPaymentsPdf = useCallback(async () => {
     if (debits.length === 0 && payments.length === 0 && movements.length === 0) return
 
-    const safeName = athleteName.replace(/[^\p{L}\p{N}\s_-]+/gu, '').trim().replace(/\s+/g, '_')
+    const safeName = athleteName
+      .replace(/[^\p{L}\p{N}\s_-]+/gu, '')
+      .trim()
+      .replace(/\s+/g, '_')
     const filename = `pagamenti_${safeName || 'atleta'}_${serviceType}_${new Date().toISOString().split('T')[0]}.pdf`
 
     setPdfPreviewLoading(true)
@@ -501,7 +515,9 @@ export default function PagamentiAtletaPage() {
         workoutLogIds.length > 0
           ? supabase
               .from('workout_logs')
-              .select('id, completed_at, started_at, scheda_id, note, scheda:workout_plans!scheda_id(name)')
+              .select(
+                'id, completed_at, started_at, scheda_id, note, scheda:workout_plans!scheda_id(name)',
+              )
               .in('id', workoutLogIds)
           : Promise.resolve({ data: [] as unknown[], error: null }),
       ])
@@ -538,7 +554,9 @@ export default function PagamentiAtletaPage() {
         .map((r) => {
           const reason = (r.reason ?? '').trim()
           const isWorkoutLog = reason.startsWith(COACHED_APP_DEBIT_REASON_PREFIX)
-          const workoutLogId = isWorkoutLog ? reason.slice(COACHED_APP_DEBIT_REASON_PREFIX.length) : null
+          const workoutLogId = isWorkoutLog
+            ? reason.slice(COACHED_APP_DEBIT_REASON_PREFIX.length)
+            : null
           const wl = workoutLogId ? workoutLogsById.get(workoutLogId) : undefined
           const apt = r.appointment_id ? appointmentsById.get(r.appointment_id) : undefined
 
@@ -568,10 +586,10 @@ export default function PagamentiAtletaPage() {
 
           const notes =
             source === 'appointment'
-              ? apt?.notes ?? null
+              ? (apt?.notes ?? null)
               : source === 'workout_log'
-                ? wl?.note ?? null
-                : r.reason ?? null
+                ? (wl?.note ?? null)
+                : (r.reason ?? null)
 
           return {
             id: r.id,
@@ -734,7 +752,9 @@ export default function PagamentiAtletaPage() {
       setLedgerMovementToDelete(null)
       await load()
     } catch (err) {
-      logger.error('Errore eliminazione credit_ledger', err, { ledgerId: ledgerMovementToDelete.id })
+      logger.error('Errore eliminazione credit_ledger', err, {
+        ledgerId: ledgerMovementToDelete.id,
+      })
       setError(err instanceof Error ? err.message : 'Errore durante eliminazione movimento')
     } finally {
       setLedgerDeleting(false)
@@ -900,7 +920,9 @@ export default function PagamentiAtletaPage() {
 
         await load()
       } catch (err) {
-        logger.error('Errore caricamento fattura (solo allegato)', err, { paymentId: targetPayment.id })
+        logger.error('Errore caricamento fattura (solo allegato)', err, {
+          paymentId: targetPayment.id,
+        })
         setError(err instanceof Error ? err.message : 'Errore durante il caricamento della fattura')
       } finally {
         setInvoiceOnlyUploadingId(null)
@@ -911,7 +933,8 @@ export default function PagamentiAtletaPage() {
 
   const openEditPayment = useCallback((p: PaymentRow) => {
     setEditingPayment(p)
-    const iso = (p.payment_date ?? p.created_at).split('T')[0] ?? new Date().toISOString().split('T')[0]
+    const iso =
+      (p.payment_date ?? p.created_at).split('T')[0] ?? new Date().toISOString().split('T')[0]
     setEditInvoiceFile(null)
     setEditForm({
       payment_date: iso,
@@ -1094,8 +1117,7 @@ export default function PagamentiAtletaPage() {
     return <StaffDashboardSegmentSkeleton />
   }
 
-  const serviceTypeLabel =
-    SERVICE_TYPES.find((s) => s.value === serviceType)?.label ?? serviceType
+  const serviceTypeLabel = SERVICE_TYPES.find((s) => s.value === serviceType)?.label ?? serviceType
 
   return (
     <StaffContentLayout
@@ -1143,9 +1165,7 @@ export default function PagamentiAtletaPage() {
               <CardContent className="p-4 space-y-3">
                 <div className="rounded-lg border border-border bg-background-tertiary/30 p-3">
                   <p className="text-text-secondary text-sm mb-1">Contatore attuale</p>
-                  <p className="text-2xl font-bold text-text-primary">
-                    {counter?.remaining ?? 0}
-                  </p>
+                  <p className="text-2xl font-bold text-text-primary">{counter?.remaining ?? 0}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-lg border border-border bg-background-tertiary/20 p-3">
@@ -1287,14 +1307,24 @@ export default function PagamentiAtletaPage() {
               <table className="w-full">
                 <thead className="border-b border-white/10 bg-white/[0.02]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">Data</th>
+                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
+                      Data
+                    </th>
                     <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
                       Allenamenti
                     </th>
-                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">Fattura</th>
-                    <th className="px-4 py-3 text-right text-text-primary text-sm font-semibold">Pagato</th>
-                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">Stato</th>
-                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">Azioni</th>
+                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
+                      Fattura
+                    </th>
+                    <th className="px-4 py-3 text-right text-text-primary text-sm font-semibold">
+                      Pagato
+                    </th>
+                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
+                      Stato
+                    </th>
+                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
+                      Azioni
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
@@ -1315,7 +1345,9 @@ export default function PagamentiAtletaPage() {
                           <td className="px-4 py-3 text-text-secondary">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-text-tertiary" />
-                              <span className="text-text-primary text-sm">{formatDateTime(dateIso)}</span>
+                              <span className="text-text-primary text-sm">
+                                {formatDateTime(dateIso)}
+                              </span>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-center text-text-primary font-semibold">
@@ -1336,7 +1368,11 @@ export default function PagamentiAtletaPage() {
                           </td>
                           <td className="px-4 py-3 text-center">
                             <Badge variant={p.is_reversal ? 'warning' : 'success'} size="sm">
-                              {p.is_reversal ? 'Storno' : p.status === 'cancelled' ? 'Stornato' : 'Attivo'}
+                              {p.is_reversal
+                                ? 'Storno'
+                                : p.status === 'cancelled'
+                                  ? 'Stornato'
+                                  : 'Attivo'}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-center">
@@ -1346,7 +1382,9 @@ export default function PagamentiAtletaPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => void openInvoicePdfPreview(p.id, p.invoice_url!, dateIso)}
+                                    onClick={() =>
+                                      void openInvoicePdfPreview(p.id, p.invoice_url!, dateIso)
+                                    }
                                     disabled={invoicePreviewLoadingPaymentId === p.id}
                                     title="Anteprima fattura PDF"
                                     className="gap-1.5"
@@ -1356,7 +1394,9 @@ export default function PagamentiAtletaPage() {
                                   </Button>
                                 ) : (
                                   <>
-                                    <span className="text-text-secondary text-xs">Nessuna fattura</span>
+                                    <span className="text-text-secondary text-xs">
+                                      Nessuna fattura
+                                    </span>
                                     {canAttachInvoiceOnly ? (
                                       <Button
                                         variant="outline"
@@ -1388,7 +1428,12 @@ export default function PagamentiAtletaPage() {
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm" disabled title="Storno (da Gestione Pagamenti)">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled
+                                  title="Storno (da Gestione Pagamenti)"
+                                >
                                   <RotateCcw className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -1469,7 +1514,8 @@ export default function PagamentiAtletaPage() {
             <DialogHeader>
               <DialogTitle>Modifica pagamento</DialogTitle>
               <DialogDescription>
-                La modifica viene salvata “a storico”: il pagamento originale viene stornato e viene creato un nuovo record.
+                La modifica viene salvata “a storico”: il pagamento originale viene stornato e viene
+                creato un nuovo record.
               </DialogDescription>
             </DialogHeader>
 
@@ -1483,7 +1529,11 @@ export default function PagamentiAtletaPage() {
                   <Input
                     type="date"
                     value={editForm.payment_date}
-                    onChange={(e) => setEditForm((prev) => (prev ? { ...prev, payment_date: e.target.value } : prev))}
+                    onChange={(e) =>
+                      setEditForm((prev) =>
+                        prev ? { ...prev, payment_date: e.target.value } : prev,
+                      )
+                    }
                   />
                 </div>
 
@@ -1499,7 +1549,12 @@ export default function PagamentiAtletaPage() {
                       value={editForm.lessons_purchased}
                       onChange={(e) =>
                         setEditForm((prev) =>
-                          prev ? { ...prev, lessons_purchased: parseInt(e.target.value || '0', 10) || 0 } : prev,
+                          prev
+                            ? {
+                                ...prev,
+                                lessons_purchased: parseInt(e.target.value || '0', 10) || 0,
+                              }
+                            : prev,
                         )
                       }
                     />
@@ -1528,7 +1583,9 @@ export default function PagamentiAtletaPage() {
                   <SimpleSelect
                     value={editForm.status}
                     onValueChange={(value) =>
-                      setEditForm((prev) => (prev ? { ...prev, status: value as 'completed' | 'cancelled' } : prev))
+                      setEditForm((prev) =>
+                        prev ? { ...prev, status: value as 'completed' | 'cancelled' } : prev,
+                      )
                     }
                     options={[
                       { value: 'completed', label: 'Attivo' },
@@ -1556,11 +1613,7 @@ export default function PagamentiAtletaPage() {
             )}
 
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setEditOpen(false)}
-                disabled={editSaving}
-              >
+              <Button variant="outline" onClick={() => setEditOpen(false)} disabled={editSaving}>
                 Annulla
               </Button>
               <Button
@@ -1587,9 +1640,9 @@ export default function PagamentiAtletaPage() {
             <DialogHeader>
               <DialogTitle>Modifica movimento ledger</DialogTitle>
               <DialogDescription>
-                Le modifiche aggiornano il registro crediti e possono cambiare il conteggio lezioni. Se il movimento
-                è legato a un pagamento o a un appuntamento, il salvataggio può essere rifiutato per vincoli del
-                database.
+                Le modifiche aggiornano il registro crediti e possono cambiare il conteggio lezioni.
+                Se il movimento è legato a un pagamento o a un appuntamento, il salvataggio può
+                essere rifiutato per vincoli del database.
               </DialogDescription>
             </DialogHeader>
 
@@ -1597,11 +1650,13 @@ export default function PagamentiAtletaPage() {
               <div className="space-y-4">
                 <div className="rounded-md border border-white/10 bg-white/[0.02] px-3 py-2 text-xs text-text-secondary space-y-1">
                   <p>
-                    <span className="text-text-tertiary">Service:</span> {ledgerEditForm.service_type}
+                    <span className="text-text-tertiary">Service:</span>{' '}
+                    {ledgerEditForm.service_type}
                   </p>
                   {ledgerEditForm.payment_id ? (
                     <p>
-                      <span className="text-text-tertiary">payment_id:</span> {ledgerEditForm.payment_id}
+                      <span className="text-text-tertiary">payment_id:</span>{' '}
+                      {ledgerEditForm.payment_id}
                     </p>
                   ) : null}
                   {ledgerEditForm.appointment_id ? (
@@ -1640,17 +1695,19 @@ export default function PagamentiAtletaPage() {
                     value={ledgerEditForm.qty}
                     onChange={(e) =>
                       setLedgerEditForm((prev) =>
-                        prev
-                          ? { ...prev, qty: parseInt(e.target.value || '0', 10) || 0 }
-                          : prev,
+                        prev ? { ...prev, qty: parseInt(e.target.value || '0', 10) || 0 } : prev,
                       )
                     }
                   />
-                  <p className="text-text-tertiary text-xs">Valor tipici: CREDIT positivo, DEBIT negativo, REVERSAL negativo.</p>
+                  <p className="text-text-tertiary text-xs">
+                    Valor tipici: CREDIT positivo, DEBIT negativo, REVERSAL negativo.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-text-primary text-sm font-medium">Data/ora (created_at) *</label>
+                  <label className="text-text-primary text-sm font-medium">
+                    Data/ora (created_at) *
+                  </label>
                   <Input
                     type="datetime-local"
                     value={ledgerEditForm.created_at_local}
@@ -1711,11 +1768,13 @@ export default function PagamentiAtletaPage() {
             <DialogHeader>
               <DialogTitle>Nuovo movimento ledger (manuale)</DialogTitle>
               <DialogDescription>
-                Inserisci una riga su <code className="text-xs">credit_ledger</code> senza passare da pagamenti o
-                calendario. Per il servizio <strong>training</strong> il riepilogo lezioni usa i DEBIT nel ledger: un
-                CREDIT manuale compare qui ma non aumenta le lezioni &quot;acquistate&quot; (quelle restano legate ai
-                pagamenti). <code className="text-xs">payment_id</code> / <code className="text-xs">appointment_id</code>{' '}
-                devono esistere se compilati; vincoli univoci del DB possono rifiutare duplicati.
+                Inserisci una riga su <code className="text-xs">credit_ledger</code> senza passare
+                da pagamenti o calendario. Per il servizio <strong>training</strong> il riepilogo
+                lezioni usa i DEBIT nel ledger: un CREDIT manuale compare qui ma non aumenta le
+                lezioni &quot;acquistate&quot; (quelle restano legate ai pagamenti).{' '}
+                <code className="text-xs">payment_id</code> /{' '}
+                <code className="text-xs">appointment_id</code> devono esistere se compilati;
+                vincoli univoci del DB possono rifiutare duplicati.
               </DialogDescription>
             </DialogHeader>
 
@@ -1770,9 +1829,7 @@ export default function PagamentiAtletaPage() {
                     value={ledgerCreateForm.qty}
                     onChange={(e) =>
                       setLedgerCreateForm((prev) =>
-                        prev
-                          ? { ...prev, qty: parseInt(e.target.value || '0', 10) || 0 }
-                          : prev,
+                        prev ? { ...prev, qty: parseInt(e.target.value || '0', 10) || 0 } : prev,
                       )
                     }
                   />
@@ -1782,7 +1839,9 @@ export default function PagamentiAtletaPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-text-primary text-sm font-medium">Data/ora (created_at) *</label>
+                  <label className="text-text-primary text-sm font-medium">
+                    Data/ora (created_at) *
+                  </label>
                   <Input
                     type="datetime-local"
                     value={ledgerCreateForm.created_at_local}
@@ -1810,7 +1869,9 @@ export default function PagamentiAtletaPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-text-primary text-sm font-medium">payment_id (opzionale)</label>
+                  <label className="text-text-primary text-sm font-medium">
+                    payment_id (opzionale)
+                  </label>
                   <Input
                     value={ledgerCreateForm.payment_id}
                     onChange={(e) =>
@@ -1824,7 +1885,9 @@ export default function PagamentiAtletaPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-text-primary text-sm font-medium">appointment_id (opzionale)</label>
+                  <label className="text-text-primary text-sm font-medium">
+                    appointment_id (opzionale)
+                  </label>
                   <Input
                     value={ledgerCreateForm.appointment_id}
                     onChange={(e) =>
@@ -1861,7 +1924,10 @@ export default function PagamentiAtletaPage() {
               >
                 Annulla
               </Button>
-              <Button onClick={() => void saveLedgerManualCreate()} disabled={ledgerCreateSaving || !ledgerCreateForm}>
+              <Button
+                onClick={() => void saveLedgerManualCreate()}
+                disabled={ledgerCreateSaving || !ledgerCreateForm}
+              >
                 Inserisci nel DB
               </Button>
             </DialogFooter>
@@ -1936,11 +2002,21 @@ export default function PagamentiAtletaPage() {
               <table className="w-full">
                 <thead className="border-b border-white/10 bg-white/[0.02]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">Tipo</th>
-                    <th className="px-4 py-3 text-right text-text-primary text-sm font-semibold">Qty</th>
-                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">Data/Ora</th>
-                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">Causale</th>
-                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">Azioni</th>
+                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
+                      Tipo
+                    </th>
+                    <th className="px-4 py-3 text-right text-text-primary text-sm font-semibold">
+                      Qty
+                    </th>
+                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
+                      Data/Ora
+                    </th>
+                    <th className="px-4 py-3 text-left text-text-primary text-sm font-semibold">
+                      Causale
+                    </th>
+                    <th className="px-4 py-3 text-center text-text-primary text-sm font-semibold">
+                      Azioni
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
@@ -2013,4 +2089,3 @@ export default function PagamentiAtletaPage() {
     </StaffContentLayout>
   )
 }
-

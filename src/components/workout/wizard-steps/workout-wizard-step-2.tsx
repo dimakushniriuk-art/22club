@@ -32,11 +32,7 @@ function buildSessionsUntilRefreshOptions(
     current >= 1 &&
     current > SESSIONS_SELECT_MAX
   ) {
-    return [
-      empty,
-      { value: String(current), label: `${current} (attuale)` },
-      ...standard,
-    ]
+    return [empty, { value: String(current), label: `${current} (attuale)` }, ...standard]
   }
   return [empty, ...standard]
 }
@@ -126,8 +122,8 @@ export function WorkoutWizardStep2({
                             <span className="font-normal text-text-tertiary"> · opzionale</span>
                           </p>
                           <p className="text-xs leading-relaxed text-text-tertiary">
-                            Quante volte ripetere questo giorno nel ciclo prima di aggiornare esercizi
-                            o carico.
+                            Quante volte ripetere questo giorno nel ciclo prima di aggiornare
+                            esercizi o carico.
                           </p>
                         </div>
                       </div>
@@ -137,8 +133,7 @@ export function WorkoutWizardStep2({
                         </span>
                         <SimpleSelect
                           value={
-                            day.sessions_until_refresh != null &&
-                            day.sessions_until_refresh >= 1
+                            day.sessions_until_refresh != null && day.sessions_until_refresh >= 1
                               ? String(day.sessions_until_refresh)
                               : ''
                           }

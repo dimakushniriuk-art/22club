@@ -650,8 +650,8 @@ export default function CalendarioImpostazioniPage() {
           <div>
             <h2 className={sectionTitleClass}>Vista e griglia</h2>
             <p className={sectionDescClass + ' mt-1'}>
-              Vista iniziale del calendario e step della griglia oraria. Orari griglia in formato 24 ore
-              (es. 07:00–22:00).
+              Vista iniziale del calendario e step della griglia oraria. Orari griglia in formato 24
+              ore (es. 07:00–22:00).
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

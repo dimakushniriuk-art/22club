@@ -43,14 +43,14 @@ export function useStaffAthleteUnifiedDocuments(athleteProfileId: string | null)
         throw profileErr
       }
 
-      const row = profile as { user_id?: string | null; nome?: string | null; cognome?: string | null }
-      const displayName =
-        [row.nome, row.cognome].filter(Boolean).join(' ').trim() || null
+      const row = profile as {
+        user_id?: string | null
+        nome?: string | null
+        cognome?: string | null
+      }
+      const displayName = [row.nome, row.cognome].filter(Boolean).join(' ').trim() || null
 
-      const items = await getAllAthleteDocuments(
-        athleteProfileId,
-        row.user_id ?? null,
-      )
+      const items = await getAllAthleteDocuments(athleteProfileId, row.user_id ?? null)
       return mapUnifiedItemsToStaffDocuments(items, athleteProfileId, displayName)
     },
   })

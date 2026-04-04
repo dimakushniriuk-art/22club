@@ -188,17 +188,16 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             .select('id, name, category')
             .in('id', exChunk)
           if (exercisesNamesError) {
-            logger.error('Error fetching exercises names', exercisesNamesError, { uniqueExerciseIds })
+            logger.error('Error fetching exercises names', exercisesNamesError, {
+              uniqueExerciseIds,
+            })
             throw exercisesNamesError
           }
           exercisesAccum.push(...((exercisesData ?? []) as ExRow[]))
         }
 
         const exercisesMap = new Map(
-          exercisesAccum.map((e) => [
-            e.id,
-            { name: e.name, category: e.category },
-          ]),
+          exercisesAccum.map((e) => [e.id, { name: e.name, category: e.category }]),
         )
 
         // STEP 6: Recupera tutti i workout_sets completati (con almeno completed_at; includiamo anche set senza peso per reps/tempo)
@@ -227,11 +226,10 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           }
           setsMerged.push(...((workoutSets ?? []) as SetRow[]))
         }
-        setsMerged.sort(
-          (a, b) =>
-            (a.completed_at ?? '').localeCompare(b.completed_at ?? '', undefined, {
-              sensitivity: 'base',
-            }),
+        setsMerged.sort((a, b) =>
+          (a.completed_at ?? '').localeCompare(b.completed_at ?? '', undefined, {
+            sensitivity: 'base',
+          }),
         )
 
         const rawSets = setsMerged

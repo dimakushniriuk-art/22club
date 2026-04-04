@@ -296,7 +296,9 @@ export async function getAllAthleteDocuments(
     .select('id, title')
     .eq('athlete_id', profileId)
   const groupRows = (nutritionGroups ?? []) as { id: string; title: string | null }[]
-  const groupTitleById = new Map(groupRows.map((g) => [g.id, g.title?.trim() || 'Piano nutrizionale']))
+  const groupTitleById = new Map(
+    groupRows.map((g) => [g.id, g.title?.trim() || 'Piano nutrizionale']),
+  )
 
   for (const idChunk of chunkForSupabaseIn(groupRows.map((g) => g.id))) {
     if (idChunk.length === 0) continue

@@ -32,12 +32,18 @@ export default function StaffAtletaProgressiFotoPage() {
   }, [authLoading, id, role, router])
   const [selectedAngle, setSelectedAngle] = useState<'fronte' | 'profilo' | 'retro'>('fronte')
 
-  const { photos, loading: photosLoading, error: photosError, hasMore, loadMore, filterByAngle } =
-    useProgressPhotos({
-      userId: id,
-      role: 'athlete',
-      angle: selectedAngle,
-    })
+  const {
+    photos,
+    loading: photosLoading,
+    error: photosError,
+    hasMore,
+    loadMore,
+    filterByAngle,
+  } = useProgressPhotos({
+    userId: id,
+    role: 'athlete',
+    angle: selectedAngle,
+  })
 
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -72,7 +78,10 @@ export default function StaffAtletaProgressiFotoPage() {
   if (!id) {
     return (
       <div className="p-6">
-        <ErrorState message="ID atleta mancante" onRetry={() => router.push('/dashboard/clienti')} />
+        <ErrorState
+          message="ID atleta mancante"
+          onRetry={() => router.push('/dashboard/clienti')}
+        />
       </div>
     )
   }

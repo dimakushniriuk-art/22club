@@ -33,4 +33,3 @@ test.describe('Staff Workouts two-pane (no iframe)', () => {
     }
   })
 })
-

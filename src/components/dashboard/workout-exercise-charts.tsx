@@ -59,7 +59,9 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
               <div className="w-full">
                 <div className="mb-2 grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-1">
                   <div className="min-w-0 col-start-1 row-start-1">
-                    <h3 className="text-text-primary text-sm font-semibold">{exercise.exercise_name}</h3>
+                    <h3 className="text-text-primary text-sm font-semibold">
+                      {exercise.exercise_name}
+                    </h3>
                   </div>
                   {detailHref ? (
                     <div className="col-start-2 row-start-1 row-span-2 justify-self-end self-start">

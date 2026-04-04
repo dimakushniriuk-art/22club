@@ -149,7 +149,9 @@ type SessionExerciseSetsForLog = {
   }>
 }
 
-function sessionExercisesToPersistPayload(exercises: unknown[] | undefined): SessionExerciseSetsForLog[] {
+function sessionExercisesToPersistPayload(
+  exercises: unknown[] | undefined,
+): SessionExerciseSetsForLog[] {
   if (!exercises?.length) return []
   const out: SessionExerciseSetsForLog[] = []
   for (const ex of exercises) {
@@ -170,7 +172,9 @@ function sessionExercisesToPersistPayload(exercises: unknown[] | undefined): Ses
             ? Number(row.execution_time_sec)
             : null,
         rest_timer_sec:
-          row.rest_timer_sec != null && row.rest_timer_sec !== '' ? Number(row.rest_timer_sec) : null,
+          row.rest_timer_sec != null && row.rest_timer_sec !== ''
+            ? Number(row.rest_timer_sec)
+            : null,
       })
     }
     out.push({ id, sets })
@@ -184,7 +188,10 @@ function isWorkoutSetCompleted(s: Record<string, unknown>): boolean {
   return c === true || c === 1
 }
 
-function resolveExerciseIndexInSession(exercises: unknown[] | undefined, exercise: unknown): number {
+function resolveExerciseIndexInSession(
+  exercises: unknown[] | undefined,
+  exercise: unknown,
+): number {
   if (!exercises?.length) return -1
   const id = workoutDayExerciseRowId(exercise)
   if (!id) return -1
@@ -207,8 +214,7 @@ function applyExerciseSetPatch(
     const newSets = prevSets.map((set) =>
       Number(set.set_number) === targetN ? { ...set, ...updates } : set,
     )
-    const allSetsDone =
-      newSets.length > 0 && newSets.every((s) => isWorkoutSetCompleted(s))
+    const allSetsDone = newSets.length > 0 && newSets.every((s) => isWorkoutSetCompleted(s))
     return { ...ex, sets: newSets, is_completed: allSetsDone }
   })
   const completedCount = exercises.filter(
@@ -518,17 +524,18 @@ export function AllenamentiOggiPageContent() {
       event:
         | { type: typeof STAFF_WORKOUTS_EMBED_SAVE_START; scope: 'block' | 'workout' }
         | { type: typeof STAFF_WORKOUTS_EMBED_SAVE_OK; scope: 'block' | 'workout' }
-        | { type: typeof STAFF_WORKOUTS_EMBED_SAVE_ERROR; scope: 'block' | 'workout'; message: string },
+        | {
+            type: typeof STAFF_WORKOUTS_EMBED_SAVE_ERROR
+            scope: 'block' | 'workout'
+            message: string
+          },
     ) => {
       if (!isPreview) return
       if (typeof window === 'undefined') return
       if (window.parent === window) return
       if (!athleteProfileId) return
       try {
-        window.parent.postMessage(
-          { ...event, athleteProfileId },
-          window.location.origin,
-        )
+        window.parent.postMessage({ ...event, athleteProfileId }, window.location.origin)
       } catch {
         /* ignore */
       }
@@ -661,7 +668,11 @@ export function AllenamentiOggiPageContent() {
       if (msg.type !== '22club:staff-workouts-embed-refresh') return
       const id = typeof msg.athleteProfileId === 'string' ? msg.athleteProfileId.trim() : ''
       if (!id || id !== athleteProfileId) return
-      void fetchCurrentWorkout(athleteProfileId, workoutPlanId ?? undefined, workoutDayId ?? undefined)
+      void fetchCurrentWorkout(
+        athleteProfileId,
+        workoutPlanId ?? undefined,
+        workoutDayId ?? undefined,
+      )
     }
 
     window.addEventListener('message', onMessage)
@@ -729,17 +740,14 @@ export function AllenamentiOggiPageContent() {
   /** Ref del contenitore scrollabile per header/barra visibili solo in cima/fondo */
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
   const [showHeaderScroll, setShowHeaderScroll] = useState(true)
-  const [showBottomBarScroll, setShowBottomBarScroll] = useState(false)
   const SCROLL_THRESHOLD = 60
 
   const handleScrollOggi = React.useCallback(() => {
     const el = scrollContainerRef.current
     if (!el) return
-    const { scrollTop, clientHeight, scrollHeight } = el
+    const { scrollTop } = el
     const atTop = scrollTop <= SCROLL_THRESHOLD
-    const atBottom = scrollTop + clientHeight >= scrollHeight - SCROLL_THRESHOLD
     setShowHeaderScroll(atTop)
-    setShowBottomBarScroll(atBottom)
   }, [])
 
   const setTopBarConfig = useContext(AthleteTopBarContext)?.setConfig
@@ -1044,21 +1052,10 @@ export function AllenamentiOggiPageContent() {
   const isWorkoutComplete =
     completedExercisesCount > 0 && completedExercisesCount === totalExercisesCount
 
-  // Ricalcola visibilitÃ  header/barra in base allo scroll quando cambia esercizio o contenuto
+  // Ricalcola visibilità top bar (titolo) in base allo scroll quando cambia esercizio o contenuto
   useEffect(() => {
     handleScrollOggi()
   }, [handleScrollOggi, currentBlockIndex, workoutSession?.exercises?.length])
-
-  // Con barra in-flow (non fixed), quando diventa visibile aumenta scrollHeight: resta in fondo senza flicker
-  useEffect(() => {
-    if (!showBottomBarScroll) return
-    const el = scrollContainerRef.current
-    if (!el) return
-    const id = requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight - el.clientHeight
-    })
-    return () => cancelAnimationFrame(id)
-  }, [showBottomBarScroll, currentBlockIndex])
 
   // Reset quando cambia il blocco (video rimosso)
   useEffect(() => {
@@ -1089,10 +1086,13 @@ export function AllenamentiOggiPageContent() {
         const idx = prev.exercises.findIndex((ex) => workoutDayExerciseRowId(ex) === idNorm)
         if (idx < 0) {
           if (process.env.NODE_ENV === 'development') {
-            logger.warn('updateSet: id esercizio (workout_day_exercise) non trovato nella sessione', {
-              idNorm,
-              targetN: Number(setNumber),
-            })
+            logger.warn(
+              'updateSet: id esercizio (workout_day_exercise) non trovato nella sessione',
+              {
+                idNorm,
+                targetN: Number(setNumber),
+              },
+            )
           }
           return prev
         }
@@ -1230,7 +1230,11 @@ export function AllenamentiOggiPageContent() {
 
   /** Alla chiusura sessione: allinea DB a tutta la sessione (non solo blocchi marcati completati). */
   const persistAllSessionSetsToWorkoutLog = useCallback(
-    async (logId: string, exercisesPayload: SessionExerciseSetsForLog[], completedAtIso: string) => {
+    async (
+      logId: string,
+      exercisesPayload: SessionExerciseSetsForLog[],
+      completedAtIso: string,
+    ) => {
       for (const ex of exercisesPayload) {
         const wdeId = ex.id
         const { error: delErr } = await supabase
@@ -1607,7 +1611,8 @@ export function AllenamentiOggiPageContent() {
                 const chainMode = timerChainModeRef.current
                 const sets = (currentExerciseForTimer.sets as Record<string, unknown>[]) || []
                 const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
-                const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+                const activeSet =
+                  currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
                 const bound = restTimerTargetRef.current
                 const setNum = (activeSet?.set_number as number) ?? 1
 
@@ -1785,9 +1790,7 @@ export function AllenamentiOggiPageContent() {
   const finishWorkout = () => {
     /** Embed iframe: coachato. Dashboard Workouts: coachato solo se c'è allenamento valido in agenda per lo slot. App atleta: solo. */
     const withTrainer =
-      workoutsPane != null
-        ? Boolean(workoutsPane.countCompletionAsCoached)
-        : Boolean(isPreview)
+      workoutsPane != null ? Boolean(workoutsPane.countCompletionAsCoached) : Boolean(isPreview)
     void handleTrainerSessionConfirm(withTrainer)
   }
 
@@ -1818,7 +1821,9 @@ export function AllenamentiOggiPageContent() {
         } else {
           const { data: trainerRow } = await supabase.rpc('get_my_trainer_profile')
           const row =
-            Array.isArray(trainerRow) && trainerRow[0] ? (trainerRow[0] as { pt_id?: string }) : null
+            Array.isArray(trainerRow) && trainerRow[0]
+              ? (trainerRow[0] as { pt_id?: string })
+              : null
           coachedByProfileId = row?.pt_id ?? null
         }
       }
@@ -2254,7 +2259,7 @@ export function AllenamentiOggiPageContent() {
       <div
         ref={scrollContainerRef}
         onScroll={handleScrollOggi}
-        className="min-h-0 flex-1 overflow-auto px-3 pt-4 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6"
+        className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6 min-[834px]:pb-[calc(6rem+env(safe-area-inset-bottom,0px))]"
       >
         <div className="mx-auto w-full max-w-lg space-y-4 min-[834px]:space-y-5 min-[1100px]:max-w-3xl">
           {/* Esercizio corrente */}
@@ -2531,8 +2536,7 @@ export function AllenamentiOggiPageContent() {
                                               ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
                                               : weightPicker?.exerciseId ===
                                                     workoutDayExerciseRowId(item) &&
-                                                  weightPicker?.setNumber ===
-                                                    Number(set.set_number)
+                                                  weightPicker?.setNumber === Number(set.set_number)
                                                 ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                                                 : 'border-white/10 bg-white/5'
                                           }`}
@@ -2826,7 +2830,9 @@ export function AllenamentiOggiPageContent() {
                                 const sets = (ex as { sets?: Record<string, unknown>[] }).sets ?? []
                                 return (
                                   sets.length === 0 ||
-                                  sets.every((s: Record<string, unknown>) => isWorkoutSetCompleted(s))
+                                  sets.every((s: Record<string, unknown>) =>
+                                    isWorkoutSetCompleted(s),
+                                  )
                                 )
                               })
                             const isBlockCompleted = block
@@ -3086,8 +3092,7 @@ export function AllenamentiOggiPageContent() {
                                         ? 'border-cyan-400/80 bg-cyan-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]'
                                         : weightPicker?.exerciseId ===
                                               workoutDayExerciseRowId(currentExercise) &&
-                                            weightPicker?.setNumber ===
-                                              Number(set.set_number)
+                                            weightPicker?.setNumber === Number(set.set_number)
                                           ? 'border-orange-400/80 bg-orange-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                                           : 'border-white/10 bg-white/5'
                                     } ${circuitGroup.length === 0 ? 'cursor-pointer hover:border-white/20 hover:bg-white/10' : ''}`}
@@ -3104,8 +3109,7 @@ export function AllenamentiOggiPageContent() {
                                             ? 'border-cyan-400/80 bg-cyan-500/25 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]'
                                             : weightPicker?.exerciseId ===
                                                   workoutDayExerciseRowId(currentExercise) &&
-                                                weightPicker?.setNumber ===
-                                                  Number(set.set_number)
+                                                weightPicker?.setNumber === Number(set.set_number)
                                               ? 'border-orange-400/70 bg-orange-500/[0.2] text-orange-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
                                               : 'border-white/12 bg-white/[0.06] text-text-primary'
                                         }`}
@@ -3119,7 +3123,8 @@ export function AllenamentiOggiPageContent() {
                                             onClick={(e) => {
                                               e.stopPropagation()
                                               setWeightPicker({
-                                                exerciseId: workoutDayExerciseRowId(currentExercise),
+                                                exerciseId:
+                                                  workoutDayExerciseRowId(currentExercise),
                                                 setNumber: Number(set.set_number) || 1,
                                                 initialKg: resolveSetWeightKgForPicker(
                                                   set,
@@ -3436,14 +3441,20 @@ export function AllenamentiOggiPageContent() {
               })()
             : null}
         </div>
+      </div>
 
-        {/* Navigazione esercizi — stessa larghezza/centering della colonna card (max-w-lg / 3xl) */}
-        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
-          {showBottomBarScroll && (
-            <header
-              className="relative z-20 mt-4 w-full overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] min-[834px]:p-5"
-              style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
-            >
+      {/* Navigazione esercizi — fissa in basso (viewport o pannello staff) */}
+      <div
+        className={cn(
+          'pointer-events-none z-20 flex justify-center px-3 sm:px-4 min-[834px]:px-6',
+          workoutsPane ? 'absolute bottom-0 left-0 right-0' : 'fixed bottom-0 left-0 right-0',
+        )}
+      >
+        <div className="pointer-events-auto mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          <header
+            className="relative w-full overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] min-[834px]:p-5"
+            style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
+          >
             <div
               className="absolute inset-x-0 top-0 h-px"
               style={{
@@ -3481,7 +3492,6 @@ export function AllenamentiOggiPageContent() {
               </Button>
             </div>
           </header>
-          )}
         </div>
       </div>
 
@@ -3518,8 +3528,7 @@ export function AllenamentiOggiPageContent() {
                     const setIdx = itemSets.findIndex(
                       (s) => !(s as { completed?: boolean }).completed,
                     )
-                    const activeSet =
-                      setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
+                    const activeSet = setIdx >= 0 ? itemSets[setIdx] : itemSets[itemSets.length - 1]
                     const t =
                       ((activeSet?.execution_time_sec ??
                         (item as Record<string, unknown>).execution_time_sec ??

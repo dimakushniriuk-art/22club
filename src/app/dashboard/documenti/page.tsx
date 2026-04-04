@@ -40,9 +40,7 @@ export default function DocumentiPage() {
   const athleteIdFromQuery = searchParams.get('atleta')
   const hasAthleteFilter = Boolean(athleteIdFromQuery)
 
-  const unifiedQuery = useStaffAthleteUnifiedDocuments(
-    hasAthleteFilter ? athleteIdFromQuery : null,
-  )
+  const unifiedQuery = useStaffAthleteUnifiedDocuments(hasAthleteFilter ? athleteIdFromQuery : null)
   const tableQuery = useDocuments({
     enabled: !hasAthleteFilter,
   })
@@ -130,10 +128,7 @@ export default function DocumentiPage() {
     if (!previewHref && !doc.file_url) return
 
     const fileName =
-      doc.display_file_name?.trim() ||
-      doc.file_name ||
-      extractFileName(doc.file_url) ||
-      'documento'
+      doc.display_file_name?.trim() || doc.file_name || extractFileName(doc.file_url) || 'documento'
 
     void (async () => {
       try {
@@ -163,7 +158,10 @@ export default function DocumentiPage() {
         theme="teal"
         onBack={() => window.history.back()}
       >
-        <StaffLazyChunkFallback className="min-h-[min(52vh,420px)] w-full" label="Caricamento documenti…" />
+        <StaffLazyChunkFallback
+          className="min-h-[min(52vh,420px)] w-full"
+          label="Caricamento documenti…"
+        />
       </StaffContentLayout>
     )
   }
@@ -209,7 +207,14 @@ export default function DocumentiPage() {
 
       {/* Drawer dettaglio documento - Lazy loaded solo quando aperto */}
       {showDrawer && selectedDocument && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] w-full max-w-md ml-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] w-full max-w-md ml-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <DocumentDetailDrawer
             document={selectedDocument}
             open={showDrawer}
@@ -225,7 +230,14 @@ export default function DocumentiPage() {
 
       {/* Modal segnalazione non valido - Lazy loaded solo quando aperto */}
       {showInvalidModal && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[180px] max-w-md mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[180px] max-w-md mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <DocumentInvalidModal
             open={showInvalidModal}
             rejectionReason={rejectionReason}

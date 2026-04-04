@@ -39,10 +39,15 @@ export default function StaffAtletaMisurazioneStoricoPage() {
     }
   }, [rawField])
 
-  const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(id ?? '')
+  const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(
+    id ?? '',
+  )
 
-  const { data: progressData, isLoading: progressLoading, error: progressError } =
-    useProgressAnalytics(athleteUserId ?? undefined)
+  const {
+    data: progressData,
+    isLoading: progressLoading,
+    error: progressError,
+  } = useProgressAnalytics(athleteUserId ?? undefined)
 
   const { notify } = useNotify()
   const {
@@ -89,7 +94,10 @@ export default function StaffAtletaMisurazioneStoricoPage() {
       .trim()
       .replace(/\s+/g, '_')
     const slug = safeAthlete || 'atleta'
-    const fieldSlug = entry.field.replace(/[^\p{L}\p{N}_-]+/gu, '_').replace(/_+/g, '_').slice(0, 48)
+    const fieldSlug = entry.field
+      .replace(/[^\p{L}\p{N}_-]+/gu, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 48)
     const fileName = `misurazione-${fieldSlug}-${slug}-${new Date().toISOString().split('T')[0]}.pdf`
 
     setPdfLoading(true)
@@ -158,7 +166,10 @@ export default function StaffAtletaMisurazioneStoricoPage() {
   if (!id) {
     return (
       <div className="p-6">
-        <ErrorState message="ID atleta mancante" onRetry={() => router.push('/dashboard/clienti')} />
+        <ErrorState
+          message="ID atleta mancante"
+          onRetry={() => router.push('/dashboard/clienti')}
+        />
       </div>
     )
   }
@@ -205,102 +216,102 @@ export default function StaffAtletaMisurazioneStoricoPage() {
 
   return (
     <>
-    <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-      <StaffAthleteSubpageHeader
-        backHref={backHref}
-        backAriaLabel="Torna alle misurazioni"
-        title={`${entry.label} — ${name || 'Atleta'}`}
-        description="Valori registrati per data"
-      />
+      <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+        <StaffAthleteSubpageHeader
+          backHref={backHref}
+          backAriaLabel="Torna alle misurazioni"
+          title={`${entry.label} — ${name || 'Atleta'}`}
+          description="Valori registrati per data"
+        />
 
-      <Card className={`relative overflow-hidden ${CARD_DS}`}>
-        <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 sm:px-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 space-y-1.5">
-              <CardTitle className="text-base font-bold text-text-primary md:text-lg flex items-center gap-2">
-                <Scale className="h-4 w-4 text-primary shrink-0" />
-                Storico misurazioni
-              </CardTitle>
-              <p className="text-text-tertiary text-xs">
-                Dal più recente; solo rilevazioni con valore compilato
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => void handleExportPDF()}
-                disabled={!canExportStoricoPdf || pdfLoading || progressLoading}
-              >
-                {pdfLoading ? 'Generazione…' : 'Esporta PDF'}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-text-secondary hover:text-primary"
-                aria-pressed={editUnlocked}
-                aria-label={
-                  editUnlocked
-                    ? 'Blocca modifica ed eliminazione voci'
-                    : 'Sblocca modifica ed eliminazione voci'
-                }
-                onClick={() => setEditUnlocked((v) => !v)}
-              >
-                {editUnlocked ? <Unlock className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4 space-y-6">
-          {!athleteUserId ? (
-            <p className="text-text-secondary text-sm py-6 text-center">
-              Profilo atleta senza user collegato.
-            </p>
-          ) : progressLoading ? (
-            <p className="text-text-secondary text-sm py-8 text-center">Caricamento dati...</p>
-          ) : progressError ? (
-            <p className="text-text-secondary text-sm py-8 text-center">
-              {progressError instanceof Error ? progressError.message : String(progressError)}
-            </p>
-          ) : (
-            <>
-              <RangeStatusMeter
-                value={currentValue}
-                history={chartHistory}
-                title={entry.label}
-                unit={unitSuffix}
-                showValue
-                height={190}
-                misurazioneField={entry.field}
-              />
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-                  Elenco per data
-                </h4>
-                <MisurazioneValoriByDateList
-                  rows={listItems}
-                  valueSuffix={unitSuffix}
-                  actionsUnlocked={editUnlocked}
-                  variant="staff"
-                  misurazioneField={entry.field}
-                  analyticsUserId={athleteUserId ?? undefined}
-                  misurazioneLabel={entry.label}
-                />
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 sm:px-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 space-y-1.5">
+                <CardTitle className="text-base font-bold text-text-primary md:text-lg flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-primary shrink-0" />
+                  Storico misurazioni
+                </CardTitle>
+                <p className="text-text-tertiary text-xs">
+                  Dal più recente; solo rilevazioni con valore compilato
+                </p>
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-    <PdfCanvasPreviewDialog
-      open={pdfOpen}
-      onOpenChange={onPdfOpenChange}
-      blob={pdfBlob}
-      filename={pdfFilename}
-      title={`Anteprima — ${entry.label}`}
-    />
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => void handleExportPDF()}
+                  disabled={!canExportStoricoPdf || pdfLoading || progressLoading}
+                >
+                  {pdfLoading ? 'Generazione…' : 'Esporta PDF'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-text-secondary hover:text-primary"
+                  aria-pressed={editUnlocked}
+                  aria-label={
+                    editUnlocked
+                      ? 'Blocca modifica ed eliminazione voci'
+                      : 'Sblocca modifica ed eliminazione voci'
+                  }
+                  onClick={() => setEditUnlocked((v) => !v)}
+                >
+                  {editUnlocked ? <Unlock className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4 space-y-6">
+            {!athleteUserId ? (
+              <p className="text-text-secondary text-sm py-6 text-center">
+                Profilo atleta senza user collegato.
+              </p>
+            ) : progressLoading ? (
+              <p className="text-text-secondary text-sm py-8 text-center">Caricamento dati...</p>
+            ) : progressError ? (
+              <p className="text-text-secondary text-sm py-8 text-center">
+                {progressError instanceof Error ? progressError.message : String(progressError)}
+              </p>
+            ) : (
+              <>
+                <RangeStatusMeter
+                  value={currentValue}
+                  history={chartHistory}
+                  title={entry.label}
+                  unit={unitSuffix}
+                  showValue
+                  height={190}
+                  misurazioneField={entry.field}
+                />
+                <div className="space-y-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                    Elenco per data
+                  </h4>
+                  <MisurazioneValoriByDateList
+                    rows={listItems}
+                    valueSuffix={unitSuffix}
+                    actionsUnlocked={editUnlocked}
+                    variant="staff"
+                    misurazioneField={entry.field}
+                    analyticsUserId={athleteUserId ?? undefined}
+                    misurazioneLabel={entry.label}
+                  />
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title={`Anteprima — ${entry.label}`}
+      />
     </>
   )
 }

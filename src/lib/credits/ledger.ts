@@ -144,7 +144,9 @@ export type ManualCreditLedgerInsert = {
  * Inserimento manuale da staff (nessun record `payments` / `appointments` obbligatorio).
  * `org_id` è allineato al profilo atleta (trigger `trg_credit_ledger_athlete_org_match`).
  */
-export async function insertManualCreditLedgerRow(payload: ManualCreditLedgerInsert): Promise<void> {
+export async function insertManualCreditLedgerRow(
+  payload: ManualCreditLedgerInsert,
+): Promise<void> {
   const org_id = await orgIdForAthleteProfile(payload.athleteId)
 
   const { error } = await supabase.from('credit_ledger').insert({

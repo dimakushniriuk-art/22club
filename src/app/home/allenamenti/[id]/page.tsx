@@ -28,7 +28,9 @@ type WorkoutDayRow = {
   title: string | null
 }
 
-export function SchedaAllenamentoContent({ workoutPlanIdOverride }: { workoutPlanIdOverride?: string } = {}) {
+export function SchedaAllenamentoContent({
+  workoutPlanIdOverride,
+}: { workoutPlanIdOverride?: string } = {}) {
   const router = useRouter()
   const params = useParams()
   const planId = workoutPlanIdOverride ?? (typeof params?.id === 'string' ? params.id : null)
@@ -203,7 +205,7 @@ export function SchedaAllenamentoContent({ workoutPlanIdOverride }: { workoutPla
                   onClick={(e) => {
                     if (!workoutsPane) return
                     e.preventDefault()
-                      workoutsPane.navigateTo({ kind: 'oggi', workoutPlanId: planId })
+                    workoutsPane.navigateTo({ kind: 'oggi', workoutPlanId: planId })
                   }}
                 >
                   Apri allenamento
@@ -230,7 +232,11 @@ export function SchedaAllenamentoContent({ workoutPlanIdOverride }: { workoutPla
                     onClick={(e) => {
                       if (!workoutsPane) return
                       e.preventDefault()
-                      workoutsPane.navigateTo({ kind: 'giorno', workoutPlanId: planId, dayId: day.id })
+                      workoutsPane.navigateTo({
+                        kind: 'giorno',
+                        workoutPlanId: planId,
+                        dayId: day.id,
+                      })
                     }}
                   >
                     <Card className={`relative overflow-hidden ${CARD_DS} cursor-pointer`}>

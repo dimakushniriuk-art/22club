@@ -27,8 +27,7 @@ const HEADER_BASE_CHAT = 'overflow-hidden bg-black border-b border-white/10 p-3 
 const HEADER_FIXED_TOP = 'fixed inset-x-0 z-20 border-x-0 border-t-0'
 const HEADER_FIXED_PT_SAFE = 'top-0 pt-[calc(10px+env(safe-area-inset-top,0px))]'
 const HEADER_FIXED_PT_STACKED = 'top-[var(--home-athlete-brand-top,0px)] pt-[10px] min-[834px]:pt-3'
-const HEADER_STATIC =
-  'relative rounded-lg pt-3 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)] shrink-0'
+const HEADER_STATIC = 'relative rounded-lg pt-3 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)] shrink-0'
 /** Chat embed / split pane: speculare alla barra navigazione oggi (rounded-b, blur, bordo-b, ombra verso il basso). */
 const HEADER_CHAT_EMBED =
   'relative z-10 shrink-0 overflow-hidden rounded-b-2xl border-b border-white/10 bg-black/95 px-3 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md min-[834px]:px-4 min-[834px]:py-3'

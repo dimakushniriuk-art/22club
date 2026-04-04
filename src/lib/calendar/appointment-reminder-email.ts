@@ -328,8 +328,7 @@ ${creditsTitle}
 
   const calendarIntro = `<p style="margin:0 0 20px;font-family:${f};font-size:16px;line-height:1.7;color:${E.textSec};">Puoi aggiungere l'evento al calendario con il pulsante qui sotto.</p>`
 
-  const mainHtml =
-    detailCard + thanksBlock + creditsBlock + noteBlock + calendarIntro
+  const mainHtml = detailCard + thanksBlock + creditsBlock + noteBlock + calendarIntro
 
   const preFooterHtml = `<p style="margin:0;font-family:${f};font-size:13px;line-height:1.65;color:${E.muted};text-align:center;">In allegato trovi il file <strong style="color:${E.textSec};">.ics</strong> per importare l'evento in Google Calendar, Apple Calendar o Outlook.</p>`
 
@@ -510,10 +509,7 @@ function buildAppointmentChangeHtml(params: SendAppointmentChangeParams): string
       { k: 'Servizio', v: newTypeLabel ?? typeLabel },
       {
         k: 'Luogo',
-        v:
-          newLocation !== undefined && newLocation.trim()
-            ? newLocation.trim()
-            : location || '—',
+        v: newLocation !== undefined && newLocation.trim() ? newLocation.trim() : location || '—',
       },
       { k: 'Referente', v: staffName },
     ]

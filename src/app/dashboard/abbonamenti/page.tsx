@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import {
-  Card,
-  CardContent,
-  Button,
-  Input,
-} from '@/components/ui'
+import { Card, CardContent, Button, Input } from '@/components/ui'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import {
@@ -959,7 +954,12 @@ export default function AbbonamentiPage() {
       {/* Modal Nuovo Pagamento - Lazy loaded solo quando aperto */}
       {showModal && (
         <Suspense
-          fallback={<StaffLazyChunkFallback className="min-h-[240px] max-w-md mx-auto" label="Caricamento modulo…" />}
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[240px] max-w-md mx-auto"
+              label="Caricamento modulo…"
+            />
+          }
         >
           <NuovoPagamentoModal
             open={showModal}

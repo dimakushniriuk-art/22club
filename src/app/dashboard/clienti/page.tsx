@@ -583,7 +583,11 @@ export default function ClientiPage() {
       </section>
 
       {/* Modali e Azioni Bulk - Lazy loaded */}
-      <Suspense fallback={<StaffLazyChunkFallback className="w-full max-w-lg" label="Caricamento filtri…" />}>
+      <Suspense
+        fallback={
+          <StaffLazyChunkFallback className="w-full max-w-lg" label="Caricamento filtri…" />
+        }
+      >
         <ClientiFiltriAvanzati
           open={showFiltriAvanzati}
           onOpenChange={setShowFiltriAvanzati}
@@ -592,7 +596,11 @@ export default function ClientiPage() {
         />
       </Suspense>
 
-      <Suspense fallback={<StaffLazyChunkFallback className="w-full max-w-md" label="Caricamento azioni…" />}>
+      <Suspense
+        fallback={
+          <StaffLazyChunkFallback className="w-full max-w-md" label="Caricamento azioni…" />
+        }
+      >
         <ClientiBulkActions
           selectedCount={selectedIds.size}
           onSendEmail={handleBulkEmail}
@@ -602,7 +610,14 @@ export default function ClientiPage() {
       </Suspense>
 
       {showCreaAtleta && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] max-w-md mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <CreaAtletaModal
             open={showCreaAtleta}
             onOpenChange={handleCloseCreaAtleta}
@@ -612,7 +627,14 @@ export default function ClientiPage() {
       )}
 
       {showModificaAtleta && atletaToEdit && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] max-w-md mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <ModificaAtletaModal
             open={showModificaAtleta}
             onOpenChange={setShowModificaAtleta}
@@ -623,7 +645,14 @@ export default function ClientiPage() {
       )}
 
       {showInvitaCliente && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] max-w-md mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <InvitaClienteModal
             open={showInvitaCliente}
             onOpenChange={setShowInvitaCliente}

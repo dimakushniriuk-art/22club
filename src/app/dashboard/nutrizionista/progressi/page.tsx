@@ -286,8 +286,7 @@ export default function NutrizionistaProgressiPage() {
           progressLogsAccum.push(...((chunkData ?? []) as ProgressLogDbRow[]))
         }
         progressLogsAccum.sort(
-          (a, b) =>
-            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+          (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
         )
         const progressLogsData = progressLogsAccum.slice(0, 500)
         if (!plErr && progressLogsData.length > 0) {
@@ -624,14 +623,7 @@ export default function NutrizionistaProgressiPage() {
     } finally {
       setPdfLoading(false)
     }
-  }, [
-    viewMode,
-    filteredTimeline,
-    filteredAthletes,
-    now,
-    setPdfLoading,
-    openPdfWithBlob,
-  ])
+  }, [viewMode, filteredTimeline, filteredAthletes, now, setPdfLoading, openPdfWithBlob])
 
   const handleNuovoProgressoSubmit = useCallback(async () => {
     if (!nuovoAthleteId || !profileId) return
@@ -740,7 +732,9 @@ export default function NutrizionistaProgressiPage() {
             onClick={() => void handleExportPdf()}
             disabled={
               pdfLoading ||
-              (viewMode === 'timeline' ? filteredTimeline.length === 0 : filteredAthletes.length === 0)
+              (viewMode === 'timeline'
+                ? filteredTimeline.length === 0
+                : filteredAthletes.length === 0)
             }
             aria-busy={pdfLoading}
             className="gap-2"

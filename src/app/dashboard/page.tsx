@@ -117,7 +117,6 @@ const QUICK_ACTIONS: QuickActionItem[] = [
 export default function DashboardPage() {
   const { events: initialEvents, loading, loadError, reload: loadAgenda } = useStaffTodayAgenda()
 
-
   return (
     <StaffContentLayout
       title="Dashboard"
@@ -169,9 +168,15 @@ export default function DashboardPage() {
           <DashboardColumnPanel
             title="Agenda di oggi"
             badge={
-              !loading && loadError == null && initialEvents.length > 0 ? initialEvents.length : undefined
+              !loading && loadError == null && initialEvents.length > 0
+                ? initialEvents.length
+                : undefined
             }
-            footer={<DashboardColumnFooterLink href="/dashboard/calendario">Vai al calendario</DashboardColumnFooterLink>}
+            footer={
+              <DashboardColumnFooterLink href="/dashboard/calendario">
+                Vai al calendario
+              </DashboardColumnFooterLink>
+            }
           >
             {loading ? (
               <DashboardColumnListSkeleton />

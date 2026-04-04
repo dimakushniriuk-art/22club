@@ -172,9 +172,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error:
-              adminLogRes.error.message ||
-              sessionLogRes.error?.message ||
-              'Errore lettura log',
+              adminLogRes.error.message || sessionLogRes.error?.message || 'Errore lettura log',
             code: adminLogRes.error.code,
           },
           { status: 502 },
@@ -236,17 +234,10 @@ export async function POST(request: Request) {
         )
         if (!authorized) {
           const coachId =
-            typeof log.coached_by_profile_id === 'string'
-              ? log.coached_by_profile_id.trim()
-              : ''
+            typeof log.coached_by_profile_id === 'string' ? log.coached_by_profile_id.trim() : ''
           const coachedSession =
-            Boolean(log.is_coached) ||
-            String(log.execution_mode ?? '').toLowerCase() === 'coached'
-          if (
-            coachedSession &&
-            coachId &&
-            normUuidStr(coachId) === normUuidStr(prof.id)
-          ) {
+            Boolean(log.is_coached) || String(log.execution_mode ?? '').toLowerCase() === 'coached'
+          if (coachedSession && coachId && normUuidStr(coachId) === normUuidStr(prof.id)) {
             /**
              * Stesso profilo coach e chiamante: autorizzazione sufficiente (no check org qui;
              * `profiles.org_id` può essere assente in lettura sessione mentre l’insert ledger
@@ -317,7 +308,9 @@ export async function POST(request: Request) {
     /** Allineato al ramo autorizzazione: `execution_mode` può arrivare con casing misto da client/app. */
     const coached =
       Boolean(log.is_coached) ||
-      String(log.execution_mode ?? '').toLowerCase().trim() === 'coached'
+      String(log.execution_mode ?? '')
+        .toLowerCase()
+        .trim() === 'coached'
 
     if (!completed || !coached) {
       return NextResponse.json(

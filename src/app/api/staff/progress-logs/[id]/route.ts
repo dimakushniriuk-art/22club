@@ -20,9 +20,7 @@ function isUuid(v: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)
 }
 
-type AssertResult =
-  | { ok: true }
-  | { ok: false; response: NextResponse }
+type AssertResult = { ok: true } | { ok: false; response: NextResponse }
 
 async function assertStaffCanMutateProgressLog(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -35,15 +33,14 @@ async function assertStaffCanMutateProgressLog(
 
   const profileRow = await resolveProfileByIdentifier(supabase, user.id, 'id, role')
   if (!profileRow || typeof profileRow.id !== 'string') {
-    return { ok: false, response: NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 }) }
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 }),
+    }
   }
 
   const normalized = normalizeRole(profileRow.role as string | undefined)
-  if (
-    normalized !== 'trainer' &&
-    normalized !== 'admin' &&
-    normalized !== 'nutrizionista'
-  ) {
+  if (normalized !== 'trainer' && normalized !== 'admin' && normalized !== 'nutrizionista') {
     return { ok: false, response: NextResponse.json({ error: 'Non autorizzato' }, { status: 403 }) }
   }
 
@@ -76,7 +73,10 @@ async function assertStaffCanMutateProgressLog(
     .maybeSingle()
 
   if (apErr || !athleteProfile?.id) {
-    return { ok: false, response: NextResponse.json({ error: 'Profilo atleta non trovato' }, { status: 404 }) }
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'Profilo atleta non trovato' }, { status: 404 }),
+    }
   }
 
   const athleteProfileId = athleteProfile.id as string
@@ -136,8 +136,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'JSON non valido' }, { status: 400 })
     }
 
-    const raw = body && typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {}
-    const misurazioneField = typeof raw.misurazioneField === 'string' ? raw.misurazioneField.trim() : ''
+    const raw =
+      body && typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {}
+    const misurazioneField =
+      typeof raw.misurazioneField === 'string' ? raw.misurazioneField.trim() : ''
     const valueRaw = raw.value
     const value =
       typeof valueRaw === 'number'
@@ -171,7 +173,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       patchPayload.thighs_cm = value
     }
 
-    const { error: upErr } = await supabase.from('progress_logs').update(patchPayload).eq('id', logId)
+    const { error: upErr } = await supabase
+      .from('progress_logs')
+      .update(patchPayload)
+      .eq('id', logId)
     if (upErr) {
       logger.error('PATCH progress_logs', upErr, { logId })
       return NextResponse.json({ error: upErr.message }, { status: 502 })
@@ -184,7 +189,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const { id: logId } = await params
     if (!logId || !isUuid(logId)) {

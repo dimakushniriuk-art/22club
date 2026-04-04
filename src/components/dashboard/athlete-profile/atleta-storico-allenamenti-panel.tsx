@@ -38,10 +38,12 @@ export function AtletaStoricoAllenamentiPanel({
 }: AtletaStoricoAllenamentiPanelProps) {
   const { notify } = useNotify()
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
-  const { workouts, stats, error: storicoError, reload } = useStoricoAllenamentiProfile(
-    athleteProfileId,
-    selectedPeriod,
-  )
+  const {
+    workouts,
+    stats,
+    error: storicoError,
+    reload,
+  } = useStoricoAllenamentiProfile(athleteProfileId, selectedPeriod)
 
   const {
     open: pdfOpen,
@@ -312,7 +314,10 @@ export function AtletaStoricoAllenamentiPanel({
                         <h3 className="text-text-primary min-w-0 flex-1 truncate text-sm font-semibold sm:text-base">
                           {workout.workout?.titolo || 'Allenamento'}
                         </h3>
-                        <Badge variant="outline" className="shrink-0 border-white/20 text-text-secondary">
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 border-white/20 text-text-secondary"
+                        >
                           {workout.is_coached ? 'Con trainer' : 'In autonomia'}
                         </Badge>
                       </div>

@@ -22,12 +22,7 @@ export function isSupabaseAuthLockStealAbortError(error: unknown): boolean {
 
   const combined = textParts.join(' ').toLowerCase()
   const lockSteal =
-    combined.includes('lock broken') &&
-    (combined.includes('steal') || combined.includes("'steal'"))
+    combined.includes('lock broken') && (combined.includes('steal') || combined.includes("'steal'"))
   if (!lockSteal) return false
-  return (
-    name === 'AbortError' ||
-    combined.includes('aborterror') ||
-    combined.includes('abort')
-  )
+  return name === 'AbortError' || combined.includes('aborterror') || combined.includes('abort')
 }

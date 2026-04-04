@@ -115,7 +115,7 @@ export function DashboardMobileNav() {
   return (
     <>
       {/* Header mobile: solo sotto md */}
-      <header className="md:hidden flex items-center justify-between gap-3 h-14 px-4 shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
+      <header className="md:hidden flex items-center justify-between gap-3 min-h-14 px-4 py-2 shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40 max-md:pt-[calc(62px+env(safe-area-inset-top,0px))]">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}

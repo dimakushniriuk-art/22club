@@ -94,8 +94,13 @@ async function verifyNextServer(): Promise<void> {
       })
       console.log(`  ✅ Server attivo su ${serverUrl}`)
       console.log(`     Status: ${data.status}`)
-      console.log(`     Uptime: ${Math.round(data.uptime)}s`)
+      console.log(`     Uptime: ${Math.round(data.uptime ?? 0)}s`)
       console.log(`     Environment: ${data.environment || 'development'}`)
+      if (data.database && data.database !== 'connected') {
+        console.log(
+          `     ⚠️  DB (da /api/health): ${data.database} — controlla anche le sezioni Supabase sotto`,
+        )
+      }
     } else {
       results.push({
         service: 'Next.js Server',

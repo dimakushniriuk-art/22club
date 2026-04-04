@@ -58,7 +58,9 @@ function AgendaEndsInTimer({
       aria-live="polite"
       aria-label={done ? 'Allenamento terminato' : `Fine tra ${value}`}
     >
-      <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">Fine tra</span>
+      <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
+        Fine tra
+      </span>
       <span
         className={cn(
           'font-mono text-lg font-bold tabular-nums transition-colors duration-300',
@@ -234,7 +236,9 @@ function AgendaEventRowInner({
               </div>
             </div>
             <div className="min-w-0 flex-1 py-0.5">
-              <div className="break-words text-base font-bold leading-snug text-text-primary">{event.athlete}</div>
+              <div className="break-words text-base font-bold leading-snug text-text-primary">
+                {event.athlete}
+              </div>
               <div className="mt-0.5 break-words text-sm leading-snug text-text-secondary">
                 {event.description || event.type}
               </div>

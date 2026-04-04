@@ -64,7 +64,8 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
     }
     const dayData = sessionMap.get(sessionKey)!
     if (point.date > dayData.date) dayData.date = point.date
-    if (!dayData.workout_log_id && point.workout_log_id) dayData.workout_log_id = point.workout_log_id
+    if (!dayData.workout_log_id && point.workout_log_id)
+      dayData.workout_log_id = point.workout_log_id
     if (!dayData.workout_day_exercise_id && point.workout_day_exercise_id) {
       dayData.workout_day_exercise_id = point.workout_day_exercise_id
     }
@@ -129,9 +130,10 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
     value: primaryValue(row),
   }))
 
-  const numericVals = history.map((h) => h.value).filter((v): v is number => v != null && Number.isFinite(v))
-  const currentValue =
-    numericVals.length > 0 ? numericVals[numericVals.length - 1]! : null
+  const numericVals = history
+    .map((h) => h.value)
+    .filter((v): v is number => v != null && Number.isFinite(v))
+  const currentValue = numericVals.length > 0 ? numericVals[numericVals.length - 1]! : null
 
   return {
     chartData,

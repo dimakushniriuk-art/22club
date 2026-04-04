@@ -28,9 +28,11 @@ test.describe('Workout complete', () => {
     }
     await completaBtn.first().click()
 
-    await expect(page.getByRole('heading', { name: /Completamento Allenamento/i })).not.toBeVisible({
-      timeout: 2000,
-    })
+    await expect(page.getByRole('heading', { name: /Completamento Allenamento/i })).not.toBeVisible(
+      {
+        timeout: 2000,
+      },
+    )
     await expect(page).toHaveURL(/\/home\/allenamenti\/riepilogo/, { timeout: 15000 })
   })
 })

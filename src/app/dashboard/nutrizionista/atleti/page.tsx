@@ -422,9 +422,7 @@ export default function NutrizionistaAtletiPage() {
             .from('profiles')
             .select('id, nome, cognome, email')
             .in('id', idChunk)
-          profiles.push(
-            ...((profilesData ?? []) as (typeof profiles)[number][]),
-          )
+          profiles.push(...((profilesData ?? []) as (typeof profiles)[number][]))
         }
         setRows(
           profiles.map((p) => ({

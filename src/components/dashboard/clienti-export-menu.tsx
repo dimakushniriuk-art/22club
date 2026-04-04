@@ -42,7 +42,10 @@ export function ClientiExportMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => void onExportPdf()} aria-label="Esporta clienti come file PDF">
+        <DropdownMenuItem
+          onClick={() => void onExportPdf()}
+          aria-label="Esporta clienti come file PDF"
+        >
           <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
           Esporta come PDF
         </DropdownMenuItem>

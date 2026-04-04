@@ -33,14 +33,7 @@ export function getEnabledAppointmentTypeKeys(
       'allenamento',
     ]
   else if (role === 'nutrizionista')
-    system = [
-      'appuntamento_normale',
-      'prova',
-      'controllo',
-      'riunione',
-      'privato',
-      'nutrizionista',
-    ]
+    system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'nutrizionista']
   else if (role === 'massaggiatore')
     system = ['appuntamento_normale', 'prova', 'controllo', 'riunione', 'privato', 'massaggio']
   else

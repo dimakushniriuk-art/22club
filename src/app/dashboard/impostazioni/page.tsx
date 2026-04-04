@@ -480,7 +480,14 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Profilo */}
         <TabsContent value="profilo" className="mt-6 space-y-6">
-          <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[200px]" label="Caricamento sezione…" />}>
+          <Suspense
+            fallback={
+              <StaffLazyChunkFallback
+                className="w-full min-h-[200px]"
+                label="Caricamento sezione…"
+              />
+            }
+          >
             <SettingsProfileTab
               profile={profile}
               profileLoading={profileLoading}
@@ -493,7 +500,14 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Notifiche */}
         <TabsContent value="notifiche" className="mt-6 space-y-6">
-          <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[200px]" label="Caricamento sezione…" />}>
+          <Suspense
+            fallback={
+              <StaffLazyChunkFallback
+                className="w-full min-h-[200px]"
+                label="Caricamento sezione…"
+              />
+            }
+          >
             <SettingsNotificationsTab
               notifications={notifications}
               loading={loading}
@@ -506,7 +520,14 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Privacy */}
         <TabsContent value="privacy" className="mt-6 space-y-6">
-          <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[200px]" label="Caricamento sezione…" />}>
+          <Suspense
+            fallback={
+              <StaffLazyChunkFallback
+                className="w-full min-h-[200px]"
+                label="Caricamento sezione…"
+              />
+            }
+          >
             <SettingsPrivacyTab
               privacy={privacy}
               loading={loading}
@@ -518,14 +539,28 @@ export default function ImpostazioniPage() {
 
         {/* Tab: Profilo professionale (trainer) */}
         <TabsContent value="profilo-professionale" className="mt-6 space-y-6">
-          <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[200px]" label="Caricamento sezione…" />}>
+          <Suspense
+            fallback={
+              <StaffLazyChunkFallback
+                className="w-full min-h-[200px]"
+                label="Caricamento sezione…"
+              />
+            }
+          >
             <SettingsTrainerProfileTab />
           </Suspense>
         </TabsContent>
 
         {/* Tab: Account */}
         <TabsContent value="account" className="mt-6 space-y-6">
-          <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[200px]" label="Caricamento sezione…" />}>
+          <Suspense
+            fallback={
+              <StaffLazyChunkFallback
+                className="w-full min-h-[200px]"
+                label="Caricamento sezione…"
+              />
+            }
+          >
             <SettingsAccountTab
               account={account}
               loading={loading}

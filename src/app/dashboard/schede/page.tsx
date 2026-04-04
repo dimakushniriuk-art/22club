@@ -154,7 +154,9 @@ export default function SchedePage() {
       }
     >
       {showFilters && (
-        <Suspense fallback={<StaffLazyChunkFallback className="w-full" label="Caricamento filtri…" />}>
+        <Suspense
+          fallback={<StaffLazyChunkFallback className="w-full" label="Caricamento filtri…" />}
+        >
           <WorkoutPlansFilters
             searchTerm={searchTerm}
             statusFilter={statusFilter}
@@ -189,7 +191,12 @@ export default function SchedePage() {
       {/* Workout Detail Modal - Lazy loaded solo quando aperto */}
       {selectedWorkoutId && (
         <Suspense
-          fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-lg mx-auto" label="Caricamento scheda…" />}
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] max-w-lg mx-auto"
+              label="Caricamento scheda…"
+            />
+          }
         >
           <WorkoutDetailModal
             workoutId={selectedWorkoutId}

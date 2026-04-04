@@ -186,7 +186,9 @@ function AppointmentStatoBadge({ status, type }: { status: string | null; type: 
         'text-xs max-w-full min-w-0 inline-block rounded-lg font-medium border px-2 py-1.5',
         variant === 'success' ? 'bg-emerald-500/14 text-emerald-300 border-emerald-500/22' : '',
         variant === 'destructive' ? 'bg-destructive/10 text-destructive border-destructive/20' : '',
-        variant === 'secondary' ? 'bg-background-secondary/30 text-text-secondary border-white/10' : '',
+        variant === 'secondary'
+          ? 'bg-background-secondary/30 text-text-secondary border-white/10'
+          : '',
       )}
     >
       <span className="flex items-start gap-1.5 min-w-0">
@@ -284,9 +286,7 @@ function SchedaAssignmentList({
                 ) : null}
               </div>
               {s.created_at ? (
-                <p className="text-[11px] text-text-tertiary">
-                  Creata {formatDate(s.created_at)}
-                </p>
+                <p className="text-[11px] text-text-tertiary">Creata {formatDate(s.created_at)}</p>
               ) : null}
               {s.objective ? (
                 <p className="text-text-secondary text-xs line-clamp-2">{s.objective}</p>
@@ -296,7 +296,9 @@ function SchedaAssignmentList({
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0 text-right">
               {periodoLabel ? (
-                <span className="text-text-secondary text-xs whitespace-nowrap">{periodoLabel}</span>
+                <span className="text-text-secondary text-xs whitespace-nowrap">
+                  {periodoLabel}
+                </span>
               ) : null}
               <div className="flex flex-wrap justify-end gap-1">
                 {s.is_active ? (
@@ -593,7 +595,9 @@ export function AthleteWorkoutsTab({
     if (loading) return
     if (window.location.hash !== '#storico-allenamenti') return
     const t = window.setTimeout(() => {
-      document.getElementById('storico-allenamenti')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document
+        .getElementById('storico-allenamenti')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 150)
     return () => window.clearTimeout(t)
   }, [loading, athleteId, hubSection, embedded, router])
@@ -642,16 +646,19 @@ export function AthleteWorkoutsTab({
                 Allenamenti e accesso ai dati
               </h3>
               <p className="max-w-2xl text-sm leading-relaxed text-text-secondary/95 sm:text-[15px]">
-                Sessioni da chiudere, calendario e storico completati con filtri ed export PDF — in questa panoramica
-                trovi anche la cronologia di tutte le schede collegate all&apos;atleta nel tempo; usa le schede qui sotto
-                per aprire ogni area in una pagina dedicata.
+                Sessioni da chiudere, calendario e storico completati con filtri ed export PDF — in
+                questa panoramica trovi anche la cronologia di tutte le schede collegate
+                all&apos;atleta nel tempo; usa le schede qui sotto per aprire ogni area in una
+                pagina dedicata.
               </p>
               {!loading && !isTotallyEmpty ? (
                 <p className="text-text-primary/90 text-sm pt-1">
                   <span className="font-medium text-text-primary">{attiveLabel}</span>{' '}
                   {attiveLabel === 1 ? 'scheda attiva' : 'schede attive'}
                   {' · '}
-                  <span className="text-text-primary/90">{sessioniUltimi30} sessioni registrate (30 gg)</span>
+                  <span className="text-text-primary/90">
+                    {sessioniUltimi30} sessioni registrate (30 gg)
+                  </span>
                   {appointments.length > 0 ? (
                     <>
                       {' · '}
@@ -771,8 +778,8 @@ export function AthleteWorkoutsTab({
                       Cronologia schede
                     </h4>
                     <p className="text-text-secondary text-xs sm:text-sm max-w-2xl leading-relaxed">
-                      Elenco di tutte le schede con questo atleta, dalla più recente: data di creazione, periodo previsto
-                      e stato (attiva / non attiva / bozza).
+                      Elenco di tutte le schede con questo atleta, dalla più recente: data di
+                      creazione, periodo previsto e stato (attiva / non attiva / bozza).
                     </p>
                   </div>
                   <Link
@@ -799,15 +806,17 @@ export function AthleteWorkoutsTab({
                 Allenamenti atleta
               </h3>
               <p className="text-text-secondary text-sm leading-relaxed max-w-2xl">
-                Schede assegnate, sessioni da chiudere, calendario e storico completati con filtri ed export PDF —
-                tutto in un’unica vista.
+                Schede assegnate, sessioni da chiudere, calendario e storico completati con filtri
+                ed export PDF — tutto in un’unica vista.
               </p>
               {!loading && !isTotallyEmpty ? (
                 <p className="text-text-primary/90 text-sm">
                   <span className="font-medium text-text-primary">{attiveLabel}</span>{' '}
                   {attiveLabel === 1 ? 'scheda attiva' : 'schede attive'}
                   {' · '}
-                  <span className="text-text-primary/90">{sessioniUltimi30} sessioni registrate (30 gg)</span>
+                  <span className="text-text-primary/90">
+                    {sessioniUltimi30} sessioni registrate (30 gg)
+                  </span>
                   {appointments.length > 0 ? (
                     <>
                       {' · '}
@@ -907,48 +916,49 @@ export function AthleteWorkoutsTab({
         </>
       )}
 
-        {loadError ? (
-          <div
-            role="alert"
-            className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-          >
-            {loadError}
-          </div>
-        ) : null}
+      {loadError ? (
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {loadError}
+        </div>
+      ) : null}
 
-        {loading ? (
-          <p className="text-text-secondary text-sm py-4">Caricamento...</p>
-        ) : isTotallyEmpty ? (
-          <div className="text-center py-12">
-            <div className="rounded-lg p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
-              <Dumbbell className="h-8 w-8" />
-            </div>
-            <p className="text-text-primary font-medium mb-2">Nessun dato allenamenti</p>
-            <p className="text-text-secondary text-sm mb-4">
-              Non risultano schede, sessioni o appuntamenti per questo atleta
-            </p>
-            <Link href={`/dashboard/schede?athlete_id=${athleteId}&new=true`}>
-              <Button variant="default" size="sm">
-                Crea Prima Scheda
-              </Button>
-            </Link>
+      {loading ? (
+        <p className="text-text-secondary text-sm py-4">Caricamento...</p>
+      ) : isTotallyEmpty ? (
+        <div className="text-center py-12">
+          <div className="rounded-lg p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
+            <Dumbbell className="h-8 w-8" />
           </div>
-        ) : (
-          <div className="space-y-4 sm:space-y-6">
-            {(!showHub || hubSection === 'schede') ? (
+          <p className="text-text-primary font-medium mb-2">Nessun dato allenamenti</p>
+          <p className="text-text-secondary text-sm mb-4">
+            Non risultano schede, sessioni o appuntamenti per questo atleta
+          </p>
+          <Link href={`/dashboard/schede?athlete_id=${athleteId}&new=true`}>
+            <Button variant="default" size="sm">
+              Crea Prima Scheda
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4 sm:space-y-6">
+          {!showHub || hubSection === 'schede' ? (
             <section id="section-schede" className={SECTION_BLOCK}>
               <h4 className="text-text-primary font-semibold flex items-center gap-2">
                 <Dumbbell className="h-4 w-4 text-primary" />
                 Schede assegnate
               </h4>
               <p className="text-text-secondary text-xs sm:text-sm">
-                Ordinate dalla più recente (data creazione). Comprende schede attive, archiviate e bozze.
+                Ordinate dalla più recente (data creazione). Comprende schede attive, archiviate e
+                bozze.
               </p>
               <SchedaAssignmentList schede={schede} giorniPerScheda={giorniPerScheda} />
             </section>
-            ) : null}
+          ) : null}
 
-            {(!showHub || hubSection === 'sessioni-aperte') ? (
+          {!showHub || hubSection === 'sessioni-aperte' ? (
             <section id="section-aperte" className={SECTION_BLOCK}>
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <h4 className="text-text-primary font-semibold flex items-center gap-2">
@@ -1057,9 +1067,9 @@ export function AthleteWorkoutsTab({
                 </ul>
               )}
             </section>
-            ) : null}
+          ) : null}
 
-            {(!showHub || hubSection === 'appuntamenti') ? (
+          {!showHub || hubSection === 'appuntamenti' ? (
             <section id="section-appuntamenti" className={SECTION_BLOCK}>
               <div>
                 <h4 className="text-text-primary font-semibold flex items-center gap-2">
@@ -1086,7 +1096,9 @@ export function AthleteWorkoutsTab({
                               <TableHead className="h-10 px-3 sm:px-4 w-[1%] whitespace-nowrap">
                                 Data e ora
                               </TableHead>
-                              <TableHead className="h-10 px-3 sm:px-4 min-w-[8rem]">Trainer</TableHead>
+                              <TableHead className="h-10 px-3 sm:px-4 min-w-[8rem]">
+                                Trainer
+                              </TableHead>
                               <TableHead className="h-10 px-3 sm:px-4 text-right min-w-[10rem]">
                                 Stato
                               </TableHead>
@@ -1137,7 +1149,9 @@ export function AthleteWorkoutsTab({
                               <TableHead className="h-10 px-3 sm:px-4 w-[1%] whitespace-nowrap">
                                 Data e ora
                               </TableHead>
-                              <TableHead className="h-10 px-3 sm:px-4 min-w-[8rem]">Trainer</TableHead>
+                              <TableHead className="h-10 px-3 sm:px-4 min-w-[8rem]">
+                                Trainer
+                              </TableHead>
                               <TableHead className="h-10 px-3 sm:px-4 text-right min-w-[10rem]">
                                 Stato
                               </TableHead>
@@ -1174,9 +1188,9 @@ export function AthleteWorkoutsTab({
                 </div>
               )}
             </section>
-            ) : null}
+          ) : null}
 
-            {(!showHub || hubSection === 'completati') ? (
+          {!showHub || hubSection === 'completati' ? (
             <div id="storico-allenamenti" className="space-y-3 scroll-mt-28">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                 <div>
@@ -1195,97 +1209,100 @@ export function AthleteWorkoutsTab({
                 reloadToken={listRefreshKey}
               />
             </div>
-            ) : null}
-          </div>
-        )}
+          ) : null}
+        </div>
+      )}
 
-        <AlertDialog
-          open={finalizeTarget !== null}
-          onOpenChange={(open) => {
-            if (!open && !finalizeBusy) setFinalizeTarget(null)
-          }}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Finalizzare la sessione in corso?</AlertDialogTitle>
-              <AlertDialogDescription className="space-y-3 text-left">
-                <span className="block">
-                  Verrà usato quanto già salvato in database (serie per questo log). Se non risultano
-                  serie, l’operazione fallirà.
-                </span>
-                <div className="flex items-start gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="finalize-coached"
-                    className={cn(
-                      'mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border border-white/10',
-                      'bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 text-primary',
-                      'focus:ring-2 focus:ring-primary/25 focus:ring-offset-0 focus:outline-none',
-                    )}
-                    checked={finalizeCoached}
-                    onChange={(e) => {
-                      const v = e.target.checked
-                      setFinalizeCoached(v)
-                      if (!v) setFinalizeRequestDebit(false)
-                    }}
-                  />
-                  <label htmlFor="finalize-coached" className="cursor-pointer text-sm font-normal leading-snug">
-                    Sessione con trainer (coachato)
-                  </label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input
-                    type="checkbox"
-                    id="finalize-debit"
-                    className={cn(
-                      'mt-0.5 h-4 w-4 shrink-0 rounded border border-white/10',
-                      'bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 text-primary',
-                      'focus:ring-2 focus:ring-primary/25 focus:ring-offset-0 focus:outline-none',
-                      !finalizeCoached && 'cursor-not-allowed opacity-50',
-                    )}
-                    checked={finalizeRequestDebit}
-                    disabled={!finalizeCoached}
-                    onChange={(e) => setFinalizeRequestDebit(e.target.checked)}
-                  />
-                  <label
-                    htmlFor="finalize-debit"
-                    className={cn(
-                      'text-sm font-normal leading-snug',
-                      finalizeCoached ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
-                    )}
-                  >
-                    Scala una lezione PT (se applicabile e non già scalata)
-                  </label>
-                </div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={finalizeBusy}
-                onClick={() => setFinalizeTarget(null)}
-              >
-                Annulla
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                disabled={finalizeBusy}
-                onClick={() => void runFinalizeSession()}
-              >
-                {finalizeBusy ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Attendi…
-                  </>
-                ) : (
-                  'Conferma'
-                )}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      <AlertDialog
+        open={finalizeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !finalizeBusy) setFinalizeTarget(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Finalizzare la sessione in corso?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3 text-left">
+              <span className="block">
+                Verrà usato quanto già salvato in database (serie per questo log). Se non risultano
+                serie, l’operazione fallirà.
+              </span>
+              <div className="flex items-start gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="finalize-coached"
+                  className={cn(
+                    'mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border border-white/10',
+                    'bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 text-primary',
+                    'focus:ring-2 focus:ring-primary/25 focus:ring-offset-0 focus:outline-none',
+                  )}
+                  checked={finalizeCoached}
+                  onChange={(e) => {
+                    const v = e.target.checked
+                    setFinalizeCoached(v)
+                    if (!v) setFinalizeRequestDebit(false)
+                  }}
+                />
+                <label
+                  htmlFor="finalize-coached"
+                  className="cursor-pointer text-sm font-normal leading-snug"
+                >
+                  Sessione con trainer (coachato)
+                </label>
+              </div>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="finalize-debit"
+                  className={cn(
+                    'mt-0.5 h-4 w-4 shrink-0 rounded border border-white/10',
+                    'bg-gradient-to-b from-zinc-800/90 to-zinc-900/90 text-primary',
+                    'focus:ring-2 focus:ring-primary/25 focus:ring-offset-0 focus:outline-none',
+                    !finalizeCoached && 'cursor-not-allowed opacity-50',
+                  )}
+                  checked={finalizeRequestDebit}
+                  disabled={!finalizeCoached}
+                  onChange={(e) => setFinalizeRequestDebit(e.target.checked)}
+                />
+                <label
+                  htmlFor="finalize-debit"
+                  className={cn(
+                    'text-sm font-normal leading-snug',
+                    finalizeCoached ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
+                  )}
+                >
+                  Scala una lezione PT (se applicabile e non già scalata)
+                </label>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={finalizeBusy}
+              onClick={() => setFinalizeTarget(null)}
+            >
+              Annulla
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              disabled={finalizeBusy}
+              onClick={() => void runFinalizeSession()}
+            >
+              {finalizeBusy ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Attendi…
+                </>
+              ) : (
+                'Conferma'
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 
@@ -1315,7 +1332,9 @@ export function AthleteWorkoutsTab({
           className="pointer-events-none absolute bottom-1/4 right-1/4 h-48 w-48 rounded-full bg-purple-500/[0.05] blur-3xl"
           aria-hidden
         />
-        <CardContent className="relative z-10 space-y-6 p-4 sm:p-6 md:p-8">{panelInner}</CardContent>
+        <CardContent className="relative z-10 space-y-6 p-4 sm:p-6 md:p-8">
+          {panelInner}
+        </CardContent>
       </Card>
     )
   }

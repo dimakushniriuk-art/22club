@@ -166,7 +166,12 @@ export function AgendaTimeline({
   const listWrapperClass = embedded ? EMBEDDED_LIST_CLASS : 'space-y-3'
 
   return (
-    <div className={cn('relative transition-all duration-200', embedded && 'min-h-0 flex flex-1 flex-col')}>
+    <div
+      className={cn(
+        'relative transition-all duration-200',
+        embedded && 'min-h-0 flex flex-1 flex-col',
+      )}
+    >
       <div
         className={cn(
           'relative',
@@ -176,7 +181,9 @@ export function AgendaTimeline({
       >
         {!embedded && (
           <div className="mb-3 sm:mb-4">
-            <h2 className="text-xs font-medium text-text-secondary sm:text-sm">I tuoi appuntamenti di oggi</h2>
+            <h2 className="text-xs font-medium text-text-secondary sm:text-sm">
+              I tuoi appuntamenti di oggi
+            </h2>
           </div>
         )}
 
@@ -185,11 +192,19 @@ export function AgendaTimeline({
             const timeStatus = getTimeStatus(event.time)
             const isActive = event.status === 'in-progress' || timeStatus === 'starting'
             const isOverdue = timeStatus === 'overdue' || timeStatus === 'late'
-            const { nome: athleteNome, cognome: athleteCognome } = getAthleteNameLines(event.athlete)
+            const { nome: athleteNome, cognome: athleteCognome } = getAthleteNameLines(
+              event.athlete,
+            )
             const endTimeLabel = formatLocalHHmm(event.ends_at)
 
             const rowInner = (
-              <div className={cn('flex items-center', embedded ? 'gap-2.5' : 'gap-3', !embedded && 'p-4')}>
+              <div
+                className={cn(
+                  'flex items-center',
+                  embedded ? 'gap-2.5' : 'gap-3',
+                  !embedded && 'p-4',
+                )}
+              >
                 <div className="shrink-0">
                   <Avatar
                     src={event.athlete_avatar}
@@ -215,7 +230,9 @@ export function AgendaTimeline({
                     {athleteNome}
                   </div>
                   {athleteCognome !== '' ? (
-                    <div className="truncate text-xs leading-tight text-text-secondary">{athleteCognome}</div>
+                    <div className="truncate text-xs leading-tight text-text-secondary">
+                      {athleteCognome}
+                    </div>
                   ) : null}
                 </div>
 

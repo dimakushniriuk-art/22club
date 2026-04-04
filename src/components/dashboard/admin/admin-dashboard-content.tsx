@@ -28,7 +28,11 @@ export function AdminDashboardContent() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const { data: rows, count, error } = await supabase
+        const {
+          data: rows,
+          count,
+          error,
+        } = await supabase
           .from('profiles')
           .select('id, role, stato, created_at, org_id', { count: 'exact' })
 

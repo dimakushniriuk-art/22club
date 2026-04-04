@@ -16,12 +16,5 @@ export function AppuntamentiPageHeader({
   subtitle = DEFAULT_SUBTITLE,
   onBack,
 }: AppuntamentiPageHeaderProps) {
-  return (
-    <PageHeaderFixed
-      variant="chat"
-      title={title}
-      subtitle={subtitle}
-      onBack={onBack}
-    />
-  )
+  return <PageHeaderFixed variant="chat" title={title} subtitle={subtitle} onBack={onBack} />
 }

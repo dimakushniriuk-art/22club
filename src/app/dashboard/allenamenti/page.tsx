@@ -417,7 +417,11 @@ export default function AllenamentiDashboardPage() {
 
       {/* Modals - Lazy loaded solo quando aperti */}
       {showFiltriAvanzati && (
-        <Suspense fallback={<StaffLazyChunkFallback className="w-full max-w-lg" label="Caricamento filtri…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback className="w-full max-w-lg" label="Caricamento filtri…" />
+          }
+        >
           <AllenamentiFiltriAvanzati
             open={showFiltriAvanzati}
             onOpenChange={setShowFiltriAvanzati}
@@ -428,7 +432,14 @@ export default function AllenamentiDashboardPage() {
       )}
 
       {selectedAllenamento && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[220px] max-w-md mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[220px] max-w-md mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <AllenamentoDettaglioModal
             allenamentoId={selectedAllenamento}
             open={selectedAllenamento !== null}

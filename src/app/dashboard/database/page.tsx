@@ -16,7 +16,11 @@ type ExercisePreviewRow = {
 
 export default function DatabasePage() {
   const router = useRouter()
-  const { clienti, total, loading: clientiLoading } = useClienti({
+  const {
+    clienti,
+    total,
+    loading: clientiLoading,
+  } = useClienti({
     page: 1,
     pageSize: 8,
     realtime: false,
@@ -137,7 +141,9 @@ export default function DatabasePage() {
                               size="sm"
                             />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-text-primary truncate">{label}</p>
+                              <p className="text-sm font-medium text-text-primary truncate">
+                                {label}
+                              </p>
                               <p className="text-xs text-text-secondary truncate">
                                 {c.email || '—'}
                               </p>
@@ -151,7 +157,10 @@ export default function DatabasePage() {
 
                 <div className="mt-5 inline-flex items-center justify-center gap-2 min-h-[44px] w-full rounded-xl border border-white/[0.10] bg-white/[0.04] text-sm font-medium text-primary hover:bg-white/[0.06] transition-colors">
                   <span>Apri database Clienti</span>
-                  <ChevronRight className="h-4 w-4 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden />
+                  <ChevronRight
+                    className="h-4 w-4 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
                 </div>
               </button>
 
@@ -193,7 +202,9 @@ export default function DatabasePage() {
                           className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2"
                           title={ex.name}
                         >
-                          <p className="text-sm font-medium text-text-primary truncate">{ex.name}</p>
+                          <p className="text-sm font-medium text-text-primary truncate">
+                            {ex.name}
+                          </p>
                           <p className="text-xs text-text-secondary truncate">
                             {ex.muscle_group?.trim() || '—'}
                           </p>
@@ -205,7 +216,10 @@ export default function DatabasePage() {
 
                 <div className="mt-5 inline-flex items-center justify-center gap-2 min-h-[44px] w-full rounded-xl border border-white/[0.10] bg-white/[0.04] text-sm font-medium text-primary hover:bg-white/[0.06] transition-colors">
                   <span>Apri database Esercizi</span>
-                  <ChevronRight className="h-4 w-4 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden />
+                  <ChevronRight
+                    className="h-4 w-4 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
                 </div>
               </button>
             </div>
@@ -215,4 +229,3 @@ export default function DatabasePage() {
     </StaffContentLayout>
   )
 }
-

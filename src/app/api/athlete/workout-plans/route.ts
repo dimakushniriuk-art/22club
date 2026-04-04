@@ -74,9 +74,11 @@ export async function GET() {
           .select('id, nome, cognome')
           .in('id', idChunk)
         if (profilesData?.length) {
-          profilesData.forEach((p: { id: string; nome?: string | null; cognome?: string | null }) => {
-            createdByProfiles[p.id] = { nome: p.nome, cognome: p.cognome }
-          })
+          profilesData.forEach(
+            (p: { id: string; nome?: string | null; cognome?: string | null }) => {
+              createdByProfiles[p.id] = { nome: p.nome, cognome: p.cognome }
+            },
+          )
         }
       }
     }

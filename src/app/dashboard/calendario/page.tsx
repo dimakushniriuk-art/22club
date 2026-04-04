@@ -530,7 +530,11 @@ export function CalendarPageContent({
     const keys = getEnabledAppointmentTypeKeys(calendarSettings, role)
     return (
       keys[0] ??
-      (role === 'massaggiatore' ? 'massaggio' : role === 'nutrizionista' ? 'nutrizionista' : 'allenamento')
+      (role === 'massaggiatore'
+        ? 'massaggio'
+        : role === 'nutrizionista'
+          ? 'nutrizionista'
+          : 'allenamento')
     )
   }, [calendarSettings, role])
   const initialCalendarView =
@@ -1144,7 +1148,10 @@ export function CalendarPageContent({
           <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
             <Suspense
               fallback={
-                <StaffLazyChunkFallback className="min-h-[min(70dvh,520px)] w-full" label="Caricamento modulo…" />
+                <StaffLazyChunkFallback
+                  className="min-h-[min(70dvh,520px)] w-full"
+                  label="Caricamento modulo…"
+                />
               }
             >
               <AppointmentForm

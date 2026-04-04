@@ -45,4 +45,3 @@ export function WorkoutsPaneProvider({
 export function useWorkoutsPaneOptional(): WorkoutsPaneContextValue | null {
   return useContext(WorkoutsPaneContext)
 }
-

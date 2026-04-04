@@ -84,14 +84,12 @@ export function useWorkouts({
     stats,
     loading,
     error,
-    fetchWorkouts: () =>
-      userId && fetchWorkouts(userId, role || null, { athleteSubjectProfileId }),
+    fetchWorkouts: () => userId && fetchWorkouts(userId, role || null, { athleteSubjectProfileId }),
     fetchCurrentWorkout: () => userId && role === 'athlete' && fetchCurrentWorkout(userId),
     fetchExercises,
     createWorkout,
     updateWorkoutSet,
     completeExercise,
-    refetch: () =>
-      userId && fetchWorkouts(userId, role || null, { athleteSubjectProfileId }),
+    refetch: () => userId && fetchWorkouts(userId, role || null, { athleteSubjectProfileId }),
   }
 }

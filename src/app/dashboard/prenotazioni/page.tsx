@@ -18,7 +18,11 @@ import { CalendarCheck, CalendarDays } from 'lucide-react'
 export default function PrenotazioniPage() {
   const router = useRouter()
   const { appointments, appointmentsLoading } = useStaffAppointmentsTable()
-  const { clienti: atleti, loading: atletiLoading, error: atletiError } = useClienti({
+  const {
+    clienti: atleti,
+    loading: atletiLoading,
+    error: atletiError,
+  } = useClienti({
     page: 1,
     pageSize: 250,
     realtime: false,
@@ -116,7 +120,9 @@ export default function PrenotazioniPage() {
                 {appointmentsLoading ? (
                   <DashboardColumnListSkeleton />
                 ) : todays.length === 0 ? (
-                  <DashboardColumnEmpty>Nessun appuntamento in agenda per oggi.</DashboardColumnEmpty>
+                  <DashboardColumnEmpty>
+                    Nessun appuntamento in agenda per oggi.
+                  </DashboardColumnEmpty>
                 ) : (
                   <div className="space-y-3">
                     {todays.map((apt: AppointmentTable) => {
@@ -247,15 +253,14 @@ export default function PrenotazioniPage() {
                 {atleti.map((a: Cliente) => {
                   const nome = a.nome ?? a.first_name ?? ''
                   const cognome = a.cognome ?? a.last_name ?? ''
-                  const fallbackText =
-                    `${nome} ${cognome}`.trim()
-                      ? `${nome} ${cognome}`
-                          .trim()
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .slice(0, 2)
-                      : '?'
+                  const fallbackText = `${nome} ${cognome}`.trim()
+                    ? `${nome} ${cognome}`
+                        .trim()
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .slice(0, 2)
+                    : '?'
                   return (
                     <button
                       type="button"
@@ -287,4 +292,3 @@ export default function PrenotazioniPage() {
     </StaffContentLayout>
   )
 }
-

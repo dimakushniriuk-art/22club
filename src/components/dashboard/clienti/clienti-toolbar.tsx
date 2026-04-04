@@ -45,7 +45,9 @@ export function ClientiToolbar({
     Icon: typeof Grid3x3
   }> = [
     { value: 'grid', ariaLabel: 'Vista griglia', Icon: Grid3x3 },
-    ...(!isMobile ? [{ value: 'table' as const, ariaLabel: 'Vista tabella', Icon: TableIcon }] : []),
+    ...(!isMobile
+      ? [{ value: 'table' as const, ariaLabel: 'Vista tabella', Icon: TableIcon }]
+      : []),
   ]
   return (
     <>

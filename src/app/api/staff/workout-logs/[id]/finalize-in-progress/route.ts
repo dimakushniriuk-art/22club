@@ -73,10 +73,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (logErr) {
       logger.warn('workout_logs lookup', logErr, { logId })
-      return NextResponse.json(
-        { error: logErr.message || 'Errore lettura log' },
-        { status: 502 },
-      )
+      return NextResponse.json({ error: logErr.message || 'Errore lettura log' }, { status: 502 })
     }
 
     if (!logRow?.id) {
@@ -172,14 +169,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     }
 
-    const coached =
-      coachedExplicit !== undefined ? coachedExplicit : Boolean(logRow.is_coached)
+    const coached = coachedExplicit !== undefined ? coachedExplicit : Boolean(logRow.is_coached)
 
     let coachedByProfileId: string | null =
       typeof logRow.coached_by_profile_id === 'string' ? logRow.coached_by_profile_id.trim() : null
 
-    let executionMode: 'solo' | 'coached' =
-      logRow.execution_mode === 'coached' ? 'coached' : 'solo'
+    let executionMode: 'solo' | 'coached' = logRow.execution_mode === 'coached' ? 'coached' : 'solo'
 
     if (coached) {
       executionMode = 'coached'
@@ -219,7 +214,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (updErr) {
       logger.error('workout_logs finalize update', updErr, { logId })
-      return NextResponse.json({ error: updErr.message || 'Aggiornamento fallito' }, { status: 502 })
+      return NextResponse.json(
+        { error: updErr.message || 'Aggiornamento fallito' },
+        { status: 502 },
+      )
     }
 
     return NextResponse.json({

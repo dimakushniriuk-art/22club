@@ -686,7 +686,9 @@ export function RiepilogoPageContent({
                     .update({ workout_log_id: workoutLogId })
                     .in('id', idChunk)
                   if (repErr) {
-                    logger.warn('Repair workout_sets → workout_log fallito', repErr, { workoutLogId })
+                    logger.warn('Repair workout_sets → workout_log fallito', repErr, {
+                      workoutLogId,
+                    })
                     break
                   }
                 }
@@ -1335,7 +1337,9 @@ export function RiepilogoPageContent({
                           <span className="min-w-0">N°</span>
                           <span className="min-w-0 text-center sm:text-left">Peso</span>
                           <span className="min-w-0 text-center sm:text-left">Rip.</span>
-                          <span className="sr-only min-w-0 sm:not-sr-only sm:w-9 sm:shrink-0">Stato</span>
+                          <span className="sr-only min-w-0 sm:not-sr-only sm:w-9 sm:shrink-0">
+                            Stato
+                          </span>
                         </div>
                         {exercise.sets.map((set, setIndex) => (
                           <div
@@ -1494,7 +1498,9 @@ export function RiepilogoPageContent({
               variant="outline"
               className="min-h-10 w-full rounded-xl border border-white/10 text-sm text-text-primary hover:bg-white/5 hover:border-white/20"
               disabled={paneFinalizeLoading}
-              onClick={workoutsPane ? () => void handleStaffPaneSaveAndComplete() : goToAllenamentiHome}
+              onClick={
+                workoutsPane ? () => void handleStaffPaneSaveAndComplete() : goToAllenamentiHome
+              }
             >
               {workoutsPane
                 ? paneFinalizeLoading

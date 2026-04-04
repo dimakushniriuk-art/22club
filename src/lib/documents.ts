@@ -140,7 +140,10 @@ export function resolveInvoiceDocumentsStoragePath(invoiceUrl: string): string |
 }
 
 /** Nome file consigliato per anteprima/download da `invoice_url` (path storage o URL legacy). */
-export function invoiceDocumentSuggestedFileName(invoiceUrl: string, fallbackDateIso: string): string {
+export function invoiceDocumentSuggestedFileName(
+  invoiceUrl: string,
+  fallbackDateIso: string,
+): string {
   const filePath = resolveInvoiceDocumentsStoragePath(invoiceUrl)
   if (filePath) {
     const fromPath = filePath.split('/').filter(Boolean).pop()
@@ -286,10 +289,12 @@ export function extractFileType(fileUrl: string): string {
 }
 
 /** Titolo riga / drawer: preferisce `display_file_name` e `file_name`. */
-export function documentDisplayFileName(doc: Pick<DocumentDTO, 'file_url'> & {
-  display_file_name?: string | null
-  file_name?: string | null
-}): string {
+export function documentDisplayFileName(
+  doc: Pick<DocumentDTO, 'file_url'> & {
+    display_file_name?: string | null
+    file_name?: string | null
+  },
+): string {
   const fromDisplay = doc.display_file_name?.trim()
   if (fromDisplay) return fromDisplay
   const fromMeta = doc.file_name?.trim()

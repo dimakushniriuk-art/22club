@@ -166,7 +166,8 @@ export default function PrenotazioniAtletaPage() {
     })
   }, [appointments, rangeFilter, search, statusFilter])
 
-  const hasActiveFilters = search.trim().length > 0 || statusFilter !== 'tutti' || rangeFilter !== 'tutti'
+  const hasActiveFilters =
+    search.trim().length > 0 || statusFilter !== 'tutti' || rangeFilter !== 'tutti'
 
   return (
     <StaffContentLayout
@@ -175,7 +176,11 @@ export default function PrenotazioniAtletaPage() {
       theme="teal"
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/prenotazioni')}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/dashboard/prenotazioni')}
+          >
             Torna a Prenotazioni
           </Button>
           {athleteId ? (
@@ -222,7 +227,9 @@ export default function PrenotazioniAtletaPage() {
             <div className="flex items-baseline justify-between gap-3 mb-4">
               <p className="text-sm font-medium text-text-primary">Appuntamenti</p>
               <p className="text-xs text-text-tertiary">
-                {appointmentsLoading ? '—' : `${filteredAppointments.length}/${appointments.length}`}
+                {appointmentsLoading
+                  ? '—'
+                  : `${filteredAppointments.length}/${appointments.length}`}
               </p>
             </div>
 
@@ -257,7 +264,9 @@ export default function PrenotazioniAtletaPage() {
                     <SimpleSelect
                       value={statusFilter}
                       onValueChange={(v) =>
-                        setStatusFilter(v as 'tutti' | 'attivo' | 'completato' | 'annullato' | 'in_corso')
+                        setStatusFilter(
+                          v as 'tutti' | 'attivo' | 'completato' | 'annullato' | 'in_corso',
+                        )
                       }
                       placeholder="Stato"
                       options={[
@@ -303,43 +312,45 @@ export default function PrenotazioniAtletaPage() {
                 ) : (
                   <div className="space-y-3">
                     {filteredAppointments.map((apt) => {
-                  const { time, dateStr } = formatDateTime(apt.starts_at)
-                  const { time: endTime } = formatDateTime(apt.ends_at)
-                  return (
-                    <div
-                      key={apt.id}
-                      className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] px-4 py-3"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex min-w-[120px] flex-col items-start">
-                          <div className="text-text-secondary text-xs mb-1">{dateStr}</div>
-                          <div className="font-mono text-[15px] font-bold text-blue-400 tabular-nums">
-                            {time} - {endTime}
-                          </div>
-                        </div>
+                      const { time, dateStr } = formatDateTime(apt.starts_at)
+                      const { time: endTime } = formatDateTime(apt.ends_at)
+                      return (
+                        <div
+                          key={apt.id}
+                          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] px-4 py-3"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex min-w-[120px] flex-col items-start">
+                              <div className="text-text-secondary text-xs mb-1">{dateStr}</div>
+                              <div className="font-mono text-[15px] font-bold text-blue-400 tabular-nums">
+                                {time} - {endTime}
+                              </div>
+                            </div>
 
-                        <div className="h-12 w-px bg-border/30" />
+                            <div className="h-12 w-px bg-border/30" />
 
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-text-primary truncate">
-                            {getAppointmentType(apt.type)}
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-semibold text-text-primary truncate">
+                                {getAppointmentType(apt.type)}
+                              </div>
+                              {apt.location ? (
+                                <div className="text-xs text-text-secondary truncate">
+                                  {apt.location}
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <span className="shrink-0 rounded-full bg-background-tertiary/50 border border-white/10 text-text-tertiary text-[11px] font-medium px-3 py-1">
+                              {statusLabel(apt.status)}
+                            </span>
                           </div>
-                          {apt.location ? (
-                            <div className="text-xs text-text-secondary truncate">{apt.location}</div>
+                          {apt.notes ? (
+                            <div className="mt-2 text-xs text-text-secondary line-clamp-2">
+                              {apt.notes}
+                            </div>
                           ) : null}
                         </div>
-
-                        <span className="shrink-0 rounded-full bg-background-tertiary/50 border border-white/10 text-text-tertiary text-[11px] font-medium px-3 py-1">
-                          {statusLabel(apt.status)}
-                        </span>
-                      </div>
-                      {apt.notes ? (
-                        <div className="mt-2 text-xs text-text-secondary line-clamp-2">
-                          {apt.notes}
-                        </div>
-                      ) : null}
-                    </div>
-                  )
+                      )
                     })}
                   </div>
                 )}
@@ -351,4 +362,3 @@ export default function PrenotazioniAtletaPage() {
     </StaffContentLayout>
   )
 }
-

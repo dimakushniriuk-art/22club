@@ -51,7 +51,8 @@ export function PatternsHeaders() {
         <div>
           <h3 className={DS_BLOCK_TITLE_CLASS}>PageHeaderFixed</h3>
           <p className={DS_LABEL_CLASS}>
-            Nero, linea cyan in basso. Back + titolo (stesso schema della barra atleta unificata, senza icona).
+            Nero, linea cyan in basso. Back + titolo (stesso schema della barra atleta unificata,
+            senza icona).
           </p>
           <div className={DS_CARD_FRAME_CLASS}>
             <PageHeaderFixed

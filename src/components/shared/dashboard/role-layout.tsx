@@ -24,7 +24,7 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
         )}
 
         <main
-          className="flex-1 flex flex-col min-h-0 min-w-0 w-full pt-[env(safe-area-inset-top,0px)] bg-transparent"
+          className="flex-1 flex flex-col min-h-0 min-w-0 w-full max-md:pt-0 md:pt-[env(safe-area-inset-top,0px)] bg-transparent"
           style={{
             paddingLeft: 'max(0px, env(safe-area-inset-left))',
             paddingRight: 'max(0px, env(safe-area-inset-right))',

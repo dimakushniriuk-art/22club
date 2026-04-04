@@ -187,10 +187,7 @@ export function AthleteSubscriptionsTab({
         openInvoicePdfWithBlob(blob, safeName)
       } catch (err) {
         logger.error('Errore anteprima fattura PDF', err, { paymentId, invoiceUrl })
-        notifyError(
-          'Errore',
-          err instanceof Error ? err.message : 'Impossibile aprire la fattura.',
-        )
+        notifyError('Errore', err instanceof Error ? err.message : 'Impossibile aprire la fattura.')
       } finally {
         setInvoicePreviewLoadingId(null)
       }

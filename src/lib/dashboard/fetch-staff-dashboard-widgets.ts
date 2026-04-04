@@ -225,7 +225,10 @@ async function fetchSessionCycleAlertsOrdered(
     }
 
     const dayIdToPlanId = new Map<string, string>()
-    const daysByPlan = new Map<string, Array<{ id: string; sessions_until_refresh: number | null }>>()
+    const daysByPlan = new Map<
+      string,
+      Array<{ id: string; sessions_until_refresh: number | null }>
+    >()
     const allDayIds: string[] = []
 
     for (const row of daysBatch) {
@@ -238,8 +241,7 @@ async function fetchSessionCycleAlertsOrdered(
       const list = daysByPlan.get(pid) ?? []
       list.push({
         id: did,
-        sessions_until_refresh:
-          typeof sur === 'number' && Number.isFinite(sur) ? sur : null,
+        sessions_until_refresh: typeof sur === 'number' && Number.isFinite(sur) ? sur : null,
       })
       daysByPlan.set(pid, list)
     }

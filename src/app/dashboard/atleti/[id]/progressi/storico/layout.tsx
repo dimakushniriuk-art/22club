@@ -17,7 +17,10 @@ export default function StoricoAllenamentiLayout({ children }: { children: React
   if (!id) {
     return (
       <div className="p-6">
-        <ErrorState message="ID atleta mancante" onRetry={() => router.push('/dashboard/clienti')} />
+        <ErrorState
+          message="ID atleta mancante"
+          onRetry={() => router.push('/dashboard/clienti')}
+        />
       </div>
     )
   }

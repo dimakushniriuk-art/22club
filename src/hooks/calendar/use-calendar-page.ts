@@ -223,7 +223,10 @@ export function useCalendarPage() {
             .select('id, nome, cognome')
             .in('id', idChunk)
           if (profilesRes.error) {
-            logger.error('Errore caricamento nomi atleti per calendario (ignorato)', profilesRes.error)
+            logger.error(
+              'Errore caricamento nomi atleti per calendario (ignorato)',
+              profilesRes.error,
+            )
           }
           ;(profilesRes.data ?? []).forEach(
             (profile: { id: string; nome?: string | null; cognome?: string | null }) => {

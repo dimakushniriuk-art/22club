@@ -54,4 +54,3 @@ export function ViewModeToggle<TMode extends string>({
     </div>
   )
 }
-

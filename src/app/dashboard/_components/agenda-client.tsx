@@ -44,10 +44,20 @@ export function AgendaClient({
               : 'mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3'
           }
         >
-          <p className={embedded ? 'text-[11px] font-medium text-amber-400' : 'text-sm font-medium text-amber-400'}>
+          <p
+            className={
+              embedded
+                ? 'text-[11px] font-medium text-amber-400'
+                : 'text-sm font-medium text-amber-400'
+            }
+          >
             ⚠️ Mostrando i primi 50 appuntamenti di {appointmentsTotalCount} totali oggi.
           </p>
-          <p className={embedded ? 'mt-1 text-[10px] text-amber-400/85' : 'mt-1 text-xs text-amber-400/80'}>
+          <p
+            className={
+              embedded ? 'mt-1 text-[10px] text-amber-400/85' : 'mt-1 text-xs text-amber-400/80'
+            }
+          >
             Visualizza il calendario completo per vedere tutti gli appuntamenti.
           </p>
         </div>

@@ -63,6 +63,13 @@ SVILUPPO
 - Niente miglioramenti non richiesti.
 - Risolvi solo problemi reali.
 
+COMANDO UPLOAD (GitHub + Vercel)
+- Quando l’utente chiede **upload / pubblica / deploy** senza altre istruzioni: usare **`npm run upload -- "messaggio commit"`** dalla root del repo (PowerShell: le parti dopo `--` sono gli argomenti dello script).
+- Lo script `scripts/git-upload-deploy.mjs` esegue: `git add -A` **solo se** ci sono modifiche/nuovi (`git status --porcelain`), commit (se c’è qualcosa in stage), `git push`, poi `npx vercel --prod --yes`.
+- Opzioni: `--no-vercel` (solo Git), `--no-push` (commit locale senza push né Vercel).
+- Non fare `git add` di cartelle vietate o fuori dal working tree richiesto; rispettare `.gitignore`.
+- Dettagli analisi problemi noti e piano manutenzione: `scripts/PUBLISH_PLAN.md`.
+
 VERIFICA STATICA (TYPECHECK + LINT)
 - Se esegui controllo o correzione con **TypeScript** (`tsc --noEmit` / `npm run typecheck`), nello **stesso ciclo** eseguire anche **ESLint** (`npm run lint`, oppure `eslint .` come in `package.json`).
 - Non considerare chiusa la verifica post-modifica se manca il lint o se il typecheck fallisce.

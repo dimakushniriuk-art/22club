@@ -19,7 +19,10 @@ import { logger } from '@/lib/logger'
 import { useRouter } from 'next/navigation'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { buildPaymentsPdfBlob } from '@/lib/export-payments'
-import { StaffDashboardSegmentSkeleton, StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
+import {
+  StaffDashboardSegmentSkeleton,
+  StaffLazyChunkFallback,
+} from '@/components/layout/route-loading-skeletons'
 
 // Lazy load NewPaymentModal per ridurre bundle size iniziale
 const NewPaymentModal = lazy(() =>
@@ -321,7 +324,14 @@ export default function PagamentiPage() {
 
       {/* Drawer dettaglio pagamento - Lazy loaded */}
       {showDrawer && selectedPayment && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] w-full max-w-md ml-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] w-full max-w-md ml-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <PaymentDetailDrawer
             payment={selectedPayment}
             open={showDrawer}
@@ -336,7 +346,14 @@ export default function PagamentiPage() {
 
       {/* Modal nuovo pagamento - Lazy loaded solo quando aperto */}
       {showNewPaymentModal && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[260px] max-w-md mx-auto" label="Caricamento modulo…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[260px] max-w-md mx-auto"
+              label="Caricamento modulo…"
+            />
+          }
+        >
           <NewPaymentModal
             onClose={() => setShowNewPaymentModal(false)}
             onSave={handleSavePayment}

@@ -186,7 +186,10 @@ export function useAthleteCalendarPage(profileId: string | null) {
             .select('id, nome, cognome')
             .in('id', idChunk)
           profiles?.forEach((p: { id: string; nome?: string | null; cognome?: string | null }) => {
-            staffNamesMap.set(p.id, [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Trainer')
+            staffNamesMap.set(
+              p.id,
+              [p.nome, p.cognome].filter(Boolean).join(' ').trim() || 'Trainer',
+            )
           })
         }
       }

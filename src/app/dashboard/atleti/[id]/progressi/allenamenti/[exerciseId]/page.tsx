@@ -27,7 +27,9 @@ function StoricoBody() {
     }
   }, [rawExerciseId])
 
-  const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(id ?? '')
+  const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(
+    id ?? '',
+  )
   const { data: statsData } = useWorkoutExerciseStats(athleteUserId)
   const [editUnlocked, setEditUnlocked] = useState(false)
 
@@ -42,7 +44,10 @@ function StoricoBody() {
   if (!id) {
     return (
       <div className="p-6">
-        <ErrorState message="ID atleta mancante" onRetry={() => router.push('/dashboard/clienti')} />
+        <ErrorState
+          message="ID atleta mancante"
+          onRetry={() => router.push('/dashboard/clienti')}
+        />
       </div>
     )
   }
@@ -102,7 +107,9 @@ function StoricoBody() {
         </CardHeader>
         <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4 space-y-6">
           {!exerciseId ? (
-            <p className="text-text-secondary text-sm py-6 text-center">Parametro esercizio mancante.</p>
+            <p className="text-text-secondary text-sm py-6 text-center">
+              Parametro esercizio mancante.
+            </p>
           ) : (
             <WorkoutExerciseStoricoContent
               exerciseId={exerciseId}

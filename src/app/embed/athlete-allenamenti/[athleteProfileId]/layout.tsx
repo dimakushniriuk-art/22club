@@ -23,7 +23,11 @@ export default function EmbedAthleteAllenamentiLayout({ children }: { children: 
     if (!isValidUUID(rawId)) {
       try {
         window.parent.postMessage(
-          { type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED, athleteProfileId: rawId, reason: 'invalid_athlete_id' },
+          {
+            type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED,
+            athleteProfileId: rawId,
+            reason: 'invalid_athlete_id',
+          },
           window.location.origin,
         )
       } catch {
@@ -34,7 +38,11 @@ export default function EmbedAthleteAllenamentiLayout({ children }: { children: 
     if (!user) {
       try {
         window.parent.postMessage(
-          { type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED, athleteProfileId: rawId, reason: 'no_session' },
+          {
+            type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED,
+            athleteProfileId: rawId,
+            reason: 'no_session',
+          },
           window.location.origin,
         )
       } catch {
@@ -45,7 +53,11 @@ export default function EmbedAthleteAllenamentiLayout({ children }: { children: 
     if (normalizedRole != null && normalizedRole !== 'trainer' && normalizedRole !== 'admin') {
       try {
         window.parent.postMessage(
-          { type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED, athleteProfileId: rawId, reason: 'forbidden_role' },
+          {
+            type: STAFF_WORKOUTS_EMBED_AUTH_REQUIRED,
+            athleteProfileId: rawId,
+            reason: 'forbidden_role',
+          },
           window.location.origin,
         )
       } catch {
@@ -68,11 +80,7 @@ export default function EmbedAthleteAllenamentiLayout({ children }: { children: 
       return
     }
     // Se il ruolo non è ancora noto (null), non reindirizzare: altrimenti l’iframe caricherebbe /dashboard dentro la colonna.
-    if (
-      normalizedRole != null &&
-      normalizedRole !== 'trainer' &&
-      normalizedRole !== 'admin'
-    ) {
+    if (normalizedRole != null && normalizedRole !== 'trainer' && normalizedRole !== 'admin') {
       const fallback =
         normalizedRole === 'marketing'
           ? '/dashboard/marketing'
@@ -97,13 +105,9 @@ export default function EmbedAthleteAllenamentiLayout({ children }: { children: 
   const pathBase = `/embed/athlete-allenamenti/${rawId}`
 
   return (
-    <AthleteAllenamentiPreviewProvider
-      value={{ subjectProfileId: rawId, pathBase }}
-    >
+    <AthleteAllenamentiPreviewProvider value={{ subjectProfileId: rawId, pathBase }}>
       <EmbedPathToParentBridge />
-      <div className="min-h-dvh w-full min-w-0">
-        {children}
-      </div>
+      <div className="min-h-dvh w-full min-w-0">{children}</div>
     </AthleteAllenamentiPreviewProvider>
   )
 }

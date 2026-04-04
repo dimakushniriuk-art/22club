@@ -83,7 +83,8 @@ export function StaffContentLayout({
   const router = useRouter()
   const pathname = usePathname()
 
-  const shouldAutoBack = pathname != null && pathname.startsWith('/dashboard/') && pathname !== '/dashboard'
+  const shouldAutoBack =
+    pathname != null && pathname.startsWith('/dashboard/') && pathname !== '/dashboard'
   const handleAutoBack =
     onBack ??
     (shouldAutoBack
@@ -139,9 +140,7 @@ export function StaffContentLayout({
             )}
           </div>
         )}
-        <div
-          className={cn('flex flex-col gap-4 sm:gap-6 md:gap-8', contentClassName)}
-        >
+        <div className={cn('flex flex-col gap-4 sm:gap-6 md:gap-8', contentClassName)}>
           {children}
         </div>
       </div>

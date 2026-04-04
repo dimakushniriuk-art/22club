@@ -218,7 +218,14 @@ export default function ComunicazioniPageClient() {
 
       {/* Modal Dettaglio Recipients - Lazy loaded solo quando aperto */}
       {selectedCommunicationId && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[200px] max-w-md mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[200px] max-w-md mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <RecipientsDetailModal
             isOpen={showRecipientsModal}
             onClose={closeRecipientsModal}
@@ -230,7 +237,14 @@ export default function ComunicazioniPageClient() {
 
       {/* Modal Nuova/Modifica Comunicazione - Lazy loaded solo quando aperto */}
       {showNewModal && (
-        <Suspense fallback={<StaffLazyChunkFallback className="min-h-[280px] max-w-lg mx-auto" label="Caricamento…" />}>
+        <Suspense
+          fallback={
+            <StaffLazyChunkFallback
+              className="min-h-[280px] max-w-lg mx-auto"
+              label="Caricamento…"
+            />
+          }
+        >
           <NewCommunicationModal
             isOpen={showNewModal}
             isEditing={!!editingCommunicationId}

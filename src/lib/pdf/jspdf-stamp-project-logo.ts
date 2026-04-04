@@ -40,7 +40,6 @@ export function stampProjectLogoOnCurrentPage(
     r,
     'F',
   )
-
   ;(doc as unknown as { addImage: (...args: unknown[]) => void }).addImage(
     logoPngDataUrl,
     'PNG',

@@ -20,9 +20,7 @@ export type WorkoutsShellCallbacksContextValue = {
   }) => Promise<boolean>
 }
 
-const WorkoutsShellCallbacksContext = createContext<WorkoutsShellCallbacksContextValue | null>(
-  null,
-)
+const WorkoutsShellCallbacksContext = createContext<WorkoutsShellCallbacksContextValue | null>(null)
 
 export function WorkoutsShellCallbacksProvider({
   value,

@@ -330,8 +330,7 @@ export default function NutrizionistaPianiPage() {
           versions.push(...((verRes.data ?? []) as Ver[]))
         }
         versions.sort(
-          (a, b) =>
-            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+          (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
         )
         const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
         list = versions.map((v) => {

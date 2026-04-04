@@ -15,7 +15,10 @@ import { ErrorState } from '@/components/dashboard/error-state'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { useAthleteProfileData } from '@/hooks/athlete-profile/use-athlete-profile-data'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
-import { useWorkoutExerciseStats, type WorkoutExerciseStats } from '@/hooks/use-workout-exercise-stats'
+import {
+  useWorkoutExerciseStats,
+  type WorkoutExerciseStats,
+} from '@/hooks/use-workout-exercise-stats'
 import { buildStandardPdfBlob } from '@/lib/pdf'
 import { useNotify } from '@/lib/ui/notify'
 
@@ -30,7 +33,10 @@ const WorkoutExerciseCharts = dynamic(
   {
     ssr: false,
     loading: () => (
-      <StaffLazyChunkFallback className="min-h-[240px] border-0 bg-transparent" label="Caricamento grafici…" />
+      <StaffLazyChunkFallback
+        className="min-h-[240px] border-0 bg-transparent"
+        label="Caricamento grafici…"
+      />
     ),
   },
 )
@@ -73,7 +79,9 @@ function AllenamentiBody() {
   const router = useRouter()
   const id = typeof params?.id === 'string' ? params.id : null
 
-  const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(id ?? '')
+  const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(
+    id ?? '',
+  )
 
   const { data, isLoading, error: statsError } = useWorkoutExerciseStats(athleteUserId)
 
@@ -117,7 +125,11 @@ function AllenamentiBody() {
           const to = formatShortDate(data.date_range.to)
           doc.text(`Periodo dati: ${from} — ${to}`, margin, y)
           y += 5
-          doc.text(`Esercizi con dati: ${data.total_exercises} · Sessioni totali: ${data.total_sessions}`, margin, y)
+          doc.text(
+            `Esercizi con dati: ${data.total_exercises} · Sessioni totali: ${data.total_sessions}`,
+            margin,
+            y,
+          )
           y += 5
           doc.text(`Generato: ${new Date().toLocaleString('it-IT')}`, margin, y)
           y += 8
@@ -154,7 +166,10 @@ function AllenamentiBody() {
   if (!id) {
     return (
       <div className="p-6">
-        <ErrorState message="ID atleta mancante" onRetry={() => router.push('/dashboard/clienti')} />
+        <ErrorState
+          message="ID atleta mancante"
+          onRetry={() => router.push('/dashboard/clienti')}
+        />
       </div>
     )
   }
@@ -178,74 +193,74 @@ function AllenamentiBody() {
 
   return (
     <>
-    <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
-      <StaffAthleteSubpageHeader
-        backHref={backHref}
-        backAriaLabel="Torna ai progressi"
-        title={`Statistiche allenamenti — ${name || 'Atleta'}`}
-        description="Pesi, tempi e progressi per esercizio (come in app Home)"
-      />
+      <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+        <StaffAthleteSubpageHeader
+          backHref={backHref}
+          backAriaLabel="Torna ai progressi"
+          title={`Statistiche allenamenti — ${name || 'Atleta'}`}
+          description="Pesi, tempi e progressi per esercizio (come in app Home)"
+        />
 
-      <Card className={`relative overflow-hidden ${CARD_DS}`}>
-        <CardHeader className="relative z-10 flex flex-col gap-3 border-b border-white/10 px-4 pb-3 pt-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
-          <div className="min-w-0">
-            <CardTitle className="text-base font-bold text-text-primary md:text-lg flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary shrink-0" />
-              Grafici per esercizio
-            </CardTitle>
-            <p className="text-text-tertiary mt-0.5 text-xs">
-              Andamento pesi e progressi negli allenamenti completati
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => void handleExportPDF()}
-              disabled={!canExportPdf || pdfLoading}
-            >
-              {pdfLoading ? 'Generazione…' : 'Esporta PDF'}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4">
-          {!athleteUserId ? (
-            <p className="text-text-secondary text-sm py-6 text-center">
-              Profilo atleta senza user collegato.
-            </p>
-          ) : isLoading ? (
-            <LoadingState message="Caricamento statistiche…" className="py-10" size="md" />
-          ) : statsError ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <p className="text-text-primary text-sm font-medium">Errore nel caricamento</p>
-            </div>
-          ) : !data || data.total_exercises === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                <BarChart3 className="h-7 w-7 text-cyan-400" />
-              </div>
-              <p className="text-text-primary text-sm font-semibold">Nessun esercizio con dati</p>
-              <p className="text-text-tertiary mt-1 text-xs">
-                Servono allenamenti completati con serie registrate.
+        <Card className={`relative overflow-hidden ${CARD_DS}`}>
+          <CardHeader className="relative z-10 flex flex-col gap-3 border-b border-white/10 px-4 pb-3 pt-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+            <div className="min-w-0">
+              <CardTitle className="text-base font-bold text-text-primary md:text-lg flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary shrink-0" />
+                Grafici per esercizio
+              </CardTitle>
+              <p className="text-text-tertiary mt-0.5 text-xs">
+                Andamento pesi e progressi negli allenamenti completati
               </p>
             </div>
-          ) : (
-            <WorkoutExerciseCharts
-              data={data}
-              detailBasePath={`/dashboard/atleti/${id}/progressi/allenamenti`}
-            />
-          )}
-        </CardContent>
-      </Card>
-    </div>
-    <PdfCanvasPreviewDialog
-      open={pdfOpen}
-      onOpenChange={onPdfOpenChange}
-      blob={pdfBlob}
-      filename={pdfFilename}
-      title="Anteprima — Statistiche esercizi"
-    />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => void handleExportPDF()}
+                disabled={!canExportPdf || pdfLoading}
+              >
+                {pdfLoading ? 'Generazione…' : 'Esporta PDF'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4">
+            {!athleteUserId ? (
+              <p className="text-text-secondary text-sm py-6 text-center">
+                Profilo atleta senza user collegato.
+              </p>
+            ) : isLoading ? (
+              <LoadingState message="Caricamento statistiche…" className="py-10" size="md" />
+            ) : statsError ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <p className="text-text-primary text-sm font-medium">Errore nel caricamento</p>
+              </div>
+            ) : !data || data.total_exercises === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                  <BarChart3 className="h-7 w-7 text-cyan-400" />
+                </div>
+                <p className="text-text-primary text-sm font-semibold">Nessun esercizio con dati</p>
+                <p className="text-text-tertiary mt-1 text-xs">
+                  Servono allenamenti completati con serie registrate.
+                </p>
+              </div>
+            ) : (
+              <WorkoutExerciseCharts
+                data={data}
+                detailBasePath={`/dashboard/atleti/${id}/progressi/allenamenti`}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <PdfCanvasPreviewDialog
+        open={pdfOpen}
+        onOpenChange={onPdfOpenChange}
+        blob={pdfBlob}
+        filename={pdfFilename}
+        title="Anteprima — Statistiche esercizi"
+      />
     </>
   )
 }

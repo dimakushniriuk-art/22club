@@ -14,7 +14,10 @@ const logger = createLogger('middleware')
 const COOKIE_IMPERSONATE_PROFILE = 'impersonate_profile_id'
 
 /** Propaga Set-Cookie dal client Supabase SSR (getUser / signOut) sulla risposta inviata al browser. */
-function withMiddlewareSupabaseCookies(supabaseRes: NextResponse | undefined, res: NextResponse): NextResponse {
+function withMiddlewareSupabaseCookies(
+  supabaseRes: NextResponse | undefined,
+  res: NextResponse,
+): NextResponse {
   if (!supabaseRes?.cookies) return res
   for (const cookie of supabaseRes.cookies.getAll()) {
     res.cookies.set(cookie)

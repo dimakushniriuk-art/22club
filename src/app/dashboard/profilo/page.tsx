@@ -12,7 +12,10 @@ import { usePTSettings } from '@/hooks/use-pt-settings'
 import { useProfiloPageGuard } from '@/hooks/use-profilo-page-guard'
 import { useNotifications, type Notification as ApiNotification } from '@/hooks/use-notifications'
 import { User, Bell, Shield, Check } from 'lucide-react'
-import { StaffDashboardSegmentSkeleton, StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
+import {
+  StaffDashboardSegmentSkeleton,
+  StaffLazyChunkFallback,
+} from '@/components/layout/route-loading-skeletons'
 
 const VALID_TABS = ['profilo', 'notifiche', 'impostazioni'] as const
 type TabValue = (typeof VALID_TABS)[number]
@@ -304,7 +307,14 @@ export default function ProfiloPTPage() {
           {/* Tab: Profilo */}
           <TabsContent value="profilo">
             {profileData && (
-              <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[220px]" label="Caricamento profilo…" />}>
+              <Suspense
+                fallback={
+                  <StaffLazyChunkFallback
+                    className="w-full min-h-[220px]"
+                    label="Caricamento profilo…"
+                  />
+                }
+              >
                 <PTProfileTab
                   profile={profileData}
                   isEditing={isEditing}
@@ -323,7 +333,14 @@ export default function ProfiloPTPage() {
 
           {/* Tab: Notifiche */}
           <TabsContent value="notifiche">
-            <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[220px]" label="Caricamento notifiche…" />}>
+            <Suspense
+              fallback={
+                <StaffLazyChunkFallback
+                  className="w-full min-h-[220px]"
+                  label="Caricamento notifiche…"
+                />
+              }
+            >
               <PTNotificationsTab
                 notifications={notifications}
                 onMarkAsRead={handleMarkAsRead}
@@ -335,7 +352,14 @@ export default function ProfiloPTPage() {
 
           {/* Tab: Impostazioni */}
           <TabsContent value="impostazioni">
-            <Suspense fallback={<StaffLazyChunkFallback className="w-full min-h-[220px]" label="Caricamento impostazioni…" />}>
+            <Suspense
+              fallback={
+                <StaffLazyChunkFallback
+                  className="w-full min-h-[220px]"
+                  label="Caricamento impostazioni…"
+                />
+              }
+            >
               <PTSettingsTab
                 settings={settings}
                 authUserId={authUserId || ''}

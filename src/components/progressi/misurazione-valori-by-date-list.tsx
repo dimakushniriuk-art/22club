@@ -26,7 +26,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase/client'
-import { bodyMetricDeltaSentimentTextColorClass, getBodyMetricDeltaSentiment } from '@/lib/body-metrics/body-metric-trend-rules'
+import {
+  bodyMetricDeltaSentimentTextColorClass,
+  getBodyMetricDeltaSentiment,
+} from '@/lib/body-metrics/body-metric-trend-rules'
 import {
   type MisurazioneLogListItem,
   getProgressLogsDbColumnForMisurazioneField,
@@ -150,7 +153,11 @@ export function MisurazioneValoriByDateList({
     if (!editRow) return
     const n = Number.parseFloat(editText.replace(',', '.'))
     if (!Number.isFinite(n)) {
-      addToast({ title: 'Valore non valido', message: 'Inserisci un numero valido', variant: 'error' })
+      addToast({
+        title: 'Valore non valido',
+        message: 'Inserisci un numero valido',
+        variant: 'error',
+      })
       return
     }
     setBusy(true)
@@ -295,8 +302,9 @@ export function MisurazioneValoriByDateList({
           <AlertDialogHeader>
             <AlertDialogTitle>Eliminare questa misurazione?</AlertDialogTitle>
             <AlertDialogDescription>
-              Verrà eliminato l&apos;intero record del {deleteRow ? formatDateFull(deleteRow.date) : ''}{' '}
-              (tutti i valori salvati in quella rilevazione). Azione irreversibile.
+              Verrà eliminato l&apos;intero record del{' '}
+              {deleteRow ? formatDateFull(deleteRow.date) : ''} (tutti i valori salvati in quella
+              rilevazione). Azione irreversibile.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

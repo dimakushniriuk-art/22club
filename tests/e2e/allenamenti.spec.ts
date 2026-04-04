@@ -96,7 +96,10 @@ test.describe('Allenamenti Page', () => {
     await exportBtn.click().catch(() => {})
     const pdfItem = page.getByRole('menuitem', { name: /Esporta come PDF|PDF/i })
     if (await pdfItem.count()) {
-      await pdfItem.first().click().catch(() => {})
+      await pdfItem
+        .first()
+        .click()
+        .catch(() => {})
       await softVisible(page.getByText(/Anteprima PDF/i), 5000)
     }
   })

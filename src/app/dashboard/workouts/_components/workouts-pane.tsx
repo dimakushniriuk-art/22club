@@ -3,10 +3,7 @@
 import { useCallback, useMemo } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AthleteAllenamentiPreviewProvider } from '@/contexts/athlete-allenamenti-preview-context'
-import {
-  WorkoutsPaneProvider,
-  type WorkoutsPaneView,
-} from '@/contexts/workouts-pane-context'
+import { WorkoutsPaneProvider, type WorkoutsPaneView } from '@/contexts/workouts-pane-context'
 import { AllenamentiHomePageContent } from '@/app/home/allenamenti/page'
 import { AllenamentiOggiPageContent } from '@/app/home/allenamenti/oggi/page'
 import { SchedaAllenamentoContent } from '@/app/home/allenamenti/[id]/page'
@@ -51,7 +48,8 @@ function parseView(kind: string, params: URLSearchParams, slotId: 'p1' | 'p2'): 
   if (kind === 'giorno') {
     const planId = params.get(`${prefix}workoutPlanId`)?.trim() ?? ''
     const dayId = params.get(`${prefix}dayId`)?.trim() ?? ''
-    if (isValidUUID(planId) && isValidUUID(dayId)) return { kind: 'giorno', workoutPlanId: planId, dayId }
+    if (isValidUUID(planId) && isValidUUID(dayId))
+      return { kind: 'giorno', workoutPlanId: planId, dayId }
     return { kind: 'home' }
   }
   if (kind === 'esercizio') {
@@ -60,7 +58,9 @@ function parseView(kind: string, params: URLSearchParams, slotId: 'p1' | 'p2'): 
   }
   if (kind === 'riepilogo') {
     const workoutLogId = params.get(`${prefix}workoutLogId`)?.trim() ?? ''
-    return workoutLogId && isValidUUID(workoutLogId) ? { kind: 'riepilogo', workoutLogId } : { kind: 'riepilogo' }
+    return workoutLogId && isValidUUID(workoutLogId)
+      ? { kind: 'riepilogo', workoutLogId }
+      : { kind: 'riepilogo' }
   }
   return { kind: 'home' }
 }
@@ -84,7 +84,8 @@ function viewToParams(slotId: 'p1' | 'p2', view: WorkoutsPaneView, base: URLSear
     base.set(`${prefix}dayId`, view.dayId)
   }
   if (view.kind === 'esercizio') base.set(`${prefix}exerciseId`, view.exerciseId)
-  if (view.kind === 'riepilogo' && view.workoutLogId) base.set(`${prefix}workoutLogId`, view.workoutLogId)
+  if (view.kind === 'riepilogo' && view.workoutLogId)
+    base.set(`${prefix}workoutLogId`, view.workoutLogId)
 }
 
 export function WorkoutsPane({
@@ -159,7 +160,10 @@ export function WorkoutsPane({
         ) : view.kind === 'scheda' ? (
           <SchedaAllenamentoContent workoutPlanIdOverride={view.workoutPlanId} />
         ) : view.kind === 'giorno' ? (
-          <GiornoPreviewContent workoutPlanIdOverride={view.workoutPlanId} dayIdOverride={view.dayId} />
+          <GiornoPreviewContent
+            workoutPlanIdOverride={view.workoutPlanId}
+            dayIdOverride={view.dayId}
+          />
         ) : view.kind === 'esercizio' ? (
           <EsercizioDetailPageContent exerciseIdOverride={view.exerciseId} />
         ) : view.kind === 'riepilogo' ? (
@@ -171,4 +175,3 @@ export function WorkoutsPane({
     </AthleteAllenamentiPreviewProvider>
   )
 }
-

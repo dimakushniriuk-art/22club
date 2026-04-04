@@ -84,8 +84,8 @@ export function AthleteProgressTab({
               Metriche e accessi
             </h3>
             <p className="max-w-2xl text-sm leading-relaxed text-text-secondary/95 sm:text-[15px]">
-              Sintesi da misurazioni e sessioni; usa le scorciatoie sotto per trend e carichi. Storico allenamenti dal tab
-              Storico.
+              Sintesi da misurazioni e sessioni; usa le scorciatoie sotto per trend e carichi.
+              Storico allenamenti dal tab Storico.
             </p>
           </div>
         </div>
@@ -189,7 +189,9 @@ export function AthleteProgressTab({
                   />
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <span className="block text-base font-semibold tracking-tight text-text-primary">Misurazioni</span>
+                  <span className="block text-base font-semibold tracking-tight text-text-primary">
+                    Misurazioni
+                  </span>
                   <span className="block text-sm leading-snug text-text-secondary/95">
                     Peso, composizione corporea e trend nel tempo.
                   </span>
@@ -223,7 +225,9 @@ export function AthleteProgressTab({
                   />
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <span className="block text-base font-semibold tracking-tight text-text-primary">Statistiche</span>
+                  <span className="block text-base font-semibold tracking-tight text-text-primary">
+                    Statistiche
+                  </span>
                   <span className="block text-sm leading-snug text-text-secondary/95">
                     Carichi, volumi e progressi per esercizio.
                   </span>

@@ -80,8 +80,7 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
   )
 
   const confirmDiscardSlot = useCallback((_slotId: 'p1' | 'p2') => {
-    const message =
-      'Ci sono modifiche non salvate in questa colonna. Vuoi scartarle e continuare?'
+    const message = 'Ci sono modifiche non salvate in questa colonna. Vuoi scartarle e continuare?'
     return window.confirm(message)
   }, [])
 
@@ -170,8 +169,7 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
       finalizeAgendaAppointment?: boolean
     }): Promise<boolean> => {
       const match = eventsRef.current.find((ev) => ev.athlete_id?.trim() === args.athleteProfileId)
-      const finalizeAgenda =
-        Boolean(args.withTrainer) || args.finalizeAgendaAppointment === true
+      const finalizeAgenda = Boolean(args.withTrainer) || args.finalizeAgendaAppointment === true
 
       if (!match) {
         addToast({
@@ -316,7 +314,9 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
         ) : (
           <>
             <div className="grid min-h-0 grid-cols-1 gap-6 md:grid-cols-2 md:items-stretch md:gap-6">
-              <div className={`flex min-h-[min(45vh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}>
+              <div
+                className={`flex min-h-[min(45vh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}
+              >
                 <div className="flex shrink-0 justify-end px-2 pt-2">
                   <button
                     type="button"
@@ -337,7 +337,9 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
                 ) : null}
                 {slot1}
               </div>
-              <div className={`flex min-h-[min(45vh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}>
+              <div
+                className={`flex min-h-[min(45vh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}
+              >
                 <div className="flex shrink-0 justify-end px-2 pt-2">
                   <button
                     type="button"

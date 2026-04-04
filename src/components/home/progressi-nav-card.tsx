@@ -82,9 +82,7 @@ function ProgressiNavCardComponent({
       >
         <CardHeader
           className={`relative z-10 px-4 min-[834px]:px-5 ${
-            compact
-              ? 'pb-2 pt-3.5 min-[834px]:pt-4'
-              : 'pb-2.5 pt-4 min-[834px]:pt-5'
+            compact ? 'pb-2 pt-3.5 min-[834px]:pt-4' : 'pb-2.5 pt-4 min-[834px]:pt-5'
           }`}
         >
           <div className="flex items-start gap-3">

@@ -60,11 +60,7 @@ function formatDateFull(raw: string) {
   })
 }
 
-function formatCellValue(
-  kind: 'weight' | 'reps' | 'time',
-  v: number,
-  valueSuffix: string,
-): string {
+function formatCellValue(kind: 'weight' | 'reps' | 'time', v: number, valueSuffix: string): string {
   if (kind === 'weight') return `${v.toFixed(1)}${valueSuffix}`
   return `${Math.round(v)}${valueSuffix}`
 }
@@ -77,9 +73,9 @@ function rowCanEdit(row: WorkoutExerciseSessionRow): boolean {
 function rowCanDelete(row: WorkoutExerciseSessionRow): boolean {
   return Boolean(
     row.workoutLogId &&
-      row.workoutLogId.trim().length > 0 &&
-      row.workoutDayExerciseId &&
-      row.workoutDayExerciseId.trim().length > 0,
+    row.workoutLogId.trim().length > 0 &&
+    row.workoutDayExerciseId &&
+    row.workoutDayExerciseId.trim().length > 0,
   )
 }
 
@@ -152,7 +148,11 @@ export function WorkoutExerciseSessioniByDateList({
     if (!editRow || !rowCanEdit(editRow)) return
     const n = Number.parseFloat(editText.replace(',', '.'))
     if (!Number.isFinite(n)) {
-      addToast({ title: 'Valore non valido', message: 'Inserisci un numero valido', variant: 'error' })
+      addToast({
+        title: 'Valore non valido',
+        message: 'Inserisci un numero valido',
+        variant: 'error',
+      })
       return
     }
     const patch =
@@ -174,7 +174,11 @@ export function WorkoutExerciseSessioniByDateList({
       }
       const { error } = await query.not('completed_at', 'is', null)
       if (error) throw new Error(error.message)
-      addToast({ title: 'Salvato', message: 'Serie aggiornate per questa sessione', variant: 'success' })
+      addToast({
+        title: 'Salvato',
+        message: 'Serie aggiornate per questa sessione',
+        variant: 'success',
+      })
       setEditRow(null)
       invalidate()
     } catch (e) {
@@ -301,13 +305,16 @@ export function WorkoutExerciseSessioniByDateList({
           <DialogHeader>
             <DialogTitle>Modifica {exerciseLabel}</DialogTitle>
             <DialogDescription>
-              Data: {editRow ? formatDateFull(editRow.date) : ''}. Il valore verrà applicato a tutte le serie di
-              questa sessione per l&apos;esercizio.
+              Data: {editRow ? formatDateFull(editRow.date) : ''}. Il valore verrà applicato a tutte
+              le serie di questa sessione per l&apos;esercizio.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
             <Label htmlFor="wo-ex-val">
-              Valore ({valueSuffix.trim() || (metricKind === 'weight' ? 'kg' : metricKind === 'reps' ? 'reps' : 's')})
+              Valore (
+              {valueSuffix.trim() ||
+                (metricKind === 'weight' ? 'kg' : metricKind === 'reps' ? 'reps' : 's')}
+              )
             </Label>
             <Input
               id="wo-ex-val"

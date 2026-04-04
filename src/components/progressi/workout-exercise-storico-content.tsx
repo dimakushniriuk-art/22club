@@ -26,10 +26,7 @@ export function WorkoutExerciseStoricoContent({
     [data?.exercises, exerciseId],
   )
 
-  const series = useMemo(
-    () => (exercise ? buildWorkoutExerciseSeries(exercise) : null),
-    [exercise],
-  )
+  const series = useMemo(() => (exercise ? buildWorkoutExerciseSeries(exercise) : null), [exercise])
 
   const listRows = useMemo((): WorkoutExerciseSessionRow[] => {
     if (!series) return []
@@ -56,7 +53,9 @@ export function WorkoutExerciseStoricoContent({
 
   if (!athleteUserId) {
     return (
-      <p className="text-text-secondary text-sm py-6 text-center">Profilo atleta senza user collegato.</p>
+      <p className="text-text-secondary text-sm py-6 text-center">
+        Profilo atleta senza user collegato.
+      </p>
     )
   }
 

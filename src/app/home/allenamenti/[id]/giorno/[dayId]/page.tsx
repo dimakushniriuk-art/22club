@@ -336,7 +336,8 @@ export function GiornoPreviewContent({
   }, [authLoading, athleteProfileId, planId, dayId, supabase])
 
   const startHref = useMemo(() => {
-    if (workoutsPane && planId && dayId) return workoutsPane.hrefFor({ kind: 'oggi', workoutPlanId: planId, dayId })
+    if (workoutsPane && planId && dayId)
+      return workoutsPane.hrefFor({ kind: 'oggi', workoutPlanId: planId, dayId })
     return `${pathBase}/oggi?workout_plan_id=${encodeURIComponent(planId ?? '')}&workout_day_id=${encodeURIComponent(dayId ?? '')}`
   }, [planId, dayId, pathBase, workoutsPane])
 
@@ -408,7 +409,10 @@ export function GiornoPreviewContent({
                             const desc = r.exercises?.description?.trim() ?? ''
                             const detailHref = r.exercises?.id
                               ? workoutsPane
-                                ? workoutsPane.hrefFor({ kind: 'esercizio', exerciseId: r.exercises.id })
+                                ? workoutsPane.hrefFor({
+                                    kind: 'esercizio',
+                                    exerciseId: r.exercises.id,
+                                  })
                                 : `${pathBase}/esercizio/${r.exercises.id}?planId=${encodeURIComponent(planId)}`
                               : null
                             const isOpen = expandedRowIds.has(r.id)

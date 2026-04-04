@@ -498,7 +498,9 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
         const athletesMap = new Map(athleteSelection.map((athlete) => [athlete.id, athlete]))
         const staffMap = new Map(staffSelection.map((staff) => [staff.id, staff]))
 
-        const planIdsForDays = workoutRows.map((w) => w.id).filter((id): id is string => Boolean(id))
+        const planIdsForDays = workoutRows
+          .map((w) => w.id)
+          .filter((id): id is string => Boolean(id))
         const daysPreviewByPlan = new Map<string, WorkoutDaySessionsPreview[]>()
         if (planIdsForDays.length > 0) {
           type DayRow = {
@@ -570,9 +572,13 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
               }
 
               if (logsErr) {
-                logger.warn('Conteggio sessioni completate (lista schede) non caricato', undefined, {
-                  message: logsErr.message,
-                })
+                logger.warn(
+                  'Conteggio sessioni completate (lista schede) non caricato',
+                  undefined,
+                  {
+                    message: logsErr.message,
+                  },
+                )
               } else {
                 for (const log of logsMerged) {
                   const dayId = log.workout_day_id as string | null
@@ -582,7 +588,8 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
                   if (!planId) continue
                   const planAthleteId = planIdToAthleteId.get(planId)
                   if (!planAthleteId) continue
-                  const logAthleteId = (log.atleta_id as string) || (log.athlete_id as string | null)
+                  const logAthleteId =
+                    (log.atleta_id as string) || (log.athlete_id as string | null)
                   if (!logAthleteId || logAthleteId !== planAthleteId) continue
                   completedByDayId.set(dayId, (completedByDayId.get(dayId) ?? 0) + 1)
                 }
@@ -1288,7 +1295,9 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
           }
 
           setWorkouts((prev) =>
-            assignCreationOrderNumbers(prev.map((w) => (w.id === workoutId ? transformedWorkout : w))),
+            assignCreationOrderNumbers(
+              prev.map((w) => (w.id === workoutId ? transformedWorkout : w)),
+            ),
           )
         }
       } catch (error) {
@@ -1670,7 +1679,9 @@ export function useWorkoutPlans(options?: UseWorkoutPlansOptions) {
       }
 
       // Rimuovi la scheda dalla lista locale
-      setWorkouts((prev) => assignCreationOrderNumbers(prev.filter((workout) => workout.id !== workoutId)))
+      setWorkouts((prev) =>
+        assignCreationOrderNumbers(prev.filter((workout) => workout.id !== workoutId)),
+      )
     } catch (error) {
       logger.error('Errore eliminazione scheda', error, { workoutId })
       setError(error instanceof Error ? error.message : "Errore nell'eliminazione della scheda")

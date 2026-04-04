@@ -16,13 +16,19 @@ export function StaffAthleteSegmentSkeleton() {
       <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="h-10 w-10 shrink-0 rounded-lg bg-white/[0.06] animate-pulse" aria-hidden />
+            <div
+              className="h-10 w-10 shrink-0 rounded-lg bg-white/[0.06] animate-pulse"
+              aria-hidden
+            />
             <div className="min-w-0 flex-1 space-y-2 pt-0.5">
               <div className="h-5 sm:h-6 w-[min(320px,70vw)] rounded-md bg-white/[0.08] animate-pulse" />
               <div className="h-3.5 w-[min(480px,85vw)] rounded-md bg-white/[0.05] animate-pulse" />
             </div>
           </div>
-          <div className="hidden h-9 w-32 rounded-lg bg-white/[0.06] animate-pulse sm:block" aria-hidden />
+          <div
+            className="hidden h-9 w-32 rounded-lg bg-white/[0.06] animate-pulse sm:block"
+            aria-hidden
+          />
         </div>
         <div className="min-h-[min(40vh,360px)] rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-6 animate-pulse space-y-4">
           <div className="h-4 w-40 rounded bg-white/[0.08]" />
@@ -37,7 +43,11 @@ export function StaffAthleteSegmentSkeleton() {
 /** Allineato a StaffContentLayout + griglia tipo dashboard/prenotazioni. */
 export function StaffDashboardSegmentSkeleton() {
   return (
-    <div className="relative min-h-dvh flex flex-col bg-transparent" aria-busy="true" aria-label="Caricamento">
+    <div
+      className="relative min-h-dvh flex flex-col bg-transparent"
+      aria-busy="true"
+      aria-label="Caricamento"
+    >
       <div
         className={[
           'flex-1 flex flex-col space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[1800px] mx-auto w-full',
@@ -254,7 +264,10 @@ export function HomeAthleteSegmentSkeleton() {
           <div className="h-40 rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="aspect-[4/3] rounded-xl border border-white/10 bg-white/[0.03] animate-pulse" />
+              <div
+                key={i}
+                className="aspect-[4/3] rounded-xl border border-white/10 bg-white/[0.03] animate-pulse"
+              />
             ))}
           </div>
         </div>
@@ -328,7 +341,11 @@ export function AuthCardSegmentSkeleton() {
 /** Privacy, termini — colonna prose (fallback compatto). */
 export function SimpleDocumentSegmentSkeleton() {
   return (
-    <div className="min-h-dvh bg-background px-4 py-8 sm:py-12" aria-busy="true" aria-label="Caricamento">
+    <div
+      className="min-h-dvh bg-background px-4 py-8 sm:py-12"
+      aria-busy="true"
+      aria-label="Caricamento"
+    >
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="h-8 w-2/3 max-w-md rounded-lg bg-white/[0.08] animate-pulse" />
         {[0, 1, 2, 3, 4].map((i) => (
@@ -368,7 +385,11 @@ export function LegalDocumentPageSkeleton() {
 /** Root `/` durante redirect a login (stesso feedback della vecchia `page` client). */
 export function RootRedirectSegmentSkeleton() {
   return (
-    <div className="min-h-dvh min-h-screen bg-background flex items-center justify-center" aria-busy="true" aria-label="Caricamento">
+    <div
+      className="min-h-dvh min-h-screen bg-background flex items-center justify-center"
+      aria-busy="true"
+      aria-label="Caricamento"
+    >
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand border-t-transparent mx-auto mb-4" />
         <p className="text-text-secondary text-sm">Caricamento...</p>
@@ -397,12 +418,19 @@ export function WelcomeOnboardingSegmentSkeleton() {
 /** Design system — griglia sezioni. */
 export function DesignSystemSegmentSkeleton() {
   return (
-    <div className="min-h-dvh bg-background px-4 py-6 sm:px-6" aria-busy="true" aria-label="Caricamento">
+    <div
+      className="min-h-dvh bg-background px-4 py-6 sm:px-6"
+      aria-busy="true"
+      aria-label="Caricamento"
+    >
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="h-10 w-64 rounded-lg bg-white/[0.08] animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-32 rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
+            <div
+              key={i}
+              className="h-32 rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
+            />
           ))}
         </div>
       </div>

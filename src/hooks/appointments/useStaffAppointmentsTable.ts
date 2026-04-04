@@ -119,7 +119,7 @@ export function useStaffAppointmentsTable() {
         }
 
         const appointmentsWithNames = appointmentsData.map((apt) => {
-          const athleteName = apt.athlete_id ? nameByAthleteId.get(apt.athlete_id) ?? null : null
+          const athleteName = apt.athlete_id ? (nameByAthleteId.get(apt.athlete_id) ?? null) : null
           const athleteAvatarUrl = apt.athlete_id
             ? (avatarByAthleteId.get(apt.athlete_id) ?? null)
             : null

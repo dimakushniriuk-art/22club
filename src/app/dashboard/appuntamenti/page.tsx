@@ -393,7 +393,10 @@ export default function AppuntamentiPage() {
           <div className="w-full max-w-md">
             <Suspense
               fallback={
-                <StaffLazyChunkFallback className="min-h-[240px] w-full max-w-md" label="Caricamento dettaglio…" />
+                <StaffLazyChunkFallback
+                  className="min-h-[240px] w-full max-w-md"
+                  label="Caricamento dettaglio…"
+                />
               }
             >
               <AppointmentDetail

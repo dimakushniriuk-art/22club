@@ -91,7 +91,9 @@ const MAIN_TAB_ROW_TRIGGER = `${TAB_TRIGGER} flex flex-1 min-w-0 items-center ju
 
 type AthleteMainTab = 'profilo' | 'progressi' | 'documenti'
 
-function initialMainTabFromSearch(searchParams: ReturnType<typeof useSearchParams>): AthleteMainTab {
+function initialMainTabFromSearch(
+  searchParams: ReturnType<typeof useSearchParams>,
+): AthleteMainTab {
   const t = searchParams.get('tab')
   if (t === 'allenamenti') return 'progressi'
   if (t === 'profilo' || t === 'progressi' || t === 'documenti') return t
@@ -108,7 +110,9 @@ export function AthleteProfileTabs({
 }: AthleteProfileTabsProps) {
   const searchParams = useSearchParams()
   const storicoHref = `/dashboard/atleti/${athleteId}/progressi/storico`
-  const [activeTab, setActiveTab] = useState<AthleteMainTab>(() => initialMainTabFromSearch(searchParams))
+  const [activeTab, setActiveTab] = useState<AthleteMainTab>(() =>
+    initialMainTabFromSearch(searchParams),
+  )
   const [activeProfileTab, setActiveProfileTab] = useState('anagrafica')
 
   const tabParam = searchParams.get('tab')

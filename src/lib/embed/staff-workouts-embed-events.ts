@@ -12,7 +12,8 @@ export const STAFF_WORKOUTS_EMBED_SAVE_START = '22club:staff-workouts-embed-save
 export const STAFF_WORKOUTS_EMBED_SAVE_OK = '22club:staff-workouts-embed-save-ok' as const
 export const STAFF_WORKOUTS_EMBED_SAVE_ERROR = '22club:staff-workouts-embed-save-error' as const
 export const STAFF_WORKOUTS_EMBED_REFRESH = '22club:staff-workouts-embed-refresh' as const
-export const STAFF_WORKOUTS_EMBED_AUTH_REQUIRED = '22club:staff-workouts-embed-auth-required' as const
+export const STAFF_WORKOUTS_EMBED_AUTH_REQUIRED =
+  '22club:staff-workouts-embed-auth-required' as const
 
 export type StaffWorkoutsSlotId = 'p1' | 'p2'
 
@@ -135,13 +136,19 @@ export function isStaffWorkoutsEmbedInboundEvent(d: unknown): d is StaffWorkouts
   }
 
   if (type === STAFF_WORKOUTS_EMBED_AUTH_REQUIRED) {
-    return d.reason === 'no_session' || d.reason === 'forbidden_role' || d.reason === 'invalid_athlete_id'
+    return (
+      d.reason === 'no_session' ||
+      d.reason === 'forbidden_role' ||
+      d.reason === 'invalid_athlete_id'
+    )
   }
 
   return false
 }
 
-export function isStaffWorkoutsEmbedOutboundEvent(d: unknown): d is StaffWorkoutsEmbedOutboundEvent {
+export function isStaffWorkoutsEmbedOutboundEvent(
+  d: unknown,
+): d is StaffWorkoutsEmbedOutboundEvent {
   if (!isRecord(d)) return false
   const athleteProfileId = typeof d.athleteProfileId === 'string' ? d.athleteProfileId.trim() : ''
   if (!athleteProfileId || !isValidUUID(athleteProfileId)) return false
@@ -156,4 +163,3 @@ export function isStaffWorkoutsEmbedOutboundEvent(d: unknown): d is StaffWorkout
 
   return false
 }
-

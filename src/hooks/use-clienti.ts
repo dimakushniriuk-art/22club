@@ -7,10 +7,7 @@ import { useAuth } from '@/providers/auth-provider'
 import { handleApiError } from '@/lib/error-handler'
 import { useSupabaseWithRetry } from './use-api-with-retry'
 import { queryKeys } from '@/lib/query-keys'
-import {
-  fetchClientiList,
-  fetchClientiStats,
-} from '@/lib/clienti/fetch-clienti-data'
+import { fetchClientiList, fetchClientiStats } from '@/lib/clienti/fetch-clienti-data'
 import type { Cliente, ClienteFilters, ClienteSort, ClienteStats } from '@/types/cliente'
 
 interface UseClientiOptions {
@@ -238,8 +235,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
           ? String(listErr)
           : null
 
-  const loading =
-    authLoading || (listEnabled && listQueryActive && listQuery.isFetching)
+  const loading = authLoading || (listEnabled && listQueryActive && listQuery.isFetching)
 
   const clienti = listQuery.data?.clienti ?? []
   const total = listQuery.data?.total ?? 0

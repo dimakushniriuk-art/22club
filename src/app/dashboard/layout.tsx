@@ -65,7 +65,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     'profiles',
     (payload) => {
       if (!orgId) return
-      const row = (payload.new ?? payload.old) as { org_id?: string | null; role?: string | null } | null
+      const row = (payload.new ?? payload.old) as {
+        org_id?: string | null
+        role?: string | null
+      } | null
       const rowOrg = row?.org_id ?? null
       if (!rowOrg || rowOrg !== orgId) return
       if (!isAthleteProfileRole(row?.role ?? null)) return
@@ -99,9 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <ImpersonationBanner />
       <RoleLayout role="staff">
         <ErrorBoundary>
-          <Suspense fallback={<StaffDashboardSegmentSkeleton />}>
-            {children}
-          </Suspense>
+          <Suspense fallback={<StaffDashboardSegmentSkeleton />}>{children}</Suspense>
         </ErrorBoundary>
 
         {/* Navigation Loading Overlay - DISABILITATO TEMPORANEAMENTE per debug refresh multipli */}

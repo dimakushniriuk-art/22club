@@ -22,7 +22,7 @@ ORDER BY tablename;
 
 ## Nota SQL
 
-Se `ADD TABLE` risponde *already member of publication*, la tabella è già nella publication.
+Se `ADD TABLE` risponde _already member of publication_, la tabella è già nella publication.
 
 **RLS:** le policy valgono anche per Realtime.
 

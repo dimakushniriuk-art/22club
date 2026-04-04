@@ -6,8 +6,7 @@ export const STAFF_WORKOUTS_SLOTS_SESSION_KEY = '22club:staff-workouts-embed-slo
 export const STAFF_WORKOUTS_SLOTS_CHANGED_EVENT = '22club:staff-workouts-slots-changed' as const
 
 /** Snapshot query string su `/dashboard/workouts` (include p1view, p1workoutPlanId, …) per ripristino dopo navigazione. */
-export const STAFF_WORKOUTS_FULL_QUERY_SESSION_KEY =
-  '22club:staff-workouts-full-query-v1' as const
+export const STAFF_WORKOUTS_FULL_QUERY_SESSION_KEY = '22club:staff-workouts-full-query-v1' as const
 
 export function readStaffWorkoutSlotsFromSession(): { p1: string; p2: string } {
   if (typeof window === 'undefined') return { p1: '', p2: '' }

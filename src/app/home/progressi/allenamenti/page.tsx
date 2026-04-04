@@ -112,10 +112,7 @@ function StatisticheAllenamentiContent() {
                 </p>
               </div>
             ) : (
-              <WorkoutExerciseCharts
-                data={data}
-                detailBasePath="/home/progressi/allenamenti"
-              />
+              <WorkoutExerciseCharts data={data} detailBasePath="/home/progressi/allenamenti" />
             )}
           </CardContent>
         </Card>
