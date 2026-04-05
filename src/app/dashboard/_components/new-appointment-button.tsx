@@ -15,15 +15,18 @@ const DEFAULT_ICON_BOX = 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400'
 
 export function NewAppointmentButton({
   iconBoxClass = DEFAULT_ICON_BOX,
+  calendarioHref = '/dashboard/calendario?new=true',
 }: {
   iconBoxClass?: string
+  /** Destinazione “nuovo appuntamento” (es. calendario staff o segmento massaggiatore). */
+  calendarioHref?: string
 }) {
   const router = useRouter()
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     logger.debug('New appointment button clicked')
-    router.push('/dashboard/calendario?new=true')
+    router.push(calendarioHref)
   }
 
   return (

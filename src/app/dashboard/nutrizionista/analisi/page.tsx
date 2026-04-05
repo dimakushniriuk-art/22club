@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
-  BarChart2,
   ArrowRight,
   User,
   AlertTriangle,
@@ -419,7 +418,6 @@ export default function NutrizionistaAnalisiPage() {
     <StaffContentLayout
       title="Analisi settimanale"
       description="Indicatori settimanali e scostamenti dagli obiettivi."
-      icon={<BarChart2 className="w-6 h-6" />}
       theme="teal"
       actions={
         <div className="flex flex-wrap items-center gap-3">

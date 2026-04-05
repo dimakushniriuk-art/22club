@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { ClipboardCheck, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 
@@ -25,7 +25,6 @@ export default function NutrizionistaCheckinDetailPage() {
     <StaffContentLayout
       title="Dettaglio check-in"
       description="Dettaglio giornata, questionario e misure (in sviluppo)."
-      icon={<ClipboardCheck className="w-6 h-6" />}
       theme="teal"
       actions={
         <Link

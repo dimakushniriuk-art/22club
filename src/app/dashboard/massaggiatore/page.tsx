@@ -1,47 +1,104 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
-  Hand,
-  Users,
+  User,
   MessageSquare,
-  Calendar,
+  BarChart3,
+  CalendarDays,
   CalendarCheck,
-  BarChart2,
   CreditCard,
-  ChevronDown,
-  FileText,
-  ArrowRight,
-  AlertCircle,
+  Settings2,
 } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-} from '@/components/ui'
 import { createLogger } from '@/lib/logger'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
+import { AgendaClient } from '@/app/dashboard/_components/agenda-client'
 import {
-  StaffDashboardGuardSkeleton,
-  StaffStaffPageContentSkeleton,
-} from '@/components/layout/route-loading-skeletons'
+  DashboardColumnEmpty,
+  DashboardColumnFooterLink,
+  DashboardColumnListSkeleton,
+  DashboardColumnPanel,
+} from '@/app/dashboard/_components/dashboard-widget-columns'
+import { NewAppointmentButton } from '@/app/dashboard/_components/new-appointment-button'
+import { useStaffTodayAgenda } from '@/hooks/use-staff-today-agenda'
+import { cn } from '@/lib/utils'
+import { MassaggiatoreDashboardWidgetColumns } from './_components/massaggiatore-dashboard-widget-columns'
 
 const logger = createLogger('app:dashboard:massaggiatore:page')
+
+const QUICK_ACTION_CARD_CLASS =
+  'group flex min-h-[64px] flex-col items-center justify-center rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-2.5 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all hover:border-white/18 hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 active:scale-[0.99] sm:min-h-[72px] sm:p-3'
+
+type QuickActionLink = {
+  href: string
+  icon: LucideIcon
+  label: string
+  iconBoxClass: string
+}
+type QuickActionAppointment = { href: null; iconBoxClass: string }
+type QuickActionItem = QuickActionLink | QuickActionAppointment
+
+const QUICK_ACTIONS: QuickActionItem[] = [
+  {
+    href: '/dashboard/massaggiatore/calendario',
+    icon: CalendarDays,
+    label: 'Calendario',
+    iconBoxClass: 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400',
+  },
+  {
+    href: '/dashboard/massaggiatore/appuntamenti',
+    icon: CalendarCheck,
+    label: 'Appuntamenti',
+    iconBoxClass: 'border-orange-500/30 bg-orange-500/20 text-orange-300',
+  },
+  {
+    href: '/dashboard/massaggiatore/chat',
+    icon: MessageSquare,
+    label: 'Chat',
+    iconBoxClass: 'border-purple-500/30 bg-purple-500/20 text-purple-400',
+  },
+  {
+    href: '/dashboard/massaggiatore/statistiche',
+    icon: BarChart3,
+    label: 'Statistiche',
+    iconBoxClass: 'border-blue-500/30 bg-blue-500/20 text-blue-400',
+  },
+  {
+    href: '/dashboard/massaggiatore/profilo',
+    icon: User,
+    label: 'Profilo',
+    iconBoxClass: 'border-sky-500/30 bg-sky-500/20 text-sky-300',
+  },
+  {
+    href: null,
+    iconBoxClass: 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400',
+  },
+  {
+    href: '/dashboard/massaggiatore/abbonamenti',
+    icon: CreditCard,
+    label: 'Abbonamenti',
+    iconBoxClass: 'border-lime-500/30 bg-lime-500/20 text-lime-300',
+  },
+  {
+    href: '/dashboard/massaggiatore/impostazioni',
+    icon: Settings2,
+    label: 'Impostazioni',
+    iconBoxClass: 'border-zinc-500/30 bg-zinc-500/20 text-zinc-300',
+  },
+]
 
 type UpcomingAppointment = {
   id: string
   starts_at: string
-  ends_at: string | null
   athlete_name: string
-  type: string | null
 }
 
 type DashboardStats = {
@@ -50,54 +107,49 @@ type DashboardStats = {
   massaggiTotali: number
   fattureEmesse: number
   appuntamentiSettimana: number
-  lastUpdated: string | null
   prossimiAppuntamenti: UpcomingAppointment[]
 }
 
-function getGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return 'Buongiorno'
-  if (h < 18) return 'Buon pomeriggio'
-  return 'Buonasera'
-}
-
-function isToday(iso: string): boolean {
-  const d = new Date(iso)
-  const today = new Date()
-  return (
-    d.getUTCFullYear() === today.getUTCFullYear() &&
-    d.getUTCMonth() === today.getUTCMonth() &&
-    d.getUTCDate() === today.getUTCDate()
-  )
+function isMassageAgendaEvent(description: string | undefined): boolean {
+  const d = (description ?? '').toLowerCase()
+  return d === 'massaggio' || d.includes('massaggio')
 }
 
 export default function MassaggiatorePage() {
   const { showLoader } = useStaffDashboardGuard('massaggiatore')
   const supabase = useSupabaseClient()
   const { user } = useAuth()
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [staffDisplayName, setStaffDisplayName] = useState<string | null>(null)
-  const [data, setData] = useState<DashboardStats>({
+  const {
+    events: agendaEvents,
+    loading: agendaLoading,
+    loadError: agendaLoadError,
+    reload: reloadAgenda,
+  } = useStaffTodayAgenda()
+
+  const massageAgendaEvents = useMemo(
+    () => agendaEvents.filter((e) => isMassageAgendaEvent(e.description)),
+    [agendaEvents],
+  )
+
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
+  const [stats, setStats] = useState<DashboardStats>({
     clientiSeguiti: 0,
     massaggiEseguiti: 0,
     massaggiTotali: 0,
     fattureEmesse: 0,
     appuntamentiSettimana: 0,
-    lastUpdated: null,
     prossimiAppuntamenti: [],
   })
 
-  useEffect(() => {
-    setStaffDisplayName((user as { nome?: string | null })?.nome ?? null)
-  }, [user])
-
-  const loadData = useCallback(async () => {
+  const loadStats = useCallback(async () => {
     const profileId = user?.id ?? null
-    if (!profileId) return
-    setError(null)
-    setLoading(true)
+    if (!profileId) {
+      setStatsLoading(false)
+      return
+    }
+    setStatsError(null)
+    setStatsLoading(true)
     try {
       const nowIso = new Date().toISOString()
       const [clientiRes, appointmentsRes, paymentsRes, weekRes, aptDataRes] = await Promise.all([
@@ -126,22 +178,20 @@ export default function MassaggiatorePage() {
           .neq('status', 'annullato'),
         supabase
           .from('appointments')
-          .select('id, starts_at, ends_at, athlete_id, type')
+          .select('id, starts_at, athlete_id')
           .eq('staff_id', profileId)
           .eq('type', 'massaggio')
           .gte('starts_at', nowIso)
           .is('cancelled_at', null)
           .order('starts_at', { ascending: true })
-          .limit(10),
+          .limit(12),
       ])
 
       const appointments = appointmentsRes.data ?? []
       const aptData = (aptDataRes.data ?? []) as Array<{
         id: string
         starts_at: string
-        ends_at: string | null
         athlete_id: string | null
-        type: string | null
       }>
       const athleteIds = [...new Set(aptData.map((a) => a.athlete_id).filter(Boolean))] as string[]
       const profilesMap = new Map<string, { nome: string | null; cognome: string | null }>()
@@ -164,400 +214,152 @@ export default function MassaggiatorePage() {
         return {
           id: apt.id,
           starts_at: apt.starts_at,
-          ends_at: apt.ends_at,
           athlete_name: name,
-          type: apt.type,
         }
       })
 
-      setData({
+      setStats({
         clientiSeguiti: clientiRes.count ?? 0,
         massaggiEseguiti: appointments.filter((a) => a.status === 'completato').length,
         massaggiTotali: appointments.length,
         fattureEmesse: paymentsRes.count ?? 0,
         appuntamentiSettimana: weekRes.count ?? 0,
-        lastUpdated: new Date().toISOString(),
         prossimiAppuntamenti,
       })
     } catch (e) {
       logger.error('Errore caricamento dashboard massaggiatore', e)
-      setError(e instanceof Error ? e.message : 'Errore nel caricamento')
+      setStatsError(e instanceof Error ? e.message : 'Errore nel caricamento')
     } finally {
-      setLoading(false)
+      setStatsLoading(false)
     }
   }, [user, supabase])
 
   useEffect(() => {
-    void loadData()
-  }, [loadData])
+    void loadStats()
+  }, [loadStats])
 
   if (showLoader) {
     return <StaffDashboardGuardSkeleton />
   }
 
+  const summaryForWidgets = {
+    clientiSeguiti: stats.clientiSeguiti,
+    massaggiEseguiti: stats.massaggiEseguiti,
+    massaggiTotali: stats.massaggiTotali,
+    fattureEmesse: stats.fattureEmesse,
+    appuntamentiSettimana: stats.appuntamentiSettimana,
+  }
+
   return (
     <StaffContentLayout
-      title="Dashboard Massaggio"
-      description="Panoramica clienti, appuntamenti e attività professionali."
-      icon={<Hand className="w-6 h-6" />}
-      theme="amber"
+      title="Dashboard"
+      description="Scorciatoie operative, agenda di oggi e riepilogo attività."
+      theme="teal"
+      className="overflow-y-auto min-h-0"
     >
-      {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
-          <span>{error}</span>
+      {statsError && (
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
+          <span>{statsError}</span>
           <Button
             variant="outline"
             size="sm"
-            className="min-h-[44px] touch-manipulation"
-            onClick={() => void loadData()}
+            className="min-h-[44px] touch-manipulation shrink-0"
+            onClick={() => void loadStats()}
           >
             Riprova
           </Button>
         </div>
       )}
 
-      {loading && !error && <StaffStaffPageContentSkeleton />}
-
-      {/* Vista smartphone */}
-      <div className="md:hidden flex flex-col gap-4 pb-4">
-        {!loading && !error && (
-          <>
-            <div>
-              <p className="text-amber-400 text-xs sm:text-sm font-medium">
-                {getGreeting()}
-                {staffDisplayName ? `, ${staffDisplayName}` : ''}!
-              </p>
-              <div className="flex items-center gap-2.5 mt-0.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
-                  <Hand className="w-4 h-4 text-amber-400" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base sm:text-lg font-bold text-text-primary leading-tight">
-                    I tuoi KPI Massaggio
-                  </h2>
-                  <p className="text-text-secondary text-xs sm:text-sm leading-snug">
-                    Metriche chiave per i clienti collegati.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-xs sm:text-sm font-semibold text-text-primary mb-2">
-                Azioni Rapide
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  asChild
-                  variant="default"
-                  size="sm"
-                  className="bg-amber-600 hover:bg-amber-500 min-h-[48px] touch-manipulation flex flex-col gap-0.5 text-xs"
-                >
-                  <Link
-                    href="/dashboard/massaggiatore/calendario"
-                    className="flex flex-col items-center justify-center gap-0.5 py-2.5"
-                  >
-                    <Calendar className="h-4 w-4 shrink-0" aria-hidden />
-                    <span className="font-medium">Calendario</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="border-amber-500/40 min-h-[48px] touch-manipulation flex flex-col gap-0.5 text-xs"
-                >
-                  <Link
-                    href="/dashboard/massaggiatore/appuntamenti"
-                    className="flex flex-col items-center justify-center gap-0.5 py-2.5"
-                  >
-                    <CalendarCheck className="h-4 w-4 shrink-0" aria-hidden />
-                    <span className="font-medium">Appuntamenti</span>
-                  </Link>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-amber-500/40 min-h-[48px] w-full touch-manipulation flex flex-col gap-0.5 text-xs"
-                    >
-                      <ChevronDown className="h-4 w-4 shrink-0" aria-hidden />
-                      <span className="font-medium">Azioni</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="min-w-[200px]">
-                    <DropdownMenuItem
-                      onClick={() => router.push('/dashboard/massaggiatore/chat')}
-                      className="min-h-[44px] py-3 touch-manipulation text-sm"
-                    >
-                      <MessageSquare className="mr-2 h-4 w-4" /> Chat
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push('/dashboard/massaggiatore/statistiche')}
-                      className="min-h-[44px] py-3 touch-manipulation text-sm"
-                    >
-                      <BarChart2 className="mr-2 h-4 w-4" /> Statistiche
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push('/dashboard/massaggiatore/abbonamenti')}
-                      className="min-h-[44px] py-3 touch-manipulation text-sm"
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" /> Abbonamenti
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {data.lastUpdated && (
-              <p className="text-text-muted text-[11px] sm:text-xs">
-                Aggiornato alle{' '}
-                {new Date(data.lastUpdated).toLocaleTimeString('it-IT', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
-            )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <Link
-                href="/dashboard/massaggiatore/appuntamenti"
-                className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation"
-              >
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Clienti seguiti
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
-                  {data.clientiSeguiti}
-                </p>
-              </Link>
-              <div className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3">
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Massaggi eseguiti
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
-                  {data.massaggiEseguiti}
-                </p>
-                <p className="text-[11px] sm:text-xs text-text-muted mt-0.5">
-                  di {data.massaggiTotali} totali
-                </p>
-              </div>
-              <Link
-                href="/dashboard/massaggiatore/abbonamenti"
-                className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation"
-              >
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Fatture emesse
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
-                  {data.fattureEmesse}
-                </p>
-              </Link>
-              <Link
-                href="/dashboard/massaggiatore/calendario"
-                className="rounded-lg border border-amber-500/30 bg-background-secondary/80 p-3 block touch-manipulation"
-              >
-                <p className="text-[11px] sm:text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Prossimi 7 giorni
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums mt-0.5">
-                  {data.appuntamentiSettimana}
-                </p>
-                <p className="text-[11px] sm:text-xs text-amber-400 mt-0.5">appuntamenti</p>
-              </Link>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Vista desktop */}
-      <div className="hidden md:block">
-        {!loading && !error && (
-          <div className="flex flex-col gap-6">
-            {/* Banner: appuntamenti oggi */}
-            {data.prossimiAppuntamenti.some((a) => isToday(a.starts_at)) && (
-              <div className="rounded-xl border-2 border-amber-500/40 bg-amber-500/10 px-5 py-4 flex flex-wrap items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-amber-400 shrink-0" aria-hidden />
+      <section className="shrink-0" aria-label="Azioni rapide" aria-busy={agendaLoading}>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-3 lg:grid-cols-6 lg:gap-3">
+          {QUICK_ACTIONS.map((item) => {
+            if (item.href) {
+              const linkItem = item as QuickActionLink
+              const Icon = linkItem.icon
+              return (
                 <Link
-                  href="/dashboard/massaggiatore/calendario"
-                  className="text-amber-200 hover:text-amber-100 font-medium text-sm underline focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
+                  key={linkItem.href}
+                  href={linkItem.href}
+                  prefetch
+                  aria-label={linkItem.label}
+                  className={QUICK_ACTION_CARD_CLASS}
                 >
-                  Hai appuntamenti oggi
-                </Link>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Link
-                href="/dashboard/massaggiatore/appuntamenti"
-                className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-5 min-h-[7.5rem] flex flex-col justify-between hover:shadow-xl hover:shadow-amber-500/20 transition-all focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
-              >
-                <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-                  <Users className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
-                  Clienti seguiti
-                </div>
-                <p className="text-2xl font-bold text-amber-400 tabular-nums">
-                  {data.clientiSeguiti}
-                </p>
-              </Link>
-              <div className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-5 min-h-[7.5rem] flex flex-col justify-between">
-                <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-                  <Hand className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
-                  Massaggi eseguiti
-                </div>
-                <p className="text-2xl font-bold text-text-primary tabular-nums">
-                  {data.massaggiEseguiti}
-                </p>
-                <p className="text-xs text-text-muted mt-0.5">di {data.massaggiTotali} totali</p>
-              </div>
-              <Link
-                href="/dashboard/massaggiatore/abbonamenti"
-                className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-5 min-h-[7.5rem] flex flex-col justify-between hover:shadow-xl hover:shadow-amber-500/20 transition-all focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 touch-manipulation"
-              >
-                <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-                  <FileText className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
-                  Fatture emesse
-                </div>
-                <p className="text-2xl font-bold text-text-primary tabular-nums">
-                  {data.fattureEmesse}
-                </p>
-              </Link>
-              <Link
-                href="/dashboard/massaggiatore/calendario"
-                className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-5 min-h-[7.5rem] flex flex-col justify-between hover:shadow-xl hover:shadow-amber-500/20 transition-all focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 touch-manipulation"
-              >
-                <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-                  <CalendarCheck className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />
-                  Prossimi 7 giorni
-                </div>
-                <p className="text-2xl font-bold text-text-primary tabular-nums">
-                  {data.appuntamentiSettimana}
-                </p>
-              </Link>
-            </div>
-
-            {/* Prossimo appuntamento in evidenza */}
-            {data.prossimiAppuntamenti.length > 0 && (
-              <div className="rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-orange-500/10 shadow-lg shadow-amber-500/10 p-5">
-                <h2 className="text-sm font-semibold text-amber-400 mb-3">Prossimo appuntamento</h2>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-lg font-bold text-text-primary">
-                      {data.prossimiAppuntamenti[0].athlete_name}
-                    </p>
-                    <p className="text-text-secondary text-sm">
-                      Massaggio ·{' '}
-                      {new Date(data.prossimiAppuntamenti[0].starts_at).toLocaleDateString(
-                        'it-IT',
-                        {
-                          weekday: 'long',
-                          day: '2-digit',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        },
-                      )}
-                    </p>
+                  <div
+                    className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+                      linkItem.iconBoxClass,
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <Link
-                    href="/dashboard/massaggiatore/calendario"
-                    className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-medium text-sm focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 rounded"
-                  >
-                    Apri calendario
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {/* Prossimi appuntamenti */}
-            <section className="rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-amber-500/20">
-                <h2 className="text-lg font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                  Prossimi appuntamenti
-                </h2>
-                <Link
-                  href="/dashboard/massaggiatore/calendario"
-                  className="text-sm text-amber-400 hover:text-amber-300 font-medium inline-flex items-center gap-1 min-h-[44px] touch-manipulation"
-                >
-                  Vedi calendario
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span className="mt-1.5 block text-[10px] font-semibold leading-tight text-text-primary sm:mt-2 sm:text-[11px]">
+                    {linkItem.label}
+                  </span>
                 </Link>
-              </div>
-              {data.prossimiAppuntamenti.length === 0 ? (
-                <div className="px-5 py-10 text-center text-text-secondary text-sm flex flex-col items-center gap-4">
-                  <Calendar className="h-10 w-10 text-amber-500/50 shrink-0" aria-hidden />
-                  <p>Nessun appuntamento massaggio in programma.</p>
-                  <Link
-                    href="/dashboard/massaggiatore/calendario"
-                    className="text-amber-400 hover:text-amber-300 font-medium focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded min-h-[44px] inline-flex items-center justify-center touch-manipulation"
-                  >
+              )
+            }
+            return (
+              <NewAppointmentButton
+                key="appointment"
+                iconBoxClass={item.iconBoxClass}
+                calendarioHref="/dashboard/massaggiatore/calendario?new=true"
+              />
+            )
+          })}
+        </div>
+      </section>
+
+      <section
+        className="grid flex-1 min-h-0 grid-cols-1 items-stretch gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-4"
+        aria-label="Area principale dashboard"
+      >
+        <div
+          className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0"
+          aria-label="Agenda di oggi"
+        >
+          <DashboardColumnPanel
+            title="Agenda di oggi"
+            badge={
+              !agendaLoading && agendaLoadError == null && massageAgendaEvents.length > 0
+                ? massageAgendaEvents.length
+                : undefined
+            }
+            footer={
+              <DashboardColumnFooterLink href="/dashboard/massaggiatore/calendario">
+                Vai al calendario
+              </DashboardColumnFooterLink>
+            }
+          >
+            {agendaLoading ? (
+              <DashboardColumnListSkeleton />
+            ) : agendaLoadError ? (
+              <DashboardColumnEmpty>
+                <p>{agendaLoadError}</p>
+                <Button variant="primary" size="sm" onClick={() => void reloadAgenda()}>
+                  Riprova
+                </Button>
+              </DashboardColumnEmpty>
+            ) : massageAgendaEvents.length === 0 ? (
+              <DashboardColumnEmpty>
+                <p className="text-text-primary/90">Nessun massaggio in agenda per oggi.</p>
+                <Button variant="primary" size="sm" asChild>
+                  <Link href="/dashboard/massaggiatore/calendario" prefetch>
                     Apri calendario
                   </Link>
-                </div>
-              ) : (
-                <ul className="divide-y divide-border/50">
-                  {data.prossimiAppuntamenti.map((apt) => (
-                    <li
-                      key={apt.id}
-                      className="flex items-center gap-3 px-5 py-4 min-h-[44px] hover:bg-background-tertiary/30 transition-colors touch-manipulation"
-                    >
-                      <Calendar className="h-5 w-5 text-amber-400 shrink-0" aria-hidden />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-text-primary font-medium">{apt.athlete_name}</span>
-                        <span className="text-text-secondary text-sm ml-2">Massaggio</span>
-                      </div>
-                      <span className="text-text-muted text-sm shrink-0">
-                        {new Date(apt.starts_at).toLocaleDateString('it-IT', {
-                          weekday: 'short',
-                          day: '2-digit',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/dashboard/massaggiatore/calendario"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
-              >
-                <Calendar className="h-4 w-4" /> Calendario
-              </Link>
-              <Link
-                href="/dashboard/massaggiatore/appuntamenti"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
-              >
-                <CalendarCheck className="h-4 w-4" /> Appuntamenti
-              </Link>
-              <Link
-                href="/dashboard/massaggiatore/chat"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
-              >
-                <MessageSquare className="h-4 w-4" /> Chat
-              </Link>
-              <Link
-                href="/dashboard/massaggiatore/statistiche"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
-              >
-                <BarChart2 className="h-4 w-4" /> Statistiche
-              </Link>
-              <Link
-                href="/dashboard/massaggiatore/abbonamenti"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
-              >
-                <CreditCard className="h-4 w-4" /> Abbonamenti
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
+                </Button>
+              </DashboardColumnEmpty>
+            ) : (
+              <AgendaClient initialEvents={massageAgendaEvents} embedded />
+            )}
+          </DashboardColumnPanel>
+        </div>
+        <MassaggiatoreDashboardWidgetColumns
+          upcoming={stats.prossimiAppuntamenti}
+          stats={summaryForWidgets}
+          statsLoading={statsLoading}
+        />
+      </section>
     </StaffContentLayout>
   )
 }

@@ -36,9 +36,9 @@ const MAIN_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary h-
 const PROFILE_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary !flex-nowrap max-[851px]:gap-1 ${TABS_SHELL} inline-flex h-auto w-max max-w-none gap-1 min-h-[48px] min-[834px]:mb-0 min-[834px]:grid min-[834px]:w-full min-[834px]:max-w-full min-[834px]:grid-cols-3 min-[834px]:gap-1 min-[834px]:flex-none min-[1100px]:grid-cols-6`
 
 const TAB_TRIGGER_CLASS =
-  'touch-manipulation text-xs px-2 sm:px-3 py-2.5 sm:py-3 rounded-xl font-medium data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 transition-all duration-200 flex items-center justify-center gap-1.5 min-h-[44px] min-w-0 active:opacity-90'
+  'touch-manipulation text-xs px-2 sm:px-3 py-2.5 sm:py-3 rounded-xl font-medium transition-none data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 flex items-center justify-center gap-1.5 min-h-[44px] min-w-0'
 const PROFILE_TAB_TRIGGER_CLASS =
-  'touch-manipulation shrink-0 text-[11px] px-3 sm:px-2.5 py-2.5 sm:py-2.5 rounded-xl font-medium data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 transition-all duration-200 inline-flex items-center justify-center gap-1.5 min-h-[44px] whitespace-nowrap active:opacity-90'
+  'touch-manipulation shrink-0 text-[11px] px-3 sm:px-2.5 py-2.5 sm:py-2.5 rounded-xl font-medium transition-none data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 inline-flex items-center justify-center gap-1.5 min-h-[44px] whitespace-nowrap'
 
 const PROFILE_TABS_SCROLL =
   '-mx-0.5 mb-1 overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch] scrollbar-hide'

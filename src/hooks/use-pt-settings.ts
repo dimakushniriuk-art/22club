@@ -28,11 +28,6 @@ interface Settings {
     mostra_telefono: boolean
     condividi_statistiche: boolean
   }
-  appearance: {
-    theme: 'dark' | 'light'
-    accent_color: string
-    sidebar_collapsed: boolean
-  }
 }
 
 const defaultSettings: Settings = {
@@ -59,11 +54,6 @@ const defaultSettings: Settings = {
     mostra_email: false,
     mostra_telefono: true,
     condividi_statistiche: true,
-  },
-  appearance: {
-    theme: 'dark',
-    accent_color: 'brand',
-    sidebar_collapsed: false,
   },
 }
 
@@ -132,28 +122,6 @@ export function usePTSettings(authUserId: string) {
     }
   }, [debounce, handleSaveSettings])
 
-  // Carica impostazioni da localStorage
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const raw = window.localStorage.getItem('impostazioni:appearance')
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<Settings['appearance']>
-        setSettings((prev) => ({
-          ...prev,
-          appearance: { ...prev.appearance, ...parsed },
-        }))
-      }
-    } catch {}
-  }, [])
-
-  // Salva impostazioni aspetto in localStorage
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem('impostazioni:appearance', JSON.stringify(settings.appearance))
-    document.documentElement.classList.toggle('dark', settings.appearance.theme === 'dark')
-  }, [settings.appearance])
-
   // Conferma abbandono pagina con modifiche non salvate
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -203,15 +171,6 @@ export function usePTSettings(authUserId: string) {
     scheduleAutoSave()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateAppearance = (field: string, value: any) => {
-    setSettings((prev) => ({
-      ...prev,
-      appearance: { ...prev.appearance, [field]: value },
-    }))
-    scheduleAutoSave()
-  }
-
   return {
     settings,
     isSavingSettings,
@@ -221,6 +180,5 @@ export function usePTSettings(authUserId: string) {
     updateProfile,
     toggleNotification,
     togglePrivacy,
-    updateAppearance,
   }
 }

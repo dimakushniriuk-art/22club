@@ -85,7 +85,11 @@ function formatCurrency(amount: number): string {
 
 const _DEFAULT_DATE = new Date().toISOString().split('T')[0]
 
-type AbbonamentiTheme = 'default' | 'teal' | 'amber'
+type AbbonamentiTheme = 'default' | 'teal'
+
+/** Card KPI: stesso linguaggio visivo della dashboard staff (zinc / inset). */
+const ABBONAMENTI_KPI_CARD_CLASS =
+  'rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 sm:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-inset ring-white/[0.03]'
 
 const ABBONAMENTI_THEME = {
   default: {
@@ -125,25 +129,6 @@ const ABBONAMENTI_THEME = {
     modalButton: 'border-teal-500/30 hover:bg-teal-500/10',
     modalPrimary: 'bg-teal-600 hover:bg-teal-500 text-white',
     spinner: 'text-teal-400',
-  },
-  amber: {
-    tabContainer: 'border-amber-500/20',
-    tabActive: 'bg-amber-600 text-white',
-    inputBorder: 'border-amber-500/30 focus:border-amber-500/50',
-    buttonOutline: 'border-amber-500/30 text-white hover:bg-amber-500/10 hover:border-amber-500/50',
-    buttonPrimary:
-      'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-semibold shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40',
-    kpiAccent: 'text-amber-400',
-    cardBorder: 'border-amber-500/30',
-    tableBorder: 'border-amber-500/20',
-    tableDivide: 'divide-amber-500/10',
-    emptyIcon: 'bg-amber-500/20 text-amber-400',
-    modalBorder: 'border-amber-500/30',
-    modalHeader: 'border-amber-500/20',
-    modalIcon: 'text-amber-400',
-    modalButton: 'border-amber-500/30 hover:bg-amber-500/10',
-    modalPrimary: 'bg-amber-600 hover:bg-amber-500 text-white',
-    spinner: 'text-amber-400',
   },
 } as const
 
@@ -193,11 +178,7 @@ export default function AbbonamentiPage() {
   const defaultService = defaultServiceForRole(role)
   const currentServiceType: ServiceType = urlService ?? defaultService
   const abbonamentiTheme: AbbonamentiTheme =
-    currentServiceType === 'massage'
-      ? 'amber'
-      : currentServiceType === 'nutrition'
-        ? 'teal'
-        : 'default'
+    currentServiceType === 'nutrition' || currentServiceType === 'massage' ? 'teal' : 'default'
   const t = ABBONAMENTI_THEME[abbonamentiTheme]
 
   // Se manca ?service=, applica default e sostituisci URL
@@ -697,36 +678,40 @@ export default function AbbonamentiPage() {
 
         {/* KPI bar (service corrente) - nascosta al trainer */}
         {role !== 'trainer' && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
               <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <Euro className="w-3.5 h-3.5" />
+                <Euro className="w-3.5 h-3.5 shrink-0 opacity-90" />
                 Incasso mese
               </div>
-              <p className={`text-lg font-bold ${t.kpiAccent}`}>
+              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>
                 {formatCurrency(kpiFromFiltered.incassoMese)}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
               <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <Package className="w-3.5 h-3.5" />
+                <Package className="w-3.5 h-3.5 shrink-0 opacity-90" />
                 Pacchetti venduti mese
               </div>
-              <p className="text-lg font-bold text-text-primary">{kpiFromFiltered.pacchettiMese}</p>
+              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>
+                {kpiFromFiltered.pacchettiMese}
+              </p>
             </div>
-            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
               <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <CreditCard className="w-3.5 h-3.5" />
+                <CreditCard className="w-3.5 h-3.5 shrink-0 opacity-90" />
                 Crediti rimanenti totali
               </div>
-              <p className="text-lg font-bold text-text-primary">{kpiFromFiltered.creditiTotali}</p>
+              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>
+                {kpiFromFiltered.creditiTotali}
+              </p>
             </div>
-            <div className="rounded-xl border border-border bg-background-secondary/80 p-3 ring-1 ring-white/5">
+            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
               <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <CalendarCheck className="w-3.5 h-3.5" />
+                <CalendarCheck className="w-3.5 h-3.5 shrink-0 opacity-90" />
                 Sedute completate mese
               </div>
-              <p className="text-lg font-bold text-text-primary">{kpiDebitsInMonth}</p>
+              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>{kpiDebitsInMonth}</p>
             </div>
           </div>
         )}

@@ -25,25 +25,28 @@ import {
   Shield,
   LogOut,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
+/** Accenti (titoli, bottoni, avatar): le superfici usano Card default zinc come Abbonamenti / liste. */
 const THEME = {
   teal: {
-    card: 'bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/30 shadow-2xl shadow-teal-500/20',
-    cardBg: 'from-teal-500/5 via-transparent to-cyan-500/5',
     title: 'from-teal-400 to-cyan-400',
     badge: 'shadow-teal-500/30',
     btn: 'border-teal-500/30 text-teal-400 hover:bg-teal-500/10 hover:border-teal-500/50',
     ring: 'ring-teal-500/30',
+    iconMuted: 'text-teal-400/90',
   },
   amber: {
-    card: 'bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-amber-500/30 shadow-2xl shadow-amber-500/20',
-    cardBg: 'from-amber-500/5 via-transparent to-orange-500/5',
     title: 'from-amber-400 to-orange-400',
     badge: 'shadow-amber-500/30',
     btn: 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50',
     ring: 'ring-amber-500/30',
+    iconMuted: 'text-amber-400/90',
   },
 } as const
+
+const PANEL_INSET_CLASS =
+  'rounded-lg border border-white/10 bg-white/[0.03] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 
 interface PTProfileTabProps {
   profile: {
@@ -77,8 +80,10 @@ interface PTProfileTabProps {
   onLogout?: () => void
   /** Etichetta ruolo (es. "Personal Trainer", "Massaggiatore"). Default: "Personal Trainer" */
   roleLabel?: string
-  /** Tema colori: teal per PT, amber per massaggiatore */
+  /** Tema colori: teal (PT / massaggiatore allineato), amber opzionale */
   theme?: 'teal' | 'amber'
+  /** Label stat “sessioni” nel riquadro rapido (es. Trattamenti mese per massaggiatore). */
+  sessioniMeseLabel?: string
 }
 
 export function PTProfileTab({
@@ -94,16 +99,30 @@ export function PTProfileTab({
   onLogout,
   roleLabel = 'Personal Trainer',
   theme: themeKey = 'teal',
+  sessioniMeseLabel = 'Sessioni/mese',
 }: PTProfileTabProps) {
   const avatarInitials = useAvatarInitials(profile.nome || '', profile.cognome || '')
   const t = THEME[themeKey]
 
+  const displayName = `${profile.nome} ${profile.cognome}`.trim()
+  const roleNorm = roleLabel.trim().toLowerCase()
+  const nomeNorm = profile.nome.trim().toLowerCase()
+  const showRoleSubline =
+    displayName.length > 0 &&
+    roleNorm.length > 0 &&
+    roleNorm !== displayName.toLowerCase() &&
+    roleNorm !== nomeNorm
+
+  const quickStatValueClass =
+    themeKey === 'teal'
+      ? 'bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent'
+      : 'bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent'
+
   return (
     <div className="space-y-6">
       {/* Header con avatar */}
-      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
-        <CardContent className="p-6 relative">
+      <Card variant="default" className="relative overflow-hidden p-6">
+        <CardContent className="p-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar
@@ -117,12 +136,14 @@ export function PTProfileTab({
                 <h2
                   className={`text-text-primary text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
                 >
-                  {profile.nome} {profile.cognome}
+                  {displayName || roleLabel}
                 </h2>
-                <p className="text-text-secondary flex items-center gap-2">
-                  <Briefcase className="h-4 w-4" />
-                  {roleLabel}
-                </p>
+                {showRoleSubline ? (
+                  <p className="text-text-secondary flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 shrink-0" />
+                    {roleLabel}
+                  </p>
+                ) : null}
                 <Badge variant="primary" size="sm" className={`mt-1 shadow-lg ${t.badge}`}>
                   Attivo da{' '}
                   {new Date(profile.data_iscrizione).toLocaleDateString('it-IT', {
@@ -146,39 +167,42 @@ export function PTProfileTab({
         </CardContent>
       </Card>
 
-      {/* Statistiche rapide */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card
-          variant="default"
-          className="relative overflow-hidden bg-gradient-to-br from-background-secondary to-background-tertiary border-teal-500/30 shadow-lg hover:shadow-teal-500/20 hover:border-teal-400/50 transition-all duration-300 group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardContent className="p-4 text-center relative">
-            <div className="text-brand mb-1 text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+      {/* Statistiche rapide (Card zinc come KPI Abbonamenti) */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <Card variant="default" className="text-center">
+          <CardContent className="p-0 pt-0">
+            <div
+              className={cn(
+                'mb-1 text-2xl font-bold tabular-nums',
+                quickStatValueClass,
+              )}
+            >
               {profile.stats.clienti_attivi}
             </div>
             <div className="text-text-secondary text-xs">Clienti Attivi</div>
           </CardContent>
         </Card>
-        <Card
-          variant="default"
-          className="relative overflow-hidden bg-gradient-to-br from-background-secondary to-background-tertiary border-green-500/30 shadow-lg hover:shadow-green-500/20 hover:border-green-400/50 transition-all duration-300 group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardContent className="p-4 text-center relative">
-            <div className="text-state-valid mb-1 text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+        <Card variant="default" className="text-center">
+          <CardContent className="p-0 pt-0">
+            <div
+              className={cn(
+                'mb-1 text-2xl font-bold tabular-nums',
+                quickStatValueClass,
+              )}
+            >
               {profile.stats.sessioni_mese}
             </div>
-            <div className="text-text-secondary text-xs">Sessioni/mese</div>
+            <div className="text-text-secondary text-xs">{sessioniMeseLabel}</div>
           </CardContent>
         </Card>
-        <Card
-          variant="default"
-          className="relative overflow-hidden bg-gradient-to-br from-background-secondary to-background-tertiary border-yellow-500/30 shadow-lg hover:shadow-yellow-500/20 hover:border-yellow-400/50 transition-all duration-300 group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <CardContent className="p-4 text-center relative">
-            <div className="text-state-warn mb-1 text-2xl font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+        <Card variant="default" className="text-center">
+          <CardContent className="p-0 pt-0">
+            <div
+              className={cn(
+                'mb-1 text-2xl font-bold tabular-nums',
+                quickStatValueClass,
+              )}
+            >
               {profile.stats.anni_esperienza}
             </div>
             <div className="text-text-secondary text-xs">Anni Esperienza</div>
@@ -187,9 +211,8 @@ export function PTProfileTab({
       </div>
 
       {/* Informazioni personali */}
-      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
-        <CardHeader className="relative">
+      <Card variant="default" className="relative overflow-hidden">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle
               size="md"
@@ -220,7 +243,7 @@ export function PTProfileTab({
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 relative">
+        <CardContent className="space-y-4">
           {isEditing ? (
             <>
               <div className="grid grid-cols-2 gap-4">
@@ -298,20 +321,17 @@ export function PTProfileTab({
       </Card>
 
       {/* KPI Performance */}
-      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
-        <CardHeader className="relative">
+      <Card variant="default" className="relative overflow-hidden">
+        <CardHeader>
           <CardTitle
             size="md"
             className={`bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
           >
-            <Users
-              className={`mr-2 inline h-5 w-5 ${themeKey === 'teal' ? 'text-teal-400' : 'text-amber-400'}`}
-            />
+            <Users className={cn('mr-2 inline h-5 w-5', t.iconMuted)} />
             Performance Professionale
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 relative">
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-6">
             <div className="text-center">
               <p className="text-text-secondary text-sm">Anni di Esperienza</p>
@@ -331,7 +351,7 @@ export function PTProfileTab({
             </div>
           </div>
 
-          <div className="space-y-2 bg-background-tertiary/50 rounded-lg p-3">
+          <div className={cn('space-y-2 p-3', PANEL_INSET_CLASS)}>
             <div className="flex items-center justify-between">
               <span className="text-text-secondary text-sm">Soddisfazione Clienti</span>
               <span
@@ -353,31 +373,27 @@ export function PTProfileTab({
       </Card>
 
       {/* Badge */}
-      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
-        <CardHeader className="relative">
+      <Card variant="default" className="relative overflow-hidden">
+        <CardHeader>
           <CardTitle
             size="md"
             className={`bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
           >
-            <Award
-              className={`mr-2 inline h-5 w-5 ${themeKey === 'teal' ? 'text-teal-400' : 'text-amber-400'}`}
-            />
+            <Award className={cn('mr-2 inline h-5 w-5', t.iconMuted)} />
             Badge e Riconoscimenti
           </CardTitle>
         </CardHeader>
-        <CardContent className="relative">
+        <CardContent>
           <div className="grid grid-cols-2 gap-4">
             {profile.badge.map((badge) => (
               <div
                 key={badge.id}
-                className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
+                className={cn(
+                  'flex items-center gap-3 p-3 rounded-lg border border-white/10 transition-colors duration-200',
                   badge.unlocked
-                    ? themeKey === 'teal'
-                      ? 'bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/30 shadow-lg shadow-teal-500/10'
-                      : 'bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 shadow-lg shadow-amber-500/10'
-                    : 'bg-background-tertiary/50 border-border opacity-60'
-                }`}
+                    ? 'bg-white/[0.04] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/15'
+                    : 'bg-background-tertiary/40 border-white/[0.06] opacity-60',
+                )}
               >
                 <div className="text-2xl">{badge.icon}</div>
                 <div>
@@ -401,9 +417,8 @@ export function PTProfileTab({
       </Card>
 
       {/* Azioni rapide */}
-      <Card variant="default" className={`relative overflow-hidden backdrop-blur-xl ${t.card}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${t.cardBg}`} />
-        <CardHeader className="relative">
+      <Card variant="default" className="relative overflow-hidden">
+        <CardHeader>
           <CardTitle
             size="md"
             className={`bg-gradient-to-r bg-clip-text text-transparent ${t.title}`}
@@ -411,7 +426,7 @@ export function PTProfileTab({
             Azioni Rapide
           </CardTitle>
         </CardHeader>
-        <CardContent className="relative">
+        <CardContent>
           <div className="flex flex-wrap gap-3">
             {onViewStats && (
               <Button

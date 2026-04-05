@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Settings, Save, Loader2, Plus, Trash2, ChevronLeft } from 'lucide-react'
+import { Save, Loader2, Plus, Trash2, ChevronLeft } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { useCalendarSettingsPageGuard } from '@/hooks/calendar/use-calendar-page-guard'
 import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
@@ -409,7 +409,6 @@ export default function CalendarioImpostazioniPage() {
     <StaffContentLayout
       title="Impostazioni calendario"
       description="Tipi di appuntamento, durate, colori e vista predefinita."
-      icon={<Settings className="h-8 w-8" />}
       theme="default"
       actions={
         <div className="flex flex-wrap items-center gap-2">

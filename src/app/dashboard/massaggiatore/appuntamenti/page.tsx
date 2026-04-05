@@ -15,9 +15,10 @@ import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
 import { useAuth } from '@/providers/auth-provider'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
-import { Calendar, Hand } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
+import { DASHBOARD_COLUMN_PANEL_CLASS } from '@/app/dashboard/_components/dashboard-widget-columns'
 
 const logger = createLogger('app:dashboard:massaggiatore:appuntamenti')
 
@@ -44,11 +45,11 @@ function getStatusColorClasses(status: string) {
     case 'completato':
       return 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15 hover:border-green-500/40'
     case 'attivo':
-      return 'bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/30'
+      return 'bg-cyan-500/5 border-cyan-500/20 hover:bg-cyan-500/10 hover:border-cyan-500/30'
     case 'annullato':
       return 'bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/15 hover:border-orange-500/40'
     default:
-      return 'bg-background-tertiary/50 border border-border/30 hover:bg-background-tertiary/60 hover:border-amber-500/30'
+      return 'bg-background-tertiary/50 border border-border/30 hover:bg-background-tertiary/60 hover:border-cyan-500/25'
   }
 }
 
@@ -253,15 +254,10 @@ export default function MassaggiatoreAppuntamentiPage() {
     <StaffContentLayout
       title="Appuntamenti"
       description="Elenco trattamenti; creazione e modifica dal calendario."
-      icon={<Hand className="w-6 h-6" />}
-      theme="amber"
+      theme="teal"
       actions={
         <Link href="/dashboard/massaggiatore/calendario">
-          <Button
-            variant="default"
-            size="sm"
-            className="bg-amber-600 hover:bg-amber-500 text-white min-h-[44px]"
-          >
+          <Button variant="primary" size="sm" className="min-h-[44px]">
             <Calendar className="mr-1.5 h-4 w-4" />
             Calendario
           </Button>
@@ -275,10 +271,10 @@ export default function MassaggiatoreAppuntamentiPage() {
           onSearchChange={setSearchTerm}
           onStatusFilterChange={setStatusFilter}
           onNewAppointment={handleNewAppointment}
-          theme="amber"
+          theme="teal"
         />
-        <div className="rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-3 sm:p-4 space-y-4">
-          <AppointmentsStats stats={stats} theme="amber" />
+        <div className={`${DASHBOARD_COLUMN_PANEL_CLASS} space-y-4`}>
+          <AppointmentsStats stats={stats} theme="teal" />
           <div role="status" aria-live="polite" className="sr-only">
             {filteredAppointments.length} appuntamenti
           </div>
@@ -297,7 +293,7 @@ export default function MassaggiatoreAppuntamentiPage() {
             formatDateTime={formatDateTime}
             getStatusColorClasses={getStatusColorClasses}
             getAppointmentType={getAppointmentType}
-            theme="amber"
+            theme="teal"
             lessonsRemainingMap={lessonsRemainingMap}
             athleteEmailMap={athleteEmailMap}
           />

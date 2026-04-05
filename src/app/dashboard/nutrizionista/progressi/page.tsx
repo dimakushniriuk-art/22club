@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
-  TrendingUp,
   ArrowRight,
   Plus,
   Filter,
@@ -708,7 +707,6 @@ export default function NutrizionistaProgressiPage() {
     <StaffContentLayout
       title="Progressi"
       description="Peso, composizione corporea e misure — atleti assegnati."
-      icon={<TrendingUp className="w-6 h-6" />}
       theme="teal"
       actions={
         <>

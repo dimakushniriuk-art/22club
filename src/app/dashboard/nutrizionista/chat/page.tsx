@@ -1,6 +1,5 @@
 'use client'
 
-import { MessageSquare } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { ChatPageContent } from '@/app/dashboard/chat/page'
@@ -22,7 +21,6 @@ export default function NutrizionistaChatPage() {
     <StaffContentLayout
       title="Chat"
       description="Messaggi con gli atleti assegnati."
-      icon={<MessageSquare className="w-6 h-6" />}
       theme="teal"
     >
       <ChatPageContent basePath="/dashboard/nutrizionista/chat" />

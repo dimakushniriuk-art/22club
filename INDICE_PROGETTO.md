@@ -2,7 +2,7 @@
 
 Mappa operativa del **codice vivo** per orientarsi su route, API, librerie e hook. Non sostituisce la ricerca semantica dell’IDE; va aggiornato quando si aggiungono aree grandi o si spostano entry point.
 
-- **Ultimo aggiornamento:** 2026-04-04 (`scripts/git-upload-deploy.mjs` + `npm run upload`; `scripts/PUBLISH_PLAN.md`; `/api/health` sempre 200 con DB nel body; Husky 9 senza `husky.sh`)
+- **Ultimo aggiornamento:** 2026-04-05 (dashboard massaggiatore: impostazioni senza tab PTSettings duplicata; profilo redirect)
 - **Obbligo di manutenzione:** criteri completi in `.cursor/rules/22club-project-rules.mdc` (sezione **NAVIGAZIONE CODICE**): allineare l’indice e questa data quando cambiano route, API o puntatori documentati; ogni modifica a questo file aggiorna la data in meta.
 - **Come aggiornare:** rigenerare elenchi route/API (vedi sotto) e allineare i puntatori per dominio; stack e divieti DB restano in `.cursor/rules/22club-project-rules.mdc`.
 
@@ -180,8 +180,8 @@ flowchart LR
 | `/dashboard/massaggiatore/chat`         |
 | `/dashboard/massaggiatore/abbonamenti`  |
 | `/dashboard/massaggiatore/statistiche`  |
-| `/dashboard/massaggiatore/profilo`      |
 | `/dashboard/massaggiatore/impostazioni` |
+| `/dashboard/massaggiatore/profilo` *(redirect → impostazioni)* |
 
 ### Dashboard — admin
 

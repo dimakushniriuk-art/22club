@@ -7,7 +7,6 @@ import {
   Users,
   CalendarCheck,
   FileText,
-  BarChart2,
   ArrowRight,
   Calendar,
   MessageSquare,
@@ -48,11 +47,11 @@ function KpiCard({
   sublabel?: string
 }) {
   const cardClass =
-    'rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 p-3 sm:p-5 text-left min-w-0 min-h-[44px] transition-all hover:shadow-xl hover:shadow-amber-500/20 hover:border-amber-500/50'
+    'rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 sm:p-5 text-left min-w-0 min-h-[44px] transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-inset ring-white/[0.03] hover:border-white/18'
   const content = (
     <div className={cardClass}>
       <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-        <Icon className="h-4 w-4 shrink-0 text-amber-400" aria-hidden />
+        <Icon className="h-4 w-4 shrink-0 text-cyan-400" aria-hidden />
         {label}
       </div>
       <p className="text-xl font-bold text-text-primary tabular-nums">{value}</p>
@@ -63,7 +62,7 @@ function KpiCard({
     return (
       <Link
         href={href}
-        className="block touch-manipulation focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl"
+        className="block touch-manipulation focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded-xl"
       >
         {content}
       </Link>
@@ -166,8 +165,7 @@ export default function MassaggiatoreStatistichePage() {
     <StaffContentLayout
       title="Statistiche"
       description="Clienti, trattamenti eseguiti, fatturazione e appuntamenti."
-      icon={<BarChart2 className="w-6 h-6" />}
-      theme="amber"
+      theme="teal"
     >
       {error && (
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
@@ -222,12 +220,12 @@ export default function MassaggiatoreStatistichePage() {
             />
           </div>
 
-          <div className="rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10 px-3 sm:px-4 py-4 sm:py-5 space-y-4">
+          <div className="rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 px-3 sm:px-4 py-4 sm:py-5 space-y-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-inset ring-white/[0.03]">
             <h3 className="font-semibold text-text-primary">Azioni rapide</h3>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/dashboard/massaggiatore/calendario"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-cyan-400 hover:border-white/15 hover:bg-white/[0.07] hover:text-cyan-300 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
               >
                 <Calendar className="h-4 w-4" />
                 Calendario
@@ -235,7 +233,7 @@ export default function MassaggiatoreStatistichePage() {
               </Link>
               <Link
                 href="/dashboard/massaggiatore/appuntamenti"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-cyan-400 hover:border-white/15 hover:bg-white/[0.07] hover:text-cyan-300 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
               >
                 <CalendarCheck className="h-4 w-4" />
                 Appuntamenti
@@ -243,7 +241,7 @@ export default function MassaggiatoreStatistichePage() {
               </Link>
               <Link
                 href="/dashboard/massaggiatore/chat"
-                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors touch-manipulation"
+                className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-cyan-400 hover:border-white/15 hover:bg-white/[0.07] hover:text-cyan-300 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
               >
                 <MessageSquare className="h-4 w-4" />
                 Chat

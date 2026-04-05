@@ -735,7 +735,6 @@ export default function NutrizionistaAtletiPage() {
     <StaffContentLayout
       title="Clienti"
       description="Clienti assegnati: piani, progressi e analisi."
-      icon={<Users className="w-6 h-6" />}
       theme="teal"
       actions={
         <>

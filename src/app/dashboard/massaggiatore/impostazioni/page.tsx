@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs, TabsList, TabsTrigger, TabsContent, Button } from '@/components/ui'
-import { Bell, Shield, Globe, UserCircle, Settings } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Badge } from '@/components/ui'
+import { Bell, Shield, Globe, UserCircle } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import type { TablesUpdate } from '@/lib/supabase/types'
 import { useNotify } from '@/lib/ui/notify'
@@ -18,10 +18,19 @@ import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
-import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
+import {
+  StaffDashboardGuardSkeleton,
+  StaffLazyChunkFallback,
+  StaffStaffPageContentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { usePTProfile } from '@/hooks/use-pt-profile'
+import { useNotifications, type Notification as ApiNotification } from '@/hooks/use-notifications'
 
 const logger = createLogger('app:dashboard:massaggiatore:impostazioni')
+
+const TAB_TRIGGER_CLASS =
+  'w-full h-full min-h-0 min-w-0 flex items-center justify-center gap-2 px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=inactive]:text-text-tertiary hover:text-text-secondary'
 
 const BASE_PATH = '/dashboard/massaggiatore/impostazioni'
 
@@ -78,15 +87,73 @@ const SettingsAccountTab = lazy(() =>
   })),
 )
 
+const PTProfileTab = lazy(() =>
+  import('@/components/profile').then((mod) => ({ default: mod.PTProfileTab })),
+)
+const PTNotificationsTab = lazy(() =>
+  import('@/components/profile').then((mod) => ({ default: mod.PTNotificationsTab })),
+)
+
+interface NotificationForTab {
+  id: string
+  user_id: string
+  title: string
+  body: string
+  link: string
+  type: string
+  sent_at: string
+  read_at: string | null
+  action_text: string
+  is_push_sent: boolean
+  created_at: string
+  priority: 'high' | 'medium' | 'low'
+  category: string
+}
+
+function mapApiNotificationToTab(n: ApiNotification): NotificationForTab {
+  const ext = n as ApiNotification & { priority?: 'high' | 'medium' | 'low'; category?: string }
+  return {
+    ...n,
+    link: n.link ?? '',
+    sent_at: n.sent_at ?? n.created_at,
+    action_text: n.action_text ?? '',
+    priority: ext.priority ?? 'medium',
+    category: ext.category ?? '',
+    read_at: n.read_at ?? null,
+  }
+}
+
 export default function MassaggiatoreImpostazioniPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useSupabaseClient()
   const { notify } = useNotify()
-  const { user: authUser, loading: authLoading } = useAuth()
+  const { user: authUser, loading: authLoading, signOut } = useAuth()
   const { showLoader: showGuardLoader } = useStaffDashboardGuard('massaggiatore')
   const { settings, loadSettings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
     useUserSettings()
+
+  const {
+    authUserId,
+    profile: profileData,
+    loading: ptProfileLoading,
+    isSaving,
+    saveProfile,
+    updateProfileField,
+  } = usePTProfile()
+
+  const {
+    notifications: apiNotifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+  } = useNotifications({ userId: authUserId ?? null })
+
+  const inboxNotifications = useMemo(
+    () => apiNotifications.map(mapApiNotificationToTab),
+    [apiNotifications],
+  )
 
   const [notifications, setNotifications] = useState<NotificationSettings>({
     ...DEFAULT_NOTIFICATIONS,
@@ -98,10 +165,17 @@ export default function MassaggiatoreImpostazioniPage() {
     return isMassaggiatoreImpostazioniTab(t) ? t : 'profilo'
   })
 
+  const [isEditing, setIsEditing] = useState(false)
+
   useEffect(() => {
     const t = searchParams.get('tab')
+    if (t === 'servizio') {
+      setActiveTab('account')
+      router.replace(`${BASE_PATH}?tab=account`, { scroll: false })
+      return
+    }
     if (isMassaggiatoreImpostazioniTab(t)) setActiveTab(t)
-  }, [searchParams])
+  }, [searchParams, router])
 
   useEffect(() => {
     if (authUser?.id) loadSettings(authUser.id)
@@ -218,6 +292,40 @@ export default function MassaggiatoreImpostazioniPage() {
       setLoading(false)
     }
   }, [supabase, profile, notify])
+
+  const handleSavePTProfile = useCallback(async () => {
+    if (!profileData) return
+    const result = await saveProfile({
+      nome: profileData.nome,
+      cognome: profileData.cognome,
+      email: profileData.email,
+      phone: profileData.phone,
+      specializzazione: profileData.specializzazione,
+      certificazioni: profileData.certificazioni,
+    })
+    if (result.success) {
+      notify('Profilo salvato con successo', 'success', 'Profilo salvato')
+      setIsEditing(false)
+    } else {
+      notify(result.error || 'Errore nel salvare il profilo', 'error', 'Errore')
+    }
+  }, [profileData, saveProfile, notify])
+
+  const handleViewAccountTab = useCallback(() => {
+    setActiveTab('account')
+    router.replace(`${BASE_PATH}?tab=account`, { scroll: false })
+  }, [router])
+
+  const handleViewStats = useCallback(() => {
+    router.push('/dashboard/massaggiatore/statistiche')
+  }, [router])
+
+  const handleProfileFieldChange = useCallback(
+    (field: string, value: string) => {
+      updateProfileField(field as Parameters<typeof updateProfileField>[0], value)
+    },
+    [updateProfileField],
+  )
 
   const handleSaveNotifications = useCallback(async () => {
     setLoading(true)
@@ -384,145 +492,224 @@ export default function MassaggiatoreImpostazioniPage() {
     handleSaveAccount,
   ])
 
+  const handleMarkAsRead = useCallback(
+    async (id: string) => {
+      try {
+        await markAsRead(id)
+      } catch (err) {
+        logger.error('Mark as read failed', err, { notificationId: id })
+        notify('Impossibile marcare come letta', 'error', 'Errore')
+      }
+    },
+    [markAsRead, notify],
+  )
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    try {
+      await markAllAsRead()
+    } catch (err) {
+      logger.error('Mark all as read failed', err)
+      notify('Impossibile marcare tutte come lette', 'error', 'Errore')
+    }
+  }, [markAllAsRead, notify])
+
   if (showGuardLoader) {
     return <StaffDashboardGuardSkeleton />
+  }
+
+  if (ptProfileLoading) {
+    return (
+      <StaffContentLayout
+        title="Impostazioni"
+        description="Profilo, notifiche, privacy e account."
+        theme="teal"
+        className="max-w-[1200px]"
+      >
+        <div className="relative min-h-[50vh] flex flex-col">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl">
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-primary/5 via-transparent to-transparent" />
+          </div>
+          <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 relative">
+            <StaffStaffPageContentSkeleton />
+          </div>
+        </div>
+      </StaffContentLayout>
+    )
   }
 
   return (
     <StaffContentLayout
       title="Impostazioni"
-      description="Account, sicurezza e preferenze."
-      icon={<Settings className="h-6 w-6 sm:h-7 sm:w-7" />}
-      theme="amber"
+      description="Profilo, notifiche, privacy e account."
+      theme="teal"
+      className="max-w-[1200px]"
     >
-      <div className="space-y-4 sm:space-y-6">
-        {lastSaveError && (
-          <div
-            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-            role="alert"
+      <div className="relative min-h-0 flex flex-col">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl -z-10">
+          <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-primary/5 via-transparent to-transparent" />
+        </div>
+
+        <div className="space-y-4 sm:space-y-6 relative">
+          {lastSaveError && (
+            <div
+              className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+              role="alert"
+            >
+              <p className="text-red-400 text-sm">{lastSaveError.message}</p>
+              <div className="flex gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLastSaveError(null)}
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                >
+                  Chiudi
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleRetrySave}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Riprova
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full space-y-4 sm:space-y-6"
           >
-            <p className="text-red-400 text-sm">{lastSaveError.message}</p>
-            <div className="flex gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLastSaveError(null)}
-                className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-              >
-                Chiudi
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleRetrySave}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Riprova
-              </Button>
+            <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]">
+              <div className="relative p-1.5">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-transparent gap-1 items-stretch justify-items-stretch min-h-10 p-0">
+                  <TabsTrigger value="profilo" variant="default" className={TAB_TRIGGER_CLASS}>
+                    <UserCircle className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:inline">Profilo</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="notifiche" variant="default" className={TAB_TRIGGER_CLASS}>
+                    <Bell className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:inline">Notifiche</span>
+                    {unreadCount > 0 && (
+                      <Badge variant="destructive" size="sm" className="min-w-[1.25rem] px-1">
+                        {unreadCount}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="privacy" variant="default" className={TAB_TRIGGER_CLASS}>
+                    <Shield className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:inline">Privacy</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="account" variant="default" className={TAB_TRIGGER_CLASS}>
+                    <Globe className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:inline">Account</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             </div>
-          </div>
-        )}
 
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="w-full space-y-4 sm:space-y-6"
-        >
-          <div className="relative overflow-hidden rounded-xl border-2 border-amber-500/40 bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary shadow-lg shadow-amber-500/10">
-            <div className="relative p-1.5">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-transparent gap-2">
-                <TabsTrigger
-                  value="profilo"
-                  variant="default"
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:!bg-amber-600 data-[state=active]:!text-white data-[state=active]:shadow-amber-500/30 data-[state=inactive]:text-text-tertiary hover:text-text-secondary"
+            <TabsContent value="profilo" className="mt-0 space-y-6">
+              {profileData && (
+                <Suspense
+                  fallback={
+                    <StaffLazyChunkFallback
+                      className="w-full min-h-[220px]"
+                      label="Caricamento profilo…"
+                    />
+                  }
                 >
-                  <UserCircle className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Profilo</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="notifiche"
-                  variant="default"
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:!bg-amber-600 data-[state=active]:!text-white data-[state=active]:shadow-amber-500/30 data-[state=inactive]:text-text-tertiary hover:text-text-secondary"
-                >
-                  <Bell className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Notifiche</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="privacy"
-                  variant="default"
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:!bg-amber-600 data-[state=active]:!text-white data-[state=active]:shadow-amber-500/30 data-[state=inactive]:text-text-tertiary hover:text-text-secondary"
-                >
-                  <Shield className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Privacy</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="account"
-                  variant="default"
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:!bg-amber-600 data-[state=active]:!text-white data-[state=active]:shadow-amber-500/30 data-[state=inactive]:text-text-tertiary hover:text-text-secondary"
-                >
-                  <Globe className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:inline">Account</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
-          </div>
+                  <PTProfileTab
+                    profile={profileData}
+                    isEditing={isEditing}
+                    onEdit={() => setIsEditing(true)}
+                    onSave={handleSavePTProfile}
+                    onCancel={() => setIsEditing(false)}
+                    onProfileChange={handleProfileFieldChange}
+                    isSaving={isSaving}
+                    onViewStats={handleViewStats}
+                    onViewSettings={handleViewAccountTab}
+                    onLogout={signOut}
+                    roleLabel="Massaggiatore"
+                    theme="teal"
+                    sessioniMeseLabel="Trattamenti mese"
+                  />
+                </Suspense>
+              )}
+              <Suspense fallback={null}>
+                <SettingsProfileTab
+                  profile={profile}
+                  profileLoading={profileLoading}
+                  loading={loading}
+                  onProfileChange={handleProfileChange}
+                  onSaveProfile={handleSaveProfile}
+                />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="profilo" className="mt-0 space-y-6">
-            <Suspense fallback={null}>
-              <SettingsProfileTab
-                profile={profile}
-                profileLoading={profileLoading}
-                loading={loading}
-                onProfileChange={handleProfileChange}
-                onSaveProfile={handleSaveProfile}
-              />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="notifiche" className="mt-0 space-y-6">
+              <Suspense
+                fallback={
+                  <StaffLazyChunkFallback
+                    className="w-full min-h-[220px]"
+                    label="Caricamento notifiche…"
+                  />
+                }
+              >
+                <PTNotificationsTab
+                  notifications={inboxNotifications}
+                  onMarkAsRead={handleMarkAsRead}
+                  onMarkAllAsRead={handleMarkAllAsRead}
+                  onDelete={deleteNotification}
+                />
+              </Suspense>
+              <Suspense fallback={null}>
+                <SettingsNotificationsTab
+                  notifications={notifications}
+                  loading={loading}
+                  onNotificationChange={handleNotificationChange}
+                  onNotificationsChange={handleNotificationsChange}
+                  onSave={handleSaveNotifications}
+                />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="notifiche" className="mt-0 space-y-6">
-            <Suspense fallback={null}>
-              <SettingsNotificationsTab
-                notifications={notifications}
-                loading={loading}
-                onNotificationChange={handleNotificationChange}
-                onNotificationsChange={handleNotificationsChange}
-                onSave={handleSaveNotifications}
-              />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="privacy" className="mt-0 space-y-6">
+              <Suspense fallback={null}>
+                <SettingsPrivacyTab
+                  privacy={privacy}
+                  loading={loading}
+                  onPrivacyChange={handlePrivacyChange}
+                  onSave={handleSavePrivacy}
+                />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="privacy" className="mt-0 space-y-6">
-            <Suspense fallback={null}>
-              <SettingsPrivacyTab
-                privacy={privacy}
-                loading={loading}
-                onPrivacyChange={handlePrivacyChange}
-                onSave={handleSavePrivacy}
-              />
-            </Suspense>
-          </TabsContent>
-
-          <TabsContent value="account" className="mt-0 space-y-6">
-            <Suspense fallback={null}>
-              <SettingsAccountTab
-                account={account}
-                loading={loading}
-                passwords={passwords}
-                showCurrentPassword={showCurrentPassword}
-                showNewPassword={showNewPassword}
-                showConfirmPassword={showConfirmPassword}
-                twoFactorEnabled={settings?.two_factor_enabled ?? false}
-                onAccountChange={handleAccountChange}
-                onPasswordChange={handlePasswordChange}
-                onTogglePasswordVisibility={handleTogglePasswordVisibility}
-                onSave={handleSaveAccount}
-                onChangePassword={handleChangePassword}
-                onTwoFactorSetup={noop}
-                onDisableTwoFactor={handleDisableTwoFactor}
-              />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="account" className="mt-0 space-y-6">
+              <Suspense fallback={null}>
+                <SettingsAccountTab
+                  account={account}
+                  loading={loading}
+                  passwords={passwords}
+                  showCurrentPassword={showCurrentPassword}
+                  showNewPassword={showNewPassword}
+                  showConfirmPassword={showConfirmPassword}
+                  twoFactorEnabled={settings?.two_factor_enabled ?? false}
+                  onAccountChange={handleAccountChange}
+                  onPasswordChange={handlePasswordChange}
+                  onTogglePasswordVisibility={handleTogglePasswordVisibility}
+                  onSave={handleSaveAccount}
+                  onChangePassword={handleChangePassword}
+                  onTwoFactorSetup={noop}
+                  onDisableTwoFactor={handleDisableTwoFactor}
+                />
+              </Suspense>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       <ConfirmDialog

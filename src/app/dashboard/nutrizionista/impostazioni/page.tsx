@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
-  Settings,
   Save,
   RotateCcw,
   Copy,
@@ -406,7 +405,6 @@ export default function NutrizionistaImpostazioniPage() {
     <StaffContentLayout
       title="Impostazioni"
       description="Template piano: pasti, varianti e regole adattive."
-      icon={<Settings className="w-6 h-6" />}
       theme="teal"
       actions={
         <>

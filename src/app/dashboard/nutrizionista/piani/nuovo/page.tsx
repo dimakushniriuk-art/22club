@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  FilePlus,
   ArrowLeft,
   ArrowRight,
   Loader2,
@@ -561,7 +560,6 @@ export default function NutrizionistaPianoNuovoPage() {
       <StaffContentLayout
         title="Nuovo piano nutrizionale"
         description="Seleziona l’atleta per cui creare il piano."
-        icon={<FilePlus className="w-6 h-6" />}
         theme="teal"
         actions={
           <Link
@@ -675,7 +673,6 @@ export default function NutrizionistaPianoNuovoPage() {
     <StaffContentLayout
       title={`Nuovo piano per ${selectedAthleteName || 'atleta'}`}
       description={`Creazione piano · passo ${step}/6 — ${STEPS[step - 1]?.label ?? ''}`}
-      icon={<FilePlus className="w-6 h-6" />}
       theme="teal"
       actions={
         <div className="flex items-center gap-3 flex-wrap">

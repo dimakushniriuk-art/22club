@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
 import { AvatarUploader } from '@/components/settings/avatar-uploader'
-import { User, Camera } from 'lucide-react'
+import { User } from 'lucide-react'
 import { formatSafeDate } from './utils'
 import { useRouter } from 'next/navigation'
 
@@ -60,9 +60,7 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
               onClick={() => setShowUploader(true)}
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 opacity-100 transition-opacity duration-200 hover:bg-black/65 active:bg-black/70 sm:opacity-0 sm:group-hover:opacity-100 touch-manipulation cursor-pointer"
               aria-label="Cambia foto profilo"
-            >
-              <Camera className="h-5 w-5 text-white drop-shadow-sm" />
-            </button>
+            />
           </div>
           <div className="flex min-w-0 flex-1 flex-col items-center sm:items-start">
             <h2 className="max-w-full truncate text-center text-xl font-semibold tracking-tight text-text-primary sm:text-left sm:text-lg min-[834px]:text-xl">

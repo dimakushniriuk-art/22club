@@ -19,7 +19,6 @@ import {
   Mail,
   Shield,
   UserPlus,
-  User,
   Megaphone,
   BarChart2,
   FileText,
@@ -67,7 +66,6 @@ const massaggiatoreNav = [
   { label: 'Calendario', icon: CalendarDays, href: '/dashboard/massaggiatore/calendario' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/massaggiatore/chat' },
   { label: 'Statistiche', icon: BarChart2, href: '/dashboard/massaggiatore/statistiche' },
-  { label: 'Profilo', icon: User, href: '/dashboard/massaggiatore/profilo' },
   { label: 'Abbonamenti', icon: Euro, href: '/dashboard/massaggiatore/abbonamenti' },
   { label: 'Impostazioni', icon: Settings, href: '/dashboard/massaggiatore/impostazioni' },
 ]

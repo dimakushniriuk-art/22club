@@ -459,7 +459,6 @@ export default function NutrizionistaDocumentiPage() {
     <StaffContentLayout
       title="Documenti"
       description="Documenti e PDF degli atleti assegnati."
-      icon={<FileText className="w-6 h-6" />}
       theme="teal"
       actions={
         <>

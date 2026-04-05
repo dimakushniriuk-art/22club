@@ -205,10 +205,9 @@ const ROUTE_GROUPS: RouteGroup[] = [
     label: 'Dashboard — Massaggiatore',
     icon: Sparkles,
     designNote:
-      'Layout staff. Pagine: profilo, calendario, appuntamenti, chat, abbonamenti, statistiche, impostazioni. StaffContentLayout, Card, stessi token.',
+      'Layout staff. Pagine: calendario, appuntamenti, chat, abbonamenti, statistiche, impostazioni (profilo unificato). StaffContentLayout, Card, stessi token.',
     routes: [
       { path: '/dashboard/massaggiatore' },
-      { path: '/dashboard/massaggiatore/profilo' },
       { path: '/dashboard/massaggiatore/calendario' },
       { path: '/dashboard/massaggiatore/appuntamenti' },
       { path: '/dashboard/massaggiatore/chat' },

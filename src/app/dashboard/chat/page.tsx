@@ -75,8 +75,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
   const withParam = searchParams.get('with') ?? null
   const supabase = useSupabaseClient()
   const { role } = useAuth()
-  const chatTheme: ChatTheme =
-    role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
+  const chatTheme: ChatTheme = role === 'nutrizionista' ? 'teal' : 'default'
   const t = CHAT_THEME_CLASSES[chatTheme]
   const {
     conversations,
@@ -337,7 +336,9 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
               Chat
             </h1>
             <p className="text-text-secondary text-xs sm:text-sm">
-              {chatTheme === 'amber' ? 'Messaggi con i tuoi clienti' : 'Messaggi con i tuoi atleti'}
+              {role === 'nutrizionista' || role === 'massaggiatore'
+                ? 'Messaggi con i tuoi clienti'
+                : 'Messaggi con i tuoi atleti'}
             </p>
             <div className={`mt-2 h-[3px] w-28 rounded-full ${t.underline}`} />
           </div>

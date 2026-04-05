@@ -920,7 +920,6 @@ export default function NutrizionistaPianiPage() {
     <StaffContentLayout
       title="Piani nutrizionali"
       description="Piani nutrizionali: versioni, scadenze e struttura."
-      icon={<ClipboardList className="w-6 h-6" />}
       theme="teal"
       actions={
         <>

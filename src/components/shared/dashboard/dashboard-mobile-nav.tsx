@@ -15,7 +15,6 @@ import {
   Send,
   Shield,
   UserPlus,
-  User,
   Menu,
   Megaphone,
   BarChart2,
@@ -68,7 +67,6 @@ const massaggiatoreNav = [
   { label: 'Calendario', icon: Calendar, href: '/dashboard/massaggiatore/calendario' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/massaggiatore/chat' },
   { label: 'Statistiche', icon: BarChart2, href: '/dashboard/massaggiatore/statistiche' },
-  { label: 'Profilo', icon: User, href: '/dashboard/massaggiatore/profilo' },
   { label: 'Abbonamenti', icon: Euro, href: '/dashboard/massaggiatore/abbonamenti' },
   { label: 'Impostazioni', icon: Settings, href: '/dashboard/massaggiatore/impostazioni' },
 ]
@@ -115,7 +113,7 @@ export function DashboardMobileNav() {
   return (
     <>
       {/* Header mobile: solo sotto md */}
-      <header className="md:hidden flex items-center justify-between gap-3 min-h-14 px-4 py-2 shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40 max-md:pt-[calc(62px+env(safe-area-inset-top,0px))]">
+      <header className="md:hidden flex items-center justify-between gap-3 h-14 px-4 shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}

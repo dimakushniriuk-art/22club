@@ -13,11 +13,16 @@ import { useStaffChatUnreadPreview } from '@/hooks/use-staff-chat-unread-preview
 export const DASHBOARD_COLUMN_PANEL_CLASS =
   'flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 sm:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-inset ring-white/[0.03]'
 
-const LIST_SCROLL =
+export const DASHBOARD_LIST_SCROLL_CLASS =
   'w-full flex-1 space-y-2 overflow-y-auto overscroll-contain min-h-[9rem] max-h-[min(52vh,440px)] sm:min-h-[10rem] lg:min-h-[12rem]'
 
-const ROW_LINK_CLASS =
+/** Alias storico interno */
+const LIST_SCROLL = DASHBOARD_LIST_SCROLL_CLASS
+
+export const DASHBOARD_ROW_LINK_CLASS =
   'block rounded-lg border border-white/5 bg-black/25 px-3 py-2.5 transition-colors hover:border-white/12 hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/30'
+
+const ROW_LINK_CLASS = DASHBOARD_ROW_LINK_CLASS
 
 export const DASHBOARD_COLUMN_FOOTER_LINK_CLASS =
   'inline-flex text-xs font-medium text-cyan-400 transition-colors hover:text-cyan-300 underline-offset-4 hover:underline'

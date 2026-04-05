@@ -25,6 +25,7 @@ import {
   CreditCard,
   Calendar,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface Notification {
   id: string
@@ -142,21 +143,17 @@ export function PTNotificationsTab({
 
   return (
     <div className="space-y-6">
-      {/* Header Notifiche */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/30 shadow-lg shadow-teal-500/10 backdrop-blur-xl hover:border-teal-400/50 transition-all duration-200"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
-        <CardContent className="p-6 relative">
+      {/* Header Notifiche — Card zinc come Abbonamenti / profilo */}
+      <Card variant="default" className="relative overflow-hidden !p-0">
+        <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-teal-500/10 rounded-lg border border-teal-500/20">
-                <Bell className="h-6 w-6 text-teal-400" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+                <Bell className="h-5 w-5 text-cyan-400" aria-hidden />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Notifiche</h2>
-                <p className="text-gray-400">
+              <div className="min-w-0">
+                <h2 className="text-xl font-bold text-text-primary">Notifiche</h2>
+                <p className="text-text-secondary text-sm">
                   {unreadCount > 0
                     ? `${unreadCount} notifiche non lette`
                     : 'Tutte le notifiche sono state lette'}
@@ -165,13 +162,8 @@ export function PTNotificationsTab({
             </div>
 
             {unreadCount > 0 && (
-              <Button
-                onClick={onMarkAllAsRead}
-                variant="trainer"
-                size="sm"
-                className="bg-teal-500 hover:bg-teal-600 text-white"
-              >
-                <CheckCheck className="h-4 w-4 mr-2" />
+              <Button onClick={onMarkAllAsRead} variant="primary" size="sm" className="min-h-[44px]">
+                <CheckCheck className="h-4 w-4 mr-2 shrink-0" />
                 Segna tutte come lette
               </Button>
             )}
@@ -180,22 +172,18 @@ export function PTNotificationsTab({
       </Card>
 
       {/* Filtri e Ricerca */}
-      <Card
-        variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-teal-500/30 shadow-lg shadow-teal-500/10 backdrop-blur-xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-cyan-500/5" />
-        <CardContent className="p-4 relative">
+      <Card variant="default" className="relative overflow-hidden !p-0">
+        <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Ricerca */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none" />
                 <Input
                   placeholder="Cerca nelle notifiche..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-zinc-800/50 border-zinc-600/50 text-white placeholder-gray-400 focus:border-teal-500/50"
+                  className="pl-10 bg-white/[0.04] border-white/10 text-text-primary placeholder:text-text-tertiary focus:border-primary"
                 />
               </div>
             </div>
@@ -231,11 +219,11 @@ export function PTNotificationsTab({
 
       {/* Lista Notifiche */}
       {filteredNotifications.length === 0 ? (
-        <Card variant="trainer" className="text-center py-12">
-          <CardContent>
-            <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">Nessuna notifica trovata</h3>
-            <p className="text-gray-400">
+        <Card variant="default" className="!p-0 text-center">
+          <CardContent className="px-6 py-12">
+            <Bell className="h-12 w-12 text-text-tertiary mx-auto mb-4" aria-hidden />
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Nessuna notifica trovata</h3>
+            <p className="text-text-secondary text-sm">
               {searchTerm || filterType !== 'all' || filterCategory !== 'all'
                 ? 'Prova a modificare i filtri di ricerca'
                 : 'Non ci sono notifiche al momento'}
@@ -247,30 +235,30 @@ export function PTNotificationsTab({
           {filteredNotifications.map((notification) => (
             <Card
               key={notification.id}
-              variant="trainer"
-              className={`transition-all duration-200 hover:shadow-lg ${
-                !notification.read_at ? 'ring-2 ring-teal-500/20 bg-teal-500/5' : ''
-              }`}
+              variant="default"
+              className={cn(
+                '!p-0 transition-colors duration-200 hover:border-white/15',
+                !notification.read_at && 'ring-1 ring-cyan-500/20 bg-white/[0.02]',
+              )}
             >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  {/* Icona Categoria */}
                   <div className="shrink-0 mt-1">{getCategoryIcon(notification.category)}</div>
 
-                  {/* Contenuto + Azioni: su mobile in colonna per evitare troncamento CTA */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           <h3
-                            className={`text-lg font-semibold ${
-                              !notification.read_at ? 'text-white' : 'text-gray-300'
-                            }`}
+                            className={cn(
+                              'text-lg font-semibold',
+                              !notification.read_at ? 'text-text-primary' : 'text-text-secondary',
+                            )}
                           >
                             {notification.title}
                           </h3>
                           {!notification.read_at && (
-                            <Badge className="bg-teal-500/20 text-teal-400 border-teal-500/30">
+                            <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/25">
                               Nuova
                             </Badge>
                           )}
@@ -279,20 +267,20 @@ export function PTNotificationsTab({
                           </Badge>
                         </div>
 
-                        <p className="text-gray-400 mb-3 leading-relaxed">{notification.body}</p>
+                        <p className="text-text-secondary mb-3 leading-relaxed">{notification.body}</p>
 
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-text-tertiary">
                           <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
+                            <Clock className="h-3 w-3 shrink-0" aria-hidden />
                             {formatDate(notification.sent_at)}
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 min-w-0">
                             {getCategoryIcon(notification.category)}
-                            {notification.type}
+                            <span className="truncate">{notification.type}</span>
                           </div>
                           {notification.read_at && (
-                            <div className="flex items-center gap-1 text-green-400">
-                              <CheckCircle className="h-3 w-3" />
+                            <div className="flex items-center gap-1 text-[color:var(--color-success)]">
+                              <CheckCircle className="h-3 w-3 shrink-0" aria-hidden />
                               Letta
                             </div>
                           )}
@@ -301,10 +289,12 @@ export function PTNotificationsTab({
 
                       <div className="flex flex-wrap items-center gap-2 shrink-0 sm:flex-nowrap">
                         <Button
-                          variant="trainer"
+                          variant="outline"
                           size="sm"
-                          className="min-h-[44px] whitespace-nowrap text-teal-400 max-[851px]:w-full max-[851px]:justify-center bg-teal-500/20 hover:bg-teal-500/30 border-teal-500/30"
-                          onClick={() => (window.location.href = notification.link)}
+                          className="min-h-[44px] whitespace-nowrap border-white/10 text-cyan-400 hover:bg-white/[0.06] hover:text-cyan-300 max-[851px]:w-full max-[851px]:justify-center"
+                          onClick={() => {
+                            window.location.href = notification.link
+                          }}
                         >
                           {notification.action_text}
                           <ArrowRight className="h-3 w-3 ml-1 shrink-0" />
@@ -312,20 +302,22 @@ export function PTNotificationsTab({
 
                         {!notification.read_at && (
                           <Button
-                            variant="trainer"
+                            variant="outline"
                             size="sm"
                             onClick={() => onMarkAsRead(notification.id)}
-                            className="min-h-[44px] min-w-[44px] text-green-400 bg-green-500/20 hover:bg-green-500/30 border-green-500/30"
+                            className="min-h-[44px] min-w-[44px] border-white/10 text-[color:var(--color-success)] hover:bg-white/[0.06]"
+                            aria-label="Segna come letta"
                           >
                             <Check className="h-3 w-3" />
                           </Button>
                         )}
 
                         <Button
-                          variant="trainer"
+                          variant="outline"
                           size="sm"
                           onClick={() => onDelete(notification.id)}
-                          className="min-h-[44px] min-w-[44px] text-red-400 bg-red-500/20 hover:bg-red-500/30 border-red-500/30"
+                          className="min-h-[44px] min-w-[44px] border-white/10 text-red-400 hover:bg-red-500/10"
+                          aria-label="Elimina o altre azioni"
                         >
                           <MoreVertical className="h-3 w-3" />
                         </Button>

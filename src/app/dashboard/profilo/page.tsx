@@ -126,7 +126,6 @@ export default function ProfiloPTPage() {
     updateProfile: updateSettingsProfile,
     toggleNotification,
     togglePrivacy,
-    updateAppearance,
   } = usePTSettings(authUserId || '')
 
   // Notifiche da backend (Supabase)
@@ -369,7 +368,6 @@ export default function ProfiloPTPage() {
                 onUpdateProfile={updateSettingsProfile}
                 onToggleNotification={toggleNotification}
                 onTogglePrivacy={togglePrivacy}
-                onUpdateAppearance={updateAppearance}
               />
             </Suspense>
           </TabsContent>

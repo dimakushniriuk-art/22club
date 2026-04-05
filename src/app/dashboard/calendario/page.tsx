@@ -521,8 +521,7 @@ export function CalendarPageContent({
   const router = useRouter()
   const searchParams = useSearchParams()
   const { role } = useAuth()
-  const calendarTheme: CalendarTheme =
-    role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
+  const calendarTheme: CalendarTheme = role === 'nutrizionista' ? 'teal' : 'default'
   const _themeButtonClasses = CALENDAR_THEME_CLASSES[calendarTheme].button
   const { settings: calendarSettings } = useStaffCalendarSettings()
   /** Primo tipo abilitato (stesso ordine di Impostazioni / form): usato per nuovo appuntamento. */
@@ -1326,8 +1325,7 @@ export function CalendarPageContent({
 export default function CalendarioPage() {
   const { showLoader: showGuardLoader } = useCalendarPageGuard()
   const { role } = useAuth()
-  const layoutTheme =
-    role === 'massaggiatore' ? 'amber' : role === 'nutrizionista' ? 'teal' : 'default'
+  const layoutTheme = role === 'nutrizionista' ? 'teal' : 'default'
   if (showGuardLoader) {
     return (
       <div className={CALENDAR_LOADING_CLASS}>

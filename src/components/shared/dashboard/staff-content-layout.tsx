@@ -7,35 +7,6 @@ import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-heade
 
 export type StaffContentTheme = 'teal' | 'amber' | 'default'
 
-const THEME_HEADER = {
-  default: {
-    iconBox: 'border border-white/10 bg-white/[0.04]',
-    iconColor: 'text-primary',
-    titleGradient: 'from-text-primary to-text-primary',
-    badgeBorder: 'border-white/10',
-    badgeBg: 'from-white/[0.04] to-white/[0.04]',
-    badgeAccent: 'text-text-primary',
-  },
-  teal: {
-    iconBox:
-      'bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border-2 border-teal-500/30 shadow-lg shadow-teal-500/10',
-    iconColor: 'text-teal-400',
-    titleGradient: 'from-teal-400 via-cyan-400 to-blue-400',
-    badgeBorder: 'border-teal-500/40',
-    badgeBg: 'from-teal-500/10 to-cyan-500/10',
-    badgeAccent: 'text-teal-400',
-  },
-  amber: {
-    iconBox:
-      'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-2 border-amber-500/30 shadow-lg shadow-amber-500/10',
-    iconColor: 'text-amber-400',
-    titleGradient: 'from-amber-400 via-orange-400 to-yellow-400',
-    badgeBorder: 'border-amber-500/40',
-    badgeBg: 'from-amber-500/10 to-orange-500/10',
-    badgeAccent: 'text-amber-400',
-  },
-} as const
-
 export type StaffContentLayoutProps = {
   /** Titolo principale (header) */
   title: string
@@ -46,9 +17,7 @@ export type StaffContentLayoutProps = {
   onBack?: () => void
   /** Sottotitolo/descrizione sotto il titolo */
   description?: string
-  /** Icona React (es. <Users />) mostrata nel box accanto al titolo */
-  icon?: ReactNode
-  /** Tema: teal per nutrizionista, amber per massaggiatore */
+  /** Tema header: teal (staff / PT), amber (legacy), default */
   theme?: StaffContentTheme
   /** Contenuto della pagina */
   children: ReactNode
@@ -64,14 +33,13 @@ export type StaffContentLayoutProps = {
 
 /**
  * Layout condiviso per pagine staff (nutrizionista, massaggiatore):
- * wrapper full-height, contenitore max-w-[1800px], header con icona + titolo gradient + descrizione.
+ * wrapper full-height, contenitore max-w-[1800px], header con titolo e descrizione.
  * Stile allineato alla pagina Statistiche trainer.
  */
 export function StaffContentLayout({
   title,
   onBack,
   description,
-  icon,
   theme = 'teal',
   children,
   actions,
@@ -79,7 +47,7 @@ export function StaffContentLayout({
   contentClassName,
   hideHeader = false,
 }: StaffContentLayoutProps) {
-  const _t = THEME_HEADER[theme]
+  void theme
   const router = useRouter()
   const pathname = usePathname()
 
@@ -111,17 +79,6 @@ export function StaffContentLayout({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-x-2 sm:gap-x-2.5">
               {handleAutoBack != null && <StaffHeaderBackButton onClick={handleAutoBack} />}
-              {icon != null ? (
-                <div
-                  className={cn(
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                    _t.iconBox,
-                  )}
-                  aria-hidden="true"
-                >
-                  <div className={cn('text-[18px] leading-none', _t.iconColor)}>{icon}</div>
-                </div>
-              ) : null}
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                 <h1 className="line-clamp-1 min-w-0 text-sm font-bold leading-tight tracking-tight text-white sm:text-base md:text-xl lg:text-2xl">
                   {title}

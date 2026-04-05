@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  User,
   ArrowLeft,
   FileDown,
   Pencil,
@@ -666,7 +665,6 @@ export default function NutrizionistaAtletaProfilePage() {
     <StaffContentLayout
       title={displayName}
       description="Profilo, piano e follow-up nutrizionale."
-      icon={<User className="w-6 h-6" />}
       theme="teal"
       actions={
         <Link
