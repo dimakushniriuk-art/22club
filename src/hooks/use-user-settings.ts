@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
+import { withNetworkRetry } from '@/lib/network-retry'
 
 const logger = createLogger('hooks:use-user-settings')
 
@@ -246,29 +247,28 @@ export function useUserSettings() {
         throw new Error('Utente non autenticato')
       }
 
-      // Workaround necessario per inferenza tipo Supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-        {
-          user_id: authUser.id,
-          notification_settings: notifications,
-        },
-        {
-          onConflict: 'user_id',
-        },
-      )
+      await withNetworkRetry(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+          {
+            user_id: authUser.id,
+            notification_settings: notifications,
+          },
+          {
+            onConflict: 'user_id',
+          },
+        )
 
-      if (updateError) {
-        // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
-        if (updateError.code === '42703') {
-          throw new Error(
-            'Colonna notification_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
-          )
+        if (updateError) {
+          if (updateError.code === '42703') {
+            throw new Error(
+              'Colonna notification_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+            )
+          }
+          throw updateError
         }
-        throw updateError
-      }
+      })
 
-      // Aggiorna stato locale
       setSettings((prev) => (prev ? { ...prev, notifications } : null))
       return { success: true }
     } catch (err) {
@@ -291,29 +291,28 @@ export function useUserSettings() {
         throw new Error('Utente non autenticato')
       }
 
-      // Workaround necessario per inferenza tipo Supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-        {
-          user_id: authUser.id,
-          privacy_settings: privacy,
-        },
-        {
-          onConflict: 'user_id',
-        },
-      )
+      await withNetworkRetry(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+          {
+            user_id: authUser.id,
+            privacy_settings: privacy,
+          },
+          {
+            onConflict: 'user_id',
+          },
+        )
 
-      if (updateError) {
-        // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
-        if (updateError.code === '42703') {
-          throw new Error(
-            'Colonna privacy_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
-          )
+        if (updateError) {
+          if (updateError.code === '42703') {
+            throw new Error(
+              'Colonna privacy_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+            )
+          }
+          throw updateError
         }
-        throw updateError
-      }
+      })
 
-      // Aggiorna stato locale
       setSettings((prev) => (prev ? { ...prev, privacy } : null))
       return { success: true }
     } catch (err) {
@@ -336,29 +335,28 @@ export function useUserSettings() {
         throw new Error('Utente non autenticato')
       }
 
-      // Workaround necessario per inferenza tipo Supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-        {
-          user_id: authUser.id,
-          account_settings: account,
-        },
-        {
-          onConflict: 'user_id',
-        },
-      )
+      await withNetworkRetry(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+          {
+            user_id: authUser.id,
+            account_settings: account,
+          },
+          {
+            onConflict: 'user_id',
+          },
+        )
 
-      if (updateError) {
-        // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
-        if (updateError.code === '42703') {
-          throw new Error(
-            'Colonna account_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
-          )
+        if (updateError) {
+          if (updateError.code === '42703') {
+            throw new Error(
+              'Colonna account_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+            )
+          }
+          throw updateError
         }
-        throw updateError
-      }
+      })
 
-      // Aggiorna stato locale
       setSettings((prev) => (prev ? { ...prev, account } : null))
       return { success: true }
     } catch (err) {
@@ -403,29 +401,28 @@ export function useUserSettings() {
           updateData.two_factor_enabled_at = undefined
         }
 
-        // Workaround necessario per inferenza tipo Supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-          {
-            user_id: authUser.id,
-            ...updateData,
-          },
-          {
-            onConflict: 'user_id',
-          },
-        )
+        await withNetworkRetry(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+            {
+              user_id: authUser.id,
+              ...updateData,
+            },
+            {
+              onConflict: 'user_id',
+            },
+          )
 
-        if (updateError) {
-          // Se errore 42703 (colonna non esiste), la migration deve essere eseguita
-          if (updateError.code === '42703') {
-            throw new Error(
-              'Colonne 2FA non esistono. Eseguire la migration 20250130_create_user_settings.sql',
-            )
+          if (updateError) {
+            if (updateError.code === '42703') {
+              throw new Error(
+                'Colonne 2FA non esistono. Eseguire la migration 20250130_create_user_settings.sql',
+              )
+            }
+            throw updateError
           }
-          throw updateError
-        }
+        })
 
-        // Aggiorna stato locale
         setSettings((prev) =>
           prev
             ? {

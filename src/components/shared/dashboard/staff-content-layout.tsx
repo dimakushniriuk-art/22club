@@ -4,6 +4,8 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { usePathname, useRouter } from 'next/navigation'
 import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-header-back-button'
+import { useAuth } from '@/providers/auth-provider'
+import { getDefaultAppPathForRole } from '@/lib/utils/role-redirect-paths'
 
 export type StaffContentTheme = 'teal' | 'amber' | 'default'
 
@@ -50,6 +52,7 @@ export function StaffContentLayout({
   void theme
   const router = useRouter()
   const pathname = usePathname()
+  const { role } = useAuth()
 
   const shouldAutoBack =
     pathname != null && pathname.startsWith('/dashboard/') && pathname !== '/dashboard'
@@ -61,7 +64,7 @@ export function StaffContentLayout({
             router.back()
             return
           }
-          router.push('/dashboard')
+          router.push(getDefaultAppPathForRole(role) ?? '/dashboard')
         }
       : undefined)
   return (
@@ -97,7 +100,12 @@ export function StaffContentLayout({
             )}
           </div>
         )}
-        <div className={cn('flex flex-col gap-4 sm:gap-6 md:gap-8', contentClassName)}>
+        <div
+          className={cn(
+            'flex flex-col space-y-4 sm:space-y-6 md:space-y-8',
+            contentClassName,
+          )}
+        >
           {children}
         </div>
       </div>

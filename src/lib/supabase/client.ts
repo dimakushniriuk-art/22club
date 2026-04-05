@@ -126,7 +126,7 @@ export function handleRefreshTokenError(error: unknown): boolean {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname
       if (path !== '/login' && !path.startsWith('/auth')) {
-        window.location.href = '/login'
+        window.location.href = '/login?reason=session_expired'
       }
     }
     return true

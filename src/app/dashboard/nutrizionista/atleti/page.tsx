@@ -49,12 +49,17 @@ import {
   DialogFooter,
 } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { InvitaClienteModal } from '@/components/dashboard/invita-cliente-modal'
 import { createLogger } from '@/lib/logger'
-import { NUTRITION_TABLES, nutritionFrom } from '@/lib/nutrition-tables'
+import {
+  NUTRITION_TABLES,
+  nutritionFrom,
+  STAFF_ASSIGNMENT_STATUS_ACTIVE,
+  STAFF_TYPE_NUTRIZIONISTA,
+} from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 const logger = createLogger('app:dashboard:nutrizionista:atleti')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 const DEBOUNCE_MS = 300
 
 type AthleteRow = {
@@ -314,11 +319,24 @@ export default function NutrizionistaAtletiPage() {
           .from('staff_requests')
           .select('id, athlete_id, created_at')
           .eq('staff_id', profileId)
-          .eq('staff_type', 'nutrizionista')
+          .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
           .eq('status', 'pending'),
         supabase.rpc('get_inviti_cliente_pendenti_staff'),
       ])
-      const inviteRows = (invitesRes.data ?? []) as Array<{
+      if (invitesRes.error) {
+        logger.warn('staff_requests inviti nutrizionista', invitesRes.error)
+      }
+      if (invitiClienteRes.error) {
+        logger.warn('get_inviti_cliente_pendenti_staff', invitiClienteRes.error)
+      }
+      if (invitesRes.error || invitiClienteRes.error) {
+        notify(
+          'Parte degli inviti non è stata caricata. Controlla la connessione e riprova.',
+          'warning',
+          'Inviti',
+        )
+      }
+      const inviteRows = (invitesRes.error ? [] : (invitesRes.data ?? [])) as Array<{
         id: string
         athlete_id: string
         created_at: string
@@ -338,10 +356,19 @@ export default function NutrizionistaAtletiPage() {
           email: string | null
         }> = []
         for (const idChunk of chunkForSupabaseIn(inviteRows.map((r) => r.athlete_id))) {
-          const { data: inviteProfiles } = await supabase
+          const { data: inviteProfiles, error: inviteProfErr } = await supabase
             .from('profiles')
             .select('id, nome, cognome, email')
             .in('id', idChunk)
+          if (inviteProfErr) {
+            logger.warn('Profili inviti staff_requests', inviteProfErr)
+            notify(
+              'Impossibile caricare i dati anagrafici per alcuni inviti.',
+              'warning',
+              'Inviti',
+            )
+            break
+          }
           inviteProfileRows.push(
             ...((inviteProfiles ?? []) as (typeof inviteProfileRows)[number][]),
           )
@@ -373,7 +400,9 @@ export default function NutrizionistaAtletiPage() {
           })
         })
       }
-      const fromInvitiCliente = (invitiClienteRes.data ?? []) as Array<{
+      const fromInvitiCliente = (invitiClienteRes.error
+        ? []
+        : (invitiClienteRes.data ?? [])) as Array<{
         invito_id: string
         atleta_id: string
         nome: string | null
@@ -403,8 +432,8 @@ export default function NutrizionistaAtletiPage() {
           .from('staff_atleti')
           .select('atleta_id')
           .eq('staff_id', profileId)
-          .eq('status', 'active')
-          .eq('staff_type', 'nutrizionista')
+          .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
+          .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
         if (staffErr || !staffData?.length) {
           setRows([])
           setLoading(false)
@@ -418,10 +447,16 @@ export default function NutrizionistaAtletiPage() {
           email: string | null
         }> = []
         for (const idChunk of chunkForSupabaseIn(ids)) {
-          const { data: profilesData } = await supabase
+          const { data: profilesData, error: profilesErr } = await supabase
             .from('profiles')
             .select('id, nome, cognome, email')
             .in('id', idChunk)
+          if (profilesErr) {
+            logger.error('Fallback clienti: profili', profilesErr)
+            setRows([])
+            setLoading(false)
+            return
+          }
           profiles.push(...((profilesData ?? []) as (typeof profiles)[number][]))
         }
         setRows(
@@ -443,13 +478,30 @@ export default function NutrizionistaAtletiPage() {
     } finally {
       setLoading(false)
     }
-  }, [profileId, supabase])
+  }, [profileId, supabase, notify])
 
   useEffect(() => {
     void loadData()
   }, [loadData])
 
-  const today = useMemo(() => new Date(), [])
+  const [today, setToday] = useState(() => new Date())
+  useEffect(() => {
+    const refresh = () => setToday(new Date())
+    const onVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refresh()
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility)
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility)
+      }
+    }
+  }, [])
+
   const todayStr = today.toISOString().slice(0, 10)
   const in7 = useMemo(() => {
     const d = new Date(today)
@@ -620,16 +672,23 @@ export default function NutrizionistaAtletiPage() {
           .update({ status: 'inactive', deactivated_at: new Date().toISOString() })
           .eq('staff_id', staffIdToUse)
           .eq('atleta_id', athleteId)
-          .eq('staff_type', 'nutrizionista')
+          .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
         if (error) throw error
         await loadData()
       } catch (e) {
         logger.error('Errore metti in pausa', e)
+        const msg =
+          e instanceof Error
+            ? e.message
+            : typeof e === 'object' && e != null && 'message' in e
+              ? String((e as { message: unknown }).message)
+              : 'Impossibile mettere in pausa il cliente.'
+        notify(msg, 'error', 'Errore')
       } finally {
         setStatusSubmitting(false)
       }
     },
-    [profileId, supabase, loadData],
+    [profileId, supabase, loadData, notify],
   )
 
   const handleActivate = useCallback(
@@ -640,19 +699,26 @@ export default function NutrizionistaAtletiPage() {
       try {
         const { error } = await supabase
           .from('staff_atleti')
-          .update({ status: 'active', deactivated_at: null })
+          .update({ status: STAFF_ASSIGNMENT_STATUS_ACTIVE, deactivated_at: null })
           .eq('staff_id', staffIdToUse)
           .eq('atleta_id', athleteId)
-          .eq('staff_type', 'nutrizionista')
+          .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
         if (error) throw error
         await loadData()
       } catch (e) {
         logger.error('Errore attiva cliente', e)
+        const msg =
+          e instanceof Error
+            ? e.message
+            : typeof e === 'object' && e != null && 'message' in e
+              ? String((e as { message: unknown }).message)
+              : 'Impossibile riattivare il cliente.'
+        notify(msg, 'error', 'Errore')
       } finally {
         setStatusSubmitting(false)
       }
     },
-    [profileId, supabase, loadData],
+    [profileId, supabase, loadData, notify],
   )
 
   const handleRemove = useCallback(
@@ -673,7 +739,7 @@ export default function NutrizionistaAtletiPage() {
         .delete()
         .eq('staff_id', staffIdToUse)
         .eq('atleta_id', removeConfirm.athleteId)
-        .eq('staff_type', 'nutrizionista')
+        .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
         .select('id')
       if (error) throw error
       if (!deleted || deleted.length === 0) {
@@ -718,17 +784,20 @@ export default function NutrizionistaAtletiPage() {
       void loadData()
     } catch (e) {
       logger.error('Insert nutrition_progress', e)
+      const msg =
+        e instanceof Error
+          ? e.message
+          : typeof e === 'object' && e != null && 'message' in e
+            ? String((e as { message: unknown }).message)
+            : 'Impossibile salvare il progresso.'
+      notify(msg, 'error', 'Errore')
     } finally {
       setProgressSubmitting(false)
     }
-  }, [progressModalAthlete, profileId, progressWeight, progressNotes, supabase, loadData])
+  }, [progressModalAthlete, profileId, progressWeight, progressNotes, supabase, loadData, notify])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
@@ -736,6 +805,7 @@ export default function NutrizionistaAtletiPage() {
       title="Clienti"
       description="Clienti assegnati: piani, progressi e analisi."
       theme="teal"
+      className="overflow-y-auto min-h-0"
       actions={
         <>
           <Button
@@ -759,9 +829,8 @@ export default function NutrizionistaAtletiPage() {
         </>
       }
     >
-      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8">
-        {error && (
-          <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between gap-2 flex-wrap">
+      {error && (
+          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between gap-2 flex-wrap">
             <span>{error}</span>
             <Button
               variant="outline"
@@ -776,7 +845,7 @@ export default function NutrizionistaAtletiPage() {
 
         {/* KPI Bar */}
         {!loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <KpiCard
               label="Clienti attivi"
               value={kpiCounts.atletiAttivi}
@@ -816,7 +885,7 @@ export default function NutrizionistaAtletiPage() {
         )}
 
         {/* Search + Sort + Filters (desktop) */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-x-4 gap-y-3">
           <div className="relative flex-1">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none"
@@ -1003,8 +1072,8 @@ export default function NutrizionistaAtletiPage() {
 
         {/* Content */}
         {loading ? null : rows.length === 0 ? (
-          <div className="rounded-xl border-2 border-teal-500/30 bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
-            <Users className="h-12 w-12 text-teal-500/50 shrink-0" aria-hidden />
+          <div className="rounded-xl border border-border bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
+            <Users className="h-12 w-12 text-text-muted shrink-0" aria-hidden />
             <p className="text-text-primary font-medium">Nessun cliente assegnato</p>
             <p className="text-text-secondary text-sm max-w-[65ch]">
               Le assegnazioni vengono gestite da Admin o Trainer. Chiedi l’assegnazione dei clienti
@@ -1017,8 +1086,8 @@ export default function NutrizionistaAtletiPage() {
             </Link>
           </div>
         ) : displayRows.length === 0 ? (
-          <div className="rounded-xl border-2 border-teal-500/30 bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
-            <Search className="h-12 w-12 text-teal-500/50 shrink-0" aria-hidden />
+          <div className="rounded-xl border border-border bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
+            <Search className="h-12 w-12 text-text-muted shrink-0" aria-hidden />
             <p className="text-text-primary font-medium">Nessun risultato</p>
             <p className="text-text-secondary text-sm max-w-[65ch]">
               {kpiFilter === 'clienti_invitati'
@@ -1037,7 +1106,7 @@ export default function NutrizionistaAtletiPage() {
         ) : (
           <>
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {displayRows.map((r) => {
                   const aid = r.athlete_id ?? r.atleta_id ?? ''
                   const isInvited = (r.assignment_status ?? '') === 'invited'
@@ -1050,7 +1119,7 @@ export default function NutrizionistaAtletiPage() {
                   return (
                     <div
                       key={aid}
-                      className="rounded-xl border-2 border-teal-500/20 bg-background-secondary/80 p-5 flex flex-col gap-4 min-h-[7.5rem]"
+                      className="rounded-xl border border-border bg-background-secondary/80 p-5 flex flex-col gap-4 min-h-[7.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-white/5"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -1142,7 +1211,7 @@ export default function NutrizionistaAtletiPage() {
             ) : (
               <>
                 {/* Desktop Table */}
-                <div className="hidden md:block rounded-xl border-2 border-teal-500/20 overflow-hidden">
+                <div className="hidden md:block rounded-xl border border-border overflow-hidden bg-background-secondary/30 ring-1 ring-white/5">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-background-tertiary/50 border-b border-border sticky top-0 z-10">
@@ -1296,7 +1365,7 @@ export default function NutrizionistaAtletiPage() {
                     return (
                       <div
                         key={aid}
-                        className="rounded-xl border-2 border-teal-500/20 bg-background-secondary/80 p-5 flex flex-col gap-4"
+                        className="rounded-xl border border-border bg-background-secondary/80 p-5 flex flex-col gap-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-white/5"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
@@ -1393,7 +1462,6 @@ export default function NutrizionistaAtletiPage() {
             )}
           </>
         )}
-      </div>
 
       {/* Quick Add Progress Modal */}
       <Dialog

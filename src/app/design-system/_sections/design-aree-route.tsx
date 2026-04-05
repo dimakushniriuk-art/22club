@@ -110,7 +110,7 @@ const ROUTE_GROUPS: RouteGroup[] = [
     label: 'Dashboard (staff) — Generale',
     icon: LayoutDashboard,
     designNote:
-      'Layout: RoleLayout (sidebar + area contenuto). Pagine: StaffContentLayout (title, actions, children). Spacing: gap-4 sm:gap-6 md:gap-8 tra header e contenuto; space-y-4 sm:space-y-6 tra sezioni; space-y-3 tra card in lista. Componenti: Card, Button, Badge, Table, Input, Select, Tabs. Token: fondazioni (colori, tipografia), bordo border-white/10, rounded-lg.',
+      'Layout: RoleLayout (sidebar + area contenuto). Pagine: StaffContentLayout (title, actions, children). Spacing: space-y-4 sm:space-y-6 md:space-y-8 tra header e blocchi di contenuto; stesso space-y tra sezioni nei children; gap-3 sm:gap-4 per griglie KPI. Componenti: Card, Button, Badge, Table, Input, Select, Tabs. Token: fondazioni (colori, tipografia), bordo border-white/10, rounded-lg.',
     routes: [
       { path: '/dashboard' },
       { path: '/dashboard/profilo' },
@@ -628,7 +628,9 @@ function DashboardStaffDesignElements() {
                 </Button>
               </div>
             </div>
-            <p className={cn(DS_LABEL_CLASS, 'mt-3')}>Spacing: gap-4 sm:gap-6 md:gap-8</p>
+            <p className={cn(DS_LABEL_CLASS, 'mt-3')}>
+              Spacing: space-y-4 sm:space-y-6 md:space-y-8 (header + sezioni)
+            </p>
           </div>
           <p className={cn(DS_LABEL_CLASS, 'mt-3')}>
             nutrizionista, massaggiatore, pagine con tema teal/amber
@@ -695,8 +697,9 @@ function DashboardStaffDesignElements() {
               <code className={DS_CODE_CLASS}>gap-4 / gap-6</code>
             </li>
             <li>
-              • Header ↔ contenuto: <code className={DS_CODE_CLASS}>gap-4 sm:gap-6 md:gap-8</code>{' '}
-              (StaffContentLayout)
+              • Header ↔ contenuto ↔ sezioni:{' '}
+              <code className={DS_CODE_CLASS}>space-y-4 sm:space-y-6 md:space-y-8</code> (
+              StaffContentLayout)
             </li>
             <li>
               • Liste di card: <code className={DS_CODE_CLASS}>space-y-3</code>

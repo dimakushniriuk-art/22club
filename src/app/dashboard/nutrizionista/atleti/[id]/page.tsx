@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -15,6 +15,10 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import {
+  StaffAthleteSegmentSkeleton,
+  StaffDashboardGuardSkeleton,
+} from '@/components/layout/route-loading-skeletons'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -47,10 +51,15 @@ import {
   PLAN_VERSION_STATUS_DRAFT,
 } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import {
+  athleteIdForNutritionColumn,
+  athleteIdForProgressLogsColumn,
+} from '@/lib/nutrition-athlete-id'
+import { macroTargetsFromPlanMacros } from '@/lib/nutrition-plan-version-macros'
+import type { Json } from '@/types/supabase'
 import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:nutrizionista:atleti:[id]')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 type ProfileRow = {
   id: string
@@ -110,10 +119,61 @@ type AdjustmentRow = {
   is_automatic?: boolean
 }
 
+type StructureMealView = {
+  id: string
+  name: string
+  time_suggested: string | null
+  items: { food_name: string; quantity: number | null; unit: string | null }[]
+}
+type StructureDayView = {
+  id: string
+  day_of_week: number
+  calories_total: number | null
+  meals: StructureMealView[]
+}
+
+const WEEKDAY_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
+
+const ATHLETE_PROFILE_TABS = [
+  'overview',
+  'piani',
+  'struttura',
+  'progressi',
+  'analisi',
+  'adattamenti',
+  'documenti',
+] as const
+
+type AthleteProfileTab = (typeof ATHLETE_PROFILE_TABS)[number]
+
 export default function NutrizionistaAtletaProfilePage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const id = params?.id as string | undefined
+  const tabParam = searchParams.get('tab')
+  const resolvedTab: AthleteProfileTab = useMemo(
+    () => ATHLETE_PROFILE_TABS.find((t) => t === tabParam) ?? 'overview',
+    [tabParam],
+  )
+
+  const onAthleteTabChange = useCallback(
+    (next: string) => {
+      const v = (ATHLETE_PROFILE_TABS.find((t) => t === next) ??
+        'overview') as AthleteProfileTab
+      if (!id) return
+      const path = `/dashboard/nutrizionista/atleti/${id}`
+      const q = new URLSearchParams(searchParams.toString())
+      if (v === 'overview') {
+        q.delete('tab')
+      } else {
+        q.set('tab', v)
+      }
+      const qs = q.toString()
+      router.replace(qs ? `${path}?${qs}` : path, { scroll: false })
+    },
+    [id, router, searchParams],
+  )
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
   const { user, org_id: orgId } = useAuth()
   const supabase = useSupabaseClient()
@@ -185,6 +245,10 @@ export default function NutrizionistaAtletaProfilePage() {
     nazione: '',
   })
 
+  const [structureLoading, setStructureLoading] = useState(false)
+  const [structureError, setStructureError] = useState<string | null>(null)
+  const [structureDays, setStructureDays] = useState<StructureDayView[] | null>(null)
+
   const syncAnagraficFromProfile = useCallback((p: ProfileRow | null) => {
     if (!p) return
     setAnagraficForm({
@@ -250,7 +314,10 @@ export default function NutrizionistaAtletaProfilePage() {
       setProfile(profileData)
       syncAnagraficFromProfile(profileData)
 
-      const groupsData = (groupsRes.data ?? []) as PlanGroupRow[]
+      if (groupsRes.error) {
+        logger.error('Dettaglio atleta: plan groups', groupsRes.error)
+      }
+      const groupsData = (groupsRes.error ? [] : (groupsRes.data ?? [])) as PlanGroupRow[]
       setGroups(groupsData)
       const groupIds = groupsData.map((g) => g.id)
 
@@ -259,19 +326,39 @@ export default function NutrizionistaAtletaProfilePage() {
         for (const gidChunk of chunkForSupabaseIn(groupIds)) {
           const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
             .select(
-              'id, plan_id, version_number, status, start_date, end_date, calories_target, protein_target, carb_target, fat_target, pdf_file_path',
+              'id, plan_id, version_number, status, start_date, end_date, calories_target, pdf_file_path, macros, created_at',
             )
             .in('plan_id', gidChunk)
             .order('created_at', { ascending: false })
-          verList.push(...((verRes.data ?? []) as PlanVersionRow[]))
+          if (verRes.error) {
+            logger.error('Dettaglio atleta: plan versions', verRes.error)
+            break
+          }
+          const rawVers = (verRes.data ?? []) as Array<
+            PlanVersionRow & { macros?: Json | null; created_at?: string | null }
+          >
+          for (const r of rawVers) {
+            const m = macroTargetsFromPlanMacros(r.macros)
+            verList.push({
+              ...r,
+              protein_target: m.protein_target,
+              carb_target: m.carb_target,
+              fat_target: m.fat_target,
+            })
+          }
         }
       }
       const prefix = 'nutrition-plans'
       const dbPaths = new Set(
         (verList as PlanVersionRow[]).map((ver) => ver.pdf_file_path).filter(Boolean) as string[],
       )
-      const { data: planFiles } = await supabase.storage.from('documents').list(`${prefix}/${id}`)
-      const pdfs = (planFiles ?? []).filter(
+      const { data: planFiles, error: storageListErr } = await supabase.storage
+        .from('documents')
+        .list(`${prefix}/${id}`)
+      if (storageListErr) {
+        logger.warn('Dettaglio atleta: list storage nutrition-plans', storageListErr)
+      }
+      const pdfs = (storageListErr ? [] : (planFiles ?? [])).filter(
         (f) =>
           (f as { name?: string }).name &&
           (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
@@ -306,17 +393,21 @@ export default function NutrizionistaAtletaProfilePage() {
       setActiveVersion(active)
 
       const athleteUserId = (profileData as { user_id?: string | null }).user_id
+      const progressLogsAthleteFk = athleteIdForProgressLogsColumn(athleteUserId)
       let progressData: ProgressRow[] = []
-      if (athleteUserId) {
-        const { data: plData } = await supabase
+      if (progressLogsAthleteFk) {
+        const { data: plData, error: plErr } = await supabase
           .from('progress_logs')
           .select(
             'id, created_at, date, weight_kg, massa_grassa_percentuale, waist_cm, hips_cm, source',
           )
-          .eq('athlete_id', athleteUserId)
+          .eq('athlete_id', progressLogsAthleteFk)
           .order('created_at', { ascending: false })
           .limit(50)
-        progressData = (plData ?? []).map((r) => ({
+        if (plErr) {
+          logger.warn('Dettaglio atleta: progress_logs', plErr)
+        }
+        progressData = (plErr ? [] : (plData ?? [])).map((r) => ({
           id: r.id,
           created_at: r.created_at ?? null,
           date: r.date ?? null,
@@ -331,26 +422,35 @@ export default function NutrizionistaAtletaProfilePage() {
       if (progressData.length === 0) {
         const progRes = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
           .select('id, created_at, weight_kg, notes')
-          .eq('athlete_id', id)
+          .eq('athlete_id', athleteIdForNutritionColumn(id))
           .order('created_at', { ascending: false })
           .limit(50)
-        progressData = (progRes.data ?? []) as ProgressRow[]
+        if (progRes.error) {
+          logger.warn('Dettaglio atleta: nutrition_progress', progRes.error)
+        }
+        progressData = (progRes.error ? [] : (progRes.data ?? [])) as ProgressRow[]
       }
       const [weekRes, adjRes] = await Promise.all([
         nutritionFrom(supabase, NUTRITION_TABLES.weeklyAnalysis)
           .select('*')
-          .eq('athlete_id', id)
+          .eq('athlete_id', athleteIdForNutritionColumn(id))
           .order('created_at', { ascending: false })
           .limit(20),
         nutritionFrom(supabase, NUTRITION_TABLES.adjustments)
           .select('id, created_at, adjustment_reason, is_automatic')
-          .eq('athlete_id', id)
+          .eq('athlete_id', athleteIdForNutritionColumn(id))
           .order('created_at', { ascending: false })
           .limit(30),
       ])
+      if (weekRes.error) {
+        logger.warn('Dettaglio atleta: weekly analysis', weekRes.error)
+      }
+      if (adjRes.error) {
+        logger.warn('Dettaglio atleta: adjustments', adjRes.error)
+      }
       setProgressList(progressData)
-      setWeeklyAnalysisList((weekRes.data ?? []) as WeeklyAnalysisRow[])
-      setAdjustmentsList((adjRes.data ?? []) as AdjustmentRow[])
+      setWeeklyAnalysisList((weekRes.error ? [] : (weekRes.data ?? [])) as WeeklyAnalysisRow[])
+      setAdjustmentsList((adjRes.error ? [] : (adjRes.data ?? [])) as AdjustmentRow[])
     } catch (e) {
       logger.error('Errore caricamento profilo atleta', e)
       setForbidden(true)
@@ -362,6 +462,110 @@ export default function NutrizionistaAtletaProfilePage() {
   useEffect(() => {
     void loadData()
   }, [loadData])
+
+  useEffect(() => {
+    if (resolvedTab !== 'struttura') return
+    const vid = activeVersion?.id
+    if (!vid || vid.startsWith('storage-')) {
+      setStructureDays(null)
+      setStructureError(null)
+      setStructureLoading(false)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      setStructureLoading(true)
+      setStructureError(null)
+      try {
+        const dayRes = await nutritionFrom(supabase, NUTRITION_TABLES.planDays)
+          .select('id, day_of_week, calories_total')
+          .eq('version_id', vid)
+          .order('day_of_week', { ascending: true })
+        if (dayRes.error) throw dayRes.error
+        const rawDays = (dayRes.data ?? []) as {
+          id: string
+          day_of_week: number
+          calories_total: number | null
+        }[]
+        const dayIds = rawDays.map((d) => d.id)
+        if (dayIds.length === 0) {
+          if (!cancelled) {
+            setStructureDays([])
+            setStructureLoading(false)
+          }
+          return
+        }
+        const mealsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planMeals)
+          .select('id, plan_day_id, name, time_suggested')
+          .in('plan_day_id', dayIds)
+        if (mealsRes.error) throw mealsRes.error
+        const meals = (mealsRes.data ?? []) as {
+          id: string
+          plan_day_id: string
+          name: string
+          time_suggested: string | null
+        }[]
+        const mealIds = meals.map((m) => m.id)
+        const itemsByMeal = new Map<
+          string,
+          { food_name: string; quantity: number | null; unit: string | null }[]
+        >()
+        if (mealIds.length > 0) {
+          const itemsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planItems)
+            .select('meal_id, food_name, quantity, unit')
+            .in('meal_id', mealIds)
+          if (itemsRes.error) throw itemsRes.error
+          for (const it of (itemsRes.data ?? []) as {
+            meal_id: string
+            food_name: string
+            quantity: number | null
+            unit: string | null
+          }[]) {
+            const arr = itemsByMeal.get(it.meal_id) ?? []
+            arr.push({
+              food_name: it.food_name,
+              quantity: it.quantity,
+              unit: it.unit,
+            })
+            itemsByMeal.set(it.meal_id, arr)
+          }
+        }
+        const mealsByDay = new Map<string, StructureMealView[]>()
+        for (const m of meals) {
+          const list = mealsByDay.get(m.plan_day_id) ?? []
+          list.push({
+            id: m.id,
+            name: m.name,
+            time_suggested: m.time_suggested,
+            items: itemsByMeal.get(m.id) ?? [],
+          })
+          mealsByDay.set(m.plan_day_id, list)
+        }
+        const built: StructureDayView[] = rawDays.map((d) => ({
+          id: d.id,
+          day_of_week: d.day_of_week,
+          calories_total: d.calories_total,
+          meals: mealsByDay.get(d.id) ?? [],
+        }))
+        if (!cancelled) setStructureDays(built)
+      } catch (e) {
+        logger.warn('Struttura piano: lettura', e)
+        if (!cancelled) {
+          setStructureError(
+            e && typeof e === 'object' && 'message' in e
+              ? String((e as { message?: string }).message)
+              : 'Impossibile caricare la struttura',
+          )
+          setStructureDays(null)
+        }
+      } finally {
+        if (!cancelled) setStructureLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [resolvedTab, activeVersion?.id, supabase])
 
   const handleSaveAnagrafic = useCallback(async () => {
     if (!id || !profile) return
@@ -582,8 +786,10 @@ export default function NutrizionistaAtletaProfilePage() {
       const dateVal = progressPdfDate
         ? new Date(progressPdfDate).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10)
+      const plFk = athleteIdForProgressLogsColumn(athleteUserId)
+      if (!plFk) return
       const { error } = await supabase.from('progress_logs').insert({
-        athlete_id: athleteUserId,
+        athlete_id: plFk,
         date: dateVal,
         weight_kg: progressPdfWeight ? Number(progressPdfWeight) : null,
         massa_grassa_percentuale: progressPdfBodyFat ? Number(progressPdfBodyFat) : null,
@@ -620,42 +826,47 @@ export default function NutrizionistaAtletaProfilePage() {
   ])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   if (!id) {
     router.replace('/dashboard/nutrizionista/atleti')
-    return null
+    return <StaffDashboardGuardSkeleton />
   }
 
   if (forbidden || (!loading && !profile)) {
     return (
-      <div className="p-4 min-[834px]:p-6 space-y-6 bg-background text-text-primary">
+      <StaffContentLayout
+        title="Atleta"
+        description="Profilo nutrizionale."
+        theme="teal"
+        actions={
+          <Link
+            href="/dashboard/nutrizionista/atleti"
+            className="text-teal-400 hover:text-teal-300 inline-flex items-center gap-1 text-sm font-medium"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Atleti
+          </Link>
+        }
+      >
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-6 text-center text-amber-200 text-sm">
           Atleta non assegnato o non trovato. Accesso consentito solo agli atleti collegati.
-          <div className="mt-3">
-            <Link href="/dashboard/nutrizionista/atleti">
-              <Button variant="outline" size="sm">
+          <div className="mt-3 flex justify-center">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard/nutrizionista/atleti">
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
                 Torna alla lista atleti
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
-      </div>
+      </StaffContentLayout>
     )
   }
 
   if (loading) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffAthleteSegmentSkeleton />
   }
 
   const displayName =
@@ -676,7 +887,7 @@ export default function NutrizionistaAtletaProfilePage() {
         </Link>
       }
     >
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={resolvedTab} onValueChange={onAthleteTabChange} className="w-full">
         <TabsList variant="underline" className="flex-wrap">
           <TabsTrigger value="overview" variant="underline">
             Overview
@@ -1324,11 +1535,82 @@ export default function NutrizionistaAtletaProfilePage() {
           </p>
         </TabsContent>
 
-        <TabsContent value="struttura" className="mt-4">
-          <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-6 text-center text-text-secondary text-sm">
-            Struttura piano (giorni → pasti → alimenti). Seleziona una versione e visualizza
-            gerarchia. Editor CRUD in sviluppo.
-          </div>
+        <TabsContent value="struttura" className="mt-4 space-y-4">
+          <p className="text-text-muted text-xs">
+            Versione attiva:{' '}
+            {activeVersion?.id.startsWith('storage-')
+              ? 'solo PDF in archivio — apri una versione da database dalla tab Piani per vedere giorni e pasti.'
+              : activeVersion
+                ? `v${activeVersion.version_number ?? '—'} · ${activeVersion.status ?? ''}`
+                : 'nessuna — scegli una versione nella tab Piani.'}
+          </p>
+          {structureLoading ? (
+            <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-muted text-sm">
+              Caricamento struttura…
+            </div>
+          ) : structureError ? (
+            <div
+              className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"
+              role="alert"
+            >
+              {structureError}
+            </div>
+          ) : structureDays && structureDays.length === 0 ? (
+            <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-6 text-center text-text-secondary text-sm">
+              Nessun giorno definito per questa versione (o schema colonne diverso dal DB).
+            </div>
+          ) : structureDays && structureDays.length > 0 ? (
+            <ul className="space-y-3">
+              {structureDays.map((day) => (
+                <li
+                  key={day.id}
+                  className="rounded-xl border border-border bg-background-secondary/50 overflow-hidden"
+                >
+                  <div className="px-4 py-2 border-b border-border/60 bg-background-tertiary/30 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-text-primary">
+                      {WEEKDAY_SHORT[day.day_of_week - 1] ?? `Giorno ${day.day_of_week}`}
+                    </span>
+                    {day.calories_total != null && (
+                      <span className="text-xs text-text-muted">{day.calories_total} kcal</span>
+                    )}
+                  </div>
+                  <div className="p-3 space-y-3">
+                    {day.meals.length === 0 ? (
+                      <p className="text-text-muted text-sm">Nessun pasto.</p>
+                    ) : (
+                      day.meals.map((meal) => (
+                        <div key={meal.id} className="rounded-lg border border-border/50 p-3 space-y-2">
+                          <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <span className="text-sm font-medium text-text-primary">{meal.name}</span>
+                            {meal.time_suggested ? (
+                              <span className="text-xs text-text-muted">{meal.time_suggested}</span>
+                            ) : null}
+                          </div>
+                          {meal.items.length === 0 ? (
+                            <p className="text-text-muted text-xs">Nessun alimento in elenco.</p>
+                          ) : (
+                            <ul className="space-y-1 text-xs text-text-secondary">
+                              {meal.items.map((it, idx) => (
+                                <li key={`${meal.id}-${idx}`}>
+                                  <span className="text-text-primary">{it.food_name}</span>
+                                  {it.quantity != null || it.unit ? (
+                                    <span className="text-text-muted">
+                                      {' '}
+                                      · {it.quantity ?? '—'} {it.unit ?? ''}
+                                    </span>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </TabsContent>
 
         <TabsContent value="progressi" className="mt-4">

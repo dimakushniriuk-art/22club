@@ -2,7 +2,7 @@
 // Service Worker per Push Notifications (PWA)
 // =====================================================
 
-const CACHE_NAME = '22club-v2'
+const CACHE_NAME = '22club-v3'
 /** Precache minimo: nessun URL inesistente; fallimenti singoli non bloccano install */
 const URLS_TO_PRECACHE = ['/', '/login', '/home', '/manifest.json']
 
@@ -57,13 +57,24 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Fetch event
+// Fetch: navigazioni HTML sempre network-first (contenuto aggiornato); offline → cache shell / login.
+// Altri GET restano cache-first per asset già precachati.
 self.addEventListener('fetch', (event) => {
+  const req = event.request
+  if (req.method !== 'GET') {
+    event.respondWith(fetch(req))
+    return
+  }
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).catch(() =>
+        caches.match(req).then((r) => r || caches.match('/login')),
+      ),
+    )
+    return
+  }
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cached version or fetch from network
-      return response || fetch(event.request)
-    }),
+    caches.match(req).then((response) => response || fetch(req)),
   )
 })
 

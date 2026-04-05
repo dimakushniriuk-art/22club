@@ -3421,6 +3421,152 @@ export type Database = {
           },
         ]
       }
+      nutrition_check_ins: {
+        Row: {
+          athlete_id: string
+          body_fat_pct: number | null
+          completed_at: string | null
+          created_at: string
+          hip_cm: number | null
+          id: string
+          notes: string | null
+          org_id: string
+          payload: Json
+          scheduled_for: string | null
+          staff_profile_id: string
+          status: string
+          updated_at: string
+          waist_cm: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          athlete_id: string
+          body_fat_pct?: number | null
+          completed_at?: string | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          payload?: Json
+          scheduled_for?: string | null
+          staff_profile_id: string
+          status?: string
+          updated_at?: string
+          waist_cm?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          athlete_id?: string
+          body_fat_pct?: number | null
+          completed_at?: string | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          payload?: Json
+          scheduled_for?: string | null
+          staff_profile_id?: string
+          status?: string
+          updated_at?: string
+          waist_cm?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'nutrition_check_ins_athlete_id_fkey'
+            columns: ['athlete_id']
+            isOneToOne: false
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_athlete_id_fkey'
+            columns: ['athlete_id']
+            isOneToOne: false
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_athlete_id_fkey'
+            columns: ['athlete_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_athlete_id_fkey'
+            columns: ['athlete_id']
+            isOneToOne: false
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_athlete_id_fkey'
+            columns: ['athlete_id']
+            isOneToOne: false
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_athlete_id_fkey'
+            columns: ['athlete_id']
+            isOneToOne: false
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_org_id_fkey'
+            columns: ['org_id']
+            isOneToOne: false
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_staff_profile_id_fkey'
+            columns: ['staff_profile_id']
+            isOneToOne: false
+            referencedRelation: 'marketing_athletes'
+            referencedColumns: ['athlete_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_staff_profile_id_fkey'
+            columns: ['staff_profile_id']
+            isOneToOne: false
+            referencedRelation: 'payments_per_staff_view'
+            referencedColumns: ['staff_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_staff_profile_id_fkey'
+            columns: ['staff_profile_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_staff_profile_id_fkey'
+            columns: ['staff_profile_id']
+            isOneToOne: false
+            referencedRelation: 'v_marketing_athletes'
+            referencedColumns: ['athlete_profile_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_staff_profile_id_fkey'
+            columns: ['staff_profile_id']
+            isOneToOne: false
+            referencedRelation: 'v_nutritionist_progress_logs_timeline'
+            referencedColumns: ['athlete_profile_id']
+          },
+          {
+            foreignKeyName: 'nutrition_check_ins_staff_profile_id_fkey'
+            columns: ['staff_profile_id']
+            isOneToOne: false
+            referencedRelation: 'v_profiles_marketing_subset'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       nutrition_plan_days: {
         Row: {
           calories_total: number | null

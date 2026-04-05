@@ -22,6 +22,7 @@ import {
   Layers,
   Zap,
   ClipboardList,
+  ClipboardCheck,
   TrendingUp,
   Activity,
   Database,
@@ -35,6 +36,9 @@ import { cn } from '@/lib/utils'
 import { useStaffWorkoutSlotsIndicator } from '@/hooks/use-staff-workout-slots-indicator'
 
 const logger = createLogger('components:shared:dashboard:mobile-nav')
+
+/** Route pesanti: evita prefetch automatico dal drawer (riduce carico rete). */
+const STAFF_NAV_NO_PREFETCH = new Set<string>(['/dashboard/comunicazioni', '/dashboard/database'])
 
 const staffNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard' },
@@ -53,6 +57,7 @@ const nutrizionistaNav = [
   { label: 'Clienti', icon: Users, href: '/dashboard/nutrizionista/atleti' },
   { label: 'Piani', icon: ClipboardList, href: '/dashboard/nutrizionista/piani' },
   { label: 'Progressi', icon: TrendingUp, href: '/dashboard/nutrizionista/progressi' },
+  { label: 'Check-in', icon: ClipboardCheck, href: '/dashboard/nutrizionista/checkin' },
   { label: 'Analisi settimanale', icon: BarChart2, href: '/dashboard/nutrizionista/analisi' },
   { label: 'Calendario', icon: Calendar, href: '/dashboard/nutrizionista/calendario' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/nutrizionista/chat' },
@@ -113,7 +118,8 @@ export function DashboardMobileNav() {
   return (
     <>
       {/* Header mobile: solo sotto md */}
-      <header className="md:hidden flex items-center justify-between gap-3 h-14 px-4 shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
+      <header className="md:hidden flex flex-col shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
+        <div className="flex items-center justify-between gap-3 h-14 px-4">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
@@ -132,11 +138,13 @@ export function DashboardMobileNav() {
                   ? '/dashboard/massaggiatore'
                   : '/dashboard'
           }
+          prefetch
           className="flex-1 flex justify-center min-w-0"
         >
           <Logo22Club className="h-7 w-auto max-w-[140px]" />
         </Link>
         <div className="w-11" />
+        </div>
       </header>
 
       {/* Drawer navigazione */}
@@ -175,6 +183,7 @@ export function DashboardMobileNav() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={!STAFF_NAV_NO_PREFETCH.has(item.href.split('?')[0])}
                   onClick={closeDrawer}
                   className={cn(
                     'relative flex items-center gap-3 min-h-[44px] px-3 rounded-xl transition-colors duration-200',
@@ -198,6 +207,7 @@ export function DashboardMobileNav() {
             {isAdmin && (
               <Link
                 href="/dashboard/admin"
+                prefetch
                 onClick={closeDrawer}
                 className={cn(
                   'flex items-center gap-3 min-h-[44px] px-3 rounded-xl transition-colors duration-200',

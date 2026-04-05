@@ -2,7 +2,7 @@
 
 Mappa operativa del **codice vivo** per orientarsi su route, API, librerie e hook. Non sostituisce la ricerca semantica dell’IDE; va aggiornato quando si aggiungono aree grandi o si spostano entry point.
 
-- **Ultimo aggiornamento:** 2026-04-05 (dashboard massaggiatore: impostazioni senza tab PTSettings duplicata; profilo redirect)
+- **Ultimo aggiornamento:** 2026-04-05 (cookie: `CookiePreferencesSettingRow`, evento `OPEN_COOKIE_PREFERENCES_EVENT`, modale accessibile; `network-retry`; loading `home/chat`, `home/appuntamenti`, `dashboard/chat`, `dashboard/calendario`; mobile nav prefetch off su Comunicazioni/Database; `scripts/RUNBOOK.md`; E2E `cookie-consent.spec.ts`)
 - **Obbligo di manutenzione:** criteri completi in `.cursor/rules/22club-project-rules.mdc` (sezione **NAVIGAZIONE CODICE**): allineare l’indice e questa data quando cambiano route, API o puntatori documentati; ogni modifica a questo file aggiorna la data in meta.
 - **Come aggiornare:** rigenerare elenchi route/API (vedi sotto) e allineare i puntatori per dominio; stack e divieti DB restano in `.cursor/rules/22club-project-rules.mdc`.
 
@@ -39,9 +39,9 @@ Nelle regole di progetto compaiono percorsi generici (`app/`, `components/`, `li
 | `supabase/`       | `migrations/`, `functions/` (Edge), `config.toml`                                                      |
 | `e2e/`            | Playwright                                                                                             |
 | `tests/`          | Test unitari / integrazione                                                                            |
-| `scripts/`        | Automazione (verify, prepush, **upload** `git-upload-deploy.mjs`, …); piano publish: `PUBLISH_PLAN.md` |
+| `scripts/`        | Automazione (verify, prepush, **upload** `git-upload-deploy.mjs`, …); `PUBLISH_PLAN.md`, **`RUNBOOK.md`** (operatività deploy/env/Sentry/cookie/auth/Capacitor) |
 
-**Componenti (cartelle principali in `src/components/`):** `appointments`, `athlete`, `auth`, `calendar`, `charts`, `chat`, `communications`, `dashboard`, `documents`, `home`, `home-profile`, `invitations`, `layout` (incl. `route-loading-skeletons.tsx`: `HomeAthletePageContentSkeleton` (`src/app/home/loading.tsx`), `HomeAthleteSegmentSkeleton`, `StaffDashboardSegmentSkeleton`, `StaffDashboardGuardSkeleton`, `StaffStaffPageContentSkeleton`, `StaffAthleteSegmentSkeleton`, `StaffAdminSegmentSkeleton`, `StaffMarketingSegmentSkeleton`, `StaffMarketingDataBlockSkeleton` + `src/app/dashboard/atleti/[id]/loading.tsx`, `src/app/dashboard/admin/loading.tsx`, `src/app/dashboard/massaggiatore/loading.tsx`, `src/app/dashboard/marketing/loading.tsx`, `EmbedAthleteAllenamentiPageSkeleton` + `src/app/embed/athlete-allenamenti/[athleteProfileId]/loading.tsx`, `StaffLazyChunkFallback`, `loading.tsx` App Router, fallback Suspense in `src/app/dashboard/layout.tsx` e in pagine staff con chunk lazy), `settings`, `shared` (incl. `shared/dashboard/role-layout.tsx` — guscio staff stabile senza animazione che rimonta l’albero), `ui`, `workout`, `workout-plans`, …
+**Componenti (cartelle principali in `src/components/`):** `appointments`, `athlete`, `auth`, `calendar`, `charts`, `chat`, `communications`, `dashboard`, `documents`, `home`, `home-profile`, `invitations`, `layout` (incl. `route-loading-skeletons.tsx`: `HomeAthletePageContentSkeleton` (`src/app/home/loading.tsx`, `src/app/home/chat/loading.tsx`, `src/app/home/appuntamenti/loading.tsx`), `HomeAthleteSegmentSkeleton`, `StaffDashboardSegmentSkeleton` (`src/app/dashboard/loading.tsx`, `src/app/dashboard/chat/loading.tsx`, `src/app/dashboard/calendario/loading.tsx`), `StaffDashboardGuardSkeleton`, `StaffStaffPageContentSkeleton`, `StaffAthleteSegmentSkeleton`, `StaffAdminSegmentSkeleton`, `StaffMarketingSegmentSkeleton`, `StaffMarketingDataBlockSkeleton` + `src/app/dashboard/atleti/[id]/loading.tsx`, `src/app/dashboard/admin/loading.tsx`, `src/app/dashboard/massaggiatore/loading.tsx`, `src/app/dashboard/nutrizionista/loading.tsx`, `src/app/dashboard/nutrizionista/atleti/[id]/loading.tsx`, `src/app/dashboard/marketing/loading.tsx`, `EmbedAthleteAllenamentiPageSkeleton` + `src/app/embed/athlete-allenamenti/[athleteProfileId]/loading.tsx`, `StaffLazyChunkFallback`, `loading.tsx` App Router, fallback Suspense in `src/app/dashboard/layout.tsx` e in pagine staff con chunk lazy), `settings`, `shared` (incl. `cookie-consent.tsx`, `cookie-preferences-setting-row.tsx`, `shared/dashboard/role-layout.tsx`, `shared/dashboard/dashboard-mobile-nav.tsx` — prefetch disattivato su route pesanti staff), `ui`, `workout`, `workout-plans`, …
 
 ---
 
@@ -170,18 +170,20 @@ flowchart LR
 | `/dashboard/nutrizionista/abbonamenti`  |
 | `/dashboard/nutrizionista/impostazioni` |
 
+Persistenza check-in: tabella `nutrition_check_ins` (+ RLS) in migrazione `supabase/migrations/20260405120000_nutrition_check_ins.sql` (applicare su Supabase); costante `NUTRITION_TABLES.checkIns` in `src/lib/nutrition-tables.ts`.
+
 ### Dashboard — massaggiatore
 
-| Route                                   |
-| --------------------------------------- |
-| `/dashboard/massaggiatore`              |
-| `/dashboard/massaggiatore/appuntamenti` |
-| `/dashboard/massaggiatore/calendario`   |
-| `/dashboard/massaggiatore/chat`         |
-| `/dashboard/massaggiatore/abbonamenti`  |
-| `/dashboard/massaggiatore/statistiche`  |
-| `/dashboard/massaggiatore/impostazioni` |
-| `/dashboard/massaggiatore/profilo` *(redirect → impostazioni)* |
+| Route                                                          |
+| -------------------------------------------------------------- |
+| `/dashboard/massaggiatore`                                     |
+| `/dashboard/massaggiatore/appuntamenti`                        |
+| `/dashboard/massaggiatore/calendario`                          |
+| `/dashboard/massaggiatore/chat`                                |
+| `/dashboard/massaggiatore/abbonamenti`                         |
+| `/dashboard/massaggiatore/statistiche`                         |
+| `/dashboard/massaggiatore/impostazioni`                        |
+| `/dashboard/massaggiatore/profilo` _(redirect → impostazioni)_ |
 
 ### Dashboard — admin
 
@@ -392,7 +394,7 @@ Cartelle principali (oltre a file nella root di `lib/`):
 | `pdf/`               | Export PDF client (logo, jsPDF header, stamp PDF.js preview)                                   |
 | `logger/`, `sentry/` | Logging e Sentry                                                                               |
 
-File spesso usati globalmente: `src/lib/utils.ts`, `src/lib/format.ts`, `src/lib/query-keys.ts`, `src/lib/audit.ts`, `src/lib/appointment-utils.ts`. **progress_logs (staff vs auth uid):** `src/lib/progress-logs-athlete-scope.ts` (`progressLogsAthleteIdOrFilter`). **UI misurazioni (valori + RangeStatusMeter + lista per data):** `src/components/progressi/misurazioni-values-content.tsx`, `misurazione-valori-by-date-list.tsx`; **regole trend % (ricomposizione):** `src/lib/body-metrics/body-metric-trend-rules.ts`. **Storico workout staff:** `src/hooks/progressi/use-storico-allenamenti-profile.ts`; **UI unificata (KPI + lista + PDF):** `src/components/dashboard/athlete-profile/atleta-storico-allenamenti-panel.tsx` (usata nel tab Allenamenti di `/dashboard/atleti/[id]`). **Storage documenti (preview proxy):** `src/lib/documents.ts`; guida riuso e bucket: `src/lib/DOCUMENTI_STORAGE_PREVIEW.md`. **PDF client:** `src/lib/pdf/` (`buildStandardPdfBlob`, logo, worker `public/pdf.worker.min.mjs`, `public/logo.svg`; anteprima `PdfCanvasPreviewDialog`).
+File spesso usati globalmente: `src/lib/utils.ts`, `src/lib/format.ts`, `src/lib/query-keys.ts`, `src/lib/audit.ts`, `src/lib/cookie-consent-storage.ts` (`OPEN_COOKIE_PREFERENCES_EVENT`, `requestOpenCookiePreferences`), `src/lib/network-retry.ts` (`withNetworkRetry`, usato in `use-user-settings`), `src/lib/appointment-utils.ts`. **progress_logs (staff vs auth uid):** `src/lib/progress-logs-athlete-scope.ts` (`progressLogsAthleteIdOrFilter`). **UI misurazioni (valori + RangeStatusMeter + lista per data):** `src/components/progressi/misurazioni-values-content.tsx`, `misurazione-valori-by-date-list.tsx`; **regole trend % (ricomposizione):** `src/lib/body-metrics/body-metric-trend-rules.ts`. **Storico workout staff:** `src/hooks/progressi/use-storico-allenamenti-profile.ts`; **UI unificata (KPI + lista + PDF):** `src/components/dashboard/athlete-profile/atleta-storico-allenamenti-panel.tsx` (usata nel tab Allenamenti di `/dashboard/atleti/[id]`). **Storage documenti (preview proxy):** `src/lib/documents.ts`; guida riuso e bucket: `src/lib/DOCUMENTI_STORAGE_PREVIEW.md`. **PDF client:** `src/lib/pdf/` (`buildStandardPdfBlob`, logo, worker `public/pdf.worker.min.mjs`, `public/logo.svg`; anteprima `PdfCanvasPreviewDialog`).
 
 ---
 

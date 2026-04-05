@@ -23,8 +23,10 @@ export const NUTRITION_TABLES = {
   planDays: 'nutrition_plan_days',
   planMeals: 'nutrition_plan_meals',
   planItems: 'nutrition_plan_items',
-  /** Monitoraggio / check-in. */
+  /** Monitoraggio / check-in (misure). */
   progress: 'nutrition_progress',
+  /** Check-in nutrizionista (sessioni / questionario in payload). */
+  checkIns: 'nutrition_check_ins',
   weeklyAnalysis: 'nutrition_weekly_analysis',
   adjustments: 'nutrition_adjustments',
   autoConfig: 'nutrition_auto_config',

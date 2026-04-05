@@ -17,6 +17,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -42,12 +43,12 @@ import {
   STAFF_TYPE_NUTRIZIONISTA,
 } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { athleteIdForProgressLogsColumn } from '@/lib/nutrition-athlete-id'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('app:dashboard:nutrizionista:progressi')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 const DEBOUNCE_MS = 300
 
 type TimelineRow = {
@@ -218,10 +219,14 @@ export default function NutrizionistaProgressiPage() {
         org_id: string | null
       }[] = []
       for (const idChunk of chunkForSupabaseIn(athleteIds)) {
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesErr } = await supabase
           .from('profiles')
           .select('id, user_id, nome, cognome, email, org_id')
           .in('id', idChunk)
+        if (profilesErr) {
+          logger.error('Progressi nutrizionista: caricamento profili', profilesErr)
+          throw profilesErr
+        }
         profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
       }
       const profilesMap = new Map(
@@ -236,6 +241,7 @@ export default function NutrizionistaProgressiPage() {
         ]),
       )
       const userIdToProfileId = new Map<string, string>()
+      /** Valori `profiles.user_id` per query su `progress_logs.athlete_id`. */
       const athleteUserIds: string[] = []
       for (const p of profilesAccum) {
         const row = p as { id: string; user_id: string | null }
@@ -291,18 +297,27 @@ export default function NutrizionistaProgressiPage() {
         if (!plErr && progressLogsData.length > 0) {
           loadedFromProgressLogs = true
           const rows: TimelineRow[] = progressLogsData.map((r) => {
-            const profileId = userIdToProfileId.get(r.athlete_id)
-            const prof = profileId ? profilesMap.get(profileId) : null
+            const athleteProfileId = userIdToProfileId.get(r.athlete_id)
+            const prof = athleteProfileId ? profilesMap.get(athleteProfileId) : null
+            const by = r.created_by_profile_id
+            let created_by_role: string | null
+            if (by == null) {
+              created_by_role = 'athlete'
+            } else if (athleteProfileId != null && by === athleteProfileId) {
+              created_by_role = 'athlete'
+            } else {
+              created_by_role = 'staff'
+            }
             return {
               progress_id: r.id,
-              athlete_id: profileId ?? r.athlete_id,
+              athlete_id: athleteProfileId ?? r.athlete_id,
               athlete_name: prof?.name ?? null,
               athlete_email: prof?.email ?? null,
               weight: r.weight_kg ?? null,
               body_fat: r.massa_grassa_percentuale ?? null,
               waist: r.waist_cm ?? null,
               hip: r.hips_cm ?? null,
-              created_by_role: r.created_by_profile_id ? 'nutrizionista' : 'athlete',
+              created_by_role,
               source: r.source ?? null,
               created_at: r.created_at ?? null,
             }
@@ -355,6 +370,9 @@ export default function NutrizionistaProgressiPage() {
           .order('created_at', { ascending: false })
           .limit(500)
         const { data: timelineData, error: timelineErr } = await timelineRes
+        if (timelineErr) {
+          logger.warn('v_nutritionist_progress_timeline', timelineErr)
+        }
         if (!timelineErr && timelineData && timelineData.length > 0) {
           setTimelineRows((timelineData ?? []) as TimelineRow[])
         }
@@ -363,6 +381,9 @@ export default function NutrizionistaProgressiPage() {
           .select('*')
           .eq('nutritionist_id', profileId)
         const { data: athletesData, error: athletesErr } = await athletesRes
+        if (athletesErr) {
+          logger.warn('v_nutritionist_progress_athletes', athletesErr)
+        }
         if (!athletesErr && athletesData && athletesData.length > 0) {
           setAthleteOverviewRows((athletesData ?? []) as AthleteOverviewRow[])
         } else {
@@ -387,10 +408,17 @@ export default function NutrizionistaProgressiPage() {
           }
           const progressAccum: ProgressFallbackRow[] = []
           for (const idChunk of chunkForSupabaseIn(athleteIds)) {
-            const { data: progressData } = await nutritionFrom(supabase, NUTRITION_TABLES.progress)
+            const { data: progressData, error: progressChunkErr } = await nutritionFrom(
+              supabase,
+              NUTRITION_TABLES.progress,
+            )
               .select('athlete_id, created_at, weight, body_fat, waist, hip, weight_kg')
               .in('athlete_id', idChunk)
               .order('created_at', { ascending: false })
+            if (progressChunkErr) {
+              logger.error('Progressi: fallback nutrition_progress chunk', progressChunkErr)
+              break
+            }
             progressAccum.push(...((progressData ?? []) as ProgressFallbackRow[]))
           }
           progressAccum.sort(
@@ -459,7 +487,24 @@ export default function NutrizionistaProgressiPage() {
     void loadData()
   }, [loadData])
 
-  const now = useMemo(() => new Date(), [])
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const refresh = () => setNow(new Date())
+    const onVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refresh()
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility)
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility)
+      }
+    }
+  }, [])
+
   const todayStart = useMemo(() => {
     const d = new Date(now)
     d.setHours(0, 0, 0, 0)
@@ -639,7 +684,7 @@ export default function NutrizionistaProgressiPage() {
         ? new Date(nuovoDate).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10)
       const payload = {
-        athlete_id: athleteUserId,
+        athlete_id: athleteIdForProgressLogsColumn(athleteUserId)!,
         date: dateVal,
         weight_kg: nuovoWeight ? Number(nuovoWeight) : null,
         massa_grassa_percentuale: nuovoBodyFat ? Number(nuovoBodyFat) : null,
@@ -696,11 +741,7 @@ export default function NutrizionistaProgressiPage() {
   }, [])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
@@ -744,7 +785,7 @@ export default function NutrizionistaProgressiPage() {
       }
     >
       {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
           <button
             type="button"

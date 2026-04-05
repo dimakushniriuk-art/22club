@@ -11,6 +11,7 @@ import { Button } from '@/components/ui'
 import { Switch } from '@/components/ui'
 import { Label } from '@/components/ui'
 import { Shield, Save, RefreshCw } from 'lucide-react'
+import { CookiePreferencesSettingRow } from '@/components/shared/cookie-preferences-setting-row'
 
 interface SettingsPrivacyTabProps {
   privacy: {
@@ -140,6 +141,8 @@ export function SettingsPrivacyTab({
             </div>
           </div>
         </div>
+
+        <CookiePreferencesSettingRow />
 
         {/* Salva */}
         <div className="flex justify-end pt-4 border-t border-white/10">

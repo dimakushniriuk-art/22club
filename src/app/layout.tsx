@@ -11,6 +11,8 @@ import { ToastProvider } from '@/components/ui/toast'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
 import { CookieConsent } from '@/components/shared/cookie-consent'
 import { WakeLockProvider } from '@/components/wake-lock-provider'
+import { ConnectionStatusBanner } from '@/components/shared/connection-status-banner'
+import { InstallPwaPrompt } from '@/components/shared/install-pwa-prompt'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -57,8 +59,8 @@ export const viewport: Viewport = {
   themeColor: '#02B3BF',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
 }
 
@@ -83,6 +85,8 @@ export default function RootLayout({
             <QueryProvider>
               <ToastProvider>
                 <WakeLockProvider>
+                  <ConnectionStatusBanner />
+                  <InstallPwaPrompt />
                   {children}
                   <SwRegister />
                   <CookieConsent />

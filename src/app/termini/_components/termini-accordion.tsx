@@ -135,7 +135,7 @@ export function TerminiAccordion() {
               style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
             >
               <div className="overflow-hidden">
-                <div className="px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-white/10">
+                <div className="readable-prose-max mx-auto px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-white/10">
                   {section.content}
                 </div>
               </div>

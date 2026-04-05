@@ -169,6 +169,21 @@ export async function middleware(request: NextRequest) {
         status,
         message: authUserError.message,
       })
+      // Evita redirect a /login: getUser() ha hit rate limit ma i cookie possono avere ancora sessione valida.
+      if (!session) {
+        try {
+          const {
+            data: { session: stored },
+            error: sessionError,
+          } = await supabase.auth.getSession()
+          if (!sessionError && stored?.user?.id) {
+            session = { user: { id: stored.user.id } }
+            authUserError = null
+          }
+        } catch (fallbackErr) {
+          logger.debug('Middleware: fallback getSession dopo 429 non riuscito', fallbackErr)
+        }
+      }
     } else if (!isRefreshTokenError) {
       logger.debug('Errore recupero utente nel middleware', {
         errorCode: code,
@@ -339,6 +354,31 @@ export async function middleware(request: NextRequest) {
               ),
             )
           }
+          /** Chat trainer condivisa: nutrizionista/massaggiatore → area dedicata (query string invariata). */
+          if (pathname === '/dashboard/chat') {
+            if (normalizedRole === 'nutrizionista') {
+              const chatUrl = request.nextUrl.clone()
+              chatUrl.pathname = '/dashboard/nutrizionista/chat'
+              return withSb(
+                applyImpersonationToResponse(
+                  NextResponse.redirect(chatUrl),
+                  clearImpersonationCookies,
+                  isImpersonating,
+                ),
+              )
+            }
+            if (normalizedRole === 'massaggiatore') {
+              const chatUrl = request.nextUrl.clone()
+              chatUrl.pathname = '/dashboard/massaggiatore/chat'
+              return withSb(
+                applyImpersonationToResponse(
+                  NextResponse.redirect(chatUrl),
+                  clearImpersonationCookies,
+                  isImpersonating,
+                ),
+              )
+            }
+          }
           if (pathname.startsWith('/dashboard/admin') && normalizedRole !== 'admin') {
             const path = getDefaultAppPathForRole(normalizedRole) ?? '/dashboard'
             return withSb(
@@ -350,7 +390,12 @@ export async function middleware(request: NextRequest) {
             )
           }
           if (normalizedRole === 'nutrizionista') {
-            const allowedPaths = ['/dashboard/nutrizionista', '/dashboard/abbonamenti']
+            const allowedPaths = [
+              '/dashboard/nutrizionista',
+              '/dashboard/abbonamenti',
+              '/dashboard/profilo',
+              '/dashboard/impostazioni',
+            ]
             const isAllowed = allowedPaths.some(
               (path) => pathname === path || pathname.startsWith(`${path}/`),
             )
@@ -498,6 +543,7 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
       redirectUrl.searchParams.set('redirectedFrom', pathname)
+      redirectUrl.searchParams.set('reason', 'auth_required')
       return withSb(NextResponse.redirect(redirectUrl))
     }
 

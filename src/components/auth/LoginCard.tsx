@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, AlertCircle, Eye, EyeOff, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,9 +26,13 @@ export interface LoginCardProps {
   showForgotPasswordLink?: boolean
   /** Disabilita submit (es. rate limit) */
   submitDisabled?: boolean
+  /** Messaggio informativo (es. sessione scaduta, redirect da area protetta) */
+  infoMessage?: string | null
   title?: string
   subtitle?: string
 }
+
+const LOGIN_INFO_ID = 'login-info'
 
 // Design System #auth: card con bordo border-white/10, gradient from-zinc-900/95 to-black/80, shadow inset (GUIDA principi + token Auth).
 const CARD_CLASS =
@@ -49,6 +53,7 @@ export function LoginCard({
   errorId = 'login-error',
   showForgotPasswordLink = true,
   submitDisabled = false,
+  infoMessage = null,
   title = 'Accedi',
   subtitle,
 }: LoginCardProps) {
@@ -128,8 +133,21 @@ export function LoginCard({
               onSubmit={onSubmit}
               className="space-y-5 min-[834px]:space-y-6"
               noValidate
-              aria-describedby={error ? errorId : undefined}
+              aria-describedby={
+                [error ? errorId : null, infoMessage ? LOGIN_INFO_ID : null].filter(Boolean).join(' ') ||
+                undefined
+              }
             >
+              {infoMessage != null && infoMessage !== '' && (
+                <div
+                  id={LOGIN_INFO_ID}
+                  className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/10 p-4 text-text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]"
+                  role="status"
+                >
+                  <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
+                  <p className="text-sm leading-relaxed text-text-primary/95">{infoMessage}</p>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="login-email" className="text-xs font-medium text-text-primary">
                   Email

@@ -91,9 +91,6 @@ const blocchiItems = [
 
 type BloccoItem = (typeof blocchiItems)[number]
 
-// --- Skeleton (stile costante, nessun oggetto inline per evitare re-render inutili) ---
-const SKELETON_CONTAINER_STYLE = { overflow: 'auto' as const }
-
 // --- Sub-componenti (stesso file, nessuna modifica ad altri file) ---
 
 interface WelcomeHeaderProps {
@@ -239,28 +236,14 @@ export default function HomePage() {
     ) as Record<string, BloccoAccentColors>
   }, [])
 
-  const mainContainerStyle = useMemo(
-    () => ({
-      overflow: 'auto' as const,
-      minHeight: 'calc(100dvh - 56px)',
-    }),
-    [],
-  )
-
   if (!user || !isValidUser) {
     return (
-      <div
-        className="bg-background min-h-dvh px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
-        style={SKELETON_CONTAINER_STYLE}
-      />
+      <div className="bg-background min-h-dvh px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24" />
     )
   }
 
   return (
-    <div
-      className="relative min-h-0 w-full max-w-full bg-background px-3 pb-28 pt-0.5 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
-      style={mainContainerStyle}
-    >
+    <div className="relative w-full max-w-full bg-background px-3 pb-28 pt-0.5 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
       <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
         <WelcomeHeader
           nome={user.nome}

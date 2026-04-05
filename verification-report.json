@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-04T14:15:39.441Z",
+  "timestamp": "2026-04-05T10:09:03.473Z",
   "summary": {
     "ok": 4,
     "errors": 1,
@@ -10,7 +10,7 @@
     {
       "service": "Next.js Server",
       "status": "error",
-      "message": "Server risponde con status 500"
+      "message": ""
     },
     {
       "service": "Supabase Config",

@@ -25,6 +25,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -49,9 +50,13 @@ import {
   PLAN_VERSION_STATUS_ACTIVE,
 } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import {
+  buildPlanVersionMacrosPayload,
+  macroTargetsFromPlanMacros,
+} from '@/lib/nutrition-plan-version-macros'
+import type { Json } from '@/types/supabase'
 
 const logger = createLogger('app:dashboard:nutrizionista:piani:nuovo')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 const STEPS = [
   { id: '1', label: 'Target calorie' },
@@ -231,10 +236,15 @@ export default function NutrizionistaPianoNuovoPage() {
         }
         const profilesMerged: { id: string; nome: string | null; cognome: string | null }[] = []
         for (const idChunk of chunkForSupabaseIn(ids)) {
-          const { data: profiles } = await supabase
+          const { data: profiles, error: profilesErr } = await supabase
             .from('profiles')
             .select('id, nome, cognome')
             .in('id', idChunk)
+          if (profilesErr) {
+            logger.error('Piano nuovo: caricamento profili', profilesErr)
+            setAthletes([])
+            return
+          }
           profilesMerged.push(...((profiles ?? []) as (typeof profilesMerged)[number][]))
         }
         if (cancelled) return
@@ -244,16 +254,22 @@ export default function NutrizionistaPianoNuovoPage() {
             async (p: { id: string; nome: string | null; cognome: string | null }) => {
               const name = [p.nome, p.cognome].filter(Boolean).join(' ').trim() || p.id.slice(0, 8)
 
-              const { data: group } = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+              const { data: group, error: groupPeekErr } = await nutritionFrom(
+                supabase,
+                NUTRITION_TABLES.planGroups,
+              )
                 .select('id')
                 .eq('athlete_id', p.id)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle()
+              if (groupPeekErr) {
+                logger.warn('Piano nuovo: anteprima group', { athleteId: p.id, err: groupPeekErr })
+              }
 
               let lastPlan: Record<string, unknown> | null = null
-              if (group && (group as { id?: string }).id) {
-                const { data: version } = await nutritionFrom(
+              if (!groupPeekErr && group && (group as { id?: string }).id) {
+                const { data: version, error: verPeekErr } = await nutritionFrom(
                   supabase,
                   NUTRITION_TABLES.planVersions,
                 )
@@ -262,7 +278,14 @@ export default function NutrizionistaPianoNuovoPage() {
                   .order('created_at', { ascending: false })
                   .limit(1)
                   .maybeSingle()
-                lastPlan = (version as Record<string, unknown>) ?? null
+                if (verPeekErr) {
+                  logger.warn('Piano nuovo: anteprima version', {
+                    planId: (group as { id: string }).id,
+                    err: verPeekErr,
+                  })
+                } else {
+                  lastPlan = (version as Record<string, unknown>) ?? null
+                }
               }
 
               return { id: p.id, name, lastPlan }
@@ -371,18 +394,14 @@ export default function NutrizionistaPianoNuovoPage() {
     (athleteId: string) => {
       const athlete = athletes.find((a) => a.id === athleteId)
       const plan = athlete?.lastPlan as
-        | {
-            calories_target?: number
-            protein_target?: number
-            carb_target?: number
-            fat_target?: number
-          }
+        | { calories_target?: number; macros?: Json | null }
         | undefined
       if (!plan) return
+      const mt = macroTargetsFromPlanMacros(plan.macros)
       setCaloriesTarget(String(plan.calories_target ?? 2000))
-      setProteinTarget(String(plan.protein_target ?? 120))
-      setCarbTarget(String(plan.carb_target ?? 250))
-      setFatTarget(String(plan.fat_target ?? 65))
+      setProteinTarget(String(mt.protein_target ?? 120))
+      setCarbTarget(String(mt.carb_target ?? 250))
+      setFatTarget(String(mt.fat_target ?? 65))
     },
     [athletes],
   )
@@ -430,9 +449,11 @@ export default function NutrizionistaPianoNuovoPage() {
           version_number: 1,
           status: PLAN_VERSION_STATUS_ACTIVE,
           calories_target: Number(caloriesTarget) || 2000,
-          protein_target: Number(proteinTarget) || 120,
-          carb_target: Number(carbTarget) || 250,
-          fat_target: Number(fatTarget) || 65,
+          macros: buildPlanVersionMacrosPayload({
+            protein: Number(proteinTarget) || 120,
+            carbs: Number(carbTarget) || 250,
+            fat: Number(fatTarget) || 65,
+          }),
           start_date: dateRange.start,
           end_date: dateRange.end,
           created_by: profileId,
@@ -541,11 +562,7 @@ export default function NutrizionistaPianoNuovoPage() {
   }, [selectedAthleteId, profileId, supabase, macroDeviation?.isError, executeCreate])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   const filteredAthletes = athletes.filter((a) =>
@@ -709,7 +726,7 @@ export default function NutrizionistaPianoNuovoPage() {
       <Stepper steps={stepperSteps} variant="minimal" className="mb-6" />
 
       {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200 text-sm flex items-start gap-2 mb-4">
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200 text-sm flex items-start gap-2 mb-4">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>

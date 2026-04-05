@@ -131,8 +131,8 @@ export async function getRecipientsByFilter(
     const typedPushTokens: PushTokenRow[] = []
     let tokensError: PostgrestError | null = null
     for (const uidChunk of chunkForSupabaseIn(authUserIds)) {
-      const { data: pushTokens, error: chunkTokErr } = await supabase
-        .from('user_push_tokens')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: pushTokens, error: chunkTokErr } = await (supabase as any).from('user_push_tokens')
         .select('user_id')
         .in('user_id', uidChunk)
         .eq('is_active', true)

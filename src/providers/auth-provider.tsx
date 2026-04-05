@@ -87,6 +87,7 @@ function mapProfileToUser(profile: ProfileRow): UserProfile {
     avatar: profile.avatar ?? undefined,
     nome: profile.nome ?? undefined,
     cognome: profile.cognome ?? undefined,
+    data_iscrizione: profile.data_iscrizione ?? undefined,
     created_at: profile.created_at ?? new Date().toISOString(),
     updated_at: profile.updated_at ?? undefined,
     stato: (profile as { stato?: string | null }).stato ?? undefined,
@@ -146,6 +147,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [actorProfile, setActorProfile] = useState<UserProfile | null>(null)
   const [isImpersonating, setIsImpersonating] = useState(false)
   const router = useRouter()
+
+  const userRef = useRef<UserProfile | null>(null)
+  userRef.current = user
+
+  const lastTabHiddenAtRef = useRef<number | null>(null)
 
   // Cache anti-storm: TTL 30 secondi
   const profileCacheRef = useRef<Map<string, CachedProfile>>(new Map())
@@ -240,7 +246,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: profile, error } = await supabase
           .from('profiles')
           .select(
-            'id, user_id, role, org_id, email, nome, cognome, avatar, avatar_url, created_at, updated_at, first_name, last_name, phone, stato, first_login',
+            'id, user_id, role, org_id, email, nome, cognome, avatar, avatar_url, created_at, updated_at, first_name, last_name, phone, stato, first_login, data_iscrizione',
           )
           .eq('user_id', userId)
           .single()
@@ -421,12 +427,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         // getUser() valida con il server; getSession() legge solo da cookie e può restituire
         // una sessione residua (cookie scaduto) → fetchProfile fallisce prima ancora del login.
-        const {
+        let {
           data: { user: authUser },
           error: userError,
         } = await supabase.auth.getUser()
 
         if (!isMounted) return
+
+        const is429 =
+          !!userError &&
+          (userError.code === 'over_request_rate_limit' || userError.status === 429)
+        if ((userError || !authUser) && is429) {
+          const {
+            data: { session: stored },
+            error: sessionError,
+          } = await supabase.auth.getSession()
+          if (!sessionError && stored?.user) {
+            authUser = stored.user
+            userError = null
+          }
+        }
 
         if (userError || !authUser) {
           if (handleRefreshTokenError(userError)) return
@@ -478,6 +498,68 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted = false
     }
   }, [fetchProfile, updateUserFromProfile, applyAuthContext])
+
+  // Dopo pausa in background (mobile): rivalida sessione e ripristina profilo se lo stato React era vuoto.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    const MIN_HIDDEN_MS = 3000
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        lastTabHiddenAtRef.current = Date.now()
+        return
+      }
+      if (document.visibilityState !== 'visible') return
+
+      const hiddenAt = lastTabHiddenAtRef.current
+      lastTabHiddenAtRef.current = null
+      if (hiddenAt == null) return
+      if (Date.now() - hiddenAt < MIN_HIDDEN_MS) return
+
+      void (async () => {
+        try {
+          let {
+            data: { user: authUser },
+            error: userError,
+          } = await supabase.auth.getUser()
+
+          const is429 =
+            !!userError &&
+            (userError.code === 'over_request_rate_limit' || userError.status === 429)
+          if ((userError || !authUser) && is429) {
+            const {
+              data: { session: stored },
+              error: sessionError,
+            } = await supabase.auth.getSession()
+            if (!sessionError && stored?.user) {
+              authUser = stored.user
+              userError = null
+            }
+          }
+
+          if (userError) {
+            if (handleRefreshTokenError(userError)) return
+            return
+          }
+
+          if (!authUser?.id) return
+
+          if (!userRef.current) {
+            const applied = await applyAuthContext()
+            if (applied) return
+            const result = await fetchProfile(authUser.id)
+            updateUserFromProfile(result.profile)
+          }
+        } catch (error) {
+          void handleRefreshTokenError(error)
+        }
+      })()
+    }
+
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [applyAuthContext, fetchProfile, updateUserFromProfile])
 
   useEffect(() => {
     let isMounted = true

@@ -171,12 +171,7 @@ export function PTProfileTab({
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <Card variant="default" className="text-center">
           <CardContent className="p-0 pt-0">
-            <div
-              className={cn(
-                'mb-1 text-2xl font-bold tabular-nums',
-                quickStatValueClass,
-              )}
-            >
+            <div className={cn('mb-1 text-2xl font-bold tabular-nums', quickStatValueClass)}>
               {profile.stats.clienti_attivi}
             </div>
             <div className="text-text-secondary text-xs">Clienti Attivi</div>
@@ -184,12 +179,7 @@ export function PTProfileTab({
         </Card>
         <Card variant="default" className="text-center">
           <CardContent className="p-0 pt-0">
-            <div
-              className={cn(
-                'mb-1 text-2xl font-bold tabular-nums',
-                quickStatValueClass,
-              )}
-            >
+            <div className={cn('mb-1 text-2xl font-bold tabular-nums', quickStatValueClass)}>
               {profile.stats.sessioni_mese}
             </div>
             <div className="text-text-secondary text-xs">{sessioniMeseLabel}</div>
@@ -197,12 +187,7 @@ export function PTProfileTab({
         </Card>
         <Card variant="default" className="text-center">
           <CardContent className="p-0 pt-0">
-            <div
-              className={cn(
-                'mb-1 text-2xl font-bold tabular-nums',
-                quickStatValueClass,
-              )}
-            >
+            <div className={cn('mb-1 text-2xl font-bold tabular-nums', quickStatValueClass)}>
               {profile.stats.anni_esperienza}
             </div>
             <div className="text-text-secondary text-xs">Anni Esperienza</div>

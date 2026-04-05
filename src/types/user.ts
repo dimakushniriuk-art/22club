@@ -21,6 +21,8 @@ export interface UserProfile {
   avatar?: string // Alias per avatar_url (compatibilità)
   nome?: string // Alias per first_name (compatibilità)
   cognome?: string // Alias per last_name (compatibilità)
+  /** Data iscrizione effettiva (DB); diversa da created_at quando valorizzata. */
+  data_iscrizione?: string | null
   created_at: string
   updated_at?: string
   /** Stato abbonamento/iscrizione: trial | attivo | sospeso | archiviato */

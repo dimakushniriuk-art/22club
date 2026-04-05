@@ -47,6 +47,7 @@ import {
   DialogFooter,
 } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { createLogger } from '@/lib/logger'
 import {
   NUTRITION_TABLES,
@@ -58,13 +59,14 @@ import {
   PLAN_VERSION_STATUS_ARCHIVED,
 } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { macroTargetsFromPlanMacros } from '@/lib/nutrition-plan-version-macros'
+import type { Json } from '@/types/supabase'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
 
 const logger = createLogger('app:dashboard:nutrizionista:piani')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 const DEBOUNCE_MS = 300
 /** DB può usare 'published' per piani attivi; consideriamo entrambi come attivi in UI */
 const isPlanVersionActive = (status: string) =>
@@ -270,6 +272,10 @@ export default function NutrizionistaPianiPage() {
       const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
         .select('id, athlete_id')
         .eq('nutrizionista_id', profileId)
+      if (groupsRes.error) {
+        logger.error('nutrition_plan_groups', groupsRes.error)
+        throw groupsRes.error
+      }
       const groups = (groupsRes.data ?? []) as Array<{ id: string; athlete_id: string }>
       const groupIds = groups.map((g) => g.id)
 
@@ -282,10 +288,14 @@ export default function NutrizionistaPianiPage() {
         email: string | null
       }[] = []
       for (const idChunk of chunkForSupabaseIn(allAthleteIds)) {
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesErr } = await supabase
           .from('profiles')
           .select('id, nome, cognome, email')
           .in('id', idChunk)
+        if (profilesErr) {
+          logger.error('Piani nutrizionista: caricamento profili', profilesErr)
+          throw profilesErr
+        }
         profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
       }
       const profilesMap = new Map(
@@ -312,10 +322,11 @@ export default function NutrizionistaPianiPage() {
           end_date: string | null
           created_at: string | null
           calories_target?: number | null
+          macros?: Json | null
+          pdf_file_path?: string | null
           protein_target?: number | null
           carb_target?: number | null
           fat_target?: number | null
-          pdf_file_path?: string | null
           auto_generated?: boolean | null
           auto_adjustment_reason?: string | null
         }
@@ -323,11 +334,25 @@ export default function NutrizionistaPianiPage() {
         for (const gidChunk of chunkForSupabaseIn(groupIds)) {
           const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
             .select(
-              'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
+              'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, pdf_file_path, macros',
             )
             .in('plan_id', gidChunk)
             .order('created_at', { ascending: false })
-          versions.push(...((verRes.data ?? []) as Ver[]))
+          if (verRes.error) {
+            logger.error('nutrition_plan_versions', verRes.error)
+            throw verRes.error
+          }
+          for (const row of (verRes.data ?? []) as Ver[]) {
+            const m = macroTargetsFromPlanMacros(row.macros)
+            versions.push({
+              ...row,
+              protein_target: m.protein_target,
+              carb_target: m.carb_target,
+              fat_target: m.fat_target,
+              auto_generated: null,
+              auto_adjustment_reason: null,
+            })
+          }
         }
         versions.sort(
           (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
@@ -360,8 +385,13 @@ export default function NutrizionistaPianiPage() {
       }
 
       const unassignedPath = `nutrition-plans/_unassigned/${profileId}`
-      const { data: storageFiles } = await supabase.storage.from('documents').list(unassignedPath)
-      const storageRows: VersionRow[] = (storageFiles ?? [])
+      const { data: storageFiles, error: unassignedStorageErr } = await supabase.storage
+        .from('documents')
+        .list(unassignedPath)
+      if (unassignedStorageErr) {
+        logger.warn('Piani: storage non assegnati', unassignedStorageErr)
+      }
+      const storageRows: VersionRow[] = (unassignedStorageErr ? [] : (storageFiles ?? []))
         .filter(
           (f) =>
             (f as { name?: string }).name &&
@@ -397,11 +427,14 @@ export default function NutrizionistaPianiPage() {
         })
 
       const nutritionPlansPrefix = 'nutrition-plans'
-      const { data: planFolders } = await supabase.storage
+      const { data: planFolders, error: planFoldersErr } = await supabase.storage
         .from('documents')
         .list(nutritionPlansPrefix)
+      if (planFoldersErr) {
+        logger.warn('Piani: list cartelle nutrition-plans', planFoldersErr)
+      }
       const assignedStorageRows: VersionRow[] = []
-      const folderNames = (planFolders ?? [])
+      const folderNames = (planFoldersErr ? [] : (planFolders ?? []))
         .map((f) => (f as { name?: string }).name)
         .filter((n): n is string => !!n && n !== '_unassigned' && /^[0-9a-f-]{36}$/i.test(n))
       if (folderNames.length > 0) {
@@ -412,13 +445,17 @@ export default function NutrizionistaPianiPage() {
           email: string | null
         }[] = []
         for (const idChunk of chunkForSupabaseIn(folderNames)) {
-          const { data: athleteProfiles } = await supabase
+          const { data: athleteProfiles, error: apErr } = await supabase
             .from('profiles')
             .select('id, nome, cognome, email')
             .in('id', idChunk)
-          athleteProfilesMerged.push(
-            ...((athleteProfiles ?? []) as (typeof athleteProfilesMerged)[number][]),
-          )
+          if (apErr) {
+            logger.warn('Piani: profili da cartelle storage', apErr)
+          } else {
+            athleteProfilesMerged.push(
+              ...((athleteProfiles ?? []) as (typeof athleteProfilesMerged)[number][]),
+            )
+          }
         }
         const athleteNameById = new Map(
           athleteProfilesMerged.map(
@@ -437,10 +474,13 @@ export default function NutrizionistaPianiPage() {
           ]),
         )
         for (const athleteId of folderNames) {
-          const { data: files } = await supabase.storage
+          const { data: files, error: filesErr } = await supabase.storage
             .from('documents')
             .list(`${nutritionPlansPrefix}/${athleteId}`)
-          const pdfs = (files ?? []).filter(
+          if (filesErr) {
+            logger.warn('Piani: list PDF atleta in storage', { athleteId, err: filesErr })
+          }
+          const pdfs = (filesErr ? [] : (files ?? [])).filter(
             (f) =>
               (f as { name?: string }).name &&
               (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
@@ -494,7 +534,24 @@ export default function NutrizionistaPianiPage() {
     void loadData()
   }, [loadData])
 
-  const today = useMemo(() => new Date(), [])
+  const [today, setToday] = useState(() => new Date())
+  useEffect(() => {
+    const refresh = () => setToday(new Date())
+    const onVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refresh()
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility)
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility)
+      }
+    }
+  }, [])
+
   const todayStr = today.toISOString().slice(0, 10)
   const in7 = useMemo(() => {
     const d = new Date(today)
@@ -909,11 +966,7 @@ export default function NutrizionistaPianiPage() {
   )
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
@@ -963,7 +1016,7 @@ export default function NutrizionistaPianiPage() {
       }
     >
       {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
           <Button
             variant="outline"

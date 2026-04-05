@@ -3,13 +3,14 @@
 // ============================================================
 
 import { format, isValid } from 'date-fns'
+import { it } from 'date-fns/locale'
 
 export const formatSafeDate = (date: string | Date | null | undefined) => {
-  if (!date) return 'N/A'
+  if (!date) return '—'
   try {
     const d = new Date(date)
-    return isValid(d) ? format(d, 'dd MMM yyyy') : 'N/A'
+    return isValid(d) ? format(d, 'd MMM yyyy', { locale: it }) : '—'
   } catch {
-    return 'N/A'
+    return '—'
   }
 }

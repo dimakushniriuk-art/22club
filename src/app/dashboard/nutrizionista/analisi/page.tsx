@@ -11,8 +11,10 @@ import {
   TrendingDown,
   FileText,
   X,
+  Loader2,
 } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -25,9 +27,11 @@ import {
   STAFF_TYPE_NUTRIZIONISTA,
 } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { macroTargetsFromPlanMacros } from '@/lib/nutrition-plan-version-macros'
+import { useNotify } from '@/lib/ui/notify'
+import type { Json } from '@/types/supabase'
 
 const logger = createLogger('app:dashboard:nutrizionista:analisi')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 const THRESHOLD_KG = 0.3
 
 type WeeklyRow = {
@@ -113,6 +117,21 @@ function KpiCard({
   )
 }
 
+function drawerLoadUserMessage(err: unknown): string {
+  if (err && typeof err === 'object' && 'message' in err) {
+    const m = String((err as { message?: string }).message ?? '')
+    const code = (err as { code?: string }).code
+    if (
+      code === '42501' ||
+      /permission denied|rls|row-level security/i.test(m)
+    ) {
+      return 'Caricamento negato dai permessi del database. Verifica l’assegnazione atleta o contatta l’amministratore.'
+    }
+    if (m.trim()) return m
+  }
+  return 'Impossibile caricare progressi e piano per questa settimana. Riprova.'
+}
+
 function badgeStatus(row: WeeklyRow): 'OK' | 'WARN' | 'OPPOSTO' | 'ADJ' | null {
   const abs = row.abs_delta_vs_target ?? 0
   const opposto =
@@ -128,6 +147,7 @@ export default function NutrizionistaAnalisiPage() {
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
   const { user } = useAuth()
   const supabase = useSupabaseClient()
+  const { notify } = useNotify()
   const profileId = user?.id ?? null
 
   const [loading, setLoading] = useState(true)
@@ -153,6 +173,7 @@ export default function NutrizionistaAnalisiPage() {
   const [drawerProgress, setDrawerProgress] = useState<ProgressEntry[]>([])
   const [drawerVersion, setDrawerVersion] = useState<VersionInfo | null>(null)
   const [drawerLoading, setDrawerLoading] = useState(false)
+  const [drawerError, setDrawerError] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     if (!profileId) {
@@ -188,10 +209,14 @@ export default function NutrizionistaAnalisiPage() {
         email: string | null
       }[] = []
       for (const idChunk of chunkForSupabaseIn(athleteIds)) {
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesErr } = await supabase
           .from('profiles')
           .select('id, nome, cognome, email')
           .in('id', idChunk)
+        if (profilesErr) {
+          logger.error('Analisi nutrizionista: caricamento profili', profilesErr)
+          throw profilesErr
+        }
         profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
       }
       const profilesMap = new Map(
@@ -238,6 +263,10 @@ export default function NutrizionistaAnalisiPage() {
             .select('*')
             .in('athlete_id', idChunk)
             .order('week_start', { ascending: false })
+          if (rawRes.error) {
+            logger.error('Analisi: fallback weeklyAnalysis chunk', rawRes.error)
+            throw rawRes.error
+          }
           rawAccum.push(...((rawRes.data ?? []) as WeeklyRaw[]))
         }
         rawAccum.sort((a, b) => {
@@ -349,6 +378,7 @@ export default function NutrizionistaAnalisiPage() {
       setDrawerRow(row)
       setDrawerProgress([])
       setDrawerVersion(null)
+      setDrawerError(null)
       setDrawerLoading(true)
       try {
         const weekEnd = row.week_end ? new Date(row.week_end) : new Date()
@@ -367,12 +397,18 @@ export default function NutrizionistaAnalisiPage() {
           row.version_id
             ? nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
                 .select(
-                  'id, version_number, status, start_date, end_date, calories_target, protein_target, carb_target, fat_target, pdf_file_path, auto_generated, auto_adjustment_reason',
+                  'id, version_number, status, start_date, end_date, calories_target, pdf_file_path, macros',
                 )
                 .eq('id', row.version_id)
                 .single()
-            : Promise.resolve({ data: null }),
+            : Promise.resolve({ data: null, error: null }),
         ])
+        if (progRes.error) {
+          throw progRes.error
+        }
+        if (verRes.error) {
+          throw verRes.error
+        }
         const progRaw = (progRes.data ?? []) as Array<{
           id: string
           created_at: string | null
@@ -396,22 +432,42 @@ export default function NutrizionistaAnalisiPage() {
             source: p.source ?? null,
           })),
         )
-        setDrawerVersion((verRes.data ?? null) as VersionInfo | null)
+        const verRaw = verRes.data as
+          | (Partial<VersionInfo> & { id: string; macros?: Json | null })
+          | null
+        if (verRaw) {
+          const mt = macroTargetsFromPlanMacros(verRaw.macros)
+          setDrawerVersion({
+            id: verRaw.id,
+            version_number: verRaw.version_number ?? null,
+            status: verRaw.status ?? null,
+            start_date: verRaw.start_date ?? null,
+            end_date: verRaw.end_date ?? null,
+            calories_target: verRaw.calories_target ?? null,
+            protein_target: mt.protein_target,
+            carb_target: mt.carb_target,
+            fat_target: mt.fat_target,
+            pdf_file_path: verRaw.pdf_file_path ?? null,
+            auto_generated: verRaw.auto_generated ?? null,
+            auto_adjustment_reason: verRaw.auto_adjustment_reason ?? null,
+          })
+        } else {
+          setDrawerVersion(null)
+        }
       } catch (e) {
         logger.error('Drawer load', e)
+        const msg = drawerLoadUserMessage(e)
+        setDrawerError(msg)
+        notify(msg, 'error')
       } finally {
         setDrawerLoading(false)
       }
     },
-    [supabase],
+    [notify, supabase],
   )
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
@@ -491,7 +547,7 @@ export default function NutrizionistaAnalisiPage() {
       }
     >
       {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
           <button
             type="button"
@@ -542,8 +598,12 @@ export default function NutrizionistaAnalisiPage() {
       </section>
 
       {loading ? (
-        <div className={LOADING_CLASS}>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div
+          className="flex min-h-[min(40vh,320px)] items-center justify-center rounded-xl border border-border bg-background-secondary/30"
+          aria-busy="true"
+          aria-label="Caricamento"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-teal-400/80" />
         </div>
       ) : filteredRows.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
@@ -651,15 +711,31 @@ export default function NutrizionistaAnalisiPage() {
         </div>
       )}
 
-      <Drawer open={!!drawerRow} onOpenChange={(open) => !open && setDrawerRow(null)}>
-        <DrawerContent onClose={() => setDrawerRow(null)}>
+      <Drawer
+        open={!!drawerRow}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDrawerRow(null)
+            setDrawerError(null)
+          }
+        }}
+      >
+        <DrawerContent
+          onClose={() => {
+            setDrawerRow(null)
+            setDrawerError(null)
+          }}
+        >
           <DrawerHeader>
             <div className="flex items-center justify-between">
               <span>Dettaglio analisi</span>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setDrawerRow(null)}
+                onClick={() => {
+                  setDrawerRow(null)
+                  setDrawerError(null)
+                }}
                 aria-label="Chiudi"
               >
                 <X className="h-4 w-4" />
@@ -669,6 +745,14 @@ export default function NutrizionistaAnalisiPage() {
           <DrawerBody className="space-y-6">
             {drawerRow && (
               <>
+                {drawerError ? (
+                  <div
+                    className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100"
+                    role="alert"
+                  >
+                    {drawerError}
+                  </div>
+                ) : null}
                 <div className="space-y-1">
                   <h3 className="font-semibold text-text-primary">
                     {drawerRow.athlete_name ?? '—'}

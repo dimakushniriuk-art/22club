@@ -104,7 +104,6 @@ function TrialBanner() {
 
 function HomeLayoutShell({ children }: HomeLayoutClientProps) {
   const pathname = usePathname()
-  const isDashboardHome = pathname === '/home' || pathname === '/home/'
 
   const shellRef = useRef<HTMLDivElement>(null)
   const chromeRef = useRef<HTMLElement>(null)
@@ -118,13 +117,8 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
 
   useLayoutEffect(() => {
     const shellEl = shellRef.current
-    if (!shellEl) return
-    if (isDashboardHome) {
-      shellEl.style.setProperty('--home-athlete-brand-top', '0px')
-      return
-    }
     const headerEl = chromeRef.current
-    if (!headerEl) return
+    if (!shellEl || !headerEl) return
     const apply = () => {
       const h = Math.ceil(headerEl.getBoundingClientRect().height)
       shellEl.style.setProperty('--home-athlete-brand-top', `${h}px`)
@@ -133,7 +127,7 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
     const ro = new ResizeObserver(apply)
     ro.observe(headerEl)
     return () => ro.disconnect()
-  }, [pathname, isDashboardHome])
+  }, [pathname])
 
   return (
     <div
@@ -141,22 +135,24 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
       className="relative flex min-h-dvh flex-col overflow-hidden bg-background"
       style={shellStyle}
     >
-      {!isDashboardHome ? (
-        <>
-          <HomeAthleteTopChrome ref={chromeRef} />
-          {/* Riserva altezza barra fissa (sincrona con --home-athlete-brand-top misurata sotto) */}
-          <div
-            className="shrink-0"
-            style={{ height: 'var(--home-athlete-brand-top)' }}
-            aria-hidden
-          />
-        </>
-      ) : null}
+      <HomeAthleteTopChrome ref={chromeRef} />
+      {/* Riserva altezza barra fissa (sincrona con --home-athlete-brand-top misurata sotto) */}
+      <div
+        className="shrink-0"
+        style={{ height: 'var(--home-athlete-brand-top)' }}
+        aria-hidden
+      />
 
       <TrialBanner />
 
-      <main className="relative z-10 flex min-h-0 flex-1 flex-col bg-background pt-4 sm:pt-6">
-        <HomeAthleteStackHeadersProvider value={!isDashboardHome}>
+      <main
+        className={
+          pathname === '/home' || pathname === '/home/'
+            ? 'relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto bg-background pt-4 sm:pt-6'
+            : 'relative z-10 flex min-h-0 flex-1 flex-col bg-background pt-4 sm:pt-6'
+        }
+      >
+        <HomeAthleteStackHeadersProvider value>
           <ErrorBoundary>{children}</ErrorBoundary>
         </HomeAthleteStackHeadersProvider>
       </main>

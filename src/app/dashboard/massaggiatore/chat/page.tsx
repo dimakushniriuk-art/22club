@@ -13,11 +13,7 @@ export default function MassaggiatoreChatPage() {
   }
 
   return (
-    <StaffContentLayout
-      title="Chat"
-      description="Messaggi con i clienti assegnati."
-      theme="teal"
-    >
+    <StaffContentLayout title="Chat" description="Messaggi con i clienti assegnati." theme="teal">
       <ChatPageContent basePath="/dashboard/massaggiatore/chat" />
     </StaffContentLayout>
   )

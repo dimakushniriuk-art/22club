@@ -113,11 +113,13 @@ export async function sendCommunicationEmail(
 
     if (!recipients || recipients.length === 0) {
       await updateCommunicationStats(communicationId)
-      await (supabase.from('communications') as ReturnType<typeof supabase.from>)
+      // Cast: PostgREST builder generics non allineano update parziale su communications
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from('communications') as any)
         .update({
           status: 'failed',
           sent_at: new Date().toISOString(),
-        } as Record<string, unknown>)
+        })
         .eq('id', communicationId)
       return {
         success: false,

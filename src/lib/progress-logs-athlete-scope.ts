@@ -1,6 +1,7 @@
 /**
  * progress_logs.athlete_id in DB è profiles.user_id (auth.users.id).
  * Nelle route staff l’ID in URL è di solito profiles.id: combiniamo entrambi per .or() Supabase.
+ * Vedi anche `nutrition-athlete-id.ts` per insert/query esplicite.
  */
 export function progressLogsAthleteIdOrFilter(
   profileId: string,

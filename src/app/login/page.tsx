@@ -48,6 +48,7 @@ function LoginContent() {
     {},
   )
   const [lockUntil, setLockUntil] = useState<number | null>(null)
+  const [infoMessage, setInfoMessage] = useState<string | null>(null)
   const failedAttemptsRef = useRef(0)
 
   const router = useRouter()
@@ -57,7 +58,33 @@ function LoginContent() {
   useEffect(() => {
     if (searchParams.get('error') === 'profilo') {
       setError("Profilo non trovato. Contatta l'amministratore per completare la registrazione.")
+      setInfoMessage(null)
+      return
     }
+
+    const reason = searchParams.get('reason')
+    const redirectedFrom = searchParams.get('redirectedFrom')
+
+    if (reason === 'session_expired') {
+      setInfoMessage('Sessione scaduta o non più valida. Accedi di nuovo per continuare.')
+      return
+    }
+
+    if (reason === 'auth_required') {
+      setInfoMessage(
+        redirectedFrom
+          ? 'Per accedere alla pagina richiesta devi effettuare il login. Se eri già connesso, la sessione potrebbe essere scaduta.'
+          : 'Accedi per continuare.',
+      )
+      return
+    }
+
+    if (redirectedFrom) {
+      setInfoMessage('Accedi per continuare.')
+      return
+    }
+
+    setInfoMessage(null)
   }, [searchParams])
 
   useEffect(() => {
@@ -258,6 +285,7 @@ function LoginContent() {
       password={password}
       loading={loading}
       error={error}
+      infoMessage={infoMessage}
       validationErrors={validationErrors}
       onSubmit={handleLogin}
       onEmailChange={handleEmailChange}

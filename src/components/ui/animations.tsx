@@ -13,7 +13,10 @@ interface AnimationProps {
 export function FadeIn({ children, className, delay = 0 }: AnimationProps) {
   return (
     <div
-      className={cn('animate-in fade-in duration-500 ease-out', className)}
+      className={cn(
+        'animate-in fade-in duration-500 ease-out motion-reduce:animate-none motion-reduce:opacity-100',
+        className,
+      )}
       style={{
         animationDelay: `${delay}ms`,
         animationFillMode: 'both',
@@ -28,7 +31,10 @@ export function FadeIn({ children, className, delay = 0 }: AnimationProps) {
 export function SlideUp({ children, className, delay = 0 }: AnimationProps) {
   return (
     <div
-      className={cn('animate-in slide-in-from-bottom-4 duration-500 ease-out', className)}
+      className={cn(
+        'animate-in slide-in-from-bottom-4 duration-500 ease-out motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:translate-y-0',
+        className,
+      )}
       style={{
         animationDelay: `${delay}ms`,
         animationFillMode: 'both',
@@ -44,7 +50,7 @@ export function ScaleOnHover({ children, className }: AnimationProps) {
   return (
     <div
       className={cn(
-        'transition-transform duration-200 ease-out hover:scale-105 active:scale-95',
+        'transition-transform duration-200 ease-out hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100',
         className,
       )}
     >
@@ -74,7 +80,7 @@ export function StaggerContainer({ children, className }: AnimationProps) {
 export function PulseIndicator({ className }: { className?: string }) {
   return (
     <div className={cn('relative', className)}>
-      <div className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-75" />
+      <div className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-75 motion-reduce:animate-none" />
       <div className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
     </div>
   )
@@ -83,6 +89,13 @@ export function PulseIndicator({ className }: { className?: string }) {
 // Bounce animation per success states
 export function BounceIn({ children, className }: AnimationProps) {
   return (
-    <div className={cn('animate-in zoom-in-50 duration-300 ease-out', className)}>{children}</div>
+    <div
+      className={cn(
+        'animate-in zoom-in-50 duration-300 ease-out motion-reduce:animate-none motion-reduce:opacity-100 motion-reduce:scale-100',
+        className,
+      )}
+    >
+      {children}
+    </div>
   )
 }

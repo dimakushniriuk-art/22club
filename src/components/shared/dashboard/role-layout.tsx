@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import { cn } from '@/lib/utils'
 import { Sidebar } from './sidebar'
 import { DashboardMobileNav } from './dashboard-mobile-nav'
 
@@ -24,7 +25,13 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
         )}
 
         <main
-          className="flex-1 flex flex-col min-h-0 min-w-0 w-full pt-[env(safe-area-inset-top,0px)] bg-transparent"
+          className={cn(
+            'flex-1 flex flex-col min-h-0 min-w-0 w-full bg-transparent',
+            /* Staff mobile: safe-top è già nell’header di DashboardMobileNav */
+            role === 'staff'
+              ? 'pt-0 md:pt-[env(safe-area-inset-top,0px)]'
+              : 'pt-[env(safe-area-inset-top,0px)]',
+          )}
           style={{
             paddingLeft: 'max(0px, env(safe-area-inset-left))',
             paddingRight: 'max(0px, env(safe-area-inset-right))',

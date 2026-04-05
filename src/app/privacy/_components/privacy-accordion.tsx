@@ -37,8 +37,8 @@ function AccordionBlock({
         className="grid transition-[grid-template-rows] duration-200 ease-out"
         style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
       >
-        <div className="overflow-hidden">
-          <div className="px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-white/10">
+          <div className="overflow-hidden">
+          <div className="readable-prose-max mx-auto px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-white/10">
             {section.content}
           </div>
         </div>
@@ -302,7 +302,17 @@ const cookieSections: Section[] = [
     id: 'c-3',
     title: '3. Gestione dei cookie',
     content: (
-      <p>L&apos;utente può gestire o disabilitare i cookie tramite le impostazioni del browser.</p>
+      <>
+        <p>
+          L&apos;utente può gestire o disabilitare i cookie tramite le impostazioni del browser.
+        </p>
+        <p className="mt-2">
+          Nella web app 22Club puoi aggiornare le preferenze in qualsiasi momento dal link{' '}
+          <strong className="font-medium text-text-primary">Preferenze cookie</strong> in basso a
+          sinistra (dopo la prima scelta): vengono memorizzate in locale sul dispositivo (chiave{' '}
+          <code className="rounded bg-white/5 px-1 text-xs">22club-cookie-preferences</code>).
+        </p>
+      </>
     ),
   },
   {
@@ -365,7 +375,7 @@ export function PrivacyAccordion() {
       </section>
 
       {/* Cookie Policy */}
-      <section className="pt-6 border-t border-white/10">
+      <section id="cookie-policy" className="pt-6 border-t border-white/10 scroll-mt-20">
         <h1 className="text-xl sm:text-2xl font-bold text-text-primary mb-4">Cookie Policy</h1>
         <div className="space-y-1">
           {cookieSections.map((section) => (

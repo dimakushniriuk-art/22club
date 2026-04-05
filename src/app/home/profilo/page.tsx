@@ -24,6 +24,7 @@ import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
 import { useProfileId } from '@/lib/utils/profile-id-utils'
 import { cn } from '@/lib/utils'
+import { CookiePreferencesSettingRow } from '@/components/shared/cookie-preferences-setting-row'
 
 const logger = createLogger('app:home:profilo:page')
 
@@ -368,6 +369,11 @@ export default function ProfiloPage() {
               </Tabs>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Privacy / cookie */}
+        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          <CookiePreferencesSettingRow />
         </div>
 
         {/* Azioni */}

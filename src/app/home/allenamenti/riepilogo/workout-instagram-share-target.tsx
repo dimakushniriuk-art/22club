@@ -473,10 +473,7 @@ export const WorkoutInstagramShareTarget = forwardRef<
                 totalSets > 0 ? (
                   <>
                     {fmtIntIt(summaryAverageLoadPerSet)}
-                    <span style={{ fontSize: 13, fontWeight: 600, color: S.muted }}>
-                      {' '}
-                      kg/serie
-                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: S.muted }}> kg/serie</span>
                   </>
                 ) : (
                   '—'
@@ -574,8 +571,7 @@ export const WorkoutInstagramShareTarget = forwardRef<
               >
                 {exerciseLines.map((line, i) => {
                   const prRowStyle = Boolean(sec.exercisePrBadges && line.isPersonalRecord)
-                  const hasMedia =
-                    Boolean(line.mediaPreviewUrl) || Boolean(line.mediaVideoUrl)
+                  const hasMedia = Boolean(line.mediaPreviewUrl) || Boolean(line.mediaVideoUrl)
                   return (
                     <div
                       key={i}

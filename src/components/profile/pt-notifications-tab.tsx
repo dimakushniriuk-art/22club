@@ -162,7 +162,12 @@ export function PTNotificationsTab({
             </div>
 
             {unreadCount > 0 && (
-              <Button onClick={onMarkAllAsRead} variant="primary" size="sm" className="min-h-[44px]">
+              <Button
+                onClick={onMarkAllAsRead}
+                variant="primary"
+                size="sm"
+                className="min-h-[44px]"
+              >
                 <CheckCheck className="h-4 w-4 mr-2 shrink-0" />
                 Segna tutte come lette
               </Button>
@@ -222,7 +227,9 @@ export function PTNotificationsTab({
         <Card variant="default" className="!p-0 text-center">
           <CardContent className="px-6 py-12">
             <Bell className="h-12 w-12 text-text-tertiary mx-auto mb-4" aria-hidden />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">Nessuna notifica trovata</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">
+              Nessuna notifica trovata
+            </h3>
             <p className="text-text-secondary text-sm">
               {searchTerm || filterType !== 'all' || filterCategory !== 'all'
                 ? 'Prova a modificare i filtri di ricerca'
@@ -267,7 +274,9 @@ export function PTNotificationsTab({
                           </Badge>
                         </div>
 
-                        <p className="text-text-secondary mb-3 leading-relaxed">{notification.body}</p>
+                        <p className="text-text-secondary mb-3 leading-relaxed">
+                          {notification.body}
+                        </p>
 
                         <div className="flex flex-wrap items-center gap-4 text-sm text-text-tertiary">
                           <div className="flex items-center gap-1">

@@ -48,6 +48,21 @@
     font-variation-settings: 'opsz' 32;
   }
 
+  /* Focus visibile da tastiera (PC) senza anello su click mouse-only dove supportato */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Mobile: evita che campi in basso finiscano sotto la tastiera virtuale */
+  @media (max-width: 768px) {
+    input:focus,
+    textarea:focus,
+    select:focus {
+      scroll-margin-bottom: max(5rem, env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   /* 🎨 Custom Animations — 22Club */
   @keyframes shimmer {
     0% {
@@ -69,6 +84,22 @@
       box-shadow, transform, filter, backdrop-filter;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    .animate-shimmer {
+      animation: none;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 
   /* Enhanced focus states */
@@ -452,6 +483,11 @@
     padding-bottom: env(safe-area-inset-bottom, 0);
     padding-left: env(safe-area-inset-left, 0);
     padding-right: env(safe-area-inset-right, 0);
+  }
+
+  /* Testi lunghi su desktop / tablet: larghezza di lettura confortevole (opt-in su wrapper) */
+  .readable-prose-max {
+    max-width: 65ch;
   }
 
   /* Login: cellulare landscape (852×393) — poco altezza, scroll e padding ridotto */

@@ -12,6 +12,7 @@ import {
   FolderOpen,
   FileCheck,
   Calendar,
+  Loader2,
 } from 'lucide-react'
 import type { Database } from '@/lib/supabase/types'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
@@ -36,6 +37,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { createLogger } from '@/lib/logger'
 import {
   NUTRITION_TABLES,
@@ -49,7 +51,6 @@ import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('app:dashboard:nutrizionista:documenti')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 const DEBOUNCE_MS = 300
 
 const TAB_CATEGORIES: { id: string; label: string; categories: string[] }[] = [
@@ -179,11 +180,14 @@ export default function NutrizionistaDocumentiPage() {
     setLoading(true)
     setError(null)
     try {
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileRowErr } = await supabase
         .from('profiles')
         .select('org_id, org_id_text')
         .eq('id', profileId)
         .single()
+      if (profileRowErr) {
+        logger.warn('Documenti: profilo staff org', profileRowErr)
+      }
       if (profileData) {
         setMyOrgId((profileData as { org_id?: string | null }).org_id ?? null)
         setMyOrgIdText((profileData as { org_id_text?: string | null }).org_id_text ?? null)
@@ -213,10 +217,14 @@ export default function NutrizionistaDocumentiPage() {
         email: string | null
       }[] = []
       for (const idChunk of chunkForSupabaseIn(athleteIds)) {
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesErr } = await supabase
           .from('profiles')
           .select('id, nome, cognome, email')
           .in('id', idChunk)
+        if (profilesErr) {
+          logger.error('Documenti nutrizionista: caricamento profili', profilesErr)
+          throw profilesErr
+        }
         profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
       }
       const profilesMap = new Map(
@@ -261,7 +269,24 @@ export default function NutrizionistaDocumentiPage() {
     void loadData()
   }, [loadData])
 
-  const now = useMemo(() => new Date(), [])
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const refresh = () => setNow(new Date())
+    const onVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refresh()
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility)
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility)
+      }
+    }
+  }, [])
+
   const sevenDaysAgo = useMemo(() => {
     const d = new Date(now)
     d.setDate(d.getDate() - 7)
@@ -448,11 +473,7 @@ export default function NutrizionistaDocumentiPage() {
   }
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
@@ -491,7 +512,7 @@ export default function NutrizionistaDocumentiPage() {
       }
     >
       {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
           <button
             type="button"
@@ -614,8 +635,12 @@ export default function NutrizionistaDocumentiPage() {
       </Drawer>
 
       {loading ? (
-        <div className={LOADING_CLASS}>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div
+          className="flex min-h-[min(40vh,320px)] items-center justify-center rounded-xl border border-border bg-background-secondary/30"
+          aria-busy="true"
+          aria-label="Caricamento"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-teal-400/80" />
         </div>
       ) : filteredRows.length === 0 ? (
         <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">

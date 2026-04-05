@@ -90,11 +90,7 @@ function applyExportPreset(
 ): HTMLCanvasElement {
   const sw = source.width
   const sh = source.height
-  if (
-    preset.transform === 'none' &&
-    sw === preset.width &&
-    sh === preset.height
-  ) {
+  if (preset.transform === 'none' && sw === preset.width && sh === preset.height) {
     return source
   }
 
@@ -197,8 +193,7 @@ export function WorkoutInstagramSharePreviewDialog({
 
   const exportPreset = useMemo(
     () =>
-      INSTAGRAM_EXPORT_PRESETS.find((p) => p.id === exportPresetId) ??
-      INSTAGRAM_EXPORT_PRESETS[0]!,
+      INSTAGRAM_EXPORT_PRESETS.find((p) => p.id === exportPresetId) ?? INSTAGRAM_EXPORT_PRESETS[0]!,
     [exportPresetId],
   )
 
@@ -340,10 +335,7 @@ export function WorkoutInstagramSharePreviewDialog({
           >
             {previewLoading ? (
               <div className="flex flex-col items-center gap-3 py-10">
-                <Spinner
-                  size="lg"
-                  className="border-white/25 border-t-cyan-400 text-cyan-400"
-                />
+                <Spinner size="lg" className="border-white/25 border-t-cyan-400 text-cyan-400" />
                 <span className="text-sm text-text-tertiary">Aggiornamento anteprima…</span>
               </div>
             ) : previewDataUrl ? (
@@ -354,7 +346,9 @@ export function WorkoutInstagramSharePreviewDialog({
                 className="h-full w-full rounded-xl object-contain shadow-[0_8px_40px_-12px_rgba(0,0,0,0.65)] ring-1 ring-white/10"
               />
             ) : (
-              <p className="px-4 text-center text-sm text-text-tertiary">Anteprima non disponibile</p>
+              <p className="px-4 text-center text-sm text-text-tertiary">
+                Anteprima non disponibile
+              </p>
             )}
           </div>
 

@@ -2,16 +2,9 @@
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import {
-  Save,
-  RotateCcw,
-  Copy,
-  AlertCircle,
-  UtensilsCrossed,
-  Target,
-  Loader2,
-} from 'lucide-react'
+import { Save, RotateCcw, Copy, AlertCircle, UtensilsCrossed, Target, Loader2 } from 'lucide-react'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -26,6 +19,7 @@ import {
   DialogFooter,
 } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
+import { CookiePreferencesSettingRow } from '@/components/shared/cookie-preferences-setting-row'
 import {
   NUTRITION_TABLES,
   nutritionFrom,
@@ -35,7 +29,6 @@ import {
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('app:dashboard:nutrizionista:impostazioni')
-const LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
 
 const MACRO_DISTRIBUTION_OPTIONS = [
   { value: 'equal', label: 'Uguale' },
@@ -151,10 +144,14 @@ export default function NutrizionistaImpostazioniPage() {
         email: string | null
       }[] = []
       for (const idChunk of chunkForSupabaseIn(athleteIds)) {
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesErr } = await supabase
           .from('profiles')
           .select('id, nome, cognome, email')
           .in('id', idChunk)
+        if (profilesErr) {
+          logger.error('Impostazioni nutrizionista: profili', profilesErr)
+          throw profilesErr
+        }
         profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
       }
       const profilesMap = new Map(
@@ -179,6 +176,10 @@ export default function NutrizionistaImpostazioniPage() {
         const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
           .select('id, athlete_id, created_at')
           .in('athlete_id', idChunk)
+        if (groupsRes.error) {
+          logger.error('Impostazioni nutrizionista: plan groups', groupsRes.error)
+          throw groupsRes.error
+        }
         groupsMerged.push(...((groupsRes.data ?? []) as typeof plans))
       }
       setPlans(groupsMerged)
@@ -205,10 +206,15 @@ export default function NutrizionistaImpostazioniPage() {
         setVersions([])
         return
       }
-      const { data } = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+      const { data, error: verErr } = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
         .select('id, plan_id, version_number, status, created_at')
         .eq('plan_id', planId)
         .order('version_number', { ascending: false })
+      if (verErr) {
+        logger.error('Impostazioni: versioni piano', verErr)
+        setVersions([])
+        return
+      }
       setVersions((data ?? []) as typeof versions)
     },
     [supabase],
@@ -240,12 +246,18 @@ export default function NutrizionistaImpostazioniPage() {
             .eq('version_id', versionId)
             .maybeSingle(),
         ])
-        const config = configRes.data as {
+        if (configRes.error) {
+          logger.warn('auto_config versione', configRes.error)
+        }
+        if (settingsRes.error) {
+          logger.warn('adaptive_settings versione', settingsRes.error)
+        }
+        const config = (configRes.error ? null : configRes.data) as {
           meals_per_day?: number
           macro_distribution_mode?: string
           carb_cycling?: boolean
         } | null
-        const settings = settingsRes.data as {
+        const settings = (settingsRes.error ? null : settingsRes.data) as {
           goal_type?: string
           weekly_target_percent?: number
           tolerance_percent?: number
@@ -394,11 +406,7 @@ export default function NutrizionistaImpostazioniPage() {
   }, [adaptiveSettings])
 
   if (showLoader) {
-    return (
-      <div className={LOADING_CLASS}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <StaffDashboardGuardSkeleton />
   }
 
   return (
@@ -442,7 +450,7 @@ export default function NutrizionistaImpostazioniPage() {
       }
     >
       {error && (
-        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between flex-wrap gap-2">
           <span>{error}</span>
           <button
             type="button"
@@ -532,8 +540,12 @@ export default function NutrizionistaImpostazioniPage() {
       {selectedVersionId && (
         <>
           {versionLoading ? (
-            <div className={LOADING_CLASS}>
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div
+              className="flex min-h-[min(40vh,320px)] items-center justify-center rounded-xl border border-border bg-background-secondary/30"
+              aria-busy="true"
+              aria-label="Caricamento"
+            >
+              <Loader2 className="h-8 w-8 animate-spin text-teal-400/80" />
             </div>
           ) : (
             <>
@@ -747,6 +759,10 @@ export default function NutrizionistaImpostazioniPage() {
           Seleziona atleta, piano e versione per configurare le impostazioni.
         </div>
       )}
+
+      <div className="mt-6 space-y-4">
+        <CookiePreferencesSettingRow />
+      </div>
 
       <Dialog open={duplicateModalOpen} onOpenChange={setDuplicateModalOpen}>
         <DialogContent className="max-w-sm">

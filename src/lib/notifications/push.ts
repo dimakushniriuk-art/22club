@@ -78,9 +78,9 @@ export async function registerPushToken(
       is_active: true,
     }
 
-    // Workaround necessario per inferenza tipo Supabase
+    // Workaround: tabella non nei tipi generati
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('user_push_tokens') as any)
+    const { data, error } = await (supabase as any).from('user_push_tokens')
       .upsert(payload)
       .select('id, user_id, device_type, token, is_active, created_at, updated_at')
       .single()
@@ -107,9 +107,8 @@ export async function registerPushToken(
 export async function deactivatePushToken(userId: string, token: string) {
   try {
     const supabase = getSupabaseClient()
-    // Workaround necessario per inferenza tipo Supabase
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('user_push_tokens') as any)
+    const { error } = await (supabase as any).from('user_push_tokens')
       .update({ is_active: false } as Record<string, unknown>)
       .eq('user_id', userId)
       .eq('token', token)
@@ -184,8 +183,8 @@ export async function getActivePushTokens(
     }
 
     // Per altri device types (iOS, Android), leggi da user_push_tokens
-    const { data: otherTokens, error: tokensError } = await supabase
-      .from('user_push_tokens')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: otherTokens, error: tokensError } = await (supabase as any).from('user_push_tokens')
       .select('token, device_type')
       .eq('user_id', userId)
       .eq('is_active', true)
