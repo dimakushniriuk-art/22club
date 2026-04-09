@@ -7,6 +7,7 @@ import { queryKeys } from '@/lib/query-keys'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { normalizeAthleteAppointmentsQueryParams } from '@/lib/appointments/athlete-query-params'
+import { isLikelyNetworkFetchFailure } from '@/lib/is-network-fetch-error'
 
 const logger = createLogger('useAthleteAppointments')
 
@@ -105,12 +106,19 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       })
 
       if (fetchError) {
-        logger.error('Errore query appointments', fetchError, {
-          code: fetchError.code,
-          message: fetchError.message,
-          details: fetchError.details,
-          hint: fetchError.hint,
-        })
+        if (isLikelyNetworkFetchFailure(fetchError)) {
+          logger.warn('Query appointments: rete non disponibile o richiesta fallita', {
+            message: fetchError.message,
+            details: fetchError.details,
+          })
+        } else {
+          logger.error('Errore query appointments', fetchError, {
+            code: fetchError.code,
+            message: fetchError.message,
+            details: fetchError.details,
+            hint: fetchError.hint,
+          })
+        }
         throw fetchError
       }
 
@@ -178,11 +186,25 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
     enabled: !!userId, // Query abilitata solo se userId è presente
   })
 
-  // Converti error di React Query in string per compatibilità
+  // Converti error di React Query in string per compatibilità (PostgREST: message + details)
   const error = queryError
     ? queryError instanceof Error
       ? queryError.message
-      : 'Errore nel caricamento degli appuntamenti'
+      : typeof queryError === 'object' &&
+          queryError !== null &&
+          'message' in queryError &&
+          typeof (queryError as { message: unknown }).message === 'string'
+        ? (() => {
+            const m = (queryError as { message: string }).message
+            const d =
+              'details' in queryError &&
+              typeof (queryError as { details: unknown }).details === 'string'
+                ? (queryError as { details: string }).details
+                : ''
+            const combined = [m, d].filter(Boolean).join(' ')
+            return combined || 'Errore nel caricamento degli appuntamenti'
+          })()
+        : 'Errore nel caricamento degli appuntamenti'
     : null
 
   // Realtime subscription per aggiornamenti automatici

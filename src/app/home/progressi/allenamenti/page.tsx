@@ -43,7 +43,7 @@ function StatisticheAllenamentiContent() {
   const { data, isLoading, error } = useWorkoutExerciseStats(athleteUserId)
   const handleBack = useCallback(() => router.back(), [router])
 
-  // Redirect se non autenticato (solo dopo che loading Ã¨ finito)
+  // Redirect se non autenticato (solo dopo che loading è finito)
   useEffect(() => {
     if (!loading && (!isValidUser || !user || !isValidProfile(user))) {
       router.push('/login')
@@ -91,12 +91,12 @@ function StatisticheAllenamentiContent() {
           <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
             {isLoading ? null : error ? (
               <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
-                <div className="mb-3 text-4xl opacity-50">âŒ</div>
+                <div className="mb-3 text-4xl opacity-50">❌</div>
                 <p className="text-text-primary text-sm font-medium min-[834px]:text-base">
                   Errore nel caricamento
                 </p>
                 <p className="text-text-tertiary text-xs min-[834px]:text-sm mt-1.5">
-                  Riprova piÃ¹ tardi
+                  Riprova più tardi
                 </p>
               </div>
             ) : !data || data.total_exercises === 0 ? (

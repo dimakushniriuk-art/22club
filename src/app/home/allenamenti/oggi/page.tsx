@@ -248,7 +248,7 @@ function ExerciseMediaDisplay({
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const videoRef = React.useRef<HTMLVideoElement>(null)
 
-  // Su mobile l'autoplay puÃ² essere bloccato: avvia play() via JS e, se fallisce, mostra overlay Play
+  // Su mobile l'autoplay può essere bloccato: avvia play() via JS e, se fallisce, mostra overlay Play
   const tryPlay = React.useCallback(() => {
     const el = videoRef.current
     if (!el) return
@@ -803,14 +803,14 @@ export function AllenamentiOggiPageContent() {
     allenamentiHeaderBackHref,
   ])
 
-  // Carica workout session quando user Ã¨ disponibile
+  // Carica workout session quando user è disponibile
   useEffect(() => {
     let cancelled = false
     if (!authLoading && athleteProfileId) {
       setLoading(true)
       setError(null)
 
-      // Se c'Ã¨ un workout_plan_id nella query, carica quella scheda specifica
+      // Se c'è un workout_plan_id nella query, carica quella scheda specifica
       if (workoutPlanId) {
         logger.debug('Caricamento scheda specifica', {
           athleteProfileId,
@@ -876,7 +876,7 @@ export function AllenamentiOggiPageContent() {
         sessionStartedAtRef.current = Date.now()
       }
 
-      // Se Ã¨ specificato un exercise_id, trova il blocco contenente l'esercizio e imposta currentBlockIndex
+      // Se è specificato un exercise_id, trova il blocco contenente l'esercizio e imposta currentBlockIndex
       if (exerciseId && currentWorkout.exercises && currentWorkout.exercises.length > 0) {
         const exerciseIndex = currentWorkout.exercises.findIndex(
           (ex) => (ex as { id?: string }).id === exerciseId,
@@ -911,8 +911,8 @@ export function AllenamentiOggiPageContent() {
           if (blockIndex >= 0) setCurrentBlockIndex(blockIndex)
         }
       } else if (workoutDayId && currentWorkout.exercises && currentWorkout.exercises.length > 0) {
-        // Se Ã¨ specificato workout_day_id, assicuriamoci che il giorno corrisponda
-        // (questo Ã¨ giÃ  gestito da fetchCurrentWorkout, ma verifichiamo comunque)
+        // Se è specificato workout_day_id, assicuriamoci che il giorno corrisponda
+        // (questo è già gestito da fetchCurrentWorkout, ma verifichiamo comunque)
         if (currentWorkout.workout_day_id !== workoutDayId) {
           logger.warn('workout_day_id non corrisponde', {
             expected: workoutDayId,
@@ -985,7 +985,7 @@ export function AllenamentiOggiPageContent() {
     }
   }, [workoutSession?.workout_id, workoutSession?.workout_day_id, workoutSession])
 
-  /** Blocchi: ogni blocco Ã¨ un esercizio singolo o un circuito (N esercizi = 1 blocco) */
+  /** Blocchi: ogni blocco è un esercizio singolo o un circuito (N esercizi = 1 blocco) */
   const blocks = useMemo(() => {
     const exercises = workoutSession?.exercises ?? []
     const out: { startIndex: number; endIndex: number }[] = []
@@ -1374,13 +1374,13 @@ export function AllenamentiOggiPageContent() {
       const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
       const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
 
-      // Verifica se c'Ã¨ execution_time_sec nel set o nell'esercizio
+      // Verifica se c'è execution_time_sec nel set o nell'esercizio
       const executionTime =
         ((activeSet?.execution_time_sec ?? currentExercise.execution_time_sec ?? null) as
           | number
           | null) ?? null
 
-      // Mostra il timer di esecuzione inline solo se execution_time_sec Ã¨ presente e > 0
+      // Mostra il timer di esecuzione inline solo se execution_time_sec è presente e > 0
       // Mantieni il timer di recupero visibile (a 0 = completato) e mostra anche il timer di esecuzione
       if (executionTime !== null && executionTime > 0) {
         // NON resettare il timer di recupero - mantienilo a 0 (completato) per mostrare entrambi i timer
@@ -1400,14 +1400,14 @@ export function AllenamentiOggiPageContent() {
         return
       }
 
-      // Se il timer Ã¨ giÃ  in esecuzione, resettalo invece di metterlo in pausa (stessa logica del timer di recupero)
+      // Se il timer è già in esecuzione, resettalo invece di metterlo in pausa (stessa logica del timer di recupero)
       if (inlineExecutionTimerRunning && inlineExecutionTimerSeconds !== null) {
         timerChainModeRef.current = null
         resetInlineExecutionTimer()
         return
       }
 
-      // Se il timer Ã¨ a 0 (completato), resettalo (stessa logica del timer di recupero)
+      // Se il timer è a 0 (completato), resettalo (stessa logica del timer di recupero)
       if (inlineExecutionTimerSeconds === 0) {
         const restPhaseAfterExecution =
           timerChainModeRef.current === 'execution_then_rest' &&
@@ -1421,7 +1421,7 @@ export function AllenamentiOggiPageContent() {
         return
       }
 
-      // Se il timer non Ã¨ ancora stato avviato, avvialo
+      // Se il timer non è ancora stato avviato, avvialo
       if (inlineExecutionTimerSeconds === null) {
         const sets = (currentExercise.sets as Record<string, unknown>[]) || []
         const currentSetIndex = sets.findIndex((s) => !isWorkoutSetCompleted(s))
@@ -1437,7 +1437,7 @@ export function AllenamentiOggiPageContent() {
           setInlineExecutionPreRollRemaining(5)
         }
       } else {
-        // Se il timer esiste ma non Ã¨ in esecuzione, riavvialo (stessa logica del timer di recupero)
+        // Se il timer esiste ma non è in esecuzione, riavvialo (stessa logica del timer di recupero)
         setInlineExecutionTimerRunning((prev) => !prev)
       }
     }
@@ -1458,7 +1458,7 @@ export function AllenamentiOggiPageContent() {
       return
     }
     if (currentExercise) {
-      // Se il timer Ã¨ giÃ  in esecuzione, resettalo invece di metterlo in pausa
+      // Se il timer è già in esecuzione, resettalo invece di metterlo in pausa
       if (inlineTimerRunning && inlineTimerSeconds !== null) {
         resetInlineTimer()
         return
@@ -1472,7 +1472,7 @@ export function AllenamentiOggiPageContent() {
       const timerValue =
         ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as number | null) ??
         0
-      // Se il valore Ã¨ 0, usa 60 come default pratico per il timer (0 secondi non ha senso per un timer)
+      // Se il valore è 0, usa 60 come default pratico per il timer (0 secondi non ha senso per un timer)
       const finalValue = timerValue > 0 ? timerValue : 60
 
       if (inlineTimerSeconds === null) {
@@ -1568,7 +1568,7 @@ export function AllenamentiOggiPageContent() {
             | null) ?? 0
         const finalValue = newTimerValue > 0 ? newTimerValue : 60
 
-        // Aggiorna il timer solo se Ã¨ fermo - resetta per usare il nuovo valore
+        // Aggiorna il timer solo se è fermo - resetta per usare il nuovo valore
         setInlineTimerSeconds(finalValue)
       }
     }
@@ -1579,7 +1579,7 @@ export function AllenamentiOggiPageContent() {
     if (inlineTimerRunning && inlineTimerSeconds !== null && inlineTimerSeconds > 0) {
       const interval = setInterval(() => {
         setInlineTimerSeconds((prev) => {
-          // Suoni ultimi 5 secondi: volume crescente; ultimo secondo = suono piÃ¹ prolungato
+          // Suoni ultimi 5 secondi: volume crescente; ultimo secondo = suono più prolungato
           // (suoniamo in base al valore prima del decremento, quindi prev 2 = ultimo secondo)
           if (prev !== null && prev > 1 && prev <= 6) {
             if (prev === 2) {
@@ -2126,7 +2126,7 @@ export function AllenamentiOggiPageContent() {
     }
   }
 
-  // Early return se user non Ã¨ valido
+  // Early return se user non è valido
   if (!authLoading && (!user || !isValidUser)) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
@@ -2259,7 +2259,12 @@ export function AllenamentiOggiPageContent() {
       <div
         ref={scrollContainerRef}
         onScroll={handleScrollOggi}
-        className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6 min-[834px]:pb-[calc(6rem+env(safe-area-inset-bottom,0px))]"
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6',
+          workoutSession && isWorkoutComplete
+            ? 'pb-[calc(9rem+env(safe-area-inset-bottom,0px))] min-[834px]:pb-[calc(9rem+env(safe-area-inset-bottom,0px))]'
+            : 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] min-[834px]:pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))]',
+        )}
       >
         <div className="mx-auto w-full max-w-lg space-y-4 min-[834px]:space-y-5 min-[1100px]:max-w-3xl">
           {/* Esercizio corrente */}
@@ -2856,16 +2861,6 @@ export function AllenamentiOggiPageContent() {
                               </Button>
                             )
                           })()}
-                          {workoutSession && isWorkoutComplete && (
-                            <Button
-                              onClick={finishWorkout}
-                              disabled={completingWorkout}
-                              className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200"
-                            >
-                              <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                              Completa allenamento
-                            </Button>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -2958,9 +2953,9 @@ export function AllenamentiOggiPageContent() {
                             // - Ripetizioni: sempre mostrata (campo standard per tutti gli esercizi)
                             // - Peso: sempre mostrata (campo standard per tutti gli esercizi)
                             // - Tempo: mostrata solo se almeno un set ha execution_time_sec > 0
-                            // - Recupero: sempre mostrata se l'esercizio ha rest_timer_sec (anche se 0, l'utente puÃ² inserire)
-                            const hasReps = true // Sempre mostrata perchÃ© Ã¨ un campo standard
-                            const hasWeight = true // Sempre mostrata perchÃ© Ã¨ un campo standard
+                            // - Recupero: sempre mostrata se l'esercizio ha rest_timer_sec (anche se 0, l'utente può inserire)
+                            const hasReps = true // Sempre mostrata perché è un campo standard
+                            const hasWeight = true // Sempre mostrata perché è un campo standard
                             const hasTime = sets.some(
                               (s) =>
                                 (s.execution_time_sec as number | null) !== null &&
@@ -3423,17 +3418,6 @@ export function AllenamentiOggiPageContent() {
                             </Button>
                           )
                         })()}
-                        {/* Pulsante fine allenamento - Mostra solo quando tutti gli esercizi sono completati */}
-                        {workoutSession && isWorkoutComplete && (
-                          <Button
-                            onClick={finishWorkout}
-                            disabled={completingWorkout}
-                            className="h-10 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold w-full transition-all duration-200 hover:scale-[1.02]"
-                          >
-                            <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                            Completa allenamento
-                          </Button>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -3443,18 +3427,17 @@ export function AllenamentiOggiPageContent() {
         </div>
       </div>
 
-      {/* Navigazione esercizi — fissa in basso (viewport o pannello staff) */}
+      {/* Navigazione esercizi — fissa in basso (viewport o pane staff); area sopra scrollabile */}
       <div
         className={cn(
-          'pointer-events-none z-20 flex justify-center px-3 sm:px-4 min-[834px]:px-6',
-          workoutsPane ? 'absolute bottom-0 left-0 right-0' : 'fixed bottom-0 left-0 right-0',
+          'z-20 flex w-full min-w-0 flex-col bg-background px-3 pt-2 sm:px-4 min-[834px]:px-6',
+          workoutsPane ? 'absolute inset-x-0 bottom-0' : 'fixed inset-x-0 bottom-0',
         )}
       >
-        <div className="pointer-events-auto mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
-          <header
-            className="relative w-full overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] min-[834px]:p-5"
-            style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
-          >
+        <header
+          className="relative w-full min-w-0 overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] min-[834px]:p-5"
+          style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
+        >
             <div
               className="absolute inset-x-0 top-0 h-px"
               style={{
@@ -3491,8 +3474,19 @@ export function AllenamentiOggiPageContent() {
                 <ChevronRight className="ml-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
               </Button>
             </div>
-          </header>
-        </div>
+            {workoutSession && isWorkoutComplete ? (
+              <div className="relative z-10 mt-3 w-full min-w-0">
+                <Button
+                  onClick={finishWorkout}
+                  disabled={completingWorkout}
+                  className="h-10 w-full min-h-11 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold transition-all duration-200 hover:scale-[1.02]"
+                >
+                  <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                  Completa allenamento
+                </Button>
+              </div>
+            ) : null}
+        </header>
       </div>
 
       {/* Timer recupero/esecuzione: solo in overlay (aperto dal Play in tabella) */}
@@ -3835,7 +3829,7 @@ export function AllenamentiOggiPageContent() {
             ((activeSet?.rest_timer_sec ?? currentExercise.rest_timer_sec ?? null) as
               | number
               | null) ?? 0
-          // Se il valore Ã¨ 0, usa 60 come default pratico per il timer (0 secondi non ha senso per un timer)
+          // Se il valore è 0, usa 60 come default pratico per il timer (0 secondi non ha senso per un timer)
           const timerValue = timerValueFromTable > 0 ? timerValueFromTable : 60
 
           return (

@@ -35,7 +35,7 @@ export type InstagramShareSections = {
 }
 
 export const DEFAULT_INSTAGRAM_SHARE_SECTIONS: InstagramShareSections = {
-  topSafeZone: true,
+  topSafeZone: false,
   logo: true,
   dateExecution: true,
   riepilogoCompactKpis: true,
@@ -158,10 +158,14 @@ function compactKpiTile(icon: ReactNode, label: string, value: ReactNode, subtit
 const fontStack =
   'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
 
-/** Spazio vuoto in cima al PNG (1080×1350) per header/status e UI del feed Instagram. */
+/** Spazio opzionale in cima (es. safe area feed); disattivato di default per Storie a tutto schermo. */
 export const INSTAGRAM_SHARE_TOP_SAFE_PX = 128
 
-const colGap = 22
+/** Dimensioni capture html2canvas (9:16, Storie Instagram). */
+export const INSTAGRAM_SHARE_CAPTURE_WIDTH = 1080
+export const INSTAGRAM_SHARE_CAPTURE_HEIGHT = 1920
+
+const colGap = 16
 
 /** Anteprima cella: immagine → se errore o assente, video (frame per html2canvas) → nome. */
 function InstagramExerciseShareMedia({
@@ -270,7 +274,7 @@ function InstagramExerciseShareMedia({
 }
 
 /**
- * Template 1080×1350 px (rapporto 4:5, post feed Instagram).
+ * Template 1080×1920 px (9:16, Storie Instagram).
  * Render off-screen e catturato con html2canvas.
  */
 export const WorkoutInstagramShareTarget = forwardRef<
@@ -319,11 +323,11 @@ export const WorkoutInstagramShareTarget = forwardRef<
         style={{
           boxSizing: 'border-box',
           display: 'flex',
-          width: 1080,
-          height: 1350,
+          width: INSTAGRAM_SHARE_CAPTURE_WIDTH,
+          height: INSTAGRAM_SHARE_CAPTURE_HEIGHT,
           flexDirection: 'column',
           gap: colGap,
-          padding: '24px 40px 32px',
+          padding: '20px 32px 24px',
           background: `linear-gradient(to bottom, ${S.bgTop}, ${S.bgBottom})`,
           fontFamily: fontStack,
           color: S.text,
@@ -514,7 +518,6 @@ export const WorkoutInstagramShareTarget = forwardRef<
               style={{
                 height: 14,
                 width: '100%',
-                maxWidth: 560,
                 overflow: 'hidden',
                 borderRadius: 9999,
                 background: S.barTrack,
@@ -533,7 +536,6 @@ export const WorkoutInstagramShareTarget = forwardRef<
               style={{
                 display: 'flex',
                 width: '100%',
-                maxWidth: 560,
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 fontSize: 20,
@@ -553,7 +555,7 @@ export const WorkoutInstagramShareTarget = forwardRef<
               borderRadius: 16,
               border: `1px solid ${S.border}`,
               background: S.exercisesBoxBg,
-              padding: '18px 22px',
+              padding: '14px 18px',
               flex: 1,
               minHeight: 0,
               display: 'flex',
@@ -564,9 +566,13 @@ export const WorkoutInstagramShareTarget = forwardRef<
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                  gap: 12,
+                  flex: 1,
+                  minHeight: 0,
                   width: '100%',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gridTemplateRows: 'repeat(4, auto)',
+                  gap: 12,
+                  alignContent: 'start',
                 }}
               >
                 {exerciseLines.map((line, i) => {
@@ -591,7 +597,7 @@ export const WorkoutInstagramShareTarget = forwardRef<
                         style={{
                           position: 'relative',
                           width: '100%',
-                          aspectRatio: '16 / 9',
+                          aspectRatio: '1 / 1',
                           background: 'rgba(0,0,0,0.35)',
                         }}
                       >

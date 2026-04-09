@@ -134,8 +134,9 @@ export function LoginCard({
               className="space-y-5 min-[834px]:space-y-6"
               noValidate
               aria-describedby={
-                [error ? errorId : null, infoMessage ? LOGIN_INFO_ID : null].filter(Boolean).join(' ') ||
-                undefined
+                [error ? errorId : null, infoMessage ? LOGIN_INFO_ID : null]
+                  .filter(Boolean)
+                  .join(' ') || undefined
               }
             >
               {infoMessage != null && infoMessage !== '' && (

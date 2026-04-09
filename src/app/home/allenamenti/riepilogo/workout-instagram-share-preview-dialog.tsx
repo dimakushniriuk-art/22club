@@ -18,13 +18,15 @@ import {
 import {
   WorkoutInstagramShareTarget,
   DEFAULT_INSTAGRAM_SHARE_SECTIONS,
+  INSTAGRAM_SHARE_CAPTURE_HEIGHT,
+  INSTAGRAM_SHARE_CAPTURE_WIDTH,
   type WorkoutInstagramShareTargetProps,
 } from './workout-instagram-share-target'
 
 const logger = createLogger('app:home:allenamenti:riepilogo:instagram-preview')
 
-const SOURCE_W = 1080
-const SOURCE_H = 1350
+const SOURCE_W = INSTAGRAM_SHARE_CAPTURE_WIDTH
+const SOURCE_H = INSTAGRAM_SHARE_CAPTURE_HEIGHT
 
 export type InstagramExportTransform = 'none' | 'crop_center_square' | 'cover' | 'contain'
 
@@ -37,50 +39,16 @@ export type InstagramExportPreset = {
   transform: InstagramExportTransform
 }
 
-/** Formati tipici foto/video feed, Storie e copertina IGTV (pixel consigliati da Instagram). */
+/** Export unico formato Storie (pixel consigliati da Instagram). */
 export const INSTAGRAM_EXPORT_PRESETS: InstagramExportPreset[] = [
-  {
-    id: 'feed_45',
-    label: 'Verticale 4:5',
-    sub: '1080×1350',
-    width: 1080,
-    height: 1350,
-    transform: 'none',
-  },
-  {
-    id: 'feed_11',
-    label: 'Quadrato 1:1',
-    sub: '1080×1080',
-    width: 1080,
-    height: 1080,
-    /** Contain: tutto il contenuto 4:5 visibile, bande laterali se serve. */
-    transform: 'contain',
-  },
-  {
-    id: 'feed_191',
-    label: 'Orizzontale 1.91:1',
-    sub: '1080×608',
-    width: 1080,
-    height: 608,
-    /** Contain: nessun ritaglio; bande sopra/sotto sul canvas orizzontale. */
-    transform: 'contain',
-  },
   {
     id: 'story_916',
     label: 'Storie 9:16',
     sub: '1080×1920',
     width: 1080,
     height: 1920,
-    /** Contain: card 4:5 intera centrata, bande sopra/sotto (come letterbox). */
-    transform: 'contain',
-  },
-  {
-    id: 'igtv_cover',
-    label: 'Copertina IGTV',
-    sub: '420×654',
-    width: 420,
-    height: 654,
-    transform: 'contain',
+    /** Canvas sorgente già 9:16: nessuna letterbox. */
+    transform: 'none',
   },
 ]
 
@@ -314,7 +282,7 @@ export function WorkoutInstagramSharePreviewDialog({
             </span>
           </div>
           <DialogDescription className="text-left text-text-secondary">
-            Scegli il formato, controlla l’anteprima, poi scarica o pubblica su Instagram.
+            Controlla l’anteprima, poi scarica o pubblica su Instagram (formato Storie 9:16).
           </DialogDescription>
         </DialogHeader>
 
@@ -352,39 +320,41 @@ export function WorkoutInstagramSharePreviewDialog({
             )}
           </div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-              Formato export
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {INSTAGRAM_EXPORT_PRESETS.map((p) => {
-                const selected = p.id === exportPresetId
-                return (
-                  <Button
-                    key={p.id}
-                    type="button"
-                    size="sm"
-                    variant={selected ? 'default' : 'outline'}
-                    className={cn(
-                      'h-auto min-h-9 flex-col gap-0.5 py-2 px-3 text-left sm:flex-row sm:items-center sm:gap-2',
-                      selected && 'ring-2 ring-cyan-500/40',
-                    )}
-                    onClick={() => setExportPresetId(p.id)}
-                  >
-                    <span className="text-xs font-semibold leading-tight">{p.label}</span>
-                    <span
+          {INSTAGRAM_EXPORT_PRESETS.length > 1 ? (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                Formato export
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {INSTAGRAM_EXPORT_PRESETS.map((p) => {
+                  const selected = p.id === exportPresetId
+                  return (
+                    <Button
+                      key={p.id}
+                      type="button"
+                      size="sm"
+                      variant={selected ? 'default' : 'outline'}
                       className={cn(
-                        'text-[10px] font-medium leading-tight',
-                        selected ? 'text-primary-foreground/80' : 'text-text-tertiary',
+                        'h-auto min-h-9 flex-col gap-0.5 py-2 px-3 text-left sm:flex-row sm:items-center sm:gap-2',
+                        selected && 'ring-2 ring-cyan-500/40',
                       )}
+                      onClick={() => setExportPresetId(p.id)}
                     >
-                      {p.sub}
-                    </span>
-                  </Button>
-                )
-              })}
+                      <span className="text-xs font-semibold leading-tight">{p.label}</span>
+                      <span
+                        className={cn(
+                          'text-[10px] font-medium leading-tight',
+                          selected ? 'text-primary-foreground/80' : 'text-text-tertiary',
+                        )}
+                      >
+                        {p.sub}
+                      </span>
+                    </Button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="pointer-events-none fixed left-[-14000px] top-0 z-0" aria-hidden>

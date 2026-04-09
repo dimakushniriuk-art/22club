@@ -25,9 +25,36 @@ vi.mock('@/lib/analytics', async () => {
 describe('Analytics functions', () => {
   const mockAnalyticsData = {
     trend: [
-      { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0 },
-      { day: '2024-01-02', allenamenti: 15, documenti: 3, ore_totali: 7.5 },
-      { day: '2024-01-03', allenamenti: 12, documenti: 1, ore_totali: 6.0 },
+      {
+        day: '2024-01-01',
+        allenamenti: 10,
+        documenti: 2,
+        ore_totali: 5.0,
+        prenotati: 0,
+        eseguiti: 0,
+        annullati: 0,
+        cancellati: 0,
+      },
+      {
+        day: '2024-01-02',
+        allenamenti: 15,
+        documenti: 3,
+        ore_totali: 7.5,
+        prenotati: 0,
+        eseguiti: 0,
+        annullati: 0,
+        cancellati: 0,
+      },
+      {
+        day: '2024-01-03',
+        allenamenti: 12,
+        documenti: 1,
+        ore_totali: 6.0,
+        prenotati: 0,
+        eseguiti: 0,
+        annullati: 0,
+        cancellati: 0,
+      },
     ],
     distribution: [
       { type: 'allenamento', count: 30, percentage: 60 },
@@ -109,8 +136,26 @@ describe('Analytics functions', () => {
   describe('calculateGrowthMetrics', () => {
     it('should calculate growth metrics correctly', () => {
       const trend = [
-        { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0 },
-        { day: '2024-01-02', allenamenti: 15, documenti: 3, ore_totali: 7.5 },
+        {
+          day: '2024-01-01',
+          allenamenti: 10,
+          documenti: 2,
+          ore_totali: 5.0,
+          prenotati: 0,
+          eseguiti: 0,
+          annullati: 0,
+          cancellati: 0,
+        },
+        {
+          day: '2024-01-02',
+          allenamenti: 15,
+          documenti: 3,
+          ore_totali: 7.5,
+          prenotati: 0,
+          eseguiti: 0,
+          annullati: 0,
+          cancellati: 0,
+        },
       ]
 
       vi.mocked(calculateGrowthMetrics).mockReturnValue({
@@ -147,10 +192,11 @@ describe('Analytics functions', () => {
 
   describe('filterByPeriod', () => {
     it('should filter data by week', () => {
+      const z = { prenotati: 0, eseguiti: 0, annullati: 0, cancellati: 0 }
       const data = [
-        { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0 },
-        { day: '2024-01-08', allenamenti: 15, documenti: 3, ore_totali: 7.5 },
-        { day: '2024-01-15', allenamenti: 12, documenti: 1, ore_totali: 6.0 },
+        { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0, ...z },
+        { day: '2024-01-08', allenamenti: 15, documenti: 3, ore_totali: 7.5, ...z },
+        { day: '2024-01-15', allenamenti: 12, documenti: 1, ore_totali: 6.0, ...z },
       ]
 
       vi.mocked(filterByPeriod).mockReturnValue([data[0], data[1]])
@@ -162,10 +208,11 @@ describe('Analytics functions', () => {
     })
 
     it('should filter data by month', () => {
+      const z = { prenotati: 0, eseguiti: 0, annullati: 0, cancellati: 0 }
       const data = [
-        { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0 },
-        { day: '2024-02-01', allenamenti: 15, documenti: 3, ore_totali: 7.5 },
-        { day: '2024-03-01', allenamenti: 12, documenti: 1, ore_totali: 6.0 },
+        { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0, ...z },
+        { day: '2024-02-01', allenamenti: 15, documenti: 3, ore_totali: 7.5, ...z },
+        { day: '2024-03-01', allenamenti: 12, documenti: 1, ore_totali: 6.0, ...z },
       ]
 
       vi.mocked(filterByPeriod).mockReturnValue([data[0]])

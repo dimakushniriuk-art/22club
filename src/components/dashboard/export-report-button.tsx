@@ -2,20 +2,25 @@
 
 import { Button } from '@/components/ui'
 import { FileText } from 'lucide-react'
-import { buildAnalyticsReportPdfBlob } from '@/lib/analytics-export'
+import { buildAnalyticsReportPdfBlob, buildTrainerAnalyticsReportPdfBlob } from '@/lib/analytics-export'
 import { createLogger } from '@/lib/logger'
 import { useToast } from '@/components/ui/toast'
 import type { AnalyticsData } from '@/lib/analytics'
+import type { TrainerAnalyticsReport } from '@/lib/trainer-analytics'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('components:dashboard:export-report-button')
 
 interface ExportReportButtonProps {
-  analyticsData: AnalyticsData
+  legacyAnalyticsData: AnalyticsData
+  trainerReport: TrainerAnalyticsReport | null
 }
 
-export function ExportReportButton({ analyticsData }: ExportReportButtonProps) {
+export function ExportReportButton({
+  legacyAnalyticsData,
+  trainerReport,
+}: ExportReportButtonProps) {
   const { addToast } = useToast()
   const {
     open: pdfOpen,
@@ -30,7 +35,9 @@ export function ExportReportButton({ analyticsData }: ExportReportButtonProps) {
   const handleExport = async () => {
     setPdfLoading(true)
     try {
-      const blob = await buildAnalyticsReportPdfBlob(analyticsData)
+      const blob = trainerReport
+        ? await buildTrainerAnalyticsReportPdfBlob(trainerReport)
+        : await buildAnalyticsReportPdfBlob(legacyAnalyticsData)
       const fn = `22club-statistiche-${new Date().toISOString().split('T')[0]}.pdf`
       openPdfWithBlob(blob, fn)
     } catch (error) {

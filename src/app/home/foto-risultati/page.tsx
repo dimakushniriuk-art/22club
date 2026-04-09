@@ -48,7 +48,7 @@ export default function FotoRisultatiPage() {
 
   const handleDelete = useCallback(
     async (photo: ProgressPhoto) => {
-      if (!window.confirm("Eliminare questa foto? L'operazione non puÃ² essere annullata.")) return
+      if (!window.confirm("Eliminare questa foto? L'operazione non può essere annullata.")) return
       setDeletingId(photo.id)
       const path = getStoragePathFromProgressPhotoUrl(photo.image_url)
       try {
@@ -148,7 +148,7 @@ export default function FotoRisultatiPage() {
             <div className={`p-6 text-center sm:p-8 ${CARD_DS}`}>
               <div className="mb-3 flex justify-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-2xl">
-                  ðŸ“·
+                  📷
                 </div>
               </div>
               <p className="text-sm text-text-secondary sm:text-base">

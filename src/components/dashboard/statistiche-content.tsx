@@ -25,7 +25,7 @@ export function StatisticheContent({ data, growth }: StatisticheContentProps) {
   return (
     <>
       {/* Export Button */}
-      <ExportReportButton analyticsData={data} />
+      <ExportReportButton legacyAnalyticsData={data} trainerReport={null} />
 
       {/* KPI Metrics */}
       <Suspense

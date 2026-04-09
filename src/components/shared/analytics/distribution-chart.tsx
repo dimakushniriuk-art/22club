@@ -10,6 +10,12 @@ import {
   Legend,
 } from '@/components/charts/client-recharts'
 import type { DistributionData } from '@/lib/analytics'
+import {
+  analyticsChartTheme,
+  chartCategoricalPalette,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
+} from '@/lib/analytics-chart-theme'
 
 interface DistributionChartProps {
   data: DistributionData[]
@@ -17,16 +23,7 @@ interface DistributionChartProps {
   height?: number
 }
 
-const COLORS = [
-  '#14B8A6',
-  '#F59E0B',
-  '#10B981',
-  '#EF4444',
-  '#8B5CF6',
-  '#EC4899',
-  '#06B6D4',
-  '#F97316',
-]
+const ch = analyticsChartTheme.chrome
 
 export const DistributionChart: React.FC<DistributionChartProps> = ({
   data,
@@ -97,21 +94,15 @@ export const DistributionChart: React.FC<DistributionChartProps> = ({
               {processedData.map((_, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
+                  fill={chartCategoricalPalette[index % chartCategoricalPalette.length]}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {...({} as any)}
                 />
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{
-                backgroundColor: '#0F172A',
-                border: '2px solid #14B8A6',
-                borderRadius: '12px',
-                color: '#EAF0F2',
-                boxShadow: '0 10px 25px rgba(20, 184, 166, 0.3)',
-                padding: '12px',
-              }}
+              contentStyle={chartTooltipContentStyle()}
+              labelStyle={chartTooltipLabelStyle()}
               formatter={(
                 value: number | string,
                 name?: string,
@@ -123,7 +114,7 @@ export const DistributionChart: React.FC<DistributionChartProps> = ({
             <Legend
               verticalAlign="bottom"
               height={36}
-              wrapperStyle={{ color: '#A5AFB4', fontSize: '12px' }}
+              wrapperStyle={{ color: ch.legend, fontSize: '12px' }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
@@ -183,7 +174,9 @@ export const HorizontalBarChart: React.FC<{
             >
               <div
                 className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                style={{
+                  backgroundColor: chartCategoricalPalette[index % chartCategoricalPalette.length],
+                }}
               />
               <div className="flex-1">
                 <div className="flex justify-between text-sm">
@@ -197,7 +190,7 @@ export const HorizontalBarChart: React.FC<{
                     className="h-3 rounded-full transition-all duration-300 shadow-md"
                     style={{
                       width: `${item.percentage}%`,
-                      backgroundColor: COLORS[index % COLORS.length],
+                      backgroundColor: chartCategoricalPalette[index % chartCategoricalPalette.length],
                     }}
                   />
                 </div>
@@ -263,7 +256,7 @@ export const VerticalBarChart: React.FC<{
                 className="w-full rounded-t-lg transition-all duration-300 hover:opacity-90 hover:scale-105 shadow-lg"
                 style={{
                   height: `${(item.count / maxCount) * 100}%`,
-                  backgroundColor: COLORS[index % COLORS.length],
+                  backgroundColor: chartCategoricalPalette[index % chartCategoricalPalette.length],
                   minHeight: '20px',
                 }}
               />

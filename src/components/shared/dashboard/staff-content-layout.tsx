@@ -100,12 +100,7 @@ export function StaffContentLayout({
             )}
           </div>
         )}
-        <div
-          className={cn(
-            'flex flex-col space-y-4 sm:space-y-6 md:space-y-8',
-            contentClassName,
-          )}
-        >
+        <div className={cn('flex flex-col space-y-4 sm:space-y-6 md:space-y-8', contentClassName)}>
           {children}
         </div>
       </div>

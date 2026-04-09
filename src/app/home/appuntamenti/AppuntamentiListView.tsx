@@ -66,7 +66,7 @@ export function AppuntamentiListView({
       : 'Nessun appuntamento per i tuoi atleti'
   const emptySubtitle =
     normalizedRole === 'athlete'
-      ? 'Controlla piÃ¹ tardi o contatta il tuo trainer'
+      ? 'Controlla più tardi o contatta il tuo trainer'
       : 'Gli appuntamenti dei tuoi atleti appariranno qui'
 
   const athleteForForm = editingAppointment?.athlete_id
@@ -105,7 +105,7 @@ export function AppuntamentiListView({
           <CardContent className="pt-2.5">
             {futureAppointments.length === 0 ? (
               <div className="py-6 text-center px-2">
-                <div className="mb-3 text-4xl opacity-50">ðŸ“…</div>
+                <div className="mb-3 text-4xl opacity-50">📅</div>
                 <h3 className="text-text-primary mb-2 text-base font-semibold line-clamp-2">
                   {emptyTitle}
                 </h3>

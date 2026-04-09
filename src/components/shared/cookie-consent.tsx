@@ -21,14 +21,16 @@ function collectFocusables(panel: HTMLElement): HTMLElement[] {
   )
 }
 
-function shouldReloadForSentry(prev: CookiePreferencesV1 | null, next: CookiePreferencesV1): boolean {
+function shouldReloadForSentry(
+  prev: CookiePreferencesV1 | null,
+  next: CookiePreferencesV1,
+): boolean {
   if (prev == null) return next.analytics === true
   return prev.analytics !== next.analytics
 }
 
 export function CookieConsent() {
   const [mounted, setMounted] = useState(false)
-  const [prefs, setPrefs] = useState<CookiePreferencesV1 | null>(null)
   const [manageOpen, setManageOpen] = useState(false)
   const [bannerOpen, setBannerOpen] = useState(false)
   const [customizeOpen, setCustomizeOpen] = useState(false)
@@ -42,7 +44,6 @@ export function CookieConsent() {
   useEffect(() => {
     setMounted(true)
     const p = getCookiePreferences()
-    setPrefs(p)
     setBannerOpen(p == null)
     if (p) {
       setDraftAnalytics(p.analytics)
@@ -118,25 +119,20 @@ export function CookieConsent() {
     }
   }, [manageOpen])
 
-  const applyAndPersist = useCallback(
-    (next: Omit<CookiePreferencesV1, 'v' | 'decidedAt'>) => {
-      const prev = getCookiePreferences()
-      const saved = saveCookiePreferences(next)
-      setPrefs(saved)
-      setBannerOpen(false)
-      setManageOpen(false)
-      setCustomizeOpen(false)
-      const willReload =
-        typeof window !== 'undefined' && shouldReloadForSentry(prev, saved)
-      if (willReload) {
-        window.location.reload()
-        return
-      }
-      setLiveMessage('Preferenze cookie salvate.')
-      window.setTimeout(() => setLiveMessage(''), 5000)
-    },
-    [],
-  )
+  const applyAndPersist = useCallback((next: Omit<CookiePreferencesV1, 'v' | 'decidedAt'>) => {
+    const prev = getCookiePreferences()
+    const saved = saveCookiePreferences(next)
+    setBannerOpen(false)
+    setManageOpen(false)
+    setCustomizeOpen(false)
+    const willReload = typeof window !== 'undefined' && shouldReloadForSentry(prev, saved)
+    if (willReload) {
+      window.location.reload()
+      return
+    }
+    setLiveMessage('Preferenze cookie salvate.')
+    window.setTimeout(() => setLiveMessage(''), 5000)
+  }, [])
 
   const handleNecessaryOnly = useCallback(() => {
     applyAndPersist({ analytics: false, functional: true })
@@ -175,13 +171,17 @@ export function CookieConsent() {
             Utilizziamo cookie e dati locali
           </h3>
           <p className="readable-prose-max mx-auto text-sm leading-relaxed text-text-secondary md:mx-0">
-            I <strong className="font-medium text-text-primary">cookie tecnici</strong> (es. sessione
-            Supabase) sono necessari per accedere all&apos;account. Con il tuo consenso possiamo attivare{' '}
-            <strong className="font-medium text-text-primary">statistiche e diagnostica</strong> (es.
-            Sentry: replay e performance) e alcune{' '}
+            I <strong className="font-medium text-text-primary">cookie tecnici</strong> (es.
+            sessione Supabase) sono necessari per accedere all&apos;account. Con il tuo consenso
+            possiamo attivare{' '}
+            <strong className="font-medium text-text-primary">statistiche e diagnostica</strong>{' '}
+            (es. Sentry: replay e performance) e alcune{' '}
             <strong className="font-medium text-text-primary">funzioni opzionali</strong> (es.
             suggerimento installazione app). Dettagli in{' '}
-            <Link href="/privacy#cookie-policy" className="text-primary underline hover:text-primary/90">
+            <Link
+              href="/privacy#cookie-policy"
+              className="text-primary underline hover:text-primary/90"
+            >
               Privacy e Cookie Policy
             </Link>
             .
@@ -194,7 +194,11 @@ export function CookieConsent() {
             aria-expanded={customizeOpen}
           >
             Personalizza
-            {customizeOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {customizeOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
           </button>
 
           {customizeOpen ? (
@@ -207,8 +211,9 @@ export function CookieConsent() {
                   className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-text-secondary">
-                  <span className="font-medium text-text-primary">Analitica e diagnostica</span> — migliora
-                  stabilità e qualità del servizio (Sentry: errori, session replay campionato, metriche).
+                  <span className="font-medium text-text-primary">Analitica e diagnostica</span> —
+                  migliora stabilità e qualità del servizio (Sentry: errori, session replay
+                  campionato, metriche).
                 </span>
               </label>
               <label className="flex cursor-pointer items-start gap-3 touch-manipulation">
@@ -219,8 +224,9 @@ export function CookieConsent() {
                   className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-text-secondary">
-                  <span className="font-medium text-text-primary">Funzionalità opzionali</span> — es.
-                  suggerimento &quot;Aggiungi alla schermata Home&quot; e preferenze salvate sul dispositivo.
+                  <span className="font-medium text-text-primary">Funzionalità opzionali</span> —
+                  es. suggerimento &quot;Aggiungi alla schermata Home&quot; e preferenze salvate sul
+                  dispositivo.
                 </span>
               </label>
               <Button
@@ -290,18 +296,6 @@ export function CookieConsent() {
           aria-label="Consenso cookie"
         >
           {panel({ variant: 'banner' })}
-        </div>
-      ) : null}
-
-      {prefs != null && !bannerOpen ? (
-        <div className="fixed bottom-0 left-0 z-[105] p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={openManage}
-            className="min-h-[40px] rounded-lg border border-white/10 bg-background-secondary/90 px-3 py-2 text-xs font-medium text-text-secondary backdrop-blur-sm hover:border-white/20 hover:text-text-primary touch-manipulation"
-          >
-            Preferenze cookie
-          </button>
         </div>
       ) : null}
 

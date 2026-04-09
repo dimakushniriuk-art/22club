@@ -362,11 +362,7 @@ export default function NutrizionistaAtletiPage() {
             .in('id', idChunk)
           if (inviteProfErr) {
             logger.warn('Profili inviti staff_requests', inviteProfErr)
-            notify(
-              'Impossibile caricare i dati anagrafici per alcuni inviti.',
-              'warning',
-              'Inviti',
-            )
+            notify('Impossibile caricare i dati anagrafici per alcuni inviti.', 'warning', 'Inviti')
             break
           }
           inviteProfileRows.push(
@@ -400,9 +396,9 @@ export default function NutrizionistaAtletiPage() {
           })
         })
       }
-      const fromInvitiCliente = (invitiClienteRes.error
-        ? []
-        : (invitiClienteRes.data ?? [])) as Array<{
+      const fromInvitiCliente = (
+        invitiClienteRes.error ? [] : (invitiClienteRes.data ?? [])
+      ) as Array<{
         invito_id: string
         atleta_id: string
         nome: string | null
@@ -830,283 +826,523 @@ export default function NutrizionistaAtletiPage() {
       }
     >
       {error && (
-          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between gap-2 flex-wrap">
-            <span>{error}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="min-h-[44px] touch-manipulation"
-              onClick={() => void loadData()}
-            >
-              Riprova
-            </Button>
-          </div>
-        )}
-
-        {/* KPI Bar */}
-        {!loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            <KpiCard
-              label="Clienti attivi"
-              value={kpiCounts.atletiAttivi}
-              active={kpiFilter === null && !hasActiveFilters}
-              onClick={() => setKpiFilter(null)}
-              icon={Users}
-            />
-            <KpiCard
-              label="Clienti invitati"
-              value={kpiCounts.clientiInvitat}
-              active={kpiFilter === 'clienti_invitati'}
-              onClick={() => setKpiFilter('clienti_invitati')}
-              icon={UserRoundPlus}
-            />
-            <KpiCard
-              label="Piani in scadenza (7 gg)"
-              value={kpiCounts.pianiInScadenza}
-              active={kpiFilter === 'scadenza'}
-              onClick={() => setKpiFilter('scadenza')}
-              icon={CalendarClock}
-            />
-            <KpiCard
-              label="Senza piano attivo"
-              value={kpiCounts.senzaPiano}
-              active={kpiFilter === 'senza_piano'}
-              onClick={() => setKpiFilter('senza_piano')}
-              icon={ClipboardList}
-            />
-            <KpiCard
-              label="Progressi mancanti (14 gg)"
-              value={kpiCounts.progressiMancanti}
-              active={kpiFilter === 'progressi_mancanti'}
-              onClick={() => setKpiFilter('progressi_mancanti')}
-              icon={TrendingUp}
-            />
-          </div>
-        )}
-
-        {/* Search + Sort + Filters (desktop) */}
-        <div className="flex flex-col sm:flex-row gap-x-4 gap-y-3">
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none"
-              aria-hidden
-            />
-            <Input
-              type="search"
-              placeholder="Cerca cliente per nome o email…"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9 w-full min-h-[44px] touch-manipulation"
-              aria-label="Cerca cliente"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label htmlFor="clienti-sort" className="sr-only">
-              Ordina per
-            </label>
-            <select
-              id="clienti-sort"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="min-h-[44px] rounded-lg bg-background-secondary border border-border text-sm text-text-primary px-4 min-w-[180px] touch-manipulation"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            <div className="flex items-center rounded-lg border border-border overflow-hidden bg-background-secondary/50">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-2.5 min-h-[44px] touch-manipulation transition-colors ${
-                  viewMode === 'grid'
-                    ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                    : 'text-text-secondary hover:bg-white/5'
-                }`}
-                aria-label="Vista a griglia"
-                aria-pressed={viewMode === 'grid'}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={`p-2.5 min-h-[44px] touch-manipulation transition-colors ${
-                  viewMode === 'table'
-                    ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                    : 'text-text-secondary hover:bg-white/5'
-                }`}
-                aria-label="Vista a lista"
-                aria-pressed={viewMode === 'table'}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden lg:inline-flex min-h-[44px] touch-manipulation"
-              onClick={() => setFiltersOpen(true)}
-            >
-              <Filter className="mr-1.5 h-4 w-4" />
-              Filtri
-            </Button>
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="min-h-[44px] touch-manipulation"
-                onClick={clearFilters}
-              >
-                <X className="mr-1 h-4 w-4" />
-                Rimuovi filtri
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Filters Drawer */}
-        <Drawer open={filtersOpen} onOpenChange={setFiltersOpen} side="right" size="md">
-          <DrawerContent
-            className="bg-background border-l border-border"
-            onClose={() => setFiltersOpen(false)}
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 sm:px-4 sm:py-3 text-red-200 text-sm flex items-center justify-between gap-2 flex-wrap">
+          <span>{error}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px] touch-manipulation"
+            onClick={() => void loadData()}
           >
-            <DrawerHeader className="border-b border-border p-5 flex items-center justify-between">
-              <span className="font-semibold">Filtri</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="min-h-[44px] min-w-[44px] touch-manipulation"
-                onClick={() => setFiltersOpen(false)}
-                aria-label="Chiudi"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </DrawerHeader>
-            <DrawerBody className="p-5 space-y-6">
-              <div>
-                <Label className="text-text-secondary text-xs uppercase tracking-wider">
-                  Piano
-                </Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {(['all', 'con', 'senza'] as const).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setFilterPiano(v)}
-                      className={`rounded-full px-4 py-3 text-sm min-h-[44px] touch-manipulation ${
-                        filterPiano === v
-                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                          : 'bg-background-secondary text-text-muted border border-border'
-                      }`}
-                    >
-                      {v === 'all' ? 'Tutti' : v === 'con' ? 'Con piano' : 'Senza piano'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label className="text-text-secondary text-xs uppercase tracking-wider">
-                  Scadenza piano
-                </Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {(['all', '7', '30', 'scaduto'] as const).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setFilterScadenza(v)}
-                      className={`rounded-full px-4 py-3 text-sm min-h-[44px] touch-manipulation ${
-                        filterScadenza === v
-                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                          : 'bg-background-secondary text-text-muted border border-border'
-                      }`}
-                    >
-                      {v === 'all'
-                        ? 'Tutti'
-                        : v === '7'
-                          ? 'Scade entro 7 gg'
-                          : v === '30'
-                            ? 'Scade entro 30 gg'
-                            : 'Scaduto'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label className="text-text-secondary text-xs uppercase tracking-wider">
-                  Progressi
-                </Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {(['all', 'recenti', 'mancanti'] as const).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setFilterProgressi(v)}
-                      className={`rounded-full px-4 py-3 text-sm min-h-[44px] touch-manipulation ${
-                        filterProgressi === v
-                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                          : 'bg-background-secondary text-text-muted border border-border'
-                      }`}
-                    >
-                      {v === 'all'
-                        ? 'Tutti'
-                        : v === 'recenti'
-                          ? 'Ultimi 7 gg'
-                          : 'Nessuno da 14+ gg'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full min-h-[44px] touch-manipulation"
-                onClick={clearFilters}
-              >
-                Azzera filtri
-              </Button>
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
+            Riprova
+          </Button>
+        </div>
+      )}
 
-        {/* Content */}
-        {loading ? null : rows.length === 0 ? (
-          <div className="rounded-xl border border-border bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
-            <Users className="h-12 w-12 text-text-muted shrink-0" aria-hidden />
-            <p className="text-text-primary font-medium">Nessun cliente assegnato</p>
-            <p className="text-text-secondary text-sm max-w-[65ch]">
-              Le assegnazioni vengono gestite da Admin o Trainer. Chiedi l’assegnazione dei clienti
-              all’organizzazione.
-            </p>
-            <Link href="/dashboard/nutrizionista">
-              <Button variant="outline" size="sm" className="min-h-[44px] touch-manipulation mt-2">
-                Torna alla Dashboard
-              </Button>
-            </Link>
+      {/* KPI Bar */}
+      {!loading && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <KpiCard
+            label="Clienti attivi"
+            value={kpiCounts.atletiAttivi}
+            active={kpiFilter === null && !hasActiveFilters}
+            onClick={() => setKpiFilter(null)}
+            icon={Users}
+          />
+          <KpiCard
+            label="Clienti invitati"
+            value={kpiCounts.clientiInvitat}
+            active={kpiFilter === 'clienti_invitati'}
+            onClick={() => setKpiFilter('clienti_invitati')}
+            icon={UserRoundPlus}
+          />
+          <KpiCard
+            label="Piani in scadenza (7 gg)"
+            value={kpiCounts.pianiInScadenza}
+            active={kpiFilter === 'scadenza'}
+            onClick={() => setKpiFilter('scadenza')}
+            icon={CalendarClock}
+          />
+          <KpiCard
+            label="Senza piano attivo"
+            value={kpiCounts.senzaPiano}
+            active={kpiFilter === 'senza_piano'}
+            onClick={() => setKpiFilter('senza_piano')}
+            icon={ClipboardList}
+          />
+          <KpiCard
+            label="Progressi mancanti (14 gg)"
+            value={kpiCounts.progressiMancanti}
+            active={kpiFilter === 'progressi_mancanti'}
+            onClick={() => setKpiFilter('progressi_mancanti')}
+            icon={TrendingUp}
+          />
+        </div>
+      )}
+
+      {/* Search + Sort + Filters (desktop) */}
+      <div className="flex flex-col sm:flex-row gap-x-4 gap-y-3">
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            placeholder="Cerca cliente per nome o email…"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-9 w-full min-h-[44px] touch-manipulation"
+            aria-label="Cerca cliente"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="clienti-sort" className="sr-only">
+            Ordina per
+          </label>
+          <select
+            id="clienti-sort"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="min-h-[44px] rounded-lg bg-background-secondary border border-border text-sm text-text-primary px-4 min-w-[180px] touch-manipulation"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center rounded-lg border border-border overflow-hidden bg-background-secondary/50">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`p-2.5 min-h-[44px] touch-manipulation transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                  : 'text-text-secondary hover:bg-white/5'
+              }`}
+              aria-label="Vista a griglia"
+              aria-pressed={viewMode === 'grid'}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`p-2.5 min-h-[44px] touch-manipulation transition-colors ${
+                viewMode === 'table'
+                  ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                  : 'text-text-secondary hover:bg-white/5'
+              }`}
+              aria-label="Vista a lista"
+              aria-pressed={viewMode === 'table'}
+            >
+              <List className="h-4 w-4" />
+            </button>
           </div>
-        ) : displayRows.length === 0 ? (
-          <div className="rounded-xl border border-border bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
-            <Search className="h-12 w-12 text-text-muted shrink-0" aria-hidden />
-            <p className="text-text-primary font-medium">Nessun risultato</p>
-            <p className="text-text-secondary text-sm max-w-[65ch]">
-              {kpiFilter === 'clienti_invitati'
-                ? 'Nessun invito in attesa corrisponde alla ricerca.'
-                : 'Nessun cliente corrisponde ai filtri selezionati. Prova a rimuovere alcuni filtri o a cambiare la ricerca.'}
-            </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden lg:inline-flex min-h-[44px] touch-manipulation"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <Filter className="mr-1.5 h-4 w-4" />
+            Filtri
+          </Button>
+          {hasActiveFilters && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               className="min-h-[44px] touch-manipulation"
               onClick={clearFilters}
             >
+              <X className="mr-1 h-4 w-4" />
               Rimuovi filtri
             </Button>
-          </div>
-        ) : (
-          <>
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+          )}
+        </div>
+      </div>
+
+      {/* Filters Drawer */}
+      <Drawer open={filtersOpen} onOpenChange={setFiltersOpen} side="right" size="md">
+        <DrawerContent
+          className="bg-background border-l border-border"
+          onClose={() => setFiltersOpen(false)}
+        >
+          <DrawerHeader className="border-b border-border p-5 flex items-center justify-between">
+            <span className="font-semibold">Filtri</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="min-h-[44px] min-w-[44px] touch-manipulation"
+              onClick={() => setFiltersOpen(false)}
+              aria-label="Chiudi"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </DrawerHeader>
+          <DrawerBody className="p-5 space-y-6">
+            <div>
+              <Label className="text-text-secondary text-xs uppercase tracking-wider">Piano</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(['all', 'con', 'senza'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setFilterPiano(v)}
+                    className={`rounded-full px-4 py-3 text-sm min-h-[44px] touch-manipulation ${
+                      filterPiano === v
+                        ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                        : 'bg-background-secondary text-text-muted border border-border'
+                    }`}
+                  >
+                    {v === 'all' ? 'Tutti' : v === 'con' ? 'Con piano' : 'Senza piano'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-text-secondary text-xs uppercase tracking-wider">
+                Scadenza piano
+              </Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(['all', '7', '30', 'scaduto'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setFilterScadenza(v)}
+                    className={`rounded-full px-4 py-3 text-sm min-h-[44px] touch-manipulation ${
+                      filterScadenza === v
+                        ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                        : 'bg-background-secondary text-text-muted border border-border'
+                    }`}
+                  >
+                    {v === 'all'
+                      ? 'Tutti'
+                      : v === '7'
+                        ? 'Scade entro 7 gg'
+                        : v === '30'
+                          ? 'Scade entro 30 gg'
+                          : 'Scaduto'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-text-secondary text-xs uppercase tracking-wider">
+                Progressi
+              </Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(['all', 'recenti', 'mancanti'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setFilterProgressi(v)}
+                    className={`rounded-full px-4 py-3 text-sm min-h-[44px] touch-manipulation ${
+                      filterProgressi === v
+                        ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                        : 'bg-background-secondary text-text-muted border border-border'
+                    }`}
+                  >
+                    {v === 'all' ? 'Tutti' : v === 'recenti' ? 'Ultimi 7 gg' : 'Nessuno da 14+ gg'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full min-h-[44px] touch-manipulation"
+              onClick={clearFilters}
+            >
+              Azzera filtri
+            </Button>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Content */}
+      {loading ? null : rows.length === 0 ? (
+        <div className="rounded-xl border border-border bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
+          <Users className="h-12 w-12 text-text-muted shrink-0" aria-hidden />
+          <p className="text-text-primary font-medium">Nessun cliente assegnato</p>
+          <p className="text-text-secondary text-sm max-w-[65ch]">
+            Le assegnazioni vengono gestite da Admin o Trainer. Chiedi l’assegnazione dei clienti
+            all’organizzazione.
+          </p>
+          <Link href="/dashboard/nutrizionista">
+            <Button variant="outline" size="sm" className="min-h-[44px] touch-manipulation mt-2">
+              Torna alla Dashboard
+            </Button>
+          </Link>
+        </div>
+      ) : displayRows.length === 0 ? (
+        <div className="rounded-xl border border-border bg-background-secondary/50 px-5 py-10 text-center flex flex-col items-center gap-4">
+          <Search className="h-12 w-12 text-text-muted shrink-0" aria-hidden />
+          <p className="text-text-primary font-medium">Nessun risultato</p>
+          <p className="text-text-secondary text-sm max-w-[65ch]">
+            {kpiFilter === 'clienti_invitati'
+              ? 'Nessun invito in attesa corrisponde alla ricerca.'
+              : 'Nessun cliente corrisponde ai filtri selezionati. Prova a rimuovere alcuni filtri o a cambiare la ricerca.'}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-[44px] touch-manipulation"
+            onClick={clearFilters}
+          >
+            Rimuovi filtri
+          </Button>
+        </div>
+      ) : (
+        <>
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+              {displayRows.map((r) => {
+                const aid = r.athlete_id ?? r.atleta_id ?? ''
+                const isInvited = (r.assignment_status ?? '') === 'invited'
+                const reviewDate = r.review_date
+                const isScaduto = reviewDate && reviewDate < todayStr
+                const scadeIn7 = reviewDate && reviewDate >= todayStr && reviewDate <= in7
+                const progressLabel = r.last_progress_at
+                  ? `${Math.floor((Date.now() - new Date(r.last_progress_at).getTime()) / (24 * 60 * 60 * 1000))} giorni fa`
+                  : 'Mai'
+                return (
+                  <div
+                    key={aid}
+                    className="rounded-xl border border-border bg-background-secondary/80 p-5 flex flex-col gap-4 min-h-[7.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-white/5"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="h-10 w-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-medium text-sm shrink-0">
+                          {(r.athlete_name ?? '?').slice(0, 1).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-text-primary truncate">
+                            {r.athlete_name ?? aid.slice(0, 8)}
+                          </p>
+                          <p className="text-text-muted text-xs truncate">
+                            {r.athlete_email ?? '—'}
+                          </p>
+                        </div>
+                      </div>
+                      {!isInvited && (
+                        <AthleteRowActions
+                          row={r}
+                          onAddProgress={setProgressModalAthlete}
+                          onCopyEmail={handleCopyEmail}
+                          onPause={handlePause}
+                          onActivate={handleActivate}
+                          onRemove={handleRemove}
+                        />
+                      )}
+                      {isInvited && (
+                        <span className="rounded-full px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 shrink-0">
+                          In attesa
+                        </span>
+                      )}
+                    </div>
+                    {!isInvited && (
+                      <>
+                        <div className="flex flex-wrap gap-2 text-xs tabular-nums">
+                          {r.active_plan_version != null && (
+                            <span className="rounded-full px-2 py-0.5 bg-teal-500/20 text-teal-400">
+                              v{r.active_plan_version} • attivo
+                            </span>
+                          )}
+                          {reviewDate && (
+                            <span
+                              className={
+                                isScaduto
+                                  ? 'text-red-400'
+                                  : scadeIn7
+                                    ? 'text-amber-400'
+                                    : 'text-text-muted'
+                              }
+                            >
+                              {isScaduto ? 'Scaduto' : scadeIn7 ? 'Scade tra poco' : 'Scadenza: '}
+                              {new Date(reviewDate).toLocaleDateString('it-IT', {
+                                day: '2-digit',
+                                month: 'short',
+                              })}
+                            </span>
+                          )}
+                          <span className="text-text-muted">Progresso: {progressLabel}</span>
+                        </div>
+                        <div className="flex gap-2 mt-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 min-h-[44px] touch-manipulation"
+                            asChild
+                          >
+                            <Link href={`/dashboard/nutrizionista/atleti/${aid}`}>Apri</Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="min-h-[44px] touch-manipulation"
+                            onClick={() => setProgressModalAthlete(r)}
+                          >
+                            <Plus className="h-4 w-4" />
+                            Progresso
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                    {isInvited && (
+                      <p className="text-text-muted text-sm">
+                        In attesa di accettazione dell&apos;invito
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block rounded-xl border border-border overflow-hidden bg-background-secondary/30 ring-1 ring-white/5">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-background-tertiary/50 border-b border-border sticky top-0 z-10">
+                      <tr className="text-left text-text-secondary">
+                        <th className="p-4 font-medium">Cliente</th>
+                        <th className="p-4 font-medium">Contatti</th>
+                        <th className="p-4 font-medium">Stato</th>
+                        <th className="p-4 font-medium">Piano</th>
+                        <th className="p-4 font-medium">Scadenza</th>
+                        <th className="p-4 font-medium">Ultimo progresso</th>
+                        <th className="p-4 font-medium w-24">Azioni</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayRows.map((r) => {
+                        const aid = r.athlete_id ?? r.atleta_id ?? ''
+                        const isInvited = (r.assignment_status ?? '') === 'invited'
+                        const reviewDate = r.review_date
+                        const isScaduto = reviewDate && reviewDate < todayStr
+                        const scadeIn7 = reviewDate && reviewDate >= todayStr && reviewDate <= in7
+                        return (
+                          <tr
+                            key={aid}
+                            className="border-b border-border/50 hover:bg-background-tertiary/30 min-h-[44px]"
+                          >
+                            <td className="p-4">
+                              <div className="flex items-center gap-2">
+                                <div className="h-9 w-9 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-medium text-sm shrink-0">
+                                  {(r.athlete_name ?? '?').slice(0, 1).toUpperCase()}
+                                </div>
+                                <span className="font-medium text-text-primary">
+                                  {r.athlete_name ?? (
+                                    <span className="font-mono text-xs text-text-muted">
+                                      {aid.slice(0, 8)}…
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <a
+                                href={`mailto:${r.athlete_email ?? ''}`}
+                                className="text-teal-400 hover:text-teal-300 hover:underline inline-flex items-center gap-1 break-all focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                              >
+                                <Mail className="h-3.5 w-3.5 shrink-0" />
+                                {r.athlete_email ?? '—'}
+                              </a>
+                            </td>
+                            <td className="p-4">
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-xs ${
+                                  isInvited
+                                    ? 'bg-amber-500/20 text-amber-400'
+                                    : (r.assignment_status ?? 'active') === 'active'
+                                      ? 'bg-teal-500/20 text-teal-400'
+                                      : 'bg-amber-500/20 text-amber-400'
+                                }`}
+                              >
+                                {isInvited
+                                  ? 'In attesa'
+                                  : (r.assignment_status ?? 'active') === 'active'
+                                    ? 'Attivo'
+                                    : 'In pausa'}
+                              </span>
+                            </td>
+                            <td className="p-4 text-text-muted">
+                              {r.active_plan_version != null ? (
+                                <span className="rounded-full px-2 py-0.5 text-xs bg-teal-500/20 text-teal-400">
+                                  v{r.active_plan_version} • attivo
+                                </span>
+                              ) : (
+                                '—'
+                              )}
+                            </td>
+                            <td className="p-4 tabular-nums">
+                              {reviewDate ? (
+                                <span
+                                  className={
+                                    isScaduto
+                                      ? 'text-red-400'
+                                      : scadeIn7
+                                        ? 'text-amber-400'
+                                        : 'text-text-muted'
+                                  }
+                                >
+                                  {new Date(reviewDate).toLocaleDateString('it-IT', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                              ) : (
+                                '—'
+                              )}
+                            </td>
+                            <td className="p-4 text-text-muted tabular-nums">
+                              {r.last_progress_at
+                                ? new Date(r.last_progress_at).toLocaleDateString('it-IT', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })
+                                : '—'}
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center gap-1">
+                                {!isInvited && (
+                                  <Link
+                                    href={`/dashboard/nutrizionista/atleti/${aid}`}
+                                    className="text-teal-400 hover:text-teal-300 text-sm font-medium inline-flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                                  >
+                                    Apri
+                                    <ArrowRight className="h-3.5 w-3.5" />
+                                  </Link>
+                                )}
+                                {isInvited ? (
+                                  <span className="text-text-muted text-sm">
+                                    In attesa accettazione
+                                  </span>
+                                ) : (
+                                  <AthleteRowActions
+                                    row={r}
+                                    onAddProgress={setProgressModalAthlete}
+                                    onCopyEmail={handleCopyEmail}
+                                    onPause={handlePause}
+                                    onActivate={handleActivate}
+                                    onRemove={handleRemove}
+                                  />
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-4">
                 {displayRows.map((r) => {
                   const aid = r.athlete_id ?? r.atleta_id ?? ''
                   const isInvited = (r.assignment_status ?? '') === 'invited'
@@ -1119,10 +1355,10 @@ export default function NutrizionistaAtletiPage() {
                   return (
                     <div
                       key={aid}
-                      className="rounded-xl border border-border bg-background-secondary/80 p-5 flex flex-col gap-4 min-h-[7.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-white/5"
+                      className="rounded-xl border border-border bg-background-secondary/80 p-5 flex flex-col gap-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-white/5"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 min-w-0">
                           <div className="h-10 w-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-medium text-sm shrink-0">
                             {(r.athlete_name ?? '?').slice(0, 1).toUpperCase()}
                           </div>
@@ -1178,7 +1414,7 @@ export default function NutrizionistaAtletiPage() {
                             )}
                             <span className="text-text-muted">Progresso: {progressLabel}</span>
                           </div>
-                          <div className="flex gap-2 mt-auto">
+                          <div className="flex gap-2">
                             <Button
                               variant="outline"
                               size="sm"
@@ -1201,267 +1437,17 @@ export default function NutrizionistaAtletiPage() {
                       )}
                       {isInvited && (
                         <p className="text-text-muted text-sm">
-                          In attesa di accettazione dell&apos;invito
+                          In attesa di accettazione dell’invito
                         </p>
                       )}
                     </div>
                   )
                 })}
               </div>
-            ) : (
-              <>
-                {/* Desktop Table */}
-                <div className="hidden md:block rounded-xl border border-border overflow-hidden bg-background-secondary/30 ring-1 ring-white/5">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-background-tertiary/50 border-b border-border sticky top-0 z-10">
-                        <tr className="text-left text-text-secondary">
-                          <th className="p-4 font-medium">Cliente</th>
-                          <th className="p-4 font-medium">Contatti</th>
-                          <th className="p-4 font-medium">Stato</th>
-                          <th className="p-4 font-medium">Piano</th>
-                          <th className="p-4 font-medium">Scadenza</th>
-                          <th className="p-4 font-medium">Ultimo progresso</th>
-                          <th className="p-4 font-medium w-24">Azioni</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {displayRows.map((r) => {
-                          const aid = r.athlete_id ?? r.atleta_id ?? ''
-                          const isInvited = (r.assignment_status ?? '') === 'invited'
-                          const reviewDate = r.review_date
-                          const isScaduto = reviewDate && reviewDate < todayStr
-                          const scadeIn7 = reviewDate && reviewDate >= todayStr && reviewDate <= in7
-                          return (
-                            <tr
-                              key={aid}
-                              className="border-b border-border/50 hover:bg-background-tertiary/30 min-h-[44px]"
-                            >
-                              <td className="p-4">
-                                <div className="flex items-center gap-2">
-                                  <div className="h-9 w-9 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-medium text-sm shrink-0">
-                                    {(r.athlete_name ?? '?').slice(0, 1).toUpperCase()}
-                                  </div>
-                                  <span className="font-medium text-text-primary">
-                                    {r.athlete_name ?? (
-                                      <span className="font-mono text-xs text-text-muted">
-                                        {aid.slice(0, 8)}…
-                                      </span>
-                                    )}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="p-4">
-                                <a
-                                  href={`mailto:${r.athlete_email ?? ''}`}
-                                  className="text-teal-400 hover:text-teal-300 hover:underline inline-flex items-center gap-1 break-all focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
-                                >
-                                  <Mail className="h-3.5 w-3.5 shrink-0" />
-                                  {r.athlete_email ?? '—'}
-                                </a>
-                              </td>
-                              <td className="p-4">
-                                <span
-                                  className={`rounded-full px-2 py-0.5 text-xs ${
-                                    isInvited
-                                      ? 'bg-amber-500/20 text-amber-400'
-                                      : (r.assignment_status ?? 'active') === 'active'
-                                        ? 'bg-teal-500/20 text-teal-400'
-                                        : 'bg-amber-500/20 text-amber-400'
-                                  }`}
-                                >
-                                  {isInvited
-                                    ? 'In attesa'
-                                    : (r.assignment_status ?? 'active') === 'active'
-                                      ? 'Attivo'
-                                      : 'In pausa'}
-                                </span>
-                              </td>
-                              <td className="p-4 text-text-muted">
-                                {r.active_plan_version != null ? (
-                                  <span className="rounded-full px-2 py-0.5 text-xs bg-teal-500/20 text-teal-400">
-                                    v{r.active_plan_version} • attivo
-                                  </span>
-                                ) : (
-                                  '—'
-                                )}
-                              </td>
-                              <td className="p-4 tabular-nums">
-                                {reviewDate ? (
-                                  <span
-                                    className={
-                                      isScaduto
-                                        ? 'text-red-400'
-                                        : scadeIn7
-                                          ? 'text-amber-400'
-                                          : 'text-text-muted'
-                                    }
-                                  >
-                                    {new Date(reviewDate).toLocaleDateString('it-IT', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric',
-                                    })}
-                                  </span>
-                                ) : (
-                                  '—'
-                                )}
-                              </td>
-                              <td className="p-4 text-text-muted tabular-nums">
-                                {r.last_progress_at
-                                  ? new Date(r.last_progress_at).toLocaleDateString('it-IT', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric',
-                                    })
-                                  : '—'}
-                              </td>
-                              <td className="p-4">
-                                <div className="flex items-center gap-1">
-                                  {!isInvited && (
-                                    <Link
-                                      href={`/dashboard/nutrizionista/atleti/${aid}`}
-                                      className="text-teal-400 hover:text-teal-300 text-sm font-medium inline-flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
-                                    >
-                                      Apri
-                                      <ArrowRight className="h-3.5 w-3.5" />
-                                    </Link>
-                                  )}
-                                  {isInvited ? (
-                                    <span className="text-text-muted text-sm">
-                                      In attesa accettazione
-                                    </span>
-                                  ) : (
-                                    <AthleteRowActions
-                                      row={r}
-                                      onAddProgress={setProgressModalAthlete}
-                                      onCopyEmail={handleCopyEmail}
-                                      onPause={handlePause}
-                                      onActivate={handleActivate}
-                                      onRemove={handleRemove}
-                                    />
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Mobile Cards */}
-                <div className="md:hidden space-y-4">
-                  {displayRows.map((r) => {
-                    const aid = r.athlete_id ?? r.atleta_id ?? ''
-                    const isInvited = (r.assignment_status ?? '') === 'invited'
-                    const reviewDate = r.review_date
-                    const isScaduto = reviewDate && reviewDate < todayStr
-                    const scadeIn7 = reviewDate && reviewDate >= todayStr && reviewDate <= in7
-                    const progressLabel = r.last_progress_at
-                      ? `${Math.floor((Date.now() - new Date(r.last_progress_at).getTime()) / (24 * 60 * 60 * 1000))} giorni fa`
-                      : 'Mai'
-                    return (
-                      <div
-                        key={aid}
-                        className="rounded-xl border border-border bg-background-secondary/80 p-5 flex flex-col gap-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-white/5"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="h-10 w-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-medium text-sm shrink-0">
-                              {(r.athlete_name ?? '?').slice(0, 1).toUpperCase()}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-medium text-text-primary truncate">
-                                {r.athlete_name ?? aid.slice(0, 8)}
-                              </p>
-                              <p className="text-text-muted text-xs truncate">
-                                {r.athlete_email ?? '—'}
-                              </p>
-                            </div>
-                          </div>
-                          {!isInvited && (
-                            <AthleteRowActions
-                              row={r}
-                              onAddProgress={setProgressModalAthlete}
-                              onCopyEmail={handleCopyEmail}
-                              onPause={handlePause}
-                              onActivate={handleActivate}
-                              onRemove={handleRemove}
-                            />
-                          )}
-                          {isInvited && (
-                            <span className="rounded-full px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 shrink-0">
-                              In attesa
-                            </span>
-                          )}
-                        </div>
-                        {!isInvited && (
-                          <>
-                            <div className="flex flex-wrap gap-2 text-xs tabular-nums">
-                              {r.active_plan_version != null && (
-                                <span className="rounded-full px-2 py-0.5 bg-teal-500/20 text-teal-400">
-                                  v{r.active_plan_version} • attivo
-                                </span>
-                              )}
-                              {reviewDate && (
-                                <span
-                                  className={
-                                    isScaduto
-                                      ? 'text-red-400'
-                                      : scadeIn7
-                                        ? 'text-amber-400'
-                                        : 'text-text-muted'
-                                  }
-                                >
-                                  {isScaduto
-                                    ? 'Scaduto'
-                                    : scadeIn7
-                                      ? 'Scade tra poco'
-                                      : 'Scadenza: '}
-                                  {new Date(reviewDate).toLocaleDateString('it-IT', {
-                                    day: '2-digit',
-                                    month: 'short',
-                                  })}
-                                </span>
-                              )}
-                              <span className="text-text-muted">Progresso: {progressLabel}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 min-h-[44px] touch-manipulation"
-                                asChild
-                              >
-                                <Link href={`/dashboard/nutrizionista/atleti/${aid}`}>Apri</Link>
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="min-h-[44px] touch-manipulation"
-                                onClick={() => setProgressModalAthlete(r)}
-                              >
-                                <Plus className="h-4 w-4" />
-                                Progresso
-                              </Button>
-                            </div>
-                          </>
-                        )}
-                        {isInvited && (
-                          <p className="text-text-muted text-sm">
-                            In attesa di accettazione dell’invito
-                          </p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </>
-            )}
-          </>
-        )}
+            </>
+          )}
+        </>
+      )}
 
       {/* Quick Add Progress Modal */}
       <Dialog

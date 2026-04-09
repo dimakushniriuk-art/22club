@@ -252,7 +252,7 @@ export default function AggiungiFotoPage() {
         <PageHeaderFixed
           variant="chat"
           title="Aggiungi foto"
-          subtitle="Scegli la vista e scatta: si aprirÃ  la fotocamera"
+          subtitle="Scegli la vista e scatta: si aprirà la fotocamera"
           backHref="/home/foto-risultati"
         />
 
@@ -355,7 +355,7 @@ export default function AggiungiFotoPage() {
 
         <p className="text-text-tertiary text-xs min-[834px]:text-sm text-center px-2">
           Tocca una figura: potrai caricare un&apos;immagine dalla galleria o scattare una nuova
-          foto. VerrÃ  salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
+          foto. Verrà salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
         </p>
 
         {allThreeUploaded && (

@@ -18,6 +18,7 @@ import {
   isAthleteAppointmentPastLike,
 } from '@/lib/appointments/athlete-query-params'
 import { supabase } from '@/lib/supabase/client'
+import { isLikelyNetworkFetchFailure } from '@/lib/is-network-fetch-error'
 import { AppuntamentiPageHeader } from './AppuntamentiPageHeader'
 import { AppuntamentiListView } from './AppuntamentiListView'
 
@@ -26,6 +27,11 @@ const AppointmentForm = lazy(() =>
 )
 
 const logger = createLogger('app:home:appuntamenti:page')
+
+/** [start, end) vs [openStart, openEnd) */
+function intervalsOverlap(start: Date, end: Date, openStart: Date, openEnd: Date): boolean {
+  return start.getTime() < openEnd.getTime() && end.getTime() > openStart.getTime()
+}
 
 function toLocalISOString(date: Date): string {
   const y = date.getFullYear()
@@ -56,15 +62,23 @@ function AppuntamentiPageContent() {
   useEffect(() => {
     if (!profileId || !isAthlete) return
     let cancelled = false
-    supabase
-      .from('profiles')
-      .select('stato_cliente')
-      .eq('id', profileId)
-      .single()
-      .then(({ data }) => {
-        if (!cancelled && data)
-          setStatoCliente((data as { stato_cliente?: string | null }).stato_cliente ?? 'cliente')
-      })
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('stato_cliente')
+          .eq('id', profileId)
+          .single()
+        if (cancelled) return
+        if (error || !data) {
+          setStatoCliente('cliente')
+          return
+        }
+        setStatoCliente((data as { stato_cliente?: string | null }).stato_cliente ?? 'cliente')
+      } catch {
+        if (!cancelled) setStatoCliente('cliente')
+      }
+    })()
     return () => {
       cancelled = true
     }
@@ -204,16 +218,26 @@ function AppuntamentiPageContent() {
   }, [])
 
   useEffect(() => {
-    if (error) {
-      logger.error('Errore nel caricamento appuntamenti', error, {
+    if (!error) return
+    const errorMessage =
+      typeof error === 'string' ? error : 'Errore sconosciuto nel caricamento degli appuntamenti'
+    if (isLikelyNetworkFetchFailure(errorMessage)) {
+      logger.warn('Caricamento appuntamenti: problema di rete', {
         profileId: user?.id,
         userId: user?.user_id,
+        message: errorMessage,
       })
-      // error Ã¨ di tipo string | null da useAthleteAppointments
-      const errorMessage =
-        typeof error === 'string' ? error : 'Errore sconosciuto nel caricamento degli appuntamenti'
-      notifyError('Errore nel caricamento appuntamenti', errorMessage)
+      notifyError(
+        'Connessione',
+        'Impossibile raggiungere il server. Controlla la rete e riprova.',
+      )
+      return
     }
+    logger.error('Errore nel caricamento appuntamenti', error, {
+      profileId: user?.id,
+      userId: user?.user_id,
+    })
+    notifyError('Errore nel caricamento appuntamenti', errorMessage)
   }, [error, user?.id, user?.user_id])
 
   if (!user || !isValidUser) {
@@ -248,7 +272,7 @@ function AppuntamentiPageContent() {
         <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4">
           <AppuntamentiPageHeader onBack={handleBack} />
           <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
-            <div className="mb-3 text-4xl opacity-50">âŒ</div>
+            <div className="mb-3 text-4xl opacity-50">❌</div>
             <p className="text-text-primary mb-4 text-sm font-medium line-clamp-3">
               {typeof error === 'string'
                 ? error
@@ -282,6 +306,21 @@ function AppuntamentiPageContent() {
       handleEventResize,
     } = athleteCalendar
 
+    const openBookingWindows = calendarAppointments.filter(
+      (a) => a.is_open_booking_day === true && a.starts_at && a.ends_at,
+    )
+    const slotOverlapsOpenBooking = (start: Date, end: Date) =>
+      openBookingWindows.some((slot) =>
+        intervalsOverlap(start, end, new Date(slot.starts_at), new Date(slot.ends_at)),
+      )
+    const handleSelectSlot = (start: Date, end: Date) => {
+      if (!trainerStaffId || !slotOverlapsOpenBooking(start, end)) return
+      formPreviousFocusRef.current = document.activeElement as HTMLElement | null
+      setSelectedSlot({ start, end })
+      setEditingAppointment(null)
+      setShowForm(true)
+    }
+
     const closeFormAndRestoreFocus = () => {
       formPreviousFocusRef.current?.focus()
       formPreviousFocusRef.current = null
@@ -312,17 +351,11 @@ function AppuntamentiPageContent() {
       setSelectedSlot(null)
       setShowForm(true)
     }
-    const handleSelectSlot = (start: Date, end: Date) => {
-      formPreviousFocusRef.current = document.activeElement as HTMLElement | null
-      setSelectedSlot({ start, end })
-      setEditingAppointment(null)
-      setShowForm(true)
-    }
     const handleEdit = () => {
       if (
         selectedAppointment &&
-        selectedAppointment.created_by_role === 'athlete' &&
-        selectedAppointment.athlete_id
+        selectedAppointment.athlete_id === profileId &&
+        selectedAppointment.created_by_role === 'athlete'
       ) {
         setEditingAppointment({
           id: selectedAppointment.id,
@@ -354,18 +387,22 @@ function AppuntamentiPageContent() {
             onBack={handleBack}
           />
 
-          <div className="min-h-[260px] rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] overflow-hidden flex flex-col">
+          <div className="flex min-h-[min(420px,55dvh)] flex-1 flex-col rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] overflow-hidden">
             <CalendarView
               appointments={calendarAppointments}
               onEventClick={handleEventClick}
               onNewAppointment={trainerStaffId ? handleNewAppointment : undefined}
               onEventDrop={handleEventDrop}
               onEventResize={handleEventResize}
-              onSelectSlot={handleSelectSlot}
+              onSelectSlot={trainerStaffId ? handleSelectSlot : undefined}
+              selectAllow={trainerStaffId ? slotOverlapsOpenBooking : undefined}
               navigateToDate={navigateToDate}
               onNavigateComplete={() => setNavigateToDate(null)}
+              peerReadonlyProfileId={profileId}
               isEventEditable={(apt) =>
-                !apt.is_open_booking_day && apt.created_by_role === 'athlete'
+                !apt.is_open_booking_day &&
+                apt.created_by_role === 'athlete' &&
+                apt.athlete_id === profileId
               }
               openBookingAsBackground
               slotBookingCounts={slotBookingCounts}
@@ -377,7 +414,8 @@ function AppuntamentiPageContent() {
           <div className="mt-3 space-y-2">
             {trainerStaffId && (
               <p className="text-center text-xs text-text-secondary px-1">
-                Libera prenotazione: max {openBookingSlotMax} prenotazioni per fascia oraria.
+                Libera prenotazione: max {openBookingSlotMax} prenotazioni per ogni fascia da 15 minuti
+                (griglia oraria).
               </p>
             )}
             {!trainerStaffId && !athleteCalendar.trainerLoading && (
@@ -444,11 +482,13 @@ function AppuntamentiPageContent() {
               loading={submitLoading}
               canEdit={
                 !selectedAppointment.is_open_booking_day &&
-                selectedAppointment.created_by_role === 'athlete'
+                selectedAppointment.created_by_role === 'athlete' &&
+                selectedAppointment.athlete_id === profileId
               }
               canDelete={
                 !selectedAppointment.is_open_booking_day &&
-                selectedAppointment.created_by_role === 'athlete'
+                selectedAppointment.created_by_role === 'athlete' &&
+                selectedAppointment.athlete_id === profileId
               }
             />
           )}

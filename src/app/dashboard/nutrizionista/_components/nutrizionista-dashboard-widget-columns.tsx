@@ -172,7 +172,9 @@ export function NutrizionistaDashboardWidgetColumns({
               : undefined
           }
           footer={
-            <DashboardColumnFooterLink href="/dashboard/nutrizionista/chat">Apri chat</DashboardColumnFooterLink>
+            <DashboardColumnFooterLink href="/dashboard/nutrizionista/chat">
+              Apri chat
+            </DashboardColumnFooterLink>
           }
         >
           {chatLoading ? (

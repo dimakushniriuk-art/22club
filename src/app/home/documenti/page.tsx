@@ -1,17 +1,17 @@
 'use client'
 
 /**
- * Pagina Documenti atleta â€“ /home/documenti
+ * Pagina Documenti atleta – /home/documenti
  *
- * Mostra in unâ€™unica lista tutti i documenti dellâ€™atleta: tabella documents (certificati,
+ * Mostra in un’unica lista tutti i documenti dell’atleta: tabella documents (certificati,
  * liberatorie, contratti, dossier onboarding), certificato/referti da athlete_medical_data,
  * documenti contrattuali da athlete_administrative_data, fatture da payments (invoice_url),
  * PDF piani nutrizionali (nutrition_plan_versions / legacy), allegati chat_messages.
  *
- * FunzionalitÃ :
+ * Funzionalità:
  * - Lista unificata con categoria, label, date, stato (valido/in_scadenza/scaduto), note.
- * - Visualizza: apre il documento in nuova scheda (signed â†’ proxy /api/document-preview).
- * - Carica: upload nuovo documento (PDF/JPG); se categoria â€œaltroâ€ si apre dialog per scegliere.
+ * - Visualizza: apre il documento in nuova scheda (signed → proxy /api/document-preview).
+ * - Carica: upload nuovo documento (PDF/JPG); se categoria “altro” si apre dialog per scegliere.
  * - Nuovo: sostituzione documento (solo per documenti sostituibili, es. scaduti).
  *
  * Dati: getAllAthleteDocuments(profileId, userId) in lib/all-athlete-documents.ts.
@@ -309,7 +309,7 @@ function DocumentiPageContent() {
 
   /**
    * Apre file picker per caricare un documento (PDF/JPG).
-   * Se category assente o "altro", mostra dialog per scegliere categoria prima dellâ€™upload.
+   * Se category assente o "altro", mostra dialog per scegliere categoria prima dell’upload.
    */
   const validCount = useMemo(
     () => allDocuments.filter((d) => d.status === 'valido').length,

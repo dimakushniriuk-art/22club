@@ -24,18 +24,20 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
         exercise,
         series: buildWorkoutExerciseSeries(exercise),
       }))
-      .filter(({ series }) => series.hasWeight)
+      .filter(
+        ({ series }) => series.hasWeight || series.hasReps || series.hasTime,
+      )
   }, [data.exercises])
 
   if (exerciseCharts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center px-2">
         <p className="text-text-primary text-sm font-medium">
-          Nessun esercizio con peso registrato
+          Nessun dato da mostrare
         </p>
         <p className="text-text-tertiary mt-1 text-xs max-w-md">
-          In questa griglia compaiono solo esercizi con almeno una serie con peso negli allenamenti
-          completati (tempo o sole reps non sono mostrati qui).
+          Compaiono esercizi con almeno una serie completata con peso, ripetizioni o tempo
+          registrati negli allenamenti.
         </p>
       </div>
     )

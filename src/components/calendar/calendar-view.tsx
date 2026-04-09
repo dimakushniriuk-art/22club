@@ -1,25 +1,48 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, type ReactNode } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import type FullCalendarComponent from '@fullcalendar/react'
-import type {
-  CalendarApi,
-  EventClickArg,
-  EventInput,
-  PluginDef,
-  EventDropArg,
-} from '@fullcalendar/core'
+import type { CalendarApi, EventClickArg, EventInput, PluginDef, EventDropArg } from '@fullcalendar/core'
 import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
 import { ChevronLeft, ChevronRight, Plus, ZoomIn, ZoomOut } from 'lucide-react'
 import type { AppointmentUI, AppointmentColor } from '@/types/appointment'
 import { APPOINTMENT_COLORS } from '@/types/appointment'
 import type { CalendarBlock } from '@/types/calendar-block'
 import { useStaffCalendarSettings } from '@/hooks/calendar/use-staff-calendar-settings'
-import { APPOINTMENT_TYPE_LABELS } from '@/lib/calendar-defaults'
+import {
+  APPOINTMENT_TYPE_LABELS,
+  DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
+} from '@/lib/calendar-defaults'
+import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
+import { eachOpenBookingSegment } from '@/lib/appointments/open-booking-grid-segments'
 
 const logger = createLogger('CalendarView')
+
+/** In calendario atleta: un colore stabile per ogni athlete_id (indipendente da `appointment.color` in DB). */
+const ATHLETE_VIEW_COLOR_KEYS: AppointmentColor[] = [
+  'verde',
+  'azzurro',
+  'blu',
+  'viola_scuro',
+  'arancione',
+  'rosa',
+  'giallo',
+  'verde_chiaro',
+  'lilla',
+  'marrone',
+  'grigio',
+]
+
+function distinctColorForAthleteId(athleteId: string): AppointmentColor {
+  let h = 2166136261
+  for (let i = 0; i < athleteId.length; i++) {
+    h ^= athleteId.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return ATHLETE_VIEW_COLOR_KEYS[(h >>> 0) % ATHLETE_VIEW_COLOR_KEYS.length]
+}
 
 interface CalendarViewProps {
   appointments: AppointmentUI[]
@@ -29,12 +52,16 @@ interface CalendarViewProps {
   onEventDrop?: (appointmentId: string, newStart: Date, newEnd: Date) => Promise<void>
   onEventResize?: (appointmentId: string, newStart: Date, newEnd: Date) => Promise<void>
   onSelectSlot?: (start: Date, end: Date) => void
+  /** Se impostato con onSelectSlot, limita la selezione drag (es. solo fasce Libera prenotazione) */
+  selectAllow?: (start: Date, end: Date) => boolean
   /** Data a cui navigare (vista giorno) */
   navigateToDate?: Date | null
   /** Callback quando la navigazione è completata */
   onNavigateComplete?: () => void
-  /** Se fornita, drag/resize abilitati solo per eventi per cui ritorna true (es. calendario atleta: solo created_by_role === 'athlete') */
+  /** Se fornita, drag/resize abilitati solo per eventi per cui ritorna true (es. calendario atleta: solo i propri) */
   isEventEditable?: (appointment: AppointmentUI) => boolean
+  /** Calendario atleta: profilo loggato; click/tooltip ignorati sugli appuntamenti con altro athlete_id */
+  peerReadonlyProfileId?: string | null
   /** Se true, slot Libera prenotazione sono mostrati come sfondo cyan (vista atleta) */
   openBookingAsBackground?: boolean
   /** Mappa slotKey (starts_at|ends_at) -> numero prenotazioni, per mostrare "x/N" sugli slot Libera */
@@ -49,7 +76,7 @@ interface CalendarViewProps {
   initialWeekStart?: 0 | 1
   /** Blocchi calendario (ferie, chiusura) da mostrare come sfondo grigio */
   calendarBlocks?: CalendarBlock[]
-  /** Se true (es. calendario atleta): nasconde step griglia e zoom, slot fisso 1h */
+  /** Se true (es. calendario atleta): nasconde step griglia e zoom, griglia oraria a 15 min */
   compactToolbar?: boolean
 }
 
@@ -80,6 +107,7 @@ export function CalendarView({
   onEventDrop,
   onEventResize,
   onSelectSlot,
+  selectAllow,
   navigateToDate,
   onNavigateComplete,
   isEventEditable,
@@ -91,7 +119,9 @@ export function CalendarView({
   initialWeekStart = 1,
   calendarBlocks = [],
   compactToolbar = false,
+  peerReadonlyProfileId = null,
 }: CalendarViewProps) {
+  const slotSelectionEnabled = Boolean(onSelectSlot)
   const { settings, mutate: mutateSettings } = useStaffCalendarSettings()
   const typeLabelMap = useMemo(() => {
     const m: Record<string, string> = { ...APPOINTMENT_TYPE_LABELS }
@@ -140,7 +170,7 @@ export function CalendarView({
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
     }
     if (compactToolbar) {
-      const s = '01:00:00'
+      const s = '00:15:00'
       return { slotDurationStr: s, snapDurationStr: s }
     }
     const min = settings?.slot_duration_minutes ?? 15
@@ -267,10 +297,14 @@ export function CalendarView({
       const api = calendarRef.current.getApi()
       api.changeView('timeGridDay', navigateToDate)
       setView('timeGridDay')
+      const d = navigateToDate
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
       setTimeout(() => {
         setCurrentTitle(api.view.title)
+        api.scrollToTime(timeStr)
         onNavigateComplete?.()
-      }, 0)
+      }, 50)
     }
   }, [navigateToDate, isLoaded, onNavigateComplete])
 
@@ -296,15 +330,60 @@ export function CalendarView({
     return () => clearTimeout(t)
   }, [isLoaded, appointments, view])
 
-  // Cyan sfumato per Libera prenotazione in vista atleta (allineato a cyan-500 del tema)
-  const OPEN_BOOKING_BG = 'rgba(6, 182, 212, 0.42)'
-  const OPEN_BOOKING_BORDER = 'rgba(6, 182, 212, 0.55)'
+  // Grigio chiaro per Libera prenotazione in vista atleta (sfondo neutro su tema scuro)
+  const OPEN_BOOKING_BG = 'rgba(244, 244, 248, 0.58)'
+  const OPEN_BOOKING_BORDER = 'rgba(232, 232, 240, 0.72)'
+  /** Allineato a `bg-cyan-500` / `--athlete-cyan-500` (FAB «Nuovo appuntamento») */
+  const ATHLETE_OWN_APPOINTMENT_COLOR = '#06b6d4'
 
   const BLOCK_BG = 'rgba(120, 120, 120, 0.35)'
   const REASON_LABELS: Record<string, string> = useMemo(
     () => ({ ferie: 'Ferie', chiusura: 'Chiusura', malattia: 'Malattia' }),
     [],
   )
+
+  /** Max atleti per fascia Libera: da staff_calendar_settings del trainer che ha creato lo slot (vista atleta). */
+  const [trainerLiberaSlotMax, setTrainerLiberaSlotMax] = useState<number | null>(null)
+
+  const openBookingTrainerStaffId = useMemo(() => {
+    const row = appointments.find((a) => a.is_open_booking_day === true && a.staff_id)
+    return row?.staff_id ?? null
+  }, [appointments])
+
+  useEffect(() => {
+    if (!compactToolbar || !openBookingAsBackground) {
+      setTrainerLiberaSlotMax(null)
+      return
+    }
+    if (!openBookingTrainerStaffId) {
+      setTrainerLiberaSlotMax(null)
+      return
+    }
+    let cancelled = false
+    void supabase
+      .from('staff_calendar_settings')
+      .select('max_free_pass_athletes_per_slot')
+      .eq('staff_id', openBookingTrainerStaffId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return
+        if (error) {
+          logger.warn('Lettura max_free_pass trainer per Libera prenotazione', error)
+          setTrainerLiberaSlotMax(null)
+          return
+        }
+        const n = (data as { max_free_pass_athletes_per_slot?: number } | null)
+          ?.max_free_pass_athletes_per_slot
+        setTrainerLiberaSlotMax(
+          typeof n === 'number' && n > 0 ? n : DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
+        )
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [compactToolbar, openBookingAsBackground, openBookingTrainerStaffId])
+
+  const effectiveOpenBookingSlotMax = trainerLiberaSlotMax ?? openBookingSlotMax
 
   // Converti gli appuntamenti e i blocchi per FullCalendar
   const events: EventInput[] = useMemo(() => {
@@ -318,33 +397,54 @@ export function CalendarView({
       backgroundColor: BLOCK_BG,
       borderColor: 'rgba(100,100,100,0.5)',
       extendedProps: { _isBlock: true },
+      startEditable: false,
+      durationEditable: false,
     }))
     appointments.forEach((appointment) => {
       const isOpenSlot = appointment.is_open_booking_day === true
       if (openBookingAsBackground && isOpenSlot) {
-        const slotKey = `${appointment.starts_at}|${appointment.ends_at}`
-        const count = slotBookingCounts?.[slotKey] ?? 0
-        result.push({
-          id: appointment.id,
-          title: slotBookingCounts ? `${count}/${openBookingSlotMax}` : '',
-          start: appointment.starts_at,
-          end: appointment.ends_at,
-          display: 'background' as const,
-          classNames: ['fc-open-booking-slot'],
-          backgroundColor: OPEN_BOOKING_BG,
-          borderColor: OPEN_BOOKING_BORDER,
-          extendedProps: {
-            athlete: appointment.athlete_name,
-            type: appointment.type,
-            location: appointment.location,
-            notes: appointment.notes,
-            cancelled_at: appointment.cancelled_at,
-            recurrence_rule: appointment.recurrence_rule,
-            color: appointment.color,
-            created_by_role: appointment.created_by_role,
-            is_open_booking_day: true,
-          },
-        })
+        const segments = eachOpenBookingSegment(appointment.starts_at, appointment.ends_at)
+        const pushSegment = (seg: { startMs: number; endMs: number; key: string }, syntheticId: string) => {
+          const count = slotBookingCounts?.[seg.key] ?? 0
+          result.push({
+            id: syntheticId,
+            title: slotBookingCounts ? `${count}/${effectiveOpenBookingSlotMax}` : '',
+            start: new Date(seg.startMs).toISOString(),
+            end: new Date(seg.endMs).toISOString(),
+            display: 'background' as const,
+            classNames: ['fc-open-booking-slot'],
+            backgroundColor: OPEN_BOOKING_BG,
+            borderColor: OPEN_BOOKING_BORDER,
+            startEditable: false,
+            durationEditable: false,
+            extendedProps: {
+              athlete: appointment.athlete_name,
+              type: appointment.type,
+              location: appointment.location,
+              notes: appointment.notes,
+              cancelled_at: appointment.cancelled_at,
+              recurrence_rule: appointment.recurrence_rule,
+              color: appointment.color,
+              created_by_role: appointment.created_by_role,
+              is_open_booking_day: true,
+              _openBookingSourceId: appointment.id,
+            },
+          })
+        }
+        if (segments.length > 0) {
+          for (const seg of segments) {
+            pushSegment(seg, `open-bg-${appointment.id}-${seg.startMs}`)
+          }
+        } else {
+          pushSegment(
+            {
+              startMs: new Date(appointment.starts_at).getTime(),
+              endMs: new Date(appointment.ends_at).getTime(),
+              key: `${new Date(appointment.starts_at).getTime()}|${new Date(appointment.ends_at).getTime()}`,
+            },
+            appointment.id,
+          )
+        }
         return
       }
 
@@ -365,6 +465,14 @@ export function CalendarView({
       if (isOpenSlot) {
         classNames.push('fc-event-open-booking')
       }
+      const isPeerEvent =
+        Boolean(peerReadonlyProfileId) &&
+        !isOpenSlot &&
+        Boolean(appointment.athlete_id) &&
+        appointment.athlete_id !== peerReadonlyProfileId
+      if (isPeerEvent) {
+        classNames.push('fc-athlete-peer-event')
+      }
       const cellWidth = compactToolbar
         ? 'full'
         : (settings?.type_cell_width?.[appointment.type] ?? 'half')
@@ -375,11 +483,27 @@ export function CalendarView({
         ? `${typeLabel} - ${appointment.athlete_name}`
         : typeLabel
 
-      const colorKey = (appointment.color || 'azzurro') as AppointmentColor
-      let backgroundColor = APPOINTMENT_COLORS[colorKey] || APPOINTMENT_COLORS.azzurro
+      const colorKey = (() => {
+        if (compactToolbar && appointment.athlete_id && !isOpenSlot) {
+          return distinctColorForAthleteId(appointment.athlete_id)
+        }
+        return (appointment.color || 'azzurro') as AppointmentColor
+      })()
+      let backgroundColor: string = APPOINTMENT_COLORS[colorKey] || APPOINTMENT_COLORS.azzurro
+      const isOwnAthleteAppointment =
+        compactToolbar &&
+        Boolean(peerReadonlyProfileId) &&
+        appointment.athlete_id === peerReadonlyProfileId &&
+        !isOpenSlot
+      if (isOwnAthleteAppointment) {
+        backgroundColor = ATHLETE_OWN_APPOINTMENT_COLOR
+      }
       if (appointment.lessons_remaining !== undefined && appointment.lessons_remaining <= 0) {
         backgroundColor = APPOINTMENT_COLORS.rosso
       }
+
+      const allowDragResize =
+        !isPeerEvent && (!isEventEditable || isEventEditable(appointment))
 
       result.push({
         id: appointment.id,
@@ -389,8 +513,11 @@ export function CalendarView({
         classNames,
         backgroundColor,
         borderColor: backgroundColor,
+        startEditable: allowDragResize,
+        durationEditable: allowDragResize,
         extendedProps: {
           athlete: appointment.athlete_name,
+          athlete_id: appointment.athlete_id,
           athlete_avatar_url: appointment.athlete_avatar_url,
           type: appointment.type,
           location: appointment.location,
@@ -430,6 +557,8 @@ export function CalendarView({
           classNames: ['fc-open-booking-slot'],
           backgroundColor: OPEN_BOOKING_BG,
           borderColor: OPEN_BOOKING_BORDER,
+          startEditable: false,
+          durationEditable: false,
           extendedProps: {
             is_open_booking_day: true,
             _dayDate: dateStr,
@@ -446,17 +575,70 @@ export function CalendarView({
     openBookingAsBackground,
     view,
     slotBookingCounts,
-    openBookingSlotMax,
+    effectiveOpenBookingSlotMax,
     typeLabelMap,
     REASON_LABELS,
     settings?.type_cell_width,
+    peerReadonlyProfileId,
+    isEventEditable,
   ])
+
+  /** Passa alla vista giorno sulla data (e orario) indicati; scroll alla fascia oraria dopo il render della griglia */
+  const navigateCalendarToDay = useCallback((day: Date) => {
+    setView('timeGridDay')
+    setTimeout(() => {
+      const calendarApi = calendarRef.current?.getApi()
+      if (!calendarApi) return
+      calendarApi.changeView('timeGridDay', day)
+      setCurrentTitle(calendarApi.view.title)
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const timeStr = `${pad(day.getHours())}:${pad(day.getMinutes())}:${pad(day.getSeconds())}`
+      setTimeout(() => {
+        calendarApi.scrollToTime(timeStr)
+      }, 50)
+    }, 0)
+  }, [])
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     if (!clickInfo.event.start) return
 
+    const viewType = clickInfo.view.type as string
+    if (viewType === 'dayGridMonth') {
+      const eventIdStr = String(clickInfo.event.id)
+      const xp = clickInfo.event.extendedProps as Record<string, unknown> | undefined
+      const isBlock = xp?._isBlock === true
+      const isOpenBookingDayMarker = eventIdStr.startsWith('open-booking-day-')
+      const isOpenBookingBackground =
+        clickInfo.event.display === 'background' &&
+        xp?.is_open_booking_day === true &&
+        !isBlock
+      if (isOpenBookingDayMarker || isOpenBookingBackground) {
+        navigateCalendarToDay(clickInfo.event.start)
+        return
+      }
+    }
+
+    // Atleta: in mese/settimana il tap sugli appuntamenti non apre il popover — solo vista giorno
+    if (compactToolbar && (viewType === 'dayGridMonth' || viewType === 'timeGridWeek')) {
+      const xp = clickInfo.event.extendedProps as Record<string, unknown> | undefined
+      if (clickInfo.event.display === 'background') {
+        if (viewType === 'dayGridMonth' && xp?._isBlock === true) {
+          navigateCalendarToDay(clickInfo.event.start)
+        }
+        return
+      }
+      navigateCalendarToDay(clickInfo.event.start)
+      return
+    }
+
     const eventId = clickInfo.event.id as string
     let baseAppointment: AppointmentUI | undefined = appointments.find((a) => a.id === eventId)
+    if (!baseAppointment && eventId.startsWith('open-bg-')) {
+      const srcId = clickInfo.event.extendedProps?._openBookingSourceId as string | undefined
+      if (srcId) {
+        baseAppointment = appointments.find((a) => a.id === srcId)
+      }
+    }
 
     // Vista mese: click su giorno con Libera prenotazione (evento sintetico all-day)
     if (!baseAppointment && eventId.startsWith('open-booking-day-')) {
@@ -521,6 +703,15 @@ export function CalendarView({
         false,
     }
 
+    if (
+      peerReadonlyProfileId &&
+      !appointment.is_open_booking_day &&
+      appointment.athlete_id &&
+      appointment.athlete_id !== peerReadonlyProfileId
+    ) {
+      return
+    }
+
     const rect = clickInfo.el.getBoundingClientRect()
     const position = {
       x: rect.left + rect.width / 2,
@@ -531,20 +722,22 @@ export function CalendarView({
   }
 
   const handleDateClick = (arg: DateClickArg) => {
-    if (view === 'dayGridMonth') {
-      // In vista mese, passa alla vista giorno
-      setView('timeGridDay')
-      setTimeout(() => {
-        const calendarApi = calendarRef.current?.getApi()
-        calendarApi?.changeView('timeGridDay', arg.date)
-      }, 0)
-    } else {
-      // In vista giorno/settimana, apri form con l'orario cliccato
-      // arg.date contiene data + orario completo
-      const start = arg.date
-      const end = new Date(start.getTime() + 60 * 60 * 1000) // +1 ora
-      onSelectSlot?.(start, end)
+    const viewType = arg.view.type as string
+    if (viewType === 'dayGridMonth') {
+      navigateCalendarToDay(arg.date)
+      return
     }
+    if (viewType === 'timeGridWeek') {
+      navigateCalendarToDay(arg.date)
+      const start = arg.date
+      const end = new Date(start.getTime() + 60 * 60 * 1000)
+      onSelectSlot?.(start, end)
+      return
+    }
+    // timeGridDay: apri form con l'orario cliccato
+    const start = arg.date
+    const end = new Date(start.getTime() + 60 * 60 * 1000)
+    onSelectSlot?.(start, end)
   }
 
   const handleEventDrop = async (info: EventDropArg) => {
@@ -579,6 +772,7 @@ export function CalendarView({
 
   const handleEventMouseEnter = (info: {
     el: HTMLElement
+    view: { type: string }
     event: {
       title: string
       start: Date | null
@@ -586,6 +780,19 @@ export function CalendarView({
       extendedProps: Record<string, unknown>
     }
   }) => {
+    const vt = info.view.type as string
+    if (compactToolbar && (vt === 'dayGridMonth' || vt === 'timeGridWeek')) {
+      return
+    }
+    const xp = info.event.extendedProps
+    if (
+      peerReadonlyProfileId &&
+      xp?.is_open_booking_day !== true &&
+      xp?.athlete_id != null &&
+      String(xp.athlete_id) !== peerReadonlyProfileId
+    ) {
+      return
+    }
     const rect = info.el.getBoundingClientRect()
     const startTime = info.event.start
       ? new Date(info.event.start).toLocaleTimeString('it-IT', {
@@ -667,7 +874,7 @@ export function CalendarView({
 
   if (!isLoaded || !calendarComponents) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex min-h-[220px] h-full w-full flex-1 items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
           <p className="text-text-secondary text-sm">Caricamento calendario...</p>
@@ -680,7 +887,7 @@ export function CalendarView({
     calendarComponents
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full min-h-[220px] flex flex-1 flex-col">
       {/* Header: su mobile due righe, touch target min 44px */}
       <div className="flex flex-col gap-2 py-2 px-1 sm:flex-row sm:items-center sm:justify-between sm:py-3 sm:gap-3 rounded-t-xl bg-gradient-to-r from-primary/10 via-transparent to-transparent border-b border-white/10 backdrop-blur-sm">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -816,25 +1023,16 @@ export function CalendarView({
             editable={true}
             eventDrop={handleEventDrop}
             eventResize={handleEventResize}
-            eventDurationEditable={
-              (isEventEditable
-                ? (arg: { id?: string }) => {
-                    const apt = appointments.find((a) => a.id === arg.id)
-                    return apt ? isEventEditable(apt) : false
-                  }
-                : true) as boolean
-            }
-            eventStartEditable={
-              (isEventEditable
-                ? (arg: { id?: string }) => {
-                    const apt = appointments.find((a) => a.id === arg.id)
-                    return apt ? isEventEditable(apt) : false
-                  }
-                : true) as boolean
-            }
+            eventDurationEditable
+            eventStartEditable
             select={handleSelect}
-            selectable={true}
-            selectMirror={true}
+            selectable={slotSelectionEnabled}
+            selectMirror={slotSelectionEnabled}
+            selectAllow={
+              selectAllow
+                ? (info: { start: Date; end: Date }) => selectAllow(info.start, info.end)
+                : undefined
+            }
             selectMinDistance={5}
             unselectAuto={true}
             height="auto"
@@ -882,8 +1080,12 @@ export function CalendarView({
               const isOpenSlot = arg.event.extendedProps?.is_open_booking_day === true
               const title = arg.event.title
               if (isOpenSlot && title && openBookingAsBackground) {
+                const vt = arg.view.type
+                if (vt === 'timeGridDay' || vt === 'timeGridWeek') {
+                  return { html: '' }
+                }
                 return {
-                  html: `<div class="fc-open-booking-slot-label">${title}</div>`,
+                  html: `<div class="fc-open-booking-slot-label fc-open-booking-slot-label--month" aria-hidden="true"><span class="fc-open-booking-slot-count">${title}</span></div>`,
                 }
               }
               const esc = (s: string) =>
@@ -938,14 +1140,29 @@ export function CalendarView({
                     ? `${start.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })} – ${end.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })}`
                     : ''
                 const initial = athlete ? athlete.charAt(0).toUpperCase() : '?'
-                const avatarHtml = avatarUrl
-                  ? `<img src="${escAttr(avatarUrl)}" alt="" class="w-8 h-8 rounded-full object-cover shrink-0" />`
-                  : `<span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-white text-xs font-semibold">${esc(initial)}</span>`
                 const lessonsRem = p?.lessons_remaining
                 const lessonsLine =
                   lessonsRem !== undefined
                     ? `<span class="text-white/80 text-[10px] leading-tight">${lessonsRem} lezioni</span>`
                     : ''
+
+                if (compactToolbar) {
+                  const nameLine = athlete || typeLabel
+                  const avatarHtmlCompact = avatarUrl
+                    ? `<img src="${escAttr(avatarUrl)}" alt="" class="fc-athlete-timegrid-card__photo" />`
+                    : `<span class="fc-athlete-timegrid-card__photo fc-athlete-timegrid-card__photo--placeholder" aria-hidden="true">${esc(initial)}</span>`
+                  const lessonsCompact =
+                    lessonsRem !== undefined
+                      ? `<div class="fc-athlete-timegrid-card__lessons">${lessonsRem} lez.</div>`
+                      : ''
+                  return {
+                    html: `<div class="fc-athlete-timegrid-card">${avatarHtmlCompact}<div class="fc-athlete-timegrid-card__name">${esc(nameLine)}</div>${timeStr ? `<div class="fc-athlete-timegrid-card__time">${esc(timeStr)}</div>` : ''}${lessonsCompact}</div>`,
+                  }
+                }
+
+                const avatarHtml = avatarUrl
+                  ? `<img src="${escAttr(avatarUrl)}" alt="" class="w-8 h-8 rounded-full object-cover shrink-0" />`
+                  : `<span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-white text-xs font-semibold">${esc(initial)}</span>`
                 const lines = [esc(typeLabel), athlete ? esc(athlete) : '', timeStr].filter(Boolean)
                 return {
                   html: `<div class="fc-timegrid-event-detail flex items-start gap-2 text-left p-1.5 overflow-hidden"><div class="shrink-0">${avatarHtml}</div><div class="flex flex-col gap-0.5 min-w-0 flex-1"><span class="font-semibold text-white text-xs leading-tight">${lines[0]}</span>${lines[1] ? `<span class="text-white/95 text-[10px] leading-tight truncate">${lines[1]}</span>` : ''}${lines[2] ? `<span class="text-white/80 text-[10px] leading-tight">${lines[2]}</span>` : ''}${lessonsLine}</div></div>`,

@@ -121,10 +121,7 @@ function drawerLoadUserMessage(err: unknown): string {
   if (err && typeof err === 'object' && 'message' in err) {
     const m = String((err as { message?: string }).message ?? '')
     const code = (err as { code?: string }).code
-    if (
-      code === '42501' ||
-      /permission denied|rls|row-level security/i.test(m)
-    ) {
+    if (code === '42501' || /permission denied|rls|row-level security/i.test(m)) {
       return 'Caricamento negato dai permessi del database. Verifica l’assegnazione atleta o contatta l’amministratore.'
     }
     if (m.trim()) return m

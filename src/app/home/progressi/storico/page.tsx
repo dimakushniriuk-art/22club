@@ -21,7 +21,7 @@ interface WorkoutLog {
   durata_minuti: number | null
   note: string | null
   created_at: string | null
-  /** Per compatibilitÃ  UI (data/ora da mostrare) */
+  /** Per compatibilità UI (data/ora da mostrare) */
   started_at: string
   completed_at: string | null
   duration_minutes: number | null

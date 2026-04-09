@@ -435,8 +435,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!isMounted) return
 
         const is429 =
-          !!userError &&
-          (userError.code === 'over_request_rate_limit' || userError.status === 429)
+          !!userError && (userError.code === 'over_request_rate_limit' || userError.status === 429)
         if ((userError || !authUser) && is429) {
           const {
             data: { session: stored },

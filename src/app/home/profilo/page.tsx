@@ -119,7 +119,7 @@ export default function ProfiloPage() {
   const [subscriptionsRefreshKey, setSubscriptionsRefreshKey] = useState(0)
 
   // Ottieni user_id per gli hook
-  // Nota: user Ã¨ di tipo ProfileRow che ha user_id (UUID dell'utente auth)
+  // Nota: user è di tipo ProfileRow che ha user_id (UUID dell'utente auth)
   // Gli hook usano user_id per filtrare i dati
   const athleteUserId = user?.user_id || null
 
@@ -140,7 +140,7 @@ export default function ProfiloPage() {
     }
   }
 
-  // Converti user_id a profile_id per useAthleteStats (workout_logs.athlete_id Ã¨ FK a profiles.id)
+  // Converti user_id a profile_id per useAthleteStats (workout_logs.athlete_id è FK a profiles.id)
   // Chiamato prima degli altri hook per evitare problemi di inizializzazione
   const athleteProfileId = useProfileId(athleteUserId)
 
@@ -153,7 +153,7 @@ export default function ProfiloPage() {
   const { data: fitness } = useAthleteFitness(athleteUserId || '')
   const { data: administrative } = useAthleteAdministrative(athleteUserId || '')
 
-  // React Query giÃ  esegue questi fetch in parallelo automaticamente
+  // React Query già esegue questi fetch in parallelo automaticamente
   // Non serve un hook aggregator - React Query gestisce il parallelismo
 
   const avatarInitials = useAvatarInitials(user?.nome || '', user?.cognome || '')

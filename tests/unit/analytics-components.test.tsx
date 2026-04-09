@@ -10,8 +10,26 @@ import { KPIMetrics, PerformanceMetrics } from '@/components/shared/analytics/kp
 
 describe('Analytics Components', () => {
   const mockTrendData = [
-    { day: '2024-01-01', allenamenti: 10, documenti: 2, ore_totali: 5.0 },
-    { day: '2024-01-02', allenamenti: 15, documenti: 3, ore_totali: 7.5 },
+    {
+      day: '2024-01-01',
+      allenamenti: 10,
+      documenti: 2,
+      ore_totali: 5.0,
+      prenotati: 1,
+      eseguiti: 2,
+      annullati: 0,
+      cancellati: 0,
+    },
+    {
+      day: '2024-01-02',
+      allenamenti: 15,
+      documenti: 3,
+      ore_totali: 7.5,
+      prenotati: 0,
+      eseguiti: 1,
+      annullati: 1,
+      cancellati: 0,
+    },
   ]
 
   const mockDistributionData = [
@@ -46,7 +64,7 @@ describe('Analytics Components', () => {
     it('renders trend chart', () => {
       render(<TrendChart data={mockTrendData} />)
 
-      expect(screen.getByText('Andamento Allenamenti (ultimi 14 giorni)')).toBeInTheDocument()
+      expect(screen.getByText('Andamento Allenamenti (ultimi 15 giorni)')).toBeInTheDocument()
     })
 
     it('applies correct styling', () => {
@@ -63,7 +81,7 @@ describe('Analytics Components', () => {
     it('renders multi trend chart', () => {
       render(<MultiTrendChart data={mockTrendData} />)
 
-      expect(screen.getByText('Trend Multipli')).toBeInTheDocument()
+      expect(screen.getByText('Prenotazioni allenamento (ultimi 15 giorni)')).toBeInTheDocument()
     })
   })
 

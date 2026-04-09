@@ -137,11 +137,7 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
     >
       <HomeAthleteTopChrome ref={chromeRef} />
       {/* Riserva altezza barra fissa (sincrona con --home-athlete-brand-top misurata sotto) */}
-      <div
-        className="shrink-0"
-        style={{ height: 'var(--home-athlete-brand-top)' }}
-        aria-hidden
-      />
+      <div className="shrink-0" style={{ height: 'var(--home-athlete-brand-top)' }} aria-hidden />
 
       <TrialBanner />
 

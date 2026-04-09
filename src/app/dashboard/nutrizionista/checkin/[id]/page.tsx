@@ -70,9 +70,7 @@ export default function NutrizionistaCheckinDetailPage() {
       setRow(r)
       setStatus(r.status)
       setScheduledFor(r.scheduled_for ? r.scheduled_for.slice(0, 10) : '')
-      setCompletedAt(
-        r.completed_at ? new Date(r.completed_at).toISOString().slice(0, 16) : '',
-      )
+      setCompletedAt(r.completed_at ? new Date(r.completed_at).toISOString().slice(0, 16) : '')
       setWeight(r.weight_kg != null ? String(r.weight_kg) : '')
       setBodyFat(r.body_fat_pct != null ? String(r.body_fat_pct) : '')
       setWaist(r.waist_cm != null ? String(r.waist_cm) : '')

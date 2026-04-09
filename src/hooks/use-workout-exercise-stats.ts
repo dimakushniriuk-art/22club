@@ -44,8 +44,9 @@ export interface WorkoutExerciseStats {
 
 /**
  * Hook per recuperare statistiche degli esercizi per un atleta.
- * Include tutti gli esercizi assegnati nelle schede (anche mai eseguiti).
- * Per ogni esercizio: dati da workout_sets (peso, reps, tempo) e statistiche.
+ * Include tutti gli esercizi assegnati nelle schede attuali (anche mai eseguiti).
+ * I set completati provengono da tutti i workout_logs dell’atleta (anche con schede
+ * non più attuali), più eventuali set legati ai WDE dei piani (deduplicati per id set).
  *
  * @param athleteUserId - user_id dell'atleta (profiles.user_id, auth.uid())
  */
@@ -90,7 +91,35 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           }
         }
 
-        // STEP 2: Recupera tutti i workout_plans dell'atleta
+        // Sessioni totali: conteggio da workout_logs (una riga per sessione)
+        let totalSessionsFromLogs = 0
+        const { count: logsCount } = await supabase
+          .from('workout_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('atleta_id', athleteProfileId)
+        if (logsCount != null) totalSessionsFromLogs = logsCount
+
+        const LOG_PAGE_SIZE = 1000
+        const logIds: string[] = []
+        let logRangeFrom = 0
+        for (;;) {
+          const { data: logPage, error: logsListError } = await supabase
+            .from('workout_logs')
+            .select('id')
+            .eq('atleta_id', athleteProfileId)
+            .order('id', { ascending: true })
+            .range(logRangeFrom, logRangeFrom + LOG_PAGE_SIZE - 1)
+          if (logsListError) {
+            logger.error('Error fetching workout_logs ids', logsListError, { athleteProfileId })
+            throw logsListError
+          }
+          const rows = (logPage ?? []) as { id: string }[]
+          logIds.push(...rows.map((r) => r.id))
+          if (rows.length < LOG_PAGE_SIZE) break
+          logRangeFrom += LOG_PAGE_SIZE
+        }
+
+        // STEP 2: Piani attuali → WDE assegnati (placeholder senza dati + seconda fonte set)
         const { data: workoutPlans, error: plansError } = await supabase
           .from('workout_plans')
           .select('id')
@@ -101,95 +130,151 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           throw plansError
         }
 
-        if (!workoutPlans || workoutPlans.length === 0) {
-          logger.debug('No workout plans found for athlete', undefined, { athleteProfileId })
-          return {
-            exercises: [],
-            total_exercises: 0,
-            total_sessions: 0,
-            date_range: { from: null, to: null },
-          }
-        }
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const planIds = (workoutPlans as any[]).map((p: any) => p.id)
-
-        // Sessioni totali: conteggio da workout_logs (una riga per sessione completata)
-        let totalSessionsFromLogs = 0
-        const { count: logsCount } = await supabase
-          .from('workout_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('atleta_id', athleteProfileId)
-        if (logsCount != null) totalSessionsFromLogs = logsCount
-
-        // STEP 3: Recupera tutti i workout_days per questi piani
-        const workoutDays: { id: string }[] = []
-        for (const planChunk of chunkForSupabaseIn(planIds)) {
-          const { data: daysChunk, error: daysError } = await supabase
-            .from('workout_days')
-            .select('id')
-            .in('workout_plan_id', planChunk)
-          if (daysError) {
-            logger.error('Error fetching workout days', daysError, { planIds })
-            throw daysError
-          }
-          workoutDays.push(...((daysChunk ?? []) as { id: string }[]))
-        }
-
-        if (!workoutDays || workoutDays.length === 0) {
-          logger.debug('No workout days found', undefined, { planIds })
-          return {
-            exercises: [],
-            total_exercises: 0,
-            total_sessions: 0,
-            date_range: { from: null, to: null },
-          }
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dayIds = (workoutDays as any[]).map((d: any) => d.id)
+        const planIds = ((workoutPlans ?? []) as any[]).map((p: any) => p.id)
 
         type WdeRow = { id: string; exercise_id: string }
+        const planWdeRows: WdeRow[] = []
 
-        // STEP 4: Recupera tutti i workout_day_exercises per questi giorni
-        const workoutDayExercises: WdeRow[] = []
-        for (const dayChunk of chunkForSupabaseIn(dayIds)) {
-          const { data: wdeChunk, error: exercisesError } = await supabase
+        if (planIds.length > 0) {
+          const workoutDays: { id: string }[] = []
+          for (const planChunk of chunkForSupabaseIn(planIds)) {
+            const { data: daysChunk, error: daysError } = await supabase
+              .from('workout_days')
+              .select('id')
+              .in('workout_plan_id', planChunk)
+            if (daysError) {
+              logger.error('Error fetching workout days', daysError, { planIds })
+              throw daysError
+            }
+            workoutDays.push(...((daysChunk ?? []) as { id: string }[]))
+          }
+
+          const dayIds = workoutDays.map((d) => d.id)
+          for (const dayChunk of chunkForSupabaseIn(dayIds)) {
+            const { data: wdeChunk, error: exercisesError } = await supabase
+              .from('workout_day_exercises')
+              .select('id, exercise_id')
+              .in('workout_day_id', dayChunk)
+            if (exercisesError) {
+              logger.error('Error fetching workout day exercises', exercisesError, { dayIds })
+              throw exercisesError
+            }
+            planWdeRows.push(...((wdeChunk ?? []) as WdeRow[]))
+          }
+        }
+
+        const planWdeIds = planWdeRows.map((e) => e.id)
+        const uniqueExerciseIdsFromPlan = [...new Set(planWdeRows.map((e) => e.exercise_id))]
+
+        type SetRow = {
+          id: string
+          workout_day_exercise_id: string
+          set_number: number
+          reps?: number | null
+          reps_completed?: number | null
+          weight_kg?: number | null
+          weight_used?: number | null
+          completed_at: string | null
+          execution_time_sec?: number | null
+          workout_log_id?: string | null
+        }
+
+        const setsById = new Map<string, SetRow>()
+        const selectSets =
+          'id, workout_day_exercise_id, set_number, reps, reps_completed, weight_kg, weight_used, completed_at, execution_time_sec, workout_log_id'
+
+        for (const logChunk of chunkForSupabaseIn(logIds)) {
+          const { data: workoutSets, error: setsError } = await supabase
+            .from('workout_sets')
+            .select(selectSets)
+            .in('workout_log_id', logChunk)
+            .not('completed_at', 'is', null)
+            .order('completed_at', { ascending: true })
+          if (setsError) {
+            logger.error('Error fetching workout_sets by log', setsError, { athleteProfileId })
+            throw setsError
+          }
+          for (const row of (workoutSets ?? []) as SetRow[]) {
+            setsById.set(row.id, row)
+          }
+        }
+
+        for (const wdeChunk of chunkForSupabaseIn(planWdeIds)) {
+          const { data: workoutSets, error: setsError } = await supabase
+            .from('workout_sets')
+            .select(selectSets)
+            .in('workout_day_exercise_id', wdeChunk)
+            .not('completed_at', 'is', null)
+            .order('completed_at', { ascending: true })
+          if (setsError) {
+            logger.error('Error fetching workout_sets by wde', setsError, { planWdeIds })
+            throw setsError
+          }
+          for (const row of (workoutSets ?? []) as SetRow[]) {
+            setsById.set(row.id, row)
+          }
+        }
+
+        const setsMerged = Array.from(setsById.values())
+        setsMerged.sort((a, b) =>
+          (a.completed_at ?? '').localeCompare(b.completed_at ?? '', undefined, {
+            sensitivity: 'base',
+          }),
+        )
+
+        const rawSets = setsMerged
+
+        const effectiveWeightKg = (s: SetRow): number | null => {
+          if (s.weight_kg != null && Number.isFinite(Number(s.weight_kg))) {
+            return Number(s.weight_kg)
+          }
+          if (s.weight_used != null && Number.isFinite(Number(s.weight_used))) {
+            return Number(s.weight_used)
+          }
+          return null
+        }
+
+        const effectiveReps = (s: SetRow): number | null => {
+          if (s.reps != null && s.reps > 0) return s.reps
+          if (s.reps_completed != null && s.reps_completed > 0) return s.reps_completed
+          return null
+        }
+
+        const exerciseIdMap = new Map(planWdeRows.map((e) => [e.id, e.exercise_id]))
+        const wdeIdsFromSets = [...new Set(rawSets.map((s) => s.workout_day_exercise_id))]
+        const missingWdeIds = wdeIdsFromSets.filter((id) => !exerciseIdMap.has(id))
+
+        for (const wdeChunk of chunkForSupabaseIn(missingWdeIds)) {
+          const { data: wdeExtra, error: wdeExtraErr } = await supabase
             .from('workout_day_exercises')
             .select('id, exercise_id')
-            .in('workout_day_id', dayChunk)
-          if (exercisesError) {
-            logger.error('Error fetching workout day exercises', exercisesError, { dayIds })
-            throw exercisesError
+            .in('id', wdeChunk)
+          if (wdeExtraErr) {
+            logger.error('Error fetching workout_day_exercises for sets', wdeExtraErr, {
+              missingWdeIds,
+            })
+            throw wdeExtraErr
           }
-          workoutDayExercises.push(...((wdeChunk ?? []) as WdeRow[]))
-        }
-
-        if (!workoutDayExercises || workoutDayExercises.length === 0) {
-          logger.debug('No workout day exercises found', undefined, { dayIds })
-          return {
-            exercises: [],
-            total_exercises: 0,
-            total_sessions: 0,
-            date_range: { from: null, to: null },
+          for (const row of (wdeExtra ?? []) as WdeRow[]) {
+            exerciseIdMap.set(row.id, row.exercise_id)
           }
         }
 
-        const wdeRows = workoutDayExercises
-        const workoutDayExerciseIds = wdeRows.map((e) => e.id)
-        const uniqueExerciseIds = [...new Set(wdeRows.map((e) => e.exercise_id))]
+        const exerciseIdsForNames = [
+          ...new Set([...uniqueExerciseIdsFromPlan, ...exerciseIdMap.values()]),
+        ]
 
-        // STEP 5: Recupera i nomi degli esercizi
         type ExRow = { id: string; name: string; category?: string | null }
         const exercisesAccum: ExRow[] = []
-        for (const exChunk of chunkForSupabaseIn(uniqueExerciseIds)) {
+        for (const exChunk of chunkForSupabaseIn(exerciseIdsForNames)) {
           const { data: exercisesData, error: exercisesNamesError } = await supabase
             .from('exercises')
             .select('id, name, category')
             .in('id', exChunk)
           if (exercisesNamesError) {
             logger.error('Error fetching exercises names', exercisesNamesError, {
-              uniqueExerciseIds,
+              exerciseIdsForNames,
             })
             throw exercisesNamesError
           }
@@ -200,53 +285,21 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           exercisesAccum.map((e) => [e.id, { name: e.name, category: e.category }]),
         )
 
-        // STEP 6: Recupera tutti i workout_sets completati (con almeno completed_at; includiamo anche set senza peso per reps/tempo)
-        type SetRow = {
-          workout_day_exercise_id: string
-          set_number: number
-          reps?: number | null
-          weight_kg?: number | null
-          completed_at: string | null
-          execution_time_sec?: number | null
-          workout_log_id?: string | null
-        }
-        const setsMerged: SetRow[] = []
-        for (const wdeChunk of chunkForSupabaseIn(workoutDayExerciseIds)) {
-          const { data: workoutSets, error: setsError } = await supabase
-            .from('workout_sets')
-            .select(
-              'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, execution_time_sec, workout_log_id',
-            )
-            .in('workout_day_exercise_id', wdeChunk)
-            .not('completed_at', 'is', null)
-            .order('completed_at', { ascending: true })
-          if (setsError) {
-            logger.error('Error fetching workout sets', setsError, { workoutDayExerciseIds })
-            throw setsError
-          }
-          setsMerged.push(...((workoutSets ?? []) as SetRow[]))
-        }
-        setsMerged.sort((a, b) =>
-          (a.completed_at ?? '').localeCompare(b.completed_at ?? '', undefined, {
-            sensitivity: 'base',
-          }),
-        )
-
-        const rawSets = setsMerged
+        const uniqueExerciseIds = uniqueExerciseIdsFromPlan
 
         // Set con almeno un dato utile (peso, reps o tempo)
-        const setsWithData = rawSets.filter(
-          (s) =>
-            (s.weight_kg != null && Number(s.weight_kg) >= 0) ||
-            (s.reps != null && s.reps > 0) ||
-            (s.execution_time_sec != null && s.execution_time_sec > 0),
-        )
+        const setsWithData = rawSets.filter((s) => {
+          const w = effectiveWeightKg(s)
+          const r = effectiveReps(s)
+          return (
+            (w != null && w >= 0) ||
+            (r != null && r > 0) ||
+            (s.execution_time_sec != null && s.execution_time_sec > 0)
+          )
+        })
 
         // STEP 7: Raggruppa i set per esercizio
         const exerciseStatsMap = new Map<string, ExerciseStat>()
-        // Crea una mappa workout_day_exercise_id -> exercise_id
-        const exerciseIdMap = new Map(wdeRows.map((e) => [e.id, e.exercise_id]))
-
         for (const set of setsWithData) {
           const exerciseId = exerciseIdMap.get(set.workout_day_exercise_id)
           if (!exerciseId) continue
@@ -278,10 +331,11 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           }
 
           const stat = exerciseStatsMap.get(exerciseId)!
+          const wKg = effectiveWeightKg(set)
           stat.dataPoints.push({
             date,
-            weight_kg: set.weight_kg != null ? Number(set.weight_kg) : 0,
-            reps: set.reps ?? null,
+            weight_kg: wKg != null ? wKg : 0,
+            reps: effectiveReps(set),
             execution_time_sec: set.execution_time_sec ?? null,
             set_number: set.set_number,
             workout_log_id: set.workout_log_id ?? null,

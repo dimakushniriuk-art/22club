@@ -59,7 +59,7 @@ function calculateStreak(allenamenti: Array<{ data: string; stato: string }>): n
     if (completedDates.has(dateKey)) {
       streak++
     } else if (streak > 0) {
-      // Se abbiamo giÃ  uno streak e questo giorno non ha allenamenti, interrompi
+      // Se abbiamo già uno streak e questo giorno non ha allenamenti, interrompi
       break
     }
   }
@@ -141,7 +141,7 @@ export function AllenamentiHomePageContent() {
 
   // Normalizza il ruolo usando utility function centralizzata
   const normalizedRoleRaw = useNormalizedRole(user?.role)
-  // Converte in formato legacy per compatibilitÃ
+  // Converte in formato legacy per compatibilità
   const normalizedRole = useMemo(() => {
     return toLegacyRole(normalizedRoleRaw)
   }, [normalizedRoleRaw])

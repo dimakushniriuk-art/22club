@@ -30,10 +30,7 @@ import {
 import { NewAppointmentButton } from '@/app/dashboard/_components/new-appointment-button'
 import { useStaffTodayAgenda } from '@/hooks/use-staff-today-agenda'
 import { cn } from '@/lib/utils'
-import {
-  STAFF_ASSIGNMENT_STATUS_ACTIVE,
-  STAFF_TYPE_NUTRIZIONISTA,
-} from '@/lib/nutrition-tables'
+import { STAFF_ASSIGNMENT_STATUS_ACTIVE, STAFF_TYPE_NUTRIZIONISTA } from '@/lib/nutrition-tables'
 import { NutrizionistaDashboardWidgetColumns } from './_components/nutrizionista-dashboard-widget-columns'
 
 const logger = createLogger('app:dashboard:nutrizionista:page')
@@ -158,60 +155,54 @@ export default function NutrizionistaPage() {
     try {
       const nowIso = new Date().toISOString()
       const weekEndIso = new Date(Date.now() + 7 * 86400000).toISOString()
-      const [
-        atletiRes,
-        visiteTotaliRes,
-        visiteCompletateRes,
-        paymentsRes,
-        weekRes,
-        aptDataRes,
-      ] = await Promise.all([
-        supabase
-          .from('staff_atleti')
-          .select('id', { count: 'exact', head: true })
-          .eq('staff_id', profileId)
-          .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
-          .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE),
-        supabase
-          .from('appointments')
-          .select('id', { count: 'exact', head: true })
-          .eq('staff_id', profileId)
-          .eq('service_type', 'nutrition')
-          .is('cancelled_at', null)
-          .neq('status', 'annullato'),
-        supabase
-          .from('appointments')
-          .select('id', { count: 'exact', head: true })
-          .eq('staff_id', profileId)
-          .eq('service_type', 'nutrition')
-          .eq('status', 'completato')
-          .is('cancelled_at', null),
-        supabase
-          .from('payments')
-          .select('id', { count: 'exact', head: true })
-          .eq('created_by_staff_id', profileId)
-          .eq('service_type', 'nutrition')
-          .is('deleted_at', null),
-        supabase
-          .from('appointments')
-          .select('id', { count: 'exact', head: true })
-          .eq('staff_id', profileId)
-          .eq('service_type', 'nutrition')
-          .gte('starts_at', nowIso)
-          .lte('starts_at', weekEndIso)
-          .is('cancelled_at', null)
-          .neq('status', 'annullato'),
-        supabase
-          .from('appointments')
-          .select('id, starts_at, athlete_id, type')
-          .eq('staff_id', profileId)
-          .eq('service_type', 'nutrition')
-          .gte('starts_at', nowIso)
-          .is('cancelled_at', null)
-          .neq('status', 'annullato')
-          .order('starts_at', { ascending: true })
-          .limit(12),
-      ])
+      const [atletiRes, visiteTotaliRes, visiteCompletateRes, paymentsRes, weekRes, aptDataRes] =
+        await Promise.all([
+          supabase
+            .from('staff_atleti')
+            .select('id', { count: 'exact', head: true })
+            .eq('staff_id', profileId)
+            .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
+            .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE),
+          supabase
+            .from('appointments')
+            .select('id', { count: 'exact', head: true })
+            .eq('staff_id', profileId)
+            .eq('service_type', 'nutrition')
+            .is('cancelled_at', null)
+            .neq('status', 'annullato'),
+          supabase
+            .from('appointments')
+            .select('id', { count: 'exact', head: true })
+            .eq('staff_id', profileId)
+            .eq('service_type', 'nutrition')
+            .eq('status', 'completato')
+            .is('cancelled_at', null),
+          supabase
+            .from('payments')
+            .select('id', { count: 'exact', head: true })
+            .eq('created_by_staff_id', profileId)
+            .eq('service_type', 'nutrition')
+            .is('deleted_at', null),
+          supabase
+            .from('appointments')
+            .select('id', { count: 'exact', head: true })
+            .eq('staff_id', profileId)
+            .eq('service_type', 'nutrition')
+            .gte('starts_at', nowIso)
+            .lte('starts_at', weekEndIso)
+            .is('cancelled_at', null)
+            .neq('status', 'annullato'),
+          supabase
+            .from('appointments')
+            .select('id, starts_at, athlete_id, type')
+            .eq('staff_id', profileId)
+            .eq('service_type', 'nutrition')
+            .gte('starts_at', nowIso)
+            .is('cancelled_at', null)
+            .neq('status', 'annullato')
+            .order('starts_at', { ascending: true })
+            .limit(12),
+        ])
 
       const supabaseErrors = [
         atletiRes.error,
@@ -251,11 +242,12 @@ export default function NutrizionistaPage() {
             .in('id', idChunk)
           if (profilesErr) {
             logger.error('Dashboard nutrizionista: profili per appuntamenti', profilesErr)
-            setStatsError((prev) =>
-              prev ??
-              (profilesErr.message?.trim()
-                ? profilesErr.message
-                : 'Impossibile caricare i nomi degli atleti per gli appuntamenti.'),
+            setStatsError(
+              (prev) =>
+                prev ??
+                (profilesErr.message?.trim()
+                  ? profilesErr.message
+                  : 'Impossibile caricare i nomi degli atleti per gli appuntamenti.'),
             )
             break
           }
@@ -401,7 +393,9 @@ export default function NutrizionistaPage() {
               </DashboardColumnEmpty>
             ) : nutritionAgendaEvents.length === 0 ? (
               <DashboardColumnEmpty>
-                <p className="text-text-primary/90">Nessun appuntamento nutrizione in agenda per oggi.</p>
+                <p className="text-text-primary/90">
+                  Nessun appuntamento nutrizione in agenda per oggi.
+                </p>
                 <Button variant="primary" size="sm" asChild>
                   <Link href="/dashboard/nutrizionista/calendario" prefetch>
                     Apri calendario

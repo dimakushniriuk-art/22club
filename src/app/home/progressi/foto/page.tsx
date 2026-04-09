@@ -338,7 +338,7 @@ export default function FotoProgressiPage() {
       } catch (err) {
         logger.error('Errore nel download', err, { photoId: photo.id })
         notify(
-          'Si Ã¨ verificato un errore durante il download della foto. Riprova.',
+          'Si è verificato un errore durante il download della foto. Riprova.',
           'error',
           'Errore download',
         )
@@ -442,7 +442,7 @@ export default function FotoProgressiPage() {
         {photos.length === 0 ? (
           <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <CardContent className="py-12 text-center">
-              <div className="mb-4 text-6xl opacity-50">ðŸ“¸</div>
+              <div className="mb-4 text-6xl opacity-50">📸</div>
               <h3 className="text-text-primary mb-2 text-lg font-medium">Nessuna foto caricata</h3>
               <p className="text-text-secondary mb-4 text-sm">
                 Inizia a caricare le tue foto per tracciare i progressi visivi
@@ -548,7 +548,7 @@ export default function FotoProgressiPage() {
               className="absolute right-4 top-4 rounded-xl bg-black/50 text-white hover:bg-black/70"
               aria-label="Chiudi"
             >
-              âœ•
+              ✕
             </Button>
           </div>
         </div>

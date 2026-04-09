@@ -512,7 +512,7 @@ export default function NuovoProgressoPage() {
     })
 
     // Verifica che esista un profilo con user_id = auth.uid()
-    // Usa .single() invece di .maybeSingle() per avere un errore piÃ¹ chiaro
+    // Usa .single() invece di .maybeSingle() per avere un errore più chiaro
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, user_id, email, nome, cognome, role')
@@ -528,11 +528,11 @@ export default function NuovoProgressoPage() {
         errorHint: profileError.hint,
       })
 
-      // Se il profilo non esiste (PGRST116), mostra un messaggio piÃ¹ chiaro
+      // Se il profilo non esiste (PGRST116), mostra un messaggio più chiaro
       if (profileError.code === 'PGRST116') {
         notifyError(
           'Errore',
-          "Il tuo profilo non Ã¨ stato trovato nel sistema. Contatta l'amministratore.",
+          "Il tuo profilo non è stato trovato nel sistema. Contatta l'amministratore.",
         )
       } else {
         notifyError('Errore', `Errore nel verificare il profilo: ${profileError.message}`)
@@ -577,7 +577,7 @@ export default function NuovoProgressoPage() {
         athlete_id: profile.user_id ?? authUser.id,
         created_by_profile_id: profile.id,
         date: formData.date,
-        // Valori principali - mappa peso_kg a weight_kg per compatibilitÃ
+        // Valori principali - mappa peso_kg a weight_kg per compatibilità
         weight_kg: parseNumber(formData.peso_kg),
         massa_grassa_percentuale: parseNumber(formData.massa_grassa_percentuale),
         massa_grassa_kg: parseNumber(formData.massa_grassa_kg),
@@ -594,14 +594,14 @@ export default function NuovoProgressoPage() {
         massa_ossea_kg: parseNumber(formData.massa_ossea_kg),
         massa_residuale_kg: parseNumber(formData.massa_residuale_kg),
 
-        // Circonferenze - mappa torace_cm a chest_cm, vita_cm a waist_cm, fianchi_cm a hips_cm per compatibilitÃ
+        // Circonferenze - mappa torace_cm a chest_cm, vita_cm a waist_cm, fianchi_cm a hips_cm per compatibilità
         collo_cm: parseNumber(formData.collo_cm),
         spalle_cm: parseNumber(formData.spalle_cm),
         chest_cm: parseNumber(formData.torace_cm), // Mappa a chest_cm esistente
         torace_inspirazione_cm: parseNumber(formData.torace_inspirazione_cm),
         braccio_rilassato_cm: parseNumber(formData.braccio_rilassato_cm),
         braccio_contratto_cm: parseNumber(formData.braccio_contratto_cm),
-        biceps_cm: parseNumber(formData.braccio_contratto_cm), // Mappa anche a biceps_cm per compatibilitÃ
+        biceps_cm: parseNumber(formData.braccio_contratto_cm), // Mappa anche a biceps_cm per compatibilità
         avambraccio_cm: parseNumber(formData.avambraccio_cm),
         polso_cm: parseNumber(formData.polso_cm),
         vita_alta_cm: parseNumber(formData.vita_alta_cm),
@@ -611,7 +611,7 @@ export default function NuovoProgressoPage() {
         glutei_cm: parseNumber(formData.glutei_cm),
         coscia_alta_cm: parseNumber(formData.coscia_alta_cm),
         coscia_media_cm: parseNumber(formData.coscia_media_cm),
-        thighs_cm: parseNumber(formData.coscia_media_cm), // Mappa anche a thighs_cm per compatibilitÃ
+        thighs_cm: parseNumber(formData.coscia_media_cm), // Mappa anche a thighs_cm per compatibilità
         coscia_bassa_cm: parseNumber(formData.coscia_bassa_cm),
         ginocchio_cm: parseNumber(formData.ginocchio_cm),
         polpaccio_cm: parseNumber(formData.polpaccio_cm),
@@ -758,7 +758,7 @@ export default function NuovoProgressoPage() {
           />
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
             <CardContent className="p-12 text-center relative z-10">
-              <div className="mb-3 text-4xl opacity-50">ðŸ“Š</div>
+              <div className="mb-3 text-4xl opacity-50">📊</div>
               <p className="text-text-secondary text-sm font-medium">Caricamento dati...</p>
             </CardContent>
           </Card>
@@ -1185,7 +1185,7 @@ export default function NuovoProgressoPage() {
             <CardContent className="relative z-10 space-y-3 pt-2.5">
               <div className="grid grid-cols-1 gap-3">
                 <Input
-                  label="IMC (kg/mÂ²)"
+                  label="IMC (kg/m²)"
                   type="number"
                   step="0.1"
                   value={formData.imc}
@@ -1217,7 +1217,7 @@ export default function NuovoProgressoPage() {
                   placeholder="es. 2.48"
                 />
                 <Input
-                  label="Indice di ConicitÃ "
+                  label="Indice di Conicità"
                   type="number"
                   step="0.01"
                   value={formData.indice_conicita}
@@ -1241,7 +1241,7 @@ export default function NuovoProgressoPage() {
                   placeholder="es. 52.0"
                 />
                 <Input
-                  label="Area Superficie Corporea (mÂ²)"
+                  label="Area Superficie Corporea (m²)"
                   type="number"
                   step="0.01"
                   value={formData.area_superficie_corporea_m2}
@@ -1284,7 +1284,7 @@ export default function NuovoProgressoPage() {
                 />
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    Livello AttivitÃ 
+                    Livello Attività
                   </label>
                   <select
                     className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
@@ -1494,7 +1494,7 @@ export default function NuovoProgressoPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    AdipositÃ  Centrale
+                    Adiposità Centrale
                   </label>
                   <select
                     className="flex w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
@@ -1523,7 +1523,7 @@ export default function NuovoProgressoPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    CapacitÃ  di Dispersione del Calore
+                    Capacità di Dispersione del Calore
                   </label>
                   <textarea
                     className="bg-white/[0.04] text-text-primary placeholder:text-text-tertiary w-full rounded-lg border border-white/10 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
@@ -1532,7 +1532,7 @@ export default function NuovoProgressoPage() {
                     onChange={(e) =>
                       handleInputChange('capacita_dispersione_calore', e.target.value)
                     }
-                    placeholder="es. CapacitÃ  di dispersione del calore elevata"
+                    placeholder="es. Capacità di dispersione del calore elevata"
                   />
                 </div>
               </div>

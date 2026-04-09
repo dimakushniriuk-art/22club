@@ -7,6 +7,7 @@ import { createLogger } from '@/lib/logger'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { classifyWorkoutAppointmentForTrend } from '@/lib/analytics-workout-bookings-trend'
 
 const logger = createLogger('Analytics')
 
@@ -15,6 +16,10 @@ export interface TrendData {
   allenamenti: number
   documenti: number
   ore_totali: number
+  prenotati: number
+  eseguiti: number
+  annullati: number
+  cancellati: number
 }
 
 export interface DistributionData {
@@ -69,20 +74,146 @@ export interface AnalyticsData {
 // Nota: mockTrendData potrebbe essere usato in futuro per testing/mock
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockTrendData: TrendData[] = [
-  { day: '2024-01-01', allenamenti: 12, documenti: 3, ore_totali: 8.5 },
-  { day: '2024-01-02', allenamenti: 15, documenti: 5, ore_totali: 10.2 },
-  { day: '2024-01-03', allenamenti: 8, documenti: 2, ore_totali: 6.1 },
-  { day: '2024-01-04', allenamenti: 20, documenti: 7, ore_totali: 12.8 },
-  { day: '2024-01-05', allenamenti: 18, documenti: 4, ore_totali: 11.5 },
-  { day: '2024-01-06', allenamenti: 14, documenti: 6, ore_totali: 9.3 },
-  { day: '2024-01-07', allenamenti: 16, documenti: 3, ore_totali: 10.7 },
-  { day: '2024-01-08', allenamenti: 22, documenti: 8, ore_totali: 14.2 },
-  { day: '2024-01-09', allenamenti: 19, documenti: 5, ore_totali: 12.1 },
-  { day: '2024-01-10', allenamenti: 17, documenti: 4, ore_totali: 11.3 },
-  { day: '2024-01-11', allenamenti: 21, documenti: 6, ore_totali: 13.8 },
-  { day: '2024-01-12', allenamenti: 13, documenti: 3, ore_totali: 8.9 },
-  { day: '2024-01-13', allenamenti: 25, documenti: 9, ore_totali: 16.4 },
-  { day: '2024-01-14', allenamenti: 23, documenti: 7, ore_totali: 15.1 },
+  {
+    day: '2024-01-01',
+    allenamenti: 12,
+    documenti: 3,
+    ore_totali: 8.5,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-02',
+    allenamenti: 15,
+    documenti: 5,
+    ore_totali: 10.2,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-03',
+    allenamenti: 8,
+    documenti: 2,
+    ore_totali: 6.1,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-04',
+    allenamenti: 20,
+    documenti: 7,
+    ore_totali: 12.8,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-05',
+    allenamenti: 18,
+    documenti: 4,
+    ore_totali: 11.5,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-06',
+    allenamenti: 14,
+    documenti: 6,
+    ore_totali: 9.3,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-07',
+    allenamenti: 16,
+    documenti: 3,
+    ore_totali: 10.7,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-08',
+    allenamenti: 22,
+    documenti: 8,
+    ore_totali: 14.2,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-09',
+    allenamenti: 19,
+    documenti: 5,
+    ore_totali: 12.1,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-10',
+    allenamenti: 17,
+    documenti: 4,
+    ore_totali: 11.3,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-11',
+    allenamenti: 21,
+    documenti: 6,
+    ore_totali: 13.8,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-12',
+    allenamenti: 13,
+    documenti: 3,
+    ore_totali: 8.9,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-13',
+    allenamenti: 25,
+    documenti: 9,
+    ore_totali: 16.4,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
+  {
+    day: '2024-01-14',
+    allenamenti: 23,
+    documenti: 7,
+    ore_totali: 15.1,
+    prenotati: 0,
+    eseguiti: 0,
+    annullati: 0,
+    cancellati: 0,
+  },
 ]
 
 // Mock data rimossi - non più usati dopo il passaggio a fallback vuoto
@@ -101,8 +232,8 @@ export async function getAnalyticsData(orgId?: string): Promise<AnalyticsData> {
       try {
         // Esegui query in parallelo per migliorare performance
         const [trend, distribution, performance] = await Promise.all([
-          // 1. TREND DATA - Ultimi 14 giorni
-          getTrendDataFromDB(supabase, 14),
+          // 1. TREND DATA - Ultimi 15 giorni (incluso oggi)
+          getTrendDataFromDB(supabase, 15, orgId),
           // 2. DISTRIBUTION DATA - Distribuzione per tipo di appuntamento
           getDistributionDataFromDB(supabase),
           // 3. PERFORMANCE DATA - Performance atleti
@@ -148,52 +279,90 @@ export async function getAnalyticsData(orgId?: string): Promise<AnalyticsData> {
 // Funzione per ottenere trend data dal database
 async function getTrendDataFromDB(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  days: number = 14,
+  days: number = 15,
+  orgId?: string,
 ): Promise<TrendData[]> {
   try {
-    const endDate = new Date()
-    const startDate = new Date()
-    startDate.setDate(endDate.getDate() - days)
+    const endBoundary = new Date()
+    endBoundary.setHours(23, 59, 59, 999)
+
+    const startBoundary = new Date()
+    startBoundary.setDate(endBoundary.getDate() - (days - 1))
+    startBoundary.setHours(0, 0, 0, 0)
+
+    const startDayKey = startBoundary.toISOString().split('T')[0]
+    const endDayKey = endBoundary.toISOString().split('T')[0]
 
     // Query per allenamenti giornalieri (workout_logs)
     // Usa CAST per gestire sia DATE che TIMESTAMP
     const { data: workoutLogs, error: workoutsError } = await supabase
       .from('workout_logs')
       .select('data, durata_minuti, stato')
-      .gte('data', startDate.toISOString().split('T')[0])
-      .lte('data', endDate.toISOString().split('T')[0])
+      .gte('data', startDayKey)
+      .lte('data', endDayKey)
       .in('stato', ['completato', 'completed', 'in_corso', 'in_progress'])
 
     if (workoutsError) {
       logger.warn('Errore caricamento workout_logs', { error: workoutsError })
     }
 
-    // Query per documenti giornalieri
-    const { data: documents, error: documentsError } = await supabase
+    let documentsQuery = supabase
       .from('documents')
       .select('created_at')
-      .gte('created_at', startDate.toISOString())
-      .lte('created_at', endDate.toISOString())
+      .gte('created_at', startBoundary.toISOString())
+      .lte('created_at', endBoundary.toISOString())
+    if (orgId) {
+      documentsQuery = documentsQuery.eq('org_id', orgId)
+    }
+    const { data: documents, error: documentsError } = await documentsQuery
 
     if (documentsError) {
       logger.warn('Errore caricamento documents', { error: documentsError })
     }
 
-    // Raggruppa per giorno
-    const trendMap = new Map<
-      string,
-      { allenamenti: number; documenti: number; ore_totali: number }
-    >()
+    let appointmentsQuery = supabase
+      .from('appointments')
+      .select('starts_at, status, cancelled_at, athlete_id, type')
+      .gte('starts_at', startBoundary.toISOString())
+      .lte('starts_at', endBoundary.toISOString())
+    if (orgId) {
+      appointmentsQuery = appointmentsQuery.eq('org_id', orgId)
+    }
+    const { data: workoutAppointments, error: appointmentsError } = await appointmentsQuery
 
-    // Inizializza tutti i giorni con 0
-    for (let i = 0; i < days; i++) {
-      const date = new Date(startDate)
-      date.setDate(date.getDate() + i)
-      const dayKey = date.toISOString().split('T')[0]
-      trendMap.set(dayKey, { allenamenti: 0, documenti: 0, ore_totali: 0 })
+    if (appointmentsError) {
+      logger.warn('Errore caricamento appointments (trend prenotazioni)', { error: appointmentsError })
     }
 
-    // Popola allenamenti
+    type TrendAgg = {
+      allenamenti: number
+      documenti: number
+      ore_totali: number
+      prenotati: number
+      eseguiti: number
+      annullati: number
+      cancellati: number
+    }
+
+    const emptyAgg = (): TrendAgg => ({
+      allenamenti: 0,
+      documenti: 0,
+      ore_totali: 0,
+      prenotati: 0,
+      eseguiti: 0,
+      annullati: 0,
+      cancellati: 0,
+    })
+
+    const trendMap = new Map<string, TrendAgg>()
+
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startBoundary)
+      date.setDate(date.getDate() + i)
+      const dayKey = date.toISOString().split('T')[0]
+      trendMap.set(dayKey, emptyAgg())
+    }
+
     if (workoutLogs) {
       type WorkoutLogRow = {
         data?: string | Date | unknown
@@ -202,7 +371,6 @@ async function getTrendDataFromDB(
       }
       const typedLogs = (workoutLogs as WorkoutLogRow[]) || []
       typedLogs.forEach((log) => {
-        // Gestisci sia DATE che TIMESTAMP
         let dayKey: string
         const logData = log.data as string | Date | unknown
         if (typeof logData === 'string') {
@@ -210,18 +378,18 @@ async function getTrendDataFromDB(
         } else if (logData instanceof Date) {
           dayKey = logData.toISOString().split('T')[0]
         } else {
-          // Se è un oggetto con proprietà date, estrai la stringa
           dayKey = String(logData).split('T')[0]
         }
 
-        const existing = trendMap.get(dayKey) || { allenamenti: 0, documenti: 0, ore_totali: 0 }
+        if (!trendMap.has(dayKey)) return
+
+        const existing = trendMap.get(dayKey) ?? emptyAgg()
         existing.allenamenti += 1
-        existing.ore_totali += (log.durata_minuti || 0) / 60 // Converti minuti in ore
+        existing.ore_totali += (log.durata_minuti || 0) / 60
         trendMap.set(dayKey, existing)
       })
     }
 
-    // Popola documenti
     if (documents) {
       type DocumentRow = {
         created_at?: string | Date | null
@@ -230,19 +398,42 @@ async function getTrendDataFromDB(
       const typedDocs = (documents as DocumentRow[]) || []
       typedDocs.forEach((doc) => {
         const dayKey = new Date(doc.created_at || new Date()).toISOString().split('T')[0]
-        const existing = trendMap.get(dayKey) || { allenamenti: 0, documenti: 0, ore_totali: 0 }
+        if (!trendMap.has(dayKey)) return
+        const existing = trendMap.get(dayKey) ?? emptyAgg()
         existing.documenti += 1
         trendMap.set(dayKey, existing)
       })
     }
 
-    // Converti in array e ordina
+    if (workoutAppointments) {
+      type AptRow = {
+        starts_at: string
+        status: string | null
+        cancelled_at: string | null
+        athlete_id: string | null
+        type: string | null
+      }
+      for (const raw of workoutAppointments as AptRow[]) {
+        const bucket = classifyWorkoutAppointmentForTrend(raw)
+        if (!bucket) continue
+        const dayKey = new Date(raw.starts_at).toISOString().split('T')[0]
+        if (!trendMap.has(dayKey)) continue
+        const existing = trendMap.get(dayKey) ?? emptyAgg()
+        existing[bucket] += 1
+        trendMap.set(dayKey, existing)
+      }
+    }
+
     const trend: TrendData[] = Array.from(trendMap.entries())
       .map(([day, data]) => ({
         day,
         allenamenti: data.allenamenti,
         documenti: data.documenti,
-        ore_totali: Math.round(data.ore_totali * 10) / 10, // Arrotonda a 1 decimale
+        ore_totali: Math.round(data.ore_totali * 10) / 10,
+        prenotati: data.prenotati,
+        eseguiti: data.eseguiti,
+        annullati: data.annullati,
+        cancellati: data.cancellati,
       }))
       .sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime())
 

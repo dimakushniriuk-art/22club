@@ -56,8 +56,7 @@ export function InstallPwaPrompt() {
   const deferredRef = useRef<BeforeInstallPromptEvent | null>(null)
 
   const onAllowedRoute =
-    pathname != null &&
-    (pathname.startsWith('/home') || pathname.startsWith('/dashboard'))
+    pathname != null && (pathname.startsWith('/home') || pathname.startsWith('/dashboard'))
 
   const consentAllowsOptional = hasCookieDecision() && hasFunctionalConsent()
 
@@ -100,11 +99,7 @@ export function InstallPwaPrompt() {
     const onBeforeInstall = (e: Event) => {
       e.preventDefault()
       deferredRef.current = e as BeforeInstallPromptEvent
-      if (
-        !dismissedDeferred() &&
-        hasCookieDecision() &&
-        hasFunctionalConsent()
-      ) {
+      if (!dismissedDeferred() && hasCookieDecision() && hasFunctionalConsent()) {
         setMode('deferred')
       }
     }
@@ -151,8 +146,8 @@ export function InstallPwaPrompt() {
             <div className="flex min-w-0 flex-1 items-start gap-2 text-sm text-text-primary">
               <Download className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
               <p className="leading-snug">
-                Installa <span className="font-semibold">22Club</span> sul dispositivo per un accesso
-                più rapido e notifiche push (se attive).
+                Installa <span className="font-semibold">22Club</span> sul dispositivo per un
+                accesso più rapido e notifiche push (se attive).
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:justify-end">
@@ -178,8 +173,8 @@ export function InstallPwaPrompt() {
               <Share2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
               <p className="leading-snug">
                 Su iPhone/iPad: tocca <strong className="font-semibold">Condividi</strong> e poi{' '}
-                <strong className="font-semibold">Aggiungi alla schermata Home</strong> per usare 22Club
-                come app.
+                <strong className="font-semibold">Aggiungi alla schermata Home</strong> per usare
+                22Club come app.
               </p>
             </div>
             <button

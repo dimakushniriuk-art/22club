@@ -182,13 +182,7 @@ export function DialogTrigger({ children }: { children: React.ReactNode }) {
     }
   }
   return (
-    <div
-      onClick={open}
-      onKeyDown={onKeyDown}
-      role="button"
-      tabIndex={0}
-      className="cursor-pointer"
-    >
+    <div onClick={open} onKeyDown={onKeyDown} role="button" tabIndex={0} className="cursor-pointer">
       {children}
     </div>
   )

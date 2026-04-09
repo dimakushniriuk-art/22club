@@ -30,8 +30,8 @@ export function CookiePreferencesSettingRow({ compact = false }: CookiePreferenc
           <div className="min-w-0">
             <p className="text-sm font-medium text-text-primary">Cookie e dati sul dispositivo</p>
             <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-              Gestisci analitica (Sentry) e funzioni opzionali. I cookie di sessione restano necessari per
-              l&apos;accesso.{' '}
+              Gestisci analitica (Sentry) e funzioni opzionali. I cookie di sessione restano
+              necessari per l&apos;accesso.{' '}
               <Link
                 href="/privacy#cookie-policy"
                 className="inline-flex items-center gap-0.5 text-primary underline hover:text-primary/90"

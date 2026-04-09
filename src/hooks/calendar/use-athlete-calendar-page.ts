@@ -17,8 +17,21 @@ import type {
 import type { Tables } from '@/types/supabase'
 import { normalizeAppointmentStatus } from '@/lib/appointment-utils'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import {
+  eachOpenBookingSegment,
+  countBookingsOverlappingWindow,
+} from '@/lib/appointments/open-booking-grid-segments'
 
 const logger = createLogger('hooks:calendar:use-athlete-calendar-page')
+
+/** Validazione drag/resize: non è un fallimento tecnico, non va loggato come error. */
+function isExpectedAthleteCalendarMoveRejection(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    (err.message === 'ATHLETE_BOOKING_SLOT_FULL' ||
+      err.message === 'ATHLETE_BOOKING_OUTSIDE_OPEN_SLOT')
+  )
+}
 
 type AppointmentRow = Tables<'appointments'>
 
@@ -119,10 +132,16 @@ export function useAthleteCalendarPage(profileId: string | null) {
   }, [staffId])
 
   const fetchAppointments = useCallback(async () => {
-    if (!profileId) return
+    if (!profileId) {
+      setAppointments([])
+      setSlotBookingCounts({})
+      setAppointmentsLoading(false)
+      return
+    }
     try {
       setAppointmentsLoading(true)
-      // Nessun filtro athlete_id: RLS restituisce propri appuntamenti + sabato/domenica (visibili a tutti)
+      // Nessun filtro client: la lista dipende da RLS. Per la griglia Libera prenotazione servono anche
+      // le prenotazioni degli altri atleti nello stesso slot (policy SELECT dedicata lato DB).
       const { data, error } = await supabase
         .from('appointments')
         .select(
@@ -154,24 +173,13 @@ export function useAthleteCalendarPage(profileId: string | null) {
       type Row = AppointmentRow & { created_by_role?: string | null; is_open_booking_day?: boolean }
       const rows = (data ?? []) as unknown as Row[]
 
-      // Conteggio prenotazioni per slot Libera (chiave = marker slot) per UI "x/N" — allineato al matching per contenimento
+      // Conteggio per fascia griglia (15 min) dentro ogni finestra Libera — chiave `${startMs}|${endMs}` (allineata a CalendarView)
       const slotBookingCounts: Record<string, number> = {}
-      const openSlotKeys = new Set(
-        rows
-          .filter((r) => r.is_open_booking_day && r.starts_at && r.ends_at)
-          .map((r) => `${r.starts_at}|${r.ends_at}`),
-      )
-      for (const key of openSlotKeys) {
-        const [s, e] = key.split('|')
-        slotBookingCounts[key] = rows.filter(
-          (r) =>
-            r.starts_at &&
-            r.ends_at &&
-            r.athlete_id != null &&
-            r.cancelled_at == null &&
-            r.status !== 'annullato' &&
-            isAthleteBookingInsideOpenSlot(r.starts_at, r.ends_at, s, e),
-        ).length
+      const openMarkers = rows.filter((r) => r.is_open_booking_day && r.starts_at && r.ends_at)
+      for (const m of openMarkers) {
+        for (const seg of eachOpenBookingSegment(m.starts_at, m.ends_at)) {
+          slotBookingCounts[seg.key] = countBookingsOverlappingWindow(rows, seg.startMs, seg.endMs)
+        }
       }
       setSlotBookingCounts(slotBookingCounts)
 
@@ -291,6 +299,38 @@ export function useAthleteCalendarPage(profileId: string | null) {
     [appointments, staffId, notify],
   )
 
+  /** Stessa regola della creazione: ogni fascia 15 min del nuovo intervallo non deve essere già al max (esclude l’appuntamento spostato). */
+  const assertAthleteDragRespectsSlotCapacity = useCallback(
+    (appointmentId: string, newStartIso: string, newEndIso: string) => {
+      if (!staffId) return
+      const maxPerSlot = openBookingSlotMax
+      const bkS = new Date(newStartIso).getTime()
+      const bkE = new Date(newEndIso).getTime()
+      const openSlots = appointments.filter(
+        (a) => a.is_open_booking_day && a.staff_id === staffId && !a.cancelled_at,
+      )
+      const matchingSlot = openSlots.find((s) =>
+        isAthleteBookingInsideOpenSlot(newStartIso, newEndIso, s.starts_at, s.ends_at),
+      )
+      if (!matchingSlot) return
+      const segments = eachOpenBookingSegment(matchingSlot.starts_at, matchingSlot.ends_at)
+      const rowsForCount = appointments.filter((a) => a.id !== appointmentId)
+      for (const seg of segments) {
+        if (bkS >= seg.endMs || bkE <= seg.startMs) continue
+        const c = countBookingsOverlappingWindow(rowsForCount, seg.startMs, seg.endMs)
+        if (c >= maxPerSlot) {
+          notify(
+            `Una o più fasce da 15 min in questo orario sono al completo (${maxPerSlot}/${maxPerSlot}). Scegli un altro orario.`,
+            'error',
+            'Slot pieno',
+          )
+          throw new Error('ATHLETE_BOOKING_SLOT_FULL')
+        }
+      }
+    },
+    [appointments, staffId, openBookingSlotMax, notify],
+  )
+
   const handleFormSubmit = useCallback(
     async (data: CreateAppointmentData, editing: EditAppointmentData | null) => {
       if (!staffId || !profileId) {
@@ -327,17 +367,22 @@ export function useAthleteCalendarPage(profileId: string | null) {
             setLoading(false)
             return
           }
-          const slotKey = `${matchingSlot.starts_at}|${matchingSlot.ends_at}`
-          const currentCount = slotBookingCounts[slotKey] ?? 0
           const maxPerSlot = openBookingSlotMax
-          if (currentCount >= maxPerSlot) {
-            notify(
-              `Questo slot è al completo (${maxPerSlot}/${maxPerSlot}). Scegli un altro orario.`,
-              'error',
-              'Slot pieno',
-            )
-            setLoading(false)
-            return
+          const bkS = new Date(startsAt).getTime()
+          const bkE = new Date(endsAt).getTime()
+          const segments = eachOpenBookingSegment(matchingSlot.starts_at, matchingSlot.ends_at)
+          for (const seg of segments) {
+            if (bkS >= seg.endMs || bkE <= seg.startMs) continue
+            const currentCount = slotBookingCounts[seg.key] ?? 0
+            if (currentCount >= maxPerSlot) {
+              notify(
+                `Una o più fasce da 15 min in questo orario sono al completo (${maxPerSlot}/${maxPerSlot}). Scegli un altro orario.`,
+                'error',
+                'Slot pieno',
+              )
+              setLoading(false)
+              return
+            }
           }
         }
         if (editing?.id) {
@@ -462,9 +507,16 @@ export function useAthleteCalendarPage(profileId: string | null) {
   const handleEventDrop = useCallback(
     async (appointmentId: string, newStart: Date, newEnd: Date) => {
       const apt = appointments.find((a) => a.id === appointmentId)
-      if (apt?.created_by_role !== 'athlete') return
+      if (
+        apt?.created_by_role !== 'athlete' ||
+        !profileId ||
+        apt.athlete_id !== profileId
+      ) {
+        return
+      }
       try {
         assertAthleteMoveInsideOpenSlot(newStart.toISOString(), newEnd.toISOString())
+        assertAthleteDragRespectsSlotCapacity(appointmentId, newStart.toISOString(), newEnd.toISOString())
         const { error } = await supabase
           .from('appointments')
           .update({
@@ -481,20 +533,35 @@ export function useAthleteCalendarPage(profileId: string | null) {
           ),
         )
       } catch (err) {
-        logger.error('Errore spostamento appuntamento', err)
-        await fetchAppointments()
+        if (!isExpectedAthleteCalendarMoveRejection(err)) {
+          logger.error('Errore spostamento appuntamento', err)
+          await fetchAppointments()
+        }
         throw err
       }
     },
-    [appointments, fetchAppointments, assertAthleteMoveInsideOpenSlot],
+    [
+      appointments,
+      fetchAppointments,
+      assertAthleteMoveInsideOpenSlot,
+      assertAthleteDragRespectsSlotCapacity,
+      profileId,
+    ],
   )
 
   const handleEventResize = useCallback(
     async (appointmentId: string, newStart: Date, newEnd: Date) => {
       const apt = appointments.find((a) => a.id === appointmentId)
-      if (apt?.created_by_role !== 'athlete') return
+      if (
+        apt?.created_by_role !== 'athlete' ||
+        !profileId ||
+        apt.athlete_id !== profileId
+      ) {
+        return
+      }
       try {
         assertAthleteMoveInsideOpenSlot(newStart.toISOString(), newEnd.toISOString())
+        assertAthleteDragRespectsSlotCapacity(appointmentId, newStart.toISOString(), newEnd.toISOString())
         const { error } = await supabase
           .from('appointments')
           .update({
@@ -511,12 +578,20 @@ export function useAthleteCalendarPage(profileId: string | null) {
           ),
         )
       } catch (err) {
-        logger.error('Errore ridimensionamento appuntamento', err)
-        await fetchAppointments()
+        if (!isExpectedAthleteCalendarMoveRejection(err)) {
+          logger.error('Errore ridimensionamento appuntamento', err)
+          await fetchAppointments()
+        }
         throw err
       }
     },
-    [appointments, fetchAppointments, assertAthleteMoveInsideOpenSlot],
+    [
+      appointments,
+      fetchAppointments,
+      assertAthleteMoveInsideOpenSlot,
+      assertAthleteDragRespectsSlotCapacity,
+      profileId,
+    ],
   )
 
   return {

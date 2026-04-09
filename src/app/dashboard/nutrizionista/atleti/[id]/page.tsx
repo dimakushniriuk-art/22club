@@ -159,8 +159,7 @@ export default function NutrizionistaAtletaProfilePage() {
 
   const onAthleteTabChange = useCallback(
     (next: string) => {
-      const v = (ATHLETE_PROFILE_TABS.find((t) => t === next) ??
-        'overview') as AthleteProfileTab
+      const v = (ATHLETE_PROFILE_TABS.find((t) => t === next) ?? 'overview') as AthleteProfileTab
       if (!id) return
       const path = `/dashboard/nutrizionista/atleti/${id}`
       const q = new URLSearchParams(searchParams.toString())
@@ -1579,9 +1578,14 @@ export default function NutrizionistaAtletaProfilePage() {
                       <p className="text-text-muted text-sm">Nessun pasto.</p>
                     ) : (
                       day.meals.map((meal) => (
-                        <div key={meal.id} className="rounded-lg border border-border/50 p-3 space-y-2">
+                        <div
+                          key={meal.id}
+                          className="rounded-lg border border-border/50 p-3 space-y-2"
+                        >
                           <div className="flex flex-wrap items-baseline justify-between gap-2">
-                            <span className="text-sm font-medium text-text-primary">{meal.name}</span>
+                            <span className="text-sm font-medium text-text-primary">
+                              {meal.name}
+                            </span>
                             {meal.time_suggested ? (
                               <span className="text-xs text-text-muted">{meal.time_suggested}</span>
                             ) : null}

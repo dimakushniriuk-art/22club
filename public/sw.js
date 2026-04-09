@@ -67,15 +67,11 @@ self.addEventListener('fetch', (event) => {
   }
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req).catch(() =>
-        caches.match(req).then((r) => r || caches.match('/login')),
-      ),
+      fetch(req).catch(() => caches.match(req).then((r) => r || caches.match('/login'))),
     )
     return
   }
-  event.respondWith(
-    caches.match(req).then((response) => response || fetch(req)),
-  )
+  event.respondWith(caches.match(req).then((response) => response || fetch(req)))
 })
 
 // =====================================================

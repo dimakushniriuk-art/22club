@@ -7,10 +7,20 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   CartesianGrid,
 } from '@/components/charts/client-recharts'
 import type { TrendData } from '@/lib/analytics'
+import {
+  analyticsChartTheme,
+  chartBookingStatus,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
+} from '@/lib/analytics-chart-theme'
+
+const ch = analyticsChartTheme.chrome
+const se = analyticsChartTheme.series
 
 interface TrendChartProps {
   data: TrendData[]
@@ -20,7 +30,7 @@ interface TrendChartProps {
 
 export const TrendChart: React.FC<TrendChartProps> = ({
   data,
-  title = 'Andamento Allenamenti (ultimi 14 giorni)',
+  title = 'Andamento Allenamenti (ultimi 15 giorni)',
   height = 280,
 }) => {
   const processedData = useMemo(() => data ?? [], [data])
@@ -86,13 +96,13 @@ export const TrendChart: React.FC<TrendChartProps> = ({
           <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#242A2E"
+              stroke={ch.grid}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <XAxis
               dataKey="day"
-              stroke="#A5AFB4"
+              stroke={ch.axis}
               fontSize={12}
               tickFormatter={(value: string | number) => {
                 try {
@@ -107,21 +117,15 @@ export const TrendChart: React.FC<TrendChartProps> = ({
               {...({} as any)}
             />
             <YAxis
-              stroke="#A5AFB4"
+              stroke={ch.axis}
               fontSize={12}
               tickFormatter={(value: number) => value.toString()}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: '#0F172A',
-                border: '2px solid #14B8A6',
-                borderRadius: '12px',
-                color: '#EAF0F2',
-                boxShadow: '0 10px 25px rgba(20, 184, 166, 0.3)',
-                padding: '12px',
-              }}
+              contentStyle={chartTooltipContentStyle()}
+              labelStyle={chartTooltipLabelStyle()}
               labelFormatter={(value: string | number) => {
                 try {
                   const date = typeof value === 'string' ? new Date(value) : new Date(String(value))
@@ -151,10 +155,10 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             <Line
               type="monotone"
               dataKey="allenamenti"
-              stroke="#14B8A6"
+              stroke={se.primary}
               strokeWidth={3}
-              dot={{ fill: '#14B8A6', strokeWidth: 2, r: 5 }}
-              activeDot={{ r: 7, stroke: '#14B8A6', strokeWidth: 3, fill: '#ffffff' }}
+              dot={{ fill: se.primary, strokeWidth: 2, r: 5 }}
+              activeDot={{ r: 7, stroke: se.primary, strokeWidth: 3, fill: '#ffffff' }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
@@ -170,7 +174,7 @@ export const MultiTrendChart: React.FC<{
   data: TrendData[]
   title?: string
   height?: number
-}> = ({ data, title = 'Trend Multipli', height = 280 }) => {
+}> = ({ data, title = 'Prenotazioni allenamento (ultimi 15 giorni)', height = 280 }) => {
   const processedData = useMemo(() => data ?? [], [data])
 
   if (!processedData.length) {
@@ -234,13 +238,13 @@ export const MultiTrendChart: React.FC<{
           <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#242A2E"
+              stroke={ch.grid}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <XAxis
               dataKey="day"
-              stroke="#A5AFB4"
+              stroke={ch.axis}
               fontSize={12}
               tickFormatter={(value: string | number) => {
                 try {
@@ -255,20 +259,14 @@ export const MultiTrendChart: React.FC<{
               {...({} as any)}
             />
             <YAxis
-              stroke="#A5AFB4"
+              stroke={ch.axis}
               fontSize={12}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: '#0F172A',
-                border: '2px solid #14B8A6',
-                borderRadius: '12px',
-                color: '#EAF0F2',
-                boxShadow: '0 10px 25px rgba(20, 184, 166, 0.3)',
-                padding: '12px',
-              }}
+              contentStyle={chartTooltipContentStyle()}
+              labelStyle={chartTooltipLabelStyle()}
               labelFormatter={(value: string | number) => {
                 try {
                   const date = typeof value === 'string' ? new Date(value) : new Date(String(value))
@@ -282,39 +280,73 @@ export const MultiTrendChart: React.FC<{
                   return String(value)
                 }
               }}
+              formatter={(value: number | string, name?: string) => {
+                const labels: Record<string, string> = {
+                  prenotati: 'Prenotati',
+                  eseguiti: 'Eseguiti',
+                  annullati: 'Annullati',
+                  cancellati: 'Cancellati',
+                }
+                return [value, name ? (labels[name] ?? name) : '']
+              }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              {...({} as any)}
+            />
+            <Legend
+              wrapperStyle={{ color: ch.legend, fontSize: 12, paddingTop: 8 }}
+              formatter={(value: string) => {
+                const labels: Record<string, string> = {
+                  prenotati: 'Prenotati',
+                  eseguiti: 'Eseguiti',
+                  annullati: 'Annullati',
+                  cancellati: 'Cancellati',
+                }
+                return labels[value] ?? value
+              }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <Line
               type="monotone"
-              dataKey="allenamenti"
-              stroke="#14B8A6"
-              strokeWidth={3}
-              name="Allenamenti"
-              dot={{ fill: '#14B8A6', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#14B8A6', strokeWidth: 2 }}
+              dataKey="prenotati"
+              stroke={chartBookingStatus.prenotati}
+              strokeWidth={2}
+              name="prenotati"
+              dot={{ fill: chartBookingStatus.prenotati, strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 5, stroke: chartBookingStatus.prenotati, strokeWidth: 2 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <Line
               type="monotone"
-              dataKey="documenti"
-              stroke="#F59E0B"
-              strokeWidth={3}
-              name="Documenti"
-              dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2 }}
+              dataKey="eseguiti"
+              stroke={chartBookingStatus.eseguiti}
+              strokeWidth={2}
+              name="eseguiti"
+              dot={{ fill: chartBookingStatus.eseguiti, strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 5, stroke: chartBookingStatus.eseguiti, strokeWidth: 2 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />
             <Line
               type="monotone"
-              dataKey="ore_totali"
-              stroke="#10B981"
-              strokeWidth={3}
-              name="Ore Totali"
-              dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2 }}
+              dataKey="annullati"
+              stroke={chartBookingStatus.annullati}
+              strokeWidth={2}
+              name="annullati"
+              dot={{ fill: chartBookingStatus.annullati, strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 5, stroke: chartBookingStatus.annullati, strokeWidth: 2 }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              {...({} as any)}
+            />
+            <Line
+              type="monotone"
+              dataKey="cancellati"
+              stroke={chartBookingStatus.cancellati}
+              strokeWidth={2}
+              name="cancellati"
+              dot={{ fill: chartBookingStatus.cancellati, strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 5, stroke: chartBookingStatus.cancellati, strokeWidth: 2 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               {...({} as any)}
             />

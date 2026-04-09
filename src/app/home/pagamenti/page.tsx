@@ -61,7 +61,7 @@ export default function PagamentiPage() {
         return
       }
 
-      // user.id dal AuthProvider Ã¨ profiles.id (FK athlete_id su payments / lesson_counters)
+      // user.id dal AuthProvider è profiles.id (FK athlete_id su payments / lesson_counters)
       let athleteId = user.id ?? null
       if (!athleteId) {
         const { data: profile, error: profileError } = await supabase

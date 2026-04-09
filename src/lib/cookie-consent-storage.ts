@@ -36,7 +36,11 @@ function safeParse(raw: string | null): CookiePreferencesV1 | null {
     const analytics = (o as { analytics?: unknown }).analytics
     const functional = (o as { functional?: unknown }).functional
     const decidedAt = (o as { decidedAt?: unknown }).decidedAt
-    if (typeof analytics !== 'boolean' || typeof functional !== 'boolean' || typeof decidedAt !== 'string') {
+    if (
+      typeof analytics !== 'boolean' ||
+      typeof functional !== 'boolean' ||
+      typeof decidedAt !== 'string'
+    ) {
       return null
     }
     return { v: COOKIE_PREFS_VERSION, analytics, functional, decidedAt }
@@ -79,7 +83,9 @@ export function migrateLegacyCookieKey(): void {
   }
 }
 
-export function saveCookiePreferences(prefs: Omit<CookiePreferencesV1, 'v' | 'decidedAt'>): CookiePreferencesV1 {
+export function saveCookiePreferences(
+  prefs: Omit<CookiePreferencesV1, 'v' | 'decidedAt'>,
+): CookiePreferencesV1 {
   const full: CookiePreferencesV1 = {
     v: COOKIE_PREFS_VERSION,
     analytics: prefs.analytics,

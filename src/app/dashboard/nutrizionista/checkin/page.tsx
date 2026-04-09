@@ -19,10 +19,7 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { createLogger } from '@/lib/logger'
-import {
-  STAFF_ASSIGNMENT_STATUS_ACTIVE,
-  STAFF_TYPE_NUTRIZIONISTA,
-} from '@/lib/nutrition-tables'
+import { STAFF_ASSIGNMENT_STATUS_ACTIVE, STAFF_TYPE_NUTRIZIONISTA } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { athleteIdForNutritionColumn } from '@/lib/nutrition-athlete-id'
 import { useNotify } from '@/lib/ui/notify'
@@ -85,8 +82,12 @@ export default function NutrizionistaCheckinPage() {
         return
       }
 
-      const profilesAccum: { id: string; nome: string | null; cognome: string | null; org_id: string | null }[] =
-        []
+      const profilesAccum: {
+        id: string
+        nome: string | null
+        cognome: string | null
+        org_id: string | null
+      }[] = []
       for (const idChunk of chunkForSupabaseIn(athleteIds)) {
         const { data: prof, error: pErr } = await supabase
           .from('profiles')
@@ -172,16 +173,7 @@ export default function NutrizionistaCheckinPage() {
     } finally {
       setSaving(false)
     }
-  }, [
-    profileId,
-    formAthleteId,
-    formScheduled,
-    formNotes,
-    athletes,
-    supabase,
-    loadData,
-    notify,
-  ])
+  }, [profileId, formAthleteId, formScheduled, formNotes, athletes, supabase, loadData, notify])
 
   if (showLoader) {
     return <StaffDashboardGuardSkeleton />
@@ -232,7 +224,9 @@ export default function NutrizionistaCheckinPage() {
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-background-tertiary/40">
                   <tr>
-                    <th className="text-left p-3 font-medium text-text-secondary">Data / creazione</th>
+                    <th className="text-left p-3 font-medium text-text-secondary">
+                      Data / creazione
+                    </th>
                     <th className="text-left p-3 font-medium text-text-secondary">Cliente</th>
                     <th className="text-left p-3 font-medium text-text-secondary">Programmato</th>
                     <th className="text-left p-3 font-medium text-text-secondary">Stato</th>
@@ -241,7 +235,10 @@ export default function NutrizionistaCheckinPage() {
                 </thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} className="border-b border-border/60 hover:bg-background-tertiary/20">
+                    <tr
+                      key={r.id}
+                      className="border-b border-border/60 hover:bg-background-tertiary/20"
+                    >
                       <td className="p-3 text-text-secondary whitespace-nowrap">
                         {r.created_at
                           ? new Date(r.created_at).toLocaleString('it-IT', {
@@ -281,7 +278,9 @@ export default function NutrizionistaCheckinPage() {
 
         <p className="text-text-muted text-xs text-center">
           Migrazione DB:{' '}
-          <code className="text-text-secondary">supabase/migrations/20260405120000_nutrition_check_ins.sql</code>
+          <code className="text-text-secondary">
+            supabase/migrations/20260405120000_nutrition_check_ins.sql
+          </code>
         </p>
       </div>
 
@@ -332,7 +331,12 @@ export default function NutrizionistaCheckinPage() {
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
               Annulla
             </Button>
-            <Button type="button" variant="primary" disabled={saving} onClick={() => void handleCreate()}>
+            <Button
+              type="button"
+              variant="primary"
+              disabled={saving}
+              onClick={() => void handleCreate()}
+            >
               {saving ? 'Salvataggio…' : 'Crea'}
             </Button>
           </DialogFooter>

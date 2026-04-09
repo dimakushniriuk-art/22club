@@ -37,7 +37,7 @@ function AccordionBlock({
         className="grid transition-[grid-template-rows] duration-200 ease-out"
         style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
       >
-          <div className="overflow-hidden">
+        <div className="overflow-hidden">
           <div className="readable-prose-max mx-auto px-4 pb-4 pt-0 text-text-secondary text-[15px] leading-relaxed border-t border-white/10">
             {section.content}
           </div>

@@ -120,30 +120,30 @@ export function DashboardMobileNav() {
       {/* Header mobile: solo sotto md */}
       <header className="md:hidden flex flex-col shrink-0 border-b border-white/5 bg-background/95 backdrop-blur-sm sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center justify-between gap-3 h-14 px-4">
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          className="flex items-center justify-center w-11 h-11 rounded-xl hover:bg-white/5 active:bg-white/10 transition-colors touch-manipulation"
-          aria-label="Apri menu"
-        >
-          <Menu className="w-6 h-6 text-text-primary" />
-        </button>
-        <Link
-          href={
-            userRole === 'marketing'
-              ? '/dashboard/marketing'
-              : userRole === 'nutrizionista'
-                ? '/dashboard/nutrizionista'
-                : userRole === 'massaggiatore'
-                  ? '/dashboard/massaggiatore'
-                  : '/dashboard'
-          }
-          prefetch
-          className="flex-1 flex justify-center min-w-0"
-        >
-          <Logo22Club className="h-7 w-auto max-w-[140px]" />
-        </Link>
-        <div className="w-11" />
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="flex items-center justify-center w-11 h-11 rounded-xl hover:bg-white/5 active:bg-white/10 transition-colors touch-manipulation"
+            aria-label="Apri menu"
+          >
+            <Menu className="w-6 h-6 text-text-primary" />
+          </button>
+          <Link
+            href={
+              userRole === 'marketing'
+                ? '/dashboard/marketing'
+                : userRole === 'nutrizionista'
+                  ? '/dashboard/nutrizionista'
+                  : userRole === 'massaggiatore'
+                    ? '/dashboard/massaggiatore'
+                    : '/dashboard'
+            }
+            prefetch
+            className="flex-1 flex justify-center min-w-0"
+          >
+            <Logo22Club className="h-7 w-auto max-w-[140px]" />
+          </Link>
+          <div className="w-11" />
         </div>
       </header>
 

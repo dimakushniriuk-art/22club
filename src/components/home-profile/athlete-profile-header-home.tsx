@@ -25,19 +25,19 @@ const ROLE_LABEL: Record<UserRole, string> = {
   massaggiatore: 'Massaggiatore',
 }
 
-function statoDisplay(stato: string | null | undefined): { label: string; className: string } | null {
+function statoDisplay(
+  stato: string | null | undefined,
+): { label: string; className: string } | null {
   if (stato == null || stato === '') return null
   const s = stato.toLowerCase()
   const map: Record<string, { label: string; className: string }> = {
     trial: {
       label: 'Prova',
-      className:
-        'border-amber-500/25 bg-amber-500/12 text-amber-200',
+      className: 'border-amber-500/25 bg-amber-500/12 text-amber-200',
     },
     attivo: {
       label: 'Attivo',
-      className:
-        'border-emerald-500/25 bg-emerald-500/12 text-emerald-200',
+      className: 'border-emerald-500/25 bg-emerald-500/12 text-emerald-200',
     },
     sospeso: {
       label: 'Sospeso',
@@ -48,10 +48,12 @@ function statoDisplay(stato: string | null | undefined): { label: string; classN
       className: 'border-white/15 bg-white/[0.06] text-text-secondary',
     },
   }
-  return map[s] ?? {
-    label: stato.charAt(0).toUpperCase() + stato.slice(1),
-    className: 'border-white/15 bg-white/[0.06] text-text-secondary',
-  }
+  return (
+    map[s] ?? {
+      label: stato.charAt(0).toUpperCase() + stato.slice(1),
+      className: 'border-white/15 bg-white/[0.06] text-text-secondary',
+    }
+  )
 }
 
 interface AthleteProfileHeaderHomeProps {
@@ -114,7 +116,11 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
               className="absolute bottom-1 left-1/2 z-10 flex min-h-[44px] min-w-[44px] -translate-x-1/2 touch-manipulation items-end justify-center border-0 bg-transparent px-3 pb-1 pt-3 text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] transition-colors hover:text-cyan-200 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:bottom-0.5 sm:px-2 sm:pb-0.5 sm:pt-2"
               aria-label="Cambia foto profilo"
             >
-              <Camera className="h-5 w-5 shrink-0 sm:h-[1.2rem] sm:w-[1.2rem]" strokeWidth={2.5} aria-hidden />
+              <Camera
+                className="h-5 w-5 shrink-0 sm:h-[1.2rem] sm:w-[1.2rem]"
+                strokeWidth={2.5}
+                aria-hidden
+              />
             </button>
           </div>
           <div className="flex min-w-0 flex-1 flex-col items-center sm:items-stretch">
