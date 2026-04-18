@@ -134,12 +134,25 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
     }
   }, [isCollapsed, isMounted])
 
+  const [logoutPending, setLogoutPending] = useState(false)
+
   const handleLogout = async () => {
+    if (logoutPending) return
+    setLogoutPending(true)
     try {
-      await signOut()
+      const result = await signOut()
+      if (!result.success) {
+        notify(
+          result.error ?? 'Logout non riuscito. Riprova.',
+          'error',
+          'Errore logout',
+        )
+      }
     } catch (error) {
       logger.error('Errore nel logout', error)
       notify('Si è verificato un errore durante il logout. Riprova.', 'error', 'Errore logout')
+    } finally {
+      setLogoutPending(false)
     }
   }
 
@@ -168,7 +181,7 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col transition-all duration-300 shrink-0 border-r border-white/10 bg-transparent ${
+      className={`hidden md:flex md:h-full md:max-h-full flex-col min-h-0 transition-all duration-300 shrink-0 border-r border-white/10 bg-transparent ${
         isCollapsed ? 'w-20' : 'w-64'
       } p-4`}
       suppressHydrationWarning
@@ -179,7 +192,8 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
           <Logo22Club className="w-full max-w-[180px] h-auto" />
         </div>
       )}
-      <nav className="flex flex-col gap-1.5 flex-1 min-h-0" suppressHydrationWarning>
+      <nav className="flex flex-col flex-1 min-h-0 gap-0" suppressHydrationWarning>
+        <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch]">
         {nav.map((item) => {
           const itemPath = item.href.split('?')[0]
           const isHomePage =
@@ -259,12 +273,15 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
             )}
           </Link>
         )}
-        {/* Esci + Toggle collapse */}
-        <div className="mt-auto pt-3 border-t border-white/10 space-y-1.5">
+        </div>
+        {/* Esci + toggle: footer fuori area scroll (sempre in vista) */}
+        <div className="shrink-0 pt-3 border-t border-white/10 space-y-1.5">
           <button
             type="button"
             onClick={handleLogout}
-            className={`flex w-full items-center gap-3 min-h-[44px] p-3 rounded-lg transition-colors duration-200 text-state-error font-medium border border-transparent hover:bg-state-error/10 hover:border-state-error/30 ${
+            disabled={logoutPending}
+            aria-busy={logoutPending}
+            className={`flex w-full cursor-pointer items-center gap-3 min-h-[44px] p-3 rounded-lg transition-colors duration-200 text-state-error font-medium border border-transparent hover:bg-state-error/10 hover:border-state-error/30 active:bg-state-error/15 disabled:pointer-events-none disabled:opacity-60 ${
               isCollapsed ? 'justify-center' : 'min-w-0'
             }`}
             title={isCollapsed ? 'Esci' : undefined}

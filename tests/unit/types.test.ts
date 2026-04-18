@@ -54,6 +54,7 @@ describe('Type definitions', () => {
         signIn: async () => ({ success: true }),
         signOut: async () => ({ success: true }),
         resetPassword: async () => ({ success: true }),
+        refreshUserProfile: async () => {},
       }
 
       expect(context.user).toBeNull()

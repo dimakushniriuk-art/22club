@@ -80,7 +80,7 @@ function NuovaSchedaContent() {
 
   if (error || exercisesLoadError) {
     return (
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
         <ErrorState message={error || exercisesLoadError || ''} onRetry={() => router.refresh()} />
       </div>
     )

@@ -45,6 +45,8 @@ export interface AuthContext {
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   signOut: () => Promise<{ success: boolean; error?: string }>
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>
+  /** Invalida cache profilo in-memory e ricarica da DB (es. dopo salvataggio in Impostazioni). */
+  refreshUserProfile: () => Promise<void>
 }
 
 export interface JWTClaims {

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { extractFileName } from '@/lib/documents'
 import { queryKeys } from '@/lib/query-keys'
+import { invalidateDocumentsQueries } from '@/lib/react-query/post-mutation-cache'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import type { Document } from '@/types/document'
 
@@ -149,7 +150,7 @@ export function useDocuments({ athleteId, filters, enabled = true }: UseDocument
   // Realtime subscription per aggiornamenti automatici
   useRealtimeChannel('documents', (payload) => {
     // Invalida query quando ci sono cambiamenti (INSERT, UPDATE, DELETE)
-    queryClient.invalidateQueries({ queryKey: queryKeys.documents.all })
+    void invalidateDocumentsQueries(queryClient)
     logger.debug('Realtime document event received', undefined, {
       eventType: payload.eventType,
       new: payload.new,

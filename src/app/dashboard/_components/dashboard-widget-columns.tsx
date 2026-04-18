@@ -8,6 +8,7 @@ import { useAuth } from '@/providers/auth-provider'
 import { useStaffDashboardWidgets } from '@/hooks/use-staff-dashboard-widgets'
 import { STAFF_DASHBOARD_LOW_LESSONS_THRESHOLD } from '@/lib/dashboard/fetch-staff-dashboard-widgets'
 import { useStaffChatUnreadPreview } from '@/hooks/use-staff-chat-unread-preview'
+import type { StaffDashboardLayoutPrefs } from '@/lib/dashboard/staff-dashboard-layout-prefs'
 
 /** Pannello colonna dashboard: stesso chrome per agenda + widget. */
 export const DASHBOARD_COLUMN_PANEL_CLASS =
@@ -124,7 +125,11 @@ function ListSkeleton() {
   return <DashboardColumnListSkeleton />
 }
 
-export function DashboardWidgetColumns() {
+export function DashboardWidgetColumns({
+  widgetsVisibility,
+}: {
+  widgetsVisibility: StaffDashboardLayoutPrefs['widgets']
+}) {
   const { user } = useAuth()
   const staffProfileId = user?.id
   const { expiring, athletes, loading, error } = useStaffDashboardWidgets(staffProfileId)
@@ -134,6 +139,7 @@ export function DashboardWidgetColumns() {
 
   return (
     <>
+      {widgetsVisibility.expiringPrograms ? (
       <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
         <ColumnPanel
           title="Schede in scadenza"
@@ -182,7 +188,9 @@ export function DashboardWidgetColumns() {
           )}
         </ColumnPanel>
       </div>
+      ) : null}
 
+      {widgetsVisibility.lowLessons ? (
       <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
         <ColumnPanel
           title="Lezioni in esaurimento"
@@ -229,7 +237,9 @@ export function DashboardWidgetColumns() {
           )}
         </ColumnPanel>
       </div>
+      ) : null}
 
+      {widgetsVisibility.unreadChats ? (
       <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
         <ColumnPanel
           title="Messaggi non letti"
@@ -268,6 +278,7 @@ export function DashboardWidgetColumns() {
           )}
         </ColumnPanel>
       </div>
+      ) : null}
     </>
   )
 }

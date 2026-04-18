@@ -1,0 +1,30 @@
+- payments_fetch
+	- ATOMS
+		- source_file=src/lib/credits/athlete-training-lessons-display.ts
+		- tables=payments lesson_counters appointments credit_ledger
+		- service_type=ref=[[abbonamenti-service-type]] (import)
+		- hook_file=src/hooks/use-payments.ts
+		- hook_file=src/hooks/use-payments-stats.ts
+		- hook_file=src/hooks/use-payments-filters.ts
+		- type_payment=ref=@/types/payment
+	- COMPRESSED
+		- pickTrainingCounterRow=preferenza `training` poi `standard` su righe `lesson_counters`
+		- remainingByAthleteFromLessonCounterRows=Map athlete_id→count da righe aggregate
+		- computeAthleteTrainingLessonUsage=training: `totalUsed` da somma DEBIT `credit_ledger` qty negativi; `totalRemaining=max(0,totalPurchased-totalUsed)`; altri service: Promise.all lesson_counters + appointments completati + ledger DEBIT, `totalUsed=max` tra ledger vs counter vs count appuntamenti con fallback
+		- fetchAthleteTrainingLessonsSnapshot=payments `completed` somma `lessons_purchased` + computeAthleteTrainingLessonUsage
+		- lessonUsageByAthleteIds=chunk IN su payments completed + per-atleta computeAthleteTrainingLessonUsage; errore→riga zero usage
+		- usePayments.fetchPayments=payments select * + join profiles!athlete_id + profiles!created_by_staff_id; map athlete_name/created_by_staff_name; order created_at desc; count exact se paginazione; range page*pageSize; filtri role athlete→eq(athlete_id); admin|trainer→eq(created_by_staff_id); default deleted_at is null; includeDeleted solo admin
+		- usePayments.getStats=derivato in-memory su lista corrente: mese corrente JS `getMonth` 0-based, esclude is_reversal, date=created_at||payment_date
+		- usePaymentsStats=cacheKey=`payments-stats:${year}:${month}` su statsCache; preferenza rpc `get_monthly_revenue` p_year p_month (month 1-based in hook); fallback reduce su array payments opzionale se RPC fail/empty
+		- usePaymentsFilters=useMemo filter su athlete_name|method_text search; method_text exact; status active|reversals vs is_reversal
+	- QUERIES
+		- use=payments.select(lessons_purchased).eq(status,completed).eq(service_type)
+		- use=lesson_counters.select(count,lesson_type).eq(athlete_id).in(lesson_type)
+		- use=appointments.select(id).eq(athlete_id).eq(status,completato).eq(service_type)
+		- use=credit_ledger.select(qty).eq(athlete_id).eq(entry_type,DEBIT).eq(service_type)
+		- use=payments.select(join athletes+staff profiles)
+		- use=rpc.get_monthly_revenue(p_year,p_month)
+	- CONTEXT
+		- name=training_counter_alignment
+		- issues=training allineato a “Opzione A” ledger DEBIT vs altri servizi con confronto multi-fonte
+		- ref=[[payments_context]] (rischi cache/partitioning stats vs hook list)

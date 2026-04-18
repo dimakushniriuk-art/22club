@@ -1,0 +1,87 @@
+- notifications_context
+	- ATOMS
+		- NOT.ctx.inbox_no_realtime=src/hooks/use-notifications.ts|no postgres_changes su notifications|unreadCount lista stale finché non fetchNotifications|altre tab/device non propagano
+		- NOT.ctx.chat_param_unused=useChatNotifications(_userId)|param non usato|non forwarded a useNotifications
+		- NOT.ctx.create_recipient_opt=file=src/hooks/use-notifications.ts#createNotification|options.recipientUserId opzionale|stringa vuota o solo whitespace→null poi coalesce con hook userId|merge lista+unreadCount solo se hook userId valorizzato e uguale a targetUserId
+		- NOT.ctx.chat_wiring_gap=id atom legacy|src/hooks/use-chat-notifications.ts|useNotifications() senza userId per liste|insert chat via ref=NOT.ctx.create_recipient_opt|listener INSERT recipientUserId=auth.getUser().id|notifyMessageSent recipientUserId=receiverProfile.user_id|residuo RLS insert per conto destinatario da validare deploy
+		- NOT.ctx.chat_notify_target=notifyMessageSent|createNotification passa recipientUserId|dual truth insert vs destinatario chiuso 2026-04-18|ref=[[notifications_mutations]] NOT.hook.chat_notify_sent
+		- NOT.ctx.chat_mount_pages=file=src/app/dashboard/chat/page.tsx|file=src/app/home/chat/page.tsx|entry=useChat|nested=useChatNotifications|side_effects=postgres listener INSERT+notifyMessageSent solo quando route chat montata
+		- NOT.ctx.chat_notify_fireforget=file=src/hooks/use-chat.ts#sendMessage|notifyMessageSent senza await|errori solo catch interno notifyMessageSent→logger
+		- NOT.ctx.chat_channel_parallel=file=src/hooks/use-chat-notifications.ts|channel literal chat_messages|non passa realtimeClient|duplicati possibili multi tab sessioni
+		- NOT.ctx.chat_title_semantic_bug=RESOLVED 2026-04-18|solo notifyMessageSent era errato titolo destinatario|listener INSERT aveva già titolo mittente senderName|post-fix notifyMessageSent usa senderProfile currentProfileId|ref=[[notifications_mutations]] NOT.hook.chat_notify_sent
+		- NOT.ctx.chat_listener_link_static=INSERT postgres_changes handler|createNotification link fisso=/home/chat|notifyMessageSent invece branch athlete vs staff URL|drift cross-path ref=[[notifications_mutations]] NOT.hook.chat_side_effect_insert
+		- NOT.ctx.profile_vs_auth_inbox=chat_messages.receiver_id sender_id=profiles.id|use-notifications filtra notifications.user_id=auth.users.id|insert chat con recipientUserId riduce mismatch|resta rischio altri writer|ref=NOT.ctx.chat_wiring_gap
+		- NOT.ctx.header_coupling=file=src/components/header.tsx|useAuth user|useNotifications userId=user?.id|badge Bell+menu Notifiche|getUnreadNotifications slice preview|role link settings athlete vs staff
+		- NOT.ctx.route_nav_inbox_staff=URL=/dashboard/notifiche|file=src/app/dashboard/notifiche/page.tsx|sidebar+header_href_ok|guard+hook_stack=stesso contratto tab profilo|surrogate_tab=/dashboard/profilo?tab=notifiche|ref=[[notifications_fetch]] NOT.page.inbox_dashboard_staff|ref=[[notifications_fetch]] NOT.page.inbox_pt
+		- NOT.ctx.inbox_pt_role=file=src/hooks/use-profilo-page-guard.ts|permission=staff_dashboard_home|non_atleta|redirect=getRedirectPath_guard_staff_wrong_area
+		- NOT.ctx.pt_tab_shape_gap=mapApiNotificationToTab|defaults priority=medium|category=''|link|action_text|sent_at da optional DB→tab UI assume stringhe|colonne DB priority/category opzionali cast ApiNotification&
+		- NOT.ctx.section_dead_export=NotificationsSection+barrel_export|nessun_import_in_app|widget atleta non montato|onViewAll_onMarkAsRead mai cablati da route
+		- NOT.ctx.header_bell_nav=handleNotificationClick setShowNotificationDropdown then window.location /dashboard/notifiche sempre|dropdown unread preview quasi unreachable stesso tick|state showNotificationDropdown vs href race
+		- NOT.ctx.header_read_gap=click preview row link navigate|nessuna markAsRead su preview|solo navigate|unread badge stale finché pagina notifiche non marca ref=[[notifications_mutations]] NOT.hook.mark_read
+		- NOT.ctx.realtime_consumer_empty=useRealtimeNotifications handler vuoto|nessun merge lista|unread gap vs altro tab/device|ref=[[notifications_fetch]] NOT.hook.realtime_consumer_stub
+		- NOT.ctx.rt_map_singleton=file=src/lib/realtimeClient.ts|channels Map process-wide|name_key dedup|shared tra feature che riusano stesso channelName
+		- NOT.ctx.rt_cleanup_contract=subscribeToTable return fn→unsubscribe+Map.delete|ultimo_unmount_wins|multi_mount stesso table_name=stesso channel getRealtimeChannel→rischio listener multipli .on chain|ordine dipende supabase-js
+		- NOT.ctx.rt_cast_unsafe=channel cast unknown per on/send firma|accoppia a tipi Row Generics solo su callback payload
+		- NOT.ctx.rt_hook_deps=file=src/hooks/useRealtimeChannel.ts|useRealtimeChannel effect deps=[table,eventType]|userId non in deps useRealtimeNotifications|handler fresh via onEventRef
+		- NOT.ctx.rt_notifications_hook_dead=grep_src useRealtimeNotifications|solo definizione|nessun import consumer|canale notifications INSERT mai sottoscritto da app→NOT.ctx.inbox_no_realtime confermato|ref=[[notifications_fetch]] NOT.hook.realtime_consumer_stub
+		- NOT.ctx.rt_broadcast_orthogonal=subscribeToChannel+broadcastToChannel|non postgres_changes|non coinvolge inbox notifications salvo uso futuro
+		- NOT.ctx.unread_drift=unreadCount solo stato hook post-fetch|optimistic mark read ok|senza realtime INSERT altri device restano stale|push path separato ref=[[notifications_mutations]] use-push
+		- NOT.ctx.athlete_section_contract=presentational|types locali senza chat|parent deve mappare Notification hook→title message timestamp isRead|slice UI max 3|onMarkAsRead opzionale|ref=[[notifications_fetch]] NOT.ui.athlete_inbox_feed
+		- NOT.ctx.homonym=useNotifications|@/hooks/use-notifications=inbox DB|@/lib/notifications.ts=toast client NotificationType info|success|warning|error|non confondere import
+		- NOT.ctx.inbox_user_id=hook filtra eq notifications.user_id|allinea a auth.users.id passato da Header|Profilo|Massaggiatore impostazioni|non profile_id
+		- NOT.ctx.mark_read_updated_at=optimistic merge campo updated_at locale|insert select single non garantisce shape completa vs cast Notification
+		- NOT.ctx.delete_stale_closure=deleteNotification setUnreadCount legge notifications da closure|possibile mismatch se batch updates
+		- NOT.ctx.vapid_env_split=NEXT_PUBLIC_VAPID_KEY=api GET vapid-key+lib getVAPIDPublicKey|NEXT_PUBLIC_VAPID_PUBLIC_KEY=use-push.ts subscribe|se divergono o mancanti→subscribe fallisce o key mismatch ref=deploy checklist
+		- NOT.ctx.vapid_route_public=GET /api/push/vapid-key senza auth|publicKey esposta|accettabile se public only|non leak private
+		- NOT.ctx.push_api_auth=subscribe|unsubscribe richiedono session cookie server|body userId deve eq user.id|anti-spoof
+		- NOT.ctx.unsubscribe_order=use-push unsubscrive PushManager prima di API delete|se POST fallisce subscription browser già null→riga DB orphan possibile finché non cleanup
+		- NOT.ctx.permission_gap=use-push non richiede Notification.requestPermission|subscribe può fallire se default denied|use-push-notifications ha requestPermission flow separato
+		- NOT.ctx.dual_pwa_hooks=use-push→POST subscribe DB|use-push-notifications→localStorage only no sync getActivePushTokens|stato permission richiesto|consumer PT pt-settings-tab=use-push file=src/components/profile/pt-settings-tab.tsx
+		- NOT.ctx.push_hooks_split=use-push-notifications subscription non in push_subscriptions|server push lib ignora localStorage→notifiche web non ricevute se solo questo hook
+		- NOT.ctx.duplicate_endpoint=upsert onConflict user_id endpoint|re-subscribe stesso device aggiorna p256dh auth
+		- NOT.ctx.admin=push.ts|scheduler.ts|test→createAdminClient server role bypass RLS expectation
+		- NOT.ctx.rls_notifications_insert_cross_user=file=src/hooks/use-notifications.ts#createNotification|client browser insert notifications.user_id=recipientUserId opzionale|mitigazione=RLS INSERT WITH CHECK tipicamente user_id=auth.uid() o SECURITY DEFINER/RPC|se policy permissiva→escalation scrittura inbox altrui|migrations notifications non presenti in repo→audit manuale Supabase obbligatorio prima produzione|pagamenti e PII finanziari non in questo path|corpo chat può contenere testo conversazione=sensibilità media
+		- NOT.ctx.rls_client=athlete-registration.ts→createClient browser/server anon auth path|insert notifications as client ref=NOT.ctx.split_brain
+		- NOT.ctx.reg_module_client=athlete-registration.ts|const supabase=createClient() module scope singleton
+		- NOT.ctx.split_brain=athlete-registration sendPushNotification name collision|file-local stub logs success|does NOT import push.ts sendPushNotification ref=critical gap delivery PT push
+		- NOT.ctx.types_gap=user_push_tokens|push_subscriptions optional|casts any on generated Database types
+		- NOT.ctx.is_push_idempotent=update notifications only eq is_push_sent false+id→evita doppio flag se race minima
+		- NOT.ctx.dedup_window=hasRecentReminderNotification 24h same user type link action_text→anti-spam skipped workouts|missing photos only
+		- NOT.ctx.rpc_black_box=notify_expiring_documents|notify_missing_progress|notify_low_lesson_balance|notify_no_active_workouts|logic in DB not in src/lib/notifications
+		- NOT.ctx.no_modal=none|no overlap|no calendar|no recurrence in folder
+		- NOT.ctx.env=VAPID_PUBLIC_KEY|VAPID_PRIVATE_KEY|NEXT_PUBLIC_VAPID_KEY|VAPID_EMAIL default mailto admin 22club
+		- NOT.ctx.webpush_fallback=VAPID missing→simulate|web-push import error→simulate delay 100ms
+		- NOT.ctx.push_sub=optional table|errors non fatal→fallback user_push_tokens
+		- NOT.ctx.skipped_sql=raw filter not in subquery on profiles|depends workout_plans is_active false updated_at window
+		- NOT.ctx.photos_sql=raw filter progress_photos date gt 14d
+		- NOT.ctx.coupling=logger createLogger|supabase server|NOTIFICATION_TYPES shared types
+		- NOT.ctx.assumption=sendPushNotification success sent gt 0|false if all tokens fail even partial errors array
+		- NOT.ctx.assumption2=broadcast sequential await per user|no rate limit in code
+	- COMPRESSED
+		- inbox: solo refetch on mount/userId|badge header=stesso hook|chat insert con recipientUserId|realtime tabella notifications stub|chat realtime su messages→createNotification con ref=NOT.ctx.create_recipient_opt
+		- chat bridge: grep consumer useChatNotifications=use-chat.ts only|notifyMessageSent trigger=sendMessage|mount=dashboard/home chat pages|ref=[[notifications_mutations]] NOT.hook.chat_consumer_graph
+		- realtimeClient: singleton Map|cleanup delete key|useRealtimeChannel cleanup on unmount|useRealtimeNotifications dead→no realtime pipeline notifications
+		- split inbox vs push: hook inbox DB client|use-push subscription device|incrocio solo se row notifications+job unsent ref lib
+		- push web: due sorgenti chiave VAPID client|route vapid-key vs env inline|allineare env e permessi prima produzione
+		- rischio PT registration: notifica in-app creata ma push reale non inviata da questo modulo (stub)
+		- rischio admin push: stesso processo Node service client|non usare profile_id vs user_id qui: campo notifications.user_id come auth user id
+		- auth RLS insert chat: sessione mittente esegue insert riga destinatario|gate=policy DB non codice app|ref=NOT.ctx.rls_notifications_insert_cross_user
+		- scheduler skipped|photos: insert senza is_push_sent field explicit→default DB governa ref=migrations esterni
+	- QUERIES
+		- use=src/app/dashboard/profilo/page.tsx|useProfiloPageGuard|tab_notifiche
+		- use=src/components/header.tsx|bell vs dropdown vs mark read
+		- use=src/lib/realtimeClient.ts|contract subscribeToTable lifecycle
+		- use=src/hooks/use-chat.ts#sendMessage|useChatNotifications
+		- use=src/hooks/useRealtimeChannel.ts#useRealtimeChannel|useRealtimeNotifications
+		- use=src/hooks/use-notifications.ts#createNotification recipientUserId|use-chat-notifications.ts listener|notifyMessageSent
+		- use=src/hooks/use-push.ts|confronto env VAPID vs src/app/api/push/vapid-key/route.ts|src/hooks/use-push-notifications.ts
+		- use=external DB RPC definitions per NOT.ctx.rpc_black_box
+		- use=src/lib/notifications/types.ts#NOTIFICATION_TYPES|isNotificationType
+	- CONTEXT
+		- issues=stub push athlete-registration|dual token tables web vs mobile|generated types incomplete|inbox realtime absent|chat param _userId hook ancora unused|hook name collision lib toast|VAPID env name drift use-push vs api|vapid-key route unauthenticated|use-push no permission preflight|unsubscribe API-after-browser orphan risk|use-push-notifications localStorage vs DB subscribe split|RLS notifications INSERT cross-user+registration ref=NOT.ctx.rls_notifications_insert_cross_user|header bell always navigate|header preview no mark read|athlete section type subset vs NOTIFICATION_TYPES|realtime notifications consumer empty|/dashboard/notifiche page dedicata ok|NotificationsSection mai montato|inbox PT solo staff_dashboard_home profilo tab|realtimeClient Map globale cleanup delete|useRealtimeNotifications export non usato|multi .on stesso channelName non gestito in cleanup granulare|useChatNotifications solo dentro useChat|listener chat_messages duplicabile fuori Map realtime
+		- delta_recipient_normalize=2026-04-18|src/hooks/use-notifications.ts#createNotification|recipientUserId stringa vuota o solo whitespace→null|trim applicato se stringa non vuota|poi coalesce con hook userId|evita insert user_id ''|ref=NOT.ctx.create_recipient_opt
+		- risk_recipient_contract=createNotification non valida UUID né ownership conversazione|correttezza destinatario=responsabilità caller use-chat-notifications + vincoli DB RLS|ID errato o malevolo passa se policy permissiva|ref=NOT.ctx.rls_notifications_insert_cross_user
+		- risk_trim_edge=trim su recipientUserId altera solo spazi iniziali/finali|UUID interni con spazi improbabili|se mai accadessero verrebbero normalizzati
+		- delta_listener_try=2026-04-18|postgres_changes INSERT chat_messages|createNotification avvolto in try/catch|fail RLS/rete→logger|no reject non gestita sul callback async
+		- use=allineare prima fix delivery PT se push reale richiesta da questo flusso
+		- use=audit Supabase: policy notifications INSERT/UPDATE/SELECT vs auth.uid|confronto createNotification recipientUserId e athlete-registration insert|admin/service_role path NOT.ctx.admin|dump o SQL dashboard non in repo

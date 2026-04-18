@@ -25,19 +25,21 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
         series: buildWorkoutExerciseSeries(exercise),
       }))
       .filter(
-        ({ series }) => series.hasWeight || series.hasReps || series.hasTime,
+        ({ series, exercise }) =>
+          series.hasWeight ||
+          series.hasReps ||
+          series.hasTime ||
+          exercise.dataPoints.length > 0,
       )
   }, [data.exercises])
 
   if (exerciseCharts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center px-2">
-        <p className="text-text-primary text-sm font-medium">
-          Nessun dato da mostrare
-        </p>
+        <p className="text-text-primary text-sm font-medium">Nessun dato da mostrare</p>
         <p className="text-text-tertiary mt-1 text-xs max-w-md">
-          Compaiono esercizi con almeno una serie completata con peso, ripetizioni o tempo
-          registrati negli allenamenti.
+          Compaiono esercizi con serie su sessioni di allenamento (anche in corso o senza peso
+          registrato).
         </p>
       </div>
     )
@@ -46,6 +48,11 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {exerciseCharts.map(({ exercise, series }) => {
+        const noNumericTrend =
+          exercise.dataPoints.length > 0 &&
+          !series.hasWeight &&
+          !series.hasReps &&
+          !series.hasTime
         const noDataYet = series.chartData.length === 0
         const detailHref =
           detailBasePath !== undefined && detailBasePath.length > 0
@@ -57,7 +64,41 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
             key={exercise.exercise_id}
             className="min-w-0 rounded-lg border border-white/10 bg-white/[0.02] p-3"
           >
-            {noDataYet ? (
+            {noNumericTrend ? (
+              <div className="w-full">
+                <div className="mb-2 grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-1">
+                  <div className="min-w-0 col-start-1 row-start-1">
+                    <h3 className="text-text-primary text-sm font-semibold">
+                      {exercise.exercise_name}
+                    </h3>
+                  </div>
+                  {detailHref ? (
+                    <div className="col-start-2 row-start-1 row-span-2 justify-self-end self-start">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 h-8 px-2.5 text-xs text-primary"
+                        asChild
+                      >
+                        <Link href={detailHref} aria-label={`Dettagli ${exercise.exercise_name}`}>
+                          Dettagli
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="flex flex-col items-center justify-center py-8 px-1">
+                  <Dumbbell className="h-9 w-9 text-text-tertiary mb-2 opacity-60" />
+                  <p className="text-text-secondary text-xs font-medium text-center">
+                    Serie su sessione, senza metriche
+                  </p>
+                  <p className="text-text-tertiary text-[11px] text-center mt-1 leading-snug">
+                    {exercise.total_sessions} sessioni · {exercise.total_sets} serie (anche in corso
+                    o senza peso/reps/tempo). Apri Dettagli per l&apos;elenco date.
+                  </p>
+                </div>
+              </div>
+            ) : noDataYet ? (
               <div className="w-full">
                 <div className="mb-2 grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-1">
                   <div className="min-w-0 col-start-1 row-start-1">

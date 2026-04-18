@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen min-h-dvh bg-background text-text-primary flex flex-col">
+    <div className="flex min-h-full min-w-0 w-full flex-1 flex-col bg-background text-text-primary">
       {/* Header */}
       <header className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 border-b border-white/10">
         <Link

@@ -79,17 +79,15 @@ export function useAthleteFitness(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 5 * 60 * 1000, // 5 minuti - dati fitness cambiano raramente
-    gcTime: 30 * 60 * 1000, // 30 minuti (cacheTime in React Query v4) - mantieni in cache più a lungo
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }
 
 /**
  * Hook per aggiornare dati fitness atleta
- * @param athleteId - UUID dell'atleta (user_id)
+ * @param athleteId - `profiles.user_id` o `profiles.id` (risolto da PATCH `/api/athlete-fitness`)
  */
 export function useUpdateAthleteFitness(athleteId: string | null) {
   const queryClient = useQueryClient()
@@ -104,68 +102,33 @@ export function useUpdateAthleteFitness(athleteId: string | null) {
         // Valida i dati con Zod
         const validated = updateAthleteFitnessDataSchema.parse(updates)
 
-        // Prepara i dati per l'update (rimuove campi undefined)
-        const updateData: Record<string, unknown> = {}
-        if (validated.livello_esperienza !== undefined)
-          updateData.livello_esperienza = validated.livello_esperienza
-        if (validated.obiettivo_primario !== undefined)
-          updateData.obiettivo_primario = validated.obiettivo_primario
-        if (validated.obiettivi_secondari !== undefined)
-          updateData.obiettivi_secondari = validated.obiettivi_secondari
-        if (validated.giorni_settimana_allenamento !== undefined)
-          updateData.giorni_settimana_allenamento = validated.giorni_settimana_allenamento
-        if (validated.durata_sessione_minuti !== undefined)
-          updateData.durata_sessione_minuti = validated.durata_sessione_minuti
-        if (validated.preferenze_orario !== undefined)
-          updateData.preferenze_orario = validated.preferenze_orario
-        if (validated.attivita_precedenti !== undefined)
-          updateData.attivita_precedenti = validated.attivita_precedenti
-        if (validated.infortuni_pregressi !== undefined)
-          updateData.infortuni_pregressi = validated.infortuni_pregressi
-        if (validated.zone_problematiche !== undefined)
-          updateData.zone_problematiche = validated.zone_problematiche
-        if (validated.note_fitness !== undefined) updateData.note_fitness = validated.note_fitness
+        const res = await fetch('/api/athlete-fitness', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            athleteUserId: athleteId,
+            updates: validated,
+          }),
+        })
 
-        // Verifica se esiste già un record
-        const { data: existing } = await supabase
-          .from('athlete_fitness_data')
-          .select('id')
-          .eq('athlete_id', athleteId)
-          .single()
+        const payload = (await res.json().catch(() => null)) as
+          | { data?: unknown; error?: string }
+          | null
 
-        let result
-
-        if (existing) {
-          // Update esistente
-          const { data, error } = await supabase
-            .from('athlete_fitness_data')
-            .update(updateData)
-            .eq('athlete_id', athleteId)
-            .select('*')
-            .single()
-
-          if (error) throw error
-          result = data
-        } else {
-          // Insert nuovo record
-          const { data, error } = await supabase
-            .from('athlete_fitness_data')
-            .insert({
-              athlete_id: athleteId,
-              ...updateData,
-            })
-            .select('*')
-            .single()
-
-          if (error) throw error
-          result = data
+        if (!res.ok) {
+          const msg =
+            payload && typeof payload === 'object' && 'error' in payload && payload.error
+              ? String(payload.error)
+              : `HTTP ${res.status}`
+          throw new Error(msg)
         }
 
-        if (!result) {
-          throw new Error('Dati non trovati dopo aggiornamento')
+        if (!payload || typeof payload !== 'object' || !('data' in payload) || !payload.data) {
+          throw new Error('Risposta API non valida')
         }
 
-        // Valida e ritorna i dati aggiornati
+        const result = payload.data as Record<string, unknown>
+
         const validatedResult = createAthleteFitnessDataSchema.parse({
           id: result.id,
           athlete_id: result.athlete_id,

@@ -1,0 +1,51 @@
+- chat_modal
+	- ATOMS
+		- source_conversation_list=src/components/chat/conversation-list.tsx
+		- source_chat_empty_state=src/components/chat/chat-empty-state.tsx
+		- source_chat_theme=src/components/chat/chat-theme.ts
+		- source_barrel=src/components/chat/index.ts
+		- list_selection_contract=onSelectConversation(other_user_id)|currentConversationId===other_user_id→t.selectedItem
+		- list_remove_contract=onRemoveFromList?(userId) abilita DropdownMenuItem Rimuovi dalla lista
+		- list_search_operational=filter other_user_name includes searchTerm lower
+		- list_empty_inline=filteredConversations.length===0→copy searchTerm? vs lista vuota ref=[[chat_context]] delta_ui_routes staff_two_panel (non ChatEmptyState)
+		- list_staff_split_client=isStaffRole admin|trainer|nutrizionista|massaggiatore|marketing|staff→sezioni Staff|Atleti
+		- list_profile_link_operational=Link href=/dashboard/atleti/${other_user_id} stopPropagation menu
+		- empty_state_contract=variant=select|loading theme?=ChatTheme default→CHAT_THEME_CLASSES keys emptyIconBox|spinner
+		- theme_map_file=ChatTheme default|teal|amber CHAT_THEME_CLASSES.searchRing|emptyIconBox|selectedItem|iconColor|spinner
+		- barrel_surface=re-export message-list|message-input|emoji-picker|file-upload|conversation-list|chat-empty-state prefetch ref=[[chat_context]] delta_ui_routes prefetch_staff
+		- source_message_input=src/components/chat/message-input.tsx
+		- source_file_upload=src/components/chat/file-upload.tsx
+		- source_message_list=src/components/chat/message-list.tsx
+		- logger_input=ref=@/lib/logger createLogger components:chat:message-input
+		- logger_list=ref=@/lib/logger createLogger components:chat:message-list
+		- props_contract=onSendMessage(message,type,fileData?)|onUploadFile(File)=>Promise url|name|size|onDraftChange?(boolean)|disabled?
+		- draft_has=Boolean(message.trim()||selectedFile)→useEffect onDraftChange ref=[[chat_context]] draft_leave_confirm
+		- textarea_autosize=scrollHeight style height auto loop
+		- send_keyboard=Enter&&!shift preventDefault async handleSend
+		- send_text=onSendMessage(trim,'text') clear message
+		- send_file_sequence=isUploading true→onUploadFile(file)→onSendMessage(file.name,'file',fileData) clear selectedFile notify on fail
+		- hidden_file_input_id=file-input accept=image/*,application/pdf inline string message-input
+		- fileupload_accept_keys=ACCEPTED_TYPES image/* application/pdf extensions jpg png gif webp pdf
+		- fileupload_max_bytes=10*1024*1024 notifyError File troppo grande
+		- fileupload_drag=onDrop first file only preventDefault drag state
+		- fileupload_preview_image=URL.createObjectURL image only revoke not explicit in snippet
+		- message_list_delete_ui=AlertDialog open messageToDelete onDeleteMessage(messageId)=>Promise boolean false→notify mittente
+		- message_list_load_more=onLoadMore+hasMore UI button onClick load older (dettaglio markup oltre scope)
+		- message_list_scroll=messages.length effect scrollIntoView smooth bottom ref
+	- COMPRESSED
+		- staff_right_panel_states=ref=src/app/dashboard/chat/page.tsx selected+participant match→MessageList+MessageInput; selected id senza participant allineato→ChatEmptyState loading; nessun selected→select; theme={chatTheme} lista+empty
+		- dashboard_chatTheme_rule=role nutrizionista→teal else default (amber in theme file non assegnato da page)
+		- disable_matrix=disabled||isUploading textarea; send disabled !canSend||uploading; paperclip targets getElementById file-input
+		- file_branch_ui=selectedFile shows FileUpload component variant selected preview remove X
+		- emoji_integrated=EmojiPicker append focus textarea
+	- QUERIES
+		- use=(none server-side)
+	- CONTEXT
+		- name=list_profile_link_scope
+		- issues=ConversationList link fisso dashboard atleti—non home athlete; riuso componente altrove va rivalutato
+		- name=theme_amber_unused_dashboard
+		- issues=CHAT_THEME amber definito chat-theme.ts ma ChatPageContent non mappa massaggiatore→amber
+		- name=accept_matrix_drift
+		- issues=message-input accept string vs file-upload ACCEPTED_TYPES—estensioni devono restare allineate operativamente
+		- name=file_caption_absent
+		- issues=nessun campo caption separato: nome file diventa testo messaggio su invio file ref=[[chat_mutations]] ui_file_message_text_contract

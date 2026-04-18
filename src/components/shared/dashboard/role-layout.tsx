@@ -12,9 +12,16 @@ type Props = {
 
 export const RoleLayout: React.FC<Props> = ({ role, children }) => {
   return (
-    <div className="w-full min-w-0">
+    <div
+      className={cn(
+        'w-full min-w-0',
+        role === 'staff' && 'flex h-full min-h-0 flex-1 flex-col',
+      )}
+    >
       <div
-        className="flex flex-col md:flex-row min-h-screen w-full min-w-0 text-text-primary transition-all duration-300"
+        className={cn(
+          'flex w-full min-w-0 flex-1 min-h-0 flex-col text-text-primary transition-all duration-300 md:h-full md:flex-row',
+        )}
         suppressHydrationWarning
       >
         {role === 'staff' && (
@@ -26,7 +33,7 @@ export const RoleLayout: React.FC<Props> = ({ role, children }) => {
 
         <main
           className={cn(
-            'flex-1 flex flex-col min-h-0 min-w-0 w-full bg-transparent',
+            'flex flex-1 min-h-0 min-w-0 w-full flex-col bg-transparent md:h-full',
             /* Staff mobile: safe-top è già nell’header di DashboardMobileNav */
             role === 'staff'
               ? 'pt-0 md:pt-[env(safe-area-inset-top,0px)]'

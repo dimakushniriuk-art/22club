@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import {
   FileText,
@@ -49,6 +50,7 @@ import { extractFileName } from '@/lib/documents'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
+import { invalidateDocumentsQueries } from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('app:dashboard:nutrizionista:documenti')
 const DEBOUNCE_MS = 300
@@ -129,6 +131,7 @@ function KpiCard({
 export default function NutrizionistaDocumentiPage() {
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
   const {
@@ -393,6 +396,7 @@ export default function NutrizionistaDocumentiPage() {
       }
       const { error: insertErr } = await supabase.from('documents').insert(insertPayload)
       if (insertErr) throw insertErr
+      await invalidateDocumentsQueries(queryClient)
       setUploadOpen(false)
       setUploadAthleteId('')
       setUploadCategory('altro')
@@ -417,6 +421,7 @@ export default function NutrizionistaDocumentiPage() {
     uploadExpires,
     supabase,
     loadData,
+    queryClient,
   ])
 
   const handleSaveNote = useCallback(
@@ -428,6 +433,7 @@ export default function NutrizionistaDocumentiPage() {
           .update({ notes: editNoteValue })
           .eq('id', documentId)
         if (err) throw err
+        await invalidateDocumentsQueries(queryClient)
         setEditNoteDocId(null)
         setEditNoteValue('')
         void loadData()
@@ -437,7 +443,7 @@ export default function NutrizionistaDocumentiPage() {
         setSavingNote(false)
       }
     },
-    [editNoteValue, supabase, loadData],
+    [editNoteValue, supabase, loadData, queryClient],
   )
 
   const handleExportPdf = useCallback(async () => {

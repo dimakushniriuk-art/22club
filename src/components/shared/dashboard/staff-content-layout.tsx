@@ -68,10 +68,10 @@ export function StaffContentLayout({
         }
       : undefined)
   return (
-    <div className="relative min-h-dvh flex flex-col bg-transparent">
+    <div className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent">
       <div
         className={cn(
-          'flex-1 flex flex-col space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[1800px] mx-auto w-full relative bg-transparent',
+          'relative mx-auto flex w-full min-w-0 flex-1 flex-col space-y-4 bg-transparent max-w-[min(100%,2160px)] sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6',
           'pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))]',
           className,
         )}

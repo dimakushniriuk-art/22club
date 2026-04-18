@@ -317,15 +317,18 @@ export async function DELETE(
       await safeDelete('trainer_athletes', { column: 'trainer_id', value: id })
       await safeDelete('trainer_athletes', { column: 'athlete_id', value: id })
 
-      // 2. Tabelle athlete_* (dati atleta - referenziano profiles.id come athlete_id)
-      await safeDelete('athlete_medical_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_fitness_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_nutrition_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_massage_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_motivational_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_administrative_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_smart_tracking_data', { column: 'athlete_id', value: id })
-      await safeDelete('athlete_ai_data', { column: 'athlete_id', value: id })
+      // 2. Tabelle athlete_* (athlete_id = profiles.user_id, non profiles.id)
+      const athleteAuthId = existingAthleteTyped.user_id
+      if (athleteAuthId) {
+        await safeDelete('athlete_medical_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_fitness_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_nutrition_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_massage_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_motivational_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_administrative_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_smart_tracking_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_ai_data', { column: 'athlete_id', value: athleteAuthId })
+      }
 
       // 3. Payments: soft delete (no DELETE fisico)
       const { error: paymentsSoftErr } = await adminClient.rpc('soft_delete_payments_for_profile', {

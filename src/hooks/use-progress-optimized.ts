@@ -78,14 +78,12 @@ async function getProgressStatsFallback(userId: string): Promise<ProgressStats |
 
     if (logsError) throw logsError
 
-    const { data: photos, error: photosError } = await supabase
+    const { count: photoTotal, error: photosCountError } = await supabase
       .from('progress_photos')
-      .select('*')
+      .select('id', { count: 'exact', head: true })
       .eq('athlete_id', userId)
-      .order('date', { ascending: false })
-      .limit(1)
 
-    if (photosError) throw photosError
+    if (photosCountError) throw photosCountError
 
     type ProgressLogRow = Pick<
       Tables<'progress_logs'>,
@@ -119,7 +117,7 @@ async function getProgressStatsFallback(userId: string): Promise<ProgressStats |
     return {
       total_logs: typedLogs?.length ?? 0,
       avg_weight: avgWeight,
-      total_photos: photos?.length ?? 0,
+      total_photos: photoTotal ?? 0,
       weight_change_30d: weightChange,
       latest_measurements: latestMeasurements,
     }

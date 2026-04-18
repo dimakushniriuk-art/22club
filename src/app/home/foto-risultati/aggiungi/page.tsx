@@ -2,6 +2,7 @@
 
 import type { ReactElement, RefObject } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { PageHeaderFixed } from '@/components/layout'
@@ -20,6 +21,11 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { formatDate } from '@/lib/format'
 import { useNotify } from '@/lib/ui/notify'
 import type { ProgressPhoto } from '@/types/progress'
+import {
+  invalidateProgressAnalyticsQueries,
+  invalidateProgressPhotosFrequentCache,
+} from '@/lib/react-query/post-mutation-cache'
+import { PROGRESS_PHOTOS_LIST_COLUMNS } from '@/lib/progress/progress-photos-columns'
 
 const BUCKET = 'progress-photos'
 
@@ -98,6 +104,7 @@ const CARD_DS =
 
 export default function AggiungiFotoPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const supabase = useSupabaseClient()
   const { user } = useAuth()
   const { notify } = useNotify()
@@ -123,7 +130,7 @@ export default function AggiungiFotoPage() {
     const load = async () => {
       const { data } = await supabase
         .from('progress_photos')
-        .select('id, athlete_id, date, angle, image_url, created_at, updated_at')
+        .select(PROGRESS_PHOTOS_LIST_COLUMNS)
         .eq('athlete_id', profileId)
         .eq('date', today)
       if (cancelled) return
@@ -180,9 +187,13 @@ export default function AggiungiFotoPage() {
       notify(`Errore: ${error.message}`, 'error')
       return
     }
+    if (authUserId) {
+      invalidateProgressPhotosFrequentCache(authUserId)
+      void invalidateProgressAnalyticsQueries(queryClient, authUserId)
+    }
     notify(`Foto salvate per il ${formatDate(today)}`, 'success')
     router.push('/home/foto-risultati')
-  }, [profileId, today, supabase, notify, router])
+  }, [profileId, today, supabase, notify, router, authUserId, queryClient])
 
   const handleFileChange = useCallback(
     async (ref: RefObject<HTMLInputElement | null>) => {
@@ -218,7 +229,7 @@ export default function AggiungiFotoPage() {
             image_url: urlData.publicUrl,
             note: null,
           })
-          .select('id, athlete_id, date, angle, image_url, created_at, updated_at')
+          .select(PROGRESS_PHOTOS_LIST_COLUMNS)
           .single()
 
         if (insertError) {
@@ -233,6 +244,8 @@ export default function AggiungiFotoPage() {
           if (prev[angle]) URL.revokeObjectURL(prev[angle]!)
           return { ...prev, [angle]: objectUrl }
         })
+        invalidateProgressPhotosFrequentCache(authUserId)
+        void invalidateProgressAnalyticsQueries(queryClient, authUserId)
         notify(`Foto "${ANGLE_LABELS[angle]}" salvata`, 'success')
       } catch (e) {
         notify(e instanceof Error ? e.message : "Errore durante l'upload", 'error')
@@ -243,7 +256,7 @@ export default function AggiungiFotoPage() {
         currentAngleRef.current = null
       }
     },
-    [profileId, authUserId, today, supabase, notify],
+    [profileId, authUserId, today, supabase, notify, queryClient],
   )
 
   return (

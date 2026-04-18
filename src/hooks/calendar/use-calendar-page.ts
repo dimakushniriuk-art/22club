@@ -5,6 +5,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
@@ -40,7 +41,11 @@ import {
   requireCurrentOrgId,
   resolveOrgIdForAppointmentWrite,
 } from '@/lib/organizations/current-org'
-import { STAFF_APPOINTMENTS_INVALIDATE_EVENT } from '@/lib/staff-cross-tab-events'
+import {
+  STAFF_APPOINTMENTS_INVALIDATE_EVENT,
+  type StaffAppointmentsInvalidateDetail,
+} from '@/lib/staff-cross-tab-events'
+import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:calendar:use-calendar-page')
@@ -145,6 +150,18 @@ export function useCalendarPage() {
   const [loading, setLoading] = useState(false)
   const [calendarBlocks, setCalendarBlocks] = useState<CalendarBlock[]>([])
   const { settings: calendarSettings } = useStaffCalendarSettings()
+  const queryClient = useQueryClient()
+
+  const broadcastAppointmentsStale = useCallback(() => {
+    void invalidateAppointmentsQueries(queryClient)
+    if (typeof window !== 'undefined' && staffOrgId) {
+      window.dispatchEvent(
+        new CustomEvent<StaffAppointmentsInvalidateDetail>(STAFF_APPOINTMENTS_INVALIDATE_EVENT, {
+          detail: { org_id: staffOrgId },
+        }),
+      )
+    }
+  }, [queryClient, staffOrgId])
 
   useEffect(() => {
     if (authLoading) return
@@ -749,6 +766,7 @@ export function useCalendarPage() {
           }
         }
 
+        broadcastAppointmentsStale()
         await fetchAppointments()
         setLoading(false)
       } catch (err: unknown) {
@@ -771,7 +789,16 @@ export function useCalendarPage() {
         throw err
       }
     },
-    [staffProfileId, staffOrgId, staffRole, athletes, calendarBlocks, fetchAppointments, notify],
+    [
+      staffProfileId,
+      staffOrgId,
+      staffRole,
+      athletes,
+      calendarBlocks,
+      fetchAppointments,
+      notify,
+      broadcastAppointmentsStale,
+    ],
   )
 
   const handleCancel = useCallback(
@@ -840,6 +867,7 @@ export function useCalendarPage() {
           })
         }
 
+        broadcastAppointmentsStale()
         await fetchAppointments()
         if (athleteId) {
           fetch('/api/calendar/notify-appointment-change', {
@@ -856,7 +884,7 @@ export function useCalendarPage() {
         setLoading(false)
       }
     },
-    [staffProfileId, fetchAppointments, notify],
+    [staffProfileId, fetchAppointments, notify, broadcastAppointmentsStale],
   )
 
   /** Elimina l'appuntamento da Supabase senza lasciare traccia. Pulizia correlati best-effort (non blocca se RLS/errore); fallisce solo se fallisce il delete su appointments. */
@@ -905,6 +933,7 @@ export function useCalendarPage() {
           })
         const { error } = await supabase.from('appointments').delete().eq('id', appointmentId)
         if (error) throw error
+        broadcastAppointmentsStale()
         await fetchAppointments()
         if (snapshot) {
           fetch('/api/calendar/notify-appointment-change', {
@@ -921,7 +950,7 @@ export function useCalendarPage() {
         setLoading(false)
       }
     },
-    [fetchAppointments, notify],
+    [fetchAppointments, notify, broadcastAppointmentsStale],
   )
 
   /** Allinea drag/resize alla stessa pre-validazione del salvataggio form (blocchi + overlap sullo staff del record). */
@@ -1013,6 +1042,7 @@ export function useCalendarPage() {
           }).catch((e) => logger.error('Notifica modifica dopo spostamento fallita', e))
         }
 
+        broadcastAppointmentsStale()
         logger.info('Appuntamento spostato', undefined, { appointmentId })
       } catch (err) {
         logger.error('Errore spostamento appuntamento', err, { appointmentId })
@@ -1021,7 +1051,7 @@ export function useCalendarPage() {
         throw err
       }
     },
-    [appointments, fetchAppointments, assertStaffDragResizeAllowed],
+    [appointments, fetchAppointments, assertStaffDragResizeAllowed, broadcastAppointmentsStale],
   )
 
   // Handler per ridimensionamento eventi
@@ -1074,6 +1104,7 @@ export function useCalendarPage() {
           }).catch((e) => logger.error('Notifica modifica dopo ridimensionamento fallita', e))
         }
 
+        broadcastAppointmentsStale()
         logger.info('Appuntamento ridimensionato', undefined, { appointmentId })
       } catch (err) {
         logger.error('Errore ridimensionamento appuntamento', err, { appointmentId })
@@ -1082,7 +1113,7 @@ export function useCalendarPage() {
         throw err
       }
     },
-    [appointments, fetchAppointments, assertStaffDragResizeAllowed],
+    [appointments, fetchAppointments, assertStaffDragResizeAllowed, broadcastAppointmentsStale],
   )
 
   const handleComplete = useCallback(
@@ -1135,6 +1166,7 @@ export function useCalendarPage() {
           }
         }
 
+        broadcastAppointmentsStale()
         await fetchAppointments()
         notify(successMsg, 'success', 'Completato')
       } catch (err) {
@@ -1145,7 +1177,7 @@ export function useCalendarPage() {
         setLoading(false)
       }
     },
-    [fetchAppointments, notify, staffProfileId],
+    [fetchAppointments, notify, staffProfileId, broadcastAppointmentsStale],
   )
 
   const handleNoShow = useCallback(
@@ -1187,6 +1219,7 @@ export function useCalendarPage() {
             lesson_deducted: true,
           })
         }
+        broadcastAppointmentsStale()
         await fetchAppointments()
         notify('No-show registrato. È stato scalato 1 credito.', 'success', 'No-show')
       } catch (err) {
@@ -1197,7 +1230,7 @@ export function useCalendarPage() {
         setLoading(false)
       }
     },
-    [staffProfileId, fetchAppointments, notify],
+    [staffProfileId, fetchAppointments, notify, broadcastAppointmentsStale],
   )
 
   return {

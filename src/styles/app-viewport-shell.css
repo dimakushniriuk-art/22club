@@ -1,0 +1,26 @@
+/**
+ * Shell viewport per route staff / pubbliche (esclusa area /home atleta).
+ * Obiettivo: niente overflow “fantasma” tra orientamento landscape e portrait
+ * (es. 2160×1620 ↔ 1620×2160), con un solo flusso di scroll controllato.
+ */
+.non-home-viewport-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.non-home-viewport-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}

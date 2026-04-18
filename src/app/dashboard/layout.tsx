@@ -11,7 +11,10 @@ import { NotificationToast } from '@/components/shared/ui/notification-toast'
 // import { useNavigationState } from '@/hooks/use-navigation-state'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import { useAuth } from '@/providers/auth-provider'
-import { queryKeys } from '@/lib/query-keys'
+import {
+  invalidateAppointmentsQueries,
+  invalidateClientiQueries,
+} from '@/lib/react-query/post-mutation-cache'
 import {
   STAFF_APPOINTMENTS_INVALIDATE_EVENT,
   type StaffAppointmentsInvalidateDetail,
@@ -20,6 +23,7 @@ import { notifyInfo } from '@/lib/notifications'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
 import { ModalsWrapper } from '@/components/dashboard/modals-wrapper'
 import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
+import { NonHomeViewportShell } from '@/components/layout/non-home-viewport-shell'
 
 const STAFF_APPOINTMENTS_REALTIME_THROTTLE_MS = 450
 const STAFF_PROFILES_REALTIME_THROTTLE_MS = 600
@@ -49,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
       lastApptInvalidateAtRef.current = now
 
-      void queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent<StaffAppointmentsInvalidateDetail>(STAFF_APPOINTMENTS_INVALIDATE_EVENT, {
@@ -79,7 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
       lastClientiInvalidateAtRef.current = now
 
-      void queryClient.invalidateQueries({ queryKey: queryKeys.clienti.all })
+      void invalidateClientiQueries(queryClient)
     },
     '*',
   )
@@ -99,20 +103,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <>
-      <ImpersonationBanner />
-      <RoleLayout role="staff">
-        <ErrorBoundary>
-          <Suspense fallback={<StaffDashboardSegmentSkeleton />}>{children}</Suspense>
-        </ErrorBoundary>
+      <NonHomeViewportShell variant="fill" className="min-h-0">
+        <ImpersonationBanner />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <RoleLayout role="staff">
+            <ErrorBoundary>
+              <Suspense fallback={<StaffDashboardSegmentSkeleton />}>{children}</Suspense>
+            </ErrorBoundary>
 
-        {/* Navigation Loading Overlay - DISABILITATO TEMPORANEAMENTE per debug refresh multipli */}
-        {/* <NavigationLoading
+            {/* Navigation Loading Overlay - DISABILITATO TEMPORANEAMENTE per debug refresh multipli */}
+            {/* <NavigationLoading
           isLoading={navigationState.isLoading}
           loadingDuration={navigationState.getLoadingDuration()}
           isSlow={navigationState.isNavigationSlow()}
           targetPath={navigationState.currentPath}
         /> */}
-      </RoleLayout>
+          </RoleLayout>
+        </div>
+      </NonHomeViewportShell>
       <NotificationToast />
 
       {/* Modals Wrapper - disponibile per tutti i componenti dashboard */}

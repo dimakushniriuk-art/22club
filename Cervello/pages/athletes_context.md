@@ -1,0 +1,85 @@
+- athletes_context
+	- ATOMS
+		- id_surface_risk=profile_id (profiles.id) vs athleteUserId (profiles.user_id) vs athlete_id nelle tabelle athlete_* (auth uid)
+		- upload_diag=useUploadCertificatoMedico|useUploadRefertoMedico loggano auth.uid vs athleteId e check profiles.user_id (warn se RLS blocca)
+		- PROG.id_note=progress_logs.athlete_id FK profiles.user_id; workout_plans.athlete_id FK profiles.id→bridge getProfileIdFromUserId in use-progress-analytics
+		- PROG.reminder_role_mismatch=use-progress-reminders guard role===atleta vs use-progress filtri role===athlete (stringhe diverse)
+		- PROG.staff_wide_query=use-progress|use-progress-photos admin|trainer+userId non applicano eq athlete_id→affidamento totale RLS
+		- PROG.write_surface_id=createProgressLog|createProgressPhoto accettano logData|photoData senza guard ruolo|string role nel corpo|campo athlete_id pass-through verso insert→deve essere UUID auth user atleta coerente con progress_logs.athlete_id|non profiles.id
+		- PROG.write_fetch_role_asymmetry=lettura progress_logs|progress_photos in use-progress filtra eq athlete_id solo se role===athlete|insert write path non ripete check ruolo sul payload
+		- PROG.stats_cache_userId_partition=getProgressStats in file=src/hooks/use-progress.ts usa userId hook param per key statsCache progress-stats:${userId}|mismatch userId=profiles.id vs athlete_uuid atteso RPC→cache segment errato o RPC fallita poi fallback eq athlete_id su UUID sbagliato
+		- PROG.foto_id_mismatch_operativo=progressi/foto page passa userId=params.id (profiles.id) con role literal athlete→useProgressPhotos eq athlete_id su quel UUID|con PROG.id_note progress_photos.athlete_id atteso=user auth|risultato probabile lista vuota o dati errati finché non si passa profiles.user_id|admin non redireziona come trainer ma stesso binding errato
+		- PROG.useProgressData_assumption=file=src/hooks/use-progress-data.ts|output dipende solo da array progress_logs passato|parent deve aver già applicato filtri RLS/atleta corretti|hook non corregge id misti|[[athletes_fetch]] ATOMS.LIB body_metric_trends è layer separato per colore copy dashboard
+	- COMPRESSED
+		- useAthleteProfileData: doppia query identica su errore primo profiles.load (retry pattern legacy)
+		- useAthleteProfileData: queryClient importato ma non usato (nota futura invalidazione)
+		- PGRST116 gestito come “no row” su fetch tab dove single() richiesto
+		- use-progress-analytics: logging sessione/query molto verboso console.*; getKPIProgress export stub sempre null; KPI completamento/streak basati su workout_plans.is_active e created_at (semantica “completato” implicita)
+		- use-progress-reminders: markReminderAsSent solo localStorage TODO tabella DB
+	- QUERIES
+		- use=debug FK/RLS upload medici; use=allineare chiamate UI a user_id corretto tra header stats e tab
+	- CONTEXT
+		- name=athlete-profile-hooks
+		- issues=confusione id; issues=RLS su read profiles in upload; issues=retry duplicato loadAthleteData
+		- use=onboarding dev su bug profilo atleta
+	- CONTEXT
+		- name=progress-hooks
+		- issues=PROG.reminder_role_mismatch; issues=staff query senza filtro id; issues=console noise analytics; issues=KPI workout semantics; issues=insert use-progress non invalida query RQ esterne solo refetch stato locale; issues=useProgressData trend up non implica “buono” senza copy UI
+		- use=realtime+coupling invalidate progress-analytics con canali progress_logs|workout_plans
+	- ATOMS.ROUTE
+		- base=/dashboard/atleti/[id]
+		- param.id=profiles.id|load=useAthleteProfileData(id)|note=arg hook nominato athleteId ma valore=PK profiles
+		- athleteUserId=profiles.user_id|from=useAthleteProfileData state|downstream=useWorkoutExerciseStats|useProgressAnalytics|WorkoutExerciseStoricoContent|MisurazioneValoriByDateList analyticsUserId
+		- prop_athleteId_split=AthleteProfileTabs athleteId prop=profiles.id→AthleteProgressTab|AthleteDocumentsTab|AthleteProfileHeader|link storico; sottotab Profilo: `<*Tab athleteId={athleteUserId} />` (stesso nome prop, semantica user_id)
+		- query.tab=?tab=profilo|progressi|documenti|allenamenti→alias progressi|sync=useSearchParams+useEffect in athlete-profile-tabs
+		- storico_link=file=src/components/dashboard/athlete-profile/athlete-profile-tabs.tsx|href=/dashboard/atleti/${athleteId}/progressi/storico|not=TabsTrigger (nav full page)
+		- storico_layout=file=src/app/dashboard/atleti/[id]/progressi/storico/layout.tsx|pattern=useParams id+useAthleteProfileData+ErrorState|provider=StoricoAtletaProvider|ctx_keys=athleteProfileId=id|displayName|schedeAttive=stats.schede_attive
+		- storico_hub=file=src/app/dashboard/atleti/[id]/progressi/storico/*/page.tsx|hubSection=overview|schede|sessioni-aperte|completati|appuntamenti|ui=AthleteWorkoutsTab|ctx=useStoricoAtleta
+		- progressi_root_redirect=file=src/app/dashboard/atleti/[id]/progressi/page.tsx|server redirect=/dashboard/atleti/${id}?tab=progressi
+		- segment_loading=file=src/app/dashboard/atleti/[id]/loading.tsx|ui=StaffAthleteSegmentSkeleton
+		- guard_edit=useAuth role trainer|admin→ModificaAtletaModal+showEditButton|prefetch noop=page passes onPrefetchTab={()=>{}}
+		- guard_foto=file=src/app/dashboard/atleti/[id]/progressi/foto/page.tsx|trainer→router.replace `?tab=progressi`|AthleteProgressiNavSection hides foto card role===trainer
+		- foto_param_flow=file=src/app/dashboard/atleti/[id]/progressi/foto/page.tsx|route id=profiles.id|useProgressPhotos userId=id|role costante 'athlete'|useAthleteProfileData(id) carica athlete ma non passa athlete.user_id al hook foto
+		- foto_cache_partition_risk=userId in frequentQueryCache progress-photos:* ripete id route|se id errato vs FK athlete_id cache miss/empty coerente con query errata
+		- back_href_staff=sottopagine progressi→`/dashboard/atleti/${id}?tab=progressi` eccezione misurazioni/[field]→`/dashboard/atleti/${id}/progressi/misurazioni`
+		- param_exerciseId=decodeURIComponent(params.exerciseId)|detailBasePath=/dashboard/atleti/${id}/progressi/allenamenti
+		- param_field=decodeURIComponent(params.field)|misurazioni/detail paths=/dashboard/atleti/${id}/progressi/misurazioni/...
+	- COMPRESSED.ROUTE
+		- page_orchestration=useParams→id|null guard→useAthleteProfileData→skeleton|error|Cliente header+Suspense AthleteProfileTabs athleteId=id athleteUserId|null+lazy ModificaAtletaModal onSuccess loadAthleteData
+		- progress_subpages=comune useAthleteProfileData(id); allenamenti +useWorkoutExerciseStats(athleteUserId); misurazioni +useProgressAnalytics(athleteUserId); esercizio storico +WorkoutExerciseStoricoContent; PDF export hooks usePdfPreviewDialog+notify
+		- foto_staff_subpage=progressi/foto carica header da athlete PK|lista foto da hook con userId route id|coupling mismatch se athlete_id DB=user_uuid ref ATOMS.ROUTE foto_param_flow
+	- QUERIES.ROUTE
+		- use=UUID da URL vs prop athleteId nelle tab|use=guard trainer foto vs nav Progressi|use=hub storico+ctx StoricoAtleta
+	- CONTEXT
+		- name=dashboard-atleti-id-binding
+		- issues=MISMATCH progressi/foto useProgressPhotos userId=id route (profiles.id) vs hook `role===athlete`→eq athlete_id atteso FK user_id (vedi [[athletes_fetch]] ATOMS.ROUTE.delta); issues=prop name athleteId duplice semantica route vs tab profilo; issues=verifica codice 2026: foto page usa role string costante 'athlete' non auth role|stesso mismatch userId route vs athlete_id FK
+		- use=wiring staff scheda atleta route↔hook↔UI
+	- ATOMS.LIB
+		- progress_logs_naming=DB chest_cm|waist_cm|hips_cm|thighs_cm vs UI torace_cm|vita_cm|fianchi_cm|coscia_media_cm|map=file [[athletes_fetch]] ATOMS.LIB misurazioni_lib
+		- coscia_media_dual=readMisurazioneValueFromLogRow preferisce coscia_media_cm poi fallback thighs_cm
+		- trend_delta_assumption=getBodyMetricDeltaSentiment usa delta numerico “percentuale relativa” (chiamante deve passare coerente)|delta=0 sempre neutral
+		- clienti_mapping_stub=fetchClientiList Cliente.allenamenti_mese=0|scheda_attiva=null|tags=[] sempre post-query
+	- COMPRESSED.LIB
+		- clienti_list_architecture=profiles query limit=pageSize **senza** from/to DB|filtri+sort secondari+pagina applicati in RAM sul window→con filtri aggressivi rischio pagina vuota o skew vs `total` stimato/estimated count
+		- clienti_total_heuristic=data.length===pageSize→total placeholder *5 finché count head non risponde (page===1)|count query search richiede len>2
+		- trend_interpretation=increase_is_good su circonferenze arti/torace vs decrease su vita/massa grassa/peso coerenza “body recomp” copy non in lib solo regole colore
+	- QUERIES.LIB
+		- use=allineare nuove chiavi misurazione UI↔MISURAZIONE_FIELD_TO_DB|use=QA lista clienti+stats sotto carico|use=estendere BODY_METRIC_TREND_RULES per metriche nuove
+	- CONTEXT
+		- name=lib-athletes-data-metrics
+		- issues=fetch clienti window+heuristic total; issues=allenamenti_mese filter ineffective; issues=UUID filter su edit list misurazioni salta righe id malformati
+		- use=source truth dati statici progressi oltre hook|ref_hooks=[[athletes_fetch]] COMPRESSED.PROG
+	- ATOMS.LIB
+		- sanitizeString_trim_split=sanitizeString(...,max,undefined) trim default true su payload/salvataggio; input controllato live tab profilo usa {trim:false} su onChange per non rimuovere spazio finale mentre si digita|file=src/lib/sanitize.ts
+		- medical_save_api=PATCH `/api/athlete-medical` resolve admin poi sessione; writeDb=admin se resolve admin altrimenti client JWT (RLS) così dev funziona anche SERVICE_ROLE su progetto sbagliato|file=src/app/api/athlete-medical/route.ts
+		- medical_rls_assignments=MCP apply_migration `extend_athlete_medical_rls_trainer_assignments` su progetto icibqnmtacibgnhaidlz: policy SELECT/INSERT/UPDATE/DELETE su athlete_medical_data OR con athlete_trainer_assignments status=active oltre pt_atleti|file=supabase/migrations/20260418175750_extend_athlete_medical_rls_trainer_assignments.sql
+		- fitness_save_api=PATCH `/api/athlete-fitness` stesso modello medical (assertAthleteProfileWriteAllowed)|file=src/app/api/athlete-fitness/route.ts
+		- fitness_rls_assignments=policy athlete_fitness_data SELECT/INSERT/UPDATE/DELETE OR athlete_trainer_assignments active oltre pt_atleti|file=supabase/migrations/20260418192000_extend_athlete_fitness_rls_trainer_assignments.sql
+		- athlete_patch_access_shared=file=src/lib/server/athlete-profile-patch-access.ts assertAthleteProfileWriteAllowed+resolve interno
+		- motivational_save_api=PATCH `/api/athlete-motivational`|file=src/app/api/athlete-motivational/route.ts
+		- motivational_storico_abbandoni_draft_ui=file=athlete-motivational-tab.tsx|lista Storico Abbandoni in modifica legge formData.storico_abbandoni (draft) non solo query useAthleteMotivational; prop `storicoAbbandoni` su MotivationalAbandonmentsSection|data display YYYY-MM-DD locale it-IT senza shift UTC
+		- motivational_addAbbandono_ts=file=src/hooks/athlete-profile/use-athlete-motivational-form.ts|oggetto AbbandonoStorico costruito prima di setFormData così TS non perde narrowing su draft Partial dentro l’updater React
+		- nutrition_save_api=PATCH `/api/athlete-nutrition`|file=src/app/api/athlete-nutrition/route.ts
+		- massage_save_api=PATCH `/api/athlete-massage`|file=src/app/api/athlete-massage/route.ts
+		- anagrafica_save_api=PATCH `/api/athlete-anagrafica` update profiles|file=src/app/api/athlete-anagrafica/route.ts
+		- motiv_nutri_massage_rls_assignments=file=supabase/migrations/20260418194500_extend_motiv_nutri_massage_rls_trainer_assignments.sql OR athlete_trainer_assignments active su athlete_motivational_data|athlete_nutrition_data|athlete_massage_data|MCP execute_sql applicato su icibqnmtacibgnhaidlz 2026-04-18 (stesso SQL della migration, chunk DROP+CREATE)

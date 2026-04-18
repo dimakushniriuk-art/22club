@@ -32,7 +32,7 @@ export function FitnessNotesSection({
           value={formData.note_fitness || ''}
           onChange={(e) =>
             onFormDataChange({
-              note_fitness: sanitizeString(e.target.value, 2000) || null,
+              note_fitness: sanitizeString(e.target.value, 2000, { trim: false }) || null,
             })
           }
           maxLength={2000}

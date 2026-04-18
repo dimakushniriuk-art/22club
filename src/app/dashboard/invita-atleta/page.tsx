@@ -525,7 +525,7 @@ export default function InvitaAtletaPage() {
 
   if (error) {
     return (
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
           <ErrorState message={error} onRetry={refetch} />
         </div>

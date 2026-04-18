@@ -63,6 +63,7 @@ const createChartComponent = <K extends keyof typeof import('recharts')>(key: K)
 // Esporta tutti i componenti Recharts con dynamic import e gestione errori
 export const LineChart = createChartComponent('LineChart')
 export const ComposedChart = createChartComponent('ComposedChart')
+export const Scatter = createChartComponent('Scatter')
 export const Line = createChartComponent('Line')
 export const BarChart = createChartComponent('BarChart')
 export const Bar = createChartComponent('Bar')

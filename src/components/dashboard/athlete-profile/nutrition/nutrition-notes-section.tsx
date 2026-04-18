@@ -30,7 +30,7 @@ export function NutritionNotesSection({
           value={formData.note_nutrizionali || ''}
           maxLength={2000}
           onChange={(e) => {
-            const sanitized = sanitizeString(e.target.value, 2000)
+            const sanitized = sanitizeString(e.target.value, 2000, { trim: false })
             onFormDataChange({ note_nutrizionali: sanitized || null })
           }}
           placeholder="Note aggiuntive sulla nutrizione..."

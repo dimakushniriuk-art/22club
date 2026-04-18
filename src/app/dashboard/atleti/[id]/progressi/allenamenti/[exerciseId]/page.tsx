@@ -84,8 +84,8 @@ function StoricoBody() {
                 <Dumbbell className="h-4 w-4 text-primary shrink-0" />
                 Storico allenamenti
               </CardTitle>
-              <p className="text-text-tertiary text-xs">
-                Dal più recente; solo sessioni con valore registrato
+              <p className="text-text-tertiary text-xs max-w-[72ch]">
+                Dal più recente. Valori da serie su workout_sets collegate al log; massimo per giorno.
               </p>
             </div>
             <Button

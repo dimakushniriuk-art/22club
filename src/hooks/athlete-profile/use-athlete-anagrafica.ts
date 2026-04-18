@@ -16,9 +16,6 @@ import {
   updateAthleteAnagraficaSchema,
 } from '@/types/athlete-profile.schema'
 import type { AthleteAnagrafica, AthleteAnagraficaUpdate } from '@/types/athlete-profile'
-// Nota: UpdateAthleteAnagraficaValidation potrebbe essere usato in futuro per type checking
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { UpdateAthleteAnagraficaValidation } from '@/types/athlete-profile.schema'
 
 const logger = createLogger('hooks:athlete-profile:use-athlete-anagrafica')
 
@@ -118,17 +115,15 @@ export function useAthleteAnagrafica(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 5 * 60 * 1000, // 5 minuti - dati anagrafici cambiano raramente
-    gcTime: 30 * 60 * 1000, // 30 minuti (cacheTime in React Query v4) - mantieni in cache più a lungo
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }
 
 /**
  * Hook per aggiornare dati anagrafici atleta
- * @param athleteId - UUID dell'atleta (user_id)
+ * @param athleteId - `profiles.user_id` o `profiles.id` (risolto da PATCH `/api/athlete-anagrafica`)
  */
 export function useUpdateAthleteAnagrafica(athleteId: string | null) {
   const queryClient = useQueryClient()
@@ -140,91 +135,43 @@ export function useUpdateAthleteAnagrafica(athleteId: string | null) {
       }
 
       try {
-        // Valida i dati con Zod
         const validated = updateAthleteAnagraficaSchema.parse(updates)
 
-        // Prepara i dati per l'update (rimuove campi undefined)
-        const updateData: Record<string, unknown> = {}
-        if (validated.nome !== undefined) updateData.nome = validated.nome
-        if (validated.cognome !== undefined) updateData.cognome = validated.cognome
-        if (validated.email !== undefined) updateData.email = validated.email
-        if (validated.telefono !== undefined) {
-          updateData.telefono = validated.telefono
-          updateData.phone = validated.telefono // Sincronizza anche phone
-        }
-        if (validated.data_nascita !== undefined) updateData.data_nascita = validated.data_nascita
-        if (validated.sesso !== undefined) updateData.sesso = validated.sesso
-        if (validated.codice_fiscale !== undefined)
-          updateData.codice_fiscale = validated.codice_fiscale
-        if (validated.indirizzo !== undefined) updateData.indirizzo = validated.indirizzo
-        if (validated.citta !== undefined) updateData.citta = validated.citta
-        if (validated.cap !== undefined) updateData.cap = validated.cap
-        if (validated.provincia !== undefined) updateData.provincia = validated.provincia
-        if (validated.nazione !== undefined) updateData.nazione = validated.nazione
-        if (validated.contatto_emergenza_nome !== undefined)
-          updateData.contatto_emergenza_nome = validated.contatto_emergenza_nome
-        if (validated.contatto_emergenza_telefono !== undefined)
-          updateData.contatto_emergenza_telefono = validated.contatto_emergenza_telefono
-        if (validated.contatto_emergenza_relazione !== undefined)
-          updateData.contatto_emergenza_relazione = validated.contatto_emergenza_relazione
-        if (validated.professione !== undefined) updateData.professione = validated.professione
-        if (validated.altezza_cm !== undefined) updateData.altezza_cm = validated.altezza_cm
-        if (validated.peso_iniziale_kg !== undefined)
-          updateData.peso_iniziale_kg = validated.peso_iniziale_kg
-        if (validated.gruppo_sanguigno !== undefined)
-          updateData.gruppo_sanguigno = validated.gruppo_sanguigno
+        const res = await fetch('/api/athlete-anagrafica', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            athleteUserId: athleteId,
+            updates: validated,
+          }),
+        })
 
-        // Esegui update
-        const { data, error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('user_id', athleteId)
-          .select(
-            `
-            user_id,
-            nome,
-            cognome,
-            email,
-            phone,
-            telefono,
-            data_nascita,
-            sesso,
-            codice_fiscale,
-            indirizzo,
-            citta,
-            cap,
-            provincia,
-            nazione,
-            contatto_emergenza_nome,
-            contatto_emergenza_telefono,
-            contatto_emergenza_relazione,
-            professione,
-            altezza_cm,
-            peso_iniziale_kg,
-            gruppo_sanguigno,
-            created_at,
-            updated_at
-          `,
-          )
-          .single()
+        const payload = (await res.json().catch(() => null)) as
+          | { data?: unknown; error?: string }
+          | null
 
-        if (error) {
-          throw error
+        if (!res.ok) {
+          const msg =
+            payload && typeof payload === 'object' && 'error' in payload && payload.error
+              ? String(payload.error)
+              : `HTTP ${res.status}`
+          throw new Error(msg)
         }
 
-        if (!data) {
-          throw new Error('Dati non trovati dopo aggiornamento')
+        if (!payload || typeof payload !== 'object' || !('data' in payload) || !payload.data) {
+          throw new Error('Risposta API non valida')
         }
 
-        // Valida e ritorna i dati aggiornati
+        const data = payload.data as Record<string, unknown>
+
         const validatedResult = createAthleteAnagraficaSchema.parse({
           user_id: data.user_id,
           nome: data.nome || '',
           cognome: data.cognome || '',
           email: data.email || '',
-          telefono: data.telefono || data.phone || null,
+          telefono: (data.telefono || data.phone || null) as string | null,
           data_nascita: data.data_nascita,
-          sesso: normalizeSesso(data.sesso),
+          sesso: normalizeSesso(data.sesso as string | null | undefined),
           codice_fiscale: data.codice_fiscale,
           indirizzo: data.indirizzo,
           citta: data.citta,

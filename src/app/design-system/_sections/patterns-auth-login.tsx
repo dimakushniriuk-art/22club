@@ -26,7 +26,7 @@ const AUTH_LOGIN_TOKENS: Array<{ token: string; value: string; Icon: LucideIcon 
   {
     token: 'Container',
     value:
-      'min-h-screen flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 bg-background, minHeight 100dvh',
+      'min-h-full flex flex-1 w-full items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 bg-background, minHeight 100dvh',
     Icon: LayoutDashboard,
   },
   {

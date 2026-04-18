@@ -26,22 +26,22 @@ export function WorkoutExerciseStoricoContent({
     [data?.exercises, exerciseId],
   )
 
-  const series = useMemo(() => (exercise ? buildWorkoutExerciseSeries(exercise) : null), [exercise])
+  const series = useMemo(
+    () => (exercise ? buildWorkoutExerciseSeries(exercise) : null),
+    [exercise],
+  )
 
   const listRows = useMemo((): WorkoutExerciseSessionRow[] => {
     if (!series) return []
-    return series.chartData
-      .map((row) => {
-        const v = series.primaryValue(row)
-        if (v == null || !Number.isFinite(v)) return null
-        return {
-          date: row.date,
-          value: v,
-          workoutLogId: row.workout_log_id,
-          workoutDayExerciseId: row.workout_day_exercise_id,
-        }
-      })
-      .filter((x): x is WorkoutExerciseSessionRow => x != null)
+    return series.chartData.map((row) => {
+      const v = series.primaryValue(row)
+      return {
+        date: row.date,
+        value: v != null && Number.isFinite(v) ? v : null,
+        workoutLogId: row.workout_log_id,
+        workoutDayExerciseId: row.workout_day_exercise_id,
+      }
+    })
   }, [series])
 
   const metricKind: 'weight' | 'reps' | 'time' = useMemo(() => {

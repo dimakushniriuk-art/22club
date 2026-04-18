@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { validateDate } from '@/lib/utils/validation'
 import { notifyError } from '@/lib/notifications'
+import {
+  invalidateProgressAnalyticsQueries,
+  invalidateProgressPhotosFrequentCache,
+} from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('app:home:progressi:nuovo:page')
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -124,6 +129,7 @@ interface FormData {
 
 export default function NuovoProgressoPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [loadingLastMeasurement, setLoadingLastMeasurement] = useState(true)
@@ -732,6 +738,8 @@ export default function NuovoProgressoPage() {
       }
 
       logger.debug('Progress saved successfully', undefined, { athleteId: authUser.id })
+      await invalidateProgressAnalyticsQueries(queryClient, authUser.id)
+      invalidateProgressPhotosFrequentCache(authUser.id)
       router.push('/home/progressi')
     } catch (error) {
       logger.error('Error saving progress', error, { athleteId: authUser?.id })

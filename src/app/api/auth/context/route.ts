@@ -67,23 +67,56 @@ export async function GET(request: NextRequest) {
       | 'email'
     >
     // Service role: bypass RLS dopo JWT verificato (stesso pattern di invitations/create e altre API).
-    // Evita "Profilo non trovato" quando RLS/cookie SSR non allineano auth.uid() alla query su profiles.
+    // Fallback: client con cookie sessione (stesso modello del middleware). Se la service_role punta a un altro
+    // progetto Supabase o è errata, l'admin non vede righe ma l'anon+JWT sì → senza fallback l'UI resta "vuota".
     const admin = createAdminClient()
-    const actor = await fetchCurrentProfileForAuthUserId(admin, user.id)
+    let actor = await fetchCurrentProfileForAuthUserId(admin, user.id)
     if (!actor) {
-      const { data: probe, error: probeErr } = await admin
+      actor = await fetchCurrentProfileForAuthUserId(supabase, user.id)
+      if (actor) {
+        logger.warn(
+          'auth/context: profilo risolto solo con client sessione (RLS). Verificare che SUPABASE_SERVICE_ROLE_KEY sia dello stesso progetto di NEXT_PUBLIC_SUPABASE_URL.',
+          undefined,
+          { userId: user.id },
+        )
+      }
+    }
+    if (!actor) {
+      const { data: probeAdmin, error: probeAdminErr } = await admin
         .from('profiles')
         .select('id, user_id, email')
         .eq('user_id', user.id)
         .limit(1)
         .maybeSingle()
-      logger.warn('Profilo non trovato', undefined, {
-        userId: user.id,
-        email: user.email,
-        probeRow: probe ?? null,
-        probeError: probeErr?.message ?? null,
-        probeCode: probeErr?.code ?? null,
-      })
+      const { data: probeSession, error: probeSessionErr } = await supabase
+        .from('profiles')
+        .select('id, user_id, email')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle()
+      if (probeAdmin || probeSession) {
+        logger.error(
+          'Profilo presente in DB (probe) ma risoluzione contesto fallita: verificare colonne SELECT / resolveProfileByIdentifier',
+          undefined,
+          {
+            userId: user.id,
+            email: user.email,
+            probeAdmin: probeAdmin ?? null,
+            probeSession: probeSession ?? null,
+            probeAdminErr: probeAdminErr?.message ?? null,
+            probeSessionErr: probeSessionErr?.message ?? null,
+          },
+        )
+      } else {
+        logger.warn('Profilo non trovato', undefined, {
+          userId: user.id,
+          email: user.email,
+          probeAdminErr: probeAdminErr?.message ?? null,
+          probeAdminCode: probeAdminErr?.code ?? null,
+          probeSessionErr: probeSessionErr?.message ?? null,
+          probeSessionCode: probeSessionErr?.code ?? null,
+        })
+      }
       return NextResponse.json(
         { role: null, org_id: null, isImpersonating: false },
         { status: 200 },

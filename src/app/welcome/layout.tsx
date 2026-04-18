@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { NonHomeViewportShell } from '@/components/layout/non-home-viewport-shell'
 
 export const metadata: Metadata = {
   title: 'Benvenuto | 22Club',
@@ -6,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function WelcomeLayout({ children }: { children: React.ReactNode }) {
-  return children
+  return <NonHomeViewportShell>{children}</NonHomeViewportShell>
 }

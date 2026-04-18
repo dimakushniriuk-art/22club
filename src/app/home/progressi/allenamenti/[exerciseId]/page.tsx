@@ -124,7 +124,8 @@ function StoricoAllenamentoEsercizioContent() {
                   Andamento
                 </CardTitle>
                 <p className="text-text-tertiary text-xs">
-                  Dal più recente; solo sessioni con valore registrato
+                  Dal più recente. Valori da serie registrate sul log (peso/reps/tempo); massimo per
+                  giorno.
                 </p>
               </div>
               <Button

@@ -10,16 +10,11 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Dati considerati freschi per 5 minuti (ottimizzazione performance)
-            // Riduce drasticamente refetch inutili durante navigazione
-            staleTime: 5 * 60 * 1000, // 5 minuti (da 30 secondi)
-            // Non refetch automatico se dati sono ancora freschi (staleTime)
-            // Riduce query duplicate durante navigazione
-            refetchOnMount: false, // Cambiato da true
-            // Non refetch quando la finestra riprende focus (migliora UX)
-            // I dati sono ancora freschi grazie a staleTime più lungo
-            refetchOnWindowFocus: false, // Cambiato da true
-            // Refetch su riconnessione di rete (mantenuto per dati aggiornati)
+            // Dati “freschi” 1 min: meno UI obsoleta dopo salvataggi/navigazione; dedup automatico di React Query.
+            staleTime: 60 * 1000,
+            // Se stale, ricarica al mount (cambio pagina). Focus finestra disattivato per ridurre rifetch su query pesanti.
+            refetchOnMount: true,
+            refetchOnWindowFocus: false,
             refetchOnReconnect: true,
             // Retry intelligente: solo su errori transienti (network, 5xx), max 1 tentativo
             // Ridotto da 3 a 1 per risposta più veloce su errori

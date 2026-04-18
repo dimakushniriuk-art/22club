@@ -3,7 +3,7 @@
 import { Suspense, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { Activity, BarChart3 } from 'lucide-react'
+import { Activity, BarChart3, ClipboardList } from 'lucide-react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import {
@@ -55,6 +55,17 @@ function formatShortDate(iso: string | null): string {
 function formatWeightKg(v: number | null): string {
   if (v === null || Number.isNaN(v)) return '—'
   return `${v.toLocaleString('it-IT', { maximumFractionDigits: 1 })} kg`
+}
+
+function formatVolumeTotale(v: number | null): string {
+  if (v === null || Number.isNaN(v)) return '—'
+  return v.toLocaleString('it-IT', { maximumFractionDigits: 0 })
+}
+
+function formatStatoLog(stato: string | null): string {
+  if (!stato) return '—'
+  const s = stato.replace(/_/g, ' ')
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function buildExerciseStatsPdfRows(data: WorkoutExerciseStats): string[][] {
@@ -198,8 +209,69 @@ function AllenamentiBody() {
           backHref={backHref}
           backAriaLabel="Torna ai progressi"
           title={`Statistiche allenamenti — ${name || 'Atleta'}`}
-          description="Pesi, tempi e progressi per esercizio (come in app Home)"
+          description="Tutti gli stati sessione: pesi, tempi e serie anche in corso o senza metriche (come in app Home)"
         />
+
+        {athleteUserId && !isLoading && !statsError && data && data.log_sessions.length > 0 ? (
+          <Card className={`relative overflow-hidden ${CARD_DS}`}>
+            <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 sm:px-6">
+              <CardTitle className="text-base font-bold text-text-primary md:text-lg flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-primary shrink-0" />
+                Sessioni registrate
+              </CardTitle>
+              <p className="text-text-tertiary mt-0.5 text-xs max-w-[78ch]">
+                Dati da <span className="font-mono text-[11px]">workout_logs</span> (tutte le date).
+                I grafici per esercizio usano le serie in{' '}
+                <span className="font-mono text-[11px]">workout_sets</span> collegate al log: se
+                &quot;Serie&quot; è 0, il volume qui è comunque salvato ma non alimenta i grafici sotto.
+              </p>
+            </CardHeader>
+            <CardContent className="relative z-10 p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="border-b border-white/10 bg-white/[0.03] text-text-tertiary text-[11px] uppercase tracking-wide">
+                    <tr>
+                      <th className="px-4 py-2.5 sm:px-6 font-medium">Data</th>
+                      <th className="px-3 py-2.5 font-medium">Stato</th>
+                      <th className="px-3 py-2.5 font-medium text-right">Volume</th>
+                      <th className="px-3 py-2.5 font-medium text-right">Durata</th>
+                      <th className="px-3 py-2.5 font-medium text-right">Esercizi</th>
+                      <th className="px-4 py-2.5 sm:px-6 font-medium text-right">Serie</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.06]">
+                    {data.log_sessions.map((row) => (
+                      <tr key={row.workout_log_id} className="text-text-secondary">
+                        <td className="px-4 py-2.5 sm:px-6 text-text-primary tabular-nums">
+                          {formatShortDate(row.calendar_date)}
+                        </td>
+                        <td className="px-3 py-2.5">{formatStatoLog(row.stato)}</td>
+                        <td className="px-3 py-2.5 text-right tabular-nums">
+                          {formatVolumeTotale(row.volume_totale)}
+                        </td>
+                        <td className="px-3 py-2.5 text-right tabular-nums">
+                          {row.duration_minutes != null
+                            ? `${row.duration_minutes}′`
+                            : '—'}
+                        </td>
+                        <td className="px-3 py-2.5 text-right tabular-nums">
+                          {row.exercises_completed != null ? row.exercises_completed : '—'}
+                        </td>
+                        <td
+                          className={`px-4 py-2.5 sm:px-6 text-right tabular-nums font-medium ${
+                            row.sets_count === 0 ? 'text-amber-400/90' : 'text-text-primary'
+                          }`}
+                        >
+                          {row.sets_count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card className={`relative overflow-hidden ${CARD_DS}`}>
           <CardHeader className="relative z-10 flex flex-col gap-3 border-b border-white/10 px-4 pb-3 pt-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
@@ -208,8 +280,9 @@ function AllenamentiBody() {
                 <Activity className="h-4 w-4 text-primary shrink-0" />
                 Grafici per esercizio
               </CardTitle>
-              <p className="text-text-tertiary mt-0.5 text-xs">
-                Andamento pesi e progressi negli allenamenti completati
+              <p className="text-text-tertiary mt-0.5 text-xs max-w-[80ch]">
+                Asse = solo giorni con valore (peso max, reps o tempo da serie sul log). Tabella sessioni
+                sotto resta disponibile per tutte le sessioni.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -242,7 +315,7 @@ function AllenamentiBody() {
                 </div>
                 <p className="text-text-primary text-sm font-semibold">Nessun esercizio con dati</p>
                 <p className="text-text-tertiary mt-1 text-xs">
-                  Servono allenamenti completati con serie registrate.
+                  Servono sessioni di allenamento con serie sul log atleta (anche in corso).
                 </p>
               </div>
             ) : (

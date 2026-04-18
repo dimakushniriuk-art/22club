@@ -156,7 +156,7 @@ export default function AllenamentiDashboardPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />

@@ -34,7 +34,7 @@ const DS_PANEL_CLASS =
   'overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)]'
 
 const CONTAINER_CLASS =
-  'flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full'
+  'flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[min(100%,2160px)] mx-auto w-full min-w-0'
 
 const _StaffChatErrorState = memo(function StaffChatErrorState({
   error,
@@ -311,7 +311,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 max-h-full overflow-hidden w-full min-w-0 max-w-[1800px] mx-auto px-4 sm:px-6 py-4 sm:py-6 gap-4 sm:gap-6">
+    <div className="mx-auto flex h-full min-h-0 w-full min-w-0 max-w-[min(100%,2160px)] flex-1 flex-col gap-4 px-4 py-4 sm:gap-6 sm:px-6 sm:py-6">
       {/* Banner errore con retry (non full-page) */}
       {error && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
@@ -327,8 +327,8 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
         </div>
       )}
 
-      {/* Header - compatto, back 44px su mobile, fisso in alto allo scroll */}
-      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-6 bg-gradient-to-b from-zinc-950 to-black border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
+      {/* Header: sticky; py compatto (il wrapper pagina ha già py-4/sm:py-6) così l’altezza segue la riga back+titolo */}
+      <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-b from-zinc-950 via-zinc-950 to-black border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <StaffHeaderBackButton onClick={handleHeaderBack} className="touch-manipulation" />
           <div className="min-w-0">
@@ -399,7 +399,7 @@ export function ChatPageContent({ basePath = '/dashboard/chat' }: ChatPageConten
                     className="flex-1 min-h-0"
                   />
                 </div>
-                <div className="sticky bottom-0 z-10 border-t border-white/10 bg-background-secondary backdrop-blur-sm px-4 py-3 sm:p-4 shrink-0 rounded-b-lg">
+                <div className="shrink-0 border-t border-white/10 bg-background-secondary backdrop-blur-sm px-4 py-3 sm:p-4 rounded-b-lg">
                   <MessageInput
                     onSendMessage={handleSendMessage}
                     onUploadFile={handleUploadFile}

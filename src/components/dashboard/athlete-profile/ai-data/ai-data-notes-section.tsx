@@ -37,7 +37,7 @@ export function AIDataNotesSection({
             value={formData.note_ai || ''}
             maxLength={2000}
             onChange={(e) => {
-              const sanitized = sanitizeString(e.target.value, 2000)
+              const sanitized = sanitizeString(e.target.value, 2000, { trim: false })
               onFormDataChange({ note_ai: sanitized || null })
             }}
             placeholder="Note aggiuntive sui dati AI..."

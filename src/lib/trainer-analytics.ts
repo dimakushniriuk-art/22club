@@ -331,7 +331,10 @@ function heatmapBucketFromIso(
 }
 
 /** Periodo precedente con lo stesso numero di giorni di calendario (inclusivi). */
-export function computePreviousPeriodBounds(startBoundary: Date, endBoundary: Date): {
+export function computePreviousPeriodBounds(
+  startBoundary: Date,
+  endBoundary: Date,
+): {
   start: Date
   end: Date
 } {
@@ -366,8 +369,7 @@ export function buildPeriodComparison(
     revenueDeltaPct: pctDelta(current.revenueTotal, previous.revenueTotal),
     rphDeltaPct: pctDelta(current.revenuePerHour, previous.revenuePerHour),
     churnDeltaPctPoints: Math.round((current.churnRatePct - previous.churnRatePct) * 10) / 10,
-    adherenceDeltaPctPoints:
-      Math.round((current.adherencePct - previous.adherencePct) * 10) / 10,
+    adherenceDeltaPctPoints: Math.round((current.adherencePct - previous.adherencePct) * 10) / 10,
   }
 }
 
@@ -505,7 +507,9 @@ export function buildHeuristicInsights(report: {
     )
   }
   if (lines.length === 0) {
-    lines.push('Nessun campanello d’allarme automatico su questo periodo: continua a monitorare a occhio.')
+    lines.push(
+      'Nessun campanello d’allarme automatico su questo periodo: continua a monitorare a occhio.',
+    )
   }
   return lines.slice(0, 6)
 }
@@ -623,7 +627,9 @@ export function buildAthleteLessonBalanceRows(input: {
   }
   rows.sort(
     (a, b) =>
-      b.totalUsed + b.totalRemaining + b.futureBookedCount -
+      b.totalUsed +
+      b.totalRemaining +
+      b.futureBookedCount -
       (a.totalUsed + a.totalRemaining + a.futureBookedCount),
   )
   return rows
@@ -658,7 +664,9 @@ export function countFutureBookedTrainingByAthlete(
 }
 
 /** Aggregazione pura (testabile) su righe già filtrate a livello query. */
-export function aggregateTrainerAnalytics(input: TrainerAnalyticsAggregateInput): TrainerAnalyticsReport {
+export function aggregateTrainerAnalytics(
+  input: TrainerAnalyticsAggregateInput,
+): TrainerAnalyticsReport {
   const th = input.thresholds ?? DEFAULT_TRAINER_THRESHOLDS
   const rangeStartMs = input.startBoundary.getTime()
   const rangeEndMs = input.endBoundary.getTime()
@@ -784,8 +792,7 @@ export function aggregateTrainerAnalytics(input: TrainerAnalyticsAggregateInput)
   const noShowCount = noShowAppointmentIds.size
 
   const bookedTotal = prenotati + eseguiti + annullati + cancellati
-  const adherencePct =
-    bookedTotal > 0 ? Math.round((eseguiti / bookedTotal) * 1000) / 10 : 0
+  const adherencePct = bookedTotal > 0 ? Math.round((eseguiti / bookedTotal) * 1000) / 10 : 0
 
   const msPerWeek = 7 * 86400000
   const rangeMs = Math.max(1, input.endBoundary.getTime() - input.startBoundary.getTime())
@@ -823,7 +830,11 @@ export function aggregateTrainerAnalytics(input: TrainerAnalyticsAggregateInput)
   startDayIter.setHours(0, 0, 0, 0)
   const endDayIter = new Date(input.endBoundary)
   endDayIter.setHours(0, 0, 0, 0)
-  for (let d = new Date(startDayIter); d.getTime() <= endDayIter.getTime(); d.setDate(d.getDate() + 1)) {
+  for (
+    let d = new Date(startDayIter);
+    d.getTime() <= endDayIter.getTime();
+    d.setDate(d.getDate() + 1)
+  ) {
     const dk = d.toISOString().split('T')[0]
     days.push({
       day: dk,

@@ -216,7 +216,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                       maxLength={100}
                       className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                       onChange={(e) => {
-                        const sanitized = sanitizeString(e.target.value, 100)
+                        const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                         setNewArrayItem({ ...newArrayItem, zona: sanitized || '' })
                       }}
                       onKeyDown={(e) => {
@@ -277,7 +277,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                       maxLength={100}
                       className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                       onChange={(e) => {
-                        const sanitized = sanitizeString(e.target.value, 100)
+                        const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                         setNewArrayItem({ ...newArrayItem, allergia: sanitized || '' })
                       }}
                       onKeyDown={(e) => {
@@ -469,7 +469,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
                   maxLength={500}
                   className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
                   onChange={(e) => {
-                    const sanitized = sanitizeString(e.target.value, 500)
+                    const sanitized = sanitizeString(e.target.value, 500, { trim: false })
                     setNewArrayItem({
                       ...newArrayItem,
                       massaggio: { ...newArrayItem.massaggio, note: sanitized || undefined },
@@ -505,7 +505,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
               maxLength={2000}
               className="min-h-9 border-white/10 bg-white/[0.04] text-xs"
               onChange={(e) => {
-                const sanitized = sanitizeString(e.target.value, 2000)
+                const sanitized = sanitizeString(e.target.value, 2000, { trim: false })
                 setFormData({ ...formData, note_terapeutiche: sanitized || null })
               }}
               placeholder="Note aggiuntive sui massaggi..."

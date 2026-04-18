@@ -305,7 +305,7 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
         className="overflow-y-auto min-h-0"
       >
         {loadError ? (
-          <div className="flex min-h-[min(45vh,560px)] min-w-0 flex-col items-center justify-center gap-4 px-2 py-8 text-center sm:px-4">
+          <div className="flex min-h-[min(45dvh,560px)] min-w-0 flex-col items-center justify-center gap-4 px-2 py-8 text-center sm:px-4">
             <p className="text-sm leading-relaxed text-text-secondary">{loadError}</p>
             <Button variant="primary" size="sm" onClick={() => void reload()}>
               Riprova
@@ -315,7 +315,7 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
           <>
             <div className="grid min-h-0 grid-cols-1 gap-6 md:grid-cols-2 md:items-stretch md:gap-6">
               <div
-                className={`flex min-h-[min(45vh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}
+                className={`flex min-h-[min(45dvh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}
               >
                 <div className="flex shrink-0 justify-end px-2 pt-2">
                   <button
@@ -338,7 +338,7 @@ export function WorkoutsShell({ slot1, slot2 }: Props) {
                 {slot1}
               </div>
               <div
-                className={`flex min-h-[min(45vh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}
+                className={`flex min-h-[min(45dvh,560px)] min-w-0 flex-col md:min-h-0 ${PANE_FRAME}`}
               >
                 <div className="flex shrink-0 justify-end px-2 pt-2">
                   <button

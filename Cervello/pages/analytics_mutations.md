@@ -1,0 +1,22 @@
+- analytics_mutations
+	- ATOMS
+		- source_file=src/lib/analytics-export.ts
+		- deps_pdf=buildStandardPdfBlob @/lib/pdf
+		- deps_csv=exportToCSV @/lib/export-utils
+		- types_import=AnalyticsData TrendData PerformanceData @/lib/analytics ref=[[analytics_fetch]]
+		- types_import_trainer=TrainerAnalyticsReport @/lib/trainer-analytics ref=[[analytics_fetch]] (sezione trainer)
+		- export_buildAnalyticsReportPdfBlob=async Blob da AnalyticsData landscape autoTable sezioni riepilogo+trend+distribuzione+performance
+		- export_buildTrainerAnalyticsReportPdfBlob=async Blob da TrainerAnalyticsReport landscape KPI+progressDistribution+paymentMix+insights+daily+top30 athletes revenue+alerts
+		- deprecated_exportAnalyticsToCSV=void filename optional; sezioni RIEPILOGO TREND DISTRIBUZIONE PERFORMANCE
+		- deprecated_exportTrendToCSV=void
+		- deprecated_exportPerformanceToCSV=void
+		- note_comment=@deprecated UI PDF unificata; CSV per script legacy
+	- COMPRESSED
+		- buildAnalyticsReportPdfBlob=testo titolo Statistiche 22Club+timestamp it-IT; summary table; trend colonne incl. prenotati/eseguiti/annullati/cancellati; distribution tipo/qty/%; performance nome/allenamenti/durata/completamento%
+		- buildTrainerAnalyticsReportPdfBlob=titolo Statistiche trainer; periodo report.startDay—endDay; KPI tab incasso training ore revenue/h ARPC roster nuovi/persi churn aderenza no-show score; optional progress bands+payment mix+insights; daily colonne incasso ore allen pren eseg ann canc no-show nuovi persi; top atleti revenue max 30; alert label/level/hint
+	- QUERIES
+		- use=N/A (solo layout Blob/CSV lato client da dati già fetchati)
+	- CONTEXT
+		- name=pdf_locale_side_effect
+		- issues=toLocaleString it-IT al momento generazione; nessun persist storage in questo file
+		- ref=[[analytics_context]]

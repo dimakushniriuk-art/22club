@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
+import { PROGRESS_PHOTOS_LIST_COLUMNS } from '@/lib/progress/progress-photos-columns'
 import type { ProgressPhoto } from '@/types/progress'
 
 const logger = createLogger('hooks:use-progress-photos')
@@ -23,7 +24,6 @@ interface UseProgressPhotosReturn {
   loading: boolean
   error: string | null
   hasMore: boolean
-  totalCount: number
   loadMore: () => Promise<void>
   refresh: () => Promise<void>
   filterByAngle: (angle: 'fronte' | 'profilo' | 'retro' | null) => void
@@ -40,7 +40,6 @@ export function useProgressPhotos({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
-  const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
   const [angle, setAngle] = useState<'fronte' | 'profilo' | 'retro' | null>(initialAngle)
   const [dateFilter, setDateFilter] = useState<string | null>(initialDateFilter)
@@ -71,21 +70,19 @@ export function useProgressPhotos({
         const cacheKey = getCacheKey(page)
         const cached = frequentQueryCache.get<{
           photos: ProgressPhoto[]
-          totalCount: number
         }>(cacheKey)
 
         if (cached && append) {
           // Se stiamo appendendo e abbiamo cache, usa quella
           setPhotos((prev) => [...prev, ...cached.photos])
-          setTotalCount(cached.totalCount)
           setHasMore(cached.photos.length === PHOTOS_PER_PAGE)
           setCurrentPage(page)
           loadingRef.current = false
           return
         }
 
-        // Query base
-        let query = supabase.from('progress_photos').select('*', { count: 'exact' })
+        // Query base: colonne esplicite, nessun count exact (hasMore da pagina piena)
+        let query = supabase.from('progress_photos').select(PROGRESS_PHOTOS_LIST_COLUMNS)
 
         // Filtri per ruolo
         if (role === 'athlete' && userId) {
@@ -107,11 +104,7 @@ export function useProgressPhotos({
         const from = page * PHOTOS_PER_PAGE
         const to = from + PHOTOS_PER_PAGE - 1
 
-        const {
-          data,
-          error: fetchError,
-          count,
-        } = await query
+        const { data, error: fetchError } = await query
           .order('date', { ascending: false })
           .order('created_at', { ascending: false })
           .range(from, to)
@@ -119,20 +112,23 @@ export function useProgressPhotos({
         if (fetchError) throw fetchError
 
         const fetchedPhotos = (data || []) as ProgressPhoto[]
-        const total = count || 0
 
         // Salva in cache
-        frequentQueryCache.set(cacheKey, { photos: fetchedPhotos, totalCount: total })
+        frequentQueryCache.set(cacheKey, { photos: fetchedPhotos })
 
         // Aggiorna stato
+        if (append && fetchedPhotos.length === 0) {
+          setHasMore(false)
+        } else {
+          setHasMore(fetchedPhotos.length === PHOTOS_PER_PAGE)
+        }
+
         if (append) {
           setPhotos((prev) => [...prev, ...fetchedPhotos])
         } else {
           setPhotos(fetchedPhotos)
         }
 
-        setTotalCount(total)
-        setHasMore(fetchedPhotos.length === PHOTOS_PER_PAGE && from + fetchedPhotos.length < total)
         setCurrentPage(page)
       } catch (err) {
         logger.error('Error fetching progress photos', err, { userId, page, angle, dateFilter })
@@ -217,7 +213,6 @@ export function useProgressPhotos({
     loading,
     error,
     hasMore,
-    totalCount,
     loadMore,
     refresh,
     filterByAngle,

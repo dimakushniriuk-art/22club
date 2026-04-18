@@ -82,10 +82,8 @@ export function useAthleteMedical(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 5 * 60 * 1000, // 5 minuti - dati medici cambiano raramente
-    gcTime: 30 * 60 * 1000, // 30 minuti (cacheTime in React Query v4) - mantieni in cache più a lungo
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }
@@ -125,44 +123,33 @@ export function useUpdateAthleteMedical(athleteId: string | null) {
           updateData.interventi_chirurgici = validated.interventi_chirurgici
         if (validated.note_mediche !== undefined) updateData.note_mediche = validated.note_mediche
 
-        // Verifica se esiste già un record
-        const { data: existing } = await supabase
-          .from('athlete_medical_data')
-          .select('id')
-          .eq('athlete_id', athleteId)
-          .single()
+        // Salvataggio via API server: verifica permessi + upsert con service role (RLS client spesso blocca INSERT staff)
+        const res = await fetch('/api/athlete-medical', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            athleteUserId: athleteId,
+            updates: validated,
+          }),
+        })
 
-        let result
+        const payload = (await res.json().catch(() => null)) as
+          | { data?: unknown; error?: string }
+          | null
 
-        if (existing) {
-          // Update esistente
-          const { data, error } = await supabase
-            .from('athlete_medical_data')
-            .update(updateData)
-            .eq('athlete_id', athleteId)
-            .select('*')
-            .single()
-
-          if (error) throw error
-          result = data
-        } else {
-          // Insert nuovo record
-          const { data, error } = await supabase
-            .from('athlete_medical_data')
-            .insert({
-              athlete_id: athleteId,
-              ...updateData,
-            })
-            .select('*')
-            .single()
-
-          if (error) throw error
-          result = data
+        if (!res.ok) {
+          const msg =
+            payload && typeof payload === 'object' && 'error' in payload && payload.error
+              ? String(payload.error)
+              : `HTTP ${res.status}`
+          throw new Error(msg)
         }
 
-        if (!result) {
-          throw new Error('Dati non trovati dopo aggiornamento')
+        if (!payload || typeof payload !== 'object' || !('data' in payload) || !payload.data) {
+          throw new Error('Risposta API non valida')
         }
+
+        const result = payload.data as Record<string, unknown>
 
         // Valida e ritorna i dati aggiornati
         const validatedResult = createAthleteMedicalDataSchema.parse({

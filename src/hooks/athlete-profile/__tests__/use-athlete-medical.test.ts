@@ -242,68 +242,33 @@ describe('useAthleteMedical', () => {
         updated_at: '2025-01-02T00:00:00Z',
       }
 
-      // Setup chain per check esistenza (prima chiamata)
-      const mockSelectForCheck = vi.fn()
-      const mockEqForCheck = vi.fn()
-      const mockSingleForCheck = vi.fn()
-
-      mockSelectForCheck.mockReturnValue({
-        eq: mockEqForCheck,
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: mockUpdatedData }),
       })
+      vi.stubGlobal('fetch', fetchMock)
 
-      mockEqForCheck.mockReturnValue({
-        single: mockSingleForCheck,
-      })
+      try {
+        const { result } = renderHook(() => useUpdateAthleteMedical('test-athlete-id'), {
+          wrapper: createWrapper(),
+        })
 
-      mockSingleForCheck.mockResolvedValue({
-        data: { id: 'medical-id' },
-        error: null,
-      })
+        result.current.mutate(updateData)
 
-      // Setup chain per update (seconda chiamata)
-      const mockUpdateEq = vi.fn()
-      const mockUpdateSelect = vi.fn()
-      const mockUpdateSingle = vi.fn()
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true)
+        })
 
-      mockUpdateEq.mockReturnValue({
-        select: mockUpdateSelect,
-      })
-
-      mockUpdateSelect.mockReturnValue({
-        single: mockUpdateSingle,
-      })
-
-      mockUpdateSingle.mockResolvedValue({
-        data: mockUpdatedData,
-        error: null,
-      })
-
-      // Configura from() per ritornare chain corretta
-      mockSupabase.from
-        .mockReturnValueOnce({
-          select: mockSelectForCheck,
-          update: vi.fn().mockReturnValue({
-            eq: mockUpdateEq,
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/athlete-medical',
+          expect.objectContaining({
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
           }),
-        }) // Prima chiamata: check esistenza
-        .mockReturnValueOnce({
-          select: mockSelectForCheck,
-          update: vi.fn().mockReturnValue({
-            eq: mockUpdateEq,
-          }),
-        }) // Seconda chiamata: update
-
-      const { result } = renderHook(() => useUpdateAthleteMedical('test-athlete-id'), {
-        wrapper: createWrapper(),
-      })
-
-      result.current.mutate(updateData)
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true)
-      })
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('athlete_medical_data')
+        )
+      } finally {
+        vi.unstubAllGlobals()
+      }
     })
   })
 

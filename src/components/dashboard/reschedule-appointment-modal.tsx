@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-keys'
+import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 
@@ -113,7 +113,7 @@ export function RescheduleAppointmentModal({
       }
 
       // Invalida query appointments per refresh automatico
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
 
       onSuccess?.()
       onOpenChange(false)

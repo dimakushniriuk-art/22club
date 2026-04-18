@@ -2,9 +2,12 @@
 
 import * as React from 'react'
 import Image from 'next/image'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui'
 import { useSupabase } from '@/hooks/use-supabase'
 import { useToast } from '@/components/ui/toast'
+import { syncAuthContextAfterOwnProfilesRowUpdate } from '@/lib/react-query/post-mutation-cache'
+import { useAuth } from '@/providers/auth-provider'
 import { validateAvatarFile, resizeImage, getFileExtension } from '@/lib/avatar-utils'
 import { createLogger } from '@/lib/logger'
 import { Upload, X } from 'lucide-react'
@@ -26,6 +29,8 @@ export function AvatarUploader({
   autoOpenFilePicker,
   onFilePickerOpened,
 }: AvatarUploaderProps) {
+  const queryClient = useQueryClient()
+  const { user: authProfileUser, refreshUserProfile } = useAuth()
   const { supabase } = useSupabase()
   const { addToast } = useToast()
   const [file, setFile] = React.useState<File | null>(null)
@@ -188,6 +193,12 @@ export function AvatarUploader({
         title: 'Avatar aggiornato',
         message: 'Immagine caricata e profilo aggiornato con successo.',
         variant: 'success',
+      })
+
+      await syncAuthContextAfterOwnProfilesRowUpdate(queryClient, {
+        authProfileId: authProfileUser?.id,
+        updatedProfileId: userId,
+        refreshUserProfile,
       })
 
       // Callback

@@ -88,7 +88,7 @@ export function StaffDashboardLayout({
   const classes = THEME_CLASSES[theme]
 
   return (
-    <div className="min-h-screen w-full min-w-0 bg-background p-4 sm:p-6">
+    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col bg-background p-4 sm:p-6">
       <div className="w-full max-w-4xl mx-auto space-y-6 sm:space-y-8">
         <div
           className={cn(

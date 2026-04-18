@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -36,6 +37,7 @@ import {
   DialogFooter,
 } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
+import { invalidateProgressAnalyticsQueries } from '@/lib/react-query/post-mutation-cache'
 import {
   NUTRITION_TABLES,
   nutritionFrom,
@@ -136,6 +138,7 @@ function KpiCard({
 
 export default function NutrizionistaProgressiPage() {
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
@@ -695,6 +698,7 @@ export default function NutrizionistaProgressiPage() {
       }
       const { error: err } = await supabase.from('progress_logs').insert(payload)
       if (err) throw err
+      await invalidateProgressAnalyticsQueries(queryClient, athleteUserId)
       setNuovoProgressoOpen(false)
       setNuovoStep(1)
       setNuovoAthleteId(null)
@@ -724,6 +728,7 @@ export default function NutrizionistaProgressiPage() {
     nuovoHip,
     supabase,
     loadData,
+    queryClient,
   ])
 
   const openNuovoProgresso = useCallback(() => {

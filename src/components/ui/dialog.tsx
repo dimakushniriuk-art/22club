@@ -64,7 +64,11 @@ type DialogFocusShellProps = {
 function DialogFocusShell({ className, children, onOpenChange }: DialogFocusShellProps) {
   const panelRef = React.useRef<HTMLDivElement>(null)
   const previouslyFocusedRef = React.useRef<Element | null>(null)
+  const onOpenChangeRef = React.useRef(onOpenChange)
+  onOpenChangeRef.current = onOpenChange
 
+  // Al mount (dialog appena aperto): solo allora focus sul primo focusable. onOpenChange via ref
+  // così i re-render del genitore non rieseguono focusFirst() (perdeva il focus sugli input).
   React.useEffect(() => {
     const panel = panelRef.current
     if (!panel) return
@@ -81,7 +85,7 @@ function DialogFocusShell({ className, children, onOpenChange }: DialogFocusShel
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
-        onOpenChange(false)
+        onOpenChangeRef.current(false)
         return
       }
       if (e.key !== 'Tab') return
@@ -117,13 +121,13 @@ function DialogFocusShell({ className, children, onOpenChange }: DialogFocusShel
         }
       }
     }
-  }, [onOpenChange])
+  }, [])
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-md"
-        onClick={() => onOpenChange(false)}
+        onClick={() => onOpenChangeRef.current(false)}
         aria-hidden="true"
       />
 
@@ -145,7 +149,7 @@ function DialogFocusShell({ className, children, onOpenChange }: DialogFocusShel
           className="absolute right-4 top-4 z-[110] text-text-secondary hover:text-text-primary hover:bg-white/10 transition-all duration-200 rounded-full"
           onClick={(e) => {
             e.stopPropagation()
-            onOpenChange(false)
+            onOpenChangeRef.current(false)
           }}
           aria-label="Chiudi dialog"
         >

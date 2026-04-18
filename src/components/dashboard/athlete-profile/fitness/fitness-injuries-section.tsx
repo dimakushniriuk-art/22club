@@ -102,7 +102,7 @@ export function FitnessInjuriesSection({
               onChange={(e) =>
                 onNewInfortunioChange({
                   ...newInfortunio,
-                  tipo: sanitizeString(e.target.value, 100) || '',
+                  tipo: sanitizeString(e.target.value, 100, { trim: false }) || '',
                 })
               }
               placeholder="Es. Distorsione caviglia"
@@ -129,7 +129,7 @@ export function FitnessInjuriesSection({
               onChange={(e) =>
                 onNewInfortunioChange({
                   ...newInfortunio,
-                  note: sanitizeString(e.target.value, 500) || '',
+                  note: sanitizeString(e.target.value, 500, { trim: false }) || '',
                 })
               }
               placeholder="Note aggiuntive..."

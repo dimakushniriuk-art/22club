@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-keys'
 import { createClient } from '@/lib/supabase/client'
+import { invalidateAllenamentiQueries } from '@/lib/react-query/post-mutation-cache'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('components:dashboard:assign-workout-modal')
@@ -101,7 +101,7 @@ export function AssignWorkoutModal({ open, onOpenChange, onSuccess }: AssignWork
       }
 
       // Invalida query allenamenti per refresh automatico (workout_plans influisce su allenamenti)
-      queryClient.invalidateQueries({ queryKey: queryKeys.allenamenti.all })
+      void invalidateAllenamentiQueries(queryClient)
 
       toast.addToast({
         title: 'Scheda assegnata',

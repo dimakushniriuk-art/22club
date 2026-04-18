@@ -81,6 +81,7 @@ export function DashboardMobileNav() {
   const { role: userRole, signOut } = useAuth()
   const { notify } = useNotify()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [logoutPending, setLogoutPending] = useState(false)
   const staffWorkoutsSlotsActive = useStaffWorkoutSlotsIndicator()
 
   const isAdmin = userRole === 'admin'
@@ -104,14 +105,25 @@ export function DashboardMobileNav() {
   }
 
   const handleLogout = useCallback(async () => {
+    if (logoutPending) return
+    setLogoutPending(true)
     setDrawerOpen(false)
     try {
-      await signOut()
+      const result = await signOut()
+      if (!result.success) {
+        notify(
+          result.error ?? 'Logout non riuscito. Riprova.',
+          'error',
+          'Errore logout',
+        )
+      }
     } catch (error) {
       logger.error('Errore nel logout', error)
       notify('Si è verificato un errore durante il logout. Riprova.', 'error', 'Errore logout')
+    } finally {
+      setLogoutPending(false)
     }
-  }, [signOut, notify])
+  }, [signOut, notify, logoutPending])
 
   const closeDrawer = useCallback(() => setDrawerOpen(false), [])
 
@@ -225,7 +237,9 @@ export function DashboardMobileNav() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full min-h-[44px] px-3 rounded-xl text-state-error hover:bg-state-error/10 font-medium transition-colors touch-manipulation"
+              disabled={logoutPending}
+              aria-busy={logoutPending}
+              className="flex items-center gap-3 w-full min-h-[44px] px-3 rounded-xl text-state-error hover:bg-state-error/10 active:bg-state-error/15 font-medium transition-colors touch-manipulation cursor-pointer disabled:pointer-events-none disabled:opacity-60"
             >
               <LogOut className="w-5 h-5 shrink-0" />
               <span className="text-sm">Esci</span>

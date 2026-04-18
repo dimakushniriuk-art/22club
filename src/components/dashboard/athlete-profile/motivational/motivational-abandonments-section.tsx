@@ -14,13 +14,23 @@ import { AlertCircle, Plus, Trash2, Calendar } from 'lucide-react'
 import { sanitizeString, sanitizeNumber } from '@/lib/sanitize'
 import type { AbbandonoStorico } from '@/types/athlete-profile'
 
+/** Evita shift timezone su stringhe `YYYY-MM-DD` da input date / JSON. */
+function formatAbbandonoDateIt(isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate.trim())
+  if (m) {
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    if (!Number.isNaN(d.getTime())) return d.toLocaleDateString('it-IT')
+  }
+  const d = new Date(isoDate)
+  return Number.isNaN(d.getTime()) ? isoDate : d.toLocaleDateString('it-IT')
+}
+
 interface MotivationalAbandonmentsSectionProps {
   isEditing: boolean
   showAbbandonoForm: boolean
   newAbbandono: Partial<AbbandonoStorico>
-  motivational: {
-    storico_abbandoni: AbbandonoStorico[]
-  } | null
+  /** Lista mostrata: in modifica deve provenire da form draft, altrimenti da query. */
+  storicoAbbandoni: AbbandonoStorico[]
   onShowAbbandonoFormChange: (show: boolean) => void
   onNewAbbandonoChange: (abbandono: Partial<AbbandonoStorico>) => void
   onAbbandonoAdd: () => void
@@ -31,7 +41,7 @@ export function MotivationalAbandonmentsSection({
   isEditing,
   showAbbandonoForm,
   newAbbandono,
-  motivational,
+  storicoAbbandoni,
   onShowAbbandonoFormChange,
   onNewAbbandonoChange,
   onAbbandonoAdd,
@@ -62,9 +72,9 @@ export function MotivationalAbandonmentsSection({
         </div>
       </CardHeader>
       <CardContent className="pt-2 pb-6 px-6">
-        {motivational?.storico_abbandoni && motivational.storico_abbandoni.length > 0 ? (
+        {storicoAbbandoni.length > 0 ? (
           <div className="space-y-3">
-            {motivational.storico_abbandoni.map((abbandono, index) => (
+            {storicoAbbandoni.map((abbandono, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.02]"
@@ -74,9 +84,9 @@ export function MotivationalAbandonmentsSection({
                   <div className="flex items-center gap-4 mt-1">
                     <div className="flex items-center gap-2 text-text-secondary text-sm">
                       <Calendar className="h-4 w-4" />
-                      {new Date(abbandono.data).toLocaleDateString('it-IT')}
+                      {formatAbbandonoDateIt(abbandono.data)}
                     </div>
-                    {abbandono.durata_mesi && (
+                    {abbandono.durata_mesi != null && abbandono.durata_mesi > 0 && (
                       <p className="text-text-secondary text-sm">
                         Durata: {abbandono.durata_mesi} mesi
                       </p>
@@ -115,7 +125,7 @@ export function MotivationalAbandonmentsSection({
                 onChange={(e) =>
                   onNewAbbandonoChange({
                     ...newAbbandono,
-                    motivo: sanitizeString(e.target.value, 500) || '',
+                    motivo: sanitizeString(e.target.value, 500, { trim: false }) || '',
                   })
                 }
                 placeholder="Motivo dell'abbandono"
@@ -128,7 +138,7 @@ export function MotivationalAbandonmentsSection({
                 id="abbandono-durata"
                 type="number"
                 min="1"
-                value={newAbbandono.durata_mesi || ''}
+                value={newAbbandono.durata_mesi ?? ''}
                 onChange={(e) =>
                   onNewAbbandonoChange({
                     ...newAbbandono,

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, Suspense, createElement, useCallback, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
+import { mergeOrphanWorkoutSetsIntoSetsByWdeIdAndRepair } from '@/lib/workout-sets-repair-orphan-log'
 import { useAuth } from '@/providers/auth-provider'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { notifyError } from '@/lib/notifications'
@@ -37,6 +39,7 @@ import {
   X,
 } from 'lucide-react'
 import { formatDateTime } from '@/lib/format'
+import { invalidateAfterWorkoutSessionWrite } from '@/lib/react-query/post-mutation-cache'
 import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
 import { useToast } from '@/components/ui/toast'
 import {
@@ -173,6 +176,7 @@ export function RiepilogoPageContent({
 } = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const { user, loading: authLoading } = useAuth()
   const supabase = useSupabaseClient()
   const { addToast } = useToast()
@@ -454,6 +458,8 @@ export function RiepilogoPageContent({
         }
       }
 
+      await invalidateAfterWorkoutSessionWrite(queryClient, user?.user_id ?? null)
+
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('22club:athlete-lessons-refresh'))
       }
@@ -474,7 +480,16 @@ export function RiepilogoPageContent({
     } finally {
       setPaneFinalizeLoading(false)
     }
-  }, [workoutsPane, athleteProfileId, summary, workoutIdFromParams, addToast, supabase])
+  }, [
+    workoutsPane,
+    athleteProfileId,
+    summary,
+    workoutIdFromParams,
+    addToast,
+    supabase,
+    queryClient,
+    user?.user_id,
+  ])
 
   // Carica riepilogo workout
   useEffect(() => {
@@ -769,107 +784,28 @@ export function RiepilogoPageContent({
             null
         }
 
-        // Set salvati ma non collegati al log (o log senza workout_day_id su scheda multi-giorno): cerca su TUTTA la scheda nella finestra di chiusura sessione
+        // Set salvati ma non collegati al log: cerca su TUTTA la scheda nella finestra di chiusura sessione
+        // (anche se il log ha già altre serie collegate, così il riepilogo e i grafici vedono gli orfani).
         const allWdeIdsOnPlan = days.flatMap(
           (d) =>
             d.workout_day_exercises?.map((w) => w.id).filter((x): x is string => Boolean(x)) ?? [],
         )
-        if (workoutLogId && setsByWdeId.size === 0 && allWdeIdsOnPlan.length > 0) {
+        if (workoutLogId && allWdeIdsOnPlan.length > 0) {
           const anchor =
             typedWorkoutLog.completed_at || typedWorkoutLog.created_at || typedWorkoutLog.data
-          if (anchor) {
-            const raw = String(anchor).trim()
-            let winStart: string
-            let winEnd: string
-            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-              winStart = `${raw}T00:00:00.000Z`
-              winEnd = `${raw}T23:59:59.999Z`
-            } else {
-              const t0 = new Date(raw).getTime()
-              if (Number.isNaN(t0)) {
-                winStart = ''
-                winEnd = ''
-              } else {
-                winStart = new Date(t0 - 45 * 60 * 1000).toISOString()
-                winEnd = new Date(t0 + 15 * 60 * 1000).toISOString()
-              }
-            }
-            if (winStart && winEnd) {
-              type OrphanRow = {
-                id: string
-                workout_day_exercise_id: string
-                set_number: number
-                reps: number | null
-                weight_kg: number | null
-                completed_at: string | null
-                workout_log_id: string | null
-              }
-              const selectOrphan =
-                'id, workout_day_exercise_id, set_number, reps, weight_kg, completed_at, workout_log_id, created_at' as const
-
-              const list: OrphanRow[] = []
-              for (const wdeChunk of chunkForSupabaseIn(allWdeIdsOnPlan)) {
-                const { data: byCompleted } = await supabase
-                  .from('workout_sets')
-                  .select(selectOrphan)
-                  .in('workout_day_exercise_id', wdeChunk)
-                  .gte('completed_at', winStart)
-                  .lte('completed_at', winEnd)
-                list.push(...((byCompleted ?? []) as OrphanRow[]))
-              }
-
-              if (list.length === 0) {
-                const tLog = typedWorkoutLog.created_at || typedWorkoutLog.completed_at
-                if (tLog) {
-                  const tc = new Date(tLog).getTime()
-                  if (!Number.isNaN(tc)) {
-                    const tMin = new Date(tc - 90 * 60 * 1000).toISOString()
-                    const tMax = new Date(tc + 20 * 60 * 1000).toISOString()
-                    for (const wdeChunk of chunkForSupabaseIn(allWdeIdsOnPlan)) {
-                      const { data: byCreated } = await supabase
-                        .from('workout_sets')
-                        .select(selectOrphan)
-                        .in('workout_day_exercise_id', wdeChunk)
-                        .is('workout_log_id', null)
-                        .gte('created_at', tMin)
-                        .lte('created_at', tMax)
-                      list.push(...((byCreated ?? []) as OrphanRow[]))
-                    }
-                  }
-                }
-              }
-
-              const repairIds: string[] = []
-              for (const row of list) {
-                if (row.workout_log_id != null && row.workout_log_id !== workoutLogId) continue
-                const wdeId = row.workout_day_exercise_id
-                if (!setsByWdeId.has(wdeId)) setsByWdeId.set(wdeId, [])
-                setsByWdeId.get(wdeId)!.push({
-                  set_number: row.set_number,
-                  reps: row.reps ?? 0,
-                  weight_kg: row.weight_kg ?? 0,
-                  is_completed: Boolean(row.completed_at),
-                })
-                if (row.workout_log_id == null) repairIds.push(row.id)
-              }
-              for (const arr of setsByWdeId.values()) {
-                arr.sort((a, b) => a.set_number - b.set_number)
-              }
-              if (repairIds.length > 0) {
-                for (const idChunk of chunkForSupabaseIn(repairIds)) {
-                  const { error: repErr } = await supabase
-                    .from('workout_sets')
-                    .update({ workout_log_id: workoutLogId })
-                    .in('id', idChunk)
-                  if (repErr) {
-                    logger.warn('Repair workout_sets → workout_log fallito', repErr, {
-                      workoutLogId,
-                    })
-                    break
-                  }
-                }
-              }
-            }
+          const fallback = typedWorkoutLog.created_at || typedWorkoutLog.completed_at
+          const anchorStr = anchor != null && String(anchor).trim() !== '' ? String(anchor) : ''
+          const fallbackStr =
+            fallback != null && String(fallback).trim() !== '' ? String(fallback) : null
+          if (anchorStr || fallbackStr) {
+            await mergeOrphanWorkoutSetsIntoSetsByWdeIdAndRepair(
+              supabase,
+              workoutLogId,
+              allWdeIdsOnPlan,
+              anchorStr || (fallbackStr ?? ''),
+              fallbackStr,
+              setsByWdeId,
+            )
           }
         }
 

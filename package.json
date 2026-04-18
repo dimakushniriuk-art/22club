@@ -130,7 +130,7 @@
     "build:capacitor:android": "cross-env CAPACITOR=true CAPACITOR_NEXT_EXPORT=true next build && npm run capacitor:sync && npm run capacitor:open:android"
   },
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   },
   "overrides": {
     "baseline-browser-mapping": "2.9.11",

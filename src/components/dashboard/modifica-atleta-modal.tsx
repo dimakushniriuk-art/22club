@@ -1,7 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { createLogger } from '@/lib/logger'
+import {
+  invalidateAllAthleteDomainQueries,
+  invalidateClientiQueries,
+} from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('components:dashboard:modifica-atleta-modal')
 import {
@@ -42,6 +47,7 @@ export function ModificaAtletaModal({
   onSuccess,
   athlete,
 }: ModificaAtletaModalProps) {
+  const queryClient = useQueryClient()
   const { addToast } = useToast()
   const [formData, setFormData] = useState<FormData>({
     nome: '',
@@ -158,6 +164,9 @@ export function ModificaAtletaModal({
           return { data: { ...athlete, ...requestBody } }
         },
       )
+
+      await invalidateAllAthleteDomainQueries(queryClient)
+      await invalidateClientiQueries(queryClient)
 
       // Successo
       addToast({

@@ -87,10 +87,8 @@ export function useAthleteAdministrative(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 5 * 60 * 1000, // 5 minuti - dati amministrativi cambiano raramente
-    gcTime: 30 * 60 * 1000, // 30 minuti (cacheTime in React Query v4) - mantieni in cache più a lungo
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }

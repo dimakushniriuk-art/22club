@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-keys'
+import {
+  invalidateClientiQueries,
+  invalidatePaymentsQueries,
+} from '@/lib/react-query/post-mutation-cache'
 import {
   Dialog,
   DialogContent,
@@ -430,8 +433,9 @@ export function NuovoPagamentoModal({
         serviceType,
       })
 
-      // Invalida query payments per refresh automatico
-      queryClient.invalidateQueries({ queryKey: queryKeys.payments.all })
+      // Invalida query payments e clienti (crediti / liste staff)
+      void invalidatePaymentsQueries(queryClient)
+      void invalidateClientiQueries(queryClient)
 
       addToast({
         title: 'Successo',

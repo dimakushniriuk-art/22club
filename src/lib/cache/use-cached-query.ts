@@ -20,8 +20,8 @@ interface UseCachedQueryOptions<T> {
 export function useCachedQuery<T>({
   queryKey,
   queryFn,
-  staleTime = 5 * 60 * 1000, // 5 minuti
-  cacheTime = 10 * 60 * 1000, // 10 minuti
+  staleTime = 60 * 1000,
+  cacheTime = 15 * 60 * 1000,
   enabled = true,
   localStorageKey,
   localStorageTtl = 5 * 60 * 1000, // 5 minuti
@@ -53,9 +53,7 @@ export function useCachedQuery<T>({
     gcTime: cacheTime, // React Query v5 usa gcTime invece di cacheTime
     enabled,
     initialData,
-    // Refetch on mount se i dati sono stale
     refetchOnMount: true,
-    // Non refetch su window focus per performance
     refetchOnWindowFocus: false,
   })
 

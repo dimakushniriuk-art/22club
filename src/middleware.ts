@@ -260,24 +260,39 @@ export async function middleware(request: NextRequest) {
           if (isNoProfile) {
             return withSb(NextResponse.redirect(new URL('/welcome', request.url)))
           }
-          const redirectUrl = request.nextUrl.clone()
-          redirectUrl.pathname = '/login'
-          if (!is429) {
-            redirectUrl.searchParams.set('error', 'profilo')
+          // Rate limit PostgREST: evita redirect a /login se abbiamo ancora una voce in cache (anche scaduta).
+          if (is429 && cached) {
+            logger.debug('Middleware: 429 su profiles, uso ruolo da cache (anche scaduta)', {
+              userId,
+            })
+            const rawRole = cached.role
+            firstLogin = cached.first_login ?? null
+            normalizedRole = normalizeRole(rawRole) ?? rawRole
+            roleCache.set(userId, {
+              role: cached.role,
+              first_login: firstLogin,
+              expires: Date.now() + 60 * 1000,
+            })
+          } else {
+            const redirectUrl = request.nextUrl.clone()
+            redirectUrl.pathname = '/login'
+            if (!is429) {
+              redirectUrl.searchParams.set('error', 'profilo')
+            }
+            return withSb(NextResponse.redirect(redirectUrl))
           }
-          return withSb(NextResponse.redirect(redirectUrl))
+        } else {
+          const { role, first_login: profileFirstLogin } = profile
+          firstLogin = profileFirstLogin ?? null
+          normalizedRole = normalizeRole(role) ?? role
+
+          // Salva in cache (1 minuto)
+          roleCache.set(userId, { role, first_login: firstLogin, expires: Date.now() + 60 * 1000 })
+          logger.debug('Ruolo utente caricato da database middleware', {
+            userId,
+            role: normalizedRole,
+          })
         }
-
-        const { role, first_login: profileFirstLogin } = profile
-        firstLogin = profileFirstLogin ?? null
-        normalizedRole = normalizeRole(role) ?? role
-
-        // Salva in cache (1 minuto)
-        roleCache.set(userId, { role, first_login: firstLogin, expires: Date.now() + 60 * 1000 })
-        logger.debug('Ruolo utente caricato da database middleware', {
-          userId,
-          role: normalizedRole,
-        })
       }
 
       // Impersonation: solo impersonate_profile_id; se actor non admin -> clear cookie. Redirect/role lasciati ad auth context.

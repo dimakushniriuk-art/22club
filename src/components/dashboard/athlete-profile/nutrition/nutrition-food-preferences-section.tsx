@@ -57,7 +57,7 @@ export function NutritionFoodPreferencesSection({
                 value={newAlimentoPreferito}
                 maxLength={100}
                 onChange={(e) => {
-                  const sanitized = sanitizeString(e.target.value, 100)
+                  const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                   onNewAlimentoPreferitoChange(sanitized || '')
                 }}
                 onKeyDown={(e) => {
@@ -113,7 +113,7 @@ export function NutritionFoodPreferencesSection({
                 value={newAlimentoEvitato}
                 maxLength={100}
                 onChange={(e) => {
-                  const sanitized = sanitizeString(e.target.value, 100)
+                  const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                   onNewAlimentoEvitatoChange(sanitized || '')
                 }}
                 onKeyDown={(e) => {

@@ -6,7 +6,7 @@
  */
 export function ProfiloPageSkeleton() {
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col bg-black p-6">
       <div className="space-y-6">
         <div className="animate-pulse space-y-6">
           <div className="bg-background-tertiary h-32 rounded-lg" />

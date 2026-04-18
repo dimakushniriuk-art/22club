@@ -4,20 +4,29 @@
  * @module lib/sanitize
  */
 
+export type SanitizeStringOptions = {
+  /** Se false, non applica trim durante la digitazione (es. onChange); il trim resta nei path di salvataggio. Default: true */
+  trim?: boolean
+}
+
 /**
  * Sanitizza una stringa rimuovendo spazi iniziali/finali e caratteri pericolosi
  * @param value - Valore da sanitizzare
  * @param maxLength - Lunghezza massima (opzionale)
+ * @param options - trim: default true; usare `{ trim: false }` negli handler onChange dei campi testo per non cancellare lo spazio mentre si scrive tra le parole
  * @returns Stringa sanitizzata o null se vuota
  */
 export function sanitizeString(
   value: string | null | undefined,
   maxLength?: number,
+  options?: SanitizeStringOptions,
 ): string | null {
   if (!value) return null
 
-  // Trim spazi iniziali/finali
-  let sanitized = value.trim()
+  const shouldTrim = options?.trim !== false
+
+  // Trim spazi iniziali/finali (disattivabile durante input controllato live)
+  let sanitized = shouldTrim ? value.trim() : value
 
   // Applica maxLength se specificato
   if (maxLength && sanitized.length > maxLength) {

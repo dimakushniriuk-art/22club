@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import '../styles/sidebar-enhanced.css'
 import '../styles/tablet-landscape.css'
+import '../styles/app-viewport-shell.css'
 import '@/lib/dom-protection' // Protezione DOM per errori className
 import { QueryProvider } from '@/providers/query-provider'
 import { AuthProvider } from '@/providers/auth-provider'
@@ -70,7 +71,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   // Stili critici inline: visibili anche se il CSS esterno (es. layout.css) non si carica
-  const criticalCss = `html,body{background:#0d0d0d !important;color:#EAF0F2}body{min-height:100vh}.page-login{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1rem}`
+  const criticalCss = `html,body{background:#0d0d0d !important;color:#EAF0F2}body{min-height:100dvh}.page-login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1rem}`
 
   return (
     <html lang="it">

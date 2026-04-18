@@ -88,3 +88,6 @@ debug-*.log
 /athlete-auth.json
 /admin-auth.json
 /pt-auth.json
+
+# Segreti MCP locali (copia da mcp.secrets.env.example)
+.cursor/mcp.secrets.env

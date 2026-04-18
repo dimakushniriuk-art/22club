@@ -2,7 +2,13 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import type FullCalendarComponent from '@fullcalendar/react'
-import type { CalendarApi, EventClickArg, EventInput, PluginDef, EventDropArg } from '@fullcalendar/core'
+import type {
+  CalendarApi,
+  EventClickArg,
+  EventInput,
+  PluginDef,
+  EventDropArg,
+} from '@fullcalendar/core'
 import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
 import { ChevronLeft, ChevronRight, Plus, ZoomIn, ZoomOut } from 'lucide-react'
 import type { AppointmentUI, AppointmentColor } from '@/types/appointment'
@@ -98,6 +104,9 @@ const SLOT_DURATION_OPTIONS: { value: number; label: string }[] = [
   { value: 60, label: '1 h' },
   { value: 90, label: '1h 30min' },
 ]
+
+const CALENDAR_FAB_BUTTON_CLASS =
+  'w-14 h-14 min-w-[56px] min-h-[56px] rounded-full border border-cyan-400/80 bg-cyan-500 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_16px_rgba(34,211,238,0.25)] flex items-center justify-center transition-all duration-200 hover:border-cyan-300/90 hover:bg-cyan-400 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0_20px_rgba(34,211,238,0.35)] hover:scale-105 active:scale-95 active:bg-cyan-600'
 
 export function CalendarView({
   appointments,
@@ -404,7 +413,10 @@ export function CalendarView({
       const isOpenSlot = appointment.is_open_booking_day === true
       if (openBookingAsBackground && isOpenSlot) {
         const segments = eachOpenBookingSegment(appointment.starts_at, appointment.ends_at)
-        const pushSegment = (seg: { startMs: number; endMs: number; key: string }, syntheticId: string) => {
+        const pushSegment = (
+          seg: { startMs: number; endMs: number; key: string },
+          syntheticId: string,
+        ) => {
           const count = slotBookingCounts?.[seg.key] ?? 0
           result.push({
             id: syntheticId,
@@ -502,8 +514,7 @@ export function CalendarView({
         backgroundColor = APPOINTMENT_COLORS.rosso
       }
 
-      const allowDragResize =
-        !isPeerEvent && (!isEventEditable || isEventEditable(appointment))
+      const allowDragResize = !isPeerEvent && (!isEventEditable || isEventEditable(appointment))
 
       result.push({
         id: appointment.id,
@@ -609,9 +620,7 @@ export function CalendarView({
       const isBlock = xp?._isBlock === true
       const isOpenBookingDayMarker = eventIdStr.startsWith('open-booking-day-')
       const isOpenBookingBackground =
-        clickInfo.event.display === 'background' &&
-        xp?.is_open_booking_day === true &&
-        !isBlock
+        clickInfo.event.display === 'background' && xp?.is_open_booking_day === true && !isBlock
       if (isOpenBookingDayMarker || isOpenBookingBackground) {
         navigateCalendarToDay(clickInfo.event.start)
         return
@@ -1214,15 +1223,45 @@ export function CalendarView({
         </div>
       )}
 
-      {/* FAB - solo se onNewAppointment fornito (es. nascosto se atleta senza trainer) */}
+      {/* FAB: navigazione periodo al centro, nuovo appuntamento a destra (solo se onNewAppointment) */}
       {onNewAppointment && (
-        <button
-          onClick={onNewAppointment}
-          className="fixed z-50 w-14 h-14 min-w-[56px] min-h-[56px] rounded-full border border-cyan-400/80 bg-cyan-500 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_16px_rgba(34,211,238,0.25)] flex items-center justify-center transition-all duration-200 hover:border-cyan-300/90 hover:bg-cyan-400 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0_20px_rgba(34,211,238,0.35)] hover:scale-105 active:scale-95 active:bg-cyan-600 right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]"
-          aria-label="Nuovo appuntamento"
-        >
-          <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
-        </button>
+        <>
+          <div
+            className="fixed z-50 bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-row items-center gap-2"
+            role="group"
+            aria-label="Navigazione periodo"
+          >
+            <button
+              type="button"
+              onClick={handlePrev}
+              className={CALENDAR_FAB_BUTTON_CLASS}
+              aria-label="Periodo precedente"
+            >
+              <ChevronLeft className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+            </button>
+            <div className="min-w-[56px] w-14 shrink-0 pointer-events-none" aria-hidden />
+            <div className="min-w-[56px] w-14 shrink-0 pointer-events-none" aria-hidden />
+            <button
+              type="button"
+              onClick={handleNext}
+              className={CALENDAR_FAB_BUTTON_CLASS}
+              aria-label="Periodo successivo"
+            >
+              <ChevronRight className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={onNewAppointment}
+            className={cn(
+              'fixed z-50 right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]',
+              CALENDAR_FAB_BUTTON_CLASS,
+            )}
+            aria-label="Nuovo appuntamento"
+          >
+            <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+          </button>
+        </>
       )}
     </div>
   )

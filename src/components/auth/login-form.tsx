@@ -79,7 +79,7 @@ function LoginFormContent() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="relative flex min-h-full w-full flex-1 items-center justify-center bg-background p-4">
       {/* Background gradient decorativo */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-1/4 -top-1/4 h-96 w-96 rounded-full bg-gradient-to-br from-teal-500/20 via-cyan-500/20 to-blue-500/20 blur-3xl" />
@@ -239,7 +239,7 @@ export default function LoginForm() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="flex min-h-full w-full flex-1 items-center justify-center bg-background p-4">
           <div className="text-text-primary">Caricamento...</div>
         </div>
       }

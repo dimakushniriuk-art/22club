@@ -301,7 +301,7 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <div
-      className="page-login min-h-screen min-w-0 bg-background text-text-primary flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 safe-area-inset"
+      className="page-login flex min-h-full min-w-0 w-full flex-1 items-center justify-center bg-background px-4 py-4 text-text-primary min-[834px]:px-6 min-[834px]:py-6 safe-area-inset"
       style={{ minHeight: '100dvh' }}
     >
       <Suspense fallback={<LoginCard skeleton title="Accedi" />}>

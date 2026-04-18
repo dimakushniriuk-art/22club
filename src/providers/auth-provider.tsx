@@ -19,6 +19,13 @@ export type FetchProfileResult = {
   errorMessage?: string
 }
 
+/** Dopo bootstrap/INITIAL_SESSION: non marcare "handled" se il profilo manca solo per rate limit (così un evento successivo può riprovare). */
+function shouldMarkInitialProfileHandled(result: FetchProfileResult): boolean {
+  if (result.profile) return true
+  if (result.errorCode === 'over_request_rate_limit' || result.errorStatus === 429) return false
+  return true
+}
+
 /** Messaggio utente in base a code/status (Model A: profilo con user_id = auth.user.id). */
 function profileErrorMessage(result: FetchProfileResult): string {
   if (result.errorCode === 'PGRST116') {
@@ -453,11 +460,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return
         }
 
-        // Sessione valida: prima prova contesto (impersonation), altrimenti profilo
+        // Sessione valida: prima prova contesto (impersonation), altrimenti profilo.
+        // Non impostare initialSessionHandledRef prima del fetch: se fallisce per 429, INITIAL_SESSION deve poter riprovare.
         if (!initialSessionHandledRef.current) {
-          initialSessionHandledRef.current = true
           const applied = await applyAuthContext()
-          if (isMounted && applied) return
+          if (isMounted && applied) {
+            initialSessionHandledRef.current = true
+            return
+          }
           if (process.env.NODE_ENV !== 'production') {
             logger.debug('[profiles] bootstrap → chiama fetchProfile', {
               userId: authUser.id,
@@ -468,6 +478,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const result = await fetchProfile(authUser.id)
           if (isMounted) {
             updateUserFromProfile(result.profile)
+            if (shouldMarkInitialProfileHandled(result)) {
+              initialSessionHandledRef.current = true
+            }
           }
         } else {
           // Già gestita, solo setta loading
@@ -603,9 +616,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
             return
           }
-          initialSessionHandledRef.current = true
           const applied = await applyAuthContext()
-          if (isMounted && applied) return
+          if (isMounted && applied) {
+            initialSessionHandledRef.current = true
+            return
+          }
           if (process.env.NODE_ENV !== 'production') {
             logger.debug('[profiles] INITIAL_SESSION → chiama fetchProfile', {
               userId: (sess.user as { id: string }).id,
@@ -616,6 +631,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const result = await fetchProfile((sess.user as { id: string }).id)
           if (isMounted) {
             updateUserFromProfile(result.profile)
+            if (shouldMarkInitialProfileHandled(result)) {
+              initialSessionHandledRef.current = true
+            }
           }
           return
         }
@@ -748,6 +766,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [])
 
+  const refreshUserProfile = useCallback(async () => {
+    try {
+      const applied = await applyAuthContext()
+      if (applied) {
+        return
+      }
+      const {
+        data: { user: authUser },
+        error: userError,
+      } = await supabase.auth.getUser()
+      if (userError || !authUser?.id) {
+        if (handleRefreshTokenError(userError)) return
+        return
+      }
+      profileCacheRef.current.delete(authUser.id)
+      const result = await fetchProfile(authUser.id)
+      updateUserFromProfile(result.profile)
+    } catch (error) {
+      void handleRefreshTokenError(error)
+    }
+  }, [applyAuthContext, fetchProfile, updateUserFromProfile])
+
   const contextValue = useMemo<AuthContextType>(
     () => ({
       user,
@@ -760,8 +800,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signOut,
       resetPassword,
+      refreshUserProfile,
     }),
-    [user, role, orgId, loading, actorProfile, isImpersonating, signIn, signOut, resetPassword],
+    [
+      user,
+      role,
+      orgId,
+      loading,
+      actorProfile,
+      isImpersonating,
+      signIn,
+      signOut,
+      resetPassword,
+      refreshUserProfile,
+    ],
   )
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

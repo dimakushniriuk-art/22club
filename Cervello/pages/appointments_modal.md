@@ -1,0 +1,92 @@
+- appointments_modal
+	- ATOMS
+		- APT.frm.file=src/components/calendar/appointment-form.tsx
+		- APT.frm.pathNote=nessun src/components/dashboard/appointment-form.tsx nel repo; form staff calendario=questo file
+		- APT.frm.props=appointment?|athletes|onSubmit|loading|showOpenBookingOption|defaultType|defaultColor|athleteMode
+		- APT.frm.fields=athlete_id|date|start_time|end_time|type|color|notes|location|is_open_booking_day|is_all_day|recurrence
+		- APT.frm.def.datetime=no appointment→oggi+ora arrotondata 15m|fine=calculateEndTime(start,getDurationForType)|location default="22 Club"|singolo atleta→athlete_id prefill
+		- APT.frm.def.types=enabledTypes=getEnabledAppointmentTypeKeys(settings,role)|athleteMode=tipo fisso allenamento|defaultTypeFromSettings=athleteMode?allenamento:(enabledTypes[0]??defaultType??allenamento)
+		- APT.frm.def.duration=settings.default_durations se non vuoto altrimenti getDefaultDurationsForRole(role)|athleteMode durata=90|open booking=FREE_PASS_DURATION_MINUTES ref=lib/calendar-defaults
+		- APT.frm.def.recurrence=settings.recurrence_options se presente altrimenti lista default none|2_weeks|1_month|6_months|1_year|until_lessons
+		- APT.frm.state=formData athlete_id|date|start_time|end_time|type|color|notes|location|is_open_booking_day|is_all_day|recurrence string|errors Record field|isSubmitting|showColorPicker|formContainerRef
+		- APT.frm.fx.focus=mount requestAnimationFrame focus primo controllo enabled nel form
+		- APT.frm.fx.singleAthlete=useEffect athletes.length===1 ∧ !formData.athlete_id→prefill athletes[0].id
+		- APT.frm.fx.syncSubmitting=useEffect !loading ∧ isSubmitting→setIsSubmitting false
+		- APT.frm.timeUI=TIME_OPTIONS=SimpleSelect ogni 15m 00:00-23:45|start/end nascosti se is_all_day
+		- APT.frm.val=open booking→athlete_id non richiesto|altrimenti athlete_id|data|orari se !is_all_day|start≠end (solo uguaglianza vietata)|submit guard=isSubmitting||loading
+		- APT.frm.payload=CreateAppointmentData|open booking→omit athlete_id|staff_id='' (parent staff calendario)|org_id=undefined form|status attivo|color|notes open default "Libera prenotazione"|is_open_booking_day|recurrence≠none→campo recurrence su payload
+		- APT.frm.payload.editNote=handleSubmit costruisce solo CreateAppointmentData; id edit non nel body uscito dal form→parent deve usare appointment.id|EditAppointmentData ref=[[appointments_context]] nome:appointment-form-edit-payload
+		- APT.frm.datetime=all_day→starts 00:00 ends 23:59 local→ISO|else end<=start stesso giorno→endDate+1giorno poi ISO
+		- APT.frm.openBooking.switch=ON→notes default|type allenamento|color grigio|end_time 20:00
+		- APT.frm.edit=appointment con id→UI "Salva modifiche"|recurrence reset none su sync appointment|is_all_day inferito da start/end midnight/eod
+		- APT.frm.edit.ui=Ripetizione nascosta !isEditing|switch Libera prenotazione solo !isEditing ∧ showOpenBookingOption
+		- APT.frm.typeUI=athleteMode nascosto blocco tipo|altrimenti pills enabledTypes+emoji|open day+showOpenBookingOption→OPEN_BOOKING_TYPE in testa + appointmentTypes senza duplicato allenamento
+		- APT.pop.file=src/components/calendar/appointment-popover.tsx
+		- APT.pop.props=canEdit|canDelete|canComplete|canNoShow|onComplete|onNoShow|asModal|loading|callbacks edit/cancel/delete/close
+		- APT.pop.ui=showEditDelete=status attivo&&(canEdit||canDelete)|complete/no-show=props boolean+handler da parent
+		- APT.mdl.wire=src/components/dashboard/modals-wrapper.tsx lazy+ModalContext.openAppointment
+		- APT.mdl.file=src/components/dashboard/appointment-modal.tsx
+		- APT.mdl.ui=Dialog onOpenChange=handleClose|handleClose=!loading→onOpenChange false+reset error+form|submit buttons disabled=loading
+		- APT.mdl.state=formData useState|recurrence RecurrenceConfig useState type none|loading|error string|null|useClienti clienti|useToast|useQueryClient
+		- APT.mdl.branch.val=early return setLoading false su campi vuoti|end<=start|no user|rpc profile fail|staffOrgError|requireCurrentOrgId throw→messaggio org
+		- APT.mdl.branch.insert=recurrence.type===none→single baseAppointmentData|else generateRecurringAppointments(startsAt,endsAt,recurrence)→each row +recurrence_rule serializeRecurrence cast row
+		- APT.mdl.postUI=toast success count|onOpenChange false|onSuccess|reset form+recurrence none|catch toast error+setError
+		- APT.rsch.file=src/components/dashboard/reschedule-appointment-modal.tsx
+		- APT.rsch.usage=rg src: zero import di RescheduleAppointmentModal; riprogramma reale staff calendario=drag/resize+hook ref=[[appointments_calendar]]|atleta ref=hooks/calendar/use-athlete-calendar-page.ts
+		- APT.mdl.form=athlete_id|date|start_time|end_time|type|notes|location
+		- APT.mdl.types=allenamento|prova|valutazione|prima_visita|riunione|massaggio|nutrizionista
+		- APT.mdl.def.open=tomorrow date ISO split T[0]; start_time 10:00; end_time 11:15 (useEffect se open e !date)
+		- APT.mdl.def.endAuto=start_time onChange→end=start+1h20 arrotondato 5 min + rollover 24h (stesso giorno form date)
+		- APT.mdl.def.endAuto.detail=+20 min su minuti|min≥60→+1h -60m|endHour≥24→0|round endMinute /5*5|round spill≥60→+1h min0|finalHour≥24→0|pad HH:mm
+		- APT.mdl.val.req=athlete_id+date+start_time+end_time obbligatori
+		- APT.mdl.val.end>start=Date(`${date}T${start}:00`) vs `${date}T${end}:00`
+		- APT.mdl.auth=supabase.auth.getUser()→!user errore
+		- APT.mdl.staff=rpc get_current_staff_profile_id→profile id staff
+		- APT.mdl.org.chain=profiles.select org_id eq id staff→requireCurrentOrgId(resolveOrgIdForAppointmentWrite({profileOrgId})) catch→messaggio org
+		- APT.mdl.payload=CreateAppointmentData athlete_id|staff_id|starts_at|ends_at|type|status attivo|notes|null|location|null|org_id|org_id_text
+		- APT.mdl.ins=supabase.from(appointments).insert(appointmentsToInsert) batch unica richiesta atomicità (eslint any cast)
+		- APT.mdl.post=invalidateAppointmentsQueries(queryClient) ref=[[appointments_mutations]]
+		- APT.mdl.rec≠none→generateRecurringAppointments+recurrence_rule serializeRecurrence su ogni row ref=[[appointments_recurrence]]
+		- APT.mdl.uiOv=validazione sovrapposizione rimossa commento (gruppi/multi atleta stesso slot)
+		- APT.rsch.val=id|startDateTime|endDateTime; start<end; startDate < now vietato
+		- APT.rsch.fmt=formatForInput iso→local YYYY-MM-DDTHH:mm|state sync useEffect currentStart|currentEnd
+		- APT.rsch.input=datetime-local start min=new Date().toISOString().slice(0,16)|end min=startDateTime||stesso fallback now slice
+		- APT.rsch.upd=appointments.update starts_at ends_at eq id
+		- APT.rsch.post=invalidateAppointmentsQueries ref=[[appointments_mutations]]|onSuccess|onOpenChange false|no toast success
+		- APT.rsch.gap=nessun overlap ref=[[appointments_overlap]] prima update|RLS/DB autorità
+		- ref=[[appointments_overlap]] checkAppointmentOverlap import commentato/disabilitato in appointment-modal
+		- APT.ui.cal.frm.shell=file=src/app/dashboard/calendario/page.tsx|overlay fixed z-50 AppointmentForm lazy+Suspense StaffLazyChunkFallback|open showForm|close handleCloseForm strip URL param new|loading gate close
+		- APT.ui.cal.frm.init=editingAppointment EditAppointmentData da appointmentToEditData|oppure CreateAppointmentData da selectedSlot toLocalISOString|type defaultNewAppointmentType|athletes prop|onSubmit handleFormSubmitClick
+		- APT.ui.cal.frm.overlap=await handleFormSubmit(data,editing)|result.overlapDetected→setOverlapConfirmData|ConfirmDialog onConfirm handleFormSubmit(..., {forceOverwrite:true}) ref=[[appointments_overlap]] delta UX|poi clear slot+close ref=[[appointments_mutations]] stesso handler core
+		- APT.ui.cal.pop=AppointmentPopover wiring page|onEdit→edit state+close popover+open form|cancel/delete/complete/no-show→handlers useCalendarPage|confirm dialogs separati da popover
+		- APT.ui.cal.url.new=searchParams new=true→useEffect setShowForm true
+	- COMPRESSED
+		- appointment-modal: submit→validazioni→staff rpc→org→base row→[rec expand]→insert batch→invalidate→toast→reset form+recurrence none
+		- appointment-form: validateForm→payload CreateAppointmentData→onSubmit(await) parent muta DB|staff_id vuoto|recurrence string staff hook espande ref=[[appointments_calendar]]
+		- home appuntamenti lista: edit→AppointmentForm+updateAppointment payload parziale starts..location no staff insert ref=src/app/home/appuntamenti/page.tsx
+		- athlete calendar: select slot/open day→form preset slot|submit handleFormSubmit open-slot+capacity ref=hooks/calendar/use-athlete-calendar-page.ts
+		- reschedule-modal (file isolato): submit→datetime-local parse→validazioni→update→invalidate→close
+		- diff create surfaces: APT.mdl=self insert+RecurrenceSelector lib recurrence-utils+color assente+tipi select nativo|APT.frm=parent muta+color+open booking+all day+pills tipo+recurrence string settings+edit id fuori payload|APT.rsch=solo update times+min ISO slice nessun overlap UI
+	- QUERIES
+		- use=src/components/calendar/appointment-form.tsx
+		- use=src/components/calendar/appointment-popover.tsx
+		- use=src/app/home/appuntamenti/page.tsx
+		- use=src/hooks/calendar/use-athlete-calendar-page.ts
+		- use=src/components/dashboard/appointment-modal.tsx
+		- use=src/components/dashboard/reschedule-appointment-modal.tsx
+		- use=src/hooks/use-clienti.ts (select atleti)
+		- use=src/app/dashboard/calendario/page.tsx#CalendarPageContent (form+popover+overlap confirm+cancel choice dialogs)
+		- use=src/types/appointment.ts#CreateAppointmentData
+		- use=src/lib/organizations/current-org.ts#requireCurrentOrgId|resolveOrgIdForAppointmentWrite
+		- use=src/components/appointments/recurrence-selector.tsx
+		- use=src/lib/recurrence-utils.ts (APT.mdl branch insert generateRecurringAppointments|serializeRecurrence ref=[[appointments_recurrence]] delta)
+	- CONTEXT
+		- nome:trainer_id in insert modal
+		- issues=payload usa staff_id; commento DB trigger sincronizza trainer_id staff_id
+		- use=allineare aspettative schema vs form
+		- nome:appointment-form-edit-payload
+		- issues=handleSubmit non appende id; calendario page merge editingAppointment.id in handleFormSubmit ref=APT.ui.cal.frm.init
+		- use=src/components/calendar/appointment-form.tsx|src/app/dashboard/calendario/page.tsx
+		- nome:dashboard-calendario-form-overlap-ux
+		- issues=primo submit overlapDetected→secondo submit forceOverwrite via ConfirmDialog|non duplicare regole overlap server ref=[[appointments_overlap]]|handler core sempre useCalendarPage.handleFormSubmit
+		- use=src/app/dashboard/calendario/page.tsx#handleFormSubmitClick|APT.ui.cal.frm.overlap

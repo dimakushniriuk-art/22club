@@ -427,14 +427,7 @@ export default function StatistichePage() {
     return () => {
       cancelled = true
     }
-  }, [
-    trainerMode,
-    org_id,
-    adminTrainersReady,
-    selectedTrainerIds,
-    supabase,
-    rangeDays,
-  ])
+  }, [trainerMode, org_id, adminTrainersReady, selectedTrainerIds, supabase, rangeDays])
 
   const onToggleTrainerId = useCallback((id: string) => {
     setSelectedTrainerIds((prev) => {

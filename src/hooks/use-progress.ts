@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { statsCache } from '@/lib/cache/cache-strategies'
+import { PROGRESS_PHOTOS_LIST_COLUMNS } from '@/lib/progress/progress-photos-columns'
 import type { ProgressLog, ProgressPhoto, ProgressStats } from '@/types/progress'
 
 const logger = createLogger('hooks:use-progress')
@@ -56,7 +57,7 @@ export function useProgress({ userId, role }: UseProgressProps) {
     try {
       setError(null)
 
-      let query = supabase.from('progress_photos').select('*')
+      let query = supabase.from('progress_photos').select(PROGRESS_PHOTOS_LIST_COLUMNS)
 
       if (role === 'athlete' && userId) {
         query = query.eq('athlete_id', userId)
@@ -120,7 +121,7 @@ export function useProgress({ userId, role }: UseProgressProps) {
       const { data, error } = await supabase
         .from('progress_photos')
         .insert(photoData as never)
-        .select()
+        .select(PROGRESS_PHOTOS_LIST_COLUMNS)
         .single()
 
       if (error) throw error
@@ -191,14 +192,12 @@ export function useProgress({ userId, role }: UseProgressProps) {
 
       if (logsError) throw logsError
 
-      const { data: photos, error: photosError } = await supabase
+      const { count: photoTotal, error: photosCountError } = await supabase
         .from('progress_photos')
-        .select('*')
+        .select('id', { count: 'exact', head: true })
         .eq('athlete_id', userId)
-        .order('date', { ascending: false })
-        .limit(1)
 
-      if (photosError) throw photosError
+      if (photosCountError) throw photosCountError
 
       // Type assertions per risultati query
       type ProgressLogRow = {
@@ -239,7 +238,7 @@ export function useProgress({ userId, role }: UseProgressProps) {
       const stats: ProgressStats = {
         total_logs: logs?.length ?? 0,
         avg_weight: avgWeight,
-        total_photos: photos?.length ?? 0,
+        total_photos: photoTotal ?? 0,
         weight_change_30d: weightChange,
         latest_measurements: latestMeasurements,
       }

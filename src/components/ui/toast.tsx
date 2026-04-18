@@ -79,7 +79,7 @@ function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
 
   return createPortal(
     <div
-      className="pointer-events-none fixed right-0 top-0 z-[100] flex max-h-screen w-full flex-col-reverse gap-3 p-4 sm:right-4 sm:top-4 sm:w-[420px]"
+      className="pointer-events-none fixed right-0 top-0 z-[100] flex max-h-dvh w-full flex-col-reverse gap-3 p-4 sm:right-4 sm:top-4 sm:w-[420px]"
       role="region"
       aria-live="polite"
       aria-label="Notifiche"

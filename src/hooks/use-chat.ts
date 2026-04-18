@@ -10,7 +10,7 @@ import { useChatConversations } from './chat/use-chat-conversations'
 import { useChatMessages } from './chat/use-chat-messages'
 import { useChatRealtimeOptimized } from './chat/use-chat-realtime-optimized'
 import { createLogger } from '@/lib/logger'
-import type { ChatState, ChatConversation } from '@/types/chat'
+import type { ChatState, ChatConversation, ChatMessage } from '@/types/chat'
 import type { ConversationParticipant } from '@/types/chat'
 
 const logger = createLogger('hooks:use-chat')
@@ -213,7 +213,7 @@ export function useChat() {
         return prev
       })
 
-      await fetchMessagesInternal(otherUserId, limit, offset, existingMessages)
+      return await fetchMessagesInternal(otherUserId, limit, offset, existingMessages)
     },
     [fetchMessagesInternal, state.currentConversation],
   )
@@ -270,8 +270,12 @@ export function useChat() {
 
   // Mark messages as read
   const markAsRead = useCallback(
-    async (otherUserId: string) => {
-      const currentMessages = state.currentConversation?.messages ?? []
+    async (otherUserId: string, messagesOverride?: ChatMessage[]) => {
+      const fromState =
+        state.currentConversation?.participant.other_user_id === otherUserId
+          ? (state.currentConversation.messages ?? [])
+          : []
+      const currentMessages = messagesOverride ?? fromState
       await markAsReadInternal(
         otherUserId,
         (updatedMessages) => {
@@ -283,12 +287,14 @@ export function useChat() {
             return {
               ...prev,
               conversations: updatedConversations,
-              currentConversation: prev.currentConversation
-                ? {
-                    ...prev.currentConversation,
-                    messages: updatedMessages,
-                  }
-                : null,
+              currentConversation:
+                prev.currentConversation &&
+                prev.currentConversation.participant.other_user_id === otherUserId
+                  ? {
+                      ...prev.currentConversation,
+                      messages: updatedMessages,
+                    }
+                  : prev.currentConversation,
             }
           })
         },
@@ -467,8 +473,8 @@ export function useChat() {
       }))
 
       try {
-        await fetchMessages(otherUserId)
-        await markAsRead(otherUserId)
+        const loadedMessages = await fetchMessages(otherUserId)
+        await markAsRead(otherUserId, loadedMessages)
       } catch (error) {
         logger.error('Error setting current conversation', error, { otherUserId })
         setState((prev) =>

@@ -313,8 +313,8 @@ export function MessageList({
           </div>
         )}
 
-        {/* Messages - raggruppati per data con label Oggi / Ieri / data */}
-        <div className="flex-1 min-h-0 space-y-1">
+        {/* Messages - raggruppati per data; scroll interno così l’input resta sul fondo del pannello chat */}
+        <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-1">
           {messages.length > 0 ? (
             (() => {
               const groups: { dateKey: string; label: string; msgs: ChatMessage[] }[] = []

@@ -227,10 +227,7 @@ function AppuntamentiPageContent() {
         userId: user?.user_id,
         message: errorMessage,
       })
-      notifyError(
-        'Connessione',
-        'Impossibile raggiungere il server. Controlla la rete e riprova.',
-      )
+      notifyError('Connessione', 'Impossibile raggiungere il server. Controlla la rete e riprova.')
       return
     }
     logger.error('Errore nel caricamento appuntamenti', error, {
@@ -414,8 +411,8 @@ function AppuntamentiPageContent() {
           <div className="mt-3 space-y-2">
             {trainerStaffId && (
               <p className="text-center text-xs text-text-secondary px-1">
-                Libera prenotazione: max {openBookingSlotMax} prenotazioni per ogni fascia da 15 minuti
-                (griglia oraria).
+                Libera prenotazione: max {openBookingSlotMax} prenotazioni per ogni fascia da 15
+                minuti (griglia oraria).
               </p>
             )}
             {!trainerStaffId && !athleteCalendar.trainerLoading && (

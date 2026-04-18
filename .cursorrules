@@ -1,0 +1,302 @@
+# 🧠 22CLUB MASTER RULE — BRAIN-FIRST SYSTEM
+
+Il Cervello è la memoria globale e la fonte di verità operativa del progetto.
+Il codice e Supabase restano la fonte di verità tecnica da verificare sempre.
+
+---
+
+## ⚙️ MODALITÀ AUTONOMA
+
+L'utente fornisce solo l'obiettivo.
+
+Il sistema deve decidere automaticamente:
+- dominio
+- file da leggere
+- file da modificare
+- se interrogare Supabase
+- se aggiornare il Cervello
+
+---
+
+## 🔄 FLOW OBBLIGATORIO
+
+1. Identifica dominio
+2. Verifica copertura Cervello (vedi BRAIN COVERAGE CHECK)
+3. Leggi SOLO il Cervello necessario:
+   - Cervello/pages/<dominio>.md
+   - Cervello/pages/<dominio>_context.md (sempre)
+   - Cervello/pages/<dominio>_mutations.md se scrittura/logica
+   - Cervello/pages/<dominio>_fetch.md se lettura/query
+4. Segui ref [[...]] solo se necessari
+5. Verifica codice reale
+6. Se necessario → verifica Supabase via MCP
+7. Determina causa reale
+8. Applica modifica nel layer corretto
+9. Aggiorna Cervello (delta)
+
+---
+
+## 🔴 BRAIN COVERAGE CHECK
+
+Prima di qualsiasi modifica:
+
+Verifica che esistano:
+- <dominio>.md
+- <dominio>_context.md
+- almeno uno tra:
+  - <dominio>_fetch.md
+  - <dominio>_mutations.md
+
+SE manca qualcosa:
+- NON modificare codice
+- completa prima il Cervello minimo
+- poi procedi
+
+---
+
+## 🔴 CROSS-DOMAIN IMPACT CHECK
+
+Se la modifica tocca:
+- DB
+- API
+- lib/*
+- hooks condivisi
+- supabase/*
+- funzioni riutilizzate
+
+ALLORA:
+
+- identifica domini collegati tramite ref [[...]]
+- verifica impatto su:
+  - logica
+  - dati
+  - permessi
+  - flussi
+
+SE necessario:
+- aggiorna anche i loro *_context.md
+
+---
+
+## 🔴 DRIFT DETECTION
+
+Se trovi mismatch tra:
+- Cervello
+- codice reale
+- Supabase
+
+ALLORA:
+
+- NON modificare subito
+- determina quale è corretto
+- aggiorna prima il Cervello
+- poi procedi
+
+---
+
+## 🧠 DEPENDENCY MAP AUTOMATICA
+
+Se trovi:
+- import cross-domain
+- hook condivisi
+- lib riusate
+
+ALLORA:
+
+- aggiungi ref [[...]] nel Cervello
+- aggiorna <dominio>_context.md
+
+---
+
+## 🧪 PRE-CHANGE SIMULATION
+
+Prima di modificare:
+
+Simula mentalmente:
+- cosa cambia
+- chi dipende da questo
+- cosa può rompersi
+
+Se rischio alto:
+- verifica prima
+- NON procedere alla cieca
+
+---
+
+## 🎯 PRINCIPI CORE
+
+- Non inventare logica
+- Deriva solo da:
+  - Cervello
+  - codice reale
+  - Supabase
+
+Priorità:
+context → mutations → fetch → UI
+
+---
+
+## ✂️ MODALITÀ CHIRURGICA
+
+- Modifica solo ciò che serve
+- Nessun refactor non richiesto
+- Nessuna modifica globale inutile
+- Puoi modificare tutti i file necessari se il task lo richiede
+- Mantieni sistema consistente
+
+---
+
+## 🧠 OTTIMIZZAZIONE TOKEN
+
+- Non leggere tutto il Cervello
+- Non leggere tutto il progetto
+- Non fare analisi lunga se non necessaria
+- Se serve analisi → solo sul dominio
+- Non interrogare Supabase se non necessario
+
+---
+
+## 🧠 ANALISI INTELLIGENTE
+
+- Task semplice → esegui diretto
+- Task complesso → analizza solo dove serve
+- Task DB → verifica Supabase MCP
+- Task critico → valida tutto il flusso
+
+---
+
+## 🧱 BLOCCO DI SICUREZZA
+
+FERMATI se:
+- Cervello incompleto
+- rischio RLS / auth non chiaro
+- mismatch codice ↔ DB
+- problema non identificato
+
+→ completa prima
+
+---
+
+## 🗄️ DATABASE DIAGNOSTIC RULE
+
+Se il problema coinvolge dati:
+
+NON modificare subito il codice.
+
+Determina prima se il problema è in:
+- codice
+- query
+- RLS
+- schema
+- RPC
+- dati
+
+Flow:
+1. Leggi Cervello
+2. Verifica codice
+3. Interroga Supabase MCP
+4. Analizza schema, policy, dati
+5. Determina causa
+
+Regole:
+- Problema RLS → SQL, NON codice
+- Problema schema → SQL, NON codice
+- Problema codice → modifica codice
+- Non chiaro → continua diagnosi
+
+---
+
+## HARD MODE — PRE-PATCH
+
+Controlla sempre:
+1. dominio corretto
+2. Cervello sufficiente
+3. codice coerente
+4. Supabase verificato (se necessario)
+5. invarianti non rotti:
+   - auth
+   - ruoli
+   - RLS
+   - org_id
+   - cache
+   - realtime
+
+---
+
+## HARD MODE — PATCH RULES
+
+- niente patch speculative
+- niente fix incompleti
+- niente workaround nascosti
+- niente TODO critici
+- niente drift Cervello/codice/DB
+- niente modifiche fuori scope
+
+---
+
+## HARD MODE — POST-PATCH
+
+Verifica:
+- coerenza Cervello
+- coerenza codice
+- coerenza Supabase
+- effetti collaterali
+
+Se drift:
+- aggiorna Cervello
+
+---
+
+## 🔁 AGGIORNAMENTO CERVELLO
+
+Sempre dopo modifica:
+
+- scrivi SOLO delta reale
+- aggiorna SOLO dominio
+- aggiungi ref se cross-domain
+- segnala:
+  - drift
+  - rischio
+  - decisione
+
+Aggiorna SOLO se cambia:
+- logica
+- flusso
+- rischio
+- contratto API/DB
+- dipendenze
+
+NON aggiornare per:
+- styling
+- rename
+- refactor interni
+
+---
+
+## 🔗 COERENZA SISTEMA
+
+Deve essere sempre allineato:
+- codice
+- Cervello
+- Supabase
+
+---
+
+## 🚫 DIVIETI
+
+- non duplicare logica
+- non inventare comportamento
+- non ignorare RLS
+- non fare fix casuali
+- non uscire dal dominio
+- non correggere codice se problema è DB/RLS
+
+---
+
+## 🚀 OBIETTIVO
+
+- autonomia totale
+- zero micro-gestione
+- massima precisione
+- minimo uso token
+- modifiche sicure e scalabili

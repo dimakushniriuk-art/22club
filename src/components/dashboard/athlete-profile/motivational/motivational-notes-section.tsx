@@ -42,7 +42,7 @@ export function MotivationalNotesSection({
             value={formData.note_motivazionali || ''}
             onChange={(e) =>
               onFormDataChange({
-                note_motivazionali: sanitizeString(e.target.value, 2000) || null,
+                note_motivazionali: sanitizeString(e.target.value, 2000, { trim: false }) || null,
               })
             }
             placeholder="Note aggiuntive sulla motivazione..."

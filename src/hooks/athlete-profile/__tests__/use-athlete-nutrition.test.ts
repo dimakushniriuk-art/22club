@@ -215,88 +215,33 @@ describe('useAthleteNutrition', () => {
         updated_at: '2025-01-02T00:00:00Z',
       }
 
-      // Setup chain per verifica profile (prima chiamata)
-      const mockProfileSelect = vi.fn()
-      const mockProfileEq = vi.fn()
-      const mockProfileMaybeSingle = vi.fn()
-
-      mockProfileSelect.mockReturnValue({
-        eq: mockProfileEq,
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: mockUpdatedData }),
       })
+      vi.stubGlobal('fetch', fetchMock)
 
-      mockProfileEq.mockReturnValue({
-        maybeSingle: mockProfileMaybeSingle,
-      })
+      try {
+        const { result } = renderHook(() => useUpdateAthleteNutrition('test-athlete-id'), {
+          wrapper: createWrapper(),
+        })
 
-      mockProfileMaybeSingle.mockResolvedValue({
-        data: { id: 'profile-id', user_id: 'test-athlete-id' },
-        error: null,
-      })
+        result.current.mutate(updateData)
 
-      // Setup chain per check esistenza (seconda chiamata)
-      const mockSelectForCheck = vi.fn()
-      const mockEqForCheck = vi.fn()
-      const mockMaybeSingleForCheck = vi.fn()
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true)
+        })
 
-      mockSelectForCheck.mockReturnValue({
-        eq: mockEqForCheck,
-      })
-
-      mockEqForCheck.mockReturnValue({
-        maybeSingle: mockMaybeSingleForCheck,
-      })
-
-      mockMaybeSingleForCheck.mockResolvedValue({
-        data: { id: 'nutrition-id' },
-        error: null,
-      })
-
-      // Setup chain per update (terza chiamata)
-      const mockUpdate = vi.fn()
-      const mockUpdateEq = vi.fn()
-      const mockUpdateSelect = vi.fn()
-      const mockUpdateSingle = vi.fn()
-
-      mockUpdate.mockReturnValue({
-        eq: mockUpdateEq,
-      })
-
-      mockUpdateEq.mockReturnValue({
-        select: mockUpdateSelect,
-      })
-
-      mockUpdateSelect.mockReturnValue({
-        single: mockUpdateSingle,
-      })
-
-      mockUpdateSingle.mockResolvedValue({
-        data: mockUpdatedData,
-        error: null,
-      })
-
-      // Configura from() per ritornare chain corretta
-      mockSupabase.from
-        .mockReturnValueOnce({
-          select: mockProfileSelect,
-        }) // Prima chiamata: verifica profile
-        .mockReturnValueOnce({
-          select: mockSelectForCheck,
-        }) // Seconda chiamata: check esistenza
-        .mockReturnValueOnce({
-          update: mockUpdate,
-        }) // Terza chiamata: update
-
-      const { result } = renderHook(() => useUpdateAthleteNutrition('test-athlete-id'), {
-        wrapper: createWrapper(),
-      })
-
-      result.current.mutate(updateData)
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true)
-      })
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('athlete_nutrition_data')
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/athlete-nutrition',
+          expect.objectContaining({
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        )
+      } finally {
+        vi.unstubAllGlobals()
+      }
     })
   })
 })

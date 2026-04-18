@@ -308,6 +308,9 @@ export function useChatMessages(
               },
             )
             combinedMessages = existingMessages
+          } else if (cachedMessages && cachedMessages.length > 0) {
+            // SWR: fetch vuoto ma avevamo già servito la cache — non azzerare la UI
+            combinedMessages = cachedMessages
           } else {
             // Nessun messaggio dal fetch e nessun messaggio esistente (nuova conversazione vuota)
             combinedMessages = []
@@ -328,6 +331,7 @@ export function useChatMessages(
         if (combinedMessages.length > 0) {
           // Abbiamo messaggi (nuovi o combinati), aggiorna
           onMessageUpdate(otherUserId, combinedMessages, (data ?? []).length === limit, false)
+          return combinedMessages
         } else {
           // Il fetch non ha trovato messaggi e non ci sono messaggi esistenti
           // Questo può succedere solo per una nuova conversazione vuota
@@ -342,6 +346,7 @@ export function useChatMessages(
             },
           )
           onMessageUpdate(otherUserId, [], false, false)
+          return []
         }
       } catch (error) {
         logger.error('Error fetching messages - mantenendo messaggi esistenti se presenti', error, {
@@ -368,9 +373,11 @@ export function useChatMessages(
             messagesToKeepCount: messagesToKeep.length,
           })
           onMessageUpdate(otherUserId, messagesToKeep, false, false)
+          return messagesToKeep
         } else {
           // Solo se non ci sono messaggi, aggiorna lo stato per mostrare l'errore
           onMessageUpdate(otherUserId, [], false, false)
+          return []
         }
       }
     },

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback, Suspense, useContext } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -51,6 +52,8 @@ import {
 import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
 import { AllenamentiPageHeader } from '@/app/home/allenamenti/AllenamentiPageHeader'
 import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
+import { invalidateAfterWorkoutSessionWrite } from '@/lib/react-query/post-mutation-cache'
+import { repairOrphanWorkoutSetsToLog } from '@/lib/workout-sets-repair-orphan-log'
 import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
 import type { WorkoutSession, WorkoutSetData } from '@/types/workout'
 import type { Tables } from '@/types/supabase'
@@ -460,6 +463,7 @@ function ExerciseMediaDisplay({
 export function AllenamentiOggiPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const { user, loading: authLoading } = useAuth()
   const { addToast } = useToast()
   const supabase = useSupabaseClient()
@@ -1224,8 +1228,16 @@ export function AllenamentiOggiPageContent() {
       }
       clearEmbedDirty()
       postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'block' })
+      void invalidateAfterWorkoutSessionWrite(queryClient, user?.user_id ?? null)
     },
-    [ensureActiveWorkoutLog, supabase, clearEmbedDirty, postEmbedSaveEvent],
+    [
+      ensureActiveWorkoutLog,
+      supabase,
+      clearEmbedDirty,
+      postEmbedSaveEvent,
+      queryClient,
+      user?.user_id,
+    ],
   )
 
   /** Alla chiusura sessione: allinea DB a tutta la sessione (non solo blocchi marcati completati). */
@@ -1865,6 +1877,27 @@ export function AllenamentiOggiPageContent() {
           )
         }
 
+        const wdeIdsForRepair = syncPayload.map((e) => e.id).filter((id) => id.trim().length > 0)
+        try {
+          const linked = await repairOrphanWorkoutSetsToLog(
+            supabase,
+            existingLogId,
+            wdeIdsForRepair,
+            completedAt,
+            completedAt,
+          )
+          if (linked > 0) {
+            logger.info('Serie orfane riagganciate al workout_log', {
+              count: linked,
+              workoutLogId: existingLogId,
+            })
+          }
+        } catch (repairErr) {
+          logger.warn('Repair serie orfane non riuscito (non bloccante)', repairErr, {
+            workoutLogId: existingLogId,
+          })
+        }
+
         const { data: setsRows, error: setsErr } = await supabase
           .from('workout_sets')
           .select('reps, weight_kg')
@@ -1915,6 +1948,8 @@ export function AllenamentiOggiPageContent() {
           message: 'Allenamento completato!',
           variant: 'success',
         })
+
+        await invalidateAfterWorkoutSessionWrite(queryClient, user?.user_id ?? null)
 
         clearEmbedDirty()
         postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'workout' })
@@ -2072,6 +2107,8 @@ export function AllenamentiOggiPageContent() {
         message: 'Allenamento completato!',
         variant: 'success',
       })
+
+      await invalidateAfterWorkoutSessionWrite(queryClient, user?.user_id ?? null)
 
       clearEmbedDirty()
       postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'workout' })
@@ -3438,54 +3475,54 @@ export function AllenamentiOggiPageContent() {
           className="relative w-full min-w-0 overflow-hidden rounded-t-2xl border-t border-white/10 bg-black/95 backdrop-blur-md p-4 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] min-[834px]:p-5"
           style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
         >
-            <div
-              className="absolute inset-x-0 top-0 h-px"
-              style={{
-                background:
-                  'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
-              }}
-              aria-hidden
-            />
-            <div className="relative z-10 flex items-center justify-between gap-2">
+          <div
+            className="absolute inset-x-0 top-0 h-px"
+            style={{
+              background:
+                'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+            }}
+            aria-hidden
+          />
+          <div className="relative z-10 flex items-center justify-between gap-2">
+            <Button
+              onClick={previousExercise}
+              disabled={currentBlockIndex === 0}
+              variant="outline"
+              className="h-9 min-h-[44px] touch-manipulation rounded-xl border border-white/10 text-[10px] text-text-primary hover:bg-white/5 disabled:opacity-30"
+            >
+              <ChevronLeft className="mr-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+              Precedente
+            </Button>
+            <div className="flex min-w-0 flex-col items-center">
+              <span className="text-[10px] uppercase tracking-wider text-text-secondary">
+                Esercizio
+              </span>
+              <span className="text-sm font-bold text-text-primary">
+                {currentBlockIndex + 1} / {blocks.length}
+              </span>
+            </div>
+            <Button
+              onClick={nextExercise}
+              disabled={currentBlockIndex === blocks.length - 1}
+              variant="outline"
+              className="h-9 min-h-[44px] touch-manipulation rounded-xl border border-white/10 text-[10px] text-text-primary hover:bg-white/5 disabled:opacity-30"
+            >
+              Successivo
+              <ChevronRight className="ml-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            </Button>
+          </div>
+          {workoutSession && isWorkoutComplete ? (
+            <div className="relative z-10 mt-3 w-full min-w-0">
               <Button
-                onClick={previousExercise}
-                disabled={currentBlockIndex === 0}
-                variant="outline"
-                className="h-9 min-h-[44px] touch-manipulation rounded-xl border border-white/10 text-[10px] text-text-primary hover:bg-white/5 disabled:opacity-30"
+                onClick={finishWorkout}
+                disabled={completingWorkout}
+                className="h-10 w-full min-h-11 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold transition-all duration-200 hover:scale-[1.02]"
               >
-                <ChevronLeft className="mr-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                Precedente
-              </Button>
-              <div className="flex min-w-0 flex-col items-center">
-                <span className="text-[10px] uppercase tracking-wider text-text-secondary">
-                  Esercizio
-                </span>
-                <span className="text-sm font-bold text-text-primary">
-                  {currentBlockIndex + 1} / {blocks.length}
-                </span>
-              </div>
-              <Button
-                onClick={nextExercise}
-                disabled={currentBlockIndex === blocks.length - 1}
-                variant="outline"
-                className="h-9 min-h-[44px] touch-manipulation rounded-xl border border-white/10 text-[10px] text-text-primary hover:bg-white/5 disabled:opacity-30"
-              >
-                Successivo
-                <ChevronRight className="ml-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                Completa allenamento
               </Button>
             </div>
-            {workoutSession && isWorkoutComplete ? (
-              <div className="relative z-10 mt-3 w-full min-w-0">
-                <Button
-                  onClick={finishWorkout}
-                  disabled={completingWorkout}
-                  className="h-10 w-full min-h-11 text-xs rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold transition-all duration-200 hover:scale-[1.02]"
-                >
-                  <PartyPopper className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                  Completa allenamento
-                </Button>
-              </div>
-            ) : null}
+          ) : null}
         </header>
       </div>
 

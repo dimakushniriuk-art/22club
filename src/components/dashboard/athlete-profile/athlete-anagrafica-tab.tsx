@@ -178,7 +178,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 id="nome"
                 value={formData.nome || ''}
                 onChange={(e) =>
-                  setFormData({ ...formData, nome: sanitizeString(e.target.value, 100) || '' })
+                  setFormData({ ...formData, nome: sanitizeString(e.target.value, 100, { trim: false }) || '' })
                 }
                 placeholder="Nome"
                 maxLength={100}
@@ -197,7 +197,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    cognome: sanitizeString(e.target.value, 100) || '',
+                    cognome: sanitizeString(e.target.value, 100, { trim: false }) || '',
                   })
                 }
                 placeholder="Cognome"
@@ -324,7 +324,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    codice_fiscale: sanitizeString(e.target.value.toUpperCase(), 16) || null,
+                    codice_fiscale: sanitizeString(e.target.value.toUpperCase(), 16, { trim: false }) || null,
                   })
                 }
                 placeholder="ABCDEF12G34H567I"
@@ -344,7 +344,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    indirizzo: sanitizeString(e.target.value, 200) || null,
+                    indirizzo: sanitizeString(e.target.value, 200, { trim: false }) || null,
                   })
                 }
                 maxLength={200}
@@ -369,7 +369,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        citta: sanitizeString(e.target.value, 100) || null,
+                        citta: sanitizeString(e.target.value, 100, { trim: false }) || null,
                       })
                     }
                     maxLength={100}
@@ -391,7 +391,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        cap: sanitizeString(e.target.value, 10) || null,
+                        cap: sanitizeString(e.target.value, 10, { trim: false }) || null,
                       })
                     }
                     maxLength={10}
@@ -413,7 +413,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        provincia: sanitizeString(e.target.value, 50) || null,
+                        provincia: sanitizeString(e.target.value, 50, { trim: false }) || null,
                       })
                     }
                     placeholder="Provincia"
@@ -435,7 +435,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    nazione: sanitizeString(e.target.value, 50) || null,
+                    nazione: sanitizeString(e.target.value, 50, { trim: false }) || null,
                   })
                 }
                 placeholder="Italia"
@@ -455,7 +455,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    professione: sanitizeString(e.target.value, 100) || null,
+                    professione: sanitizeString(e.target.value, 100, { trim: false }) || null,
                   })
                 }
                 placeholder="Professione"
@@ -559,7 +559,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    gruppo_sanguigno: sanitizeString(e.target.value.toUpperCase(), 5) || null,
+                    gruppo_sanguigno: sanitizeString(e.target.value.toUpperCase(), 5, { trim: false }) || null,
                   })
                 }
                 placeholder="A+"
@@ -587,7 +587,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    contatto_emergenza_nome: sanitizeString(e.target.value, 200) || null,
+                    contatto_emergenza_nome: sanitizeString(e.target.value, 200, { trim: false }) || null,
                   })
                 }
                 placeholder="Nome contatto"
@@ -638,7 +638,7 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    contatto_emergenza_relazione: sanitizeString(e.target.value, 50) || null,
+                    contatto_emergenza_relazione: sanitizeString(e.target.value, 50, { trim: false }) || null,
                   })
                 }
                 placeholder="Familiare, amico, ecc."

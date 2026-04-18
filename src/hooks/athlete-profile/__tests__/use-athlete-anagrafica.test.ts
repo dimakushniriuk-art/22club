@@ -213,48 +213,38 @@ describe('useAthleteAnagrafica', () => {
         updated_at: '2025-01-02T00:00:00Z',
       }
 
-      // Reset mock per questo test
       vi.clearAllMocks()
 
-      // Setup chain per update
-      const mockUpdateEq = vi.fn()
-      const mockUpdateSelect = vi.fn()
-      const mockUpdateSingle = vi.fn()
-
-      mockUpdateEq.mockReturnValue({
-        select: mockUpdateSelect,
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: mockUpdatedData }),
       })
+      vi.stubGlobal('fetch', fetchMock)
 
-      mockUpdateSelect.mockReturnValue({
-        single: mockUpdateSingle,
-      })
+      try {
+        const { result } = renderHook(() => useUpdateAthleteAnagrafica('test-athlete-id'), {
+          wrapper: createWrapper(),
+        })
 
-      mockUpdateSingle.mockResolvedValue({
-        data: mockUpdatedData,
-        error: null,
-      })
+        result.current.mutate(updateData)
 
-      mockSupabase.from.mockReturnValue({
-        select: mockSelect,
-        update: vi.fn().mockReturnValue({
-          eq: mockUpdateEq,
-        }),
-      })
+        await waitFor(
+          () => {
+            expect(result.current.isSuccess).toBe(true)
+          },
+          { timeout: 3000 },
+        )
 
-      const { result } = renderHook(() => useUpdateAthleteAnagrafica('test-athlete-id'), {
-        wrapper: createWrapper(),
-      })
-
-      result.current.mutate(updateData)
-
-      await waitFor(
-        () => {
-          expect(result.current.isSuccess).toBe(true)
-        },
-        { timeout: 3000 },
-      )
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('profiles')
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/athlete-anagrafica',
+          expect.objectContaining({
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        )
+      } finally {
+        vi.unstubAllGlobals()
+      }
     })
 
     it('should handle validation error', async () => {

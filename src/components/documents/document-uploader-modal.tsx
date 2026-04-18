@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-keys'
+import { invalidateDocumentsQueries } from '@/lib/react-query/post-mutation-cache'
 import { createClient } from '@/lib/supabase/client'
 import { useClienti } from '@/hooks/use-clienti'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -138,7 +138,7 @@ export function DocumentUploaderModal({
       setUploadProgress(100)
 
       // Invalida query documents per refresh automatico
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all })
+      void invalidateDocumentsQueries(queryClient)
 
       addToast({
         title: 'Documento caricato',

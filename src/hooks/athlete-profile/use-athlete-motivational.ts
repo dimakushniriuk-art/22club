@@ -80,17 +80,15 @@ export function useAthleteMotivational(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 5 * 60 * 1000, // 5 minuti - dati motivazionali cambiano raramente
-    gcTime: 30 * 60 * 1000, // 30 minuti (cacheTime in React Query v4) - mantieni in cache più a lungo
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }
 
 /**
  * Hook per aggiornare dati motivazionali atleta
- * @param athleteId - UUID dell'atleta (user_id)
+ * @param athleteId - `profiles.user_id` o `profiles.id` (risolto da PATCH `/api/athlete-motivational`)
  */
 export function useUpdateAthleteMotivational(athleteId: string | null) {
   const queryClient = useQueryClient()
@@ -104,68 +102,35 @@ export function useUpdateAthleteMotivational(athleteId: string | null) {
       }
 
       try {
-        // Valida i dati con Zod
         const validated = updateAthleteMotivationalDataSchema.parse(updates)
 
-        // Prepara i dati per l'update (rimuove campi undefined)
-        const updateData: Record<string, unknown> = {}
-        if (validated.motivazione_principale !== undefined)
-          updateData.motivazione_principale = validated.motivazione_principale
-        if (validated.motivazioni_secondarie !== undefined)
-          updateData.motivazioni_secondarie = validated.motivazioni_secondarie
-        if (validated.ostacoli_percepiti !== undefined)
-          updateData.ostacoli_percepiti = validated.ostacoli_percepiti
-        if (validated.preferenze_ambiente !== undefined)
-          updateData.preferenze_ambiente = validated.preferenze_ambiente
-        if (validated.preferenze_compagnia !== undefined)
-          updateData.preferenze_compagnia = validated.preferenze_compagnia
-        if (validated.livello_motivazione !== undefined)
-          updateData.livello_motivazione = validated.livello_motivazione
-        if (validated.storico_abbandoni !== undefined)
-          updateData.storico_abbandoni = validated.storico_abbandoni
-        if (validated.note_motivazionali !== undefined)
-          updateData.note_motivazionali = validated.note_motivazionali
+        const res = await fetch('/api/athlete-motivational', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            athleteUserId: athleteId,
+            updates: validated,
+          }),
+        })
 
-        // Verifica se esiste già un record
-        const { data: existing } = await supabase
-          .from('athlete_motivational_data')
-          .select('id')
-          .eq('athlete_id', athleteId)
-          .maybeSingle()
+        const payload = (await res.json().catch(() => null)) as
+          | { data?: unknown; error?: string }
+          | null
 
-        let result
-
-        if (existing) {
-          // Update esistente
-          const { data, error } = await supabase
-            .from('athlete_motivational_data')
-            .update(updateData)
-            .eq('athlete_id', athleteId)
-            .select('*')
-            .single()
-
-          if (error) throw error
-          result = data
-        } else {
-          // Insert nuovo record
-          const { data, error } = await supabase
-            .from('athlete_motivational_data')
-            .insert({
-              athlete_id: athleteId,
-              ...updateData,
-            })
-            .select('*')
-            .single()
-
-          if (error) throw error
-          result = data
+        if (!res.ok) {
+          const msg =
+            payload && typeof payload === 'object' && 'error' in payload && payload.error
+              ? String(payload.error)
+              : `HTTP ${res.status}`
+          throw new Error(msg)
         }
 
-        if (!result) {
-          throw new Error('Dati non trovati dopo aggiornamento')
+        if (!payload || typeof payload !== 'object' || !('data' in payload) || !payload.data) {
+          throw new Error('Risposta API non valida')
         }
 
-        // Valida e ritorna i dati aggiornati
+        const result = payload.data as Record<string, unknown>
+
         const validatedResult = createAthleteMotivationalDataSchema.parse({
           id: result.id,
           athlete_id: result.athlete_id,

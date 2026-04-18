@@ -441,7 +441,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    note_mediche: sanitizeString(e.target.value, 2000) || null,
+                    note_mediche: sanitizeString(e.target.value, 2000, { trim: false }) || null,
                   })
                 }
                 maxLength={2000}
@@ -674,7 +674,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                   onChange={(e) =>
                     setRefertoData({
                       ...refertoData,
-                      tipo: sanitizeString(e.target.value, 50) || '',
+                      tipo: sanitizeString(e.target.value, 50, { trim: false }) || '',
                     })
                   }
                   placeholder="Es. Esami del sangue, RX..."
@@ -708,7 +708,7 @@ export function AthleteMedicalTab({ athleteId }: AthleteMedicalTabProps) {
                   onChange={(e) =>
                     setRefertoData({
                       ...refertoData,
-                      note: sanitizeString(e.target.value, 500) || '',
+                      note: sanitizeString(e.target.value, 500, { trim: false }) || '',
                     })
                   }
                   maxLength={500}

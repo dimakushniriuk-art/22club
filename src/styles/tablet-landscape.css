@@ -168,7 +168,7 @@
 @media (orientation: landscape) and (min-width: 1024px) {
   /* Layout specifico per landscape */
   .landscape-optimal {
-    height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
   }
 
@@ -176,7 +176,7 @@
   .landscape-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    height: 100vh;
+    height: 100dvh;
     gap: 2rem;
   }
 
@@ -185,7 +185,7 @@
     position: sticky;
     top: 0;
     height: fit-content;
-    max-height: 100vh;
+    max-height: 100dvh;
     overflow-y: auto;
   }
 }

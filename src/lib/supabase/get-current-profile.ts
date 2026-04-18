@@ -9,6 +9,9 @@ const PROFILE_SELECT =
 /** Fallback se la SELECT estesa fallisce (es. schema diverso da types/generato). */
 const PROFILE_SELECT_MINIMAL = 'id, user_id, role, org_id, nome, cognome, email' as const
 
+/** Ultimo tentativo: solo colonne indispensabili per auth/context. */
+const PROFILE_SELECT_ULTRA = 'id, user_id, role, org_id' as const
+
 export type CurrentProfile = {
   authUserId: string
   profileId: string
@@ -42,9 +45,11 @@ export async function fetchCurrentProfileForAuthUserId(
   supabase: SupabaseClient,
   authUserId: string,
 ): Promise<CurrentProfile | null> {
-  let row = await resolveProfileByIdentifier(supabase, authUserId, PROFILE_SELECT)
-  if (!row || typeof row.id !== 'string') {
-    row = await resolveProfileByIdentifier(supabase, authUserId, PROFILE_SELECT_MINIMAL)
+  const selects = [PROFILE_SELECT, PROFILE_SELECT_MINIMAL, PROFILE_SELECT_ULTRA] as const
+  let row: Record<string, unknown> | null = null
+  for (const columns of selects) {
+    row = await resolveProfileByIdentifier(supabase, authUserId, columns)
+    if (row && typeof row.id === 'string') break
   }
   if (!row || typeof row.id !== 'string') {
     return null

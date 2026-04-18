@@ -1,0 +1,9 @@
+- ENTRY
+	- [[GLOBAL]]
+	- [[SYSTEM]]
+	- [[DOMAINS]]
+	- [[AI]]
+	- [[RUNTIME]]
+	- [[RULES]]
+- FIRST_DOMAIN
+	- [[appointments]]

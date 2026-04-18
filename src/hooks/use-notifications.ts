@@ -141,8 +141,13 @@ export function useNotifications({ userId }: UseNotificationsProps = {}) {
       type: Notification['type'],
       link?: string,
       actionText?: string,
+      options?: { recipientUserId?: string | null },
     ) => {
-      if (!userId) {
+      const raw = options?.recipientUserId
+      const recipient =
+        typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null
+      const targetUserId = recipient ?? userId ?? null
+      if (!targetUserId) {
         setError('User ID is required to create notification')
         return null
       }
@@ -153,7 +158,7 @@ export function useNotifications({ userId }: UseNotificationsProps = {}) {
         const { data, error: insertError } = await supabase
           .from('notifications')
           .insert({
-            user_id: userId,
+            user_id: targetUserId,
             title,
             body,
             type,
@@ -165,9 +170,10 @@ export function useNotifications({ userId }: UseNotificationsProps = {}) {
 
         if (insertError) throw insertError
 
-        // Aggiorna lo stato locale
-        setNotifications((prev) => [data as Notification, ...prev])
-        setUnreadCount((prev) => prev + 1)
+        if (userId && targetUserId === userId) {
+          setNotifications((prev) => [data as Notification, ...prev])
+          setUnreadCount((prev) => prev + 1)
+        }
 
         return data
       } catch (err) {

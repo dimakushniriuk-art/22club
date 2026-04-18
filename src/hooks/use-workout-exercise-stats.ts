@@ -8,6 +8,69 @@ import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 
 const logger = createLogger('hooks:use-workout-exercise-stats')
 
+type WorkoutLogMeta = {
+  data: string | null
+  started_at: string | null
+  stato: string | null
+  completed_at: string | null
+  created_at: string | null
+  volume_totale: number | null
+  duration_minutes: number | null
+  exercises_completed: number | null
+}
+
+function parseDbNumber(v: string | number | null | undefined): number | null {
+  if (v == null) return null
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
+  const n = Number(String(v).replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+
+function toCalendarDateFromIso(iso: string | null | undefined): string | null {
+  if (iso == null || typeof iso !== 'string') return null
+  const t = iso.trim()
+  if (!t) return null
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t
+  const d = new Date(t)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toISOString().split('T')[0]
+}
+
+function resolveLogCalendarDate(m: WorkoutLogMeta): string {
+  return (
+    toCalendarDateFromIso(m.data) ??
+    toCalendarDateFromIso(m.started_at) ??
+    toCalendarDateFromIso(m.completed_at) ??
+    toCalendarDateFromIso(m.created_at) ??
+    '1970-01-01'
+  )
+}
+
+function resolveSetDisplayDate(
+  set: {
+    completed_at: string | null
+    workout_log_id?: string | null
+    created_at?: string | null
+  },
+  logMetaById: Map<string, WorkoutLogMeta>,
+): string | null {
+  const fromCompleted = toCalendarDateFromIso(set.completed_at)
+  if (fromCompleted) return fromCompleted
+  const logId = typeof set.workout_log_id === 'string' ? set.workout_log_id.trim() : ''
+  if (logId) {
+    const m = logMetaById.get(logId)
+    if (m) {
+      const fromLogData = toCalendarDateFromIso(m.data)
+      if (fromLogData) return fromLogData
+      const fromStarted = toCalendarDateFromIso(m.started_at)
+      if (fromStarted) return fromStarted
+      const fromLogSession = toCalendarDateFromIso(m.completed_at)
+      if (fromLogSession) return fromLogSession
+    }
+  }
+  return toCalendarDateFromIso(set.created_at ?? null)
+}
+
 export interface ExerciseStat {
   exercise_id: string
   exercise_name: string
@@ -29,7 +92,20 @@ export interface ExerciseStat {
     set_number: number
     workout_log_id?: string | null
     workout_day_exercise_id?: string | null
+    /** `workout_logs.stato` quando la serie è legata a un log (es. in_corso / completato). */
+    workout_log_stato?: string | null
   }>
+}
+
+/** Riga da `workout_logs` + conteggio serie collegate (per sessioni senza `workout_sets` sul log). */
+export type WorkoutLogSessionSummary = {
+  workout_log_id: string
+  calendar_date: string
+  stato: string | null
+  volume_totale: number | null
+  duration_minutes: number | null
+  exercises_completed: number | null
+  sets_count: number
 }
 
 export interface WorkoutExerciseStats {
@@ -40,13 +116,15 @@ export interface WorkoutExerciseStats {
     from: string | null
     to: string | null
   }
+  log_sessions: WorkoutLogSessionSummary[]
 }
 
 /**
  * Hook per recuperare statistiche degli esercizi per un atleta.
  * Include tutti gli esercizi assegnati nelle schede attuali (anche mai eseguiti).
- * I set completati provengono da tutti i workout_logs dell’atleta (anche con schede
- * non più attuali), più eventuali set legati ai WDE dei piani (deduplicati per id set).
+ * Serie incluse: tutte quelle collegate a un `workout_log` dell’atleta (qualunque stato
+ * sessione e anche senza `completed_at` sulla serie), più i set completati sui WDE dei
+ * piani dell’atleta. Esclude i soli placeholder di scheda (senza log e senza completamento).
  *
  * @param athleteUserId - user_id dell'atleta (profiles.user_id, auth.uid())
  */
@@ -62,6 +140,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           total_exercises: 0,
           total_sessions: 0,
           date_range: { from: null, to: null },
+          log_sessions: [],
         }
       }
 
@@ -79,6 +158,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
               total_exercises: 0,
               total_sessions: 0,
               date_range: { from: null, to: null },
+              log_sessions: [],
             }
           }
         } catch (conversionError) {
@@ -88,6 +168,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             total_exercises: 0,
             total_sessions: 0,
             date_range: { from: null, to: null },
+            log_sessions: [],
           }
         }
 
@@ -101,11 +182,14 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
         const LOG_PAGE_SIZE = 1000
         const logIds: string[] = []
+        const workoutLogMetaById = new Map<string, WorkoutLogMeta>()
         let logRangeFrom = 0
         for (;;) {
           const { data: logPage, error: logsListError } = await supabase
             .from('workout_logs')
-            .select('id')
+            .select(
+              'id, data, started_at, stato, completed_at, created_at, volume_totale, durata_minuti, duration_minutes, esercizi_completati',
+            )
             .eq('atleta_id', athleteProfileId)
             .order('id', { ascending: true })
             .range(logRangeFrom, logRangeFrom + LOG_PAGE_SIZE - 1)
@@ -113,8 +197,40 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             logger.error('Error fetching workout_logs ids', logsListError, { athleteProfileId })
             throw logsListError
           }
-          const rows = (logPage ?? []) as { id: string }[]
-          logIds.push(...rows.map((r) => r.id))
+          const rows = (logPage ?? []) as Array<{
+            id: string
+            data: string | null
+            started_at: string | null
+            stato: string | null
+            completed_at: string | null
+            created_at: string | null
+            volume_totale: string | number | null
+            durata_minuti: number | null
+            duration_minutes: number | null
+            esercizi_completati: number | null
+          }>
+          for (const r of rows) {
+            logIds.push(r.id)
+            const durationMinutes =
+              typeof r.duration_minutes === 'number' && Number.isFinite(r.duration_minutes)
+                ? r.duration_minutes
+                : typeof r.durata_minuti === 'number' && Number.isFinite(r.durata_minuti)
+                  ? r.durata_minuti
+                  : null
+            workoutLogMetaById.set(r.id, {
+              data: r.data,
+              started_at: r.started_at,
+              stato: r.stato,
+              completed_at: r.completed_at,
+              created_at: r.created_at,
+              volume_totale: parseDbNumber(r.volume_totale),
+              duration_minutes: durationMinutes,
+              exercises_completed:
+                typeof r.esercizi_completati === 'number' && Number.isFinite(r.esercizi_completati)
+                  ? r.esercizi_completati
+                  : null,
+            })
+          }
           if (rows.length < LOG_PAGE_SIZE) break
           logRangeFrom += LOG_PAGE_SIZE
         }
@@ -178,19 +294,19 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           completed_at: string | null
           execution_time_sec?: number | null
           workout_log_id?: string | null
+          created_at?: string | null
         }
 
         const setsById = new Map<string, SetRow>()
         const selectSets =
-          'id, workout_day_exercise_id, set_number, reps, reps_completed, weight_kg, weight_used, completed_at, execution_time_sec, workout_log_id'
+          'id, workout_day_exercise_id, set_number, reps, reps_completed, weight_kg, weight_used, completed_at, execution_time_sec, workout_log_id, created_at'
 
         for (const logChunk of chunkForSupabaseIn(logIds)) {
           const { data: workoutSets, error: setsError } = await supabase
             .from('workout_sets')
             .select(selectSets)
             .in('workout_log_id', logChunk)
-            .not('completed_at', 'is', null)
-            .order('completed_at', { ascending: true })
+            .order('id', { ascending: true })
           if (setsError) {
             logger.error('Error fetching workout_sets by log', setsError, { athleteProfileId })
             throw setsError
@@ -205,8 +321,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             .from('workout_sets')
             .select(selectSets)
             .in('workout_day_exercise_id', wdeChunk)
-            .not('completed_at', 'is', null)
-            .order('completed_at', { ascending: true })
+            .order('id', { ascending: true })
           if (setsError) {
             logger.error('Error fetching workout_sets by wde', setsError, { planWdeIds })
             throw setsError
@@ -217,13 +332,51 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         }
 
         const setsMerged = Array.from(setsById.values())
-        setsMerged.sort((a, b) =>
-          (a.completed_at ?? '').localeCompare(b.completed_at ?? '', undefined, {
-            sensitivity: 'base',
-          }),
+        const rawSets = setsMerged.filter(
+          (s) =>
+            Boolean(s.completed_at) ||
+            Boolean(typeof s.workout_log_id === 'string' && s.workout_log_id.trim().length > 0),
         )
+        rawSets.sort((a, b) => {
+          const ta =
+            (a.completed_at && a.completed_at.trim()) ||
+            (a.created_at && a.created_at.trim()) ||
+            ''
+          const tb =
+            (b.completed_at && b.completed_at.trim()) ||
+            (b.created_at && b.created_at.trim()) ||
+            ''
+          return ta.localeCompare(tb)
+        })
 
-        const rawSets = setsMerged
+        const setsCountByLogId = new Map<string, number>()
+        for (const set of rawSets) {
+          const lid = typeof set.workout_log_id === 'string' ? set.workout_log_id.trim() : ''
+          if (!lid) continue
+          setsCountByLogId.set(lid, (setsCountByLogId.get(lid) ?? 0) + 1)
+        }
+
+        const log_sessions: WorkoutLogSessionSummary[] = logIds
+          .map((id) => {
+            const m = workoutLogMetaById.get(id)
+            if (!m) return null
+            const row: WorkoutLogSessionSummary = {
+              workout_log_id: id,
+              calendar_date: resolveLogCalendarDate(m),
+              stato: m.stato,
+              volume_totale: m.volume_totale,
+              duration_minutes: m.duration_minutes,
+              exercises_completed: m.exercises_completed,
+              sets_count: setsCountByLogId.get(id) ?? 0,
+            }
+            return row
+          })
+          .filter((x): x is WorkoutLogSessionSummary => x != null)
+          .sort((a, b) => {
+            const c = a.calendar_date.localeCompare(b.calendar_date)
+            if (c !== 0) return c
+            return a.workout_log_id.localeCompare(b.workout_log_id)
+          })
 
         const effectiveWeightKg = (s: SetRow): number | null => {
           if (s.weight_kg != null && Number.isFinite(Number(s.weight_kg))) {
@@ -287,29 +440,16 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
         const uniqueExerciseIds = uniqueExerciseIdsFromPlan
 
-        // Set con almeno un dato utile (peso, reps o tempo)
-        const setsWithData = rawSets.filter((s) => {
-          const w = effectiveWeightKg(s)
-          const r = effectiveReps(s)
-          return (
-            (w != null && w >= 0) ||
-            (r != null && r > 0) ||
-            (s.execution_time_sec != null && s.execution_time_sec > 0)
-          )
-        })
-
-        // STEP 7: Raggruppa i set per esercizio
+        // STEP 7: Raggruppa i set per esercizio (tutti gli stati di sessione / serie su log)
         const exerciseStatsMap = new Map<string, ExerciseStat>()
-        for (const set of setsWithData) {
+        for (const set of rawSets) {
           const exerciseId = exerciseIdMap.get(set.workout_day_exercise_id)
           if (!exerciseId) continue
 
           const exerciseInfo = exercisesMap.get(exerciseId)
           if (!exerciseInfo) continue
 
-          const date = set.completed_at
-            ? new Date(set.completed_at).toISOString().split('T')[0]
-            : null
+          const date = resolveSetDisplayDate(set, workoutLogMetaById)
           if (!date) continue
 
           if (!exerciseStatsMap.has(exerciseId)) {
@@ -332,6 +472,8 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
           const stat = exerciseStatsMap.get(exerciseId)!
           const wKg = effectiveWeightKg(set)
+          const logId = typeof set.workout_log_id === 'string' ? set.workout_log_id.trim() : ''
+          const logStato = logId ? (workoutLogMetaById.get(logId)?.stato ?? null) : null
           stat.dataPoints.push({
             date,
             weight_kg: wKg != null ? wKg : 0,
@@ -340,6 +482,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             set_number: set.set_number,
             workout_log_id: set.workout_log_id ?? null,
             workout_day_exercise_id: set.workout_day_exercise_id,
+            workout_log_stato: logStato,
           })
         }
 
@@ -419,7 +562,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           to: sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null,
         }
 
-        // Sessioni totali da workout_logs (tutte le sessioni completate), non dalle date dei set
+        // Sessioni totali da workout_logs (tutti gli stati), non dalle date dei set
         const totalSessions = totalSessionsFromLogs
 
         logger.debug('Workout exercise stats fetched', undefined, {
@@ -433,6 +576,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           total_exercises: exercises.length,
           total_sessions: totalSessions,
           date_range,
+          log_sessions,
         }
       } catch (error) {
         logger.error('Error in useWorkoutExerciseStats', error, { athleteUserId })

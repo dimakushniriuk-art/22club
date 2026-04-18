@@ -176,7 +176,7 @@ function ModificaSchedaContent() {
 
   if (!workoutId) {
     return (
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
         <ErrorState
           message="ID scheda non valido"
           onRetry={() => router.push('/dashboard/schede')}
@@ -187,7 +187,7 @@ function ModificaSchedaContent() {
 
   if (detailLoading || wizardDataLoading) {
     return (
-      <div className="relative min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col items-center justify-center p-6">
         <div className="flex items-center gap-3 text-text-secondary">
           <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
           <span>Caricamento scheda in corso...</span>
@@ -198,7 +198,7 @@ function ModificaSchedaContent() {
 
   if (detailError) {
     return (
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
         <ErrorState message={detailError.message} onRetry={() => router.refresh()} />
       </div>
     )
@@ -206,7 +206,7 @@ function ModificaSchedaContent() {
 
   if (exercisesLoadError) {
     return (
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
         <ErrorState message={exercisesLoadError} onRetry={() => router.refresh()} />
       </div>
     )
@@ -214,7 +214,7 @@ function ModificaSchedaContent() {
 
   if (!workout || !initialData) {
     return (
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
         <ErrorState message="Scheda non trovata" onRetry={() => router.push('/dashboard/schede')} />
       </div>
     )

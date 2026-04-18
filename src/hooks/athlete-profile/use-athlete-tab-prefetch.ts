@@ -150,7 +150,7 @@ export function useAthleteTabPrefetch(athleteUserId: string | null) {
         queryClient.prefetchQuery({
           queryKey: prefetchConfig.queryKey,
           queryFn: prefetchConfig.queryFn,
-          staleTime: 5 * 60 * 1000, // 5 minuti (stesso dei hook)
+          staleTime: 60 * 1000,
         })
       }
     },

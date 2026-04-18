@@ -921,7 +921,8 @@ export function useProgressAnalytics(athleteId?: string) {
     enabled: !!athleteId,
     staleTime: 10 * 1000, // 10 secondi (ridotto per aggiornamenti più frequenti)
     refetchOnMount: 'always', // Ricarica sempre quando il componente viene montato
-    refetchOnWindowFocus: true, // Ricarica quando la finestra torna in focus
+    // Realtime invalida la query; evitare doppio refetch al focus (query pesante).
+    refetchOnWindowFocus: false,
     gcTime: 5 * 60 * 1000, // 5 minuti (ex cacheTime)
   })
 

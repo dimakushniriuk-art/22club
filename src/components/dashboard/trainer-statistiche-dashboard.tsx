@@ -155,9 +155,7 @@ function TrainerSectionCard({
         </div>
         <div className="min-w-0 space-y-1">
           <h3 className="text-lg font-semibold tracking-tight text-text-primary">{title}</h3>
-          {subtitle ? (
-            <p className="text-sm leading-relaxed text-text-muted">{subtitle}</p>
-          ) : null}
+          {subtitle ? <p className="text-sm leading-relaxed text-text-muted">{subtitle}</p> : null}
         </div>
       </div>
       {children}
@@ -297,7 +295,9 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
             accent="violet"
             label="Media variazione peso atleti"
             value={
-              kpis.progressWeightAvgPct != null ? `${kpis.progressWeightAvgPct > 0 ? '+' : ''}${kpis.progressWeightAvgPct.toFixed(1)}%` : '—'
+              kpis.progressWeightAvgPct != null
+                ? `${kpis.progressWeightAvgPct > 0 ? '+' : ''}${kpis.progressWeightAvgPct.toFixed(1)}%`
+                : '—'
             }
             caption={
               kpis.progressWeightAvgPct != null
@@ -325,7 +325,8 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
           >
             {progressDistribution.length === 0 ? (
               <p className="text-sm leading-relaxed text-text-muted">
-                Non ci sono abbastanza misurazioni ripetute nello stesso periodo per disegnare le fasce.
+                Non ci sono abbastanza misurazioni ripetute nello stesso periodo per disegnare le
+                fasce.
               </p>
             ) : (
               <ul className="space-y-3">
@@ -356,7 +357,8 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
           >
             {athleteAdherenceLeaders.length === 0 ? (
               <p className="text-sm leading-relaxed text-text-muted">
-                Servono almeno due appuntamenti di allenamento per atleta per comparare in modo sensato.
+                Servono almeno due appuntamenti di allenamento per atleta per comparare in modo
+                sensato.
               </p>
             ) : (
               <ul className="space-y-2 text-sm">
@@ -489,8 +491,8 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
                             {r.displayName}
                           </Link>
                           <span className="text-xs tabular-nums text-text-muted shrink-0 text-right">
-                            {r.totalUsed} usate · {r.futureBookedCount} in agenda · {r.totalRemaining}{' '}
-                            disp.
+                            {r.totalUsed} usate · {r.futureBookedCount} in agenda ·{' '}
+                            {r.totalRemaining} disp.
                             {r.totalPurchased > 0 ? ` · ${r.totalPurchased} acquistate` : ''}
                           </span>
                         </div>
@@ -519,8 +521,8 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
             )}
             {athleteLessonBalances.length > 0 ? (
               <p className="text-xs text-text-muted mt-3 pt-3 border-t border-white/10">
-                Barra normalizzata su usate + disponibili + prenotate in agenda; i numeri assoluti sono nella
-                riga a destra.
+                Barra normalizzata su usate + disponibili + prenotate in agenda; i numeri assoluti
+                sono nella riga a destra.
               </p>
             ) : null}
           </TrainerSectionCard>
@@ -602,475 +604,496 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
         title="Attività del trainer"
         subtitle="Semafori, andamenti, affluenza in agenda e carico di lavoro: come organizzi e eroghi le sessioni nel periodo."
       >
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <TrainerSectionCard
-          icon={Bell}
-          accent="teal"
-          title="Semaforo sui numeri chiave"
-          subtitle="Verde, giallo o rosso in base a soglie interne: quanto rispetti il calendario, se i clienti restano e se incassi abbastanza rispetto alle ore che registri."
-        >
-          <ul className="space-y-3">
-            {alerts.map((a) => (
-              <li
-                key={a.id}
-                className={cn(
-                  'flex flex-col gap-1.5 rounded-xl border px-4 py-3 text-sm leading-snug',
-                  alertBadgeClass(a.level),
-                )}
-              >
-                <span className="font-semibold text-text-primary">{a.label}</span>
-                <span className="text-sm text-text-secondary/95">{a.hint}</span>
-              </li>
-            ))}
-          </ul>
-        </TrainerSectionCard>
-        <TrainerSectionCard
-          icon={Lightbulb}
-          accent="cyan"
-          title="Suggerimenti automatici"
-          subtitle="Frasi generate dai dati del periodo: sono spunti di lavoro, non un verdetto finale."
-        >
-          <ul className="space-y-3 text-sm text-text-secondary leading-relaxed">
-            {insights.map((line, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400/80" aria-hidden />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-            <p className="text-xs leading-relaxed text-text-muted">{utilizationNote}</p>
-          </div>
-        </TrainerSectionCard>
-      </section>
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <TrainerSectionCard
+            icon={Bell}
+            accent="teal"
+            title="Semaforo sui numeri chiave"
+            subtitle="Verde, giallo o rosso in base a soglie interne: quanto rispetti il calendario, se i clienti restano e se incassi abbastanza rispetto alle ore che registri."
+          >
+            <ul className="space-y-3">
+              {alerts.map((a) => (
+                <li
+                  key={a.id}
+                  className={cn(
+                    'flex flex-col gap-1.5 rounded-xl border px-4 py-3 text-sm leading-snug',
+                    alertBadgeClass(a.level),
+                  )}
+                >
+                  <span className="font-semibold text-text-primary">{a.label}</span>
+                  <span className="text-sm text-text-secondary/95">{a.hint}</span>
+                </li>
+              ))}
+            </ul>
+          </TrainerSectionCard>
+          <TrainerSectionCard
+            icon={Lightbulb}
+            accent="cyan"
+            title="Suggerimenti automatici"
+            subtitle="Frasi generate dai dati del periodo: sono spunti di lavoro, non un verdetto finale."
+          >
+            <ul className="space-y-3 text-sm text-text-secondary leading-relaxed">
+              {insights.map((line, i) => (
+                <li key={i} className="flex gap-3">
+                  <span
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400/80"
+                    aria-hidden
+                  />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <p className="text-xs leading-relaxed text-text-muted">{utilizationNote}</p>
+            </div>
+          </TrainerSectionCard>
+        </section>
 
-      <TrainerSectionCard
-        icon={Activity}
-        accent="teal"
-        title="Andamento nel tempo"
-        subtitle="Incassi e ore registrate, oppure rispetto del calendario. Con periodi lunghi puoi passare alla vista settimanale (blocchi di 7 giorni)."
-      >
-        <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          {report.daily.length > 7 ? (
+        <TrainerSectionCard
+          icon={Activity}
+          accent="teal"
+          title="Andamento nel tempo"
+          subtitle="Incassi e ore registrate, oppure rispetto del calendario. Con periodi lunghi puoi passare alla vista settimanale (blocchi di 7 giorni)."
+        >
+          <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            {report.daily.length > 7 ? (
+              <div
+                role="group"
+                aria-label="Scala temporale"
+                className="inline-flex rounded-xl border border-white/15 bg-white/5 p-1"
+              >
+                <button
+                  type="button"
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
+                    timeGranularity === 'day'
+                      ? 'bg-teal-500/25 text-teal-200'
+                      : 'text-text-secondary',
+                  )}
+                  onClick={() => setTimeGranularity('day')}
+                >
+                  Giorno per giorno
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
+                    timeGranularity === 'week'
+                      ? 'bg-teal-500/25 text-teal-200'
+                      : 'text-text-secondary',
+                  )}
+                  onClick={() => setTimeGranularity('week')}
+                >
+                  Per settimana
+                </button>
+              </div>
+            ) : (
+              <span />
+            )}
             <div
               role="group"
-              aria-label="Scala temporale"
+              aria-label="Cosa mostrare nel grafico"
               className="inline-flex rounded-xl border border-white/15 bg-white/5 p-1"
             >
               <button
                 type="button"
                 className={cn(
                   'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-                  timeGranularity === 'day' ? 'bg-teal-500/25 text-teal-200' : 'text-text-secondary',
+                  trendMode === 'revenue_hours'
+                    ? 'bg-teal-500/25 text-teal-200'
+                    : 'text-text-secondary',
                 )}
-                onClick={() => setTimeGranularity('day')}
+                onClick={() => setTrendMode('revenue_hours')}
               >
-                Giorno per giorno
+                Incassi e ore
               </button>
               <button
                 type="button"
                 className={cn(
                   'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-                  timeGranularity === 'week' ? 'bg-teal-500/25 text-teal-200' : 'text-text-secondary',
+                  trendMode === 'adherence'
+                    ? 'bg-teal-500/25 text-teal-200'
+                    : 'text-text-secondary',
                 )}
-                onClick={() => setTimeGranularity('week')}
+                onClick={() => setTrendMode('adherence')}
               >
-                Per settimana
+                Rispetto calendario
               </button>
             </div>
+          </div>
+          {chartData.length === 0 ? (
+            <p className="text-sm text-text-muted">Nessun dato nel periodo selezionato.</p>
+          ) : trendMode === 'revenue_hours' ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 8, bottom: 5 }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={ch.grid}
+                  {...({} as Record<string, unknown>)}
+                />
+                <XAxis dataKey="day" stroke={ch.axis} fontSize={11} tickLine={false} />
+                <YAxis yAxisId="left" stroke={ch.axis} fontSize={11} tickLine={false} />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke={ch.axis}
+                  fontSize={11}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={chartTooltipContentStyle()}
+                  labelStyle={chartTooltipLabelStyle()}
+                />
+                <Legend />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="revenue"
+                  name="Incassi (€)"
+                  stroke={se.primary}
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="hours"
+                  name="Ore registrate"
+                  stroke={se.secondary}
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           ) : (
-            <span />
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={adherenceDaily} margin={{ top: 5, right: 20, left: 8, bottom: 5 }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={ch.grid}
+                  {...({} as Record<string, unknown>)}
+                />
+                <XAxis dataKey="day" stroke={ch.axis} fontSize={11} tickLine={false} />
+                <YAxis
+                  stroke={ch.axis}
+                  fontSize={11}
+                  tickLine={false}
+                  domain={[0, 100]}
+                  tickFormatter={(v: number) => `${v}%`}
+                />
+                <Tooltip
+                  contentStyle={chartTooltipContentStyle()}
+                  labelStyle={chartTooltipLabelStyle()}
+                  formatter={(value: number) => [`${value}%`, 'Rispetto calendario']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="adherenceDayPct"
+                  name="Rispetto calendario"
+                  stroke={se.tertiary}
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           )}
-          <div
-            role="group"
-            aria-label="Cosa mostrare nel grafico"
-            className="inline-flex rounded-xl border border-white/15 bg-white/5 p-1"
-          >
-            <button
-              type="button"
-              className={cn(
-                'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-                trendMode === 'revenue_hours' ? 'bg-teal-500/25 text-teal-200' : 'text-text-secondary',
-              )}
-              onClick={() => setTrendMode('revenue_hours')}
-            >
-              Incassi e ore
-            </button>
-            <button
-              type="button"
-              className={cn(
-                'rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-                trendMode === 'adherence' ? 'bg-teal-500/25 text-teal-200' : 'text-text-secondary',
-              )}
-              onClick={() => setTrendMode('adherence')}
-            >
-              Rispetto calendario
-            </button>
-          </div>
-        </div>
-        {chartData.length === 0 ? (
-          <p className="text-sm text-text-muted">Nessun dato nel periodo selezionato.</p>
-        ) : trendMode === 'revenue_hours' ? (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 8, bottom: 5 }}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={ch.grid}
-                {...({} as Record<string, unknown>)}
-              />
-              <XAxis dataKey="day" stroke={ch.axis} fontSize={11} tickLine={false} />
-              <YAxis yAxisId="left" stroke={ch.axis} fontSize={11} tickLine={false} />
-              <YAxis yAxisId="right" orientation="right" stroke={ch.axis} fontSize={11} tickLine={false} />
-              <Tooltip
-                contentStyle={chartTooltipContentStyle()}
-                labelStyle={chartTooltipLabelStyle()}
-              />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="revenue"
-                name="Incassi (€)"
-                stroke={se.primary}
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="hours"
-                name="Ore registrate"
-                stroke={se.secondary}
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={adherenceDaily} margin={{ top: 5, right: 20, left: 8, bottom: 5 }}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={ch.grid}
-                {...({} as Record<string, unknown>)}
-              />
-              <XAxis dataKey="day" stroke={ch.axis} fontSize={11} tickLine={false} />
-              <YAxis
-                stroke={ch.axis}
-                fontSize={11}
-                tickLine={false}
-                domain={[0, 100]}
-                tickFormatter={(v: number) => `${v}%`}
-              />
-              <Tooltip
-                contentStyle={chartTooltipContentStyle()}
-                labelStyle={chartTooltipLabelStyle()}
-                formatter={(value: number) => [`${value}%`, 'Rispetto calendario']}
-              />
-              <Line
-                type="monotone"
-                dataKey="adherenceDayPct"
-                name="Rispetto calendario"
-                stroke={se.tertiary}
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-      </TrainerSectionCard>
+        </TrainerSectionCard>
 
-      <TrainerSectionCard
-        icon={LayoutGrid}
-        accent="violet"
-        title="Quando ti prenotano di più"
-        subtitle="Ogni riga è un giorno della settimana, ogni colonna un’ora: più il verde è intenso, più appuntamenti di allenamento ci sono stati (per i trainer selezionati)."
-      >
-        <div className="flex flex-wrap gap-2 items-center justify-end mb-4">
-          <div
-            role="group"
-            aria-label="Fuso orario mappa"
-            className="inline-flex rounded-xl border border-white/15 bg-white/5 p-1"
-          >
-            <button
-              type="button"
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
-                heatmapTz === 'rome' ? 'bg-violet-500/25 text-violet-200' : 'text-text-secondary',
-              )}
-              onClick={() => setHeatmapTz('rome')}
-            >
-              Ora Italia
-            </button>
-            <button
-              type="button"
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
-                heatmapTz === 'utc' ? 'bg-violet-500/25 text-violet-200' : 'text-text-secondary',
-              )}
-              onClick={() => setHeatmapTz('utc')}
-            >
-              UTC
-            </button>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-            <input
-              type="checkbox"
-              className="rounded border-white/20"
-              checked={heatmapWorkdaysOnly}
-              onChange={(e) => setHeatmapWorkdaysOnly(e.target.checked)}
-            />
-            Solo lunedì–venerdì
-          </label>
-        </div>
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full">
+        <TrainerSectionCard
+          icon={LayoutGrid}
+          accent="violet"
+          title="Quando ti prenotano di più"
+          subtitle="Ogni riga è un giorno della settimana, ogni colonna un’ora: più il verde è intenso, più appuntamenti di allenamento ci sono stati (per i trainer selezionati)."
+        >
+          <div className="flex flex-wrap gap-2 items-center justify-end mb-4">
             <div
-              className="grid gap-0.5 text-[10px] sm:text-xs"
-              style={{ gridTemplateColumns: '44px repeat(24, minmax(0,1fr))' }}
+              role="group"
+              aria-label="Fuso orario mappa"
+              className="inline-flex rounded-xl border border-white/15 bg-white/5 p-1"
             >
-              <div />
-              {Array.from({ length: 24 }, (_, h) => (
-                <div key={h} className="text-center text-text-muted py-1">
-                  {h}
-                </div>
-              ))}
-              {weekdayRows.map((weekday) => {
-                const wl = WEEK_LABELS[weekday]
-                return (
-                  <Fragment key={weekday}>
-                    <div className="pr-2 text-text-secondary font-medium py-1 text-right">{wl}</div>
-                    {Array.from({ length: 24 }, (_, hour) => {
-                      const n = heatByWh.get(`${weekday}-${hour}`) ?? 0
-                      const op = 0.15 + (n / heatMax) * 0.85
-                      return (
-                        <div
-                          key={`${weekday}-${hour}`}
-                          className="aspect-square min-h-[14px] rounded-sm border border-white/5"
-                          style={{
-                            backgroundColor: `rgba(${chartHeatmapPrimaryRgb}, ${n > 0 ? op : 0.05})`,
-                          }}
-                          title={`${wl} ${hour}:00 — ${n}`}
-                        />
-                      )
-                    })}
-                  </Fragment>
-                )
-              })}
+              <button
+                type="button"
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
+                  heatmapTz === 'rome' ? 'bg-violet-500/25 text-violet-200' : 'text-text-secondary',
+                )}
+                onClick={() => setHeatmapTz('rome')}
+              >
+                Ora Italia
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
+                  heatmapTz === 'utc' ? 'bg-violet-500/25 text-violet-200' : 'text-text-secondary',
+                )}
+                onClick={() => setHeatmapTz('utc')}
+              >
+                UTC
+              </button>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+              <input
+                type="checkbox"
+                className="rounded border-white/20"
+                checked={heatmapWorkdaysOnly}
+                onChange={(e) => setHeatmapWorkdaysOnly(e.target.checked)}
+              />
+              Solo lunedì–venerdì
+            </label>
+          </div>
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full">
+              <div
+                className="grid gap-0.5 text-[10px] sm:text-xs"
+                style={{ gridTemplateColumns: '44px repeat(24, minmax(0,1fr))' }}
+              >
+                <div />
+                {Array.from({ length: 24 }, (_, h) => (
+                  <div key={h} className="text-center text-text-muted py-1">
+                    {h}
+                  </div>
+                ))}
+                {weekdayRows.map((weekday) => {
+                  const wl = WEEK_LABELS[weekday]
+                  return (
+                    <Fragment key={weekday}>
+                      <div className="pr-2 text-text-secondary font-medium py-1 text-right">
+                        {wl}
+                      </div>
+                      {Array.from({ length: 24 }, (_, hour) => {
+                        const n = heatByWh.get(`${weekday}-${hour}`) ?? 0
+                        const op = 0.15 + (n / heatMax) * 0.85
+                        return (
+                          <div
+                            key={`${weekday}-${hour}`}
+                            className="aspect-square min-h-[14px] rounded-sm border border-white/5"
+                            style={{
+                              backgroundColor: `rgba(${chartHeatmapPrimaryRgb}, ${n > 0 ? op : 0.05})`,
+                            }}
+                            title={`${wl} ${hour}:00 — ${n}`}
+                          />
+                        )
+                      })}
+                    </Fragment>
+                  )
+                })}
+              </div>
             </div>
           </div>
+        </TrainerSectionCard>
+
+        <div className="space-y-3 sm:space-y-4 border-t border-white/10 pt-4 sm:pt-5">
+          <div className="space-y-1">
+            <h3 className="text-base font-semibold tracking-tight text-text-primary">
+              Dettaglio operativo nel tempo
+            </h3>
+            <p className="text-sm text-text-muted max-w-3xl leading-relaxed">
+              Stessa scala del grafico &quot;Andamento nel tempo&quot; (giorno o settimana): funnel
+              appuntamenti, allenamenti vs ore lavorate, no-show ed entrate/uscite dal roster.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+            <TrainerSectionCard
+              icon={CalendarCheck}
+              accent="cyan"
+              title="Funnel appuntamenti in agenda"
+              subtitle="Come si ripartono ogni giorno (o settimana) gli appuntamenti di allenamento: in attesa, svolti, annullati o cancellati."
+            >
+              {chartData.some((d) => d.prenotati + d.eseguiti + d.annullati + d.cancellati > 0) ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={ch.grid}
+                      {...({} as Record<string, unknown>)}
+                    />
+                    <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
+                    <YAxis stroke={ch.axis} fontSize={11} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={chartTooltipContentStyle()}
+                      labelStyle={chartTooltipLabelStyle()}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="prenotati"
+                      stackId="f"
+                      name="In attesa / futuri"
+                      fill={chartBookingStatus.prenotati}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="eseguiti"
+                      stackId="f"
+                      name="Svolti"
+                      fill={chartBookingStatus.eseguiti}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="annullati"
+                      stackId="f"
+                      name="Annullati"
+                      fill={chartBookingStatus.annullati}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="cancellati"
+                      stackId="f"
+                      name="Cancellati"
+                      fill={chartBookingStatus.cancellati}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-text-muted">
+                  Nessun appuntamento di allenamento nel periodo.
+                </p>
+              )}
+            </TrainerSectionCard>
+
+            <TrainerSectionCard
+              icon={Activity}
+              accent="violet"
+              title="Allenamenti registrati e ore"
+              subtitle="Barre = sessioni nei log; linea = ore totali registrate (stesso giorno o settimana)."
+            >
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart
+                    data={chartData}
+                    margin={{ top: 8, right: 16, left: 4, bottom: 4 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={ch.grid}
+                      {...({} as Record<string, unknown>)}
+                    />
+                    <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
+                    <YAxis
+                      yAxisId="left"
+                      stroke={ch.axis}
+                      fontSize={11}
+                      tickLine={false}
+                      allowDecimals={false}
+                    />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke={ch.axis}
+                      fontSize={11}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={chartTooltipContentStyle()}
+                      labelStyle={chartTooltipLabelStyle()}
+                    />
+                    <Legend />
+                    <Bar
+                      yAxisId="left"
+                      dataKey="allenamenti"
+                      name="Allenamenti (log)"
+                      fill={se.tertiary}
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={48}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="hours"
+                      name="Ore registrate"
+                      stroke={se.secondary}
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-text-muted">Nessun dato.</p>
+              )}
+            </TrainerSectionCard>
+
+            <TrainerSectionCard
+              icon={UserX}
+              accent="amber"
+              title="No-show nel tempo"
+              subtitle="Quanti appuntamenti con assenza segnalata ricadono in ogni giorno (o settimana), in base alla data dell’appuntamento."
+            >
+              {chartData.some((d) => d.noShow > 0) ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={ch.grid}
+                      {...({} as Record<string, unknown>)}
+                    />
+                    <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
+                    <YAxis stroke={ch.axis} fontSize={11} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={chartTooltipContentStyle()}
+                      labelStyle={chartTooltipLabelStyle()}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="noShow"
+                      name="No-show"
+                      stroke={se.highlight}
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: se.highlight }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-text-muted">Nessun no-show nel periodo.</p>
+              )}
+            </TrainerSectionCard>
+
+            <TrainerSectionCard
+              icon={UserMinus}
+              accent="rose"
+              title="Nuovi clienti e uscite"
+              subtitle="In base alle date di attivazione e disattivazione delle assegnazioni (tabella legami trainer–atleta)."
+            >
+              {chartData.some((d) => d.clientsNew > 0 || d.clientsLost > 0) ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={ch.grid}
+                      {...({} as Record<string, unknown>)}
+                    />
+                    <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
+                    <YAxis stroke={ch.axis} fontSize={11} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={chartTooltipContentStyle()}
+                      labelStyle={chartTooltipLabelStyle()}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="clientsNew"
+                      name="Nuovi in roster"
+                      fill={se.positive}
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={36}
+                    />
+                    <Bar
+                      dataKey="clientsLost"
+                      name="Usciti"
+                      fill={se.negative}
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={36}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-text-muted">
+                  Nessun ingresso o uscita registrato nel periodo (da assegnazioni).
+                </p>
+              )}
+            </TrainerSectionCard>
+          </div>
         </div>
-      </TrainerSectionCard>
-
-      <div className="space-y-3 sm:space-y-4 border-t border-white/10 pt-4 sm:pt-5">
-        <div className="space-y-1">
-          <h3 className="text-base font-semibold tracking-tight text-text-primary">
-            Dettaglio operativo nel tempo
-          </h3>
-          <p className="text-sm text-text-muted max-w-3xl leading-relaxed">
-            Stessa scala del grafico &quot;Andamento nel tempo&quot; (giorno o settimana): funnel
-            appuntamenti, allenamenti vs ore lavorate, no-show ed entrate/uscite dal roster.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
-          <TrainerSectionCard
-            icon={CalendarCheck}
-            accent="cyan"
-            title="Funnel appuntamenti in agenda"
-            subtitle="Come si ripartono ogni giorno (o settimana) gli appuntamenti di allenamento: in attesa, svolti, annullati o cancellati."
-          >
-            {chartData.some(
-              (d) => d.prenotati + d.eseguiti + d.annullati + d.cancellati > 0,
-            ) ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={ch.grid}
-                    {...({} as Record<string, unknown>)}
-                  />
-                  <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
-                  <YAxis stroke={ch.axis} fontSize={11} tickLine={false} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={chartTooltipContentStyle()}
-                    labelStyle={chartTooltipLabelStyle()}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="prenotati"
-                    stackId="f"
-                    name="In attesa / futuri"
-                    fill={chartBookingStatus.prenotati}
-                    radius={[0, 0, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="eseguiti"
-                    stackId="f"
-                    name="Svolti"
-                    fill={chartBookingStatus.eseguiti}
-                    radius={[0, 0, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="annullati"
-                    stackId="f"
-                    name="Annullati"
-                    fill={chartBookingStatus.annullati}
-                    radius={[0, 0, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="cancellati"
-                    stackId="f"
-                    name="Cancellati"
-                    fill={chartBookingStatus.cancellati}
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-text-muted">Nessun appuntamento di allenamento nel periodo.</p>
-            )}
-          </TrainerSectionCard>
-
-          <TrainerSectionCard
-            icon={Activity}
-            accent="violet"
-            title="Allenamenti registrati e ore"
-            subtitle="Barre = sessioni nei log; linea = ore totali registrate (stesso giorno o settimana)."
-          >
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={chartData} margin={{ top: 8, right: 16, left: 4, bottom: 4 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={ch.grid}
-                    {...({} as Record<string, unknown>)}
-                  />
-                  <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
-                  <YAxis
-                    yAxisId="left"
-                    stroke={ch.axis}
-                    fontSize={11}
-                    tickLine={false}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    yAxisId="right"
-                    orientation="right"
-                    stroke={ch.axis}
-                    fontSize={11}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={chartTooltipContentStyle()}
-                    labelStyle={chartTooltipLabelStyle()}
-                  />
-                  <Legend />
-                  <Bar
-                    yAxisId="left"
-                    dataKey="allenamenti"
-                    name="Allenamenti (log)"
-                    fill={se.tertiary}
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={48}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="hours"
-                    name="Ore registrate"
-                    stroke={se.secondary}
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-text-muted">Nessun dato.</p>
-            )}
-          </TrainerSectionCard>
-
-          <TrainerSectionCard
-            icon={UserX}
-            accent="amber"
-            title="No-show nel tempo"
-            subtitle="Quanti appuntamenti con assenza segnalata ricadono in ogni giorno (o settimana), in base alla data dell’appuntamento."
-          >
-            {chartData.some((d) => d.noShow > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={ch.grid}
-                    {...({} as Record<string, unknown>)}
-                  />
-                  <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
-                  <YAxis stroke={ch.axis} fontSize={11} tickLine={false} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={chartTooltipContentStyle()}
-                    labelStyle={chartTooltipLabelStyle()}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="noShow"
-                    name="No-show"
-                    stroke={se.highlight}
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: se.highlight }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-text-muted">Nessun no-show nel periodo.</p>
-            )}
-          </TrainerSectionCard>
-
-          <TrainerSectionCard
-            icon={UserMinus}
-            accent="rose"
-            title="Nuovi clienti e uscite"
-            subtitle="In base alle date di attivazione e disattivazione delle assegnazioni (tabella legami trainer–atleta)."
-          >
-            {chartData.some((d) => d.clientsNew > 0 || d.clientsLost > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={ch.grid}
-                    {...({} as Record<string, unknown>)}
-                  />
-                  <XAxis dataKey="day" stroke={ch.axis} fontSize={10} tickLine={false} />
-                  <YAxis stroke={ch.axis} fontSize={11} tickLine={false} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={chartTooltipContentStyle()}
-                    labelStyle={chartTooltipLabelStyle()}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="clientsNew"
-                    name="Nuovi in roster"
-                    fill={se.positive}
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={36}
-                  />
-                  <Bar
-                    dataKey="clientsLost"
-                    name="Usciti"
-                    fill={se.negative}
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={36}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-text-muted">
-                Nessun ingresso o uscita registrato nel periodo (da assegnazioni).
-              </p>
-            )}
-          </TrainerSectionCard>
-        </div>
-      </div>
-
       </TrainerDashboardSection>
 
       <TrainerDashboardSection
@@ -1102,8 +1125,8 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
         </div>
         <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 sm:px-5 sm:py-4">
           <p className="text-sm text-text-secondary leading-relaxed">
-            <span className="font-medium text-text-primary">Periodo:</span>{' '}
-            {report.startDay} – {report.endDay}.
+            <span className="font-medium text-text-primary">Periodo:</span> {report.startDay} –{' '}
+            {report.endDay}.
             {kpis.revenueGrowthHalfPct === 0 ? (
               <> Incassi simili tra prima e seconda metà del periodo.</>
             ) : (
@@ -1127,9 +1150,12 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
         >
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={chartDataWithCumulative} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+              <AreaChart
+                data={chartDataWithCumulative}
+                margin={{ top: 8, right: 12, left: 4, bottom: 4 }}
+              >
                 <defs>
-                    <linearGradient id="trainerRevCum" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="trainerRevCum" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={se.primary} stopOpacity={0.35} />
                     <stop offset="100%" stopColor={se.primary} stopOpacity={0} />
                   </linearGradient>
@@ -1144,7 +1170,10 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
                 <Tooltip
                   contentStyle={chartTooltipContentStyle()}
                   labelStyle={chartTooltipLabelStyle()}
-                  formatter={(value: number) => [`€${value.toFixed(0)}`, 'Totale da inizio periodo']}
+                  formatter={(value: number) => [
+                    `€${value.toFixed(0)}`,
+                    'Totale da inizio periodo',
+                  ]}
                 />
                 <Area
                   type="monotone"
@@ -1226,7 +1255,9 @@ export function TrainerStatisticheDashboard({ report }: TrainerStatisticheDashbo
                     >
                       <span className="text-text-secondary">{m.key}</span>
                       <span className="tabular-nums">
-                        <span className="font-medium text-text-primary">€{m.amount.toFixed(0)}</span>{' '}
+                        <span className="font-medium text-text-primary">
+                          €{m.amount.toFixed(0)}
+                        </span>{' '}
                         <span className="text-text-muted">({m.percentage.toFixed(0)}%)</span>
                       </span>
                     </li>

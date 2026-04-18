@@ -319,7 +319,7 @@ export default function DesignSystemPage() {
   }, [])
 
   return (
-    <div className="min-h-screen min-w-0 bg-black text-text-primary">
+    <div className="flex min-h-full min-w-0 w-full flex-1 flex-col bg-black text-text-primary">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-black/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur supports-backdrop-filter:bg-black/80">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 sm:gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-text-primary min-w-0 truncate">

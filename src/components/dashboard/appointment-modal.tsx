@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useClienti } from '@/hooks/use-clienti'
-import { queryKeys } from '@/lib/query-keys'
+import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -185,7 +185,7 @@ export function AppointmentModal({ open, onOpenChange, onSuccess }: AppointmentM
       }
 
       // Invalida query appointments per refresh automatico
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
 
       const appointmentCount = appointmentsToInsert.length
       toast.addToast({

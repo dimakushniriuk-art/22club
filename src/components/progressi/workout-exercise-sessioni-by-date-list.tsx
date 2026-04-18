@@ -32,16 +32,17 @@ import { useToast } from '@/components/ui/toast'
 
 export type WorkoutExerciseSessionRow = {
   date: string
-  value: number
+  value: number | null
   workoutLogId: string | null
   workoutDayExerciseId: string | null
 }
 
 function pctVsPrevious(
-  current: number,
-  previous: number | undefined,
+  current: number | null,
+  previous: number | null | undefined,
 ): { pct: number; label: string } | null {
-  if (previous === undefined || !Number.isFinite(previous) || previous === 0) return null
+  if (current == null || !Number.isFinite(current)) return null
+  if (previous == null || !Number.isFinite(previous) || previous === 0) return null
   const pct = ((current - previous) / previous) * 100
   if (!Number.isFinite(pct)) return null
   const sign = pct > 0 ? '+' : ''
@@ -60,7 +61,12 @@ function formatDateFull(raw: string) {
   })
 }
 
-function formatCellValue(kind: 'weight' | 'reps' | 'time', v: number, valueSuffix: string): string {
+function formatCellValue(
+  kind: 'weight' | 'reps' | 'time',
+  v: number | null,
+  valueSuffix: string,
+): string {
+  if (v == null || !Number.isFinite(v)) return '—'
   if (kind === 'weight') return `${v.toFixed(1)}${valueSuffix}`
   return `${Math.round(v)}${valueSuffix}`
 }
@@ -136,6 +142,7 @@ export function WorkoutExerciseSessioniByDateList({
   }
 
   const openEdit = (row: WorkoutExerciseSessionRow) => {
+    if (row.value == null || !Number.isFinite(row.value)) return
     setEditRow(row)
     if (metricKind === 'weight') {
       setEditText(row.value.toFixed(1))
@@ -229,6 +236,7 @@ export function WorkoutExerciseSessioniByDateList({
           const older = sorted[index + 1]
           const delta = pctVsPrevious(row.value, older?.value)
           const canEdit = rowCanEdit(row)
+          const canEditValue = canEdit && row.value != null && Number.isFinite(row.value)
           const canDelete = rowCanDelete(row)
           return (
             <li
@@ -238,8 +246,14 @@ export function WorkoutExerciseSessioniByDateList({
               <span className="text-text-secondary text-sm capitalize min-w-0 text-left">
                 {formatDateFull(row.date)}
               </span>
-              <span className="text-text-primary font-semibold tabular-nums text-center px-1">
-                {formatCellValue(metricKind, row.value, valueSuffix)}
+              <span className="flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center">
+                {row.value != null && Number.isFinite(row.value) ? (
+                  <span className="text-text-primary font-semibold tabular-nums">
+                    {formatCellValue(metricKind, row.value, valueSuffix)}
+                  </span>
+                ) : (
+                  <span className="text-text-tertiary font-medium tabular-nums">—</span>
+                )}
               </span>
               <div className="flex items-center justify-end gap-2 min-w-0">
                 {delta ? (
@@ -265,11 +279,13 @@ export function WorkoutExerciseSessioniByDateList({
                       variant="ghost"
                       size="icon-sm"
                       className="h-8 w-8 text-primary disabled:opacity-40"
-                      disabled={!canEdit}
+                      disabled={!canEditValue}
                       title={
-                        canEdit
+                        canEditValue
                           ? `Modifica valore ${exerciseLabel}`
-                          : 'Manca lo slot esercizio (workout_day_exercise): modifica non disponibile'
+                          : !canEdit
+                            ? 'Manca lo slot esercizio (workout_day_exercise): modifica non disponibile'
+                            : 'Nessun valore numerico: registra peso/reps/tempo prima di modificare'
                       }
                       aria-label={`Modifica valore ${exerciseLabel}`}
                       onClick={() => openEdit(row)}

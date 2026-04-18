@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
 import { Button, Input, Textarea, Select, Checkbox } from '@/components/ui'
 import { useTrainerProfile } from '@/hooks/use-trainer-profile'
@@ -28,6 +29,8 @@ import {
   Video,
 } from 'lucide-react'
 import { useNotify } from '@/lib/ui/notify'
+import { useAuth } from '@/hooks/use-auth'
+import { syncAuthContextAfterOwnProfilesRowUpdate } from '@/lib/react-query/post-mutation-cache'
 import { uploadTrainerCertificate, uploadTrainerMedia } from '@/lib/trainer-storage'
 
 const MODALITA_OPTS = [
@@ -71,6 +74,8 @@ const defaultIdentita: IdentitaState = {
 
 export function SettingsTrainerProfileTab() {
   const { notify } = useNotify()
+  const queryClient = useQueryClient()
+  const { user, refreshUserProfile } = useAuth()
   const {
     profileId,
     profile: trainerProfile,
@@ -319,6 +324,11 @@ export function SettingsTrainerProfileTab() {
         })
         .eq('id', profileId)
       if (error) throw error
+      await syncAuthContextAfterOwnProfilesRowUpdate(queryClient, {
+        authProfileId: user?.id,
+        updatedProfileId: profileId,
+        refreshUserProfile,
+      })
       notify('Identità professionale salvata', 'success', 'Salvato')
     } catch (e) {
       notify(e instanceof Error ? e.message : 'Errore nel salvataggio', 'error', 'Errore')

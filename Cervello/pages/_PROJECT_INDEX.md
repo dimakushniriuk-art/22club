@@ -1,0 +1,51 @@
+- PROJECT_INDEX
+	- goal
+		- map entire project structure
+		- define domain boundaries
+		- enable automatic brain extraction
+		- reduce navigation ambiguity
+	- root_structure
+		- app=frontend routes/pages
+		- api=backend endpoints
+		- lib=core logic/services
+		- hooks=react hooks
+		- components=ui logic
+		- db=schema/queries/rls
+		- utils=helpers/shared logic
+	- domain_mapping
+		- appointments
+			- api=/api/calendar
+			- lib=/lib/appointments
+			- hooks=/hooks/calendar
+			- components=/components/...appointment
+		- workouts
+			- lib=/lib/workouts
+			- components=/components/...workout
+		- athletes
+			- api=/api/athletes
+			- lib=/lib/athletes
+		- payments
+			- api=/api/payments
+			- lib=/lib/payments
+	- module_mapping
+		- fetch=queries/hooks/api get
+		- mutations=api post/patch/delete
+		- modal=ui form logic
+		- overlap=validation/conflicts
+		- calendar=merge/aggregation/time logic
+		- recurrence=repeat logic
+		- context=debug/operational
+	- navigation_rules
+		- start from api or lib
+		- follow hooks to components
+		- detect domain by folder path
+		- detect module by logic type
+	- brain_mapping
+		- target=/Cervello/pages
+		- naming=[domain]_[module].md
+		- index=[domain].md
+	- extraction_rules
+		- read smallest useful scope
+		- avoid scanning entire project
+		- split logic into modules
+		- preserve all critical logic

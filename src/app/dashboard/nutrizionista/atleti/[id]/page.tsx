@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -58,6 +59,12 @@ import {
 import { macroTargetsFromPlanMacros } from '@/lib/nutrition-plan-version-macros'
 import type { Json } from '@/types/supabase'
 import { downloadStorageBlobViaPreview, storagePreviewHref } from '@/lib/documents'
+import {
+  invalidateAllAthleteDomainQueries,
+  invalidateClientiQueries,
+  invalidateProgressAnalyticsQueries,
+  invalidateProgressPhotosFrequentCache,
+} from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('app:dashboard:nutrizionista:atleti:[id]')
 
@@ -175,6 +182,7 @@ export default function NutrizionistaAtletaProfilePage() {
   )
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
   const { user, org_id: orgId } = useAuth()
+  const queryClient = useQueryClient()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
 
@@ -600,13 +608,20 @@ export default function NutrizionistaAtletaProfilePage() {
       setProfile(data as ProfileRow)
       syncAnagraficFromProfile(data as ProfileRow)
       setAnagraficEditMode(false)
+      const row = data as ProfileRow
+      const uid = row.user_id ?? profile?.user_id ?? null
+      await invalidateAllAthleteDomainQueries(queryClient)
+      await invalidateClientiQueries(queryClient)
+      if (uid) {
+        await invalidateProgressAnalyticsQueries(queryClient, uid)
+      }
     } catch (e) {
       logger.error('Errore salvataggio dati anagrafici', e)
       setAnagraficError('Errore durante il salvataggio.')
     } finally {
       setSavingAnagrafic(false)
     }
-  }, [id, profile, anagraficForm, supabase, syncAnagraficFromProfile])
+  }, [id, profile, anagraficForm, supabase, syncAnagraficFromProfile, queryClient])
 
   const canEditValidity = useCallback(
     (v: PlanVersionRow) => !!v.id && !v.id.startsWith('storage-'),
@@ -798,6 +813,8 @@ export default function NutrizionistaAtletaProfilePage() {
         source: 'pdf_import',
       })
       if (error) throw error
+      await invalidateProgressAnalyticsQueries(queryClient, athleteUserId)
+      invalidateProgressPhotosFrequentCache(athleteUserId)
       setProgressPdfOpen(false)
       setProgressPdfFile(null)
       setProgressPdfExtracted({})
@@ -822,6 +839,7 @@ export default function NutrizionistaAtletaProfilePage() {
     progressPdfHip,
     supabase,
     loadData,
+    queryClient,
   ])
 
   if (showLoader) {

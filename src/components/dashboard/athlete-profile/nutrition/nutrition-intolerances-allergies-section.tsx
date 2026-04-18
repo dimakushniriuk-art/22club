@@ -57,7 +57,7 @@ export function NutritionIntolerancesAllergiesSection({
                 value={newIntolleranza}
                 maxLength={100}
                 onChange={(e) => {
-                  const sanitized = sanitizeString(e.target.value, 100)
+                  const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                   onNewIntolleranzaChange(sanitized || '')
                 }}
                 onKeyDown={(e) => {
@@ -113,7 +113,7 @@ export function NutritionIntolerancesAllergiesSection({
                 value={newAllergia}
                 maxLength={100}
                 onChange={(e) => {
-                  const sanitized = sanitizeString(e.target.value, 100)
+                  const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                   onNewAllergiaChange(sanitized || '')
                 }}
                 onKeyDown={(e) => {

@@ -53,7 +53,7 @@ export const colorTokens = {
 // =====================================================
 
 export const layoutTokens = {
-  container: 'min-h-screen bg-black pb-24',
+  container: 'min-h-dvh bg-black pb-24',
   content:
     'px-4 py-4 sm:px-6 sm:py-6 tablet-landscape:px-8 tablet-landscape:py-8 max-w-6xl mx-auto space-y-6',
   sectionSpacing: 'space-y-4 tablet-landscape:space-y-6',
@@ -391,14 +391,14 @@ export const masterColors = {
 
 export const masterLayout = {
   // Container principale (comune a tutti)
-  container: 'min-h-screen bg-black pb-24',
+  container: 'min-h-dvh bg-black pb-24',
   content: 'space-y-6 px-4 py-4 sm:px-6 sm:py-6 max-w-4xl mx-auto',
 
   // =====================================================
   // 🏠 HOMEPAGE LAYOUT
   // =====================================================
   homepage: {
-    hero: 'min-h-screen flex items-center justify-center',
+    hero: 'min-h-dvh flex items-center justify-center',
     section: 'py-16 px-4 sm:px-6 lg:px-8',
     container: 'max-w-7xl mx-auto',
     grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8',
@@ -408,7 +408,7 @@ export const masterLayout = {
   // 👤 ATHLETE LAYOUT
   // =====================================================
   athlete: {
-    container: 'min-h-screen bg-black pb-24',
+    container: 'min-h-dvh bg-black pb-24',
     content:
       'space-y-6 px-4 py-4 sm:px-6 sm:py-6 tablet-landscape:px-8 tablet-landscape:py-8 max-w-4xl tablet-landscape:max-w-5xl mx-auto',
     grid: {
@@ -428,7 +428,7 @@ export const masterLayout = {
   // 🏋️ TRAINER LAYOUT
   // =====================================================
   trainer: {
-    container: 'min-h-screen bg-black pb-24 tablet-landscape:pb-32',
+    container: 'min-h-dvh bg-black pb-24 tablet-landscape:pb-32',
     content:
       'space-y-6 px-4 py-4 sm:px-6 sm:py-6 tablet-landscape:px-8 tablet-landscape:py-8 max-w-6xl tablet-landscape:max-w-7xl mx-auto',
     grid: {
@@ -449,7 +449,7 @@ export const masterLayout = {
   // 👨‍💼 ADMIN LAYOUT
   // =====================================================
   admin: {
-    container: 'min-h-screen bg-black',
+    container: 'min-h-dvh bg-black',
     sidebar: 'fixed left-0 top-0 h-full w-64 bg-background-secondary border-r border-border',
     main: 'ml-64 flex-1 p-6',
     content: 'max-w-7xl mx-auto',
@@ -471,7 +471,7 @@ export const masterLayout = {
   // =====================================================
   auth: {
     container:
-      'min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden',
+      'min-h-dvh bg-black flex items-center justify-center p-4 relative overflow-hidden',
     card: 'w-full max-w-md bg-slate-900/95 border-slate-700 shadow-2xl',
     content: 'p-8',
     grid: 'grid grid-cols-2 gap-4',

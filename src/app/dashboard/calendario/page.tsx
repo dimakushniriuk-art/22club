@@ -511,7 +511,7 @@ function KeyboardShortcutsModal({ open, onClose }: { open: boolean; onClose: () 
   )
 }
 
-const CALENDAR_LOADING_CLASS = 'flex min-h-[50vh] items-center justify-center bg-background'
+const CALENDAR_LOADING_CLASS = 'flex min-h-[50dvh] items-center justify-center bg-background'
 
 type CalendarPageContentProps = { basePath?: string }
 
@@ -998,7 +998,7 @@ export function CalendarPageContent({
   const closeKeyboardHelp = useCallback(() => setShowKeyboardHelp(false), [])
 
   return (
-    <div className="flex flex-1 min-h-0 relative">
+    <div className="relative flex min-h-0 min-w-0 flex-1">
       {/* Drawer filtri e prossimi - mobile (aperto da altro punto se necessario) */}
       <Drawer
         open={showFiltersDrawer}
@@ -1050,7 +1050,7 @@ export function CalendarPageContent({
 
       {/* Sidebar - desktop lg+ (nascondibile) */}
       {showSidebar && (
-        <aside className="hidden lg:flex w-[280px] flex-col shrink-0 border-r border-white/10 bg-gradient-to-b from-zinc-950 to-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <aside className="hidden lg:flex lg:h-full lg:max-h-full w-[280px] shrink-0 flex-col border-r border-white/10 bg-gradient-to-b from-zinc-950 to-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] lg:min-h-0">
           <CalendarSidebarContent
             searchQuery={searchQuery}
             onSearchQueryChange={onSearchQueryChange}
@@ -1078,7 +1078,7 @@ export function CalendarPageContent({
         </aside>
       )}
 
-      <main className="flex-1 bg-background overflow-hidden relative min-w-0">
+      <main className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
         <div role="status" aria-live="polite" className="sr-only">
           {filteredAppointments.length === 1
             ? '1 appuntamento'
@@ -1144,7 +1144,7 @@ export function CalendarPageContent({
           data-testid="appointment-form-overlay"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
         >
-          <div className="w-full max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
+          <div className="w-full max-h-[90dvh] sm:max-h-[85dvh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
             <Suspense
               fallback={
                 <StaffLazyChunkFallback

@@ -47,7 +47,7 @@ export function MotivationalMainSection({
               value={formData.motivazione_principale || ''}
               onChange={(e) =>
                 onFormDataChange({
-                  motivazione_principale: sanitizeString(e.target.value, 1000) || null,
+                  motivazione_principale: sanitizeString(e.target.value, 1000, { trim: false }) || null,
                 })
               }
               placeholder="Descrivi la motivazione principale dell'atleta..."

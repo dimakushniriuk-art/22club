@@ -621,7 +621,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                 value={formData.note_contrattuali || ''}
                 maxLength={2000}
                 onChange={(e) => {
-                  const sanitized = sanitizeString(e.target.value, 2000)
+                  const sanitized = sanitizeString(e.target.value, 2000, { trim: false })
                   setFormData({ ...formData, note_contrattuali: sanitized || null })
                 }}
                 placeholder="Note aggiuntive sui contratti..."
@@ -692,7 +692,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                   value={documentoData.nome}
                   maxLength={200}
                   onChange={(e) => {
-                    const sanitized = sanitizeString(e.target.value, 200)
+                    const sanitized = sanitizeString(e.target.value, 200, { trim: false })
                     setDocumentoData({ ...documentoData, nome: sanitized || '' })
                   }}
                   placeholder="Es. Contratto abbonamento annuale"
@@ -706,7 +706,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                   value={documentoData.tipo}
                   maxLength={100}
                   onChange={(e) => {
-                    const sanitized = sanitizeString(e.target.value, 100)
+                    const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                     setDocumentoData({ ...documentoData, tipo: sanitized || '' })
                   }}
                   placeholder="Es. Contratto, Fattura, ecc."
@@ -720,7 +720,7 @@ export function AthleteAdministrativeTab({ athleteId }: AthleteAdministrativeTab
                   value={documentoData.note}
                   maxLength={500}
                   onChange={(e) => {
-                    const sanitized = sanitizeString(e.target.value, 500)
+                    const sanitized = sanitizeString(e.target.value, 500, { trim: false })
                     setDocumentoData({ ...documentoData, note: sanitized || '' })
                   }}
                   placeholder="Note aggiuntive sul documento"

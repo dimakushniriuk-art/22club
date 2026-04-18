@@ -213,14 +213,14 @@ export default function PagamentiPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />
         <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-indigo-500/5 via-transparent to-transparent" />
       </div>
 
-      <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+      <div className="mx-auto flex w-full min-w-0 max-w-[min(100%,2160px)] flex-1 flex-col space-y-4 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

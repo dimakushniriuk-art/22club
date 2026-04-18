@@ -7,7 +7,7 @@ import { FadeIn } from '@/components/ui/animations'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="relative flex min-h-full w-full flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background-secondary to-background p-4">
       {/* Animated Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-brand/5 animate-pulse-glow" />
 

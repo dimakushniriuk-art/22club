@@ -82,10 +82,8 @@ export function useAthleteAIData(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 10 * 60 * 1000, // 10 minuti (dati AI meno dinamici - calcoli pesanti)
-    gcTime: 60 * 60 * 1000, // 60 minuti (cacheTime in React Query v4) - cache lunga per dati costosi da calcolare
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 5 * 60 * 1000, // query pesante: cache più lunga del default, invalidata dalle mutation
+    gcTime: 60 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }

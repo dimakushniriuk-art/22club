@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Badge } from '@/components/ui'
 import { Bell, Shield, Globe, UserCircle } from 'lucide-react'
@@ -15,6 +16,7 @@ import {
 } from '@/hooks/use-user-settings'
 import { useSettingsProfile } from '@/hooks/use-settings-profile'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
+import { syncAuthContextAfterOwnProfilesRowUpdate } from '@/lib/react-query/post-mutation-cache'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -126,9 +128,10 @@ function mapApiNotificationToTab(n: ApiNotification): NotificationForTab {
 export default function MassaggiatoreImpostazioniPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const supabase = useSupabaseClient()
   const { notify } = useNotify()
-  const { user: authUser, loading: authLoading, signOut } = useAuth()
+  const { user: authUser, loading: authLoading, signOut, refreshUserProfile } = useAuth()
   const { showLoader: showGuardLoader } = useStaffDashboardGuard('massaggiatore')
   const { settings, loadSettings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
     useUserSettings()
@@ -282,6 +285,11 @@ export default function MassaggiatoreImpostazioniPage() {
       const { error } = await supabase.from('profiles').update(payload).eq('id', profile.id)
       if (error) throw error
       setProfileDirty(false)
+      await syncAuthContextAfterOwnProfilesRowUpdate(queryClient, {
+        authProfileId: authUser?.id,
+        updatedProfileId: profile.id,
+        refreshUserProfile,
+      })
       notify('Profilo aggiornato con successo', 'success', 'Successo')
     } catch (error) {
       logger.error('Errore nel salvare il profilo', error)
@@ -291,7 +299,7 @@ export default function MassaggiatoreImpostazioniPage() {
     } finally {
       setLoading(false)
     }
-  }, [supabase, profile, notify])
+  }, [supabase, profile, notify, queryClient, authUser?.id, refreshUserProfile])
 
   const handleSavePTProfile = useCallback(async () => {
     if (!profileData) return

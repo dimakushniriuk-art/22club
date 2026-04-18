@@ -57,7 +57,7 @@ function StatisticheAllenamentiContent() {
           <PageHeaderFixed
             variant="chat"
             title="Statistiche Allenamenti"
-            subtitle="Pesi, tempi e progressi per esercizio"
+            subtitle="Tutti gli stati sessione: pesi, tempi e serie anche in corso"
             onBack={handleBack}
           />
         </div>
@@ -75,7 +75,7 @@ function StatisticheAllenamentiContent() {
         <PageHeaderFixed
           variant="chat"
           title="Statistiche Allenamenti"
-          subtitle="Pesi, tempi e progressi per esercizio"
+          subtitle="Tutti gli stati sessione: pesi, tempi e serie anche in corso"
           onBack={handleBack}
         />
 
@@ -85,7 +85,7 @@ function StatisticheAllenamentiContent() {
               Grafici per esercizio
             </CardTitle>
             <p className="text-text-tertiary mt-0.5 text-xs">
-              Andamento pesi e progressi negli allenamenti completati
+              Andamento pesi e progressi su tutte le sessioni (completate e in corso)
             </p>
           </CardHeader>
           <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
@@ -108,7 +108,7 @@ function StatisticheAllenamentiContent() {
                   Nessun esercizio completato ancora
                 </p>
                 <p className="text-text-tertiary mt-1 text-xs min-[834px]:text-sm">
-                  Completa alcuni allenamenti per vedere le statistiche dei pesi utilizzati.
+                  Avvia o completa sessioni con serie sul log per vedere le statistiche.
                 </p>
               </div>
             ) : (

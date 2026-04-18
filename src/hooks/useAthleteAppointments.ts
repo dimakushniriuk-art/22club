@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { queryKeys } from '@/lib/query-keys'
+import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { normalizeAthleteAppointmentsQueryParams } from '@/lib/appointments/athlete-query-params'
@@ -210,7 +211,7 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
   // Realtime subscription per aggiornamenti automatici
   useRealtimeChannel('appointments', (payload) => {
     // Invalida query quando ci sono cambiamenti (INSERT, UPDATE, DELETE)
-    queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+    void invalidateAppointmentsQueries(queryClient)
     logger.debug('Realtime appointment event received', undefined, {
       eventType: payload.eventType,
       new: payload.new,
@@ -237,7 +238,7 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
     },
     onSuccess: () => {
       // Invalida tutte le query appointments per refresh automatico
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
     },
     onError: (err) => {
       logger.error('Error creating appointment', err, {})
@@ -267,7 +268,7 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       return data?.[0]
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
     },
     onError: (err, variables) => {
       logger.error('Error updating appointment', err, { appointmentId: variables.id })
@@ -295,7 +296,7 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       return data?.[0]
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
     },
     onError: (err, id) => {
       logger.error('Error cancelling appointment', err, { appointmentId: id })
@@ -317,7 +318,7 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+      void invalidateAppointmentsQueries(queryClient)
     },
     onError: (err, id) => {
       logger.error('Error deleting appointment', err, { appointmentId: id })

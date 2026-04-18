@@ -190,7 +190,8 @@ export const HorizontalBarChart: React.FC<{
                     className="h-3 rounded-full transition-all duration-300 shadow-md"
                     style={{
                       width: `${item.percentage}%`,
-                      backgroundColor: chartCategoricalPalette[index % chartCategoricalPalette.length],
+                      backgroundColor:
+                        chartCategoricalPalette[index % chartCategoricalPalette.length],
                     }}
                   />
                 </div>

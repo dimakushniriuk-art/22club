@@ -1098,7 +1098,7 @@ function WelcomePageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="relative flex min-h-full w-full flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background-secondary to-background">
         {backgroundContent}
         <Card className="relative z-10 w-full max-w-md border-border bg-background-secondary/95 backdrop-blur-sm rounded-2xl shadow-xl">
           <CardContent className="p-8 text-center">
@@ -1113,7 +1113,7 @@ function WelcomePageContent() {
   const step = currentStep
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background flex flex-col relative overflow-hidden">
+    <div className="relative flex min-h-full w-full flex-1 flex-col overflow-hidden bg-gradient-to-br from-background via-background-secondary to-background">
       {backgroundContent}
       <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
         <Link

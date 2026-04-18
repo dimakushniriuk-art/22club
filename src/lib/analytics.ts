@@ -331,7 +331,9 @@ async function getTrendDataFromDB(
     const { data: workoutAppointments, error: appointmentsError } = await appointmentsQuery
 
     if (appointmentsError) {
-      logger.warn('Errore caricamento appointments (trend prenotazioni)', { error: appointmentsError })
+      logger.warn('Errore caricamento appointments (trend prenotazioni)', {
+        error: appointmentsError,
+      })
     }
 
     type TrendAgg = {

@@ -4,7 +4,10 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
-import { queryKeys } from '@/lib/query-keys'
+import {
+  invalidateClientiQueries,
+  invalidatePaymentsQueries,
+} from '@/lib/react-query/post-mutation-cache'
 import { addCreditFromPayment } from '@/lib/credits/ledger'
 import { defaultServiceForRole } from '@/lib/abbonamenti-service-type'
 import { useClienti } from '@/hooks/use-clienti'
@@ -131,8 +134,9 @@ export function PaymentFormModal({ open, onOpenChange, onSuccess }: PaymentFormM
         serviceType,
       })
 
-      // Invalida query payments per refresh automatico
-      queryClient.invalidateQueries({ queryKey: queryKeys.payments.all })
+      // Invalida query payments e clienti (crediti / liste staff)
+      void invalidatePaymentsQueries(queryClient)
+      void invalidateClientiQueries(queryClient)
 
       toast.addToast({
         title: 'Pagamento registrato',

@@ -1,7 +1,12 @@
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createLogger } from '@/lib/logger'
+import { syncAuthContextAfterOwnProfilesRowUpdate } from '@/lib/react-query/post-mutation-cache'
+import { useAuth } from '@/providers/auth-provider'
 
 const logger = createLogger('usePTProfile')
 
@@ -115,6 +120,8 @@ async function calculatePTStats(supabase: SupabaseClient, userId: string): Promi
 }
 
 export function usePTProfile(_userId?: string) {
+  const queryClient = useQueryClient()
+  const { user: authUser, refreshUserProfile } = useAuth()
   const [authUserId, setAuthUserId] = useState<string>('')
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -200,6 +207,14 @@ export function usePTProfile(_userId?: string) {
           setProfile({ ...profile, ...profileData })
         }
 
+        if (result.success && authUser?.id) {
+          await syncAuthContextAfterOwnProfilesRowUpdate(queryClient, {
+            authProfileId: authUser.id,
+            updatedProfileId: authUser.id,
+            refreshUserProfile,
+          })
+        }
+
         return result
       } catch (error) {
         logger.error('Errore nel salvare il profilo', error)
@@ -208,7 +223,7 @@ export function usePTProfile(_userId?: string) {
         setIsSaving(false)
       }
     },
-    [authUserId, profile],
+    [authUserId, profile, authUser?.id, queryClient, refreshUserProfile],
   )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

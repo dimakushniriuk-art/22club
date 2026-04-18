@@ -101,6 +101,8 @@ export function useAthleteMotivationalForm({
       sanitize: sanitizeFormData,
       onSuccess: () => {
         setIsEditing(false)
+        setShowAbbandonoForm(false)
+        setNewArrayItem((prev) => ({ ...prev, abbandono: {} }))
         addToast({
           title: 'Dati aggiornati',
           message: 'I dati motivazionali sono stati aggiornati con successo.',
@@ -121,6 +123,8 @@ export function useAthleteMotivationalForm({
 
   const handleCancel = useCallback(() => {
     setIsEditing(false)
+    setShowAbbandonoForm(false)
+    setNewArrayItem((prev) => ({ ...prev, abbandono: {} }))
     if (motivational) {
       setFormData({
         motivazione_principale: motivational.motivazione_principale || null,
@@ -175,26 +179,27 @@ export function useAthleteMotivationalForm({
   )
 
   const addAbbandono = useCallback(() => {
-    if (!newArrayItem.abbandono?.data || !newArrayItem.abbandono?.motivo) return
-    const sanitizedMotivo = sanitizeString(newArrayItem.abbandono.motivo, 500)
+    const draft = newArrayItem.abbandono
+    if (!draft?.data || !draft?.motivo) return
+    const sanitizedMotivo = sanitizeString(draft.motivo, 500)
     if (!sanitizedMotivo) return
 
-    const current = formData.storico_abbandoni || []
-    setFormData({
-      ...formData,
-      storico_abbandoni: [
-        ...current,
-        {
-          data: newArrayItem.abbandono.data,
-          motivo: sanitizedMotivo,
-          durata_mesi: sanitizeNumber(newArrayItem.abbandono.durata_mesi, 0, 120) ?? undefined,
-        },
-      ],
+    const durata = sanitizeNumber(draft.durata_mesi, 0, 120)
+    const durata_mesi = durata != null && durata >= 1 ? durata : undefined
+    // Valori fissati fuori dal setter: dentro la closure TS non restringe `draft` (Partial<...>)
+    const data: string = draft.data
+    const nuovo: AbbandonoStorico = { data, motivo: sanitizedMotivo, durata_mesi }
+
+    setFormData((prev) => {
+      const current = prev.storico_abbandoni || []
+      return {
+        ...prev,
+        storico_abbandoni: [...current, nuovo],
+      }
     })
-    setNewArrayItem({ ...newArrayItem, abbandono: {} })
+    setNewArrayItem((prev) => ({ ...prev, abbandono: {} }))
     setShowAbbandonoForm(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData])
+  }, [newArrayItem.abbandono])
 
   const removeAbbandono = useCallback((index: number) => {
     setFormData((prev) => {

@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useNotify } from '@/lib/ui/notify'
@@ -21,6 +22,7 @@ import {
   eachOpenBookingSegment,
   countBookingsOverlappingWindow,
 } from '@/lib/appointments/open-booking-grid-segments'
+import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('hooks:calendar:use-athlete-calendar-page')
 
@@ -54,6 +56,7 @@ const ATHLETE_CREATED_COLOR: AppointmentColor = 'verde'
 const TRAINER_CREATED_COLOR: AppointmentColor = 'azzurro'
 
 export function useAthleteCalendarPage(profileId: string | null) {
+  const queryClient = useQueryClient()
   const { notify } = useNotify()
   const [appointments, setAppointments] = useState<AppointmentUI[]>([])
   const [slotBookingCounts, setSlotBookingCounts] = useState<Record<string, number>>({})
@@ -428,6 +431,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
           if (error) throw error
         }
         await fetchAppointments()
+        void invalidateAppointmentsQueries(queryClient)
       } catch (err) {
         logger.error('Errore salvataggio appuntamento', err)
         const msg =
@@ -464,6 +468,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
       fetchAppointments,
       notify,
       openBookingSlotMax,
+      queryClient,
     ],
   )
 
@@ -479,13 +484,14 @@ export function useAthleteCalendarPage(profileId: string | null) {
           })
           .eq('id', appointmentId)
         await fetchAppointments()
+        void invalidateAppointmentsQueries(queryClient)
       } catch (err) {
         logger.error('Errore cancellazione appuntamento', err)
       } finally {
         setLoading(false)
       }
     },
-    [fetchAppointments],
+    [fetchAppointments, queryClient],
   )
 
   const handleDelete = useCallback(
@@ -495,28 +501,29 @@ export function useAthleteCalendarPage(profileId: string | null) {
         const { error } = await supabase.from('appointments').delete().eq('id', appointmentId)
         if (error) throw error
         await fetchAppointments()
+        void invalidateAppointmentsQueries(queryClient)
       } catch (err) {
         logger.error('Errore eliminazione appuntamento', err)
       } finally {
         setLoading(false)
       }
     },
-    [fetchAppointments],
+    [fetchAppointments, queryClient],
   )
 
   const handleEventDrop = useCallback(
     async (appointmentId: string, newStart: Date, newEnd: Date) => {
       const apt = appointments.find((a) => a.id === appointmentId)
-      if (
-        apt?.created_by_role !== 'athlete' ||
-        !profileId ||
-        apt.athlete_id !== profileId
-      ) {
+      if (apt?.created_by_role !== 'athlete' || !profileId || apt.athlete_id !== profileId) {
         return
       }
       try {
         assertAthleteMoveInsideOpenSlot(newStart.toISOString(), newEnd.toISOString())
-        assertAthleteDragRespectsSlotCapacity(appointmentId, newStart.toISOString(), newEnd.toISOString())
+        assertAthleteDragRespectsSlotCapacity(
+          appointmentId,
+          newStart.toISOString(),
+          newEnd.toISOString(),
+        )
         const { error } = await supabase
           .from('appointments')
           .update({
@@ -532,6 +539,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
               : a,
           ),
         )
+        void invalidateAppointmentsQueries(queryClient)
       } catch (err) {
         if (!isExpectedAthleteCalendarMoveRejection(err)) {
           logger.error('Errore spostamento appuntamento', err)
@@ -546,22 +554,23 @@ export function useAthleteCalendarPage(profileId: string | null) {
       assertAthleteMoveInsideOpenSlot,
       assertAthleteDragRespectsSlotCapacity,
       profileId,
+      queryClient,
     ],
   )
 
   const handleEventResize = useCallback(
     async (appointmentId: string, newStart: Date, newEnd: Date) => {
       const apt = appointments.find((a) => a.id === appointmentId)
-      if (
-        apt?.created_by_role !== 'athlete' ||
-        !profileId ||
-        apt.athlete_id !== profileId
-      ) {
+      if (apt?.created_by_role !== 'athlete' || !profileId || apt.athlete_id !== profileId) {
         return
       }
       try {
         assertAthleteMoveInsideOpenSlot(newStart.toISOString(), newEnd.toISOString())
-        assertAthleteDragRespectsSlotCapacity(appointmentId, newStart.toISOString(), newEnd.toISOString())
+        assertAthleteDragRespectsSlotCapacity(
+          appointmentId,
+          newStart.toISOString(),
+          newEnd.toISOString(),
+        )
         const { error } = await supabase
           .from('appointments')
           .update({
@@ -577,6 +586,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
               : a,
           ),
         )
+        void invalidateAppointmentsQueries(queryClient)
       } catch (err) {
         if (!isExpectedAthleteCalendarMoveRejection(err)) {
           logger.error('Errore ridimensionamento appuntamento', err)
@@ -591,6 +601,7 @@ export function useAthleteCalendarPage(profileId: string | null) {
       assertAthleteMoveInsideOpenSlot,
       assertAthleteDragRespectsSlotCapacity,
       profileId,
+      queryClient,
     ],
   )
 

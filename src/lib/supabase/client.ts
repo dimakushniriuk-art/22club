@@ -95,21 +95,37 @@ export function createClient(): SupabaseClient<Database> {
   return client
 }
 
-export const supabase = createClient()
-
 // 🔄 Helper per gestire errori di refresh token
+function authErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message || ''
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as { message?: unknown }).message ?? '')
+  }
+  return String(error ?? '')
+}
+
+/** Client browser per signOut su refresh invalido (evita TDZ su `supabase` durante init modulo). */
+function getClientForRefreshTokenCleanup(): SupabaseClient<Database> {
+  if (typeof window !== 'undefined' && browserSingleton) {
+    return browserSingleton
+  }
+  return createClient()
+}
+
 export function handleRefreshTokenError(error: unknown): boolean {
   if (error == null) return false
-  const errorMessage = error instanceof Error ? error.message : String(error)
+  const errorMessage = authErrorMessage(error)
   const code =
     typeof error === 'object' && error !== null && 'code' in error
       ? String((error as { code?: string }).code ?? '')
       : ''
+  const lowered = errorMessage.toLowerCase()
   const isRefreshTokenError =
     code === 'refresh_token_not_found' ||
     errorMessage.includes('Invalid Refresh Token') ||
     errorMessage.includes('Refresh Token Not Found') ||
-    (error instanceof Error && error.name === 'AuthApiError' && errorMessage.includes('refresh'))
+    lowered.includes('refresh_token_not_found') ||
+    (error instanceof Error && error.name === 'AuthApiError' && lowered.includes('refresh'))
 
   if (isRefreshTokenError) {
     if (refreshTokenErrorHandling) return true
@@ -119,9 +135,11 @@ export function handleRefreshTokenError(error: unknown): boolean {
       errorName: error instanceof Error ? error.name : 'Unknown',
     })
     // scope: 'local' evita un altro round-trip auth con refresh token già invalido
-    void supabase.auth.signOut({ scope: 'local' }).finally(() => {
-      refreshTokenErrorHandling = false
-    })
+    void getClientForRefreshTokenCleanup()
+      .auth.signOut({ scope: 'local' })
+      .finally(() => {
+        refreshTokenErrorHandling = false
+      })
     // Reindirizza al login se siamo in un contesto client-side
     if (typeof window !== 'undefined') {
       const path = window.location.pathname
@@ -133,6 +151,35 @@ export function handleRefreshTokenError(error: unknown): boolean {
   }
   return false
 }
+
+/**
+ * Registra subito (all'import del modulo) la gestione rejection refresh-token stale.
+ * Se il listener vive solo in AuthProvider/useEffect, Supabase può aver già lanciato
+ * un refresh prima del mount → Next/Turbopack mostra AuthApiError in console.
+ */
+function installStaleRefreshRejectionHandlerOnce(): void {
+  if (typeof window === 'undefined') return
+  const w = window as Window & { __22clubSbRtRejectionHandler?: boolean }
+  if (w.__22clubSbRtRejectionHandler) return
+  w.__22clubSbRtRejectionHandler = true
+  window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+    const reason = event.reason
+    const msg = authErrorMessage(reason)
+    const lowered = msg.toLowerCase()
+    const isRefreshTokenRejection =
+      msg.includes('Invalid Refresh Token') ||
+      msg.includes('Refresh Token Not Found') ||
+      lowered.includes('refresh_token_not_found')
+    if (!isRefreshTokenRejection) return
+    if (handleRefreshTokenError(reason)) {
+      event.preventDefault()
+    }
+  })
+}
+
+installStaleRefreshRejectionHandlerOnce()
+
+export const supabase = createClient()
 
 // 🔐 Imposta headers personalizzati con ruolo e organizzazione
 export async function setSupabaseContext(role: UserRole, org_id: string) {

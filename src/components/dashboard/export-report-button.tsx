@@ -2,7 +2,10 @@
 
 import { Button } from '@/components/ui'
 import { FileText } from 'lucide-react'
-import { buildAnalyticsReportPdfBlob, buildTrainerAnalyticsReportPdfBlob } from '@/lib/analytics-export'
+import {
+  buildAnalyticsReportPdfBlob,
+  buildTrainerAnalyticsReportPdfBlob,
+} from '@/lib/analytics-export'
 import { createLogger } from '@/lib/logger'
 import { useToast } from '@/components/ui/toast'
 import type { AnalyticsData } from '@/lib/analytics'

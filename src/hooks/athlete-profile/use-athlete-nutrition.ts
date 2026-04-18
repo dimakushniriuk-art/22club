@@ -92,17 +92,15 @@ export function useAthleteNutrition(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 5 * 60 * 1000, // 5 minuti - dati nutrizionali cambiano raramente
-    gcTime: 30 * 60 * 1000, // 30 minuti (cacheTime in React Query v4) - mantieni in cache più a lungo
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }
 
 /**
  * Hook per aggiornare dati nutrizionali atleta
- * @param athleteId - UUID dell'atleta (user_id)
+ * @param athleteId - `profiles.user_id` o `profiles.id` (risolto da PATCH `/api/athlete-nutrition`)
  */
 export function useUpdateAthleteNutrition(athleteId: string | null) {
   const queryClient = useQueryClient()
@@ -114,122 +112,35 @@ export function useUpdateAthleteNutrition(athleteId: string | null) {
       }
 
       try {
-        // Valida i dati con Zod
         const validated = updateAthleteNutritionDataSchema.parse(updates)
 
-        // Prepara i dati per l'update (rimuove campi undefined)
-        const updateData: Record<string, unknown> = {}
-        if (validated.obiettivo_nutrizionale !== undefined)
-          updateData.obiettivo_nutrizionale = validated.obiettivo_nutrizionale
-        if (validated.calorie_giornaliere_target !== undefined)
-          updateData.calorie_giornaliere_target = validated.calorie_giornaliere_target
-        if (validated.macronutrienti_target !== undefined)
-          updateData.macronutrienti_target = validated.macronutrienti_target
-        if (validated.dieta_seguita !== undefined)
-          updateData.dieta_seguita = validated.dieta_seguita
-        if (validated.intolleranze_alimentari !== undefined)
-          updateData.intolleranze_alimentari = validated.intolleranze_alimentari
-        if (validated.allergie_alimentari !== undefined)
-          updateData.allergie_alimentari = validated.allergie_alimentari
-        if (validated.alimenti_preferiti !== undefined)
-          updateData.alimenti_preferiti = validated.alimenti_preferiti
-        if (validated.alimenti_evitati !== undefined)
-          updateData.alimenti_evitati = validated.alimenti_evitati
-        if (validated.preferenze_orari_pasti !== undefined)
-          updateData.preferenze_orari_pasti = validated.preferenze_orari_pasti
-        if (validated.note_nutrizionali !== undefined)
-          updateData.note_nutrizionali = validated.note_nutrizionali
-
-        // Verifica che athleteId sia un user_id valido (non profile.id)
-        // Controlla se esiste un profile con questo user_id
-        const { data: profileCheck, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, user_id')
-          .eq('user_id', athleteId)
-          .maybeSingle()
-
-        if (profileError) {
-          logger.warn('Errore verifica profile', profileError, { athleteId })
-        }
-
-        if (!profileCheck) {
-          logger.error('Profile non trovato per user_id', undefined, { athleteId })
-          throw new Error(`Profile non trovato per user_id: ${athleteId}`)
-        }
-
-        logger.debug('Profile verificato', undefined, {
-          athleteId,
-          profileId: profileCheck.id,
-          profileUserId: profileCheck.user_id,
+        const res = await fetch('/api/athlete-nutrition', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            athleteUserId: athleteId,
+            updates: validated,
+          }),
         })
 
-        // Verifica se esiste già un record
-        const { data: existing, error: existingError } = await supabase
-          .from('athlete_nutrition_data')
-          .select('id')
-          .eq('athlete_id', athleteId)
-          .maybeSingle()
+        const payload = (await res.json().catch(() => null)) as
+          | { data?: unknown; error?: string }
+          | null
 
-        if (existingError && existingError.code !== 'PGRST116') {
-          logger.warn('Errore verifica record esistente', existingError, { athleteId })
+        if (!res.ok) {
+          const msg =
+            payload && typeof payload === 'object' && 'error' in payload && payload.error
+              ? String(payload.error)
+              : `HTTP ${res.status}`
+          throw new Error(msg)
         }
 
-        let result
-
-        if (existing) {
-          // Update esistente
-          logger.debug('Aggiornamento record esistente', undefined, {
-            athleteId,
-            existingId: existing.id,
-          })
-          const { data, error } = await supabase
-            .from('athlete_nutrition_data')
-            .update(updateData)
-            .eq('athlete_id', athleteId)
-            .select('*')
-            .single()
-
-          if (error) {
-            logger.error('Errore update athlete_nutrition_data', error, {
-              athleteId,
-              updateData,
-              errorCode: error.code,
-              errorMessage: error.message,
-            })
-            throw error
-          }
-          result = data
-        } else {
-          // Insert nuovo record
-          logger.debug('Inserimento nuovo record', undefined, { athleteId, updateData })
-          const { data, error } = await supabase
-            .from('athlete_nutrition_data')
-            .insert({
-              athlete_id: athleteId,
-              ...updateData,
-            })
-            .select('*')
-            .single()
-
-          if (error) {
-            logger.error('Errore insert athlete_nutrition_data', error, {
-              athleteId,
-              updateData,
-              errorCode: error.code,
-              errorMessage: error.message,
-              errorDetails: error.details,
-              errorHint: error.hint,
-            })
-            throw error
-          }
-          result = data
+        if (!payload || typeof payload !== 'object' || !('data' in payload) || !payload.data) {
+          throw new Error('Risposta API non valida')
         }
 
-        if (!result) {
-          throw new Error('Dati non trovati dopo aggiornamento')
-        }
+        const result = payload.data as Record<string, unknown>
 
-        // Valida e ritorna i dati aggiornati
         const validatedResult = createAthleteNutritionDataSchema.parse({
           id: result.id,
           athlete_id: result.athlete_id,

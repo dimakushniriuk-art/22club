@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button } from '@/components/ui'
 import { Bell, Shield, Globe, UserCircle, Briefcase } from 'lucide-react'
@@ -15,6 +16,7 @@ import {
 } from '@/hooks/use-user-settings'
 import { useSettingsProfile } from '@/hooks/use-settings-profile'
 import { useImpostazioniPageGuard } from '@/hooks/use-impostazioni-page-guard'
+import { syncAuthContextAfterOwnProfilesRowUpdate } from '@/lib/react-query/post-mutation-cache'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
 import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
@@ -94,9 +96,10 @@ const SettingsTrainerProfileTab = lazy(() =>
 export default function ImpostazioniPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const supabase = useMemo(() => createClient(), [])
   const { notify } = useNotify()
-  const { user: authUser, loading: authLoading } = useAuth()
+  const { user: authUser, loading: authLoading, refreshUserProfile } = useAuth()
   const { showLoader: showGuardLoader } = useImpostazioniPageGuard()
   const { settings, loadSettings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
     useUserSettings()
@@ -230,6 +233,11 @@ export default function ImpostazioniPage() {
       const { error } = await supabase.from('profiles').update(payload).eq('id', profile.id)
       if (error) throw error
       setProfileDirty(false)
+      await syncAuthContextAfterOwnProfilesRowUpdate(queryClient, {
+        authProfileId: authUser?.id,
+        updatedProfileId: profile.id,
+        refreshUserProfile,
+      })
       notify('Profilo aggiornato con successo', 'success', 'Successo')
     } catch (error) {
       logger.error('Errore nel salvare il profilo', error)
@@ -239,7 +247,7 @@ export default function ImpostazioniPage() {
     } finally {
       setLoading(false)
     }
-  }, [supabase, profile, notify])
+  }, [supabase, profile, notify, queryClient, refreshUserProfile, authUser?.id])
 
   const handleSaveNotifications = useCallback(async () => {
     setLoading(true)

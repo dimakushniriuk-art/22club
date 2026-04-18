@@ -1,0 +1,32 @@
+- chat_mutations
+	- ATOMS
+		- source_file=src/hooks/chat/use-chat-messages.ts
+		- export_slice=sendMessage|markAsRead|deleteMessage (fetch in ref=[[chat_fetch]] delta_messages)
+		- send_table=chat_messages insert NewMessagePayload sender_id receiver_id message type file_* optional select single
+		- send_types=public API type text|file default text (DB row può includere system fuori da questo callback)
+		- send_callback=onSuccess?(ChatMessage) return data insert response
+		- read_update=chat_messages update read_at=ISO now eq receiver_id=currentProfile eq sender_id=otherUserId is read_at null
+		- read_local_sync=map currentMessages sender_id===otherUserId && !read_at→set read_at now; onUpdate(messages) caller
+		- delete_filter=delete eq id eq sender_id profileId select id
+		- delete_no_prefetch=commento evita select preliminare RLS select può fallire
+		- cache_invalidate_on_delete=frequentQueryCache.invalidate pattern chat-messages:${profileId}:*
+		- send_cache_invalidate=none in-hook post-insert
+	- COMPRESSED
+		- send_flow=getCurrentProfileId→insert→format ChatMessage type coerce→onSuccess optional
+		- read_flow=DB update unread verso me da other→ottimistic UI map→onUpdate|orchestrator passa snapshot messaggi post-fetch a markAsRead (evita map su [] da closure stale)
+		- delete_flow=delete returning rows; length 0→throw Messaggio non trovato o non eliminabile
+		- delete_permission_map=code 42501|message permission|policy→Error messaggio policy DELETE Supabase
+		- error_surface=send|delete→onError string; delete anche throw dopo onError
+	- QUERIES
+		- use=chat_messages.insert select single
+		- use=chat_messages.update read_at filter receiver sender read_at is null
+		- use=chat_messages.delete eq id eq sender_id select id
+	- CONTEXT
+		- name=orchestration_cache_hooks_layer
+		- issues=useChat dopo send/delete invalida frequentQueryCache e riesegue fetchConversations ref=[[chat_fetch]] delta_use_chat_cache
+		- name=delete_rls_contract
+		- issues=cancellazione solo mittente lato query; enforcement anche policy RLS ref=[[chat_context]] client_rls_surface
+		- name=read_at_optimistic_vs_db
+		- issues=markAsRead aggiorna read_at locale con timestamp “now” indipendente da risposta DB—skew clock minimo accettato pattern hook
+		- name=ui_file_message_text_contract
+		- issues=MessageInput branch file usa campo message=testo uguale a file.name in onSendMessage prima insert ref=[[chat_modal]] send_file_flow

@@ -5,9 +5,10 @@ import React, { useMemo } from 'react'
 import { Button } from '@/components/ui'
 import {
   CartesianGrid,
+  ComposedChart,
   Line,
-  LineChart,
   ResponsiveContainer,
+  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -17,9 +18,11 @@ import {
   getBodyMetricDeltaSentiment,
 } from '@/lib/body-metrics/body-metric-trend-rules'
 
+type HistoryPoint = { date: string; value: number | null }
+
 export interface RangeStatusMeterProps {
   value?: number | null
-  history?: Array<{ date: string; value: number | null }>
+  history?: HistoryPoint[]
   title?: string
   unit?: string
   height?: number
@@ -40,14 +43,21 @@ export function RangeStatusMeter({
   detailHref,
   misurazioneField = '',
 }: RangeStatusMeterProps) {
-  const chartData = history.filter(
-    (point): point is { date: string; value: number } => point.value !== null,
+  const sortedHistory = useMemo((): HistoryPoint[] => {
+    return [...history].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    )
+  }, [history])
+
+  const chartDataNumeric = sortedHistory.filter(
+    (point): point is { date: string; value: number } =>
+      point.value !== null && Number.isFinite(point.value),
   )
-  const hasChartData = chartData.length > 0
+  const hasChartData = sortedHistory.length > 0
 
   const pctFromFirstMeasurement = useMemo(() => {
-    if (chartData.length < 2) return null
-    const sortedAsc = [...chartData].sort(
+    if (chartDataNumeric.length < 2) return null
+    const sortedAsc = [...chartDataNumeric].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     )
     const baseline = sortedAsc[0]?.value
@@ -60,7 +70,7 @@ export function RangeStatusMeter({
     const pct = ((Number(currentNum) - baseline) / baseline) * 100
     if (!Number.isFinite(pct)) return null
     return { pct, firstDate: sortedAsc[0]!.date }
-  }, [chartData, value])
+  }, [chartDataNumeric, value])
 
   const formatDate = (raw: string) => {
     const d = new Date(raw)
@@ -134,29 +144,63 @@ export function RangeStatusMeter({
       <div className="mt-2 rounded-md border border-white/10 bg-black/20 p-2 min-[834px]:p-3">
         {hasChartData ? (
           (() => {
+            const ys = chartDataNumeric.map((p) => p.value)
+            const yMin = ys.length > 0 ? Math.min(...ys) : 0
+            const yMax = ys.length > 0 ? Math.max(...ys) : 1
+            const pad = ys.length > 0 ? Math.max(2, (yMax - yMin) * 0.08) : 1
+            const span = yMax - yMin || 1
+            const yNullMarker = ys.length > 0 ? yMin - Math.max(span * 0.12, 1) : 0
+            const chartRows = sortedHistory.map((h) => ({
+              date: h.date,
+              value: h.value,
+              traceY:
+                h.value != null && Number.isFinite(h.value) ? (h.value as number) : yNullMarker,
+            }))
+            const xTicks = chartRows.map((r) => r.date)
             const chart = (
               <ResponsiveContainer width="100%" height={height}>
-                <LineChart data={chartData} margin={{ top: 8, right: 10, left: -18, bottom: 2 }}>
+                <ComposedChart
+                  data={chartRows}
+                  margin={{ top: 8, right: 10, left: -18, bottom: 22 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.08)" />
                   <XAxis
                     dataKey="date"
+                    type="category"
+                    ticks={xTicks}
+                    interval={0}
                     tickFormatter={formatDate}
                     stroke="rgba(255,255,255,.45)"
-                    minTickGap={20}
-                    fontSize={11}
+                    fontSize={10}
+                    angle={-32}
+                    textAnchor="end"
+                    height={46}
                   />
                   <YAxis
                     stroke="rgba(255,255,255,.45)"
                     fontSize={11}
-                    domain={[(dataMin: number) => dataMin - 2, (dataMax: number) => dataMax + 2]}
+                    domain={[Math.min(yNullMarker, yMin) - pad, yMax + pad]}
                     tickFormatter={(raw: number) => `${Math.round(raw)}`}
                   />
                   <Tooltip
                     labelFormatter={(raw: string | number) => formatDate(String(raw))}
-                    formatter={(raw: number | string) => [
-                      formatValue(Number(raw)),
-                      title ?? 'Valore',
-                    ]}
+                    formatter={(
+                      _raw: number | string,
+                      _name: string,
+                      item: { payload?: HistoryPoint & { traceY?: number } },
+                    ) => {
+                      const pl = item?.payload
+                      const original = pl?.value
+                      if (
+                        original !== null &&
+                        original !== undefined &&
+                        typeof original === 'number' &&
+                        Number.isFinite(original)
+                      ) {
+                        return [formatValue(original), title ?? 'Valore']
+                      }
+                      return ['Nessun dato esercizio per questa data', title ?? 'Valore']
+                    }}
                     contentStyle={{
                       backgroundColor: 'rgba(7,7,9,0.95)',
                       border: '1px solid rgba(255,255,255,0.18)',
@@ -164,15 +208,59 @@ export function RangeStatusMeter({
                       color: '#e4e4e7',
                     }}
                   />
+                  <Scatter
+                    dataKey="traceY"
+                    isAnimationActive={false}
+                    legendType="none"
+                    shape={(props: {
+                      cx?: number
+                      cy?: number
+                      payload?: { value?: number | null }
+                    }) => {
+                      const v = props.payload?.value
+                      if (v != null && Number.isFinite(v)) return null
+                      if (props.cx == null || props.cy == null) return null
+                      return (
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={3}
+                          fill="rgba(255,255,255,0.08)"
+                          stroke="rgba(255,255,255,0.35)"
+                          strokeWidth={1}
+                        />
+                      )
+                    }}
+                  />
                   <Line
                     type="monotone"
                     dataKey="value"
+                    connectNulls
                     stroke="rgb(34 211 238 / 0.8)"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: 'rgb(34 211 238 / 0.8)' }}
+                    dot={(props: {
+                      cx?: number
+                      cy?: number
+                      payload?: { value?: number | null }
+                    }) => {
+                      const v = props.payload?.value
+                      if (v == null || !Number.isFinite(v) || props.cx == null || props.cy == null) {
+                        return null
+                      }
+                      return (
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={3}
+                          fill="rgb(34 211 238 / 0.85)"
+                          stroke="rgb(34 211 238 / 0.95)"
+                          strokeWidth={0}
+                        />
+                      )
+                    }}
                     activeDot={{ r: 5, fill: 'rgb(34 211 238 / 0.95)' }}
                   />
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             )
             if (detailHref) {

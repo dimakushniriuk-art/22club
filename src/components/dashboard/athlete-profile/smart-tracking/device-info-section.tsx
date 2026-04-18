@@ -129,7 +129,7 @@ export function DeviceInfoSection({
                 value={dispositivoMarca || ''}
                 maxLength={100}
                 onChange={(e) => {
-                  const sanitized = sanitizeString(e.target.value, 100)
+                  const sanitized = sanitizeString(e.target.value, 100, { trim: false })
                   onDispositivoMarcaChange(sanitized || null)
                 }}
                 placeholder="Es. Apple Watch, Fitbit, ecc."

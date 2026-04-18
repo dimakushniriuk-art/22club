@@ -59,6 +59,11 @@ export function useChatNotifications(_userId?: string) {
           // Only notify if message is for current user
           if (message.receiver_id !== profileId) return
 
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
+          if (!user?.id) return
+
           // Get sender info
           const { data: senderProfile } = await supabase
             .from('profiles')
@@ -71,18 +76,24 @@ export function useChatNotifications(_userId?: string) {
           const senderName = `${senderProfile.nome} ${senderProfile.cognome}`
           const senderRole = senderProfile.role === 'trainer' ? 'Trainer' : 'Staff'
 
-          // Create notification
-          await createNotification(
-            `💬 Nuovo messaggio da ${senderName}`,
-            message.type === 'file'
-              ? `📎 Hai ricevuto un file dal tuo ${senderRole}`
-              : message.message.length > 40
-                ? `${message.message.substring(0, 40)}...`
-                : message.message,
-            'chat',
-            '/home/chat',
-            'Rispondi',
-          )
+          try {
+            await createNotification(
+              `💬 Nuovo messaggio da ${senderName}`,
+              message.type === 'file'
+                ? `📎 Hai ricevuto un file dal tuo ${senderRole}`
+                : message.message.length > 40
+                  ? `${message.message.substring(0, 40)}...`
+                  : message.message,
+              'chat',
+              '/home/chat',
+              'Rispondi',
+              { recipientUserId: user.id },
+            )
+          } catch (err) {
+            logger.error('Chat INSERT→createNotification failed', err, {
+              sender_id: message.sender_id,
+            })
+          }
         },
       )
       .subscribe()
@@ -106,14 +117,21 @@ export function useChatNotifications(_userId?: string) {
           .eq('id', receiverId)
           .maybeSingle()
 
-        if (!receiverProfile) return
+        if (!receiverProfile?.user_id) return
 
-        const receiverName = `${receiverProfile.nome} ${receiverProfile.cognome}`
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('nome, cognome')
+          .eq('id', currentProfileId)
+          .maybeSingle()
+        if (!senderProfile) return
+
+        const senderName = `${senderProfile.nome} ${senderProfile.cognome}`
         const receiverRole = receiverProfile.role === 'athlete' ? 'athlete' : 'trainer'
 
-        // Create notification for receiver
+        // Create notification for receiver (user_id = destinatario auth)
         await createNotification(
-          `💬 Nuovo messaggio da ${receiverName}`,
+          `💬 Nuovo messaggio da ${senderName}`,
           type === 'file'
             ? `📎 Hai ricevuto un file dal tuo ${receiverRole}`
             : message.length > 40
@@ -122,6 +140,7 @@ export function useChatNotifications(_userId?: string) {
           'chat',
           receiverRole === 'athlete' ? '/home/chat' : `/dashboard/atleti/${receiverId}/chat`,
           'Rispondi',
+          { recipientUserId: receiverProfile.user_id },
         )
       } catch (error) {
         logger.error('Error sending chat notification', error, { receiverId })

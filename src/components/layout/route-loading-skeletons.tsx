@@ -13,7 +13,7 @@ export function StaffAthleteSegmentSkeleton() {
       aria-busy="true"
       aria-label="Caricamento"
     >
-      <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+      <div className="mx-auto flex w-full min-w-0 max-w-[min(100%,2160px)] flex-1 flex-col space-y-4 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6 min-h-0">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="flex min-w-0 items-start gap-3">
             <div
@@ -30,7 +30,7 @@ export function StaffAthleteSegmentSkeleton() {
             aria-hidden
           />
         </div>
-        <div className="min-h-[min(40vh,360px)] rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-6 animate-pulse space-y-4">
+        <div className="min-h-[min(40dvh,360px)] rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-6 animate-pulse space-y-4">
           <div className="h-4 w-40 rounded bg-white/[0.08]" />
           <div className="h-32 rounded-lg bg-white/[0.05]" />
           <div className="h-24 rounded-lg bg-white/[0.04]" />
@@ -44,13 +44,13 @@ export function StaffAthleteSegmentSkeleton() {
 export function StaffDashboardSegmentSkeleton() {
   return (
     <div
-      className="relative min-h-dvh flex flex-col bg-transparent"
+      className="relative flex min-h-0 flex-1 flex-col bg-transparent"
       aria-busy="true"
       aria-label="Caricamento"
     >
       <div
         className={[
-          'flex-1 flex flex-col space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[1800px] mx-auto w-full',
+          'mx-auto flex w-full min-w-0 max-w-[min(100%,2160px)] flex-1 flex-col space-y-4 px-3 py-3 sm:space-y-6 sm:px-4 sm:py-4 md:space-y-8 md:px-6 md:py-6',
           'pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))]',
           'pb-[max(1rem,env(safe-area-inset-bottom))]',
         ].join(' ')}
@@ -68,7 +68,7 @@ export function StaffDashboardSegmentSkeleton() {
 
         <div className="flex flex-col gap-4 sm:gap-6 md:gap-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div className="lg:col-span-1 min-h-[min(52vh,440px)] rounded-xl border border-white/10 bg-white/[0.02] p-4 animate-pulse">
+            <div className="lg:col-span-1 min-h-[min(52dvh,440px)] rounded-xl border border-white/10 bg-white/[0.02] p-4 animate-pulse">
               <div className="h-4 w-32 rounded bg-white/[0.08] mb-4" />
               <div className="space-y-2">
                 <div className="h-14 rounded-lg bg-white/[0.05]" />
@@ -76,8 +76,8 @@ export function StaffDashboardSegmentSkeleton() {
                 <div className="h-14 rounded-lg bg-white/[0.05]" />
               </div>
             </div>
-            <div className="min-h-[min(52vh,440px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
-            <div className="min-h-[min(52vh,440px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
+            <div className="min-h-[min(52dvh,440px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
+            <div className="min-h-[min(52dvh,440px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
           </div>
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 min-h-[200px] animate-pulse">
             <div className="h-4 w-24 rounded bg-white/[0.08] mb-4" />
@@ -102,7 +102,7 @@ export function StaffDashboardSegmentSkeleton() {
 export function StaffMarketingSegmentSkeleton() {
   return (
     <div
-      className="min-h-[min(70vh,560px)] space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6"
+      className="min-h-[min(70dvh,560px)] space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6"
       aria-busy="true"
       aria-label="Caricamento"
     >
@@ -120,7 +120,7 @@ export function StaffMarketingSegmentSkeleton() {
         ))}
       </div>
       <div
-        className="min-h-[min(35vh,280px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
+        className="min-h-[min(35dvh,280px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
         aria-hidden
       />
     </div>
@@ -133,7 +133,7 @@ export function StaffMarketingSegmentSkeleton() {
 export function StaffAdminSegmentSkeleton() {
   return (
     <div
-      className="container mx-auto w-full max-w-[1800px] space-y-6 p-6"
+      className="container mx-auto w-full max-w-[min(100%,2160px)] space-y-6 p-6"
       aria-busy="true"
       aria-label="Caricamento"
     >
@@ -151,7 +151,7 @@ export function StaffAdminSegmentSkeleton() {
         ))}
       </div>
       <div
-        className="min-h-[min(45vh,400px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
+        className="min-h-[min(45dvh,400px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
         aria-hidden
       />
     </div>
@@ -172,7 +172,7 @@ export function StaffMarketingDataBlockSkeleton() {
         ))}
       </div>
       <div
-        className="min-h-[min(40vh,320px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
+        className="min-h-[min(40dvh,320px)] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse"
         aria-hidden
       />
     </div>
@@ -203,7 +203,7 @@ export function StaffStaffPageContentSkeleton() {
         ))}
       </div>
       <div
-        className="min-h-[min(40vh,320px)] rounded-xl border-2 border-amber-500/25 bg-white/[0.03] animate-pulse"
+        className="min-h-[min(40dvh,320px)] rounded-xl border-2 border-amber-500/25 bg-white/[0.03] animate-pulse"
         aria-hidden
       />
     </div>
@@ -217,7 +217,7 @@ export function StaffStaffPageContentSkeleton() {
 export function HomeAthletePageContentSkeleton() {
   return (
     <div
-      className="relative flex min-h-[min(45vh,400px)] flex-1 flex-col bg-background w-full min-w-0"
+      className="relative flex min-h-[min(45dvh,400px)] flex-1 flex-col bg-background w-full min-w-0"
       aria-busy="true"
       aria-label="Caricamento"
     >
@@ -284,7 +284,7 @@ export function EmbedSegmentSkeleton() {
       aria-busy="true"
       aria-label="Caricamento"
     >
-      <div className="flex-1 min-h-[50vh] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
+      <div className="flex-1 min-h-[50dvh] rounded-xl border border-white/10 bg-white/[0.02] animate-pulse" />
     </div>
   )
 }
@@ -361,7 +361,7 @@ export function SimpleDocumentSegmentSkeleton() {
 export function LegalDocumentPageSkeleton() {
   return (
     <div
-      className="min-h-screen min-h-dvh bg-background text-text-primary flex flex-col"
+      className="flex min-h-full min-w-0 w-full flex-1 flex-col bg-background text-text-primary"
       aria-busy="true"
       aria-label="Caricamento"
     >
@@ -371,7 +371,7 @@ export function LegalDocumentPageSkeleton() {
         <div className="w-24 shrink-0" aria-hidden />
       </header>
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="mx-auto max-w-3xl rounded-lg border border-white/10 bg-white/[0.02] p-6 sm:p-8 min-h-[min(50vh,420px)] animate-pulse space-y-4">
+        <div className="mx-auto max-w-3xl min-h-[min(50dvh,420px)] animate-pulse space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-6 sm:p-8">
           <div className="h-7 w-3/4 max-w-sm rounded-lg bg-white/[0.08]" />
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-3 w-full rounded bg-white/[0.05]" />
@@ -386,7 +386,7 @@ export function LegalDocumentPageSkeleton() {
 export function RootRedirectSegmentSkeleton() {
   return (
     <div
-      className="min-h-dvh min-h-screen bg-background flex items-center justify-center"
+      className="flex min-h-full w-full flex-1 items-center justify-center bg-background"
       aria-busy="true"
       aria-label="Caricamento"
     >
@@ -402,7 +402,7 @@ export function RootRedirectSegmentSkeleton() {
 export function WelcomeOnboardingSegmentSkeleton() {
   return (
     <div
-      className="min-h-dvh min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background-secondary to-background text-text-primary"
+      className="flex min-h-full w-full flex-1 flex-col items-center justify-center bg-gradient-to-br from-background via-background-secondary to-background text-text-primary"
       aria-busy="true"
       aria-label="Caricamento"
     >

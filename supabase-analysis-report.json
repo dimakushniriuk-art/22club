@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-07T16:18:37.987Z",
+  "timestamp": "2026-04-10T23:02:15.972Z",
   "projectId": "icibqnmtacibgnhaidlz",
   "tables": [
     {
@@ -15,7 +15,7 @@
     {
       "name": "appointments",
       "exists": true,
-      "rowCount": 0
+      "hasRLS": false
     },
     {
       "name": "workout_plans",
@@ -25,7 +25,7 @@
     {
       "name": "workout_logs",
       "exists": true,
-      "rowCount": 0
+      "hasRLS": false
     },
     {
       "name": "exercises",
@@ -158,6 +158,18 @@
   ],
   "issues": [
     {
+      "severity": "warning",
+      "category": "rls",
+      "message": "Tabella \"appointments\" ha RLS attivo ma query fallisce",
+      "fix": "Verificare policies RLS per tabella appointments"
+    },
+    {
+      "severity": "warning",
+      "category": "rls",
+      "message": "Tabella \"workout_logs\" ha RLS attivo ma query fallisce",
+      "fix": "Verificare policies RLS per tabella workout_logs"
+    },
+    {
       "severity": "critical",
       "category": "triggers",
       "message": "Trigger \"handle_new_user\" non esiste sulla tabella \"auth.users\"",
@@ -196,7 +208,7 @@
   ],
   "recommendations": [
     "⚠️  1 problemi critici da risolvere immediatamente",
-    "⚠️  5 avvisi da verificare",
+    "⚠️  7 avvisi da verificare",
     "🔴 PRIORITÀ ALTA: Applicare trigger handle_new_user() per creazione automatica profili",
     "   Eseguire: docs/QUICK_APPLY_TRIGGER.sql nel dashboard Supabase"
   ]

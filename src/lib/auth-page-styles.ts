@@ -4,7 +4,7 @@
  */
 
 export const AUTH_PAGE_WRAPPER_CLASS =
-  'page-login min-h-screen min-w-0 bg-background text-text-primary flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 safe-area-inset'
+  'page-login min-h-full min-w-0 w-full flex-1 bg-background text-text-primary flex items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 safe-area-inset'
 
 export const AUTH_CARD_CLASS =
   'w-full max-w-md min-[834px]:max-w-lg overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-xl'

@@ -91,7 +91,7 @@ export default function ComunicazioniTemplatePage() {
   )
 
   return (
-    <div className="min-h-screen bg-background text-text-primary">
+    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col bg-background text-text-primary">
       <div className="mx-auto max-w-4xl flex flex-col space-y-4 sm:space-y-6 px-4 py-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

@@ -187,11 +187,7 @@ export async function buildTrainerAnalyticsReportPdfBlob(
         autoTable(doc, {
           startY: y,
           head: [['Tipo', '€', '%']],
-          body: report.paymentMix.map((m) => [
-            m.key,
-            m.amount.toFixed(0),
-            `${m.percentage}%`,
-          ]),
+          body: report.paymentMix.map((m) => [m.key, m.amount.toFixed(0), `${m.percentage}%`]),
           ...base,
         })
         y = (docWithAuto.lastAutoTable?.finalY ?? y) + 10
@@ -256,12 +252,14 @@ export async function buildTrainerAnalyticsReportPdfBlob(
       autoTable(doc, {
         startY: y,
         head: [['Atleta', '€', 'Allenamenti', 'Var. peso %']],
-        body: report.athletes.slice(0, 30).map((a) => [
-          a.displayName,
-          a.revenue.toFixed(0),
-          String(a.workoutCount),
-          a.weightChangePct != null ? a.weightChangePct.toFixed(1) : '—',
-        ]),
+        body: report.athletes
+          .slice(0, 30)
+          .map((a) => [
+            a.displayName,
+            a.revenue.toFixed(0),
+            String(a.workoutCount),
+            a.weightChangePct != null ? a.weightChangePct.toFixed(1) : '—',
+          ]),
         ...base,
       })
       y = (docWithAuto.lastAutoTable?.finalY ?? y) + 10

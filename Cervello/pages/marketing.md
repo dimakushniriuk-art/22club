@@ -1,0 +1,18 @@
+- marketing
+	- scan_scope=src/app/api/marketing + src/app/dashboard/marketing
+	- brain_modules=[[marketing_fetch]] [[marketing_mutations]] [[marketing_modal]] [[marketing_context]]
+	- ATOMS
+		- surface_api=NextRouteHandlers ref=[[marketing_fetch]] [[marketing_mutations]]
+		- surface_ui=src/app/dashboard/marketing staff orchestration ref=[[marketing_context]]
+		- data_plane=Supabase_tables_RPC_views marketing_leads marketing_lead_notes marketing_events marketing_campaigns marketing_automations marketing_segments marketing_athletes
+		- rbac_surface=profiles.role admin|marketing + rpc=get_current_user_role su alcune route API
+		- funnel=kpi+status_counts client-side ref=[[marketing_fetch]]
+		- campaigns_read=select marketing_campaigns ref=[[marketing_fetch]]
+		- automations_exec=manual_run ref=[[marketing_mutations]] rules_engine=ref=[[marketing_context]]
+	- COMPRESSED
+		- API+UI staff marketing; index leggero moduli dettaglio
+	- QUERIES
+		- use="rg path=src/app/api/marketing pattern=marketing_"
+		- use="rg path=src/app/dashboard/marketing pattern=fetch\\('/api/marketing|useSupabaseClient"
+	- CONTEXT
+		- next_incremental_scan=src/lib/marketing segment_rules condivisi API+UI

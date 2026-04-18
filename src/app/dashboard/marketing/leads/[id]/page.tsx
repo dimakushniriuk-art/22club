@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
+import { invalidateClientiQueries } from '@/lib/react-query/post-mutation-cache'
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'Nuovo',
@@ -56,6 +58,7 @@ function formatDate(s: string | null): string {
 }
 
 export default function LeadDetailPage() {
+  const queryClient = useQueryClient()
   const router = useRouter()
   const params = useParams()
   const { role, loading: authLoading } = useAuth()
@@ -149,6 +152,7 @@ export default function LeadDetailPage() {
         return
       }
       if (json.data) setLead(json.data as LeadRow)
+      void invalidateClientiQueries(queryClient)
     } catch {
       setConvertError('Errore di rete')
     } finally {
@@ -194,6 +198,7 @@ export default function LeadDetailPage() {
           : 'Atleta trial creato.',
         variant: 'success',
       })
+      void invalidateClientiQueries(queryClient)
     } catch {
       setConvertError('Errore di rete')
       toast.addToast?.({ title: 'Errore', message: 'Errore di rete', variant: 'error' })

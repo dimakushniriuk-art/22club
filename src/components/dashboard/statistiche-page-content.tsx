@@ -77,7 +77,7 @@ export function StatistichePageContent({
   const showStatsAuthSkeleton = !authReady
 
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
       <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full relative">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -235,7 +235,9 @@ export function StatistichePageContent({
               </p>
             )}
             {trainerPanelHint === 'no_trainers' && (
-              <p className="text-text-secondary text-sm">Nessun trainer in questa organizzazione.</p>
+              <p className="text-text-secondary text-sm">
+                Nessun trainer in questa organizzazione.
+              </p>
             )}
             {trainerPanelHint === 'none_selected' && (
               <p className="text-text-secondary text-sm">Seleziona almeno un trainer.</p>
@@ -328,7 +330,9 @@ export function StatistichePageContent({
                     </div>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center p-4 rounded-lg border border-blue-500/30 bg-gradient-to-r from-blue-500/10 via-transparent to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20 transition-all duration-200">
-                        <span className="text-text-secondary font-medium">Allenamenti completati</span>
+                        <span className="text-text-secondary font-medium">
+                          Allenamenti completati
+                        </span>
                         <span className="font-bold text-white text-lg">
                           {legacyData.summary.total_workouts}
                         </span>

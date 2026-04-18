@@ -91,10 +91,8 @@ export function useAthleteSmartTracking(athleteId: string | null) {
       }
     },
     enabled: !!athleteId,
-    staleTime: 2 * 60 * 1000, // 2 minuti (dati più dinamici - tracking wearable)
-    gcTime: 15 * 60 * 1000, // 15 minuti (cacheTime in React Query v4) - cache più breve per dati dinamici
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }
@@ -160,10 +158,8 @@ export function useAthleteSmartTrackingByDate(athleteId: string | null, date: st
       }
     },
     enabled: !!athleteId && !!date,
-    staleTime: 5 * 60 * 1000, // 5 minuti (dati storici per data specifica)
-    gcTime: 15 * 60 * 1000, // 15 minuti (cacheTime in React Query v4) - cache più breve per dati dinamici
-    refetchOnWindowFocus: false, // Non refetch automatico quando si torna alla tab
-    refetchOnMount: false, // Non refetch se dati sono ancora freschi (staleTime)
+    staleTime: 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
 }

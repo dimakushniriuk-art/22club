@@ -74,7 +74,7 @@ export const WithCustomFallback: Story = {
       const [shouldError, setShouldError] = useState(false)
 
       const CustomFallback = ({ error, resetError }: { error?: Error; resetError: () => void }) => (
-        <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="flex min-h-dvh items-center justify-center bg-red-50">
           <div className="text-center p-8">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Errore Personalizzato</h2>
             <p className="text-red-500 mb-4">Si è verificato un errore: {error?.message}</p>

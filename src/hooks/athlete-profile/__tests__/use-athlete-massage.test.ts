@@ -179,7 +179,7 @@ describe('useAthleteMassage', () => {
       const mockUpdatedData = {
         id: 'massage-id',
         athlete_id: 'test-athlete-id',
-        preferenze_tipo_massaggio: ['sportivo'] as const,
+        preferenze_tipo_massaggio: ['sportivo'],
         zone_problematiche: ['schiena', 'spalle', 'gambe'],
         intensita_preferita: 'intensa' as const,
         allergie_prodotti: [],
@@ -189,93 +189,33 @@ describe('useAthleteMassage', () => {
         updated_at: '2025-01-02T00:00:00Z',
       }
 
-      // Mock per query profiles (verifica esistenza profilo)
-      const mockSelectProfiles = vi.fn()
-      const mockEqProfiles = vi.fn()
-      const mockMaybeSingleProfiles = vi.fn()
-
-      mockSelectProfiles.mockReturnValue({
-        eq: mockEqProfiles,
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: mockUpdatedData }),
       })
+      vi.stubGlobal('fetch', fetchMock)
 
-      mockEqProfiles.mockReturnValue({
-        maybeSingle: mockMaybeSingleProfiles,
-      })
+      try {
+        const { result } = renderHook(() => useUpdateAthleteMassage('test-athlete-id'), {
+          wrapper: createWrapper(),
+        })
 
-      mockMaybeSingleProfiles.mockResolvedValue({
-        data: { id: 'profile-id', user_id: 'test-athlete-id' },
-        error: null,
-      })
+        result.current.mutate(updateData)
 
-      // Setup chain per check esistenza record massage (seconda chiamata)
-      const mockSelectForCheck = vi.fn()
-      const mockEqForCheck = vi.fn()
-      const mockMaybeSingleForCheck = vi.fn()
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true)
+        })
 
-      mockSelectForCheck.mockReturnValue({
-        eq: mockEqForCheck,
-      })
-
-      mockEqForCheck.mockReturnValue({
-        maybeSingle: mockMaybeSingleForCheck,
-      })
-
-      mockMaybeSingleForCheck.mockResolvedValue({
-        data: { id: 'massage-id' },
-        error: null,
-      })
-
-      // Setup chain per update (terza chiamata)
-      const mockUpdateEq = vi.fn()
-      const mockUpdateSelect = vi.fn()
-      const mockUpdateSingle = vi.fn()
-
-      mockUpdateEq.mockReturnValue({
-        select: mockUpdateSelect,
-      })
-
-      mockUpdateSelect.mockReturnValue({
-        single: mockUpdateSingle,
-      })
-
-      mockUpdateSingle.mockResolvedValue({
-        data: mockUpdatedData,
-        error: null,
-      })
-
-      // Configura from() per ritornare chain corretta
-      mockSupabase.from
-        .mockReturnValueOnce({
-          select: mockSelectProfiles,
-          update: mockUpdate,
-          insert: mockInsert,
-        }) // Prima chiamata: profiles
-        .mockReturnValueOnce({
-          select: mockSelectForCheck,
-          update: vi.fn().mockReturnValue({
-            eq: mockUpdateEq,
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/athlete-massage',
+          expect.objectContaining({
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
           }),
-          insert: mockInsert,
-        }) // Seconda chiamata: check esistenza massage
-        .mockReturnValueOnce({
-          select: mockSelectForCheck,
-          update: vi.fn().mockReturnValue({
-            eq: mockUpdateEq,
-          }),
-          insert: mockInsert,
-        }) // Terza chiamata: update
-
-      const { result } = renderHook(() => useUpdateAthleteMassage('test-athlete-id'), {
-        wrapper: createWrapper(),
-      })
-
-      result.current.mutate(updateData)
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true)
-      })
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('athlete_massage_data')
+        )
+      } finally {
+        vi.unstubAllGlobals()
+      }
     })
   })
 })

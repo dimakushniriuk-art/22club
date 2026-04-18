@@ -46,6 +46,8 @@ export function SchedaAllenamentoContent({
   const [planDescription, setPlanDescription] = useState<string | null>(null)
   const [staffName, setStaffName] = useState<string | null>(null)
   const [days, setDays] = useState<WorkoutDayRow[]>([])
+  /** Completamenti registrati per ogni `workout_day_id` (stato completato). */
+  const [dayCompletedById, setDayCompletedById] = useState<Record<string, number>>({})
 
   useEffect(() => {
     let cancelled = false
@@ -66,6 +68,7 @@ export function SchedaAllenamentoContent({
       try {
         setLoading(true)
         setError(null)
+        setDayCompletedById({})
 
         const { data: plan, error: planErr } = await supabase
           .from('workout_plans')
@@ -121,7 +124,37 @@ export function SchedaAllenamentoContent({
           throw daysErr
         }
 
-        setDays((daysData ?? []) as WorkoutDayRow[])
+        const dayRows = (daysData ?? []) as WorkoutDayRow[]
+        const nextDayCounts: Record<string, number> = {}
+        if (dayRows.length > 0) {
+          const perDayResults = await Promise.all(
+            dayRows.map((day) =>
+              supabase
+                .from('workout_logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('atleta_id', athleteProfileId)
+                .eq('scheda_id', planId)
+                .eq('workout_day_id', day.id)
+                .in('stato', ['completato', 'completed']),
+            ),
+          )
+          if (!cancelled) {
+            for (let i = 0; i < dayRows.length; i++) {
+              const r = perDayResults[i]
+              const id = dayRows[i].id
+              if (r.error) {
+                logger.warn('Errore conteggio workout_logs per giorno', r.error, { dayId: id })
+                nextDayCounts[id] = 0
+              } else {
+                nextDayCounts[id] = r.count ?? 0
+              }
+            }
+          }
+        }
+        if (!cancelled) {
+          setDayCompletedById(nextDayCounts)
+          setDays(dayRows)
+        }
       } catch (e) {
         if (!cancelled) {
           const msg = e instanceof Error ? e.message : 'Errore sconosciuto'
@@ -220,6 +253,7 @@ export function SchedaAllenamentoContent({
                     day.day_name?.trim() ||
                     (day.day_number != null ? `Giorno ${day.day_number}` : 'Giorno')) ??
                   'Giorno'
+                const dayDone = dayCompletedById[day.id]
                 const href = workoutsPane
                   ? workoutsPane.hrefFor({ kind: 'giorno', workoutPlanId: planId, dayId: day.id })
                   : `${pathBase}/${encodeURIComponent(planId)}/giorno/${encodeURIComponent(day.id)}`
@@ -244,13 +278,30 @@ export function SchedaAllenamentoContent({
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
                           <Calendar className="h-5 w-5 text-cyan-400" />
                         </div>
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 space-y-0.5">
                           <h3 className="truncate text-sm font-semibold text-text-primary sm:text-base">
                             {label}
                           </h3>
                           {day.day_number != null ? (
                             <p className="text-[11px] text-text-tertiary sm:text-xs">
                               Giorno {day.day_number}
+                            </p>
+                          ) : null}
+                          {typeof dayDone === 'number' ? (
+                            <p className="text-[11px] text-text-tertiary sm:text-xs">
+                              {dayDone === 0 ? (
+                                'Nessun completamento registrato'
+                              ) : dayDone === 1 ? (
+                                <>
+                                  Completata <span className="tabular-nums text-text-secondary">1</span>{' '}
+                                  volta
+                                </>
+                              ) : (
+                                <>
+                                  Completata{' '}
+                                  <span className="tabular-nums text-text-secondary">{dayDone}</span> volte
+                                </>
+                              )}
                             </p>
                           ) : null}
                         </div>
