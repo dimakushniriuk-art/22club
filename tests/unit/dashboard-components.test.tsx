@@ -156,14 +156,20 @@ describe('Dashboard Components', () => {
         </ToastProvider>,
       )
 
-      // Il div con flex min-h-screen è il container principale, non il div più vicino a content
-      // Cerchiamo il div che contiene main e ha le classi flex min-h-screen
       const content = screen.getByTestId('content')
       const main = content.closest('main')
       const layout = main?.parentElement
 
       expect(layout).toBeInTheDocument()
-      expect(layout).toHaveClass('flex', 'min-h-screen')
+      expect(layout).toHaveClass(
+        'flex',
+        'w-full',
+        'min-w-0',
+        'flex-1',
+        'min-h-0',
+        'flex-col',
+        'md:flex-row',
+      )
     })
   })
 })
