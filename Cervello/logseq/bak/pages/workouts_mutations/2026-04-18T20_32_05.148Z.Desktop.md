@@ -1,0 +1,47 @@
+- workouts_mutations
+	- ATOMS
+		- WKT.mut.file=src/hooks/workouts/use-workout-mutations.ts
+		- WKT.mut.logger=hooks:workouts:use-workout-mutations
+		- WKT.mut.ins=from(workout_plans).insert(workoutData).select().single()→data|throw
+		- WKT.mut.upsert=from(workout_sets).upsert(setData as WorkoutSetInsert).select().single() keyed workoutDayExerciseId param log only
+		- WKT.mut.complete=from(workout_sets).update({completed_at:nowISO}).eq(workout_day_exercise_id,id).is(completed_at,null)→throw on error else true
+		- WKT.mut.out=createWorkout|updateWorkoutSet|completeExercise
+		- WKT.mut.no.cache.inv=in questo file nessuna invalidate React Query / refetch orchestration
+		- WKT.wp.mut.file=src/hooks/workout-plans/use-workout-plans.ts|handlers=handleCreateWorkout|handleUpdateWorkout|handleDuplicateWorkout|handleDeleteWorkout
+		- WKT.wp.mut.create=validate session user|isWorkoutPlanRealAthleteId athlete se !draft|objective se !draft|insert workout_plans trainer_id created_by_profile_id is_active=!isDraft is_draft|note comment atomicità chunk separati scheda parziale possibile
+		- WKT.wp.mut.create.chain=chunk insert workout_days count match|chunk insert workout_day_exercises count match|chunk insert workout_sets|prepend local Workout assignCreationOrderNumbers ref=[[workouts_fetch]] WKT.wp.list.preview
+		- WKT.wp.mut.upd=update workout_plans row|delete wde in dayIds chunks|delete workout_days eq plan|reinsert days+exercises+sets come create|re-read plan * single|map replace in list state
+		- WKT.wp.mut.dup=guard source created_by_profile_id===current|insert new draft athlete null name suffix ` (copia)` maxLen200|loop insert giorni map old→new ids|remap circuit_block_id crypto.randomUUID per chiave giorno+block|copy wde+sets batch insert
+		- WKT.wp.mut.del=delete workout_plans eq id|local filter list assignCreationOrderNumbers
+		- WKT.wp.mut.helpers=getExercisesWithCircuitBlock|buildWorkoutDayExerciseInsertPayload|buildSetsRowsForExercise|duplicateWorkoutPlanName (stesso file)
+		- WKT.al.mut.file=src/hooks/use-allenamenti.ts|deleteMutation=workout_logs delete eq id|updateMutation=partial Allenamento→TablesUpdate workout_logs updated_at sempre + campi whitelisted
+		- WKT.al.mut.inv=onSuccess invalidateQueries queryKeys.allenamenti.all|realtime stesso prefix ref=[[workouts_fetch]] WKT.al.rt
+		- WKT.assign.mut.file=src/components/dashboard/assign-workout-modal.tsx|insert workout_plans singola riga metadati+date|as any|no workout_days chain ref=[[workouts_modal]] WKT.wz.assign.submit
+		- WKT.assign.mut.inv=invalidateAllenamentiQueries queryClient post-insert ref=src/lib/react-query/post-mutation-cache.ts
+	- COMPRESSED
+		- insert piano|upsert set log esercizio|batch complete sets null→timestamp per workout_day_exercise_id
+		- wp: wizard save→piano+giorni+WDE+set multi-batch senza transazione unica|update distruttivo giorni|duplicate profondo|delete piano
+		- al: delete/update log allenamento + invalidate lista RQ
+		- assign-modal: insert piano vuoto struttura vs wizard create chain ref=WKT.wp.mut.create
+	- QUERIES
+		- use=src/hooks/workouts/use-workout-mutations.ts
+		- use=src/lib/supabase/client.ts
+		- use=src/types/supabase.ts#TablesInsert|TablesUpdate
+		- use=src/hooks/workout-plans/use-workout-plans.ts#handleCreateWorkout|handleUpdateWorkout|handleDuplicateWorkout|handleDeleteWorkout
+		- use=src/hooks/use-allenamenti.ts#deleteMutation|updateMutation
+		- use=src/lib/error-handler.ts#handleApiError (onError allenamenti)
+		- use=src/lib/query-keys.ts#allenamenti
+		- use=src/components/dashboard/assign-workout-modal.tsx
+		- use=src/lib/react-query/post-mutation-cache.ts#invalidateAllenamentiQueries
+	- CONTEXT
+		- nome:mutazioni-minimali
+		- issues=scope hook solo CRUD tre operazioni; coerenza liste/stats/sessione dipende da caller refetch ref=[[workouts_fetch]]
+		- nome:wp-mut-vs-wkt-mut
+		- issues=useWorkoutMutations resta insert piano singolo semplice; useWorkoutPlans espande create/update strutturati wizard vs hook atomico
+		- use=[[workouts_modal]] WKT.wz.no.db
+		- nome:supabase-any-cast
+		- issues=insert/update workout_plans|workout_days|workout_day_exercises|workout_sets usa cast `as any` per batch typings
+		- use=src/hooks/workout-plans/use-workout-plans.ts
+		- nome:assign-insert-vs-wp-create
+		- issues=AssignWorkoutModal non crea giorni/WDE/set; useWorkoutPlans handleCreate costruisce albero completo ref=WKT.wp.mut.create.chain
+		- use=WKT.assign.mut.file|WKT.wp.mut.create

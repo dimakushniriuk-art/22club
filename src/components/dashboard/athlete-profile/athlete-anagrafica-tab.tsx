@@ -178,7 +178,10 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 id="nome"
                 value={formData.nome || ''}
                 onChange={(e) =>
-                  setFormData({ ...formData, nome: sanitizeString(e.target.value, 100, { trim: false }) || '' })
+                  setFormData({
+                    ...formData,
+                    nome: sanitizeString(e.target.value, 100, { trim: false }) || '',
+                  })
                 }
                 placeholder="Nome"
                 maxLength={100}
@@ -324,7 +327,8 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    codice_fiscale: sanitizeString(e.target.value.toUpperCase(), 16, { trim: false }) || null,
+                    codice_fiscale:
+                      sanitizeString(e.target.value.toUpperCase(), 16, { trim: false }) || null,
                   })
                 }
                 placeholder="ABCDEF12G34H567I"
@@ -559,7 +563,8 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    gruppo_sanguigno: sanitizeString(e.target.value.toUpperCase(), 5, { trim: false }) || null,
+                    gruppo_sanguigno:
+                      sanitizeString(e.target.value.toUpperCase(), 5, { trim: false }) || null,
                   })
                 }
                 placeholder="A+"
@@ -587,7 +592,8 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    contatto_emergenza_nome: sanitizeString(e.target.value, 200, { trim: false }) || null,
+                    contatto_emergenza_nome:
+                      sanitizeString(e.target.value, 200, { trim: false }) || null,
                   })
                 }
                 placeholder="Nome contatto"
@@ -638,7 +644,8 @@ export function AthleteAnagraficaTab({ athleteId }: AthleteAnagraficaTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    contatto_emergenza_relazione: sanitizeString(e.target.value, 50, { trim: false }) || null,
+                    contatto_emergenza_relazione:
+                      sanitizeString(e.target.value, 50, { trim: false }) || null,
                   })
                 }
                 placeholder="Familiare, amico, ecc."

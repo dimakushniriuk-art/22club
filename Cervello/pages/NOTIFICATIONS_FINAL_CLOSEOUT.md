@@ -1,56 +1,56 @@
 - NOTIFICATIONS_FINAL_CLOSEOUT
-	- completeness
-		- fetch=82%
-		- mutations=85%
-		- context=88%
-	- stable_modules
-		- module=[[notifications]]
-			- status=stable
-			- reason=indice leggero con ref incrociati inbox|realtime|chat|push
-		- module=[[notifications_fetch]]
-			- status=almost_stable
-			- reason=copre inbox PT|route /dashboard/notifiche|NOT.rt|chat INSERT|scheduler read|manca consumer minore opzionale
-		- module=[[notifications_mutations]]
-			- status=stable
-			- reason=hook CRUD|push API|scheduler|reg|chat callgraph documentati
-		- module=[[notifications_context]]
-			- status=almost_stable
-			- reason=rischi e drift densi|issues string unica→leggibilità limite|contenuto allineato a micro-update recenti
-	- residual_gaps
-		- gap=chat→notifications user_id+createNotification senza receiver user_id
-			- status=resolved 2026-04-18
-			- likely_path=src/hooks/use-chat-notifications.ts|src/hooks/use-notifications.ts#createNotification
-			- target_module=[[notifications_context]] NOT.ctx.create_recipient_opt|[[notifications_mutations]] NOT.hook.create
-		- gap=athlete-registration push stub vs lib push
-			- severity=high
-			- likely_path=src/lib/notifications/athlete-registration.ts
-			- target_module=[[notifications_context]] NOT.ctx.split_brain
-		- gap=/dashboard/notifiche nav senza page+header bell
-			- status=resolved 2026-04-18
-			- path=src/app/dashboard/notifiche/page.tsx
-			- target_module=[[notifications_fetch]] NOT.route.dashboard_notifiche|[[notifications_context]] NOT.ctx.route_nav_inbox_staff
-		- gap=inbox senza realtime tab notifications
-			- severity=medium
-			- likely_path=src/hooks/useRealtimeChannel.ts|src/hooks/use-notifications.ts
-			- target_module=[[notifications_fetch]] NOT.hook.realtime_consumer_stub|[[notifications_context]] NOT.ctx.rt_notifications_hook_dead
-		- gap=RPC scheduler black box DB
-			- severity=low
-			- likely_path=supabase/migrations o SQL esterno
-			- target_module=[[notifications_context]] NOT.ctx.rpc_black_box
-		- gap=notifyMessageSent titolo destinatario vs mittente
-			- status=resolved 2026-04-18
-			- likely_path=src/hooks/use-chat-notifications.ts#notifyMessageSent
-			- target_module=[[notifications_context]] NOT.ctx.chat_title_semantic_bug
-	- cleanup_opportunities
-		- file=[[notifications_context]]
-			- type=ordering
-			- action=leave|opzionale split issues= in bullet multipli in pass futuro
-		- file=[[notifications_fetch]]
-			- type=too_broad
-			- action=keep|ATOMS misti dominio+infra accettabile per baseline
-		- file=[[notifications_mutations]] vs [[notifications_fetch]]
-			- type=duplication
-			- action=keep|COMPRESSED già cross-ref context
-	- baseline_decision
-		- status=ready_as_template
-		- best_next_action=micro-scan residui (RLS insert notifications cross-user chat|realtime inbox|athlete-registration push stub); chat recipient+title ok 2026-04-18
+  - completeness
+    - fetch=82%
+    - mutations=85%
+    - context=88%
+  - stable_modules
+    - module=[[notifications]]
+      - status=stable
+      - reason=indice leggero con ref incrociati inbox|realtime|chat|push
+    - module=[[notifications_fetch]]
+      - status=almost_stable
+      - reason=copre inbox PT|route /dashboard/notifiche|NOT.rt|chat INSERT|scheduler read|manca consumer minore opzionale
+    - module=[[notifications_mutations]]
+      - status=stable
+      - reason=hook CRUD|push API|scheduler|reg|chat callgraph documentati
+    - module=[[notifications_context]]
+      - status=almost_stable
+      - reason=rischi e drift densi|issues string unica→leggibilità limite|contenuto allineato a micro-update recenti
+  - residual_gaps
+    - gap=chat→notifications user_id+createNotification senza receiver user_id
+      - status=resolved 2026-04-18
+      - likely_path=src/hooks/use-chat-notifications.ts|src/hooks/use-notifications.ts#createNotification
+      - target_module=[[notifications_context]] NOT.ctx.create_recipient_opt|[[notifications_mutations]] NOT.hook.create
+    - gap=athlete-registration push stub vs lib push
+      - severity=high
+      - likely_path=src/lib/notifications/athlete-registration.ts
+      - target_module=[[notifications_context]] NOT.ctx.split_brain
+    - gap=/dashboard/notifiche nav senza page+header bell
+      - status=resolved 2026-04-18
+      - path=src/app/dashboard/notifiche/page.tsx
+      - target_module=[[notifications_fetch]] NOT.route.dashboard_notifiche|[[notifications_context]] NOT.ctx.route_nav_inbox_staff
+    - gap=inbox senza realtime tab notifications
+      - severity=medium
+      - likely_path=src/hooks/useRealtimeChannel.ts|src/hooks/use-notifications.ts
+      - target_module=[[notifications_fetch]] NOT.hook.realtime_consumer_stub|[[notifications_context]] NOT.ctx.rt_notifications_hook_dead
+    - gap=RPC scheduler black box DB
+      - severity=low
+      - likely_path=supabase/migrations o SQL esterno
+      - target_module=[[notifications_context]] NOT.ctx.rpc_black_box
+    - gap=notifyMessageSent titolo destinatario vs mittente
+      - status=resolved 2026-04-18
+      - likely_path=src/hooks/use-chat-notifications.ts#notifyMessageSent
+      - target_module=[[notifications_context]] NOT.ctx.chat_title_semantic_bug
+  - cleanup_opportunities
+    - file=[[notifications_context]]
+      - type=ordering
+      - action=leave|opzionale split issues= in bullet multipli in pass futuro
+    - file=[[notifications_fetch]]
+      - type=too_broad
+      - action=keep|ATOMS misti dominio+infra accettabile per baseline
+    - file=[[notifications_mutations]] vs [[notifications_fetch]]
+      - type=duplication
+      - action=keep|COMPRESSED già cross-ref context
+  - baseline_decision
+    - status=ready_as_template
+    - best_next_action=micro-scan residui (RLS insert notifications cross-user chat|realtime inbox|athlete-registration push stub); chat recipient+title ok 2026-04-18

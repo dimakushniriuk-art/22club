@@ -85,7 +85,8 @@ function StoricoBody() {
                 Storico allenamenti
               </CardTitle>
               <p className="text-text-tertiary text-xs max-w-[72ch]">
-                Dal più recente. Valori da serie su workout_sets collegate al log; massimo per giorno.
+                Dal più recente. Valori da serie su workout_sets collegate al log; massimo per
+                giorno.
               </p>
             </div>
             <Button

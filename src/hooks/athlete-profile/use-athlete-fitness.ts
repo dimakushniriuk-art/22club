@@ -111,9 +111,10 @@ export function useUpdateAthleteFitness(athleteId: string | null) {
           }),
         })
 
-        const payload = (await res.json().catch(() => null)) as
-          | { data?: unknown; error?: string }
-          | null
+        const payload = (await res.json().catch(() => null)) as {
+          data?: unknown
+          error?: string
+        } | null
 
         if (!res.ok) {
           const msg =

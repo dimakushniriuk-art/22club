@@ -144,8 +144,7 @@ export function useNotifications({ userId }: UseNotificationsProps = {}) {
       options?: { recipientUserId?: string | null },
     ) => {
       const raw = options?.recipientUserId
-      const recipient =
-        typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null
+      const recipient = typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null
       const targetUserId = recipient ?? userId ?? null
       if (!targetUserId) {
         setError('User ID is required to create notification')

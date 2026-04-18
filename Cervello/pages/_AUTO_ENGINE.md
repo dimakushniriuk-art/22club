@@ -1,21 +1,21 @@
 - AUTO_ENGINE
-	- input
-		- file or folder
-	- process
-		- use PROJECT_INDEX
-		- detect domain from path
-		- detect module from logic
-		- extract critical logic
-		- map to brain structure
-	- output
-		- write to /Cervello/pages/[domain]_[module].md
-		- update or append
-		- avoid duplicates
-	- rules
-		- no full project scan
-		- no long prose
-		- preserve structure
-		- split by module
-		- use refs when needed
-	- command
-		- Use PROJECT_INDEX and process this file into the correct brain module.
+  - input
+    - file or folder
+  - process
+    - use PROJECT_INDEX
+    - detect domain from path
+    - detect module from logic
+    - extract critical logic
+    - map to brain structure
+  - output
+    - write to /Cervello/pages/[domain]\_[module].md
+    - update or append
+    - avoid duplicates
+  - rules
+    - no full project scan
+    - no long prose
+    - preserve structure
+    - split by module
+    - use refs when needed
+  - command
+    - Use PROJECT_INDEX and process this file into the correct brain module.

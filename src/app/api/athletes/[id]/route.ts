@@ -324,9 +324,18 @@ export async function DELETE(
         await safeDelete('athlete_fitness_data', { column: 'athlete_id', value: athleteAuthId })
         await safeDelete('athlete_nutrition_data', { column: 'athlete_id', value: athleteAuthId })
         await safeDelete('athlete_massage_data', { column: 'athlete_id', value: athleteAuthId })
-        await safeDelete('athlete_motivational_data', { column: 'athlete_id', value: athleteAuthId })
-        await safeDelete('athlete_administrative_data', { column: 'athlete_id', value: athleteAuthId })
-        await safeDelete('athlete_smart_tracking_data', { column: 'athlete_id', value: athleteAuthId })
+        await safeDelete('athlete_motivational_data', {
+          column: 'athlete_id',
+          value: athleteAuthId,
+        })
+        await safeDelete('athlete_administrative_data', {
+          column: 'athlete_id',
+          value: athleteAuthId,
+        })
+        await safeDelete('athlete_smart_tracking_data', {
+          column: 'athlete_id',
+          value: athleteAuthId,
+        })
         await safeDelete('athlete_ai_data', { column: 'athlete_id', value: athleteAuthId })
       }
 

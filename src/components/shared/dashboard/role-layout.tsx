@@ -13,10 +13,7 @@ type Props = {
 export const RoleLayout: React.FC<Props> = ({ role, children }) => {
   return (
     <div
-      className={cn(
-        'w-full min-w-0',
-        role === 'staff' && 'flex h-full min-h-0 flex-1 flex-col',
-      )}
+      className={cn('w-full min-w-0', role === 'staff' && 'flex h-full min-h-0 flex-1 flex-col')}
     >
       <div
         className={cn(

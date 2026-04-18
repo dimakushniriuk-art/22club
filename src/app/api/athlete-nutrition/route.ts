@@ -64,7 +64,11 @@ export async function PATCH(request: NextRequest) {
       return prep.response
     }
 
-    return await upsertNutritionForAthleteUserId(prep.athleteAuthId, validatedUpdates.data, prep.writeDb)
+    return await upsertNutritionForAthleteUserId(
+      prep.athleteAuthId,
+      validatedUpdates.data,
+      prep.writeDb,
+    )
   } catch (error) {
     logger.error('Errore PATCH athlete-nutrition', error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
@@ -93,7 +97,8 @@ async function upsertNutritionForAthleteUserId(
   if (updates.alimenti_evitati !== undefined) updateData.alimenti_evitati = updates.alimenti_evitati
   if (updates.preferenze_orari_pasti !== undefined)
     updateData.preferenze_orari_pasti = updates.preferenze_orari_pasti
-  if (updates.note_nutrizionali !== undefined) updateData.note_nutrizionali = updates.note_nutrizionali
+  if (updates.note_nutrizionali !== undefined)
+    updateData.note_nutrizionali = updates.note_nutrizionali
 
   const { data: existing, error: existingErr } = await db
     .from('athlete_nutrition_data')

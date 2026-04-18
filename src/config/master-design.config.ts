@@ -470,8 +470,7 @@ export const masterLayout = {
   // 🔐 AUTH LAYOUT
   // =====================================================
   auth: {
-    container:
-      'min-h-dvh bg-black flex items-center justify-center p-4 relative overflow-hidden',
+    container: 'min-h-dvh bg-black flex items-center justify-center p-4 relative overflow-hidden',
     card: 'w-full max-w-md bg-slate-900/95 border-slate-700 shadow-2xl',
     content: 'p-8',
     grid: 'grid grid-cols-2 gap-4',

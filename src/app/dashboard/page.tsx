@@ -142,7 +142,9 @@ export default function DashboardPage() {
                     </DashboardColumnEmpty>
                   ) : initialEvents.length === 0 ? (
                     <DashboardColumnEmpty>
-                      <p className="text-text-primary/90">Nessun appuntamento in agenda per oggi.</p>
+                      <p className="text-text-primary/90">
+                        Nessun appuntamento in agenda per oggi.
+                      </p>
                       <Button variant="primary" size="sm" asChild>
                         <Link href="/dashboard/calendario" prefetch>
                           Apri calendario

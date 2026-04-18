@@ -1,0 +1,104 @@
+- DOMAIN_FREEZE_POLICY
+	- frozen_domains
+		- appointments
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- staff invalidate flow changes
+				- open booking athlete RLS changes
+				- recurrence insert cap changes
+				- calendar UI orchestration changes
+		- workouts
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- workout wizard flow changes
+				- assign modal changes
+				- workout transformers changes
+				- pane/shell context changes
+				- workout-plans API contract changes
+		- athletes
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- athlete profile route binding changes
+				- progress photo id binding changes
+				- progress write flow changes
+				- use-progress-data contract changes
+				- athlete modal/form changes
+		- payments
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- coached session debit flow changes
+				- payment reversal / ledger flow changes
+				- payment modal/create/edit changes
+				- payment stats/filter contract changes
+				- credits usage from appointments/calendar changes
+		- communications
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- communications API send/list/recipients changes
+				- communications modal/template preview changes
+				- communications tracking pixel handler changes
+				- communications role gate / check-stuck flow changes
+				- communications delivery/catalog split changes
+		- chat
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- chat realtime legacy/optimized changes
+				- chat route empty-state parity changes
+				- chat message send/delete/read flow changes
+				- chat profile identity binding changes
+				- chat/storage policy changes
+		- analytics
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- analytics engine/query changes
+				- trainer/admin statistics route changes
+				- analytics export contract changes
+				- trend/growth ordering changes
+				- progress analytics id binding changes
+		- auth_system
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- middleware auth/redirect changes
+				- provider session/state changes
+				- auth context API contract changes
+				- profile resolution chain changes
+				- createAdminClient usage changes
+		- notifications
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- inbox/read-state flow changes
+				- push subscribe/unsubscribe/vapid changes
+				- chat→notifications bridge changes
+				- dashboard/header notifications routing changes
+				- realtime notifications consumer changes
+		- marketing
+			- status=frozen
+			- update_mode=micro-scan only
+			- trigger_examples
+				- leads/convert flow changes
+				- campaigns/segments/automations logic changes
+				- funnel analytics or UTM attribution changes
+				- marketing API contract changes
+				- segment rules engine changes
+	- frozen_domain_rules
+		- do not rescan full domain
+		- update only touched module
+		- prefer delta atoms over rewrites
+		- keep index lightweight
+		- preserve existing references
+	- template_value
+		- appointments=baseline template for scheduling domain
+		- workouts=baseline template for plan/session domain
+	- next_domain_selection_rule
+		- choose domain by business centrality
+		- use pre-scan first
+		- do not create modules before evidence in code

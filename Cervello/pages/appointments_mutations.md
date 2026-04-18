@@ -1,48 +1,48 @@
 - appointments_mutations
-	- ATOMS
-		- APT.ins=supabase.from(appointments).insert([row]).select()→data[0]
-		- APT.upd=supabase.from(appointments).update(updates).eq('id',id).select()→data[0]
-		- APT.cnl=supabase.from(appointments).update({cancelled_at:new Date().toISOString()}).eq('id',id).select()→soft cancel
-		- APT.del=supabase.from(appointments).delete().eq('id',id)
-		- APT.inv=invalidateAppointmentsQueries(queryClient)→invalidateQueries queryKey queryKeys.appointments.all
-		- APT.hook.mut.onSuccess=APT.inv (create|update|cancel|delete)
-		- APT.hook.mut.onError=log structured appointmentId o payload
-		- APT.types.insert=Database public Tables appointments Insert cast su create
-		- APT.payload.core.hook=Omit Appointment id created_at updated_at per insert; Partial per update
-		- ref=[[appointments_modal]] per insert payload da form+org+staff RPC (non è lo stesso path hook insert)
-		- ref=[[appointments_fetch]] realtime path usa APT.inv stesso entrypoint
-		- APT.lib.complete=src/lib/appointments/complete-staff-appointment-client.ts#completeStaffAppointmentById(supabase,eventId)
-		- APT.lib.complete.upd=appointments.update status=completato updated_at now eq id
-		- APT.lib.complete.ledger=post-select id|athlete_id|starts_at|ends_at|service_type→hasOverlappingAppCoachedWorkoutDebit→else addDebitFromAppointment(ref=src/lib/credits/* progetto)
-		- APT.lib.complete.err=update fail→{ok:false,message}; ledger warn log non blocca ok true
-		- APT.staff.mut.hook=file=src/hooks/appointments/useStaffAppointmentsTable.ts|postWrite=await fetchAppointments() locale|no APT.inv|no queryClient
-		- APT.staff.mut.ins=insert appointments row staff_id=staffId|org_id=requireCurrentOrgId(resolveOrgIdForAppointmentWrite({profileOrgId da profiles.user_id,getUser,formOrgId:data.org_id}))
-		- APT.staff.mut.upd=update by id athlete_id|starts_at|ends_at|type|status|notes|location|org_id
-		- APT.staff.mut.cnl=update cancelled_at ISO + status=annullato (delta vs APT.cnl solo cancelled_at in hook atleta ref=confronto codice)
-		- APT.staff.mut.del=delete hard eq id
-		- APT.staff.mut.complete=status completato + if athlete_id ledger addDebitFromAppointment+coerceLedgerServiceType+dedup hasOverlappingAppCoachedWorkoutDebit|ledgerErr→throw (diverso da APT.lib.complete.err warn non blocca)
-		- APT.staff.mut.complete.cache=rimuovi localStorage keys matching cache_frequent-query:abbonamenti post complete
-	- COMPRESSED
-		- createMutation|updateMutation|cancelMutation|deleteMutation→onSuccess→APT.inv
-		- cancel≠delete: cancelled_at timestamp vs row remove
-		- completeStaff: update stato→ledger condizionale dedup coachato overlap
-		- staff.table: submit→Supabase diretto→refetch lista locale; annulla aggiorna anche status; completa ledger strict+purge cache abbonamenti locale
-	- QUERIES
-		- use=src/hooks/useAthleteAppointments.ts#createMutation|updateMutation|cancelMutation|deleteMutation
-		- use=src/lib/react-query/post-mutation-cache.ts#invalidateAppointmentsQueries
-		- use=src/lib/query-keys.ts#appointments.all
-		- use=src/lib/appointments/complete-staff-appointment-client.ts
-		- use=src/lib/credits/ledger.ts#addDebitFromAppointment
-		- use=src/lib/credits/session-debit-dedup.ts#hasOverlappingAppCoachedWorkoutDebit
-		- use=src/lib/abbonamenti-service-type.ts#coerceLedgerServiceType
-		- use=src/hooks/appointments/useStaffAppointmentsTable.ts#handleFormSubmit|handleDelete|handleComplete|handleCancel
-	- CONTEXT
-		- nome:invalidazione globale
-		- issues=byUser composite key invalidata via prefix appointments.all
-		- use=coerenza UI dopo scrittura da qualunque schermata
-		- nome:completeStaffAppointmentById
-		- issues=debito crediti fuori transazione DB con update; dedup overlap coachato in ref=src/lib/credits/session-debit-dedup
-		- use=staff completa da UI agenda/dashboard ref=[[appointments_context]]
-		- nome:staff table invalidazione
-		- issues=mutazioni staff tab non chiamano invalidateAppointmentsQueries; viste basate su React Query atleta/trainer restano stale fino a refetch naturale o altro canale
-		- use=[[appointments_fetch]] APT.staff.fetch.xtab per sync parziale cross-tab
+  - ATOMS
+    - APT.ins=supabase.from(appointments).insert([row]).select()→data[0]
+    - APT.upd=supabase.from(appointments).update(updates).eq('id',id).select()→data[0]
+    - APT.cnl=supabase.from(appointments).update({cancelled_at:new Date().toISOString()}).eq('id',id).select()→soft cancel
+    - APT.del=supabase.from(appointments).delete().eq('id',id)
+    - APT.inv=invalidateAppointmentsQueries(queryClient)→invalidateQueries queryKey queryKeys.appointments.all
+    - APT.hook.mut.onSuccess=APT.inv (create|update|cancel|delete)
+    - APT.hook.mut.onError=log structured appointmentId o payload
+    - APT.types.insert=Database public Tables appointments Insert cast su create
+    - APT.payload.core.hook=Omit Appointment id created_at updated_at per insert; Partial per update
+    - ref=[[appointments_modal]] per insert payload da form+org+staff RPC (non è lo stesso path hook insert)
+    - ref=[[appointments_fetch]] realtime path usa APT.inv stesso entrypoint
+    - APT.lib.complete=src/lib/appointments/complete-staff-appointment-client.ts#completeStaffAppointmentById(supabase,eventId)
+    - APT.lib.complete.upd=appointments.update status=completato updated_at now eq id
+    - APT.lib.complete.ledger=post-select id|athlete_id|starts_at|ends_at|service_type→hasOverlappingAppCoachedWorkoutDebit→else addDebitFromAppointment(ref=src/lib/credits/\* progetto)
+    - APT.lib.complete.err=update fail→{ok:false,message}; ledger warn log non blocca ok true
+    - APT.staff.mut.hook=file=src/hooks/appointments/useStaffAppointmentsTable.ts|postWrite=await fetchAppointments() locale|no APT.inv|no queryClient
+    - APT.staff.mut.ins=insert appointments row staff_id=staffId|org_id=requireCurrentOrgId(resolveOrgIdForAppointmentWrite({profileOrgId da profiles.user_id,getUser,formOrgId:data.org_id}))
+    - APT.staff.mut.upd=update by id athlete_id|starts_at|ends_at|type|status|notes|location|org_id
+    - APT.staff.mut.cnl=update cancelled_at ISO + status=annullato (delta vs APT.cnl solo cancelled_at in hook atleta ref=confronto codice)
+    - APT.staff.mut.del=delete hard eq id
+    - APT.staff.mut.complete=status completato + if athlete_id ledger addDebitFromAppointment+coerceLedgerServiceType+dedup hasOverlappingAppCoachedWorkoutDebit|ledgerErr→throw (diverso da APT.lib.complete.err warn non blocca)
+    - APT.staff.mut.complete.cache=rimuovi localStorage keys matching cache_frequent-query:abbonamenti post complete
+  - COMPRESSED
+    - createMutation|updateMutation|cancelMutation|deleteMutation→onSuccess→APT.inv
+    - cancel≠delete: cancelled_at timestamp vs row remove
+    - completeStaff: update stato→ledger condizionale dedup coachato overlap
+    - staff.table: submit→Supabase diretto→refetch lista locale; annulla aggiorna anche status; completa ledger strict+purge cache abbonamenti locale
+  - QUERIES
+    - use=src/hooks/useAthleteAppointments.ts#createMutation|updateMutation|cancelMutation|deleteMutation
+    - use=src/lib/react-query/post-mutation-cache.ts#invalidateAppointmentsQueries
+    - use=src/lib/query-keys.ts#appointments.all
+    - use=src/lib/appointments/complete-staff-appointment-client.ts
+    - use=src/lib/credits/ledger.ts#addDebitFromAppointment
+    - use=src/lib/credits/session-debit-dedup.ts#hasOverlappingAppCoachedWorkoutDebit
+    - use=src/lib/abbonamenti-service-type.ts#coerceLedgerServiceType
+    - use=src/hooks/appointments/useStaffAppointmentsTable.ts#handleFormSubmit|handleDelete|handleComplete|handleCancel
+  - CONTEXT
+    - nome:invalidazione globale
+    - issues=byUser composite key invalidata via prefix appointments.all
+    - use=coerenza UI dopo scrittura da qualunque schermata
+    - nome:completeStaffAppointmentById
+    - issues=debito crediti fuori transazione DB con update; dedup overlap coachato in ref=src/lib/credits/session-debit-dedup
+    - use=staff completa da UI agenda/dashboard ref=[[appointments_context]]
+    - nome:staff table invalidazione
+    - issues=mutazioni staff tab non chiamano invalidateAppointmentsQueries; viste basate su React Query atleta/trainer restano stale fino a refetch naturale o altro canale
+    - use=[[appointments_fetch]] APT.staff.fetch.xtab per sync parziale cross-tab

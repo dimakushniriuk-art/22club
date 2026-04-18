@@ -1,6 +1,6 @@
 - GLOBAL
-	- shared atoms
-	- shared compressed
-	- shared rules
-	- shared references
-	- [[DOMAIN_FREEZE_POLICY]]
+  - shared atoms
+  - shared compressed
+  - shared rules
+  - shared references
+  - [[DOMAIN_FREEZE_POLICY]]

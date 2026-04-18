@@ -339,13 +339,9 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         )
         rawSets.sort((a, b) => {
           const ta =
-            (a.completed_at && a.completed_at.trim()) ||
-            (a.created_at && a.created_at.trim()) ||
-            ''
+            (a.completed_at && a.completed_at.trim()) || (a.created_at && a.created_at.trim()) || ''
           const tb =
-            (b.completed_at && b.completed_at.trim()) ||
-            (b.created_at && b.created_at.trim()) ||
-            ''
+            (b.completed_at && b.completed_at.trim()) || (b.created_at && b.created_at.trim()) || ''
           return ta.localeCompare(tb)
         })
 

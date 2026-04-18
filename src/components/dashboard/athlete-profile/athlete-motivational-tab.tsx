@@ -130,7 +130,7 @@ export function AthleteMotivationalTab({ athleteId }: AthleteMotivationalTabProp
         showAbbandonoForm={showAbbandonoForm}
         newAbbandono={newArrayItem.abbandono || {}}
         storicoAbbandoni={
-          isEditing ? formData.storico_abbandoni ?? [] : motivational?.storico_abbandoni ?? []
+          isEditing ? (formData.storico_abbandoni ?? []) : (motivational?.storico_abbandoni ?? [])
         }
         onShowAbbandonoFormChange={(show) => {
           setShowAbbandonoForm(show)

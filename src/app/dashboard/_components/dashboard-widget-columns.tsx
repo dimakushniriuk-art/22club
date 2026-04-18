@@ -140,144 +140,146 @@ export function DashboardWidgetColumns({
   return (
     <>
       {widgetsVisibility.expiringPrograms ? (
-      <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
-        <ColumnPanel
-          title="Schede in scadenza"
-          badge={!loading && error == null && expiring.length > 0 ? expiring.length : undefined}
-          footer={
-            <DashboardColumnFooterLink href="/dashboard/schede">
-              Vai alle schede
-            </DashboardColumnFooterLink>
-          }
-        >
-          {loading ? (
-            <ListSkeleton />
-          ) : error != null ? (
-            <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
-          ) : expiring.length === 0 ? (
-            <DashboardColumnEmpty>
-              Nessuna scheda in scadenza (data fine) o con ciclo sessioni critico (completato o ≤3
-              sessioni rimanenti).
-            </DashboardColumnEmpty>
-          ) : (
-            <ul className={LIST_SCROLL}>
-              {expiring.map((p) => (
-                <li key={p.id}>
-                  <Link
-                    href={`/dashboard/schede/${p.id}/modifica`}
-                    prefetch
-                    className={ROW_LINK_CLASS}
-                  >
-                    <div className="truncate text-sm font-medium text-text-primary">
-                      {typeof p.creation_order_number === 'number' ? (
-                        <span className="tabular-nums text-text-tertiary font-medium">
-                          #{p.creation_order_number}
-                          <span className="text-text-tertiary/80"> · </span>
-                        </span>
-                      ) : null}
-                      {p.name}
-                    </div>
-                    <div className="truncate text-xs text-text-secondary">
-                      {p.athlete_display_name}
-                    </div>
-                    <div className="mt-0.5 text-[11px] text-amber-400/85">{p.subtitle}</div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </ColumnPanel>
-      </div>
+        <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
+          <ColumnPanel
+            title="Schede in scadenza"
+            badge={!loading && error == null && expiring.length > 0 ? expiring.length : undefined}
+            footer={
+              <DashboardColumnFooterLink href="/dashboard/schede">
+                Vai alle schede
+              </DashboardColumnFooterLink>
+            }
+          >
+            {loading ? (
+              <ListSkeleton />
+            ) : error != null ? (
+              <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
+            ) : expiring.length === 0 ? (
+              <DashboardColumnEmpty>
+                Nessuna scheda in scadenza (data fine) o con ciclo sessioni critico (completato o ≤3
+                sessioni rimanenti).
+              </DashboardColumnEmpty>
+            ) : (
+              <ul className={LIST_SCROLL}>
+                {expiring.map((p) => (
+                  <li key={p.id}>
+                    <Link
+                      href={`/dashboard/schede/${p.id}/modifica`}
+                      prefetch
+                      className={ROW_LINK_CLASS}
+                    >
+                      <div className="truncate text-sm font-medium text-text-primary">
+                        {typeof p.creation_order_number === 'number' ? (
+                          <span className="tabular-nums text-text-tertiary font-medium">
+                            #{p.creation_order_number}
+                            <span className="text-text-tertiary/80"> · </span>
+                          </span>
+                        ) : null}
+                        {p.name}
+                      </div>
+                      <div className="truncate text-xs text-text-secondary">
+                        {p.athlete_display_name}
+                      </div>
+                      <div className="mt-0.5 text-[11px] text-amber-400/85">{p.subtitle}</div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </ColumnPanel>
+        </div>
       ) : null}
 
       {widgetsVisibility.lowLessons ? (
-      <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
-        <ColumnPanel
-          title="Lezioni in esaurimento"
-          badge={!loading && error == null && athletes.length > 0 ? athletes.length : undefined}
-          footer={
-            <DashboardColumnFooterLink href="/dashboard/abbonamenti">
-              Abbonamenti
-            </DashboardColumnFooterLink>
-          }
-        >
-          {loading ? (
-            <ListSkeleton />
-          ) : error != null ? (
-            <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
-          ) : athletes.length === 0 ? (
-            <DashboardColumnEmpty>
-              Nessun atleta con {STAFF_DASHBOARD_LOW_LESSONS_THRESHOLD} o meno lezioni training
-              rimanenti.
-            </DashboardColumnEmpty>
-          ) : (
-            <ul className={LIST_SCROLL}>
-              {athletes.map((a) => (
-                <li key={a.athlete_id}>
-                  <Link
-                    href={`/dashboard/atleti/${a.athlete_id}`}
-                    prefetch
-                    className={cn(ROW_LINK_CLASS, 'flex items-center justify-between gap-2')}
-                  >
-                    <span className="min-w-0 truncate text-sm font-medium text-text-primary">
-                      {a.display_name}
-                    </span>
-                    <span
-                      className={cn(
-                        'shrink-0 text-xs font-semibold tabular-nums',
-                        remainingTone(a.total_remaining),
-                      )}
+        <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
+          <ColumnPanel
+            title="Lezioni in esaurimento"
+            badge={!loading && error == null && athletes.length > 0 ? athletes.length : undefined}
+            footer={
+              <DashboardColumnFooterLink href="/dashboard/abbonamenti">
+                Abbonamenti
+              </DashboardColumnFooterLink>
+            }
+          >
+            {loading ? (
+              <ListSkeleton />
+            ) : error != null ? (
+              <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
+            ) : athletes.length === 0 ? (
+              <DashboardColumnEmpty>
+                Nessun atleta con {STAFF_DASHBOARD_LOW_LESSONS_THRESHOLD} o meno lezioni training
+                rimanenti.
+              </DashboardColumnEmpty>
+            ) : (
+              <ul className={LIST_SCROLL}>
+                {athletes.map((a) => (
+                  <li key={a.athlete_id}>
+                    <Link
+                      href={`/dashboard/atleti/${a.athlete_id}`}
+                      prefetch
+                      className={cn(ROW_LINK_CLASS, 'flex items-center justify-between gap-2')}
                     >
-                      {a.total_remaining} rimanenti
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </ColumnPanel>
-      </div>
+                      <span className="min-w-0 truncate text-sm font-medium text-text-primary">
+                        {a.display_name}
+                      </span>
+                      <span
+                        className={cn(
+                          'shrink-0 text-xs font-semibold tabular-nums',
+                          remainingTone(a.total_remaining),
+                        )}
+                      >
+                        {a.total_remaining} rimanenti
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </ColumnPanel>
+        </div>
       ) : null}
 
       {widgetsVisibility.unreadChats ? (
-      <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
-        <ColumnPanel
-          title="Messaggi non letti"
-          badge={
-            !chatLoading && unreadChats.length > 0
-              ? unreadChats.reduce((n, c) => n + c.unread_count, 0)
-              : undefined
-          }
-          footer={
-            <DashboardColumnFooterLink href="/dashboard/chat">Apri chat</DashboardColumnFooterLink>
-          }
-        >
-          {chatLoading ? (
-            <ListSkeleton />
-          ) : unreadChats.length === 0 ? (
-            <DashboardColumnEmpty>Nessun messaggio da leggere.</DashboardColumnEmpty>
-          ) : (
-            <ul className={LIST_SCROLL}>
-              {unreadChats.map((c) => (
-                <li key={c.other_user_id}>
-                  <Link
-                    href={`/dashboard/chat?with=${encodeURIComponent(c.other_user_id)}`}
-                    prefetch
-                    className={cn(ROW_LINK_CLASS, 'flex items-center justify-between gap-2')}
-                  >
-                    <span className="min-w-0 truncate text-sm font-medium text-text-primary">
-                      {c.other_user_name}
-                    </span>
-                    <span className="shrink-0 rounded-full border border-cyan-400/35 bg-cyan-500/20 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-cyan-200">
-                      {c.unread_count}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </ColumnPanel>
-      </div>
+        <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
+          <ColumnPanel
+            title="Messaggi non letti"
+            badge={
+              !chatLoading && unreadChats.length > 0
+                ? unreadChats.reduce((n, c) => n + c.unread_count, 0)
+                : undefined
+            }
+            footer={
+              <DashboardColumnFooterLink href="/dashboard/chat">
+                Apri chat
+              </DashboardColumnFooterLink>
+            }
+          >
+            {chatLoading ? (
+              <ListSkeleton />
+            ) : unreadChats.length === 0 ? (
+              <DashboardColumnEmpty>Nessun messaggio da leggere.</DashboardColumnEmpty>
+            ) : (
+              <ul className={LIST_SCROLL}>
+                {unreadChats.map((c) => (
+                  <li key={c.other_user_id}>
+                    <Link
+                      href={`/dashboard/chat?with=${encodeURIComponent(c.other_user_id)}`}
+                      prefetch
+                      className={cn(ROW_LINK_CLASS, 'flex items-center justify-between gap-2')}
+                    >
+                      <span className="min-w-0 truncate text-sm font-medium text-text-primary">
+                        {c.other_user_name}
+                      </span>
+                      <span className="shrink-0 rounded-full border border-cyan-400/35 bg-cyan-500/20 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-cyan-200">
+                        {c.unread_count}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </ColumnPanel>
+        </div>
       ) : null}
     </>
   )

@@ -223,7 +223,8 @@ function AllenamentiBody() {
                 Dati da <span className="font-mono text-[11px]">workout_logs</span> (tutte le date).
                 I grafici per esercizio usano le serie in{' '}
                 <span className="font-mono text-[11px]">workout_sets</span> collegate al log: se
-                &quot;Serie&quot; è 0, il volume qui è comunque salvato ma non alimenta i grafici sotto.
+                &quot;Serie&quot; è 0, il volume qui è comunque salvato ma non alimenta i grafici
+                sotto.
               </p>
             </CardHeader>
             <CardContent className="relative z-10 p-0">
@@ -250,9 +251,7 @@ function AllenamentiBody() {
                           {formatVolumeTotale(row.volume_totale)}
                         </td>
                         <td className="px-3 py-2.5 text-right tabular-nums">
-                          {row.duration_minutes != null
-                            ? `${row.duration_minutes}′`
-                            : '—'}
+                          {row.duration_minutes != null ? `${row.duration_minutes}′` : '—'}
                         </td>
                         <td className="px-3 py-2.5 text-right tabular-nums">
                           {row.exercises_completed != null ? row.exercises_completed : '—'}
@@ -281,8 +280,8 @@ function AllenamentiBody() {
                 Grafici per esercizio
               </CardTitle>
               <p className="text-text-tertiary mt-0.5 text-xs max-w-[80ch]">
-                Asse = solo giorni con valore (peso max, reps o tempo da serie sul log). Tabella sessioni
-                sotto resta disponibile per tutte le sessioni.
+                Asse = solo giorni con valore (peso max, reps o tempo da serie sul log). Tabella
+                sessioni sotto resta disponibile per tutte le sessioni.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">

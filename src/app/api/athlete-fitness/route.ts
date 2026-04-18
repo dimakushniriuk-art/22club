@@ -61,7 +61,12 @@ export async function PATCH(request: NextRequest) {
 
     const updates = validatedUpdates.data
 
-    const prep = await assertAthleteProfileWriteAllowed(supabase, user, athleteIdentifier, 'api:athlete-fitness')
+    const prep = await assertAthleteProfileWriteAllowed(
+      supabase,
+      user,
+      athleteIdentifier,
+      'api:athlete-fitness',
+    )
     if (!prep.ok) {
       return prep.response
     }
@@ -89,7 +94,8 @@ async function upsertFitnessForAthleteUserId(
     updateData.giorni_settimana_allenamento = updates.giorni_settimana_allenamento
   if (updates.durata_sessione_minuti !== undefined)
     updateData.durata_sessione_minuti = updates.durata_sessione_minuti
-  if (updates.preferenze_orario !== undefined) updateData.preferenze_orario = updates.preferenze_orario
+  if (updates.preferenze_orario !== undefined)
+    updateData.preferenze_orario = updates.preferenze_orario
   if (updates.attivita_precedenti !== undefined)
     updateData.attivita_precedenti = updates.attivita_precedenti
   if (updates.infortuni_pregressi !== undefined)

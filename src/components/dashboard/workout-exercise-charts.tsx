@@ -26,10 +26,7 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
       }))
       .filter(
         ({ series, exercise }) =>
-          series.hasWeight ||
-          series.hasReps ||
-          series.hasTime ||
-          exercise.dataPoints.length > 0,
+          series.hasWeight || series.hasReps || series.hasTime || exercise.dataPoints.length > 0,
       )
   }, [data.exercises])
 
@@ -49,10 +46,7 @@ export function WorkoutExerciseCharts({ data, detailBasePath }: WorkoutExerciseC
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {exerciseCharts.map(({ exercise, series }) => {
         const noNumericTrend =
-          exercise.dataPoints.length > 0 &&
-          !series.hasWeight &&
-          !series.hasReps &&
-          !series.hasTime
+          exercise.dataPoints.length > 0 && !series.hasWeight && !series.hasReps && !series.hasTime
         const noDataYet = series.chartData.length === 0
         const detailHref =
           detailBasePath !== undefined && detailBasePath.length > 0

@@ -1,51 +1,51 @@
 - PROMPT_EXTRACT
-	- objective
-		- extract code logic into brain modules
-		- preserve full information
-		- reduce token usage in active context
-	- instructions
-		- analyze selected code or folder
-		- identify domain (appointments, workouts, athletes, etc.)
-		- map logic to correct module:
-			- fetch
-			- mutations
-			- modal
-			- overlap
-			- calendar
-			- recurrence
-			- context
-	- output_format
-		- ATOMS
-			- key=value
-		- COMPRESSED
-			- minimal structured logic
-		- QUERIES
-			- use=...
-		- CONTEXT
-			- name
-			- issues=...
-			- use=...
-	- rules
-		- no long prose
-		- no explanations
-		- no duplication
-		- keep all critical logic
-		- use short prefixes (APT, WKT, ATH, etc.)
-		- Logseq bullet format only
-	- writing
-		- write directly in:
-			- /Cervello/pages/[domain]_[module].md
-		- do not overwrite unrelated modules
-		- append or update existing sections
-	- module_mapping
-		- fetch=query/read/list/resolve/map/realtime
-		- mutations=insert/update/delete/cancel/invalidate
-		- modal=form/defaults/payload/ui logic
-		- overlap=conflicts/validation/rpc overlap
-		- calendar=merge/views/open booking/range
-		- recurrence=repeat/generate/serialize
-		- context=operational debug/dev
-	- validation
-		- no empty sections
-		- no lost information
-		- correct module placement
+  - objective
+    - extract code logic into brain modules
+    - preserve full information
+    - reduce token usage in active context
+  - instructions
+    - analyze selected code or folder
+    - identify domain (appointments, workouts, athletes, etc.)
+    - map logic to correct module:
+      - fetch
+      - mutations
+      - modal
+      - overlap
+      - calendar
+      - recurrence
+      - context
+  - output_format
+    - ATOMS
+      - key=value
+    - COMPRESSED
+      - minimal structured logic
+    - QUERIES
+      - use=...
+    - CONTEXT
+      - name
+      - issues=...
+      - use=...
+  - rules
+    - no long prose
+    - no explanations
+    - no duplication
+    - keep all critical logic
+    - use short prefixes (APT, WKT, ATH, etc.)
+    - Logseq bullet format only
+  - writing
+    - write directly in:
+      - /Cervello/pages/[domain]\_[module].md
+    - do not overwrite unrelated modules
+    - append or update existing sections
+  - module_mapping
+    - fetch=query/read/list/resolve/map/realtime
+    - mutations=insert/update/delete/cancel/invalidate
+    - modal=form/defaults/payload/ui logic
+    - overlap=conflicts/validation/rpc overlap
+    - calendar=merge/views/open booking/range
+    - recurrence=repeat/generate/serialize
+    - context=operational debug/dev
+  - validation
+    - no empty sections
+    - no lost information
+    - correct module placement

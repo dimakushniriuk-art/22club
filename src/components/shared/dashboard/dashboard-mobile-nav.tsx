@@ -111,11 +111,7 @@ export function DashboardMobileNav() {
     try {
       const result = await signOut()
       if (!result.success) {
-        notify(
-          result.error ?? 'Logout non riuscito. Riprova.',
-          'error',
-          'Errore logout',
-        )
+        notify(result.error ?? 'Logout non riuscito. Riprova.', 'error', 'Errore logout')
       }
     } catch (error) {
       logger.error('Errore nel logout', error)

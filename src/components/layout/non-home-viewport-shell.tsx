@@ -23,9 +23,7 @@ export function NonHomeViewportShell({
   variant = 'scroll',
 }: NonHomeViewportShellProps) {
   if (variant === 'fill') {
-    return (
-      <div className={cn('non-home-viewport-root flex flex-col', className)}>{children}</div>
-    )
+    return <div className={cn('non-home-viewport-root flex flex-col', className)}>{children}</div>
   }
   return (
     <div className={cn('non-home-viewport-root', className)}>

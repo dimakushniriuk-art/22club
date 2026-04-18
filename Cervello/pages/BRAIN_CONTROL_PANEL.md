@@ -1,32 +1,32 @@
 - BRAIN_CONTROL_PANEL
-	- active_domains
-		- appointments=status:frozen
-		- workouts=status:frozen
-		- athletes=status:frozen
-		- payments=status:frozen
-		- communications=status:frozen
-		- chat=status:frozen
-	- default_workflow
-		- pre-scan
-		- first-scan
-		- second-scan
-		- audit
-		- closeout
-		- freeze
-	- rules
-		- no full-domain rescan if frozen
-		- use micro-scan only on touched paths
-		- update only relevant module
-		- keep index lightweight
-		- preserve refs
-	- navigation
-		- project_map=[[PROJECT_STRUCTURE_INDEX]]
-		- src_map=[[SRC_NAVIGATION_INDEX]]
-		- entrypoints=[[ENTRYPOINT_SELECTION_INDEX]]
-		- scan_workflow=[[_FOLDER_SCAN_WORKFLOW]]
-		- freeze_policy=[[DOMAIN_FREEZE_POLICY]]
-	- next_candidates
-		- analytics
-		- auth
-		- marketing
-		- notifications
+  - active_domains
+    - appointments=status:frozen
+    - workouts=status:frozen
+    - athletes=status:frozen
+    - payments=status:frozen
+    - communications=status:frozen
+    - chat=status:frozen
+  - default_workflow
+    - pre-scan
+    - first-scan
+    - second-scan
+    - audit
+    - closeout
+    - freeze
+  - rules
+    - no full-domain rescan if frozen
+    - use micro-scan only on touched paths
+    - update only relevant module
+    - keep index lightweight
+    - preserve refs
+  - navigation
+    - project_map=[[PROJECT_STRUCTURE_INDEX]]
+    - src_map=[[SRC_NAVIGATION_INDEX]]
+    - entrypoints=[[ENTRYPOINT_SELECTION_INDEX]]
+    - scan_workflow=[[_FOLDER_SCAN_WORKFLOW]]
+    - freeze_policy=[[DOMAIN_FREEZE_POLICY]]
+  - next_candidates
+    - analytics
+    - auth
+    - marketing
+    - notifications

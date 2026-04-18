@@ -7,11 +7,11 @@
 
 ## 1. Cosa è stato fatto davvero
 
-| Fonte | Cosa produce |
-|--------|----------------|
-| Codice (`src/`) | Pattern che **aumentano costo** o round-trip (misurabili in teoria). |
+| Fonte                                  | Cosa produce                                                                                                                                                   |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Codice (`src/`)                        | Pattern che **aumentano costo** o round-trip (misurabili in teoria).                                                                                           |
 | `scripts/analyze-supabase-complete.ts` | Smoke su tabelle/RPC con **anon key** e **nessuna sessione** (utente non loggato): i conteggi righe e alcuni check **non** riflettono il carico reale con JWT. |
-| MCP Supabase (`.cursor/mcp.json`) | In questa sessione **non disponibile** (`mcp server` non esposto all’agente): **nessuna** query SQL interattiva diretta al progetto da qui. |
+| MCP Supabase (`.cursor/mcp.json`)      | In questa sessione **non disponibile** (`mcp server` non esposto all’agente): **nessuna** query SQL interattiva diretta al progetto da qui.                    |
 
 Conclusione metodologica: i **problemi reali di latenza** su dati/foto si confermano solo con:
 
@@ -124,12 +124,12 @@ Le policy RLS **non** sono analizzate riga per riga in questo documento (serve a
 
 ## 6. Priorità suggerite (solo codice, senza DB write)
 
-| Priorità | Intervento | Motivo |
-|----------|--------------|--------|
-| Alta | Ridurre `select('*')` + `count: 'exact'` su `use-progress-photos` (colonne minime; count solo se serve UI totale) | Lista foto è UX sensibile. |
-| Media | Rivedere `refetchOnWindowFocus` / `staleTime` per query **pesanti** (override per-query, non solo default) | Meno rifetch involontari. |
-| Media | Unificare letture `progress_photos` dietro un solo hook/query key dove possibile | Meno duplicazione. |
-| Bassa | Audit mirato `apiGet` su percorsi caldi | Ridurre hop server dove non serve. |
+| Priorità | Intervento                                                                                                        | Motivo                             |
+| -------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Alta     | Ridurre `select('*')` + `count: 'exact'` su `use-progress-photos` (colonne minime; count solo se serve UI totale) | Lista foto è UX sensibile.         |
+| Media    | Rivedere `refetchOnWindowFocus` / `staleTime` per query **pesanti** (override per-query, non solo default)        | Meno rifetch involontari.          |
+| Media    | Unificare letture `progress_photos` dietro un solo hook/query key dove possibile                                  | Meno duplicazione.                 |
+| Bassa    | Audit mirato `apiGet` su percorsi caldi                                                                           | Ridurre hop server dove non serve. |
 
 ---
 

@@ -64,7 +64,11 @@ export async function PATCH(request: NextRequest) {
       return prep.response
     }
 
-    return await upsertMotivationalForAthleteUserId(prep.athleteAuthId, validatedUpdates.data, prep.writeDb)
+    return await upsertMotivationalForAthleteUserId(
+      prep.athleteAuthId,
+      validatedUpdates.data,
+      prep.writeDb,
+    )
   } catch (error) {
     logger.error('Errore PATCH athlete-motivational', error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
@@ -81,15 +85,18 @@ async function upsertMotivationalForAthleteUserId(
     updateData.motivazione_principale = updates.motivazione_principale
   if (updates.motivazioni_secondarie !== undefined)
     updateData.motivazioni_secondarie = updates.motivazioni_secondarie
-  if (updates.ostacoli_percepiti !== undefined) updateData.ostacoli_percepiti = updates.ostacoli_percepiti
+  if (updates.ostacoli_percepiti !== undefined)
+    updateData.ostacoli_percepiti = updates.ostacoli_percepiti
   if (updates.preferenze_ambiente !== undefined)
     updateData.preferenze_ambiente = updates.preferenze_ambiente
   if (updates.preferenze_compagnia !== undefined)
     updateData.preferenze_compagnia = updates.preferenze_compagnia
   if (updates.livello_motivazione !== undefined)
     updateData.livello_motivazione = updates.livello_motivazione
-  if (updates.storico_abbandoni !== undefined) updateData.storico_abbandoni = updates.storico_abbandoni
-  if (updates.note_motivazionali !== undefined) updateData.note_motivazionali = updates.note_motivazionali
+  if (updates.storico_abbandoni !== undefined)
+    updateData.storico_abbandoni = updates.storico_abbandoni
+  if (updates.note_motivazionali !== undefined)
+    updateData.note_motivazionali = updates.note_motivazionali
 
   const { data: existing, error: existingErr } = await db
     .from('athlete_motivational_data')

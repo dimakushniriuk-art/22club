@@ -44,9 +44,7 @@ export function RangeStatusMeter({
   misurazioneField = '',
 }: RangeStatusMeterProps) {
   const sortedHistory = useMemo((): HistoryPoint[] => {
-    return [...history].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    )
+    return [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }, [history])
 
   const chartDataNumeric = sortedHistory.filter(
@@ -244,7 +242,12 @@ export function RangeStatusMeter({
                       payload?: { value?: number | null }
                     }) => {
                       const v = props.payload?.value
-                      if (v == null || !Number.isFinite(v) || props.cx == null || props.cy == null) {
+                      if (
+                        v == null ||
+                        !Number.isFinite(v) ||
+                        props.cx == null ||
+                        props.cy == null
+                      ) {
                         return null
                       }
                       return (

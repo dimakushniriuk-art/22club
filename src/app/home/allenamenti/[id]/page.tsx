@@ -293,13 +293,16 @@ export function SchedaAllenamentoContent({
                                 'Nessun completamento registrato'
                               ) : dayDone === 1 ? (
                                 <>
-                                  Completata <span className="tabular-nums text-text-secondary">1</span>{' '}
-                                  volta
+                                  Completata{' '}
+                                  <span className="tabular-nums text-text-secondary">1</span> volta
                                 </>
                               ) : (
                                 <>
                                   Completata{' '}
-                                  <span className="tabular-nums text-text-secondary">{dayDone}</span> volte
+                                  <span className="tabular-nums text-text-secondary">
+                                    {dayDone}
+                                  </span>{' '}
+                                  volte
                                 </>
                               )}
                             </p>

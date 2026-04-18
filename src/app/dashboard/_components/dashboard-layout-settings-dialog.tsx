@@ -98,8 +98,8 @@ export function DashboardLayoutSettingsDialog({
         <DialogHeader className="space-y-1 pr-8">
           <DialogTitle>Personalizza dashboard</DialogTitle>
           <DialogDescription>
-            Stesso aspetto delle tile e dei pannelli: tocca una card o usa l’interruttore. Salvato su
-            questo dispositivo.
+            Stesso aspetto delle tile e dei pannelli: tocca una card o usa l’interruttore. Salvato
+            su questo dispositivo.
           </DialogDescription>
         </DialogHeader>
 

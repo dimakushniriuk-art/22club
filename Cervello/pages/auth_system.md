@@ -1,22 +1,22 @@
 - auth_system
-	- ATOMS
-		- domain=auth_system
-		- scope_core=src/lib/auth
-		- scope_struct=middleware.ts|src/lib/supabase/*|src/providers/auth-provider.tsx|src/lib/utils/role-normalizer.ts|src/lib/utils/role-redirect-paths.ts
-		- scope_api=src/app/api/auth/*|src/app/api/invitations/create/route.ts|src/hooks/use-auth.ts
-		- scope_client_guard=src/hooks/use-staff-dashboard-guard.ts|ref=[[auth_system_fetch]].ATOMS.CLIENT_STAFF_GUARD
-		- brain_modules=[[auth_system_fetch]]+[[auth_system_mutations]]+[[auth_system_context]]
-		- micro_scope_sync=2026-04-18|wiring=middleware+supabase SSR/browser+AuthProvider+role utils|detail=[[auth_system_fetch]]+[[auth_system_context]]
-		- api_micro_sync=2026-04-18|detail=[[auth_system_fetch]].ATOMS.API_AUTH+[[auth_system_context]].ATOMS.API_RISK
-		- no_modules=modal|overlap|calendar|recurrence|reason=no_surface_in_scope
-		- profile_resolution_server=ref=[[auth_system_fetch]].ATOMS.PROFILE_RESOLUTION|context_delta=[[auth_system_context]].ATOMS.WIRING.delta
-		- scope_admin_client=src/lib/supabase/admin.ts|ref=[[auth_system_fetch]].ATOMS.ADMIN_CLIENT
-	- COMPRESSED
-		- core=RBAC+guards+redirect helpers+server getUser+middleware gates+provider session+supabase SSR/browser+login/logout/reset+api/auth+inviti
-		- boundary=RLS resta fonte sicurezza DB|lib/provider/middleware orchestrazione layer
-	- QUERIES
-		- use=entry src/lib/auth|use=wiring session/cookie|use=[[auth_system_fetch]] feature matrix
-	- CONTEXT
-		- name=auth_system_index
-		- issues=dettaglio→[[auth_system_fetch]]|mutazioni client→[[auth_system_mutations]]|rischi wiring→[[auth_system_context]]
-		- use=[[auth_system_fetch]]|use=[[auth_system_mutations]]|use=[[auth_system_context]]
+  - ATOMS
+    - domain=auth_system
+    - scope_core=src/lib/auth
+    - scope_struct=middleware.ts|src/lib/supabase/\*|src/providers/auth-provider.tsx|src/lib/utils/role-normalizer.ts|src/lib/utils/role-redirect-paths.ts
+    - scope_api=src/app/api/auth/\*|src/app/api/invitations/create/route.ts|src/hooks/use-auth.ts
+    - scope_client_guard=src/hooks/use-staff-dashboard-guard.ts|ref=[[auth_system_fetch]].ATOMS.CLIENT_STAFF_GUARD
+    - brain_modules=[[auth_system_fetch]]+[[auth_system_mutations]]+[[auth_system_context]]
+    - micro_scope_sync=2026-04-18|wiring=middleware+supabase SSR/browser+AuthProvider+role utils|detail=[[auth_system_fetch]]+[[auth_system_context]]
+    - api_micro_sync=2026-04-18|detail=[[auth_system_fetch]].ATOMS.API_AUTH+[[auth_system_context]].ATOMS.API_RISK
+    - no_modules=modal|overlap|calendar|recurrence|reason=no_surface_in_scope
+    - profile_resolution_server=ref=[[auth_system_fetch]].ATOMS.PROFILE_RESOLUTION|context_delta=[[auth_system_context]].ATOMS.WIRING.delta
+    - scope_admin_client=src/lib/supabase/admin.ts|ref=[[auth_system_fetch]].ATOMS.ADMIN_CLIENT
+  - COMPRESSED
+    - core=RBAC+guards+redirect helpers+server getUser+middleware gates+provider session+supabase SSR/browser+login/logout/reset+api/auth+inviti
+    - boundary=RLS resta fonte sicurezza DB|lib/provider/middleware orchestrazione layer
+  - QUERIES
+    - use=entry src/lib/auth|use=wiring session/cookie|use=[[auth_system_fetch]] feature matrix
+  - CONTEXT
+    - name=auth_system_index
+    - issues=dettaglio→[[auth_system_fetch]]|mutazioni client→[[auth_system_mutations]]|rischi wiring→[[auth_system_context]]
+    - use=[[auth_system_fetch]]|use=[[auth_system_mutations]]|use=[[auth_system_context]]

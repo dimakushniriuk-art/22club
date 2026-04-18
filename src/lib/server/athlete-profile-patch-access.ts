@@ -135,7 +135,10 @@ export async function assertAthleteProfileWriteAllowed(
     .single()
 
   if (actorErr || !actorRow) {
-    return { ok: false, response: NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 }) }
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 }),
+    }
   }
   const actor = actorRow as ProfileActor
 
@@ -158,7 +161,10 @@ export async function assertAthleteProfileWriteAllowed(
       .maybeSingle()
 
     if (!relation) {
-      return { ok: false, response: NextResponse.json({ error: 'Atleta non assegnato' }, { status: 403 }) }
+      return {
+        ok: false,
+        response: NextResponse.json({ error: 'Atleta non assegnato' }, { status: 403 }),
+      }
     }
   }
 

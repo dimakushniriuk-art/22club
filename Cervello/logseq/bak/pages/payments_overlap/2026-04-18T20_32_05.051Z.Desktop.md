@@ -1,0 +1,41 @@
+- payments_overlap
+	- ATOMS
+		- source_file=src/lib/credits/session-debit-dedup.ts
+		- source_file=src/lib/credits/coached-debit-reason.ts
+		- buffer_before_ms=1800000
+		- buffer_after_ms_default=10800000
+		- buffer_after_ms_appointment_dedup=4200000
+		- reason_prefix=coached-app:wl: (ref allineamento route API in commento)
+		- api_consumer=src/app/api/athlete/coached-session-debit/route.ts
+		- api_overlap_client=Supabase admin passato a hasOverlappingAppointmentTrainingDebit (non session RLS)
+		- cross_consumer_file=src/lib/appointments/complete-staff-appointment-client.ts
+		- cross_consumer_role=appointments→payments consumer (non core lib/credits)
+		- cross_consumer_client=SupabaseClient browser chiamante (RLS staff)
+		- cross_consumer_overlap_fn=hasOverlappingAppCoachedWorkoutDebit
+		- cross_consumer_debit_fn=addDebitFromAppointment
+		- cross_consumer_ledger_arg2=null (addDebitFromAppointment)
+		- cross_consumer_service_type_map=coerceLedgerServiceType ref=@/lib/abbonamenti-service-type
+	- COMPRESSED
+		- isTrainingServiceType=training se null/empty/training
+		- workoutCompletedAtOverlapsAppointment=finestra starts/ends con buffer; se completed_at mancante confronto data log vs data slot
+		- hasOverlappingAppointmentTrainingDebit=carica appointments atleta (o preload); filtra status≠annullato/cancelled + training + overlap log; chunk IN su credit_ledger DEBIT training per appointment_id→true se esiste
+		- hasOverlappingAppCoachedWorkoutDebit=workout_logs coachati completati overlap slot; deterministic id ledger row esistente OPPURE reason=coachedAppDebitReasonForWorkoutLog + stessi filtri DEBIT training
+		- route_calendar_guard=prima insert route chiama solo hasOverlappingAppointmentTrainingDebit (dedup calendario vs slot log); risposta HTTP 200 body skipped_duplicate_calendar=true debited=false ref=[[payments_mutations]]
+		- route_reason_dedup=route controlla ledger esistente per stessa reason string (coachedApp…) prima overlap; query delta ref=[[payments_mutations]]
+		- staff_completion_appointment_debit=dopo `appointments` update status completato: select slot; se `athlete_id`→`hasOverlappingAppCoachedWorkoutDebit(supabase,athlete_id,starts_at,ends_at,service_type)`; se false→`addDebitFromAppointment({id:eventId,athlete_id,service_type:coerceLedgerServiceType(apt.service_type)},null)`; se true skip DEBIT (dedup log coachato vs slot) ref=[[payments_mutations]] addDebitFromAppointment
+	- QUERIES
+		- use=appointments.select(id,starts_at,ends_at,service_type,status).eq(athlete_id)
+		- use=credit_ledger.select(id).eq(entry_type,DEBIT).eq(service_type,training).in(appointment_id)
+		- use=workout_logs.select(...).or(atleta_id/athlete_id)
+		- use=credit_ledger.select(id).eq(id,deterministic)|eq(reason,...)
+		- use=appointments.update status completato + updated_at eq id eventId (cross_consumer)
+		- use=appointments.select(id,athlete_id,starts_at,ends_at,service_type).eq(id,eventId).single() (cross_consumer)
+	- CONTEXT
+		- name=double_debit_app_vs_calendar
+		- issues=margine post-slot tuning per evitare bucket serale che blocca DEBIT app
+		- name=api_route_overlap_only
+		- issues=server coached-debit non invoca hasOverlappingAppCoachedWorkoutDebit; anti double-debit app vs app lato API = reason pre-check + 23505 su insert ref=[[payments_mutations]]
+		- name=staff_client_overlap_fn_choice
+		- issues=completamento staff (cross_consumer) usa `hasOverlappingAppCoachedWorkoutDebit` su session RLS; route API usa `hasOverlappingAppointmentTrainingDebit` su admin—gate diversi complementari
+		- name=ledger_errors_after_status_commit
+		- issues=update `appointments` ok prima del tentativo ledger; fallimento insert `credit_ledger`→catch warn senza rollback stato ref=[[payments_context]] appointments_payments_bridge

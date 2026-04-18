@@ -2,11 +2,11 @@
 
 File coinvolti:
 
-| File | Versionato | Contenuto |
-|------|------------|-----------|
-| `.cursor/mcp.json` | **No** (`.gitignore`) | GitHub MCP via Docker + env; altri server remoti |
-| `.cursor/mcp.secrets.env` | **No** | Solo tuo PAT GitHub (opzionale, come promemoria) |
-| `.cursor/mcp.secrets.env.example` | Sì | Modello senza segreti |
+| File                              | Versionato            | Contenuto                                        |
+| --------------------------------- | --------------------- | ------------------------------------------------ |
+| `.cursor/mcp.json`                | **No** (`.gitignore`) | GitHub MCP via Docker + env; altri server remoti |
+| `.cursor/mcp.secrets.env`         | **No**                | Solo tuo PAT GitHub (opzionale, come promemoria) |
+| `.cursor/mcp.secrets.env.example` | Sì                    | Modello senza segreti                            |
 
 ## 1. GitHub (obbligatorio per lo strumento GitHub MCP)
 

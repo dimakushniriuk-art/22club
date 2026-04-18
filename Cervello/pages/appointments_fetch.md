@@ -1,80 +1,80 @@
 - appointments_fetch
-	- ATOMS
-		- APT.tbl=appointments
-		- APT.qk=queryKeys.appointments.byUser(`${userId}-${role||unknown}`)|appointments.all se !userId
-		- APT.qk.canon=queryKeys.appointments.all|byUser(string)|byDate(uid,date) (definizione keys file query-keys)
-		- APT.rq.en=useQuery enabled !!userId
-		- APT.pid=resolveProfileByIdentifier(client,userId,'id',{profileIdCache:Map})
-		- APT.pid.err=no row→throw Profilo non trovato|!userId→throw UserId non fornito
-		- APT.sel=`* , athlete:profiles!athlete_id(...), trainer:profiles!trainer_id(...), staff:profiles!staff_id(...)`
-		- APT.ord=order starts_at ascending true
-		- APT.norm.drv=normalizeAthleteAppointmentsQueryParams(role) (dettaglio valori ref=[[appointments_context]])
-		- APT.f.ath=eq athlete_id profileId + se !includePastAppointments→gte starts_at now ISO + se excludeCancelledAppointments→is cancelled_at null
-		- APT.f.st|admin=eq staff_id profileId (trainer_id non amplia set)
-		- APT.f.unk=no eq athlete/staff→set filtrato solo da RLS
-		- APT.f.ath.curr=includePastAppointments true da normalize atleta→branch gte starts_at non applicata in pratica oggi
-		- APT.map.ath.nm=(athlete.nome||athlete.first_name)+(athlete.cognome||athlete.last_name) trim else Atleta
-		- APT.map.tr.nm=(trainer.nome||trainer.first_name||staff.nome||staff.first_name)+(trainer.cognome||trainer.last_name||staff.cognome||staff.last_name) trim else Trainer
-		- APT.map.av=athlete.avatar_url??athlete.avatar→athlete_avatar_url
-		- APT.map.upd_at=row.updated_at assente in transform→updated_at:=created_at
-		- APT.map.nullToUndef=location|notes|cancelled_at optional chain
-		- APT.err.str=Error|PostgREST object message[+details join]→string UX
-		- APT.net=isLikelyNetworkFetchFailure→warn vs error log su fetchError
-		- APT.rt.chan=useRealtimeChannel('appointments')→invalidate ref=[[appointments_mutations]] (invalidateAppointmentsQueries)
-		- APT.hook.out=appointments|loading|error|refetch (+ mutazioni in altro modulo stesso file)
-		- APT.lib.core=src/lib/appointments/staff-appointments-select.ts#STAFF_APPOINTMENTS_CORE_SELECT=id,org_id,athlete_id,staff_id,starts_at,ends_at,type,status,location,notes,cancelled_at,created_at
-		- APT.lib.tbl.sel=src/lib/appointments/queries.ts#STAFF_APPOINTMENTS_TABLE_LIST_SELECT=CORE+updated_at
-		- APT.lib.tbl.q=listStaffAppointmentsForTable(client,staffId)→from(appointments).select(tbl).eq(staff_id).or(is_open_booking_day.null,false).order(starts_at asc)
-		- APT.lib.cal.sel=src/lib/appointments/queries.ts#STAFF_APPOINTMENTS_CALENDAR_LIST_SELECT=CORE+color,is_open_booking_day,created_by_role
-		- APT.lib.cal.merge=listMergedStaffCalendarAppointments→ref=[[appointments_calendar]] (merge FreePass|collaboratori|filtro privato)
-		- APT.lib.day.bounds=src/lib/appointments/staff-today-appointments-query.ts#getStaffLocalDayBoundsISO→dayStart|dayEnd ISO [00:00,nextDay)
-		- APT.lib.day.sel=STAFF_TODAY_APPOINTMENTS_SELECT=id,starts_at,ends_at,type,status,athlete_id,athlete:profiles!appointments_athlete_id_fkey(...)
-		- APT.lib.day.fmt=formatStaffDayAthleteDisplayName(athlete unknown)→nome cognome|Atleta|gestione relation error object
-		- APT.lib.agenda=src/lib/appointments/fetch-staff-today-agenda.ts#fetchStaffTodayAgenda→query giorno locale staff_id gte dayStart lt dayEnd cancelled null order asc
-		- APT.lib.agenda.retry=maxAttempts=3 sleep 80ms se isSupabaseAuthLockStealAbortError
-		- APT.lib.agenda.map=TodayAppointment rows→AgendaEvent[] skip status completato|completed|cancelled|annullato; finestra >1h passato skip; status in_corso|in-progress|finestra corrente; type allenamento|consulenza(prima_visita|riunione); athlete_id UUID da row o nested profile
-		- APT.lib.ath.qp=src/lib/appointments/athlete-query-params.ts#normalizeAthleteAppointmentsQueryParams|isAthleteAppointmentFutureLike|isAthleteAppointmentPastLike (dettaglio ref=[[appointments_context]])
-		- APT.staff.hook=file=src/hooks/appointments/useStaffAppointmentsTable.ts|parallel=staff lista+CRUD locale vs ref=[[appointments_fetch]] useAthleteAppointments (no useQuery|no queryKeys|no APT.rt.chan in questo hook)
-		- APT.staff.src=staffSource=isImpersonating&&actorProfile?actorProfile:authUser→staffId=id|staffOrgId=org_id|staffRole|staffName (allineato pattern ref=[[appointments_calendar]] APT.cal.staffSource)
-		- APT.staff.fetch.list=listStaffAppointmentsForTable(supabase,staffId)→useState rows ref=APT.lib.tbl.q
-		- APT.staff.fetch.enrich=athlete_id distinct→chunkForSupabaseIn→profiles select id nome cognome avatar avatar_url→athlete_name|athlete_avatar_url|append staff_name|normalizeAppointmentStatus(status)
-		- APT.staff.fetch.athletes=profiles.in(role athlete|atleta).order(nome)→picker lista hook
-		- APT.staff.fetch.blocks=fetchStaffCalendarBlocksForUiValidation(supabase,staffOrgId,staffId)→calendarBlocks state ref=[[appointments_overlap]] APT.cb.*
-		- APT.staff.fetch.xtab=window listen STAFF_APPOINTMENTS_INVALIDATE_EVENT→void fetchAppointments|event=src/lib/staff-cross-tab-events.ts
-		- APT.api.staff.todayGET=file=src/app/api/dashboard/appointments/route.ts|method=GET|auth=getServerAuthUser 401|profile=fetchCurrentProfileForAuthUserId→staffProfileId 404|bounds=getStaffLocalDayBoundsISO|select=STAFF_TODAY_APPOINTMENTS_SELECT eq staff_id gte starts_at lt dayEnd is cancelled_at null order asc ref=APT.lib.day|response map formato leggero id|date|time|athlete_name|type
-	- COMPRESSED
-		- flow: userId→APT.pid→from(APT.tbl).select(APT.sel)→APT.norm.drv→APT.f.*→APT.ord→rows→APT.map.*→list
-		- parallelo: APT.rt.chan su ogni INSERT|UPDATE|DELETE payload→stesso invalidate globale appointments
-		- open_booking visibilità atleta: TODO hook commento→autorità RLS ref=[[appointments_calendar]]
-		- lib.staffDay: bounds→select APT.lib.day.sel→APT.lib.agenda.map→sort time HH:mm
-		- staff.table: staffId ready→parallel fetchAppointments+fetchAthletes+blocks effect; refresh post-mutazione=await fetchAppointments (non APT.inv)
-		- api.today: route GET filtra ulteriormente status completati/cancellati e passati >1h salvo in_corso finestra attiva ref=APT.api.staff.todayGET
-	- QUERIES
-		- use=src/hooks/useAthleteAppointments.ts (queryFn+realtime+error normalize; RPC checkOverlap ref=[[appointments_overlap]])
-		- use=src/lib/query-keys.ts#appointments
-		- use=src/lib/utils/resolve-profile-by-identifier.ts
-		- use=src/lib/appointments/athlete-query-params.ts (solo input filtri fetch ref=[[appointments_context]])
-		- use=src/lib/appointments/queries.ts#listStaffAppointmentsForTable|STAFF_APPOINTMENTS_*_SELECT|StaffCalendarAppointmentListRow
-		- use=src/lib/appointments/staff-today-appointments-query.ts#getStaffLocalDayBoundsISO|STAFF_TODAY_APPOINTMENTS_SELECT|formatStaffDayAthleteDisplayName
-		- use=src/lib/appointments/fetch-staff-today-agenda.ts#fetchStaffTodayAgenda
-		- use=src/lib/appointments/staff-appointments-select.ts#STAFF_APPOINTMENTS_CORE_SELECT
-		- use=src/lib/supabase/supabase-lock-abort.ts#isSupabaseAuthLockStealAbortError
-		- use=src/lib/supabase/client.ts
-		- use=src/hooks/useRealtimeChannel.ts
-		- use=src/lib/is-network-fetch-error.ts
-		- use=src/components/athlete/appointments-card.tsx (consumo liste UI ref=[[appointments_context]])
-		- use=src/hooks/appointments/useStaffAppointmentsTable.ts (fetch lista+atleti+blocks+xtab)
-		- use=src/app/dashboard/appuntamenti/page.tsx (consumo hook+filter UI lista ref=[[appointments_context]])
-		- use=src/app/dashboard/prenotazioni/page.tsx (solo appointments|loading hook+agenda oggi)
-		- use=src/app/dashboard/massaggiatore/appuntamenti/page.tsx (hook+filter type massaggio ref=[[appointments_context]])
-		- use=src/app/api/dashboard/appointments/route.ts (server list oggi staff ref=APT.api.staff.todayGET)
-	- CONTEXT
-		- nome:cache profilo modulo hook
-		- issues=Map profileIdCache per uid ripetuti nella sessione
-		- use=stesso hook file; non confondere queryKey byUser con firma byUser in query-keys (passa stringa composita `${uid}-${role}`)
-		- nome:staff appointments table fetch
-		- issues=lista staff tab non popola cache React Query useAthleteAppointments; coerenza cross-schermata dipende da refetch altra pipeline o STAFF_APPOINTMENTS_INVALIDATE_EVENT
-		- use=[[appointments_mutations]] APT.staff.mut.inv delta
-		- nome:api-dashboard-appointments-get vs client
-		- issues=stessa select lib giorno ma route applica filtro business aggiuntivo (nasconde passati freddi) non presente nella query SQL grezza
-		- use=APT.api.staff.todayGET
+  - ATOMS
+    - APT.tbl=appointments
+    - APT.qk=queryKeys.appointments.byUser(`${userId}-${role||unknown}`)|appointments.all se !userId
+    - APT.qk.canon=queryKeys.appointments.all|byUser(string)|byDate(uid,date) (definizione keys file query-keys)
+    - APT.rq.en=useQuery enabled !!userId
+    - APT.pid=resolveProfileByIdentifier(client,userId,'id',{profileIdCache:Map})
+    - APT.pid.err=no row→throw Profilo non trovato|!userId→throw UserId non fornito
+    - APT.sel=`* , athlete:profiles!athlete_id(...), trainer:profiles!trainer_id(...), staff:profiles!staff_id(...)`
+    - APT.ord=order starts_at ascending true
+    - APT.norm.drv=normalizeAthleteAppointmentsQueryParams(role) (dettaglio valori ref=[[appointments_context]])
+    - APT.f.ath=eq athlete_id profileId + se !includePastAppointments→gte starts_at now ISO + se excludeCancelledAppointments→is cancelled_at null
+    - APT.f.st|admin=eq staff_id profileId (trainer_id non amplia set)
+    - APT.f.unk=no eq athlete/staff→set filtrato solo da RLS
+    - APT.f.ath.curr=includePastAppointments true da normalize atleta→branch gte starts_at non applicata in pratica oggi
+    - APT.map.ath.nm=(athlete.nome||athlete.first_name)+(athlete.cognome||athlete.last_name) trim else Atleta
+    - APT.map.tr.nm=(trainer.nome||trainer.first_name||staff.nome||staff.first_name)+(trainer.cognome||trainer.last_name||staff.cognome||staff.last_name) trim else Trainer
+    - APT.map.av=athlete.avatar_url??athlete.avatar→athlete_avatar_url
+    - APT.map.upd_at=row.updated_at assente in transform→updated_at:=created_at
+    - APT.map.nullToUndef=location|notes|cancelled_at optional chain
+    - APT.err.str=Error|PostgREST object message[+details join]→string UX
+    - APT.net=isLikelyNetworkFetchFailure→warn vs error log su fetchError
+    - APT.rt.chan=useRealtimeChannel('appointments')→invalidate ref=[[appointments_mutations]] (invalidateAppointmentsQueries)
+    - APT.hook.out=appointments|loading|error|refetch (+ mutazioni in altro modulo stesso file)
+    - APT.lib.core=src/lib/appointments/staff-appointments-select.ts#STAFF_APPOINTMENTS_CORE_SELECT=id,org_id,athlete_id,staff_id,starts_at,ends_at,type,status,location,notes,cancelled_at,created_at
+    - APT.lib.tbl.sel=src/lib/appointments/queries.ts#STAFF_APPOINTMENTS_TABLE_LIST_SELECT=CORE+updated_at
+    - APT.lib.tbl.q=listStaffAppointmentsForTable(client,staffId)→from(appointments).select(tbl).eq(staff_id).or(is_open_booking_day.null,false).order(starts_at asc)
+    - APT.lib.cal.sel=src/lib/appointments/queries.ts#STAFF_APPOINTMENTS_CALENDAR_LIST_SELECT=CORE+color,is_open_booking_day,created_by_role
+    - APT.lib.cal.merge=listMergedStaffCalendarAppointments→ref=[[appointments_calendar]] (merge FreePass|collaboratori|filtro privato)
+    - APT.lib.day.bounds=src/lib/appointments/staff-today-appointments-query.ts#getStaffLocalDayBoundsISO→dayStart|dayEnd ISO [00:00,nextDay)
+    - APT.lib.day.sel=STAFF_TODAY_APPOINTMENTS_SELECT=id,starts_at,ends_at,type,status,athlete_id,athlete:profiles!appointments_athlete_id_fkey(...)
+    - APT.lib.day.fmt=formatStaffDayAthleteDisplayName(athlete unknown)→nome cognome|Atleta|gestione relation error object
+    - APT.lib.agenda=src/lib/appointments/fetch-staff-today-agenda.ts#fetchStaffTodayAgenda→query giorno locale staff_id gte dayStart lt dayEnd cancelled null order asc
+    - APT.lib.agenda.retry=maxAttempts=3 sleep 80ms se isSupabaseAuthLockStealAbortError
+    - APT.lib.agenda.map=TodayAppointment rows→AgendaEvent[] skip status completato|completed|cancelled|annullato; finestra >1h passato skip; status in_corso|in-progress|finestra corrente; type allenamento|consulenza(prima_visita|riunione); athlete_id UUID da row o nested profile
+    - APT.lib.ath.qp=src/lib/appointments/athlete-query-params.ts#normalizeAthleteAppointmentsQueryParams|isAthleteAppointmentFutureLike|isAthleteAppointmentPastLike (dettaglio ref=[[appointments_context]])
+    - APT.staff.hook=file=src/hooks/appointments/useStaffAppointmentsTable.ts|parallel=staff lista+CRUD locale vs ref=[[appointments_fetch]] useAthleteAppointments (no useQuery|no queryKeys|no APT.rt.chan in questo hook)
+    - APT.staff.src=staffSource=isImpersonating&&actorProfile?actorProfile:authUser→staffId=id|staffOrgId=org_id|staffRole|staffName (allineato pattern ref=[[appointments_calendar]] APT.cal.staffSource)
+    - APT.staff.fetch.list=listStaffAppointmentsForTable(supabase,staffId)→useState rows ref=APT.lib.tbl.q
+    - APT.staff.fetch.enrich=athlete_id distinct→chunkForSupabaseIn→profiles select id nome cognome avatar avatar_url→athlete_name|athlete_avatar_url|append staff_name|normalizeAppointmentStatus(status)
+    - APT.staff.fetch.athletes=profiles.in(role athlete|atleta).order(nome)→picker lista hook
+    - APT.staff.fetch.blocks=fetchStaffCalendarBlocksForUiValidation(supabase,staffOrgId,staffId)→calendarBlocks state ref=[[appointments_overlap]] APT.cb.\*
+    - APT.staff.fetch.xtab=window listen STAFF_APPOINTMENTS_INVALIDATE_EVENT→void fetchAppointments|event=src/lib/staff-cross-tab-events.ts
+    - APT.api.staff.todayGET=file=src/app/api/dashboard/appointments/route.ts|method=GET|auth=getServerAuthUser 401|profile=fetchCurrentProfileForAuthUserId→staffProfileId 404|bounds=getStaffLocalDayBoundsISO|select=STAFF_TODAY_APPOINTMENTS_SELECT eq staff_id gte starts_at lt dayEnd is cancelled_at null order asc ref=APT.lib.day|response map formato leggero id|date|time|athlete_name|type
+  - COMPRESSED
+    - flow: userId→APT.pid→from(APT.tbl).select(APT.sel)→APT.norm.drv→APT.f.*→APT.ord→rows→APT.map.*→list
+    - parallelo: APT.rt.chan su ogni INSERT|UPDATE|DELETE payload→stesso invalidate globale appointments
+    - open_booking visibilità atleta: TODO hook commento→autorità RLS ref=[[appointments_calendar]]
+    - lib.staffDay: bounds→select APT.lib.day.sel→APT.lib.agenda.map→sort time HH:mm
+    - staff.table: staffId ready→parallel fetchAppointments+fetchAthletes+blocks effect; refresh post-mutazione=await fetchAppointments (non APT.inv)
+    - api.today: route GET filtra ulteriormente status completati/cancellati e passati >1h salvo in_corso finestra attiva ref=APT.api.staff.todayGET
+  - QUERIES
+    - use=src/hooks/useAthleteAppointments.ts (queryFn+realtime+error normalize; RPC checkOverlap ref=[[appointments_overlap]])
+    - use=src/lib/query-keys.ts#appointments
+    - use=src/lib/utils/resolve-profile-by-identifier.ts
+    - use=src/lib/appointments/athlete-query-params.ts (solo input filtri fetch ref=[[appointments_context]])
+    - use=src/lib/appointments/queries.ts#listStaffAppointmentsForTable|STAFF*APPOINTMENTS*\*\_SELECT|StaffCalendarAppointmentListRow
+    - use=src/lib/appointments/staff-today-appointments-query.ts#getStaffLocalDayBoundsISO|STAFF_TODAY_APPOINTMENTS_SELECT|formatStaffDayAthleteDisplayName
+    - use=src/lib/appointments/fetch-staff-today-agenda.ts#fetchStaffTodayAgenda
+    - use=src/lib/appointments/staff-appointments-select.ts#STAFF_APPOINTMENTS_CORE_SELECT
+    - use=src/lib/supabase/supabase-lock-abort.ts#isSupabaseAuthLockStealAbortError
+    - use=src/lib/supabase/client.ts
+    - use=src/hooks/useRealtimeChannel.ts
+    - use=src/lib/is-network-fetch-error.ts
+    - use=src/components/athlete/appointments-card.tsx (consumo liste UI ref=[[appointments_context]])
+    - use=src/hooks/appointments/useStaffAppointmentsTable.ts (fetch lista+atleti+blocks+xtab)
+    - use=src/app/dashboard/appuntamenti/page.tsx (consumo hook+filter UI lista ref=[[appointments_context]])
+    - use=src/app/dashboard/prenotazioni/page.tsx (solo appointments|loading hook+agenda oggi)
+    - use=src/app/dashboard/massaggiatore/appuntamenti/page.tsx (hook+filter type massaggio ref=[[appointments_context]])
+    - use=src/app/api/dashboard/appointments/route.ts (server list oggi staff ref=APT.api.staff.todayGET)
+  - CONTEXT
+    - nome:cache profilo modulo hook
+    - issues=Map profileIdCache per uid ripetuti nella sessione
+    - use=stesso hook file; non confondere queryKey byUser con firma byUser in query-keys (passa stringa composita `${uid}-${role}`)
+    - nome:staff appointments table fetch
+    - issues=lista staff tab non popola cache React Query useAthleteAppointments; coerenza cross-schermata dipende da refetch altra pipeline o STAFF_APPOINTMENTS_INVALIDATE_EVENT
+    - use=[[appointments_mutations]] APT.staff.mut.inv delta
+    - nome:api-dashboard-appointments-get vs client
+    - issues=stessa select lib giorno ma route applica filtro business aggiuntivo (nasconde passati freddi) non presente nella query SQL grezza
+    - use=APT.api.staff.todayGET

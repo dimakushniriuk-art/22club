@@ -67,7 +67,8 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
     }
     const dayData = sessionMap.get(sessionKey)!
     if (point.date > dayData.date) dayData.date = point.date
-    if (!dayData.workout_log_id && point.workout_log_id) dayData.workout_log_id = point.workout_log_id
+    if (!dayData.workout_log_id && point.workout_log_id)
+      dayData.workout_log_id = point.workout_log_id
     if (!dayData.workout_day_exercise_id && point.workout_day_exercise_id) {
       dayData.workout_day_exercise_id = point.workout_day_exercise_id
     }
@@ -147,10 +148,8 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
 
   const chartDataUnfiltered: ChartRow[] = sortedDates.map((date) => {
     const agg = byDate.get(date)!
-    const reps_media =
-      agg.repsVals.length > 0 ? Math.max(...agg.repsVals) : null
-    const seconds_media =
-      agg.secondVals.length > 0 ? Math.max(...agg.secondVals) : null
+    const reps_media = agg.repsVals.length > 0 ? Math.max(...agg.repsVals) : null
+    const seconds_media = agg.secondVals.length > 0 ? Math.max(...agg.secondVals) : null
     return {
       date,
       peso_massimo_sessione: agg.maxPeso,

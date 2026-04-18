@@ -1,50 +1,50 @@
 - FOLDER_SCAN_WORKFLOW
-	- goal
-		- scan a real project folder
-		- detect domain from project index
-		- split logic by module
-		- update brain incrementally
-		- preserve all critical information
-	- input
-		- target_folder
-		- project_index
-	- project_navigation
-		- detect domain from path and code purpose
-		- detect likely module from logic type
-		- follow internal imports only when necessary
-		- prefer smallest useful scope
-	- module_classification
-		- fetch=query read list resolve map realtime
-		- mutations=insert update delete cancel invalidate write flow
-		- modal=form defaults payload UI form rules submit flow
-		- overlap=validation conflicts constraints blocking overlap rpc slot checks
-		- calendar=merge views ranges staff aggregation open booking time windows
-		- recurrence=repeat generate serialize recurring rules
-		- context=operational debug fix workflow assumptions risks
-	- write_strategy
-		- write into existing domain modules
-		- append or merge without losing previous information
-		- avoid unrelated overwrites
-		- use refs when logic belongs mainly elsewhere
-		- keep information dense
-	- extraction_format
-		- ATOMS
-			- key=value
-		- COMPRESSED
-			- short structured logic
-		- QUERIES
-			- use=...
-		- CONTEXT
-			- name
-			- issues=...
-			- use=...
-	- safety
-		- do not scan full project when one folder is enough
-		- do not collapse everything into one file
-		- do not remove existing critical entries
-		- if uncertain prefer adding a ref instead of duplicating
-		- preserve Logseq bullet format only
-	- output_rule
-		- domain index stays lightweight
-		- detailed knowledge goes into domain modules
-		- operational summaries go into domain_context
+  - goal
+    - scan a real project folder
+    - detect domain from project index
+    - split logic by module
+    - update brain incrementally
+    - preserve all critical information
+  - input
+    - target_folder
+    - project_index
+  - project_navigation
+    - detect domain from path and code purpose
+    - detect likely module from logic type
+    - follow internal imports only when necessary
+    - prefer smallest useful scope
+  - module_classification
+    - fetch=query read list resolve map realtime
+    - mutations=insert update delete cancel invalidate write flow
+    - modal=form defaults payload UI form rules submit flow
+    - overlap=validation conflicts constraints blocking overlap rpc slot checks
+    - calendar=merge views ranges staff aggregation open booking time windows
+    - recurrence=repeat generate serialize recurring rules
+    - context=operational debug fix workflow assumptions risks
+  - write_strategy
+    - write into existing domain modules
+    - append or merge without losing previous information
+    - avoid unrelated overwrites
+    - use refs when logic belongs mainly elsewhere
+    - keep information dense
+  - extraction_format
+    - ATOMS
+      - key=value
+    - COMPRESSED
+      - short structured logic
+    - QUERIES
+      - use=...
+    - CONTEXT
+      - name
+      - issues=...
+      - use=...
+  - safety
+    - do not scan full project when one folder is enough
+    - do not collapse everything into one file
+    - do not remove existing critical entries
+    - if uncertain prefer adding a ref instead of duplicating
+    - preserve Logseq bullet format only
+  - output_rule
+    - domain index stays lightweight
+    - detailed knowledge goes into domain modules
+    - operational summaries go into domain_context

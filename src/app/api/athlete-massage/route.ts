@@ -64,7 +64,11 @@ export async function PATCH(request: NextRequest) {
       return prep.response
     }
 
-    return await upsertMassageForAthleteUserId(prep.athleteAuthId, validatedUpdates.data, prep.writeDb)
+    return await upsertMassageForAthleteUserId(
+      prep.athleteAuthId,
+      validatedUpdates.data,
+      prep.writeDb,
+    )
   } catch (error) {
     logger.error('Errore PATCH athlete-massage', error)
     return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 })
@@ -79,11 +83,14 @@ async function upsertMassageForAthleteUserId(
   const updateData: Record<string, unknown> = {}
   if (updates.preferenze_tipo_massaggio !== undefined)
     updateData.preferenze_tipo_massaggio = updates.preferenze_tipo_massaggio
-  if (updates.zone_problematiche !== undefined) updateData.zone_problematiche = updates.zone_problematiche
+  if (updates.zone_problematiche !== undefined)
+    updateData.zone_problematiche = updates.zone_problematiche
   if (updates.intensita_preferita !== undefined)
     updateData.intensita_preferita = updates.intensita_preferita
-  if (updates.allergie_prodotti !== undefined) updateData.allergie_prodotti = updates.allergie_prodotti
-  if (updates.note_terapeutiche !== undefined) updateData.note_terapeutiche = updates.note_terapeutiche
+  if (updates.allergie_prodotti !== undefined)
+    updateData.allergie_prodotti = updates.allergie_prodotti
+  if (updates.note_terapeutiche !== undefined)
+    updateData.note_terapeutiche = updates.note_terapeutiche
   if (updates.storico_massaggi !== undefined) updateData.storico_massaggi = updates.storico_massaggi
 
   const { data: existing, error: existingErr } = await db

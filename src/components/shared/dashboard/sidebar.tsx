@@ -142,11 +142,7 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
     try {
       const result = await signOut()
       if (!result.success) {
-        notify(
-          result.error ?? 'Logout non riuscito. Riprova.',
-          'error',
-          'Errore logout',
-        )
+        notify(result.error ?? 'Logout non riuscito. Riprova.', 'error', 'Errore logout')
       }
     } catch (error) {
       logger.error('Errore nel logout', error)
@@ -194,85 +190,85 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
       )}
       <nav className="flex flex-col flex-1 min-h-0 gap-0" suppressHydrationWarning>
         <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch]">
-        {nav.map((item) => {
-          const itemPath = item.href.split('?')[0]
-          const isHomePage =
-            itemPath === '/dashboard' ||
-            itemPath === '/home' ||
-            itemPath === '/dashboard/nutrizionista' ||
-            itemPath === '/dashboard/massaggiatore'
-          const active = isHomePage
-            ? path === itemPath
-            : path === itemPath || path.startsWith(itemPath + '/')
-          const Icon = item.icon
-          return (
+          {nav.map((item) => {
+            const itemPath = item.href.split('?')[0]
+            const isHomePage =
+              itemPath === '/dashboard' ||
+              itemPath === '/home' ||
+              itemPath === '/dashboard/nutrizionista' ||
+              itemPath === '/dashboard/massaggiatore'
+            const active = isHomePage
+              ? path === itemPath
+              : path === itemPath || path.startsWith(itemPath + '/')
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                prefetch
+                onClick={handleLinkClick}
+                className={`${linkBase} relative ${isCollapsed ? 'justify-center' : ''} ${
+                  active ? linkActive : linkInactive
+                }`}
+                title={isCollapsed ? item.label : undefined}
+                suppressHydrationWarning
+              >
+                {item.href === '/dashboard/workouts' && staffWorkoutsSlotsActive ? (
+                  <span
+                    className="pointer-events-none absolute top-1.5 right-1.5 z-[1] h-2 w-2 shrink-0 rounded-full bg-amber-400 shadow-[0_0_0_2px_rgba(0,0,0,0.45)]"
+                    aria-hidden
+                  />
+                ) : null}
+                <Icon
+                  className={`w-5 h-5 shrink-0 transition-colors ${
+                    active ? 'text-primary' : 'text-text-secondary group-hover:text-primary'
+                  }`}
+                />
+                {!isCollapsed && (
+                  <>
+                    <span className="text-sm font-medium whitespace-nowrap flex-1 min-w-0 truncate">
+                      {item.label}
+                    </span>
+                    {active && (
+                      <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
+                    )}
+                  </>
+                )}
+              </Link>
+            )
+          })}
+          {/* Link Admin - solo se l'utente è admin */}
+          {role === 'staff' && isAdmin && (
             <Link
-              key={item.href}
-              href={item.href}
-              prefetch
+              href="/dashboard/admin"
               onClick={handleLinkClick}
-              className={`${linkBase} relative ${isCollapsed ? 'justify-center' : ''} ${
-                active ? linkActive : linkInactive
+              className={`${linkBase} ${isCollapsed ? 'justify-center' : ''} ${
+                path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
+                  ? linkActive
+                  : linkInactive
               }`}
-              title={isCollapsed ? item.label : undefined}
+              title={isCollapsed ? 'Admin' : undefined}
               suppressHydrationWarning
             >
-              {item.href === '/dashboard/workouts' && staffWorkoutsSlotsActive ? (
-                <span
-                  className="pointer-events-none absolute top-1.5 right-1.5 z-[1] h-2 w-2 shrink-0 rounded-full bg-amber-400 shadow-[0_0_0_2px_rgba(0,0,0,0.45)]"
-                  aria-hidden
-                />
-              ) : null}
-              <Icon
+              <Shield
                 className={`w-5 h-5 shrink-0 transition-colors ${
-                  active ? 'text-primary' : 'text-text-secondary group-hover:text-primary'
+                  path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
+                    ? 'text-primary'
+                    : 'text-text-secondary group-hover:text-primary'
                 }`}
               />
               {!isCollapsed && (
                 <>
-                  <span className="text-sm font-medium whitespace-nowrap flex-1 min-w-0 truncate">
-                    {item.label}
+                  <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1 truncate">
+                    Admin
                   </span>
-                  {active && (
+                  {(path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')) && (
                     <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                   )}
                 </>
               )}
             </Link>
-          )
-        })}
-        {/* Link Admin - solo se l'utente è admin */}
-        {role === 'staff' && isAdmin && (
-          <Link
-            href="/dashboard/admin"
-            onClick={handleLinkClick}
-            className={`${linkBase} ${isCollapsed ? 'justify-center' : ''} ${
-              path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
-                ? linkActive
-                : linkInactive
-            }`}
-            title={isCollapsed ? 'Admin' : undefined}
-            suppressHydrationWarning
-          >
-            <Shield
-              className={`w-5 h-5 shrink-0 transition-colors ${
-                path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
-                  ? 'text-primary'
-                  : 'text-text-secondary group-hover:text-primary'
-              }`}
-            />
-            {!isCollapsed && (
-              <>
-                <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1 truncate">
-                  Admin
-                </span>
-                {(path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')) && (
-                  <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
-                )}
-              </>
-            )}
-          </Link>
-        )}
+          )}
         </div>
         {/* Esci + toggle: footer fuori area scroll (sempre in vista) */}
         <div className="shrink-0 pt-3 border-t border-white/10 space-y-1.5">

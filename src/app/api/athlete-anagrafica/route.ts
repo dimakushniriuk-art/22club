@@ -110,8 +110,10 @@ export async function PATCH(request: NextRequest) {
       updateData.contatto_emergenza_relazione = validated.contatto_emergenza_relazione
     if (validated.professione !== undefined) updateData.professione = validated.professione
     if (validated.altezza_cm !== undefined) updateData.altezza_cm = validated.altezza_cm
-    if (validated.peso_iniziale_kg !== undefined) updateData.peso_iniziale_kg = validated.peso_iniziale_kg
-    if (validated.gruppo_sanguigno !== undefined) updateData.gruppo_sanguigno = validated.gruppo_sanguigno
+    if (validated.peso_iniziale_kg !== undefined)
+      updateData.peso_iniziale_kg = validated.peso_iniziale_kg
+    if (validated.gruppo_sanguigno !== undefined)
+      updateData.gruppo_sanguigno = validated.gruppo_sanguigno
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'Nessun campo da aggiornare' }, { status: 400 })

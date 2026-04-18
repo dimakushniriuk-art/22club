@@ -1,84 +1,84 @@
 - appointments_calendar
-	- ATOMS
-		- APT.cal.merge=listMergedStaffCalendarAppointments(client,args) impl=src/lib/appointments/queries.ts
-		- APT.cal.args=staffProfileId|staffOrgId|staffRole|showFreePass|showCollaborators
-		- APT.cal.mine=appointments select STAFF_APPOINTMENTS_CALENDAR_LIST_SELECT eq staff_id staffProfileId order starts_at asc
-		- APT.cal.fp=trainer|admin ∧ staffOrgId ∧ showFreePass→appointments eq org_id eq is_open_booking_day true merge dedup id Set
-		- APT.cal.coll=showCollaborators→profiles id where org_id eq staffOrgId role in nutrizionista,massaggiatore minus self→chunkForSupabaseIn staff_id in chunks→merge dedup
-		- APT.cal.sort=final allRows sort starts_at timestamp asc
-		- APT.cal.priv.filter=remove type privato AND staff_id≠staffProfileId (slot privati altri)
-		- APT.cal.tbl=listStaffAppointmentsForTable eq staff_id or is_open_booking_day is null eq false (no giorni libera prenotazione in lista tab)
-		- APT.cal.lib.ics=src/lib/calendar/appointment-reminder-email.ts
-		- APT.cal.ics.gen=generateIcs(params title|description|location|startsAt|endsAt|uid)→VCALENDAR VERSION=2.0 PRODID=-//22Club//Appuntamento//IT CALSCALE=GREGORIAN METHOD=PUBLISH VEVENT UID=${uid}@22club DTSTAMP=nowZ DTSTART/DTEND=iso stripped [-:] + drop .ms
-		- APT.cal.ics.esc=icsEscape backslash|semicolon|comma|newline CR stripped
-		- APT.cal.gcal.url=getGoogleCalendarUrl base=calendar.google.com/calendar/render action=TEMPLATE dates=formatDt(start)UTC/ formatDt(end)UTC yyyymmddThhmmssZ|text|details|location
-		- APT.cal.email.bridge=sendAppointmentReminderEmail usa APT.cal.ics.gen+APT.cal.gcal.url per allegato+CTA ref=[[appointments_context]]
-		- APT.cal.until.const=UNTIL_LESSONS_MAX_SLOTS=100
-		- APT.cal.until=N=min(lesson_counters.count,APT.cal.until.const) weekly slots duration cost da first start/end
-		- APT.cal.recWin=getRecurrenceSlots recurrence enum 2_weeks|1_month|6_months|1_year→limitTime firstStart+duration limit; step weekly oneWeekMs; push ISO starts ends
-		- APT.cal.staffSource=useAuth impersonation?actorProfile:authUser per chi opera calendario
-		- ref=[[appointments_overlap]] appointmentSlotOverlapsAnyCalendarBlock|checkStaffCalendarSlotOverlap in use-calendar-page
-		- ref=[[appointments_fetch]] TODO visibilità open booking atleta RLS
-		- APT.api.post.reminder=file=src/app/api/calendar/send-appointment-reminder/route.ts|method=POST|auth=getServerAuthUser 401|body={appointmentIds:string[]}|400 JSON parse|ids vuoti→{sent:0,skipped:0}|chunk=chunkForSupabaseIn su ids|select appointments campi id athlete staff times type location notes is_open_booking_day|filter=toProcess athlete_id presente ∧ is_open_booking_day falsy|parallel fetch=profiles(staff+athlete chunked)|staff_calendar_settings custom_appointment_types chunked|lesson_counters chunked|appointments status completato count per athlete chunked|fallback payments completed lessons_purchased sum se lesson_counters mancante|typeLabel=getTypeLabel+APPOINTMENT_TYPE_LABELS|loop sendAppointmentReminderEmail ref=APT.cal.email.bridge|json {sent,skipped:ids.length-sent}|500 fetch errors
-		- APT.ui.viewport=calendario_page_modal_max_h_dvh|loading_min_h_50dvh|sidebar_lg_h_full_max_h_full=file=src/app/dashboard/calendario/page.tsx
-		- APT.ui.fc.file=src/components/calendar/calendar-view.tsx
-		- APT.ui.fc.load=useEffect dynamic import @fullcalendar/react|daygrid|timegrid|interaction|list→state FullCalendar+plugins|spinner fino isLoaded
-		- APT.ui.fc.ref=calendarRef+apiRef|ref callback sync apiRef|datesSet listener sync view+currentTitle|getApi wrapper
-		- APT.ui.fc.views=dayGridMonth|timeGridWeek|timeGridDay|listWeek|VIEW_LABELS it|headerToolbar=false|locale=it|firstDay=initialWeekStart effect sync api.setOption
-		- APT.ui.fc.initView=useState(initialView??month)|useEffect initialView once hasAppliedInitialView|effect initialView+isLoaded changeView+title
-		- APT.ui.fc.slotWindow=useMemo slotMinTime|slotMaxTime da settings.grid_min_time|grid_max_time regex HH:mm(:ss)? else envelope work_hours min start max end else 07:00-22:00 toFull pad seconds
-		- APT.ui.fc.grid=useMemo slotDuration|snapDuration VALID_SLOT_MINUTES clamp|compactToolbar→00:15:00 fixed|else gridMins 90→30 45→15 else clamped snap=clamped label lcm comment in code
-		- APT.ui.fc.settings=useStaffCalendarSettings|toolbar slot duration buttons→mutateSettings({slot_duration_minutes})|typeLabelMap=APPOINTMENT_TYPE_LABELS+custom_appointment_types|densityClass=fc-density-{view_density}
-		- APT.ui.fc.zoom=useState 100|ZOOM_MIN=80 MAX=140 STEP=10|style --fc-zoom wrapper scroll overflow
-		- APT.ui.fc.fcOpts=slotLabelInterval 01:00|allDaySlot=false|slotEventOverlap=false|nowIndicator|dayMaxEvents=5|moreLinkText=altri|selectable=Boolean(onSelectSlot)|selectMirror|selectAllow forwarded|selectMinDistance=5|unselectAuto|editable=true|eventDrop|eventResize|revert on missing dates or catch
-		- APT.ui.fc.navigateToDate=useEffect navigateToDate→changeView timeGridDay|setView|scrollToTime padded|setTimeout title+onNavigateComplete 50ms
-		- APT.ui.fc.navigateDay=useCallback navigateCalendarToDay→setView timeGridDay+changeView+scrollToTime nested timeouts
-		- APT.ui.fc.listWeekFallback=useEffect isLoaded+appointments+view deps|se api listWeek e nessun evento in activeStart..activeEnd→gotoDate first upcoming≥now else appointments[0]+setCurrentTitle timeout 100ms
-		- APT.ui.fc.settingsLate=useEffect isLoaded api.setOption slotMinTime|slotMaxTime|slotDuration|snapDuration evita griglia 00-23 prima settings
-		- APT.ui.fc.events=useMemo merge calendarBlocks background fc-calendar-block|appointments→FC EventInput|openBookingAsBackground+is_open_booking_day→segments ref=[[appointments_overlap]] APT.ob.grid.each|title slotBookingCounts `${count}/${effectiveOpenBookingSlotMax}`|effectiveOpenBookingSlotMax=trainerLiberaSlotMax??openBookingSlotMax|trainer fetch supabase staff_calendar_settings max_free_pass quando compactToolbar+openBookingAsBackground+openBookingTrainerStaffId primo staff_id su open day row|DEFAULT_MAX_FREE_PASS da lib/calendar-defaults
-		- APT.ui.fc.openBookingMonth=openBookingAsBackground+dayGridMonth→allDay background per local y-m-d keys fc-open-booking-slot
-		- APT.ui.fc.styling=type→fc-event-type-*|cancelled fc-event-cancelled|recurrence fc-event-recurring|open fc-event-open-booking|peer fc-athlete-peer-event|cell width type_cell_width half|full fc-event-*-cell|compactToolbar colors distinctColorForAthleteId hash|own cyan ATHLETE_OWN_APPOINTMENT|lessons_remaining≤0→rosso
-		- APT.ui.fc.drag=isEventEditable optional|startEditable|durationEditable=!isPeerEvent∧(isEventEditable?isEventEditable(apt):true)
-		- APT.ui.fc.eventClick=month open booking marker/bg o block bg→navigateCalendarToDay|compactToolbar month|week→navigate day return no popover|resolve id open-bg-* via _openBookingSourceId|open-booking-day-* via _dayDate local match|merge click slice starts_at|ends_at extendedProps→AppointmentUI|peer guard return|onEventClick position center-bottom rect
-		- APT.ui.fc.dateClick=month→navigateCalendarToDay only|week→navigate+onSelectSlot 1h from click|day→onSelectSlot 1h|onDateClick prop legacy void in component
-		- APT.ui.fc.select=handleSelect→onSelectSlot range|FAB cyan se onNewAppointment: prev|due slot vuoti w-14 gap-2|next bottom-center left-1/2 -translate-x-1/2|Plus bottom-right fixed|stesso CALENDAR_FAB_BUTTON_CLASS
-		- APT.ui.fc.tooltip=eventMouseEnter skip compact month|week|peer non-open filter|fixed position state
-		- APT.ui.fc.content=eventContent HTML month avatar+lessons|timeGrid staff vs compact athlete card|listWeek detail location|escape html month count label open bg
-		- APT.ui.cal.page.file=src/app/dashboard/calendario/page.tsx
-		- APT.ui.cal.page.shell=CalendarioPage→useCalendarPageGuard loader|StaffContentLayout title Calendario|CalendarPageContent default basePath=/dashboard/calendario
-		- APT.ui.cal.page.hook=useCalendarPage→appointments|athletes|staffProfileId|calendarBlocks|loading|handleFormSubmit|handleCancel|handleDelete|handleComplete|handleNoShow|handleEventDrop|handleEventResize|appointmentsLoading ref=[[appointments_fetch]] lista hook interna
-		- APT.ui.cal.page.filters=useState URL seed q|athlete|type|status|useEffect sync da searchParams|updateUrlFilters router.replace preserve others|filteredAppointments useMemo athlete_id|type|status|search lower su nome|notes|location|type string
-		- APT.ui.cal.page.typeOptions=getEnabledAppointmentTypeKeys(calendarSettings,role)+custom labels sort|fallback distinct types da appointments
-		- APT.ui.cal.page.upcoming=filteredAppointments filter starts_at≥today00 active status sort|VirtualizedUpcomingList slice window
-		- APT.ui.cal.page.mini=selectedDate useBirthdays(selectedDate,org_id)|MiniCalendar appointmentDates da filtered|handleMiniCalendarDateSelect→setSelectedDate+setNavigateToDate
-		- APT.ui.cal.page.calendarProps=CalendarView appointments=filteredAppointments|onEventClick→popover state|onDateClick=handleDateClick dead in CalendarView void|onNewAppointment|onEventDrop|onEventResize|onSelectSlot→form+slot|navigateToDate|onNavigateComplete null navigate|initialView da default_calendar_view map week|day|agenda|month|initialWeekStart sunday→0|calendarBlocks|toolbarLeft Filter drawer lg|sidebar toggle|Settings link impostazioni
-		- APT.ui.cal.page.form=showForm lazy AppointmentForm prefetch mount|formInitialAppointment editingAppointment|selectedSlot toLocalISOString local wall|defaultNewAppointmentType enabled keys[0] role fallback massaggio|nutrizionista|allenamento|showOpenBookingOption role massaggiatore|nutrizionista false|onSubmit handleFormSubmitClick overlapDetected→overlapConfirmData ref=[[appointments_overlap]] dialog forceOverwrite ref=[[appointments_mutations]] handleFormSubmit third arg
-		- APT.ui.cal.page.popover=AppointmentPopover selectedAppointment|position|asModal=isMobile matchMedia max-width 851|canComplete matrix role staff_id service_type|handlePopoverCancel→cancelChoiceAppointment Dialog 24h choices|ConfirmDialog delete|complete|simple cancel
-		- APT.ui.cal.page.shortcuts=useCalendarKeyboardShortcuts showForm|showPopover|setShowKeyboardHelp|KeyboardShortcutsModal
-		- APT.ui.cal.page.theme=CalendarTheme nutrizionista teal else default class maps sidebar
-	- COMPRESSED
-		- load flow: staff ids/org/role→APT.cal.merge→APT.cal.priv.filter→UI + blocks overlap pipeline
-		- tab staff vs calendario: select list diversi open_booking flag
-		- until_lessons: lesson_counters→N slot settimanali max cap 100
-		- api reminder: aggrega dati lezioni/pagamenti lato server poi invia email calendario ref=APT.api.post.reminder
-		- ui orchestration: hook fornisce merge list+mutazioni drag|page filtra client+URL+passa filteredAppointments a FC|CalendarView traduce settings+blocks+open booking UI+handlers FC ref=APT.ui.fc.* APT.ui.cal.page.*
-	- QUERIES
-		- use=src/lib/calendar/appointment-reminder-email.ts#generateIcs|getGoogleCalendarUrl
-		- use=src/hooks/calendar/use-calendar-page.ts#getRecurrenceSlots|getRecurrenceSlotsUntilLessons|UNTIL_LESSONS_MAX_SLOTS|merge/fetch orchestration
-		- use=src/lib/appointments/queries.ts#listMergedStaffCalendarAppointments|listStaffAppointmentsForTable|STAFF_APPOINTMENTS_*_SELECT
-		- use=src/lib/appointments/staff-appointments-select.ts (core select string)
-		- use=src/lib/supabase/in-query-chunks.ts#chunkForSupabaseIn
-		- use=src/app/api/calendar/send-appointment-reminder/route.ts (orchestrazione chunk+sendAppointmentReminderEmail)
-		- use=src/app/api/calendar/notify-appointment-change/route.ts (sendAppointmentChangeEmail client path; side effects notif→ref=[[appointments_context]] nome:api-notify-appointment-change)
-		- use=src/components/calendar/calendar-view.tsx#CalendarView
-		- use=src/app/dashboard/calendario/page.tsx#CalendarPageContent|CalendarioPage
-		- use=src/hooks/calendar/use-calendar-keyboard-shortcuts.ts
-		- use=src/hooks/calendar/use-birthdays.ts
-		- use=src/hooks/calendar/use-calendar-page-guard.ts
-	- CONTEXT
-		- nome:insert ricorrenze calendario staff
-		- issues=commento use-calendar-page: insert rows limitato until_lessons≤100 e ricorrenze settimanali ~53; raise cap→RPC transazionale o chunk rollback
-		- use=stesso file per debiti/credits incrociati appuntamenti (non solo fetch lista)
-		- nome:fc-calendar-view-staff
-		- issues=FC editable globale true|gating per-evento solo startEditable|durationEditable|revert drop/resize se promise onEventDrop|onEventResize throw|filtri pagina nascono eventi senza rifetch intervallo visibile|onDateClick prop non usata nel componente ref=[[appointments_context]] nome:dashboard-calendario-ui-orchestrator
-		- use=src/components/calendar/calendar-view.tsx
+  - ATOMS
+    - APT.cal.merge=listMergedStaffCalendarAppointments(client,args) impl=src/lib/appointments/queries.ts
+    - APT.cal.args=staffProfileId|staffOrgId|staffRole|showFreePass|showCollaborators
+    - APT.cal.mine=appointments select STAFF_APPOINTMENTS_CALENDAR_LIST_SELECT eq staff_id staffProfileId order starts_at asc
+    - APT.cal.fp=trainer|admin ∧ staffOrgId ∧ showFreePass→appointments eq org_id eq is_open_booking_day true merge dedup id Set
+    - APT.cal.coll=showCollaborators→profiles id where org_id eq staffOrgId role in nutrizionista,massaggiatore minus self→chunkForSupabaseIn staff_id in chunks→merge dedup
+    - APT.cal.sort=final allRows sort starts_at timestamp asc
+    - APT.cal.priv.filter=remove type privato AND staff_id≠staffProfileId (slot privati altri)
+    - APT.cal.tbl=listStaffAppointmentsForTable eq staff_id or is_open_booking_day is null eq false (no giorni libera prenotazione in lista tab)
+    - APT.cal.lib.ics=src/lib/calendar/appointment-reminder-email.ts
+    - APT.cal.ics.gen=generateIcs(params title|description|location|startsAt|endsAt|uid)→VCALENDAR VERSION=2.0 PRODID=-//22Club//Appuntamento//IT CALSCALE=GREGORIAN METHOD=PUBLISH VEVENT UID=${uid}@22club DTSTAMP=nowZ DTSTART/DTEND=iso stripped [-:] + drop .ms
+    - APT.cal.ics.esc=icsEscape backslash|semicolon|comma|newline CR stripped
+    - APT.cal.gcal.url=getGoogleCalendarUrl base=calendar.google.com/calendar/render action=TEMPLATE dates=formatDt(start)UTC/ formatDt(end)UTC yyyymmddThhmmssZ|text|details|location
+    - APT.cal.email.bridge=sendAppointmentReminderEmail usa APT.cal.ics.gen+APT.cal.gcal.url per allegato+CTA ref=[[appointments_context]]
+    - APT.cal.until.const=UNTIL_LESSONS_MAX_SLOTS=100
+    - APT.cal.until=N=min(lesson_counters.count,APT.cal.until.const) weekly slots duration cost da first start/end
+    - APT.cal.recWin=getRecurrenceSlots recurrence enum 2_weeks|1_month|6_months|1_year→limitTime firstStart+duration limit; step weekly oneWeekMs; push ISO starts ends
+    - APT.cal.staffSource=useAuth impersonation?actorProfile:authUser per chi opera calendario
+    - ref=[[appointments_overlap]] appointmentSlotOverlapsAnyCalendarBlock|checkStaffCalendarSlotOverlap in use-calendar-page
+    - ref=[[appointments_fetch]] TODO visibilità open booking atleta RLS
+    - APT.api.post.reminder=file=src/app/api/calendar/send-appointment-reminder/route.ts|method=POST|auth=getServerAuthUser 401|body={appointmentIds:string[]}|400 JSON parse|ids vuoti→{sent:0,skipped:0}|chunk=chunkForSupabaseIn su ids|select appointments campi id athlete staff times type location notes is_open_booking_day|filter=toProcess athlete_id presente ∧ is_open_booking_day falsy|parallel fetch=profiles(staff+athlete chunked)|staff_calendar_settings custom_appointment_types chunked|lesson_counters chunked|appointments status completato count per athlete chunked|fallback payments completed lessons_purchased sum se lesson_counters mancante|typeLabel=getTypeLabel+APPOINTMENT_TYPE_LABELS|loop sendAppointmentReminderEmail ref=APT.cal.email.bridge|json {sent,skipped:ids.length-sent}|500 fetch errors
+    - APT.ui.viewport=calendario_page_modal_max_h_dvh|loading_min_h_50dvh|sidebar_lg_h_full_max_h_full=file=src/app/dashboard/calendario/page.tsx
+    - APT.ui.fc.file=src/components/calendar/calendar-view.tsx
+    - APT.ui.fc.load=useEffect dynamic import @fullcalendar/react|daygrid|timegrid|interaction|list→state FullCalendar+plugins|spinner fino isLoaded
+    - APT.ui.fc.ref=calendarRef+apiRef|ref callback sync apiRef|datesSet listener sync view+currentTitle|getApi wrapper
+    - APT.ui.fc.views=dayGridMonth|timeGridWeek|timeGridDay|listWeek|VIEW_LABELS it|headerToolbar=false|locale=it|firstDay=initialWeekStart effect sync api.setOption
+    - APT.ui.fc.initView=useState(initialView??month)|useEffect initialView once hasAppliedInitialView|effect initialView+isLoaded changeView+title
+    - APT.ui.fc.slotWindow=useMemo slotMinTime|slotMaxTime da settings.grid_min_time|grid_max_time regex HH:mm(:ss)? else envelope work_hours min start max end else 07:00-22:00 toFull pad seconds
+    - APT.ui.fc.grid=useMemo slotDuration|snapDuration VALID_SLOT_MINUTES clamp|compactToolbar→00:15:00 fixed|else gridMins 90→30 45→15 else clamped snap=clamped label lcm comment in code
+    - APT.ui.fc.settings=useStaffCalendarSettings|toolbar slot duration buttons→mutateSettings({slot_duration_minutes})|typeLabelMap=APPOINTMENT_TYPE_LABELS+custom_appointment_types|densityClass=fc-density-{view_density}
+    - APT.ui.fc.zoom=useState 100|ZOOM_MIN=80 MAX=140 STEP=10|style --fc-zoom wrapper scroll overflow
+    - APT.ui.fc.fcOpts=slotLabelInterval 01:00|allDaySlot=false|slotEventOverlap=false|nowIndicator|dayMaxEvents=5|moreLinkText=altri|selectable=Boolean(onSelectSlot)|selectMirror|selectAllow forwarded|selectMinDistance=5|unselectAuto|editable=true|eventDrop|eventResize|revert on missing dates or catch
+    - APT.ui.fc.navigateToDate=useEffect navigateToDate→changeView timeGridDay|setView|scrollToTime padded|setTimeout title+onNavigateComplete 50ms
+    - APT.ui.fc.navigateDay=useCallback navigateCalendarToDay→setView timeGridDay+changeView+scrollToTime nested timeouts
+    - APT.ui.fc.listWeekFallback=useEffect isLoaded+appointments+view deps|se api listWeek e nessun evento in activeStart..activeEnd→gotoDate first upcoming≥now else appointments[0]+setCurrentTitle timeout 100ms
+    - APT.ui.fc.settingsLate=useEffect isLoaded api.setOption slotMinTime|slotMaxTime|slotDuration|snapDuration evita griglia 00-23 prima settings
+    - APT.ui.fc.events=useMemo merge calendarBlocks background fc-calendar-block|appointments→FC EventInput|openBookingAsBackground+is_open_booking_day→segments ref=[[appointments_overlap]] APT.ob.grid.each|title slotBookingCounts `${count}/${effectiveOpenBookingSlotMax}`|effectiveOpenBookingSlotMax=trainerLiberaSlotMax??openBookingSlotMax|trainer fetch supabase staff_calendar_settings max_free_pass quando compactToolbar+openBookingAsBackground+openBookingTrainerStaffId primo staff_id su open day row|DEFAULT_MAX_FREE_PASS da lib/calendar-defaults
+    - APT.ui.fc.openBookingMonth=openBookingAsBackground+dayGridMonth→allDay background per local y-m-d keys fc-open-booking-slot
+    - APT.ui.fc.styling=type→fc-event-type-_|cancelled fc-event-cancelled|recurrence fc-event-recurring|open fc-event-open-booking|peer fc-athlete-peer-event|cell width type_cell_width half|full fc-event-_-cell|compactToolbar colors distinctColorForAthleteId hash|own cyan ATHLETE_OWN_APPOINTMENT|lessons_remaining≤0→rosso
+    - APT.ui.fc.drag=isEventEditable optional|startEditable|durationEditable=!isPeerEvent∧(isEventEditable?isEventEditable(apt):true)
+    - APT.ui.fc.eventClick=month open booking marker/bg o block bg→navigateCalendarToDay|compactToolbar month|week→navigate day return no popover|resolve id open-bg-_ via \_openBookingSourceId|open-booking-day-_ via \_dayDate local match|merge click slice starts_at|ends_at extendedProps→AppointmentUI|peer guard return|onEventClick position center-bottom rect
+    - APT.ui.fc.dateClick=month→navigateCalendarToDay only|week→navigate+onSelectSlot 1h from click|day→onSelectSlot 1h|onDateClick prop legacy void in component
+    - APT.ui.fc.select=handleSelect→onSelectSlot range|FAB cyan se onNewAppointment: prev|due slot vuoti w-14 gap-2|next bottom-center left-1/2 -translate-x-1/2|Plus bottom-right fixed|stesso CALENDAR_FAB_BUTTON_CLASS
+    - APT.ui.fc.tooltip=eventMouseEnter skip compact month|week|peer non-open filter|fixed position state
+    - APT.ui.fc.content=eventContent HTML month avatar+lessons|timeGrid staff vs compact athlete card|listWeek detail location|escape html month count label open bg
+    - APT.ui.cal.page.file=src/app/dashboard/calendario/page.tsx
+    - APT.ui.cal.page.shell=CalendarioPage→useCalendarPageGuard loader|StaffContentLayout title Calendario|CalendarPageContent default basePath=/dashboard/calendario
+    - APT.ui.cal.page.hook=useCalendarPage→appointments|athletes|staffProfileId|calendarBlocks|loading|handleFormSubmit|handleCancel|handleDelete|handleComplete|handleNoShow|handleEventDrop|handleEventResize|appointmentsLoading ref=[[appointments_fetch]] lista hook interna
+    - APT.ui.cal.page.filters=useState URL seed q|athlete|type|status|useEffect sync da searchParams|updateUrlFilters router.replace preserve others|filteredAppointments useMemo athlete_id|type|status|search lower su nome|notes|location|type string
+    - APT.ui.cal.page.typeOptions=getEnabledAppointmentTypeKeys(calendarSettings,role)+custom labels sort|fallback distinct types da appointments
+    - APT.ui.cal.page.upcoming=filteredAppointments filter starts_at≥today00 active status sort|VirtualizedUpcomingList slice window
+    - APT.ui.cal.page.mini=selectedDate useBirthdays(selectedDate,org_id)|MiniCalendar appointmentDates da filtered|handleMiniCalendarDateSelect→setSelectedDate+setNavigateToDate
+    - APT.ui.cal.page.calendarProps=CalendarView appointments=filteredAppointments|onEventClick→popover state|onDateClick=handleDateClick dead in CalendarView void|onNewAppointment|onEventDrop|onEventResize|onSelectSlot→form+slot|navigateToDate|onNavigateComplete null navigate|initialView da default_calendar_view map week|day|agenda|month|initialWeekStart sunday→0|calendarBlocks|toolbarLeft Filter drawer lg|sidebar toggle|Settings link impostazioni
+    - APT.ui.cal.page.form=showForm lazy AppointmentForm prefetch mount|formInitialAppointment editingAppointment|selectedSlot toLocalISOString local wall|defaultNewAppointmentType enabled keys[0] role fallback massaggio|nutrizionista|allenamento|showOpenBookingOption role massaggiatore|nutrizionista false|onSubmit handleFormSubmitClick overlapDetected→overlapConfirmData ref=[[appointments_overlap]] dialog forceOverwrite ref=[[appointments_mutations]] handleFormSubmit third arg
+    - APT.ui.cal.page.popover=AppointmentPopover selectedAppointment|position|asModal=isMobile matchMedia max-width 851|canComplete matrix role staff_id service_type|handlePopoverCancel→cancelChoiceAppointment Dialog 24h choices|ConfirmDialog delete|complete|simple cancel
+    - APT.ui.cal.page.shortcuts=useCalendarKeyboardShortcuts showForm|showPopover|setShowKeyboardHelp|KeyboardShortcutsModal
+    - APT.ui.cal.page.theme=CalendarTheme nutrizionista teal else default class maps sidebar
+  - COMPRESSED
+    - load flow: staff ids/org/role→APT.cal.merge→APT.cal.priv.filter→UI + blocks overlap pipeline
+    - tab staff vs calendario: select list diversi open_booking flag
+    - until_lessons: lesson_counters→N slot settimanali max cap 100
+    - api reminder: aggrega dati lezioni/pagamenti lato server poi invia email calendario ref=APT.api.post.reminder
+    - ui orchestration: hook fornisce merge list+mutazioni drag|page filtra client+URL+passa filteredAppointments a FC|CalendarView traduce settings+blocks+open booking UI+handlers FC ref=APT.ui.fc._ APT.ui.cal.page._
+  - QUERIES
+    - use=src/lib/calendar/appointment-reminder-email.ts#generateIcs|getGoogleCalendarUrl
+    - use=src/hooks/calendar/use-calendar-page.ts#getRecurrenceSlots|getRecurrenceSlotsUntilLessons|UNTIL_LESSONS_MAX_SLOTS|merge/fetch orchestration
+    - use=src/lib/appointments/queries.ts#listMergedStaffCalendarAppointments|listStaffAppointmentsForTable|STAFF*APPOINTMENTS*\*\_SELECT
+    - use=src/lib/appointments/staff-appointments-select.ts (core select string)
+    - use=src/lib/supabase/in-query-chunks.ts#chunkForSupabaseIn
+    - use=src/app/api/calendar/send-appointment-reminder/route.ts (orchestrazione chunk+sendAppointmentReminderEmail)
+    - use=src/app/api/calendar/notify-appointment-change/route.ts (sendAppointmentChangeEmail client path; side effects notif→ref=[[appointments_context]] nome:api-notify-appointment-change)
+    - use=src/components/calendar/calendar-view.tsx#CalendarView
+    - use=src/app/dashboard/calendario/page.tsx#CalendarPageContent|CalendarioPage
+    - use=src/hooks/calendar/use-calendar-keyboard-shortcuts.ts
+    - use=src/hooks/calendar/use-birthdays.ts
+    - use=src/hooks/calendar/use-calendar-page-guard.ts
+  - CONTEXT
+    - nome:insert ricorrenze calendario staff
+    - issues=commento use-calendar-page: insert rows limitato until_lessons≤100 e ricorrenze settimanali ~53; raise cap→RPC transazionale o chunk rollback
+    - use=stesso file per debiti/credits incrociati appuntamenti (non solo fetch lista)
+    - nome:fc-calendar-view-staff
+    - issues=FC editable globale true|gating per-evento solo startEditable|durationEditable|revert drop/resize se promise onEventDrop|onEventResize throw|filtri pagina nascono eventi senza rifetch intervallo visibile|onDateClick prop non usata nel componente ref=[[appointments_context]] nome:dashboard-calendario-ui-orchestrator
+    - use=src/components/calendar/calendar-view.tsx

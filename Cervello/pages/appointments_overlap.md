@@ -1,40 +1,40 @@
 - appointments_overlap
-	- ATOMS
-		- APT.max=4 (atomo dominio storico preservato)
-		- APT.overlap=1 (atomo dominio storico preservato)
-		- APT.rpc=check_appointment_overlap({p_staff_id,p_starts_at,p_ends_at,p_exclude_appointment_id})→array[0].has_overlap; errore catch→false (useAthleteAppointments.checkOverlap)
-		- APT.rpc.map=trainerId argomento→p_staff_id (staff_id operativo DB)
-		- APT.ov.ex=isAppointmentExcludedFromOverlapCheck: cancelled_at truthy OR status lower annullato|cancelled
-		- APT.ov.slot=intervallo overlap: starts_at < newEndsAt && ends_at > newStartsAt (lt/gt query variant fetchStaffOverlapCandidateRows)
-		- APT.ov.fetch=from appointments eq staff_id is cancelled_at null lt starts_at endsAt gt ends_at startsAt opt neq id exclude→filter post raw con APT.ov.ex
-		- APT.ov.check=checkAppointmentOverlap→hasOverlap = conflictingAppointments.length>0; error→false empty
-		- APT.ov.cal=checkStaffCalendarSlotOverlap→fetchStaffOverlapCandidateRows select ridotto; allenamento_doppio→block se doppioCount>=2 else length>=1
-		- APT.cb.win=CALENDAR_BLOCKS_UI_FETCH_WINDOW pastDays 30 futureDays 365
-		- APT.cb.fetch=calendar_blocks org_id eq; staff_id eq profile OR staff_id is null; ends_at>=from; starts_at<=to (from/to da now±win)
-		- APT.cb.slot=appointmentSlotOverlapsAnyCalendarBlock: slotStart<blockEnd && slotEnd>blockStart (NaN guard)
-		- APT.cb.ui=CALENDAR_BLOCK_CONFLICT_UI title+message condivisi calendario/tab staff
-		- APT.mdl.vs.utils=modal creazione: overlap UI disabilitata; calendario/utils: checkStaffCalendarSlotOverlap + calendar_blocks ref=[[appointments_modal]]
-		- APT.ob.grid.min=ATHLETE_OPEN_BOOKING_GRID_MINUTES=15 (src/lib/appointments/open-booking-grid-segments.ts)
-		- APT.ob.grid.each=eachOpenBookingSegment(openStartIso,openEndIso,stepMs=15m)→[{startMs,endMs,key}]
-		- APT.ob.grid.count=countBookingsOverlappingWindow(rows,windowStartMs,windowEndMs) richiede starts_at|ends_at|athlete_id; esclude cancelled_at|status annullato|is_open_booking_day true; overlap bs<windowEnd ∧ be>windowStart
-		- APT.staff.val.seq=is_open_booking_day!==true→appointmentSlotOverlapsAnyCalendarBlock→else checkStaffCalendarSlotOverlap excludeAppointmentId+appointmentType|copy messaggi diversi se staffRole nutrizionista|massaggiatore vs altri e tipo allenamento_doppio ref=src/hooks/appointments/useStaffAppointmentsTable.ts handleFormSubmit
-		- APT.staff.val.noRpc=submit staff tab non usa APT.rpc check_appointment_overlap (solo utils client ref=APT.ov.cal|APT.cb)
-	- COMPRESSED
-		- staff overlap candidati: query geometrica + filtro soft-cancel APT.ov.ex + eccezione type allenamento_doppio soglia 2
-		- blocks: fetch finestra APT.cb.win→test APT.cb.slot (UX non autorità RLS)
-		- RPC overlap parallelo a query client per stesso dominio temporale staff
-		- open_booking: griglia 15m conta sovrapposizioni finestra atleta vs prenotazioni reali
-		- staff.table: stessa pipeline blocchi+slot staff del calendario quando giorno libera prenotazione assente ref=[[appointments_calendar]] use-calendar-page commento codice
-	- QUERIES
-		- use=src/lib/appointment-utils.ts#isAppointmentExcludedFromOverlapCheck|fetchStaffOverlapCandidateRows|checkAppointmentOverlap|checkStaffCalendarSlotOverlap|appointmentSlotOverlapsAnyCalendarBlock|fetchStaffCalendarBlocksForUiValidation|normalizeAppointmentStatus
-		- use=src/hooks/useAthleteAppointments.ts#checkOverlap
-		- use=src/components/dashboard/appointment-modal.tsx (overlap disabilitato commento)
-		- use=src/lib/appointments/open-booking-grid-segments.ts#eachOpenBookingSegment|countBookingsOverlappingWindow|ATHLETE_OPEN_BOOKING_GRID_*
-		- use=src/hooks/appointments/useStaffAppointmentsTable.ts (blocks state effect + handleFormSubmit overlap branch)
-	- CONTEXT
-		- nome:autorità finale slot
-		- issues=frontend checks best-effort; messaggio appointment-utils validazione finale DB/RLS
-		- use=non assumere UI blocks=completezza oltre finestra APT.cb.win
-		- nome:staff table vs RPC overlap
-		- issues=staff tab valida slot con utils+DB candidati ma non espone checkOverlap RPC come useAthleteAppointments; coerenza messaggi UX solo notify
-		- use=[[appointments_fetch]] APT.staff parallel
+  - ATOMS
+    - APT.max=4 (atomo dominio storico preservato)
+    - APT.overlap=1 (atomo dominio storico preservato)
+    - APT.rpc=check_appointment_overlap({p_staff_id,p_starts_at,p_ends_at,p_exclude_appointment_id})→array[0].has_overlap; errore catch→false (useAthleteAppointments.checkOverlap)
+    - APT.rpc.map=trainerId argomento→p_staff_id (staff_id operativo DB)
+    - APT.ov.ex=isAppointmentExcludedFromOverlapCheck: cancelled_at truthy OR status lower annullato|cancelled
+    - APT.ov.slot=intervallo overlap: starts_at < newEndsAt && ends_at > newStartsAt (lt/gt query variant fetchStaffOverlapCandidateRows)
+    - APT.ov.fetch=from appointments eq staff_id is cancelled_at null lt starts_at endsAt gt ends_at startsAt opt neq id exclude→filter post raw con APT.ov.ex
+    - APT.ov.check=checkAppointmentOverlap→hasOverlap = conflictingAppointments.length>0; error→false empty
+    - APT.ov.cal=checkStaffCalendarSlotOverlap→fetchStaffOverlapCandidateRows select ridotto; allenamento_doppio→block se doppioCount>=2 else length>=1
+    - APT.cb.win=CALENDAR_BLOCKS_UI_FETCH_WINDOW pastDays 30 futureDays 365
+    - APT.cb.fetch=calendar_blocks org_id eq; staff_id eq profile OR staff_id is null; ends_at>=from; starts_at<=to (from/to da now±win)
+    - APT.cb.slot=appointmentSlotOverlapsAnyCalendarBlock: slotStart<blockEnd && slotEnd>blockStart (NaN guard)
+    - APT.cb.ui=CALENDAR_BLOCK_CONFLICT_UI title+message condivisi calendario/tab staff
+    - APT.mdl.vs.utils=modal creazione: overlap UI disabilitata; calendario/utils: checkStaffCalendarSlotOverlap + calendar_blocks ref=[[appointments_modal]]
+    - APT.ob.grid.min=ATHLETE_OPEN_BOOKING_GRID_MINUTES=15 (src/lib/appointments/open-booking-grid-segments.ts)
+    - APT.ob.grid.each=eachOpenBookingSegment(openStartIso,openEndIso,stepMs=15m)→[{startMs,endMs,key}]
+    - APT.ob.grid.count=countBookingsOverlappingWindow(rows,windowStartMs,windowEndMs) richiede starts_at|ends_at|athlete_id; esclude cancelled_at|status annullato|is_open_booking_day true; overlap bs<windowEnd ∧ be>windowStart
+    - APT.staff.val.seq=is_open_booking_day!==true→appointmentSlotOverlapsAnyCalendarBlock→else checkStaffCalendarSlotOverlap excludeAppointmentId+appointmentType|copy messaggi diversi se staffRole nutrizionista|massaggiatore vs altri e tipo allenamento_doppio ref=src/hooks/appointments/useStaffAppointmentsTable.ts handleFormSubmit
+    - APT.staff.val.noRpc=submit staff tab non usa APT.rpc check_appointment_overlap (solo utils client ref=APT.ov.cal|APT.cb)
+  - COMPRESSED
+    - staff overlap candidati: query geometrica + filtro soft-cancel APT.ov.ex + eccezione type allenamento_doppio soglia 2
+    - blocks: fetch finestra APT.cb.win→test APT.cb.slot (UX non autorità RLS)
+    - RPC overlap parallelo a query client per stesso dominio temporale staff
+    - open_booking: griglia 15m conta sovrapposizioni finestra atleta vs prenotazioni reali
+    - staff.table: stessa pipeline blocchi+slot staff del calendario quando giorno libera prenotazione assente ref=[[appointments_calendar]] use-calendar-page commento codice
+  - QUERIES
+    - use=src/lib/appointment-utils.ts#isAppointmentExcludedFromOverlapCheck|fetchStaffOverlapCandidateRows|checkAppointmentOverlap|checkStaffCalendarSlotOverlap|appointmentSlotOverlapsAnyCalendarBlock|fetchStaffCalendarBlocksForUiValidation|normalizeAppointmentStatus
+    - use=src/hooks/useAthleteAppointments.ts#checkOverlap
+    - use=src/components/dashboard/appointment-modal.tsx (overlap disabilitato commento)
+    - use=src/lib/appointments/open-booking-grid-segments.ts#eachOpenBookingSegment|countBookingsOverlappingWindow|ATHLETE*OPEN_BOOKING_GRID*\*
+    - use=src/hooks/appointments/useStaffAppointmentsTable.ts (blocks state effect + handleFormSubmit overlap branch)
+  - CONTEXT
+    - nome:autorità finale slot
+    - issues=frontend checks best-effort; messaggio appointment-utils validazione finale DB/RLS
+    - use=non assumere UI blocks=completezza oltre finestra APT.cb.win
+    - nome:staff table vs RPC overlap
+    - issues=staff tab valida slot con utils+DB candidati ma non espone checkOverlap RPC come useAthleteAppointments; coerenza messaggi UX solo notify
+    - use=[[appointments_fetch]] APT.staff parallel

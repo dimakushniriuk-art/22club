@@ -1,0 +1,61 @@
+- payments_mutations
+	- ATOMS
+		- source_file=src/lib/credits/ledger.ts
+		- source_file=src/lib/credits/credit-ledger-deterministic-id.ts
+		- source_file=src/lib/credits/request-coached-session-debit-client.ts
+		- hook_orchestration_file=src/hooks/use-payments.ts
+		- table=credit_ledger
+		- client=ref=@/lib/supabase/client (ledger inserts browser)
+		- pg_code_unique=23505 (idempotenza DEBIT/REVERSAL; stessa route insert coached)
+		- trigger_note=trg_credit_ledger_athlete_org_match (commento sorgente)
+		- source_file=src/app/api/athlete/coached-session-debit/route.ts
+		- method=POST
+		- body_key=workout_log_id
+		- admin_client=createAdminClient (insert credit_ledger + fallback letture)
+		- session_client=createClient (auth + prima lettura workout_logs sotto RLS)
+		- response_contract=JSON body fields ok boolean; debited boolean; already boolean; skipped_duplicate_calendar boolean; error string opzionale; code string opzionale (PG/Supabase); HTTP status come da flow_guards
+		- ui_source_payment_form_modal=src/components/dashboard/payment-form-modal.tsx
+		- ui_source_nuovo_pagamento_modal=src/components/dashboard/nuovo-pagamento-modal.tsx
+		- ui_source_pagamenti_atleta_page=src/app/dashboard/pagamenti/atleta/[athleteId]/page.tsx
+		- cross_consumer_addDebit_call_site=src/lib/appointments/complete-staff-appointment-client.ts dopo gate ref=[[payments_overlap]] staff_completion_appointment_debit
+	- COMPRESSED
+		- addCreditFromPayment=insert CREDIT qty=lessons_purchased payment_id service_type reason=Acquisto crediti; org_id da profiles.atleta
+		- addDebitFromAppointment=insert DEBIT qty=-1 appointment_id service_type default training; unique su appointment debit→catch 23505 ignore
+		- insertManualCreditLedgerRow=insert manuale entry_type qty reason created_at created_by payment_id appointment_id applies_to_counter
+		- addReversalFromPayment=insert REVERSAL qty=-lessons_purchased dopo payments cancelled; 23505→no-op
+		- creditLedgerRowIdForCoachedWorkout=UUID deterministico SHA-256 payload `22club:coached_workout_debit:v1:${workoutLogId}` web crypto
+		- requestCoachedSessionDebitClient=POST `/api/athlete/coached-session-debit` body workout_log_id; ok→CustomEvent `22club:athlete-lessons-refresh`
+		- usePayments.createPayment=insert tabella `payments` payload tipizzato Omit names; post-insert fetchPayments
+		- usePayments.reversePayment=select pagamento by id; insert nuova riga amount negativo lessons_purchased=0 is_reversal=true ref_payment_id method_text suffisso (Storno[: reason]); created_by_staff_id=userId; poi fetchPayments — non è ref=[[payments_mutations]] addReversalFromPayment su credit_ledger
+		- coached_session_debit_route=source of truth server DEBIT training da workout_log; dedup reason string + overlap calendar + unique insert; lib condivisa ref=[[payments_overlap]] (reason + hasOverlappingAppointmentTrainingDebit)
+		- flow_guards=no user→401; admin client init fail→503; body JSON invalid→400; workout_log_id mancante→400; profilo caller assente→404; log assente→404; log senza atleta→400; atleta org_id vuoto→500 (insert ledger fallirebbe)
+		- caller_profile=resolveProfileByIdentifier(session,user.id,id+role+org_id); se null admin profiles user_id limit1; se ancora null admin or id.eq.uid user_id.eq.uid→404
+		- workout_log_read=session select WORKOUT_LOG_DEBIT_SELECT by id; se no data/error→admin stessa select; admin error→502; log null→404
+		- authz_branch=role athlete|atleta→authorized se athleteProfileId===prof.id; is_admin RPC true OPPURE role admin|owner→stesso org_id atleta vs admin (admin profiles); role trainer|pt|staff→isAthleteAssignedToTrainerProfileIdAdmin(admin,prof.id,athlete) ref=[[payments_context]]; se false fallback coached_by_profile_id===prof.id su sessione coachata; se ancora false trainerAndAthleteSameOrg(admin,athlete,prof); catch assignment→502; !authorized→403
+		- reason_pre_dedup=coachedAppDebitReasonForWorkoutLog(workout_log_id); admin credit_ledger select id athlete DEBIT training eq reason→200 json ok=true debited=false already=true (no insert)
+		- state_pre_insert=stato completato|completed AND (is_coached OR execution_mode lower coached)→altrimenti 400 messaggio log non completato coach
+		- overlap_pre_insert=hasOverlappingAppointmentTrainingDebit(admin,athlete,{completed_at,data})→true allora 200 ok debited=false skipped_duplicate_calendar=true ref=[[payments_overlap]]
+		- insert_payload=DEBIT qty=-1 athlete_id org_id da profiles atleta lower created_by_profile_id=log.coached_by_profile_id|null service_type=training reason
+		- insert_outcomes=success→200 ok=true debited=true; insErr.code 23505→200 ok debited=false already=true; altro insErr→502 message+code; throw→500 Errore interno
+		- ui_create_then_ledger=insert payments (modal o pagina) poi addCreditFromPayment stesso serviceType; dettagli form/invalidazioni/RPC ledger UI→ref=[[payments_modal]]
+		- ui_edit_payment_ledger_reversal=flusso pagamenti atleta: cancel riga originale + addReversalFromPayment(payment+staff) + insert nuovo pagamento + addCreditFromPayment nuovo; diverso da usePayments.reversePayment (solo riga payments) ref=[[payments_modal]] pagamenti_atleta_embedded
+		- ui_manual_ledger=insertManualCreditLedgerRow da dialog pagina; edit/delete movimenti via RPC staff_* ref=[[payments_modal]] pagamenti_atleta_ledger_dialogs
+	- QUERIES
+		- use=profiles.select(org_id).eq(id,athleteId) (pre-insert org)
+		- use=appointments.select(org_id).eq(id,appointmentId) fallback org atleta
+		- use=workout_logs.select(WORKOUT_LOG_DEBIT_SELECT).eq(id,workout_log_id) (session poi admin)
+		- use=profiles.select(org_id).eq(id) (org match admin/athlete; risoluzione trainer org)
+		- use=profiles.select(id,role,org_id).eq(user_id) | .or(id,user_id) (fallback caller)
+		- use=rpc.is_admin() (boolean autorizzazione admin lato session)
+		- use=credit_ledger.select(id).eq(athlete_id).eq(entry_type,DEBIT).eq(service_type,training).eq(reason)
+		- use=credit_ledger.insert(payload DEBIT coached)
+	- CONTEXT
+		- name=ledger_write_contract
+		- issues=non aggiornare lesson_counters da client post-payment; coerenza trigger DB su ledger
+		- ref=[[payments_overlap]] (dedup prima di alcuni debiti calendario/app)
+		- name=hook_payments_row_reversal
+		- issues=storno via riga `payments` vs pipeline ledger REVERSAL in lib; verificare allineamento prodotto/DB trigger
+		- name=coached_debit_service_role
+		- issues=insert ledger solo via admin client; dipendenza SUPABASE_SERVICE_ROLE_KEY→503 se mancante configurazione
+		- name=three_way_reversal
+		- issues=usePayments.reversePayment (riga reversal payments) vs addReversalFromPayment (ledger) vs UI pagina storico (cancel+reversal+nuovo); mappatura ref=[[payments_modal]] ledger_ui_vs_hook_reversal

@@ -135,12 +135,7 @@ export async function repairOrphanWorkoutSetsToLog(
   anchorIso: string,
   fallbackIso: string | null,
 ): Promise<number> {
-  const rows = await collectOrphanWorkoutSetsForLogRepair(
-    supabase,
-    wdeIds,
-    anchorIso,
-    fallbackIso,
-  )
+  const rows = await collectOrphanWorkoutSetsForLogRepair(supabase, wdeIds, anchorIso, fallbackIso)
   const repairIds = rows.filter((r) => r.workout_log_id == null).map((r) => r.id)
   if (repairIds.length === 0) return 0
   await applyWorkoutLogIdToSetIds(supabase, workoutLogId, repairIds)
@@ -159,12 +154,7 @@ export async function mergeOrphanWorkoutSetsIntoSetsByWdeIdAndRepair(
   fallbackIso: string | null,
   setsByWdeId: Map<string, WorkoutSetSummaryForRepair[]>,
 ): Promise<void> {
-  const rows = await collectOrphanWorkoutSetsForLogRepair(
-    supabase,
-    wdeIds,
-    anchorIso,
-    fallbackIso,
-  )
+  const rows = await collectOrphanWorkoutSetsForLogRepair(supabase, wdeIds, anchorIso, fallbackIso)
   const repairIds: string[] = []
 
   for (const row of rows) {
