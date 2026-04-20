@@ -95,8 +95,7 @@ export async function POST(request: NextRequest) {
 
     const staffNome =
       [profile?.nome, profile?.cognome].filter(Boolean).join(' ').trim() || 'Il tuo professionista'
-    const atletaNome =
-      [atleta.nome, atleta.cognome].filter(Boolean).join(' ').trim() || 'Cliente'
+    const atletaNome = [atleta.nome, atleta.cognome].filter(Boolean).join(' ').trim() || 'Cliente'
 
     const html = buildInvitoClienteEmailHtml({
       atletaNome,

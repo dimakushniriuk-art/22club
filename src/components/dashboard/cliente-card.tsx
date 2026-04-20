@@ -223,7 +223,8 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
                   <span
                     className={cn(
                       'font-bold tracking-tight text-primary',
-                      (cliente.lessons_used ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
+                      (cliente.lessons_used ?? 0) > 0 &&
+                        'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
                     )}
                   >
                     {cliente.lessons_used !== undefined ? cliente.lessons_used : '–'}

@@ -122,8 +122,7 @@ function HomeInvitoDaEmailHandler({
     ;(async () => {
       try {
         const supabase = createClient()
-        const rpcName =
-          azione === 'accetta' ? 'accetta_invito_cliente' : 'rifiuta_invito_cliente'
+        const rpcName = azione === 'accetta' ? 'accetta_invito_cliente' : 'rifiuta_invito_cliente'
         const { data, error } = await supabase.rpc(rpcName, { p_invito_id: invitoId })
         if (cancelled) return
         if (error) {

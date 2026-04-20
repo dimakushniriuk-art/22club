@@ -192,7 +192,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await fetch('/api/auth/context', {
         credentials: 'include',
-        signal: typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(8000) : undefined,
+        signal:
+          typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal
+            ? AbortSignal.timeout(8000)
+            : undefined,
       })
       if (!res.ok) return false
       const data = (await res.json()) as AuthContextResponse

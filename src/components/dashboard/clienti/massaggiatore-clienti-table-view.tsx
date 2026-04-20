@@ -162,10 +162,7 @@ export function MassaggiatoreClientiTableView({
             {clienti.map((cliente) => {
               const rowSelectable = allRowsSelectable || !cliente.invitatoInAttesa
               const display =
-                cliente.first_name ||
-                cliente.nome ||
-                cliente.last_name ||
-                cliente.cognome
+                cliente.first_name || cliente.nome || cliente.last_name || cliente.cognome
                   ? `${cliente.first_name ?? cliente.nome ?? ''} ${cliente.last_name ?? cliente.cognome ?? ''}`.trim()
                   : cliente.email || '—'
               const profileHref = `/dashboard/massaggiatore/clienti/${cliente.id}`

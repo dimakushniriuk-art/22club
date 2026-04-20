@@ -150,8 +150,8 @@ export default function MassaggiatoreClienteProfiloPage() {
           className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-100/95"
           role="status"
         >
-          Stato: <strong>invito in attesa</strong> — il cliente deve accettare (o rifiutare) dalla propria Home.
-          Chat e altre funzioni possono restare limitate finché non accetta.
+          Stato: <strong>invito in attesa</strong> — il cliente deve accettare (o rifiutare) dalla
+          propria Home. Chat e altre funzioni possono restare limitate finché non accetta.
         </div>
       )}
 
@@ -181,9 +181,7 @@ export default function MassaggiatoreClienteProfiloPage() {
             <div className="sm:col-span-2">
               <dt className="text-text-secondary">Profilo creato</dt>
               <dd className="text-text-primary">
-                {profile.created_at
-                  ? new Date(profile.created_at).toLocaleString('it-IT')
-                  : '—'}
+                {profile.created_at ? new Date(profile.created_at).toLocaleString('it-IT') : '—'}
               </dd>
             </div>
           </dl>

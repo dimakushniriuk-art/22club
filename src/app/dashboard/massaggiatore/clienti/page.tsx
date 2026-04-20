@@ -10,7 +10,10 @@ import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
-import { StaffDashboardGuardSkeleton, StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
+import {
+  StaffDashboardGuardSkeleton,
+  StaffLazyChunkFallback,
+} from '@/components/layout/route-loading-skeletons'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { createLogger } from '@/lib/logger'
 import { Button } from '@/components/ui'
@@ -110,9 +113,13 @@ function sortClienti(list: Cliente[], sort: ClienteSort): Cliente[] {
         break
       }
       case 'cognome': {
-        const ca = (a.cognome ?? a.last_name ?? '').localeCompare(b.cognome ?? b.last_name ?? '', 'it', {
-          sensitivity: 'base',
-        })
+        const ca = (a.cognome ?? a.last_name ?? '').localeCompare(
+          b.cognome ?? b.last_name ?? '',
+          'it',
+          {
+            sensitivity: 'base',
+          },
+        )
         cmp = ca
         break
       }
@@ -284,9 +291,7 @@ export default function MassaggiatoreClientiPage() {
       ] as string[]
 
       const pendingAthleteIds = [
-        ...new Set(
-          pendenti.map((p) => p.atleta_id).filter((id): id is string => Boolean(id)),
-        ),
+        ...new Set(pendenti.map((p) => p.atleta_id).filter((id): id is string => Boolean(id))),
       ]
       const allIds = [...new Set([...linkedIds, ...pendingAthleteIds])]
 
@@ -476,7 +481,11 @@ export default function MassaggiatoreClientiPage() {
       setRemoveTarget(null)
       await load()
     } catch (e) {
-      notify(e instanceof Error ? e.message : 'Errore durante la rimozione', 'error', 'Lista clienti')
+      notify(
+        e instanceof Error ? e.message : 'Errore durante la rimozione',
+        'error',
+        'Lista clienti',
+      )
     } finally {
       setRemoveSubmitting(false)
     }
@@ -578,9 +587,9 @@ export default function MassaggiatoreClientiPage() {
       </div>
 
       <p className="text-xs text-text-muted max-w-3xl">
-        Compaiono i clienti con collegamento attivo (anche senza email di invito, es. assegnazione da admin) e quelli
-        con invito in sospeso. Le azioni di modifica account e allenamenti restano lato trainer/admin; qui gestisci
-        inviti, chat, profilo e rimozione dalla tua lista.
+        Compaiono i clienti con collegamento attivo (anche senza email di invito, es. assegnazione
+        da admin) e quelli con invito in sospeso. Le azioni di modifica account e allenamenti
+        restano lato trainer/admin; qui gestisci inviti, chat, profilo e rimozione dalla tua lista.
       </p>
 
       {loading && allClienti.length === 0 ? (
@@ -609,7 +618,12 @@ export default function MassaggiatoreClientiPage() {
             )}
             {allClienti.length === 0 ? (
               <>
-                <Button variant="primary" size="sm" type="button" onClick={() => setShowInvitaCliente(true)}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  type="button"
+                  onClick={() => setShowInvitaCliente(true)}
+                >
                   <UserRoundPlus className="mr-1.5 h-4 w-4 shrink-0" aria-hidden />
                   Invita cliente
                 </Button>
@@ -670,7 +684,9 @@ export default function MassaggiatoreClientiPage() {
       </section>
 
       <Suspense
-        fallback={<StaffLazyChunkFallback className="w-full max-w-md" label="Caricamento azioni…" />}
+        fallback={
+          <StaffLazyChunkFallback className="w-full max-w-md" label="Caricamento azioni…" />
+        }
       >
         <ClientiBulkActions
           selectedCount={selectedIds.size}

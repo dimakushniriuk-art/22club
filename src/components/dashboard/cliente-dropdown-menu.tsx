@@ -50,9 +50,7 @@ export function ClienteDropdownMenu({
 }: ClienteDropdownMenuProps) {
   const invitoId = cliente.staffInvitoId ?? null
   const canResend = Boolean(onResendStaffInvite && invitoId)
-  const canRemoveStaff = Boolean(
-    onRemoveFromStaffList && cliente.staffCollegato,
-  )
+  const canRemoveStaff = Boolean(onRemoveFromStaffList && cliente.staffCollegato)
 
   return (
     <DropdownMenu>

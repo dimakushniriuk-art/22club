@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  type CSSProperties,
-  type ReactNode,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { type CSSProperties, type ReactNode, useLayoutEffect, useMemo, useState } from 'react'
 
 /** Larghezza di riferimento layout mobile atleta (px CSS). */
 export const ATHLETE_HOME_DESIGN_WIDTH_PX = 390
@@ -63,10 +57,7 @@ export function AthleteHomeViewportScale({ children }: AthleteHomeViewportScaleP
   )
 
   return (
-    <div
-      className="min-h-dvh w-full min-w-0 overflow-x-hidden"
-      style={outerStyle}
-    >
+    <div className="min-h-dvh w-full min-w-0 overflow-x-hidden" style={outerStyle}>
       <div className="min-h-dvh min-w-0" style={innerStyle}>
         {children}
       </div>
