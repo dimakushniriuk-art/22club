@@ -91,3 +91,11 @@ debug-*.log
 
 # Segreti MCP locali (copia da mcp.secrets.env.example)
 .cursor/mcp.secrets.env
+
+# Documentazione e note di progetto (solo locale; non su GitHub)
+/Cervello/
+/DOCUMENTAZIONE/
+/docs/
+/audit/
+/dashboard-trainer-perf/
+verification-report.json

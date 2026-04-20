@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 interface ClienteCardProps {
   cliente: Cliente
   index?: number
+  /** default: lista trainer (blocca card se invitatoInAttesa). massaggiatore: stile staff, link area massaggiatore. */
+  variant?: 'default' | 'massaggiatore'
   onEdit?: (cliente: Cliente) => void
   onViewHistory?: (cliente: Cliente) => void
   onViewDocuments?: (cliente: Cliente) => void
@@ -18,11 +20,14 @@ interface ClienteCardProps {
   onDelete?: (cliente: Cliente) => void
   onDisable?: (cliente: Cliente) => void
   onEnable?: (cliente: Cliente) => void
+  onResendStaffInvite?: (cliente: Cliente) => void
+  onRemoveFromStaffList?: (cliente: Cliente) => void
 }
 
 export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
   cliente,
   index: _index = 0,
+  variant = 'default',
   onEdit,
   onViewHistory,
   onViewDocuments,
@@ -31,13 +36,22 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
   onDelete,
   onDisable,
   onEnable,
+  onResendStaffInvite,
+  onRemoveFromStaffList,
 }) {
   const avatarInitials = useAvatarInitials(cliente.nome, cliente.cognome, cliente.email)
   const displayName =
     cliente.nome?.trim() || cliente.cognome?.trim()
       ? `${cliente.nome ?? ''} ${cliente.cognome ?? ''}`.trim()
       : cliente.email || 'Profilo da completare'
-  const isBlocked = Boolean(cliente.invitatoInAttesa)
+  const isMassaggiatore = variant === 'massaggiatore'
+  const isBlocked = Boolean(cliente.invitatoInAttesa) && !isMassaggiatore
+  const profileHref = isMassaggiatore
+    ? `/dashboard/massaggiatore/clienti/${cliente.id}`
+    : `/dashboard/atleti/${cliente.id}`
+  const chatHref = isMassaggiatore
+    ? `/dashboard/massaggiatore/chat?with=${encodeURIComponent(cliente.id)}`
+    : `/dashboard/chat?with=${cliente.id}`
 
   return (
     <div
@@ -75,8 +89,48 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {isBlocked ? (
+          <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+            {isMassaggiatore ? (
+              <>
+                {cliente.invitatoInAttesa ? (
+                  <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-100/95">
+                    Invito in attesa
+                  </span>
+                ) : cliente.staffCollegato ? (
+                  <span className="rounded-full border border-state-valid/25 bg-state-valid/10 px-3 py-1 text-xs font-medium text-state-valid">
+                    Collegato
+                  </span>
+                ) : null}
+                {cliente.staffInvitoEmailPendente ? (
+                  <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-100/95">
+                    Invito email
+                  </span>
+                ) : null}
+                <ClienteDropdownMenu
+                  cliente={cliente}
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="min-h-[44px] min-w-[44px] h-8 w-8 sm:h-8 sm:w-8 rounded-full bg-background-secondary/35 border border-white/5 hover:border-primary/20 hover:bg-primary/10 touch-manipulation"
+                      aria-label={`Azioni per ${displayName}`}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  }
+                  onEdit={onEdit}
+                  onViewHistory={onViewHistory}
+                  onViewDocuments={onViewDocuments}
+                  onSendEmail={onSendEmail}
+                  onStartChat={onStartChat}
+                  onDelete={onDelete}
+                  onDisable={onDisable}
+                  onEnable={onEnable}
+                  onResendStaffInvite={onResendStaffInvite}
+                  onRemoveFromStaffList={onRemoveFromStaffList}
+                />
+              </>
+            ) : isBlocked ? (
               <span className="rounded-full bg-warning/10 text-warning border border-warning/25 px-3 py-1 text-xs font-medium">
                 Invito in attesa
               </span>
@@ -138,66 +192,72 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
               Iscritto dal
             </span>
             <span className="text-text-primary text-sm">
-              {new Date(cliente.data_iscrizione).toLocaleDateString('it-IT', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
+              {cliente.data_iscrizione
+                ? new Date(cliente.data_iscrizione).toLocaleDateString('it-IT', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : '—'}
             </span>
           </div>
 
-          <div className="space-y-1.5">
-            <div className="text-text-secondary text-xs font-medium">Allenamenti</div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-text-secondary text-xs">Acquistati:</span>
-              <span
-                className={cn(
-                  'font-medium text-text-primary',
-                  (cliente.lessons_acquired ?? 0) > 0 &&
-                    'font-bold text-primary drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
-                )}
-              >
-                {cliente.lessons_acquired !== undefined ? cliente.lessons_acquired : '–'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-text-secondary text-xs">Eseguiti:</span>
-              <span
-                className={cn(
-                  'font-bold tracking-tight text-primary',
-                  (cliente.lessons_used ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
-                )}
-              >
-                {cliente.lessons_used !== undefined ? cliente.lessons_used : '–'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-text-secondary text-xs">Rimasti:</span>
-              <span
-                className={cn(
-                  'font-bold tracking-tight',
-                  cliente.lessons_remaining !== undefined &&
-                    (cliente.lessons_remaining >= 6
-                      ? 'text-[#00C781] drop-shadow-[0_0_10px_rgba(0,199,129,0.35)]'
-                      : cliente.lessons_remaining >= 2 && cliente.lessons_remaining <= 4
-                        ? 'text-[#FFC107]'
-                        : cliente.lessons_remaining <= 1
-                          ? 'text-[#FF3B30]'
-                          : 'text-primary'),
-                )}
-              >
-                {cliente.lessons_remaining !== undefined ? cliente.lessons_remaining : '–'}
-              </span>
-            </div>
-          </div>
+          {!isMassaggiatore ? (
+            <>
+              <div className="space-y-1.5">
+                <div className="text-text-secondary text-xs font-medium">Allenamenti</div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-secondary text-xs">Acquistati:</span>
+                  <span
+                    className={cn(
+                      'font-medium text-text-primary',
+                      (cliente.lessons_acquired ?? 0) > 0 &&
+                        'font-bold text-primary drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
+                    )}
+                  >
+                    {cliente.lessons_acquired !== undefined ? cliente.lessons_acquired : '–'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-secondary text-xs">Eseguiti:</span>
+                  <span
+                    className={cn(
+                      'font-bold tracking-tight text-primary',
+                      (cliente.lessons_used ?? 0) > 0 && 'drop-shadow-[0_0_10px_rgba(2,179,191,0.4)]',
+                    )}
+                  >
+                    {cliente.lessons_used !== undefined ? cliente.lessons_used : '–'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-secondary text-xs">Rimasti:</span>
+                  <span
+                    className={cn(
+                      'font-bold tracking-tight',
+                      cliente.lessons_remaining !== undefined &&
+                        (cliente.lessons_remaining >= 6
+                          ? 'text-[#00C781] drop-shadow-[0_0_10px_rgba(0,199,129,0.35)]'
+                          : cliente.lessons_remaining >= 2 && cliente.lessons_remaining <= 4
+                            ? 'text-[#FFC107]'
+                            : cliente.lessons_remaining <= 1
+                              ? 'text-[#FF3B30]'
+                              : 'text-primary'),
+                    )}
+                  >
+                    {cliente.lessons_remaining !== undefined ? cliente.lessons_remaining : '–'}
+                  </span>
+                </div>
+              </div>
 
-          {cliente.scheda_attiva && (
-            <div className="mt-2">
-              <span className="rounded-full bg-primary/10 text-primary border border-primary/20 px-3 py-1 text-xs font-medium inline-block">
-                {cliente.scheda_attiva}
-              </span>
-            </div>
-          )}
+              {cliente.scheda_attiva && (
+                <div className="mt-2">
+                  <span className="rounded-full bg-primary/10 text-primary border border-primary/20 px-3 py-1 text-xs font-medium inline-block">
+                    {cliente.scheda_attiva}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : null}
         </div>
 
         <div className="flex gap-2 mt-auto pt-3">
@@ -207,7 +267,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
             </div>
           ) : (
             <>
-              <Link href={`/dashboard/atleti/${cliente.id}`} className="flex-1 min-w-0">
+              <Link href={profileHref} className="flex-1 min-w-0">
                 <Button
                   variant="outline"
                   size="sm"
@@ -217,7 +277,7 @@ export const ClienteCard = memo<ClienteCardProps>(function ClienteCard({
                   Profilo
                 </Button>
               </Link>
-              <Link href={`/dashboard/chat?with=${cliente.id}`}>
+              <Link href={chatHref}>
                 <Button
                   variant="ghost"
                   size="icon"

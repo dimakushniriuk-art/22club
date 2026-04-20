@@ -10,6 +10,8 @@ interface ClientiGridViewProps {
   page: number
   totalPages: number
   onPageChange: (page: number) => void
+  listHeading?: string
+  clienteCardVariant?: 'default' | 'massaggiatore'
   onEdit?: (cliente: Cliente) => void
   onViewHistory?: (cliente: Cliente) => void
   onViewDocuments?: (cliente: Cliente) => void
@@ -18,6 +20,8 @@ interface ClientiGridViewProps {
   onDelete?: (cliente: Cliente) => void
   onDisable?: (cliente: Cliente) => void
   onEnable?: (cliente: Cliente) => void
+  onResendStaffInvite?: (cliente: Cliente) => void
+  onRemoveFromStaffList?: (cliente: Cliente) => void
 }
 
 export function ClientiGridView({
@@ -26,6 +30,8 @@ export function ClientiGridView({
   page,
   totalPages,
   onPageChange,
+  listHeading,
+  clienteCardVariant = 'default',
   onEdit,
   onViewHistory,
   onViewDocuments,
@@ -34,12 +40,15 @@ export function ClientiGridView({
   onDelete,
   onDisable,
   onEnable,
+  onResendStaffInvite,
+  onRemoveFromStaffList,
 }: ClientiGridViewProps) {
+  const heading = listHeading ?? 'Lista Clienti'
   return (
     <div className="relative p-4 sm:p-5 md:p-6">
       <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
         <h3 className="text-base sm:text-lg font-semibold text-text-primary truncate">
-          Lista Clienti ({total})
+          {heading} ({total})
         </h3>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -48,6 +57,7 @@ export function ClientiGridView({
             key={cliente.id}
             cliente={cliente}
             index={index}
+            variant={clienteCardVariant}
             onEdit={onEdit}
             onViewHistory={onViewHistory}
             onViewDocuments={onViewDocuments}
@@ -56,6 +66,8 @@ export function ClientiGridView({
             onDelete={onDelete}
             onDisable={onDisable}
             onEnable={onEnable}
+            onResendStaffInvite={onResendStaffInvite}
+            onRemoveFromStaffList={onRemoveFromStaffList}
           />
         ))}
       </div>

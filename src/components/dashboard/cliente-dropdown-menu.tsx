@@ -1,4 +1,15 @@
-import { Edit, History, Trash, FileText, Mail, MessageCircle, UserX, UserCheck } from 'lucide-react'
+import {
+  Edit,
+  History,
+  Trash,
+  FileText,
+  Mail,
+  MessageCircle,
+  UserX,
+  UserCheck,
+  Send,
+  UserMinus,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -19,6 +30,8 @@ interface ClienteDropdownMenuProps {
   onDelete?: (cliente: Cliente) => void
   onDisable?: (cliente: Cliente) => void
   onEnable?: (cliente: Cliente) => void
+  onResendStaffInvite?: (cliente: Cliente) => void
+  onRemoveFromStaffList?: (cliente: Cliente) => void
 }
 
 export function ClienteDropdownMenu({
@@ -32,7 +45,15 @@ export function ClienteDropdownMenu({
   onDelete,
   onDisable,
   onEnable,
+  onResendStaffInvite,
+  onRemoveFromStaffList,
 }: ClienteDropdownMenuProps) {
+  const invitoId = cliente.staffInvitoId ?? null
+  const canResend = Boolean(onResendStaffInvite && invitoId)
+  const canRemoveStaff = Boolean(
+    onRemoveFromStaffList && cliente.staffCollegato,
+  )
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
@@ -70,6 +91,27 @@ export function ClienteDropdownMenu({
             </DropdownMenuItem>
           </>
         )}
+        {canResend && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onResendStaffInvite?.(cliente)}>
+              <Send className="mr-2 h-4 w-4" />
+              Reinvia invito (email)
+            </DropdownMenuItem>
+          </>
+        )}
+        {canRemoveStaff && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => onRemoveFromStaffList?.(cliente)}
+              className="text-state-error hover:bg-state-error/10 focus-visible:bg-state-error/10 focus-visible:ring-state-error/40"
+            >
+              <UserMinus className="mr-2 h-4 w-4" />
+              Rimuovi dalla mia lista
+            </DropdownMenuItem>
+          </>
+        )}
         {(onDisable || onEnable) && (
           <>
             <DropdownMenuSeparator />
@@ -92,7 +134,7 @@ export function ClienteDropdownMenu({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onDelete(cliente)}
-              className="text-state-error hover:bg-state-error/10"
+              className="text-state-error hover:bg-state-error/10 focus-visible:bg-state-error/10 focus-visible:ring-state-error/40"
             >
               <Trash className="mr-2 h-4 w-4" />
               Elimina cliente

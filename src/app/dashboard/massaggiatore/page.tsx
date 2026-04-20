@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   User,
+  Users,
   MessageSquare,
   BarChart3,
   CalendarDays,
@@ -58,6 +59,12 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     icon: CalendarCheck,
     label: 'Appuntamenti',
     iconBoxClass: 'border-orange-500/30 bg-orange-500/20 text-orange-300',
+  },
+  {
+    href: '/dashboard/massaggiatore/clienti',
+    icon: Users,
+    label: 'Clienti',
+    iconBoxClass: 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300',
   },
   {
     href: '/dashboard/massaggiatore/chat',
@@ -186,6 +193,17 @@ export default function MassaggiatorePage() {
           .order('starts_at', { ascending: true })
           .limit(12),
       ])
+
+      const supabaseErr =
+        clientiRes.error?.message ??
+        appointmentsRes.error?.message ??
+        paymentsRes.error?.message ??
+        weekRes.error?.message ??
+        aptDataRes.error?.message
+      if (supabaseErr) {
+        setStatsError(supabaseErr)
+        return
+      }
 
       const appointments = appointmentsRes.data ?? []
       const aptData = (aptDataRes.data ?? []) as Array<{

@@ -190,7 +190,7 @@ export default function MassaggiatoreStatistichePage() {
               label="Clienti seguiti"
               value={stats.clientiSeguiti}
               icon={Users}
-              href="/dashboard/massaggiatore/appuntamenti"
+              href="/dashboard/massaggiatore/clienti"
             />
             <KpiCard
               label="Massaggi eseguiti"

@@ -64,6 +64,7 @@ const nutrizionistaNav = [
 
 const massaggiatoreNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard/massaggiatore' },
+  { label: 'Clienti', icon: Users, href: '/dashboard/massaggiatore/clienti' },
   { label: 'Appuntamenti', icon: CalendarCheck, href: '/dashboard/massaggiatore/appuntamenti' },
   { label: 'Calendario', icon: CalendarDays, href: '/dashboard/massaggiatore/calendario' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/massaggiatore/chat' },

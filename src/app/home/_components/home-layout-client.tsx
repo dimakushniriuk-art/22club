@@ -120,13 +120,18 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
     const headerEl = chromeRef.current
     if (!shellEl || !headerEl) return
     const apply = () => {
-      const h = Math.ceil(headerEl.getBoundingClientRect().height)
+      // offsetHeight = altezza di layout (coerente con transform scale sul wrapper /home)
+      const h = Math.ceil(headerEl.offsetHeight)
       shellEl.style.setProperty('--home-athlete-brand-top', `${h}px`)
     }
     apply()
     const ro = new ResizeObserver(apply)
     ro.observe(headerEl)
-    return () => ro.disconnect()
+    window.addEventListener('resize', apply)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', apply)
+    }
   }, [pathname])
 
   return (

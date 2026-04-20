@@ -190,7 +190,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const applyAuthContext = useCallback(async (): Promise<boolean> => {
     try {
-      const res = await fetch('/api/auth/context', { credentials: 'include' })
+      const res = await fetch('/api/auth/context', {
+        credentials: 'include',
+        signal: typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(8000) : undefined,
+      })
       if (!res.ok) return false
       const data = (await res.json()) as AuthContextResponse
       if (data.isImpersonating && data.effectiveProfile && data.actorProfile) {
@@ -455,7 +458,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (userError || !authUser) {
-          if (handleRefreshTokenError(userError)) return
+          if (handleRefreshTokenError(userError)) {
+            setLoading(false)
+            return
+          }
           setLoading(false)
           return
         }
@@ -493,7 +499,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             (error instanceof Error && error.name === 'AbortError') ||
             msg.includes('aborted') ||
             msg.includes('lock broken')
-          if (handleRefreshTokenError(error)) return
+          if (handleRefreshTokenError(error)) {
+            setLoading(false)
+            return
+          }
           if (isAbort) {
             setLoading(false)
             return
@@ -614,6 +623,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 reason: 'bootstrap già eseguito',
               })
             }
+            // Evita skeleton infinito: race bootstrap/listener può lasciare loading=true se usciamo senza setState.
+            setLoading(false)
             return
           }
           const applied = await applyAuthContext()

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
+import { AthleteHomeViewportScale } from './athlete-home-viewport-scale'
 import { HomeLayoutClient } from './home-layout-client'
 import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
 import { createLogger } from '@/lib/logger'
@@ -45,9 +46,9 @@ export default function HomeLayoutAuth({ children }: HomeLayoutAuthProps) {
   }, [user, role, loading, router])
 
   return (
-    <>
+    <AthleteHomeViewportScale>
       <ImpersonationBanner />
       <HomeLayoutClient>{children}</HomeLayoutClient>
-    </>
+    </AthleteHomeViewportScale>
   )
 }

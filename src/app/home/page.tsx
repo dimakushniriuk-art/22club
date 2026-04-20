@@ -1,6 +1,9 @@
 'use client'
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { useNotify } from '@/lib/ui/notify'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { isValidProfile } from '@/lib/utils/type-guards'
@@ -90,6 +93,71 @@ const blocchiItems = [
 ] as const
 
 type BloccoItem = (typeof blocchiItems)[number]
+
+/**
+ * Gestisce link da email: /home?invito_cliente=UUID&azione=accetta|rifiuta
+ * (useSearchParams in Suspense per compatibilità build Next.js)
+ */
+function HomeInvitoDaEmailHandler({
+  refetchInviti,
+}: {
+  refetchInviti: () => void | Promise<void>
+}) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const { notify } = useNotify()
+
+  useEffect(() => {
+    const invitoId = searchParams.get('invito_cliente')
+    const azione = searchParams.get('azione')
+    if (!invitoId || (azione !== 'accetta' && azione !== 'rifiuta')) return
+
+    const storageKey = `invito_email_link_${invitoId}_${azione}`
+    if (typeof window !== 'undefined' && sessionStorage.getItem(storageKey)) {
+      router.replace('/home')
+      return
+    }
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const supabase = createClient()
+        const rpcName =
+          azione === 'accetta' ? 'accetta_invito_cliente' : 'rifiuta_invito_cliente'
+        const { data, error } = await supabase.rpc(rpcName, { p_invito_id: invitoId })
+        if (cancelled) return
+        if (error) {
+          notify(error.message ?? 'Operazione non riuscita', 'error', 'Invito')
+        } else {
+          const res = data as { success?: boolean; error?: string } | null
+          if (res?.success) {
+            if (typeof window !== 'undefined') sessionStorage.setItem(storageKey, '1')
+            notify(
+              azione === 'accetta' ? 'Invito accettato.' : 'Invito rifiutato.',
+              'success',
+              'Invito',
+            )
+          } else {
+            notify(res?.error ?? 'Operazione non riuscita', 'error', 'Invito')
+          }
+        }
+      } catch (e) {
+        if (!cancelled) notify(e instanceof Error ? e.message : 'Errore', 'error', 'Invito')
+      } finally {
+        if (!cancelled) {
+          router.replace('/home')
+          void refetchInviti()
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [searchParams, router, notify, refetchInviti])
+
+  return null
+}
 
 // --- Sub-componenti (stesso file, nessuna modifica ad altri file) ---
 
@@ -259,6 +327,11 @@ export default function HomePage() {
           onSuccess={handleWizardSuccess}
           onRefetchInviti={refetchInviti}
         />
+        {isAtleta ? (
+          <Suspense fallback={null}>
+            <HomeInvitoDaEmailHandler refetchInviti={refetchInviti} />
+          </Suspense>
+        ) : null}
         <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4 min-[834px]:grid-cols-3">
           {blocchiItems.map((blocco) => (
             <HomeBloccoCard

@@ -26,6 +26,12 @@ export interface Cliente {
   updated_at: string
   /** True se l'atleta è invitato ma non ha ancora accettato (solo nutrizionista/massaggiatore, filtro Inattivi). Non interagibile. */
   invitatoInAttesa?: boolean
+  /** Staff (es. massaggiatore): id invito pendente per reinvio email. */
+  staffInvitoId?: string | null
+  /** Staff: collegamento staff_atleti attivo. */
+  staffCollegato?: boolean
+  /** Staff: invito email ancora in sospeso ma già collegato in elenco. */
+  staffInvitoEmailPendente?: boolean
 }
 
 export interface ClienteTag {

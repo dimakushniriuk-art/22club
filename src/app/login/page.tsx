@@ -18,6 +18,26 @@ function validateLoginForm(email: string, password: string): { email?: string; p
 
 type ProfileRow = { role: string; org_id: string | null; first_login: boolean | null }
 
+/** Dopo login atleta: torna a /home con query (es. invito da email) se `redirectedFrom` è un path interno sicuro. */
+function tryAthleteRedirectFromLoginQuery(
+  profileData: ProfileRow,
+  redirectedFrom: string | null,
+  router: ReturnType<typeof useRouter>,
+): boolean {
+  if (profileData.role !== 'athlete' || !redirectedFrom?.trim()) return false
+  let path = redirectedFrom.trim()
+  try {
+    path = decodeURIComponent(path)
+  } catch {
+    // mantieni path originale
+  }
+  if (!path.startsWith('/home')) return false
+  if (path.includes('://') || path.includes('..')) return false
+  if (path.length > 2048) return false
+  router.replace(path)
+  return true
+}
+
 function performPostLoginRedirect(
   profileData: ProfileRow,
   router: ReturnType<typeof useRouter>,
@@ -248,6 +268,10 @@ function LoginContent() {
             return
           }
 
+          const redirectedFrom = searchParams.get('redirectedFrom')
+          if (tryAthleteRedirectFromLoginQuery(profileData as ProfileRow, redirectedFrom, router)) {
+            return
+          }
           performPostLoginRedirect(profileData as ProfileRow, router, setError, setLoading)
         } catch {
           logger.error('Errore durante il caricamento del profilo')
@@ -264,7 +288,7 @@ function LoginContent() {
         setLoading(false)
       }
     },
-    [email, password, router, supabase],
+    [email, password, router, supabase, searchParams],
   )
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

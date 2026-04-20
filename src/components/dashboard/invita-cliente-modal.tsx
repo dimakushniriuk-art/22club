@@ -16,11 +16,14 @@ import { useNotify } from '@/lib/ui/notify'
 import { createClient } from '@/lib/supabase/client'
 import { UserRoundPlus, Loader2 } from 'lucide-react'
 import { colors } from '@/lib/design-tokens'
+import { extractInvitoClienteIdFromRpcResult } from '@/lib/staff/invito-cliente-rpc-result'
 
 interface InvitaClienteModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+  /** Testi e messaggi di successo adattati al ruolo (es. massaggiatore). */
+  inviteContext?: 'default' | 'massaggiatore'
 }
 
 type ClienteTipo = 'palestra' | 'esterno'
@@ -32,7 +35,13 @@ interface FormData {
   telefono: string
 }
 
-export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClienteModalProps) {
+export function InvitaClienteModal({
+  open,
+  onOpenChange,
+  onSuccess,
+  inviteContext = 'default',
+}: InvitaClienteModalProps) {
+  const isMassaggiatore = inviteContext === 'massaggiatore'
   const { notify } = useNotify()
   const [tipoCliente, setTipoCliente] = useState<ClienteTipo>('palestra')
   const [formData, setFormData] = useState<FormData>({
@@ -94,11 +103,45 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
         }
         const res = result as { success?: boolean; error?: string } | null
         if (res?.success) {
-          notify(
-            'Invito inviato. Il cliente vedrà "Nuovo invito" nella sua Home.',
-            'success',
-            'Invito inviato',
-          )
+          const invitoId = extractInvitoClienteIdFromRpcResult(result)
+          if (invitoId) {
+            try {
+              const mailRes = await fetch('/api/staff/invito-cliente/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ invito_id: invitoId }),
+              })
+              if (!mailRes.ok) {
+                const j = (await mailRes.json().catch(() => ({}))) as { error?: string }
+                notify(
+                  j?.error ??
+                    "Invito salvato in attesa, ma l'email non è partita. Usa «Reinvia invito» dalla lista clienti.",
+                  'warning',
+                  'Email',
+                )
+              } else {
+                notify(
+                  isMassaggiatore
+                    ? "Invito in attesa: abbiamo inviato un'email al cliente con Accetta e Non accetto. Finché non risponde, resta in pending."
+                    : 'Invito in attesa: email inviata al cliente con i link per accettare o rifiutare.',
+                  'success',
+                  'Invito inviato',
+                )
+              }
+            } catch {
+              notify(
+                "Invito salvato in attesa, ma l'email non è partita. Usa «Reinvia invito» dalla lista clienti.",
+                'warning',
+                'Email',
+              )
+            }
+          } else {
+            notify(
+              "Invito salvato in attesa, ma non è stato possibile inviare l'email automaticamente (id invito non disponibile).",
+              'warning',
+              'Invito',
+            )
+          }
           setFormData({ nome: '', cognome: '', email: '', telefono: '' })
           onOpenChange(false)
           onSuccess?.()
@@ -118,11 +161,47 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
         }
         const res = result as { success?: boolean; error?: string } | null
         if (res?.success) {
-          notify(
-            'Cliente esterno aggiunto. Puoi gestirlo come un cliente normale (piani, progressi, profilo). Visibile solo a te e al Marketing.',
-            'success',
-            'Cliente aggiunto',
-          )
+          const invitoId = extractInvitoClienteIdFromRpcResult(result)
+          if (invitoId) {
+            try {
+              const mailRes = await fetch('/api/staff/invito-cliente/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ invito_id: invitoId }),
+              })
+              if (!mailRes.ok) {
+                const j = (await mailRes.json().catch(() => ({}))) as { error?: string }
+                notify(
+                  j?.error ??
+                    "Cliente registrato, ma l'email di invito non è partita. Usa «Reinvia invito» se compare in lista.",
+                  'warning',
+                  'Email',
+                )
+              } else {
+                notify(
+                  isMassaggiatore
+                    ? 'Cliente esterno creato: email inviata con Accetta / Non accetto. Resta in pending fino alla risposta.'
+                    : 'Cliente esterno aggiunto: email inviata con i link per accettare o rifiutare.',
+                  'success',
+                  'Cliente aggiunto',
+                )
+              }
+            } catch {
+              notify(
+                "Cliente registrato, ma l'email non è partita. Controlla la lista inviti e reinvia.",
+                'warning',
+                'Email',
+              )
+            }
+          } else {
+            notify(
+              isMassaggiatore
+                ? "Cliente esterno registrato. Se serve l'email di invito, verifica dalla lista inviti in attesa."
+                : 'Cliente esterno aggiunto. Visibile solo a te e al Marketing.',
+              'success',
+              'Cliente aggiunto',
+            )
+          }
           setFormData({ nome: '', cognome: '', email: '', telefono: '' })
           onOpenChange(false)
           onSuccess?.()
@@ -162,8 +241,12 @@ export function InvitaClienteModal({ open, onOpenChange, onSuccess }: InvitaClie
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-text-secondary text-sm">
                   {tipoCliente === 'palestra'
-                    ? 'Inserisci nome, cognome e email del cliente già registrato nella tua organizzazione. Riceverà un invito nella sua Home.'
-                    : 'Inserisci i dati del cliente esterno (non ancora in palestra). Richiedi anche il numero di cellulare.'}
+                    ? isMassaggiatore
+                      ? 'Inserisci nome, cognome e email del cliente già in organizzazione. Riceverà un invito in Home; accettandolo, risulterà collegato a te come massaggiatore.'
+                      : 'Inserisci nome, cognome e email del cliente già registrato nella tua organizzazione. Riceverà un invito nella sua Home.'
+                    : isMassaggiatore
+                      ? 'Cliente non ancora in palestra: servono email e cellulare. Verrà creato nel database e collegato a te.'
+                      : 'Inserisci i dati del cliente esterno (non ancora in palestra). Richiedi anche il numero di cellulare.'}
                 </DialogDescription>
               </div>
             </div>

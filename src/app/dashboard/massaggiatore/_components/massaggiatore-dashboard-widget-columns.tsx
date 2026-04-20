@@ -100,7 +100,7 @@ export function MassaggiatoreDashboardWidgetColumns({
             <ul className={DASHBOARD_LIST_SCROLL_CLASS}>
               <li>
                 <Link
-                  href="/dashboard/massaggiatore/appuntamenti"
+                  href="/dashboard/massaggiatore/clienti"
                   prefetch
                   className={DASHBOARD_ROW_LINK_CLASS}
                 >
@@ -114,15 +114,37 @@ export function MassaggiatoreDashboardWidgetColumns({
                 <Link
                   href="/dashboard/massaggiatore/statistiche"
                   prefetch
-                  className={DASHBOARD_ROW_LINK_CLASS}
+                  className={cn(DASHBOARD_ROW_LINK_CLASS, 'space-y-2')}
                 >
-                  <div className="text-sm font-medium text-text-primary">Massaggi eseguiti</div>
-                  <div className="text-xs text-text-secondary">
-                    <span className="font-semibold tabular-nums text-cyan-400/90">
-                      {stats.massaggiEseguiti}
-                    </span>
-                    <span className="text-text-muted"> di {stats.massaggiTotali} totali</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-sm font-medium text-text-primary">Massaggi eseguiti</div>
+                    <div className="shrink-0 text-right text-xs text-text-secondary">
+                      <span className="font-semibold tabular-nums text-cyan-400/90">
+                        {stats.massaggiEseguiti}
+                      </span>
+                      <span className="text-text-muted"> di {stats.massaggiTotali} totali</span>
+                    </div>
                   </div>
+                  {stats.massaggiTotali > 0 ? (
+                    <div
+                      className="h-1.5 w-full overflow-hidden rounded-full bg-white/5"
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={stats.massaggiTotali}
+                      aria-valuenow={stats.massaggiEseguiti}
+                      aria-label="Avanzamento massaggi completati sul totale registrato"
+                    >
+                      <div
+                        className="h-full max-w-full rounded-full bg-gradient-to-r from-cyan-600/80 to-teal-500/70 transition-[width] duration-300"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.round((stats.massaggiEseguiti / stats.massaggiTotali) * 100),
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  ) : null}
                 </Link>
               </li>
               <li>

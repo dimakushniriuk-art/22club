@@ -207,7 +207,7 @@ export function DropdownMenuContent({
     <div
       ref={ref}
       className={cn(
-        'fixed z-[9999] min-w-[12rem] rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl',
+        'fixed z-[9999] min-w-[12rem] overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_8px_32px_-8px_rgba(0,0,0,0.55)] backdrop-blur-xl',
         alignClasses[align],
         className,
       )}
@@ -248,10 +248,10 @@ export function DropdownMenuItem({
     return React.cloneElement(child, {
       ...child.props,
       className: cn(
-        'flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
+        'flex min-h-[44px] w-full cursor-pointer touch-manipulation items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text-primary transition-colors outline-none select-none',
         disabled
-          ? 'text-text-tertiary cursor-not-allowed opacity-50'
-          : 'text-text-primary hover:bg-primary/10 hover:text-text-primary',
+          ? 'cursor-not-allowed text-text-tertiary opacity-50'
+          : 'hover:bg-primary/12 hover:text-text-primary active:bg-primary/18 focus-visible:bg-primary/12 focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent',
         className,
         child.props.className,
       ),
@@ -265,11 +265,12 @@ export function DropdownMenuItem({
 
   return (
     <button
+      type="button"
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
+        'flex min-h-[44px] w-full cursor-pointer touch-manipulation items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text-primary transition-colors outline-none select-none',
         disabled
-          ? 'text-text-tertiary cursor-not-allowed opacity-50'
-          : 'text-text-primary hover:bg-primary/10 hover:text-text-primary',
+          ? 'cursor-not-allowed text-text-tertiary opacity-50'
+          : 'hover:bg-primary/12 hover:text-text-primary active:bg-primary/18 focus-visible:bg-primary/12 focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent',
         className,
       )}
       onClick={handleClick}
@@ -282,5 +283,5 @@ export function DropdownMenuItem({
 }
 
 export function DropdownMenuSeparator() {
-  return <div className="-mx-1 my-1 h-px border-t border-white/10" />
+  return <div className="my-1 h-px border-t border-white/10" role="separator" />
 }

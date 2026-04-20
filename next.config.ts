@@ -1,10 +1,15 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
+import { readFileSync } from 'node:fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+const appVersion = JSON.parse(
+  readFileSync(path.join(__dirname, 'package.json'), 'utf-8'),
+).version as string
 
 /** Middleware e altro possono usare solo CAPACITOR=true (es. in .env.local). */
 const isCapacitor = process.env.CAPACITOR === 'true'
@@ -16,6 +21,10 @@ const isCapacitorStaticExport =
   process.env.CAPACITOR === 'true' && process.env.CAPACITOR_NEXT_EXPORT === 'true'
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: appVersion,
+  },
+
   // Forza la root di tracing su questa app per evitare l'avviso multi-lockfile
   outputFileTracingRoot: path.join(__dirname),
 
