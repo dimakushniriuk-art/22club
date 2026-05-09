@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 
 // Mock per localStorage (prima di importare il provider)
@@ -65,8 +65,10 @@ describe('ThemeProvider', () => {
     expect(screen.getByTestId('theme')).toHaveTextContent('dark')
   })
 
-  it('should load theme from localStorage', () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
+  it('should load theme from localStorage', async () => {
+    mockLocalStorage.getItem.mockImplementation((key: string) =>
+      key === 'theme:anon' ? '"light"' : null,
+    )
 
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -77,11 +79,11 @@ describe('ThemeProvider', () => {
       { container },
     )
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('light')
-    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('theme')
+    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('light'))
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('theme:anon')
   })
 
-  it('should toggle theme', () => {
+  it('should toggle theme', async () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
     render(
@@ -95,13 +97,15 @@ describe('ThemeProvider', () => {
 
     fireEvent.click(screen.getByTestId('toggle'))
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('light')
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'light')
+    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('light'))
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme:anon', '"light"')
     expect(classListToggleSpy).toHaveBeenCalledWith('dark', false)
   })
 
-  it('should toggle from light to dark', () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
+  it('should toggle from light to dark', async () => {
+    mockLocalStorage.getItem.mockImplementation((key: string) =>
+      key === 'theme:anon' ? '"light"' : null,
+    )
 
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -112,12 +116,12 @@ describe('ThemeProvider', () => {
       { container },
     )
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('light')
+    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('light'))
 
     fireEvent.click(screen.getByTestId('toggle'))
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('dark')
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'dark')
+    await waitFor(() => expect(screen.getByTestId('theme')).toHaveTextContent('dark'))
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme:anon', '"dark"')
     expect(classListToggleSpy).toHaveBeenCalledWith('dark', true)
   })
 
@@ -136,8 +140,10 @@ describe('ThemeProvider', () => {
     expect(classListToggleSpy).toHaveBeenCalledWith('dark', true)
   })
 
-  it('should not apply dark class on mount when theme is light', () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
+  it('should not apply dark class on mount when theme is light', async () => {
+    mockLocalStorage.getItem.mockImplementation((key: string) =>
+      key === 'theme:anon' ? '"light"' : null,
+    )
 
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -148,6 +154,6 @@ describe('ThemeProvider', () => {
       { container },
     )
 
-    expect(classListToggleSpy).toHaveBeenCalledWith('dark', false)
+    await waitFor(() => expect(classListToggleSpy).toHaveBeenCalledWith('dark', false))
   })
 })
