@@ -261,7 +261,7 @@ export default function AggiungiFotoPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 md:px-6 space-y-4">
         <PageHeaderFixed
           variant="chat"
           title="Aggiungi foto"
@@ -366,7 +366,7 @@ export default function AggiungiFotoPage() {
           </div>
         )}
 
-        <p className="text-text-tertiary text-xs min-[834px]:text-sm text-center px-2">
+        <p className="text-text-tertiary text-xs md:text-sm text-center px-2">
           Tocca una figura: potrai caricare un&apos;immagine dalla galleria o scattare una nuova
           foto. Verrà salvata come &quot;Davanti&quot;, &quot;Dietro&quot; o &quot;Lato&quot;.
         </p>

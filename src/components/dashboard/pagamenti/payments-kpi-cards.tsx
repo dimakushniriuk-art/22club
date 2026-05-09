@@ -1,7 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui'
-import { Badge } from '@/components/ui'
+import { MetricCard } from '@/components'
 import { TrendingUp, CreditCard, Euro } from 'lucide-react'
 
 interface PaymentsKPICardsProps {
@@ -9,6 +8,12 @@ interface PaymentsKPICardsProps {
   totalLessons: number
   totalPayments: number
   totalReversals: number
+}
+
+function getRevenueStatus(amount: number): 'success' | 'warning' | 'error' {
+  if (amount >= 1000) return 'success'
+  if (amount >= 500) return 'warning'
+  return 'error'
 }
 
 export function PaymentsKPICards({
@@ -24,80 +29,38 @@ export function PaymentsKPICards({
     }).format(amount)
   }
 
-  const getRevenueColor = (amount: number) => {
-    if (amount >= 1000) return 'success'
-    if (amount >= 500) return 'warning'
-    return 'error'
-  }
-
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <Card
+      <MetricCard
+        title="Entrate Mensili"
+        value={formatCurrency(totalRevenue)}
+        icon={<TrendingUp className="h-5 w-5" />}
+        tone="emerald"
         variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-green-500/30 shadow-lg shadow-green-500/10 backdrop-blur-xl hover:border-green-400/50 transition-all duration-200"
-        style={{ animationDelay: '100ms' }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-emerald-500/5" />
-        <CardContent className="p-6 relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-secondary text-sm font-medium">Entrate Mensili</p>
-              <p className="text-text-primary text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
-            </div>
-            <div className="bg-green-500/20 text-green-400 rounded-full p-3">
-              <TrendingUp className="h-6 w-6" />
-            </div>
-          </div>
-          <Badge
-            variant={getRevenueColor(totalRevenue) as 'success' | 'warning' | 'error'}
-            size="sm"
-            className="mt-2"
-          >
-            {totalPayments} pagamenti
-          </Badge>
-        </CardContent>
-      </Card>
-
-      <Card
+        animationDelay="100ms"
+        status={getRevenueStatus(totalRevenue)}
+        statusText={`${totalPayments} pagamenti`}
+      />
+      <MetricCard
+        title="Lezioni Vendute"
+        value={totalLessons}
+        icon={<CreditCard className="h-5 w-5" />}
+        tone="blue"
         variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
-        style={{ animationDelay: '200ms' }}
-      >
-        <CardContent className="p-6 relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-secondary text-sm font-medium">Lezioni Vendute</p>
-              <p className="text-text-primary text-2xl font-bold">{totalLessons}</p>
-            </div>
-            <div className="bg-blue-500/20 text-blue-400 rounded-full p-3">
-              <CreditCard className="h-6 w-6" />
-            </div>
-          </div>
-          <p className="text-text-tertiary mt-2 text-xs">Questo mese</p>
-        </CardContent>
-      </Card>
-
-      <Card
+        animationDelay="200ms"
+        status="info"
+        statusText="Questo mese"
+      />
+      <MetricCard
+        title="Pagamenti Totali"
+        value={totalPayments + totalReversals}
+        icon={<Euro className="h-5 w-5" />}
+        tone="purple"
         variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-xl hover:border-purple-400/50 transition-all duration-200"
-        style={{ animationDelay: '300ms' }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-violet-500/5" />
-        <CardContent className="p-6 relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-secondary text-sm font-medium">Pagamenti Totali</p>
-              <p className="text-text-primary text-2xl font-bold">
-                {totalPayments + totalReversals}
-              </p>
-            </div>
-            <div className="bg-purple-500/20 text-purple-400 rounded-full p-3">
-              <Euro className="h-6 w-6" />
-            </div>
-          </div>
-          <p className="text-text-tertiary mt-2 text-xs">Di cui {totalReversals} storni</p>
-        </CardContent>
-      </Card>
+        animationDelay="300ms"
+        status="info"
+        statusText={`Di cui ${totalReversals} storni`}
+      />
     </div>
   )
 }

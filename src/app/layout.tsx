@@ -7,6 +7,7 @@ import '../styles/app-viewport-shell.css'
 import '@/lib/dom-protection' // Protezione DOM per errori className
 import { QueryProvider } from '@/providers/query-provider'
 import { AuthProvider } from '@/providers/auth-provider'
+import { SessionQuerySync } from '@/providers/session-query-sync'
 import SwRegister from '@/components/sw-register'
 import { ToastProvider } from '@/components/ui/toast'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
@@ -14,6 +15,8 @@ import { CookieConsent } from '@/components/shared/cookie-consent'
 import { WakeLockProvider } from '@/components/wake-lock-provider'
 import { ConnectionStatusBanner } from '@/components/shared/connection-status-banner'
 import { InstallPwaPrompt } from '@/components/shared/install-pwa-prompt'
+import { SentryNavigationContext } from '@/providers/sentry-navigation-context'
+import { PendingWriteBootstrap } from '@/providers/pending-write-bootstrap'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -82,8 +85,11 @@ export default function RootLayout({
       >
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
         <ErrorBoundary>
-          <AuthProvider>
-            <QueryProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <SessionQuerySync />
+              <SentryNavigationContext />
+              <PendingWriteBootstrap />
               <ToastProvider>
                 <WakeLockProvider>
                   <ConnectionStatusBanner />
@@ -93,8 +99,8 @@ export default function RootLayout({
                   <CookieConsent />
                 </WakeLockProvider>
               </ToastProvider>
-            </QueryProvider>
-          </AuthProvider>
+            </AuthProvider>
+          </QueryProvider>
         </ErrorBoundary>
       </body>
     </html>

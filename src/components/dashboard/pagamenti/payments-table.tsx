@@ -40,7 +40,7 @@ export function PaymentsTable({
     return (
       <Card
         variant="trainer"
-        className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
+        className="relative min-w-0 overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl transition-all duration-200 hover:border-blue-400/50"
       >
         <CardContent className="relative py-12 text-center">
           <div className="mb-4 text-6xl opacity-50">💳</div>
@@ -54,7 +54,7 @@ export function PaymentsTable({
   return (
     <Card
       variant="trainer"
-      className="relative overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl hover:border-blue-400/50 transition-all duration-200"
+      className="relative min-w-0 overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-blue-500/30 shadow-lg shadow-blue-500/10 backdrop-blur-xl transition-all duration-200 hover:border-blue-400/50"
     >
       <CardHeader className="relative">
         <CardTitle size="md">Pagamenti ({payments.length})</CardTitle>

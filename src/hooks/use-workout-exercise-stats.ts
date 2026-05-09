@@ -121,10 +121,15 @@ export interface WorkoutExerciseStats {
 
 /**
  * Hook per recuperare statistiche degli esercizi per un atleta.
- * Include tutti gli esercizi assegnati nelle schede attuali (anche mai eseguiti).
+ * Include tutti gli esercizi assegnati nelle schede attuali (anche mai eseguiti) **più** quelli con
+ * storico solo da `workout_sets.exercise_id` (scheda/WDE eliminati).
  * Serie incluse: tutte quelle collegate a un `workout_log` dell’atleta (qualunque stato
  * sessione e anche senza `completed_at` sulla serie), più i set completati sui WDE dei
  * piani dell’atleta. Esclude i soli placeholder di scheda (senza log e senza completamento).
+ * Log caricati con `.or(athlete_id …, atleta_id …)` su `workout_logs` per non perdere sessioni
+ * legacy che valorizzano solo una delle due colonne (`profiles.id`).
+ * `workout_sets`: paginazione `.range` per chunk (limite PostgREST ~1000 righe/richiesta), altrimenti
+ * lo storico lungo viene troncato.
  *
  * @param athleteUserId - user_id dell'atleta (profiles.user_id, auth.uid())
  */
@@ -172,12 +177,16 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           }
         }
 
+        // Sessioni: alcuni log legacy hanno solo `athlete_id` o solo `atleta_id` (profiles.id) —
+        // includere entrambe le colonne come in use-athlete-stats / analytics.
+        const athleteLogsOrFilter = `athlete_id.eq.${athleteProfileId},atleta_id.eq.${athleteProfileId}`
+
         // Sessioni totali: conteggio da workout_logs (una riga per sessione)
         let totalSessionsFromLogs = 0
         const { count: logsCount } = await supabase
           .from('workout_logs')
           .select('*', { count: 'exact', head: true })
-          .eq('atleta_id', athleteProfileId)
+          .or(athleteLogsOrFilter)
         if (logsCount != null) totalSessionsFromLogs = logsCount
 
         const LOG_PAGE_SIZE = 1000
@@ -190,7 +199,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             .select(
               'id, data, started_at, stato, completed_at, created_at, volume_totale, durata_minuti, duration_minutes, esercizi_completati',
             )
-            .eq('atleta_id', athleteProfileId)
+            .or(athleteLogsOrFilter)
             .order('id', { ascending: true })
             .range(logRangeFrom, logRangeFrom + LOG_PAGE_SIZE - 1)
           if (logsListError) {
@@ -285,7 +294,8 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
         type SetRow = {
           id: string
-          workout_day_exercise_id: string
+          workout_day_exercise_id: string | null
+          exercise_id?: string | null
           set_number: number
           reps?: number | null
           reps_completed?: number | null
@@ -299,35 +309,53 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
         const setsById = new Map<string, SetRow>()
         const selectSets =
-          'id, workout_day_exercise_id, set_number, reps, reps_completed, weight_kg, weight_used, completed_at, execution_time_sec, workout_log_id, created_at'
+          'id, workout_day_exercise_id, exercise_id, set_number, reps, reps_completed, weight_kg, weight_used, completed_at, execution_time_sec, workout_log_id, created_at'
+
+        // PostgREST: limite righe per richiesta (spesso 1000). Senza paginazione si perdono
+        // serie storiche quando i log nel chunk hanno molte righe in workout_sets.
+        const SET_PAGE_SIZE = 1000
 
         for (const logChunk of chunkForSupabaseIn(logIds)) {
-          const { data: workoutSets, error: setsError } = await supabase
-            .from('workout_sets')
-            .select(selectSets)
-            .in('workout_log_id', logChunk)
-            .order('id', { ascending: true })
-          if (setsError) {
-            logger.error('Error fetching workout_sets by log', setsError, { athleteProfileId })
-            throw setsError
-          }
-          for (const row of (workoutSets ?? []) as SetRow[]) {
-            setsById.set(row.id, row)
+          let setRangeFrom = 0
+          for (;;) {
+            const { data: workoutSets, error: setsError } = await supabase
+              .from('workout_sets')
+              .select(selectSets)
+              .in('workout_log_id', logChunk)
+              .order('id', { ascending: true })
+              .range(setRangeFrom, setRangeFrom + SET_PAGE_SIZE - 1)
+            if (setsError) {
+              logger.error('Error fetching workout_sets by log', setsError, { athleteProfileId })
+              throw setsError
+            }
+            const pageRows = (workoutSets ?? []) as SetRow[]
+            for (const row of pageRows) {
+              setsById.set(row.id, row)
+            }
+            if (pageRows.length < SET_PAGE_SIZE) break
+            setRangeFrom += SET_PAGE_SIZE
           }
         }
 
         for (const wdeChunk of chunkForSupabaseIn(planWdeIds)) {
-          const { data: workoutSets, error: setsError } = await supabase
-            .from('workout_sets')
-            .select(selectSets)
-            .in('workout_day_exercise_id', wdeChunk)
-            .order('id', { ascending: true })
-          if (setsError) {
-            logger.error('Error fetching workout_sets by wde', setsError, { planWdeIds })
-            throw setsError
-          }
-          for (const row of (workoutSets ?? []) as SetRow[]) {
-            setsById.set(row.id, row)
+          let setRangeFrom = 0
+          for (;;) {
+            const { data: workoutSets, error: setsError } = await supabase
+              .from('workout_sets')
+              .select(selectSets)
+              .in('workout_day_exercise_id', wdeChunk)
+              .order('id', { ascending: true })
+              .range(setRangeFrom, setRangeFrom + SET_PAGE_SIZE - 1)
+            if (setsError) {
+              logger.error('Error fetching workout_sets by wde', setsError, { planWdeIds })
+              throw setsError
+            }
+            const pageRows = (workoutSets ?? []) as SetRow[]
+            for (const row of pageRows) {
+              setsById.set(row.id, row)
+            }
+            if (pageRows.length < SET_PAGE_SIZE) break
+            setRangeFrom += SET_PAGE_SIZE
           }
         }
 
@@ -391,7 +419,13 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         }
 
         const exerciseIdMap = new Map(planWdeRows.map((e) => [e.id, e.exercise_id]))
-        const wdeIdsFromSets = [...new Set(rawSets.map((s) => s.workout_day_exercise_id))]
+        const wdeIdsFromSets = [
+          ...new Set(
+            rawSets
+              .map((s) => s.workout_day_exercise_id)
+              .filter((id): id is string => typeof id === 'string' && id.trim().length > 0),
+          ),
+        ]
         const missingWdeIds = wdeIdsFromSets.filter((id) => !exerciseIdMap.has(id))
 
         for (const wdeChunk of chunkForSupabaseIn(missingWdeIds)) {
@@ -410,8 +444,16 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           }
         }
 
+        const snapshotExerciseIdsFromSets = rawSets
+          .map((s) => (typeof s.exercise_id === 'string' ? s.exercise_id.trim() : ''))
+          .filter((id) => id.length > 0)
+
         const exerciseIdsForNames = [
-          ...new Set([...uniqueExerciseIdsFromPlan, ...exerciseIdMap.values()]),
+          ...new Set([
+            ...uniqueExerciseIdsFromPlan,
+            ...exerciseIdMap.values(),
+            ...snapshotExerciseIdsFromSets,
+          ]),
         ]
 
         type ExRow = { id: string; name: string; category?: string | null }
@@ -436,10 +478,20 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
 
         const uniqueExerciseIds = uniqueExerciseIdsFromPlan
 
+        const resolveCatalogExerciseIdForSet = (set: SetRow): string | null => {
+          const wde = set.workout_day_exercise_id
+          if (typeof wde === 'string' && wde.trim()) {
+            const fromWde = exerciseIdMap.get(wde.trim())
+            if (fromWde) return fromWde
+          }
+          const snap = typeof set.exercise_id === 'string' ? set.exercise_id.trim() : ''
+          return snap.length > 0 ? snap : null
+        }
+
         // STEP 7: Raggruppa i set per esercizio (tutti gli stati di sessione / serie su log)
         const exerciseStatsMap = new Map<string, ExerciseStat>()
         for (const set of rawSets) {
-          const exerciseId = exerciseIdMap.get(set.workout_day_exercise_id)
+          const exerciseId = resolveCatalogExerciseIdForSet(set)
           if (!exerciseId) continue
 
           const exerciseInfo = exercisesMap.get(exerciseId)
@@ -477,7 +529,7 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             execution_time_sec: set.execution_time_sec ?? null,
             set_number: set.set_number,
             workout_log_id: set.workout_log_id ?? null,
-            workout_day_exercise_id: set.workout_day_exercise_id,
+            workout_day_exercise_id: set.workout_day_exercise_id ?? null,
             workout_log_stato: logStato,
           })
         }

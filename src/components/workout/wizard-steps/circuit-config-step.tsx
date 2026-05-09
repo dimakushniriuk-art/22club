@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { Button, SimpleSelect } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { Textarea } from '@/components/ui'
@@ -11,6 +12,7 @@ import {
   workoutRepsFromSelectValue,
   workoutRepsToSelectValue,
 } from '@/lib/constants/workout-reps-select'
+import type { SimpleSelectOption } from '@/components/ui/simple-select'
 import { isWorkoutExerciseConfigured } from '@/lib/validations/workout-target'
 import {
   ExecutionSecondsField,
@@ -34,6 +36,56 @@ interface CircuitConfigStepProps {
   onUpdate: (index: number, data: Partial<WorkoutDayExerciseData>) => void
 }
 
+const MIN_CIRCUIT_CYCLES = 1
+const MAX_CIRCUIT_CYCLES = 10
+
+function clampCircuitCycles(raw: number): number {
+  return Math.max(MIN_CIRCUIT_CYCLES, Math.min(MAX_CIRCUIT_CYCLES, Math.round(raw)))
+}
+
+function buildCircuitCyclesOptions(current: number | null | undefined): SimpleSelectOption[] {
+  const standard: SimpleSelectOption[] = Array.from({ length: MAX_CIRCUIT_CYCLES }, (_, i) => {
+    const n = i + 1
+    return { value: String(n), label: String(n) }
+  })
+
+  if (
+    typeof current === 'number' &&
+    Number.isFinite(current) &&
+    Number.isInteger(current) &&
+    current >= 1 &&
+    current > MAX_CIRCUIT_CYCLES
+  ) {
+    return [{ value: String(current), label: `${current} (attuale)` }, ...standard]
+  }
+
+  return standard
+}
+
+function CircuitExerciseMediaVideo({
+  videoUrl,
+  posterUrl,
+}: {
+  videoUrl: string
+  posterUrl: string | undefined
+}) {
+  const ref = useAutoplayPreviewVideo({ enabled: true, pauseWhenOffscreen: true })
+  return (
+    <video
+      ref={ref}
+      src={videoUrl}
+      poster={posterUrl}
+      className="h-full w-full object-cover"
+      muted
+      loop
+      playsInline
+      autoPlay
+      preload="auto"
+      controls
+    />
+  )
+}
+
 export function CircuitConfigStep({ exercises, params, onUpdate }: CircuitConfigStepProps) {
   return (
     <div className="space-y-6">
@@ -50,7 +102,8 @@ export function CircuitConfigStep({ exercises, params, onUpdate }: CircuitConfig
           return (
             <div
               key={exercise.exercise_id}
-              className="relative overflow-hidden rounded-lg border border-white/10 bg-[#141414] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200"
+              id={`circuit-cfg-${exerciseIndex}`}
+              className="relative overflow-hidden rounded-lg border border-white/10 bg-[#141414] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200 scroll-mt-6"
             >
               <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
@@ -78,33 +131,69 @@ export function CircuitConfigStep({ exercises, params, onUpdate }: CircuitConfig
                 )}
               >
                 {showExerciseMedia ? (
-                  <div
-                    className={cn(
-                      'relative mx-auto aspect-video w-full shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]',
-                      'max-w-md lg:mx-0 lg:w-64 xl:w-72',
-                    )}
-                  >
-                    {hasVideoUrl && exerciseData?.video_url ? (
-                      <video
-                        src={exerciseData.video_url}
-                        poster={isValidHttpUrl(posterUrl) ? posterUrl : undefined}
-                        className="h-full w-full object-cover"
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                        controls
+                  <div className="mx-auto w-full max-w-md shrink-0 space-y-3 lg:mx-0 lg:w-64 xl:w-72">
+                    <div
+                      className={cn(
+                        'relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]',
+                      )}
+                    >
+                      {hasVideoUrl && exerciseData?.video_url ? (
+                        <CircuitExerciseMediaVideo
+                          videoUrl={exerciseData.video_url}
+                          posterUrl={isValidHttpUrl(posterUrl) ? posterUrl : undefined}
+                        />
+                      ) : isValidHttpUrl(posterUrl) ? (
+                        <Image
+                          src={posterUrl}
+                          alt={exerciseData?.name ?? 'Esercizio'}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 288px"
+                          unoptimized
+                        />
+                      ) : null}
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                      <Label className="text-text-secondary text-[11px] font-semibold uppercase tracking-wider">
+                        Cicli nel circuito
+                      </Label>
+                      <SimpleSelect
+                        value={String(exercise.target_sets ?? MIN_CIRCUIT_CYCLES)}
+                        onValueChange={(value) => {
+                          const parsed = Number.parseInt(value, 10)
+                          const cycles = clampCircuitCycles(
+                            Number.isFinite(parsed) ? parsed : MIN_CIRCUIT_CYCLES,
+                          )
+                          const currentSets = exercise.sets_detail ?? []
+                          const requiredExtraSets = Math.max(0, cycles - 1)
+                          const nextSets = Array.from({ length: requiredExtraSets }, (_, idx) => {
+                            const existing = currentSets[idx]
+                            if (existing) {
+                              return { ...existing, set_number: idx + 2 }
+                            }
+                            return {
+                              id: `set-${Date.now()}-${Math.random()}`,
+                              set_number: idx + 2,
+                              reps: exercise.target_reps ?? 10,
+                              weight_kg: exercise.target_weight,
+                              execution_time_sec: exercise.execution_time_sec ?? undefined,
+                              rest_timer_sec: exercise.rest_timer_sec ?? undefined,
+                            }
+                          })
+                          onUpdate(exerciseIndex, {
+                            sets: cycles,
+                            target_sets: cycles,
+                            sets_detail: nextSets.length > 0 ? nextSets : undefined,
+                          })
+                        }}
+                        options={buildCircuitCyclesOptions(exercise.target_sets)}
+                        className="mt-2 w-full"
+                        triggerTestId={`circuit-cycles-${exerciseIndex}`}
                       />
-                    ) : isValidHttpUrl(posterUrl) ? (
-                      <Image
-                        src={posterUrl}
-                        alt={exerciseData?.name ?? 'Esercizio'}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 100vw, 288px"
-                        unoptimized
-                      />
-                    ) : null}
+                      <p className="mt-1.5 text-[11px] text-text-tertiary">
+                        Quante volte questo esercizio viene ripetuto nei giri del circuito.
+                      </p>
+                    </div>
                   </div>
                 ) : null}
                 <div className="min-w-0 w-full flex-1">
@@ -175,7 +264,7 @@ export function CircuitConfigStep({ exercises, params, onUpdate }: CircuitConfig
                             <ExecutionSecondsField
                               value={exercise.execution_time_sec}
                               onChange={(sec) =>
-                                onUpdate(exerciseIndex, { execution_time_sec: sec ?? 0 })
+                                onUpdate(exerciseIndex, { execution_time_sec: sec })
                               }
                               className="w-full"
                             />

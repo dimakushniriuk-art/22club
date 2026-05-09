@@ -103,6 +103,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <>
+      {/*
+       * Shell viewport dashboard globale: `NonHomeViewportShell` (`variant="fill"`) = root flex fill;
+       * scroll/overflow delegati ai figli (RoleLayout / staff chrome). Contratto: `src/components/layout/non-home-viewport-shell.tsx`.
+       */}
       <NonHomeViewportShell variant="fill" className="min-h-0">
         <ImpersonationBanner />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">

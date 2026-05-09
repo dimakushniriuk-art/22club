@@ -51,6 +51,8 @@ describe('Type definitions', () => {
         role: null,
         org_id: null,
         loading: true,
+        authRecovery: 'idle',
+        retryAuthSession: async () => {},
         signIn: async () => ({ success: true }),
         signOut: async () => ({ success: true }),
         resetPassword: async () => ({ success: true }),

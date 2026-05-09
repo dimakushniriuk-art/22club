@@ -63,6 +63,10 @@ describe('Retry Policy', () => {
       expect(shouldRetryError(authError)).toBe(false)
     })
 
+    it('should retry on JWT expired PGRST301 even with 401 status', () => {
+      expect(shouldRetryError({ status: 401, code: 'PGRST301', message: 'JWT expired' })).toBe(true)
+    })
+
     it('should not retry on 403 Forbidden', () => {
       const forbiddenError = { status: 403, message: 'Forbidden' }
       expect(shouldRetryError(forbiddenError)).toBe(false)

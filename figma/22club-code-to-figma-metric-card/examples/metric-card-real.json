@@ -1,0 +1,10 @@
+{
+  "type": "MetricCard",
+  "name": "Lead totali (real)",
+  "variant": "compact",
+  "tone": "teal",
+  "title": "Lead totali",
+  "value": "24",
+  "icon": "UserPlus",
+  "loading": false
+}

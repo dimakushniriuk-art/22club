@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { MetricCard } from '@/components'
 import { Card, CardContent, Button, Input } from '@/components/ui'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import {
@@ -15,9 +17,9 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
-  Package,
-  CalendarCheck,
+  Users,
+  Clock3,
+  UserX,
 } from 'lucide-react'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
@@ -27,6 +29,10 @@ import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
+import {
+  DashboardColumnListSkeleton,
+  DashboardColumnPanel,
+} from '@/app/dashboard/_components/dashboard-widget-columns'
 import { useAuth } from '@/hooks/use-auth'
 import {
   type ServiceType,
@@ -86,10 +92,6 @@ function formatCurrency(amount: number): string {
 const _DEFAULT_DATE = new Date().toISOString().split('T')[0]
 
 type AbbonamentiTheme = 'default' | 'teal'
-
-/** Card KPI: stesso linguaggio visivo della dashboard staff (zinc / inset). */
-const ABBONAMENTI_KPI_CARD_CLASS =
-  'rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-3 sm:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] ring-1 ring-inset ring-white/[0.03]'
 
 const ABBONAMENTI_THEME = {
   default: {
@@ -171,7 +173,6 @@ export default function AbbonamentiPage() {
 
   // Filtri (solo ricerca atleta; KPI e tab servizio restano)
   const [searchTerm, setSearchTerm] = useState('')
-  const [kpiDebitsInMonth, setKpiDebitsInMonth] = useState<number>(0)
 
   const urlServiceParam = searchParams.get('service')
   const urlService = parseServiceFromUrl(urlServiceParam)
@@ -526,7 +527,7 @@ export default function AbbonamentiPage() {
   }, [abbonamenti, searchTerm])
 
   const { start: monthStart, end: monthEnd } = getCurrentMonthRange()
-  const kpiFromFiltered = useMemo(() => {
+  const incassoMeseFiltered = useMemo(() => {
     const inMonth = (d: string) => {
       const t = new Date(d).getTime()
       return t >= new Date(monthStart).getTime() && t <= new Date(monthEnd).getTime()
@@ -538,48 +539,30 @@ export default function AbbonamentiPage() {
       if (!p.payment_date) return false
       return inMonth(p.payment_date)
     })
-    const incassoMese = eligible.reduce((s, p) => s + (Number(p.amount) || 0), 0)
-    const pacchettiMese = eligible.length
-    const seen = new Set<string>()
-    let creditiTotali = 0
-    for (const abb of filteredAbbonamenti) {
-      if (abb.athlete_id && !seen.has(abb.athlete_id)) {
-        seen.add(abb.athlete_id)
-        creditiTotali += abb.total_remaining
-      }
-    }
-    return { incassoMese, pacchettiMese, creditiTotali }
+    return eligible.reduce((s, p) => s + (Number(p.amount) || 0), 0)
   }, [filteredAbbonamenti, kpiPayments, monthStart, monthEnd])
 
-  useEffect(() => {
-    const ids = [
-      ...new Set(filteredAbbonamenti.map((a) => a.athlete_id).filter(Boolean)),
-    ] as string[]
-    if (ids.length === 0) {
-      setKpiDebitsInMonth(0)
-      return
-    }
-    let cancelled = false
-    ;(async () => {
-      let total = 0
-      for (const idChunk of chunkForSupabaseIn(ids)) {
-        const { count, error } = await supabase
-          .from('credit_ledger')
-          .select('*', { count: 'exact', head: true })
-          .in('athlete_id', idChunk)
-          .eq('service_type', currentServiceType)
-          .eq('entry_type', 'DEBIT')
-          .gte('created_at', monthStart)
-          .lte('created_at', monthEnd)
-        if (error) break
-        total += count ?? 0
+  const kpiRigaAbbonamenti = useMemo(() => {
+    let totaleAttivi = 0
+    let inScadenza = 0
+    let scaduti = 0
+    for (const abb of filteredAbbonamenti) {
+      if (abb.total_remaining > 0) {
+        totaleAttivi += 1
+        if (abb.total_remaining <= 3) inScadenza += 1
+      } else if (abb.total_purchased > 0) {
+        scaduti += 1
       }
-      if (!cancelled) setKpiDebitsInMonth(total)
-    })()
-    return () => {
-      cancelled = true
     }
-  }, [filteredAbbonamenti, currentServiceType, monthStart, monthEnd, supabase])
+    return {
+      totaleAttivi,
+      inScadenza,
+      scaduti,
+      ricaviAttesi: formatCurrency(incassoMeseFiltered),
+    }
+  }, [filteredAbbonamenti, incassoMeseFiltered])
+
+  const metricTone = abbonamentiTheme === 'teal' ? 'teal' : 'blue'
 
   const handleExportPdf = useCallback(async () => {
     if (filteredAbbonamenti.length === 0) return
@@ -609,7 +592,56 @@ export default function AbbonamentiPage() {
   // Drilldown drawer rimosso: ora si usa la pagina dettaglio atleta.
 
   if (loading && abbonamenti.length === 0) {
-    return null
+    return (
+      <StaffContentLayout
+        title="Abbonamenti"
+        description="Abbonamenti, pacchetti e incassi degli atleti."
+        theme="teal"
+      >
+        <div className="space-y-6" aria-busy>
+          <div className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+            <div className="flex flex-wrap items-center gap-3">
+              <Skeleton className="h-10 flex-1 min-w-[200px] rounded-md" />
+              <Skeleton className="h-9 w-32 rounded-md" />
+              <Skeleton className="h-5 w-40 rounded-md" />
+            </div>
+          </div>
+
+          {role !== 'trainer' && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <MetricCard
+                title="Totale attivi"
+                value={0}
+                icon={<Users />}
+                loading
+                variant="default"
+              />
+              <MetricCard
+                title="In scadenza"
+                value={0}
+                icon={<Clock3 />}
+                loading
+                variant="default"
+              />
+              <MetricCard title="Scaduti" value={0} icon={<UserX />} loading variant="default" />
+              <MetricCard
+                title="Ricavi attesi"
+                value={0}
+                icon={<Euro />}
+                loading
+                variant="default"
+              />
+            </div>
+          )}
+
+          <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
+            <DashboardColumnPanel title="">
+              <DashboardColumnListSkeleton />
+            </DashboardColumnPanel>
+          </div>
+        </div>
+      </StaffContentLayout>
+    )
   }
 
   return (
@@ -637,7 +669,7 @@ export default function AbbonamentiPage() {
         </div>
       }
     >
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-6">
         {error && (
           <Card variant="default" className="border-red-500/30 bg-red-500/10">
             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -673,46 +705,6 @@ export default function AbbonamentiPage() {
                 {label}
               </button>
             ))}
-          </div>
-        )}
-
-        {/* KPI bar (service corrente) - nascosta al trainer */}
-        {role !== 'trainer' && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
-              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <Euro className="w-3.5 h-3.5 shrink-0 opacity-90" />
-                Incasso mese
-              </div>
-              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>
-                {formatCurrency(kpiFromFiltered.incassoMese)}
-              </p>
-            </div>
-            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
-              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <Package className="w-3.5 h-3.5 shrink-0 opacity-90" />
-                Pacchetti venduti mese
-              </div>
-              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>
-                {kpiFromFiltered.pacchettiMese}
-              </p>
-            </div>
-            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
-              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <CreditCard className="w-3.5 h-3.5 shrink-0 opacity-90" />
-                Crediti rimanenti totali
-              </div>
-              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>
-                {kpiFromFiltered.creditiTotali}
-              </p>
-            </div>
-            <div className={ABBONAMENTI_KPI_CARD_CLASS}>
-              <div className="flex items-center gap-2 text-text-secondary text-xs mb-0.5">
-                <CalendarCheck className="w-3.5 h-3.5 shrink-0 opacity-90" />
-                Sedute completate mese
-              </div>
-              <p className={`text-lg font-bold tabular-nums ${t.kpiAccent}`}>{kpiDebitsInMonth}</p>
-            </div>
           </div>
         )}
 
@@ -759,6 +751,40 @@ export default function AbbonamentiPage() {
             ? '1 abbonamento trovato'
             : `${filteredAbbonamenti.length} abbonamenti trovati`}
         </div>
+
+        {/* KPI sopra tabella (allineato a Pencil): MetricCard, gap 24px */}
+        {role !== 'trainer' && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <MetricCard
+              variant="default"
+              tone={metricTone}
+              title="Totale attivi"
+              value={kpiRigaAbbonamenti.totaleAttivi}
+              icon={<Users className="h-5 w-5" aria-hidden />}
+            />
+            <MetricCard
+              variant="default"
+              tone={metricTone}
+              title="In scadenza"
+              value={kpiRigaAbbonamenti.inScadenza}
+              icon={<Clock3 className="h-5 w-5" aria-hidden />}
+            />
+            <MetricCard
+              variant="default"
+              tone={metricTone}
+              title="Scaduti"
+              value={kpiRigaAbbonamenti.scaduti}
+              icon={<UserX className="h-5 w-5" aria-hidden />}
+            />
+            <MetricCard
+              variant="default"
+              tone={metricTone}
+              title="Ricavi attesi"
+              value={kpiRigaAbbonamenti.ricaviAttesi}
+              icon={<Euro className="h-5 w-5" aria-hidden />}
+            />
+          </div>
+        )}
 
         {/* Tabella Abbonamenti (1 riga per atleta) */}
         <Card variant="default" className="overflow-hidden">

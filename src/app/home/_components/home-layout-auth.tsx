@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { AthleteHomeViewportScale } from './athlete-home-viewport-scale'
@@ -22,19 +22,30 @@ interface HomeLayoutAuthProps {
  */
 export default function HomeLayoutAuth({ children }: HomeLayoutAuthProps) {
   const router = useRouter()
-  const { user, role, loading } = useAuth()
+  const { user, role, loading, authRecovery, retryAuthSession } = useAuth()
+  const hasRetriedSessionRef = useRef(false)
 
   // Verifica autenticazione e ruolo (client-side, dopo che middleware ha già verificato)
   useEffect(() => {
     // Non fare nulla durante il loading iniziale
     if (loading) return
 
-    // Se non c'è utente, redirect al login (il middleware dovrebbe già aver gestito questo)
+    // Se non c'è utente, prova una sola volta a recuperare sessione prima del redirect.
     if (!user) {
-      logger.warn('Utente non autenticato, redirect al login')
-      router.push('/login?error=accesso_richiesto')
+      if (!hasRetriedSessionRef.current) {
+        hasRetriedSessionRef.current = true
+        logger.warn('Utente non presente in /home, tentativo recovery sessione')
+        void retryAuthSession()
+        return
+      }
+      if (authRecovery === 'retrying' || authRecovery === 'degraded') {
+        return
+      }
+      logger.warn('Utente non autenticato dopo recovery, redirect al login')
+      router.replace('/login?reason=auth_required')
       return
     }
+    hasRetriedSessionRef.current = false
 
     // Verifica ruolo - solo atleti possono accedere a /home
     if (role && role !== 'athlete') {
@@ -43,7 +54,7 @@ export default function HomeLayoutAuth({ children }: HomeLayoutAuthProps) {
       router.push(path ?? '/login?error=accesso_negato')
       return
     }
-  }, [user, role, loading, router])
+  }, [user, role, loading, router, authRecovery, retryAuthSession])
 
   return (
     <AthleteHomeViewportScale>

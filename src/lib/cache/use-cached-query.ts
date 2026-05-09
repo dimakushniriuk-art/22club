@@ -3,9 +3,13 @@
  * Combina React Query con localStorage cache per persistenza
  */
 
+import {
+  AUTH_TOKEN_REFRESHED_EVENT,
+  SESSION_RESUMED_EVENT,
+} from '@/lib/session-stability/app-events'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { localStorageCache } from './local-storage-cache'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 interface UseCachedQueryOptions<T> {
   queryKey: string[]
@@ -15,6 +19,8 @@ interface UseCachedQueryOptions<T> {
   enabled?: boolean
   localStorageKey?: string // Chiave per localStorage (opzionale)
   localStorageTtl?: number // TTL per localStorage in ms (default: 5 minuti)
+  /** Solo query leggere: altrimenti lasciare false (allineato al default globale). */
+  refetchOnWindowFocus?: boolean
 }
 
 export function useCachedQuery<T>({
@@ -25,6 +31,7 @@ export function useCachedQuery<T>({
   enabled = true,
   localStorageKey,
   localStorageTtl = 5 * 60 * 1000, // 5 minuti
+  refetchOnWindowFocus = false,
 }: UseCachedQueryOptions<T>) {
   // Nota: queryClient potrebbe essere usato in futuro per invalidazione cache
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,8 +61,21 @@ export function useCachedQuery<T>({
     enabled,
     initialData,
     refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus,
   })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const refetch = () => {
+      void query.refetch()
+    }
+    window.addEventListener(SESSION_RESUMED_EVENT, refetch)
+    window.addEventListener(AUTH_TOKEN_REFRESHED_EVENT, refetch)
+    return () => {
+      window.removeEventListener(SESSION_RESUMED_EVENT, refetch)
+      window.removeEventListener(AUTH_TOKEN_REFRESHED_EVENT, refetch)
+    }
+  }, [query])
 
   return query
 }

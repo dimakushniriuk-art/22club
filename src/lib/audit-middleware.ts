@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { logAuditWithContext } from './audit'
+import { logAuditWithContext } from './audit-server'
 
 interface AuditContext {
   ipAddress: string

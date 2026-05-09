@@ -8,9 +8,9 @@ import { ProgressiNavCard, type Accent } from '@/components/home/progressi-nav-c
 const SCROLL_CONTAINER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' } as const
 
 const SCROLL_CONTAINER_CLASS =
-  'min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24'
+  'min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:space-y-6 md:px-6 md:pb-24'
 
-const ICON_CLASS = 'h-4 w-4 min-[834px]:h-5 min-[834px]:w-5'
+const ICON_CLASS = 'h-4 w-4 md:h-5 md:w-5'
 const CTA_ICON_CLASS = 'h-3 w-3 group-hover:translate-x-0.5 transition-transform'
 
 const PROGRESSI_CARDS: Array<{
@@ -81,7 +81,7 @@ export default function ProgressiPage() {
           backHref="/home"
         />
 
-        <div className="grid grid-cols-1 min-[834px]:grid-cols-2 gap-3 min-[834px]:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {PROGRESSI_CARDS.map((card) => (
             <ProgressiNavCard
               key={card.href}

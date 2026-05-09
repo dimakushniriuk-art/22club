@@ -30,10 +30,13 @@ export type WorkoutExerciseSeries = {
 }
 
 /**
- * Serie da `workout_sets` aggregate per giorno: sul grafico compaiono solo le date in cui la
- * metrica principale (peso / reps / tempo) ha un valore.
+ * Serie da `workout_sets`: un punto per sessione (log + esercizio giorno). Più allenamenti nello
+ * stesso giorno calendario restano punti distinti; la metrica principale è peso max di sessione,
+ * reps medie o tempo medio.
  */
 export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerciseSeries {
+  const catalogExerciseId = exercise.exercise_id
+
   const sessionMap = new Map<
     string,
     {
@@ -52,9 +55,11 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
     const sessionKey =
       logId && wde
         ? `${logId}:${wde}`
-        : wde
-          ? `wde-${wde}-${point.date}`
-          : `${point.date}-${point.set_number}`
+        : logId && catalogExerciseId
+          ? `${logId}:ex:${catalogExerciseId}`
+          : wde
+            ? `wde-${wde}-${point.date}`
+            : `${point.date}-${point.set_number}-ex:${catalogExerciseId}`
     if (!sessionMap.has(sessionKey)) {
       sessionMap.set(sessionKey, {
         date: point.date,
@@ -100,43 +105,6 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
     }
   })
 
-  type DayAgg = {
-    date: string
-    maxPeso: number
-    repsVals: number[]
-    secondVals: number[]
-    workout_log_id: string | null
-    workout_day_exercise_id: string | null
-  }
-
-  const byDate = new Map<string, DayAgg>()
-  for (const row of sessionRows) {
-    const d = row.date
-    const cur: DayAgg =
-      byDate.get(d) ??
-      ({
-        date: d,
-        maxPeso: 0,
-        repsVals: [],
-        secondVals: [],
-        workout_log_id: null,
-        workout_day_exercise_id: null,
-      } satisfies DayAgg)
-    const p = row.peso_massimo_sessione
-    if (p > cur.maxPeso) {
-      cur.maxPeso = p
-      if (row.workout_log_id) cur.workout_log_id = row.workout_log_id
-      if (row.workout_day_exercise_id) cur.workout_day_exercise_id = row.workout_day_exercise_id
-    } else {
-      cur.maxPeso = Math.max(cur.maxPeso, p)
-    }
-    if (row.reps_media != null && row.reps_media > 0) cur.repsVals.push(row.reps_media)
-    if (row.seconds_media != null && row.seconds_media > 0) cur.secondVals.push(row.seconds_media)
-    byDate.set(d, cur)
-  }
-
-  const sortedDates = [...byDate.keys()].sort((a, b) => a.localeCompare(b))
-
   type ChartRow = {
     date: string
     peso_massimo_sessione: number
@@ -146,19 +114,25 @@ export function buildWorkoutExerciseSeries(exercise: ExerciseStat): WorkoutExerc
     workout_day_exercise_id: string | null
   }
 
-  const chartDataUnfiltered: ChartRow[] = sortedDates.map((date) => {
-    const agg = byDate.get(date)!
-    const reps_media = agg.repsVals.length > 0 ? Math.max(...agg.repsVals) : null
-    const seconds_media = agg.secondVals.length > 0 ? Math.max(...agg.secondVals) : null
-    return {
-      date,
-      peso_massimo_sessione: agg.maxPeso,
-      reps_media,
-      seconds_media,
-      workout_log_id: agg.workout_log_id,
-      workout_day_exercise_id: agg.workout_day_exercise_id,
-    }
+  const sortedSessionRows = [...sessionRows].sort((a, b) => {
+    const c = a.date.localeCompare(b.date)
+    if (c !== 0) return c
+    const la = a.workout_log_id ?? ''
+    const lb = b.workout_log_id ?? ''
+    if (la !== lb) return la.localeCompare(lb)
+    const wa = a.workout_day_exercise_id ?? ''
+    const wb = b.workout_day_exercise_id ?? ''
+    return wa.localeCompare(wb)
   })
+
+  const chartDataUnfiltered: ChartRow[] = sortedSessionRows.map((row) => ({
+    date: row.date,
+    peso_massimo_sessione: row.peso_massimo_sessione,
+    reps_media: row.reps_media,
+    seconds_media: row.seconds_media,
+    workout_log_id: row.workout_log_id,
+    workout_day_exercise_id: row.workout_day_exercise_id,
+  }))
 
   const hasWeightUnfiltered = chartDataUnfiltered.some((d) => d.peso_massimo_sessione > 0)
   const hasRepsUnfiltered = chartDataUnfiltered.some((d) => d.reps_media != null)

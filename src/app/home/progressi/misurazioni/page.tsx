@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useMemo } from 'react'
+import { Suspense, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -31,7 +31,6 @@ function MisurazioniContent() {
   }, [isValidUserProfile, user])
 
   const { data: progressData, isLoading: progressLoading, error } = useProgressAnalytics(athleteId)
-  const handleBack = useCallback(() => router.back(), [router])
 
   useEffect(() => {
     if (!loading && !isValidUser) {
@@ -42,13 +41,11 @@ function MisurazioniContent() {
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:px-6">
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <CardContent className="p-8 min-[834px]:p-12 text-center">
+            <CardContent className="p-8 md:p-12 text-center">
               <div className="mb-3 text-4xl opacity-50">[ ]</div>
-              <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">
-                Caricamento...
-              </p>
+              <p className="text-text-secondary text-sm md:text-base font-medium">Caricamento...</p>
             </CardContent>
           </Card>
         </div>
@@ -63,14 +60,14 @@ function MisurazioniContent() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24"
+        className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:space-y-6 md:px-6 md:pb-24"
         style={SCROLL_CONTAINER_STYLE}
       >
         <PageHeaderFixed
           variant="chat"
           title="Dashboard Misurazioni"
           subtitle="Grafici e analisi dei tuoi progressi"
-          onBack={handleBack}
+          backHref="/home/progressi"
         />
 
         <Link href="/home/progressi/nuovo" className="block w-full">
@@ -84,7 +81,7 @@ function MisurazioniContent() {
         </Link>
 
         <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4">
+          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 md:px-5 md:pt-5 md:pb-4">
             <CardTitle className="text-base font-bold text-text-primary md:text-lg">
               Tutti i valori
             </CardTitle>
@@ -92,33 +89,33 @@ function MisurazioniContent() {
               Posizione dei valori nel range di riferimento
             </p>
           </CardHeader>
-          <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
+          <CardContent className="relative z-10 p-4 pt-3 md:p-5 md:pt-4">
             {progressLoading ? (
-              <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
+              <div className="flex flex-col items-center justify-center py-10 md:py-12 text-center">
                 <div className="mb-3 text-4xl opacity-50">[ ]</div>
-                <p className="text-text-secondary text-sm min-[834px]:text-base font-medium">
+                <p className="text-text-secondary text-sm md:text-base font-medium">
                   Caricamento dati...
                 </p>
               </div>
             ) : error ? (
-              <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center px-4">
+              <div className="flex flex-col items-center justify-center py-10 md:py-12 text-center px-4">
                 <div className="mb-3 text-4xl opacity-50">!</div>
-                <p className="text-text-primary text-sm min-[834px]:text-base font-medium">
+                <p className="text-text-primary text-sm md:text-base font-medium">
                   Errore nel caricamento
                 </p>
-                <p className="text-text-tertiary text-xs min-[834px]:text-sm mt-1.5 line-clamp-2">
+                <p className="text-text-tertiary text-xs md:text-sm mt-1.5 line-clamp-2">
                   {error instanceof Error ? error.message : String(error)}
                 </p>
               </div>
             ) : !progressData ? (
-              <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center px-4">
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-16 min-[834px]:w-16">
-                  <Scale className="h-7 w-7 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" />
+              <div className="flex flex-col items-center justify-center py-10 md:py-12 text-center px-4">
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-16 md:w-16">
+                  <Scale className="h-7 w-7 text-cyan-400 md:h-8 md:w-8" />
                 </div>
-                <p className="text-text-primary text-sm font-semibold min-[834px]:text-base">
+                <p className="text-text-primary text-sm font-semibold md:text-base">
                   Nessun dato disponibile
                 </p>
-                <p className="text-text-tertiary mt-1 text-xs min-[834px]:text-sm">
+                <p className="text-text-tertiary mt-1 text-xs md:text-sm">
                   Inizia a registrare le tue misurazioni
                 </p>
                 <Link href="/home/progressi/nuovo" className="mt-4 inline-block w-full max-w-xs">

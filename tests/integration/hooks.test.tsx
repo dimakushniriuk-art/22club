@@ -10,6 +10,12 @@ vi.mock('@/providers/auth-provider', () => ({
     role: null,
     org_id: null,
     loading: false,
+    authRecovery: 'idle',
+    retryAuthSession: async () => {},
+    signIn: async () => ({ success: false }),
+    signOut: async () => ({ success: true }),
+    resetPassword: async () => ({ success: false }),
+    refreshUserProfile: async () => {},
   }),
 }))
 

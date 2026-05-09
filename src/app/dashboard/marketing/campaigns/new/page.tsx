@@ -82,14 +82,14 @@ export default function NewCampaignPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/campaigns">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-xl font-bold min-[834px]:text-2xl">Nuova campagna</h1>
+        <h1 className="text-xl font-bold md:text-2xl">Nuova campagna</h1>
       </header>
 
       <Card className="border-border bg-background-secondary/80">
@@ -148,7 +148,7 @@ export default function NewCampaignPage() {
                 className="mt-1 border-border bg-background"
               />
             </div>
-            <div className="grid gap-4 min-[834px]:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="start_at" className="text-text-secondary">
                   Data inizio

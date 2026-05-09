@@ -1,0 +1,29 @@
+[
+  {
+    "type": "DashboardColumnPanel",
+    "variant": "default",
+    "title": "Schede in scadenza",
+    "description": "",
+    "state": "default",
+    "actions": ["Vai alle schede"],
+    "items": ["#102 · Forza base", "#103 · Ipertrofia upper", "#104 · Deload week"]
+  },
+  {
+    "type": "DashboardColumnPanel",
+    "variant": "default",
+    "title": "Messaggi non letti",
+    "description": "",
+    "state": "empty",
+    "actions": ["Apri chat"],
+    "items": []
+  },
+  {
+    "type": "DashboardColumnPanel",
+    "variant": "default",
+    "title": "Lezioni in esaurimento",
+    "description": "",
+    "state": "loading",
+    "actions": [],
+    "items": []
+  }
+]

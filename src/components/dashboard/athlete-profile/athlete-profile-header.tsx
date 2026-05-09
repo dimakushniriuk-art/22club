@@ -54,7 +54,7 @@ export function AthleteProfileHeader({
   const kpiTone = lessonsRemaining === 0 ? 'neutral' : 'positive'
 
   return (
-    <>
+    <div className="flex shrink-0 flex-col gap-4 sm:gap-6">
       <StaffAthleteSubpageHeader
         backHref="/dashboard/clienti"
         title="Profilo Atleta"
@@ -81,11 +81,11 @@ export function AthleteProfileHeader({
         }
       />
 
-      {/* Card profilo principale */}
-      <div className={`relative overflow-hidden ${DS_CARD} p-6 sm:p-8`}>
+      {/* Card profilo principale — shrink-0 sul blocco padre: evita compressione in flex column (RoleLayout scroll) */}
+      <div className={`relative overflow-x-hidden overflow-y-visible ${DS_CARD} p-6 sm:p-8`}>
         <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
           <div className="relative shrink-0">
-            <div className="flex h-20 w-20 min-[834px]:h-24 min-[834px]:w-24 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/[0.04]">
+            <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/[0.04]">
               <Avatar
                 src={athlete.avatar_url}
                 alt={`${athlete.nome} ${athlete.cognome}`}
@@ -194,6 +194,6 @@ export function AthleteProfileHeader({
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

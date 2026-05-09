@@ -84,6 +84,8 @@ type WorkoutDayExerciseJoined = {
   target_reps: number | null
   target_weight: number | null
   rest_timer_sec: number | null
+  /** Alias legacy da righe/join storici */
+  rest_seconds?: number | null
   note: string | null
   workout_day_id: string | null
   circuit_block_id?: string | null
@@ -437,7 +439,7 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
                 target_sets: wde.target_sets || 0,
                 target_reps: wde.target_reps || 0,
                 target_weight: wde.target_weight || null,
-                rest_timer_sec: wde.rest_timer_sec || 60,
+                rest_timer_sec: wde.rest_timer_sec ?? wde.rest_seconds ?? 0,
                 order_index: wde.order_index || 0,
                 note: wde.note || null,
                 circuit_block_id: (wde as WorkoutDayExerciseJoined).circuit_block_id ?? null,
@@ -475,7 +477,7 @@ export function useWorkoutDetail(workoutId: string | null, open: boolean) {
             target_sets: e.target_sets ?? 1,
             target_reps: e.target_reps ?? 10,
             target_weight: e.target_weight ?? 0,
-            rest_timer_sec: e.rest_timer_sec ?? 60,
+            rest_timer_sec: e.rest_timer_sec ?? undefined,
             note: e.note ?? undefined,
             sets_detail: e.sets?.map((s) => ({
               id: s.id,

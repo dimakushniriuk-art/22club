@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   fetchAthletesSortedByRemainingLessonsForStaff,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/dashboard/fetch-staff-dashboard-widgets'
 
 export function useStaffDashboardWidgets(staffProfileId: string | undefined) {
+  const supabase = useMemo(() => createClient(), [])
   const [expiring, setExpiring] = useState<StaffExpiringPlanRow[]>([])
   const [athletes, setAthletes] = useState<StaffAthleteLessonsRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,7 +26,6 @@ export function useStaffDashboardWidgets(staffProfileId: string | undefined) {
     }
     setLoading(true)
     setError(null)
-    const supabase = createClient()
     try {
       const [ex, ath] = await Promise.all([
         fetchMergedStaffExpiringPlansForStaff(supabase, staffProfileId),
@@ -40,7 +40,7 @@ export function useStaffDashboardWidgets(staffProfileId: string | undefined) {
     } finally {
       setLoading(false)
     }
-  }, [staffProfileId])
+  }, [staffProfileId, supabase])
 
   useEffect(() => {
     void load()

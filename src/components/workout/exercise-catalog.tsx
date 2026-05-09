@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import * as React from 'react'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import Image from 'next/image'
 import { Filter, Grid3x3, List as ListIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -38,10 +39,6 @@ function ExerciseImage({
 }) {
   const [imageError, setImageError] = useState(false)
   const [videoError, setVideoError] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
-
-  // useRef deve essere chiamato sempre, non condizionalmente (regole degli Hooks)
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   // Valida video URL
   const hasVideoUrl =
@@ -53,15 +50,16 @@ function ExerciseImage({
   // Poster (thumbnail) per il video
   const posterUrl = exercise.thumb_url || exercise.image_url || null
 
+  const videoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(hasVideoUrl && !videoError && exercise.video_url),
+    pauseWhenOffscreen: true,
+  })
+
   // Priorità: video > immagine > placeholder
   // Se c'è un video URL valido, mostra il video (con poster se disponibile)
   if (hasVideoUrl && !videoError && exercise.video_url) {
     return (
-      <div
-        className="relative w-full h-full group"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
+      <div className="relative w-full h-full group">
         {selectableCard && onSelectClick && (
           <div
             className="absolute inset-0 z-10 cursor-pointer [clip-path:inset(0_0_48px_0)]"
@@ -82,6 +80,7 @@ function ExerciseImage({
           src={exercise.video_url}
           poster={posterUrl || undefined}
           className="h-full w-full rounded-[15px] object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
+          autoPlay
           muted
           loop
           playsInline
@@ -114,67 +113,6 @@ function ExerciseImage({
           }}
           onError={() => {
             setVideoError(true)
-          }}
-          onLoadedMetadata={() => {
-            const video = videoRef.current
-            if (video && isHovering && video.paused) {
-              // Se stiamo facendo hover e il video è appena caricato, riproduci
-              video.play().catch(() => {
-                // Ignora errori di autoplay
-              })
-            }
-          }}
-          onCanPlay={() => {
-            const video = videoRef.current
-            if (video && isHovering && video.paused) {
-              // Se stiamo facendo hover e il video è pronto, riproduci
-              video.play().catch(() => {
-                // Ignora errori di autoplay
-              })
-            }
-          }}
-          onMouseEnter={(ev) => {
-            const video = ev.currentTarget as HTMLVideoElement
-            // Riproduci se il video è pronto
-            if (video.paused) {
-              // Controlla direttamente readyState invece di aspettare videoReady
-              // readyState >= 2 = HAVE_CURRENT_DATA (abbastanza dati per iniziare)
-              if (video.readyState >= 2) {
-                // Video pronto, riproduci immediatamente
-                video.play().catch((err) => {
-                  // Ignora errori di autoplay (normali nei browser moderni)
-                  console.debug('Autoplay su hover non permesso:', err)
-                })
-              } else {
-                // Video non ancora pronto, aspetta che lo sia
-                const handleCanPlay = () => {
-                  if (video.paused && isHovering) {
-                    video.play().catch((err) => {
-                      console.debug('Autoplay su hover non permesso:', err)
-                    })
-                  }
-                }
-                video.addEventListener('canplay', handleCanPlay, { once: true })
-                // Forza il caricamento se non è già iniziato
-                if (video.readyState === 0) {
-                  video.load()
-                }
-              }
-            }
-          }}
-          onMouseLeave={(ev) => {
-            const video = ev.currentTarget as HTMLVideoElement
-            // Non fermare se l'utente sta interagendo con i controlli o se ha cliccato play
-            // Ferma solo se era in autoplay su hover
-            if (!video.paused && document.activeElement !== video) {
-              // Controlla se l'utente ha interagito manualmente (click su controlli)
-              // Se non ha interagito, ferma il video
-              const wasUserInteraction = video.getAttribute('data-user-interaction') === 'true'
-              if (!wasUserInteraction) {
-                video.pause()
-                video.currentTime = 0
-              }
-            }
           }}
           onPlay={() => {
             // Marca che l'utente ha interagito se ha cliccato play manualmente
@@ -297,6 +235,10 @@ export function ExerciseCatalog({
     difficulty: 'all',
   })
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; name: string } | null>(null)
+  const catalogModalVideoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(selectedVideo),
+    pauseWhenOffscreen: false,
+  })
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
@@ -531,14 +473,14 @@ export function ExerciseCatalog({
       {/* Blocco unico: titolo + gruppi muscolari (una riga) + filtri estesi + view toggle */}
       <Card
         variant="default"
-        className="rounded-lg p-4 text-text-primary transition-all duration-200 border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none"
+        className="@container min-w-0 rounded-lg p-4 text-text-primary transition-all duration-200 border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background focus:outline-none"
       >
         <CardContent className="p-0 space-y-3">
           {/* Riga 1: Titolo + Filtri button + view toggle */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="min-w-0">
-              <h3 className="text-text-primary text-lg font-bold">Catalogo Esercizi</h3>
-              <p className="text-text-secondary text-sm">
+              <h3 className="text-text-primary text-fluid-section font-bold">Catalogo Esercizi</h3>
+              <p className="text-text-secondary text-fluid-lead @md:text-sm">
                 Scegli gli esercizi per il tuo allenamento
               </p>
             </div>
@@ -870,15 +812,19 @@ export function ExerciseCatalog({
               onClick={(e) => e.stopPropagation()}
             >
               <video
+                ref={catalogModalVideoRef}
                 src={selectedVideo.url}
                 className="w-full h-full object-contain"
                 controls
+                muted
+                loop
                 autoPlay
                 playsInline
+                preload="auto"
               >
                 Il tuo browser non supporta la riproduzione video.
               </video>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pointer-events-none">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pb-safe pointer-events-none">
                 <h3 className="text-white text-lg font-semibold drop-shadow-lg">
                   {selectedVideo.name}
                 </h3>

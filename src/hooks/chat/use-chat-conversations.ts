@@ -477,12 +477,45 @@ export function useChatConversations(
         }
       }
 
+      /** Conteggio non letti per mittente (affidabile vs RPC `get_conversation_participants`). */
+      let useDirectUnread = false
+      const unreadBySender = new Map<string, number>()
+      try {
+        const { data: unreadRows, error: unreadErr } = await supabase
+          .from('chat_messages')
+          .select('sender_id')
+          .eq('receiver_id', profileId)
+          .is('read_at', null)
+
+        if (!unreadErr && unreadRows) {
+          useDirectUnread = true
+          for (const row of unreadRows) {
+            const sid = row.sender_id as string
+            unreadBySender.set(sid, (unreadBySender.get(sid) ?? 0) + 1)
+          }
+        } else if (unreadErr) {
+          logger.warn(
+            'chat_messages unread aggregation failed, keeping RPC unread_count',
+            unreadErr,
+          )
+        }
+      } catch (e) {
+        logger.warn('chat_messages unread aggregation exception', e)
+      }
+
+      const unreadWeight = (c: ConversationParticipantExtended) => (c.unread_count > 0 ? 1 : 0)
+
       const conversationsList = Array.from(conversationsMap.values())
         .map((conversation) => ({
           ...conversation,
           last_message_at: conversation.last_message_at ?? '1970-01-01T00:00:00.000Z',
+          unread_count: useDirectUnread
+            ? (unreadBySender.get(conversation.other_user_id) ?? 0)
+            : conversation.unread_count,
         }))
         .sort((a, b) => {
+          const w = unreadWeight(b) - unreadWeight(a)
+          if (w !== 0) return w
           const timeA = Number.isNaN(Date.parse(a.last_message_at))
             ? 0
             : Date.parse(a.last_message_at)

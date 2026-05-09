@@ -385,33 +385,36 @@ export function useChat() {
     ],
   )
 
-  // Upload file for chat
+  // Upload file for chat (server-side: bucket `documents` / policy anon spesso blocca upload diretto)
   const uploadFile = useCallback(async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch('/api/chat/upload', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    })
+
+    let json: { url?: string; name?: string; size?: number; error?: string } = {}
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error('Utente non autenticato')
-
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`
-      const filePath = `chat_files/${fileName}`
-
-      const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('documents').getPublicUrl(filePath)
-
-      return {
-        url: publicUrl,
-        name: file.name,
-        size: file.size,
-      }
+      json = (await res.json()) as typeof json
     } catch {
-      throw new Error('Errore nel caricamento del file')
+      throw new Error('Risposta upload non valida')
+    }
+
+    if (!res.ok) {
+      throw new Error(json.error?.trim() || 'Errore nel caricamento del file')
+    }
+
+    if (!json.url) {
+      throw new Error('Risposta upload incompleta')
+    }
+
+    return {
+      url: json.url,
+      name: json.name ?? file.name,
+      size: json.size ?? file.size,
     }
   }, [])
 

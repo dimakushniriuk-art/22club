@@ -834,7 +834,7 @@ export function AppointmentForm({
         </div>
 
         {/* Azioni: sticky su mobile, min 44px touch target */}
-        <div className="flex items-center justify-between pt-1 gap-3 sticky bottom-0 border-t border-white/10 bg-inherit py-3 -mx-4 px-4 max-[851px]:min-h-[52px]">
+        <div className="flex items-center justify-between pt-1 gap-3 sticky bottom-0 border-t border-white/10 bg-inherit py-3 pb-safe -mx-4 px-4 max-[851px]:min-h-[52px]">
           <Button
             type="button"
             variant="outline"

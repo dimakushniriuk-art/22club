@@ -9,6 +9,12 @@ import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import { resolveProfileByIdentifier } from '@/lib/utils/resolve-profile-by-identifier'
 import { normalizeAthleteAppointmentsQueryParams } from '@/lib/appointments/athlete-query-params'
 import { isLikelyNetworkFetchFailure } from '@/lib/is-network-fetch-error'
+import {
+  appointmentCancelIdempotencyKey,
+  appointmentUpdateIdempotencyKey,
+  enqueuePendingWrite,
+} from '@/lib/session-stability/pending-write-queue'
+import { notifyInfo } from '@/lib/notifications'
 
 const logger = createLogger('useAthleteAppointments')
 
@@ -271,6 +277,22 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       void invalidateAppointmentsQueries(queryClient)
     },
     onError: (err, variables) => {
+      if (isLikelyNetworkFetchFailure(err)) {
+        const updates: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(variables.updates)) {
+          if (v !== undefined) updates[k] = v as unknown
+        }
+        enqueuePendingWrite({
+          kind: 'appointments_update',
+          idempotencyKey: appointmentUpdateIdempotencyKey(variables.id, updates),
+          payload: { id: variables.id, updates },
+        })
+        notifyInfo(
+          'Connessione instabile',
+          'Salvataggio in coda: verrà inviato al ripristino della rete.',
+        )
+        return
+      }
       logger.error('Error updating appointment', err, { appointmentId: variables.id })
     },
   })
@@ -299,6 +321,18 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
       void invalidateAppointmentsQueries(queryClient)
     },
     onError: (err, id) => {
+      if (isLikelyNetworkFetchFailure(err)) {
+        enqueuePendingWrite({
+          kind: 'appointments_cancel',
+          idempotencyKey: appointmentCancelIdempotencyKey(id),
+          payload: { id },
+        })
+        notifyInfo(
+          'Connessione instabile',
+          'Annullamento in coda: verrà inviato al ripristino della rete.',
+        )
+        return
+      }
       logger.error('Error cancelling appointment', err, { appointmentId: id })
     },
   })

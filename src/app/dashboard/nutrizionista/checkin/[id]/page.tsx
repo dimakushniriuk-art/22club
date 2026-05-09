@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -13,14 +12,19 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { createLogger } from '@/lib/logger'
 import { useNotify } from '@/lib/ui/notify'
 import type { Tables, TablesUpdate } from '@/types/supabase'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const logger = createLogger('app:dashboard:nutrizionista:checkin:[id]')
 
 type CheckInRow = Tables<'nutrition_check_ins'>
 
-export default function NutrizionistaCheckinDetailPage() {
-  const params = useParams()
-  const id = params?.id as string | undefined
+export default function NutrizionistaCheckinDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolved = useResolvedParams(params)
+  const id = typeof resolved.id === 'string' ? resolved.id : undefined
   const { showLoader } = useStaffDashboardGuard('nutrizionista')
   const { user } = useAuth()
   const supabase = useSupabaseClient()

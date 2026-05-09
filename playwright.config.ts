@@ -11,7 +11,8 @@ config({ path: '.env.local' })
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
+  testMatch: ['e2e/**/*.spec.ts', 'runtime/**/*.spec.ts'],
   /* Timeout per ogni test - ridotto da 30s a 20s */
   timeout: 20 * 1000,
   expect: {

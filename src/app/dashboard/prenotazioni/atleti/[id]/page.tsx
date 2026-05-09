@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { Card, CardContent, Button, Input, SimpleSelect } from '@/components/ui'
 import { Avatar } from '@/components/ui/avatar'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import type { AppointmentTable } from '@/types/appointment'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 type ProfileRow = {
   id: string
@@ -17,12 +18,12 @@ type ProfileRow = {
   avatar_url: string | null
 }
 
-export default function PrenotazioniAtletaPage() {
+export default function PrenotazioniAtletaPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const params = useParams<{ id: string }>()
+  const resolved = useResolvedParams(params)
   const supabase = useSupabaseClient()
 
-  const athleteId = params?.id
+  const athleteId = resolved.id
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -179,7 +180,7 @@ export default function PrenotazioniAtletaPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push('/dashboard/prenotazioni')}
+            onClick={() => router.push('/dashboard/appuntamenti')}
           >
             Torna a Prenotazioni
           </Button>

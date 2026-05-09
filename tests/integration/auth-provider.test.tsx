@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/providers/auth-provider'
 const { mockSupabaseClient } = vi.hoisted(() => ({
   mockSupabaseClient: {
     auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
       onAuthStateChange: vi
         .fn()

@@ -2,7 +2,7 @@
 // Service Worker per Push Notifications (PWA)
 // =====================================================
 
-const CACHE_NAME = '22club-v3'
+const CACHE_NAME = '22club-v4'
 /** Precache minimo: nessun URL inesistente; fallimenti singoli non bloccano install */
 const URLS_TO_PRECACHE = ['/', '/login', '/home', '/manifest.json']
 
@@ -57,8 +57,23 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Fetch: navigazioni HTML sempre network-first (contenuto aggiornato); offline → cache shell / login.
-// Altri GET restano cache-first per asset già precachati.
+function isNetworkOnlySameOriginGet(request) {
+  try {
+    const url = new URL(request.url)
+    if (url.origin !== self.location.origin) return false
+    if (url.pathname.startsWith('/api/')) return true
+    if (url.pathname.startsWith('/_next/')) return true
+    if (url.searchParams.has('_rsc')) return true
+    if (request.headers.get('RSC') === '1') return true
+    if (request.headers.get('Next-Action')) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
+// Fetch: navigazioni HTML network-first; API / RSC / _next sempre rete (no cache-first).
+// Altri GET same-origin statici: cache-first → rete.
 self.addEventListener('fetch', (event) => {
   const req = event.request
   if (req.method !== 'GET') {
@@ -69,6 +84,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(req).catch(() => caches.match(req).then((r) => r || caches.match('/login'))),
     )
+    return
+  }
+  if (isNetworkOnlySameOriginGet(req)) {
+    event.respondWith(fetch(req))
     return
   }
   event.respondWith(caches.match(req).then((response) => response || fetch(req)))

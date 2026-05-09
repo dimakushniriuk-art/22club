@@ -25,11 +25,11 @@ const logger = createLogger('app:registrati:page')
 
 function RegisterFormFallback() {
   return (
-    <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+    <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
       <Card variant="default" className={AUTH_CARD_CLASS}>
         <CardContent className={AUTH_CARD_CONTENT_CLASS}>
-          <div className="text-center mb-6 min-[834px]:mb-8">
-            <div className="mb-4 min-[834px]:mb-6 flex justify-center">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="mb-4 md:mb-6 flex justify-center">
               <Image
                 src="/logo.svg"
                 alt="22 Club Logo"
@@ -246,10 +246,10 @@ function RegisterContent() {
 
   if (showConfirmationScreen) {
     return (
-      <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+      <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
         <Card variant="default" className={AUTH_CARD_CLASS}>
           <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
-            <div className="mb-6 min-[834px]:mb-8">
+            <div className="mb-6 md:mb-8">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.06] border border-white/10 text-text-primary">
                 <CheckCircle className="h-8 w-8" aria-hidden />
               </div>
@@ -307,11 +307,11 @@ function RegisterContent() {
   }
 
   return (
-    <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+    <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
       <Card variant="default" className={AUTH_CARD_CLASS}>
         <CardContent className={AUTH_CARD_CONTENT_CLASS}>
-          <div className="text-center mb-6 min-[834px]:mb-8">
-            <div className="mb-4 min-[834px]:mb-6 flex justify-center">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="mb-4 md:mb-6 flex justify-center">
               <Image
                 src="/logo.svg"
                 alt="22 Club Logo"
@@ -330,7 +330,7 @@ function RegisterContent() {
             )}
           </div>
 
-          <form onSubmit={handleRegister} className="space-y-5 min-[834px]:space-y-6">
+          <form onSubmit={handleRegister} className="space-y-5 md:space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nome" className="text-sm font-medium text-text-primary">

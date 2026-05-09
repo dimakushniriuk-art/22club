@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
@@ -21,7 +21,8 @@ const logger = createLogger('post-login')
  */
 export default function PostLoginPage() {
   const router = useRouter()
-  const { user, role, loading } = useAuth()
+  const { user, role, loading, authRecovery, retryAuthSession } = useAuth()
+  const hasRetriedSessionRef = useRef(false)
 
   useEffect(() => {
     // Aspetta che l'autenticazione sia caricata
@@ -29,12 +30,22 @@ export default function PostLoginPage() {
       return
     }
 
-    // Se non c'è utente, redirect a login
+    // Se non c'è utente, prova una sola volta a recuperare sessione prima del redirect.
     if (!user) {
-      logger.warn('Utente non autenticato in /post-login')
-      router.push('/login?error=accesso_richiesto')
+      if (!hasRetriedSessionRef.current) {
+        hasRetriedSessionRef.current = true
+        logger.warn('Utente non presente in /post-login, tentativo recovery sessione')
+        void retryAuthSession()
+        return
+      }
+      if (authRecovery === 'retrying' || authRecovery === 'degraded') {
+        return
+      }
+      logger.warn('Utente non autenticato in /post-login dopo recovery')
+      router.replace('/login?reason=auth_required')
       return
     }
+    hasRetriedSessionRef.current = false
 
     // Normalizza il ruolo (pt -> trainer, atleta -> athlete); nutrizionista/massaggiatore invariati
     const roleStr = role as string | null
@@ -95,7 +106,7 @@ export default function PostLoginPage() {
       })
       router.push('/login?error=ruolo_non_valido')
     }
-  }, [user, role, loading, router])
+  }, [user, role, loading, router, authRecovery, retryAuthSession])
 
   // Mostra loading durante il redirect (stile trainer: sfondo #0d0d0d)
   return (

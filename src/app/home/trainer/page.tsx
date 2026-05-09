@@ -103,7 +103,7 @@ export default function TrainerProfilePage() {
   if (authLoading) {
     return (
       <div
-        className="bg-background min-h-dvh space-y-3 px-3 sm:px-4 min-[834px]:px-6 flex items-center justify-center"
+        className="bg-background min-h-dvh space-y-3 px-3 sm:px-4 md:px-6 flex items-center justify-center"
         style={{ overflow: 'auto' }}
       >
         <p className="text-text-secondary text-sm">Caricamento...</p>
@@ -114,7 +114,7 @@ export default function TrainerProfilePage() {
   const backHref = '/home/profilo'
 
   const pageContainerClass =
-    'relative min-h-0 w-full max-w-full space-y-5 min-[834px]:space-y-6 px-3 pb-6 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-5'
+    'relative min-h-0 w-full max-w-full space-y-5 md:space-y-6 px-3 pb-6 safe-area-inset-bottom sm:px-4 md:px-6 md:pb-5'
   const pageContainerStyle: React.CSSProperties = {
     overflow: 'auto',
     minHeight: 'calc(100dvh - 56px)',
@@ -136,7 +136,7 @@ export default function TrainerProfilePage() {
             Indietro
           </Link>
         </Button>
-        <Card className="border border-border bg-background-secondary/95 backdrop-blur-xl rounded-xl min-[834px]:rounded-2xl">
+        <Card className="border border-border bg-background-secondary/95 backdrop-blur-xl rounded-xl md:rounded-2xl">
           <CardContent className="pt-6">
             <p className="text-text-secondary text-sm">{error}</p>
           </CardContent>
@@ -159,7 +159,7 @@ export default function TrainerProfilePage() {
             Indietro
           </Link>
         </Button>
-        <Card className="border border-border bg-background-secondary/95 backdrop-blur-xl rounded-xl min-[834px]:rounded-2xl">
+        <Card className="border border-border bg-background-secondary/95 backdrop-blur-xl rounded-xl md:rounded-2xl">
           <CardContent className="pt-6">
             <p className="text-text-secondary text-sm">Nessun trainer assegnato.</p>
           </CardContent>
@@ -171,7 +171,7 @@ export default function TrainerProfilePage() {
   return (
     <div className={pageContainerClass} style={pageContainerStyle}>
       <div
-        className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5"
+        className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl md:p-5"
         style={{
           border: gradients.glassHeaderBorder,
           background: gradients.glassHeaderTeal,
@@ -192,7 +192,7 @@ export default function TrainerProfilePage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-bold tracking-tight text-text-primary min-[834px]:text-xl">
+            <h1 className="truncate text-lg font-bold tracking-tight text-text-primary md:text-xl">
               Profilo Trainer
             </h1>
             <p className="truncate text-xs text-text-tertiary">
@@ -207,19 +207,19 @@ export default function TrainerProfilePage() {
       </div>
 
       {loading ? (
-        <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-          <CardContent className="min-h-[140px] p-5 sm:p-6 min-[834px]:p-6" aria-hidden />
+        <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+          <CardContent className="min-h-[140px] p-5 sm:p-6 md:p-6" aria-hidden />
         </Card>
       ) : trainer ? (
-        <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+        <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
           <div
-            className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none rounded-xl min-[834px]:rounded-2xl"
+            className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none rounded-xl md:rounded-2xl"
             aria-hidden
           />
-          <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-6">
+          <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-6">
             <div className="flex flex-col items-center text-center">
               {trainer.pt_avatar_url ? (
-                <div className="relative h-32 w-32 min-[834px]:h-40 min-[834px]:w-40 shrink-0 overflow-hidden rounded-full">
+                <div className="relative h-32 w-32 md:h-40 md:w-40 shrink-0 overflow-hidden rounded-full">
                   <Image
                     src={trainer.pt_avatar_url}
                     alt={`${trainer.pt_nome} ${trainer.pt_cognome}`}
@@ -230,8 +230,8 @@ export default function TrainerProfilePage() {
                   />
                 </div>
               ) : (
-                <div className="flex h-32 w-32 min-[834px]:h-40 min-[834px]:w-40 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                  <User className="h-16 w-16 min-[834px]:h-20 min-[834px]:w-20" />
+                <div className="flex h-32 w-32 md:h-40 md:w-40 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                  <User className="h-16 w-16 md:h-20 md:w-20" />
                 </div>
               )}
               <h2 className="text-text-primary text-xl font-bold mt-4">
@@ -275,8 +275,8 @@ export default function TrainerProfilePage() {
       ) : null}
 
       {fullLoading && (
-        <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-          <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6">
+        <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+          <CardContent className="relative z-10 p-5 sm:p-6 md:p-6">
             <p className="text-text-secondary text-sm">Caricamento profilo...</p>
           </CardContent>
         </Card>
@@ -290,8 +290,8 @@ export default function TrainerProfilePage() {
               fullProfile.profile.descrizione_estesa ||
               fullProfile.profile.filosofia ||
               fullProfile.profile.perche_lavoro) && (
-              <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-                <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+              <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+                <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                   <h3 className="text-text-primary font-semibold flex items-center gap-2">
                     <User className="h-4 w-4 text-primary" />
                     Bio
@@ -333,8 +333,8 @@ export default function TrainerProfilePage() {
 
           {/* Certificazioni */}
           {fullProfile.certifications && fullProfile.certifications.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <Award className="h-4 w-4 text-primary" />
                   Certificazioni
@@ -387,8 +387,8 @@ export default function TrainerProfilePage() {
 
           {/* Specializzazioni */}
           {fullProfile.specializations && fullProfile.specializations.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <Target className="h-4 w-4 text-primary" />
                   Specializzazioni
@@ -410,8 +410,8 @@ export default function TrainerProfilePage() {
 
           {/* Formazione */}
           {fullProfile.education && fullProfile.education.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-primary" />
                   Formazione
@@ -461,8 +461,8 @@ export default function TrainerProfilePage() {
 
           {/* Corsi */}
           {fullProfile.courses && fullProfile.courses.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <ClipboardList className="h-4 w-4 text-primary" />
                   Corsi
@@ -490,8 +490,8 @@ export default function TrainerProfilePage() {
 
           {/* Esperienza */}
           {fullProfile.experience && fullProfile.experience.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-primary" />
                   Esperienza
@@ -518,8 +518,8 @@ export default function TrainerProfilePage() {
 
           {/* Testimonianze */}
           {fullProfile.testimonials && fullProfile.testimonials.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <Quote className="h-4 w-4 text-primary" />
                   Testimonianze
@@ -545,8 +545,8 @@ export default function TrainerProfilePage() {
 
           {/* Trasformazioni (prima/dopo) */}
           {fullProfile.transformations && fullProfile.transformations.length > 0 && (
-            <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-              <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+            <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+              <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                 <h3 className="text-text-primary font-semibold flex items-center gap-2">
                   <ImageIcon className="h-4 w-4 text-primary" />
                   Trasformazioni
@@ -650,8 +650,8 @@ export default function TrainerProfilePage() {
             (fullProfile.profile.url_video_presentazione ||
               (fullProfile.profile.galleria_urls &&
                 fullProfile.profile.galleria_urls.length > 0)) && (
-              <Card className="relative overflow-hidden rounded-xl min-[834px]:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
-                <CardContent className="relative z-10 p-5 sm:p-6 min-[834px]:p-6 space-y-4">
+              <Card className="relative overflow-hidden rounded-xl md:rounded-2xl border border-border bg-background-secondary/95 backdrop-blur-xl">
+                <CardContent className="relative z-10 p-5 sm:p-6 md:p-6 space-y-4">
                   <h3 className="text-text-primary font-semibold flex items-center gap-2">
                     <Video className="h-4 w-4 text-primary" />
                     Media

@@ -1,12 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { StatistichePageContent } from '@/components/dashboard/statistiche-page-content'
 import {
-  StatistichePageContent,
   STATS_PERIODS,
   type StatsPeriod,
   type StatisticheViewTab,
-} from '@/components/dashboard/statistiche-page-content'
+} from '@/components/dashboard/statistiche-constants'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
+import { StatisticheHeaderActions } from '@/components/dashboard/statistiche-header-actions'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
@@ -467,24 +469,48 @@ export default function StatistichePage() {
     selectedTrainerIds.length > 0 &&
     trainerLoading
 
+  const headerRefreshing = authLoading || trainerTabWaiting || legacyTabWaiting
+  const showTrainerExportPanel = !authLoading && trainerMode && activeTab === 'trainer'
+  const pageDescription = authLoading
+    ? 'Caricamento profilo…'
+    : trainerMode
+      ? 'Metriche trainer: atleti, attività ed economia'
+      : 'Performance e trend dell’organizzazione'
+
   return (
-    <StatistichePageContent
-      selectedPeriod={period}
-      onPeriodChange={setPeriod}
-      isRefreshing={authLoading || trainerTabWaiting || legacyTabWaiting}
-      authReady={!authLoading}
-      trainerMode={trainerMode}
-      trainerReport={trainerReport}
-      trainerPanelLoading={trainerPanelLoading}
-      trainerPanelHint={trainerPanelHint}
-      trainerOptions={trainerOptions}
-      selectedTrainerIds={selectedTrainerIds}
-      onToggleTrainerId={onToggleTrainerId}
-      showAdminLegacyTab={showAdminLegacyTab}
-      activeTab={activeTab}
-      onActiveTabChange={setActiveTab}
-      legacyData={data}
-      legacyGrowth={growth}
-    />
+    <StaffContentLayout
+      title="Statistiche"
+      description={pageDescription}
+      theme="teal"
+      actions={
+        <StatisticheHeaderActions
+          authReady={!authLoading}
+          trainerMode={trainerMode}
+          showAdminLegacyTab={showAdminLegacyTab}
+          activeTab={activeTab}
+          onActiveTabChange={setActiveTab}
+          selectedPeriod={period}
+          onPeriodChange={setPeriod}
+          isRefreshing={headerRefreshing}
+          legacyData={data}
+          trainerReportForExport={showTrainerExportPanel ? trainerReport : null}
+        />
+      }
+    >
+      <StatistichePageContent
+        authReady={!authLoading}
+        trainerMode={trainerMode}
+        trainerReport={trainerReport}
+        trainerPanelLoading={trainerPanelLoading}
+        trainerPanelHint={trainerPanelHint}
+        trainerOptions={trainerOptions}
+        selectedTrainerIds={selectedTrainerIds}
+        onToggleTrainerId={onToggleTrainerId}
+        showAdminLegacyTab={showAdminLegacyTab}
+        activeTab={activeTab}
+        legacyData={data}
+        legacyGrowth={growth}
+      />
+    </StaffContentLayout>
   )
 }

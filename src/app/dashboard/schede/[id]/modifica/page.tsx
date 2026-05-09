@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useMemo } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('app:dashboard:schede:[id]:modifica:page')
@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react'
 import type { Workout, WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
 import { WORKOUT_PLAN_NO_ATHLETE_VALUE } from '@/lib/constants/workout-plan-wizard'
 import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizard'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 function workoutDetailToWizardData(detail: {
   name: string
@@ -74,7 +75,7 @@ function workoutDetailToWizardData(detail: {
       target_sets: ex.target_sets ?? 1,
       target_reps: ex.target_reps ?? 10,
       target_weight: ex.target_weight ?? 0,
-      rest_timer_sec: ex.rest_timer_sec ?? 60,
+      rest_timer_sec: ex.rest_timer_sec ?? undefined,
       note: ex.note ?? undefined,
       sets_detail: setsDetail,
     }
@@ -126,10 +127,10 @@ function workoutDetailToWizardData(detail: {
   }
 }
 
-function ModificaSchedaContent() {
+function ModificaSchedaContent({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const params = useParams()
-  const workoutId = typeof params?.id === 'string' ? params.id : null
+  const resolved = useResolvedParams(params)
+  const workoutId = typeof resolved.id === 'string' ? resolved.id : null
 
   const { workout, loading: detailLoading, error: detailError } = useWorkoutDetail(workoutId, true)
   const { athletes, exercises, wizardDataLoading, exercisesLoadError, handleUpdateWorkout } =
@@ -228,14 +229,17 @@ function ModificaSchedaContent() {
       initialData={initialData}
       initialCircuitList={workout.circuitList}
       onCancel={handleCancel}
+      pageTitle="Modifica Scheda Allenamento"
+      localDraftScope={`edit-${workout.id}`}
+      planServerUpdatedAt={workout.updated_at ?? null}
     />
   )
 }
 
-export default function ModificaSchedaPage() {
+export default function ModificaSchedaPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense fallback={<StaffDashboardSegmentSkeleton />}>
-      <ModificaSchedaContent />
+      <ModificaSchedaContent params={params} />
     </Suspense>
   )
 }

@@ -5,6 +5,7 @@ import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-heade
 import { cn } from '@/lib/utils'
 
 export type StaffAthleteSubpageHeaderProps = {
+  /** Destinazione navigazione — passato come `href` a `StaffHeaderBackButton` (variante Link, XOR con onClick sul componente). */
   backHref: string
   title: string
   description: string
@@ -14,7 +15,11 @@ export type StaffAthleteSubpageHeaderProps = {
 }
 
 /**
- * Header allineato a `StaffContentLayout`: pulsante indietro cyan, titolo/sottotitolo a 1 riga (clamp), azioni a destra.
+ * Header di **sottopagina** atleta/staff **dentro** la shell `StaffContentLayout`: stessa gerarchia
+ * visiva (back cyan, titolo/sottotitolo clamp, azioni a destra); indietro via `backHref` → `StaffHeaderBackButton` (Link).
+ *
+ * **Contratto confine:** usare solo come blocco header interno sotto la shell staff, non come
+ * equivalente dell’header atleta/home/embed. Per quelle viste resta `PageHeaderFixed` nel layout dedicato.
  */
 export function StaffAthleteSubpageHeader({
   backHref,

@@ -1,0 +1,36 @@
+---
+description: Se manca documentazione nel Cervello per un dominio toccato, integrarla subito (delta minimo, come login.md).
+alwaysApply: true
+---
+
+# Cervello — backfill obbligatorio
+
+## Principio
+
+Se in chat o durante un intervento emerge che nel **Cervello** manca (o è obsoleto) il necessario per un **dominio** o una **feature** che stai toccando, **non chiudere solo nel codice**: aggiorna il Cervello nello stesso flusso, con **delta minimo** e allineato al **codice reale**.
+
+È lo stesso approccio usato con successo per es. **`Cervello/pages/login.md`** (scopo, file principali, responsive/test E2E, note operative, storico verifiche, ref incrociati).
+
+## Dove scrivere
+
+- Default: `Cervello/pages/<dominio>.md` (nome dominio = area prodotto/tecnica coerente: `login`, `abbonamenti`, …).
+- Se il dominio ha già split: integra solo i file esistenti (`*_context.md`, `*_mutations.md`, `*_fetch.md`) **se** la modifica tocca quel tipo di informazione; non creare file nuovi senza necessità.
+
+## Cosa mettere (ordine di priorità)
+
+1. **Scopo** del dominio in una riga.
+2. **Path** dei file toccati o entrypoint (tabella o elenco corto).
+3. **Comportamento / contratti** rilevanti (API, redirect, RLS, breakpoint UI, ecc.) — solo ciò che serve a non perdere contesto.
+4. **Test / smoke** se esistono (`tests/e2e/...`, comandi utili).
+5. **Note** (flakiness, limitazioni ambiente, HTTPS Safari, …) se evitano falsi allarmi.
+6. **`Storico verifiche`** opzionale: data + una riga se ha valore operativo.
+7. **Ref incrociati** ad altri domini `Cervello/pages/...` se il flusso li attraversa.
+
+## Cosa non fare
+
+- Non riscrivere il repo nel Cervello: niente copia-incolla di interi file.
+- Non lasciare affermazioni non verificate dal codice o da Supabase/schema se la modifica tocca dati.
+
+## Drift
+
+Se scopri incoerenza Cervello ↔ codice, **corregi il Cervello** (o segnala esplicitamente nel delta se la correzione codice è ancora aperta).

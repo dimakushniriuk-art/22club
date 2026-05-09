@@ -136,8 +136,7 @@ export function InstallPwaPrompt() {
     <div
       role="status"
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-[90] border-t border-white/10 bg-background-secondary/95 px-3 py-3 shadow-[0_-8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md safe-area-inset-bottom',
-        'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
+        'fixed bottom-0 left-0 right-0 z-[90] border-t border-white/10 bg-background-secondary/95 px-3 pt-3 pb-safe shadow-[0_-8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md safe-area-inset-bottom',
       )}
     >
       <div className="mx-auto flex max-w-lg flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">

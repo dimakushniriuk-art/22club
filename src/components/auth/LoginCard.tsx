@@ -36,9 +36,9 @@ const LOGIN_INFO_ID = 'login-info'
 
 // Design System #auth: card con bordo border-white/10, gradient from-zinc-900/95 to-black/80, shadow inset (GUIDA principi + token Auth).
 const CARD_CLASS =
-  'login-card w-full max-w-md min-[834px]:max-w-lg overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 text-text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl'
-const CARD_CONTENT_CLASS = 'p-5 sm:p-6 min-[834px]:p-8'
-const WRAPPER_CLASS = 'w-full max-w-md min-[834px]:max-w-lg min-w-0 animate-fade-in relative z-10'
+  'login-card w-full max-w-md md:max-w-lg overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 text-text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] backdrop-blur-xl'
+const CARD_CONTENT_CLASS = 'p-5 sm:p-6 md:p-8'
+const WRAPPER_CLASS = 'w-full max-w-md md:max-w-lg min-w-0 animate-fade-in relative z-10'
 
 export function LoginCard({
   skeleton = false,
@@ -72,7 +72,7 @@ export function LoginCard({
                     alt="22 PERSONAL TRAINING Club"
                     width={200}
                     height={200}
-                    className="w-auto h-24 sm:h-28 min-[834px]:h-32 object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]"
+                    className="w-auto h-24 sm:h-28 md:h-32 object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]"
                     priority
                   />
                 </div>
@@ -82,7 +82,7 @@ export function LoginCard({
               </h2>
               <p className="text-sm text-text-secondary">Caricamento...</p>
             </div>
-            <div className="space-y-5 min-[834px]:space-y-6">
+            <div className="space-y-5 md:space-y-6">
               <div className="h-[44px] rounded-md bg-background-tertiary/50 animate-pulse" />
               <div className="h-[44px] rounded-md bg-background-tertiary/50 animate-pulse" />
               <div className="h-[44px] rounded-md bg-background-tertiary/50 animate-pulse" />
@@ -115,7 +115,7 @@ export function LoginCard({
                   alt="22 PERSONAL TRAINING Club"
                   width={200}
                   height={200}
-                  className="w-auto h-24 sm:h-28 min-[834px]:h-32 object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]"
+                  className="w-auto h-24 sm:h-28 md:h-32 object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.08)]"
                   priority
                 />
               </div>
@@ -131,7 +131,7 @@ export function LoginCard({
           <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
             <form
               onSubmit={onSubmit}
-              className="space-y-5 min-[834px]:space-y-6"
+              className="space-y-5 md:space-y-6"
               noValidate
               aria-describedby={
                 [error ? errorId : null, infoMessage ? LOGIN_INFO_ID : null]

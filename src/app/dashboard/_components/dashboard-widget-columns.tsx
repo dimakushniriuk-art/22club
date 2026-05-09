@@ -1,9 +1,11 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { isValidElement, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Inbox } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/ui'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/providers/auth-provider'
 import { useStaffDashboardWidgets } from '@/hooks/use-staff-dashboard-widgets'
 import { STAFF_DASHBOARD_LOW_LESSONS_THRESHOLD } from '@/lib/dashboard/fetch-staff-dashboard-widgets'
@@ -17,16 +19,20 @@ export const DASHBOARD_COLUMN_PANEL_CLASS =
 export const DASHBOARD_LIST_SCROLL_CLASS =
   'w-full flex-1 space-y-2 overflow-y-auto overscroll-contain min-h-[9rem] max-h-[min(52vh,440px)] sm:min-h-[10rem] lg:min-h-[12rem]'
 
-/** Alias storico interno */
-const LIST_SCROLL = DASHBOARD_LIST_SCROLL_CLASS
+/** Liste widget in matrice lg (pannello alto 2 righe). */
+export const DASHBOARD_LIST_SCROLL_TALL_CLASS =
+  'w-full flex-1 space-y-2 overflow-y-auto overscroll-contain min-h-[12rem] max-h-[min(104vh,880px)] lg:min-h-[14rem]'
 
 export const DASHBOARD_ROW_LINK_CLASS =
   'block rounded-lg border border-white/5 bg-black/25 px-3 py-2.5 transition-colors hover:border-white/12 hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/30'
 
-const ROW_LINK_CLASS = DASHBOARD_ROW_LINK_CLASS
-
-export const DASHBOARD_COLUMN_FOOTER_LINK_CLASS =
-  'inline-flex text-xs font-medium text-cyan-400 transition-colors hover:text-cyan-300 underline-offset-4 hover:underline'
+/** Chrome footer pannello colonna: link e button equivalenti (stesso contratto visivo). */
+export const DASHBOARD_COLUMN_FOOTER_LINK_CLASS = cn(
+  'inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-white/[0.08]',
+  'bg-white/[0.04] px-3 text-xs font-medium text-cyan-400 transition-colors',
+  'hover:border-white/15 hover:bg-white/[0.07] hover:text-cyan-300',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
+)
 
 export function DashboardColumnFooterLink({
   href,
@@ -38,27 +44,41 @@ export function DashboardColumnFooterLink({
   prefetch?: boolean
 }) {
   return (
-    <Link
-      href={href}
-      prefetch={prefetch}
-      className={cn(
-        'inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-white/[0.08]',
-        'bg-white/[0.04] px-3 text-xs font-medium text-cyan-400 transition-colors',
-        'hover:border-white/15 hover:bg-white/[0.07] hover:text-cyan-300',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
-      )}
-    >
+    <Link href={href} prefetch={prefetch} className={DASHBOARD_COLUMN_FOOTER_LINK_CLASS}>
       <span>{children}</span>
       <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
     </Link>
   )
 }
 
+function dashboardColumnEmptyText(node: ReactNode): string {
+  if (node == null || typeof node === 'boolean') return ''
+  if (typeof node === 'string' || typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(dashboardColumnEmptyText).join('')
+  if (isValidElement<{ children?: ReactNode }>(node)) {
+    return dashboardColumnEmptyText(node.props.children)
+  }
+  return ''
+}
+
 export function DashboardColumnEmpty({ children }: { children: ReactNode }) {
+  const title = dashboardColumnEmptyText(children)
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-2 py-8 text-center text-xs leading-relaxed text-text-secondary">
-      {children}
-    </div>
+    <EmptyState
+      icon={Inbox}
+      title={title}
+      density="inline"
+      surface="transparent"
+      align="center"
+      iconSize="small"
+      className={cn(
+        'flex flex-1 flex-col justify-center',
+        'px-2',
+        '[&>div.relative]:py-8',
+        '[&>div.relative>div:first-child]:hidden',
+        '[&_h3]:mb-0 [&_h3]:text-xs [&_h3]:font-normal [&_h3]:leading-relaxed [&_h3]:text-text-secondary',
+      )}
+    />
   )
 }
 
@@ -69,30 +89,43 @@ function remainingTone(remaining: number): string {
   return '!text-[color:var(--color-success)]'
 }
 
+const BADGE_CHROME_CLASS =
+  'shrink-0 rounded-md border border-[color:var(--color-error)]/35 bg-[color:var(--color-error)]/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[color:var(--color-error)]'
+
 export function DashboardColumnPanel({
   title,
   children,
   footer,
   badge,
+  badgePlaceholder = false,
 }: {
   title: string
   children: ReactNode
   footer?: React.ReactNode
   /** Conteggio o etichetta breve accanto al titolo (es. n. voci) */
   badge?: string | number
+  /** Slot badge con stesse dimensioni del conteggio (invisibile) — evita salto header durante loading */
+  badgePlaceholder?: boolean
 }) {
+  const showBadge = badge != null && badge !== ''
+  const showBadgeSlot = showBadge || badgePlaceholder
+
   return (
     <div className={DASHBOARD_COLUMN_PANEL_CLASS}>
       <div className="mb-3 flex shrink-0 items-baseline justify-between gap-2 border-b border-white/[0.06] pb-2.5">
         <h2 className="min-w-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary/90 sm:text-xs">
           {title}
         </h2>
-        {badge != null && badge !== '' ? (
-          <span
-            className="shrink-0 rounded-md border border-[color:var(--color-error)]/35 bg-[color:var(--color-error)]/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[color:var(--color-error)]"
-            aria-label={`Elementi: ${badge}`}
-          >
+        {showBadge ? (
+          <span className={BADGE_CHROME_CLASS} aria-label={`Elementi: ${badge}`}>
             {badge}
+          </span>
+        ) : showBadgeSlot ? (
+          <span
+            className={`${BADGE_CHROME_CLASS} invisible pointer-events-none inline-flex min-w-[2rem] shrink-0 select-none items-center justify-center`}
+            aria-hidden="true"
+          >
+            0
           </span>
         ) : null}
       </div>
@@ -102,33 +135,23 @@ export function DashboardColumnPanel({
   )
 }
 
-function ColumnPanel(props: {
-  title: string
-  children: ReactNode
-  footer?: React.ReactNode
-  badge?: string | number
-}) {
-  return <DashboardColumnPanel {...props} />
-}
-
 export function DashboardColumnListSkeleton() {
   return (
-    <div className={LIST_SCROLL}>
+    <div className={DASHBOARD_LIST_SCROLL_CLASS}>
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-[3.25rem] animate-pulse rounded-lg bg-white/[0.06]" />
+        <Skeleton key={i} className="h-[3.25rem] w-full rounded-lg" />
       ))}
     </div>
   )
 }
 
-function ListSkeleton() {
-  return <DashboardColumnListSkeleton />
-}
-
 export function DashboardWidgetColumns({
   widgetsVisibility,
+  matrixPlacement = false,
 }: {
   widgetsVisibility: StaffDashboardLayoutPrefs['widgets']
+  /** lg: griglia 4 colonne — ogni pannello span 2 righe. */
+  matrixPlacement?: boolean
 }) {
   const { user } = useAuth()
   const staffProfileId = user?.id
@@ -140,8 +163,13 @@ export function DashboardWidgetColumns({
   return (
     <>
       {widgetsVisibility.expiringPrograms ? (
-        <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
-          <ColumnPanel
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0',
+            matrixPlacement && 'lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:h-full lg:min-h-0',
+          )}
+        >
+          <DashboardColumnPanel
             title="Schede in scadenza"
             badge={!loading && error == null && expiring.length > 0 ? expiring.length : undefined}
             footer={
@@ -151,7 +179,7 @@ export function DashboardWidgetColumns({
             }
           >
             {loading ? (
-              <ListSkeleton />
+              <DashboardColumnListSkeleton />
             ) : error != null ? (
               <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
             ) : expiring.length === 0 ? (
@@ -160,13 +188,17 @@ export function DashboardWidgetColumns({
                 sessioni rimanenti).
               </DashboardColumnEmpty>
             ) : (
-              <ul className={LIST_SCROLL}>
+              <ul
+                className={
+                  matrixPlacement ? DASHBOARD_LIST_SCROLL_TALL_CLASS : DASHBOARD_LIST_SCROLL_CLASS
+                }
+              >
                 {expiring.map((p) => (
                   <li key={p.id}>
                     <Link
                       href={`/dashboard/schede/${p.id}/modifica`}
                       prefetch
-                      className={ROW_LINK_CLASS}
+                      className={DASHBOARD_ROW_LINK_CLASS}
                     >
                       <div className="truncate text-sm font-medium text-text-primary">
                         {typeof p.creation_order_number === 'number' ? (
@@ -186,13 +218,18 @@ export function DashboardWidgetColumns({
                 ))}
               </ul>
             )}
-          </ColumnPanel>
+          </DashboardColumnPanel>
         </div>
       ) : null}
 
       {widgetsVisibility.lowLessons ? (
-        <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
-          <ColumnPanel
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0',
+            matrixPlacement && 'lg:col-start-3 lg:row-start-1 lg:row-span-2 lg:h-full lg:min-h-0',
+          )}
+        >
+          <DashboardColumnPanel
             title="Lezioni in esaurimento"
             badge={!loading && error == null && athletes.length > 0 ? athletes.length : undefined}
             footer={
@@ -202,7 +239,7 @@ export function DashboardWidgetColumns({
             }
           >
             {loading ? (
-              <ListSkeleton />
+              <DashboardColumnListSkeleton />
             ) : error != null ? (
               <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
             ) : athletes.length === 0 ? (
@@ -211,13 +248,20 @@ export function DashboardWidgetColumns({
                 rimanenti.
               </DashboardColumnEmpty>
             ) : (
-              <ul className={LIST_SCROLL}>
+              <ul
+                className={
+                  matrixPlacement ? DASHBOARD_LIST_SCROLL_TALL_CLASS : DASHBOARD_LIST_SCROLL_CLASS
+                }
+              >
                 {athletes.map((a) => (
                   <li key={a.athlete_id}>
                     <Link
                       href={`/dashboard/atleti/${a.athlete_id}`}
                       prefetch
-                      className={cn(ROW_LINK_CLASS, 'flex items-center justify-between gap-2')}
+                      className={cn(
+                        DASHBOARD_ROW_LINK_CLASS,
+                        'flex items-center justify-between gap-2',
+                      )}
                     >
                       <span className="min-w-0 truncate text-sm font-medium text-text-primary">
                         {a.display_name}
@@ -235,13 +279,20 @@ export function DashboardWidgetColumns({
                 ))}
               </ul>
             )}
-          </ColumnPanel>
+          </DashboardColumnPanel>
         </div>
       ) : null}
 
       {widgetsVisibility.unreadChats ? (
-        <div className="flex min-h-0 min-w-0 flex-col lg:min-h-[min(52vh,440px)] lg:min-w-0">
-          <ColumnPanel
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-col lg:min-w-0',
+            matrixPlacement
+              ? 'lg:col-start-4 lg:row-start-1 lg:row-span-2 lg:h-full lg:min-h-0'
+              : 'lg:min-h-[min(52vh,440px)]',
+          )}
+        >
+          <DashboardColumnPanel
             title="Messaggi non letti"
             badge={
               !chatLoading && unreadChats.length > 0
@@ -255,17 +306,24 @@ export function DashboardWidgetColumns({
             }
           >
             {chatLoading ? (
-              <ListSkeleton />
+              <DashboardColumnListSkeleton />
             ) : unreadChats.length === 0 ? (
               <DashboardColumnEmpty>Nessun messaggio da leggere.</DashboardColumnEmpty>
             ) : (
-              <ul className={LIST_SCROLL}>
+              <ul
+                className={
+                  matrixPlacement ? DASHBOARD_LIST_SCROLL_TALL_CLASS : DASHBOARD_LIST_SCROLL_CLASS
+                }
+              >
                 {unreadChats.map((c) => (
                   <li key={c.other_user_id}>
                     <Link
                       href={`/dashboard/chat?with=${encodeURIComponent(c.other_user_id)}`}
                       prefetch
-                      className={cn(ROW_LINK_CLASS, 'flex items-center justify-between gap-2')}
+                      className={cn(
+                        DASHBOARD_ROW_LINK_CLASS,
+                        'flex items-center justify-between gap-2',
+                      )}
                     >
                       <span className="min-w-0 truncate text-sm font-medium text-text-primary">
                         {c.other_user_name}
@@ -278,7 +336,7 @@ export function DashboardWidgetColumns({
                 ))}
               </ul>
             )}
-          </ColumnPanel>
+          </DashboardColumnPanel>
         </div>
       ) : null}
     </>

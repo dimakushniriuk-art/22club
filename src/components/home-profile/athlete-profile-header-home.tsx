@@ -124,7 +124,7 @@ export function AthleteProfileHeaderHome({ user, avatarInitials }: AthleteProfil
             </button>
           </div>
           <div className="flex min-w-0 flex-1 flex-col items-center sm:items-stretch">
-            <h2 className="max-w-full truncate text-center text-xl font-semibold tracking-tight text-text-primary sm:text-left sm:text-lg min-[834px]:text-xl">
+            <h2 className="max-w-full truncate text-center text-xl font-semibold tracking-tight text-text-primary sm:text-left sm:text-lg md:text-xl">
               {displayName}
             </h2>
             <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">

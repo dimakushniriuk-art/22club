@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Activity, BarChart3, ClipboardList } from 'lucide-react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -21,6 +21,7 @@ import {
 } from '@/hooks/use-workout-exercise-stats'
 import { buildStandardPdfBlob } from '@/lib/pdf'
 import { useNotify } from '@/lib/ui/notify'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const CARD_DS =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
@@ -85,10 +86,10 @@ function buildExerciseStatsPdfRows(data: WorkoutExerciseStats): string[][] {
     ])
 }
 
-function AllenamentiBody() {
-  const params = useParams()
+function AllenamentiBody({ routeParams }: { routeParams: Promise<{ id: string }> }) {
+  const resolved = useResolvedParams(routeParams)
   const router = useRouter()
-  const id = typeof params?.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
 
   const { athlete, athleteUserId, loading, error, loadAthleteData } = useAthleteProfileData(
     id ?? '',
@@ -337,10 +338,14 @@ function AllenamentiBody() {
   )
 }
 
-export default function StaffAtletaProgressiAllenamentiPage() {
+export default function StaffAtletaProgressiAllenamentiPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   return (
     <Suspense fallback={<StaffAthleteSegmentSkeleton />}>
-      <AllenamentiBody />
+      <AllenamentiBody routeParams={params} />
     </Suspense>
   )
 }

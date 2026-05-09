@@ -194,8 +194,12 @@ export function DialogTrigger({ children }: { children: React.ReactNode }) {
 
 export function DialogContent({ children, className }: DialogContentProps) {
   const { open, onOpenChange } = React.useContext(DialogContext)
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => setMounted(true), [])
+  // SSR + hydration: server/first paint snapshot false; post-hydration client true — avoids one-frame null after open without layout thrash from useEffect(setMounted).
+  const mounted = React.useSyncExternalStore(
+    React.useCallback(() => () => {}, []),
+    () => true,
+    () => false,
+  )
 
   if (!open) return null
   if (!mounted || typeof document === 'undefined') return null

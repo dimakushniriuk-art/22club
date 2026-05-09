@@ -105,9 +105,9 @@ export default function MarketingAthletesPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
       <header>
-        <h1 className="flex items-center gap-2 text-xl font-bold min-[834px]:text-2xl">
+        <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
           <Users className="h-6 w-6 text-cyan-400" />
           Atleti
         </h1>
@@ -125,7 +125,7 @@ export default function MarketingAthletesPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 min-[834px]:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Card className="border-border bg-background-secondary/80">
               <CardContent className="p-4">
                 <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
@@ -164,8 +164,8 @@ export default function MarketingAthletesPage() {
             </Card>
           </div>
 
-          <div className="flex flex-col gap-3 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
-            <div className="relative flex-1 min-[834px]:max-w-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="relative flex-1 md:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
               <Input
                 placeholder="Cerca per nome o email..."

@@ -53,7 +53,7 @@ function StatisticheAllenamentiContent() {
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:space-y-6 md:px-6 md:pb-24">
           <PageHeaderFixed
             variant="chat"
             title="Statistiche Allenamenti"
@@ -71,7 +71,7 @@ function StatisticheAllenamentiContent() {
 
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:space-y-6 md:px-6 md:pb-24">
         <PageHeaderFixed
           variant="chat"
           title="Statistiche Allenamenti"
@@ -80,7 +80,7 @@ function StatisticheAllenamentiContent() {
         />
 
         <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4">
+          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 md:px-5 md:pt-5 md:pb-4">
             <CardTitle className="text-base font-bold text-text-primary md:text-lg">
               Grafici per esercizio
             </CardTitle>
@@ -88,26 +88,24 @@ function StatisticheAllenamentiContent() {
               Andamento pesi e progressi su tutte le sessioni (completate e in corso)
             </p>
           </CardHeader>
-          <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
+          <CardContent className="relative z-10 p-4 pt-3 md:p-5 md:pt-4">
             {isLoading ? null : error ? (
-              <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
+              <div className="flex flex-col items-center justify-center py-10 md:py-12 text-center">
                 <div className="mb-3 text-4xl opacity-50">❌</div>
-                <p className="text-text-primary text-sm font-medium min-[834px]:text-base">
+                <p className="text-text-primary text-sm font-medium md:text-base">
                   Errore nel caricamento
                 </p>
-                <p className="text-text-tertiary text-xs min-[834px]:text-sm mt-1.5">
-                  Riprova più tardi
-                </p>
+                <p className="text-text-tertiary text-xs md:text-sm mt-1.5">Riprova più tardi</p>
               </div>
             ) : !data || data.total_exercises === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-16 min-[834px]:w-16">
-                  <BarChart3 className="h-7 w-7 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" />
+              <div className="flex flex-col items-center justify-center py-10 md:py-12 text-center">
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-16 md:w-16">
+                  <BarChart3 className="h-7 w-7 text-cyan-400 md:h-8 md:w-8" />
                 </div>
-                <p className="text-text-primary text-sm font-semibold min-[834px]:text-base">
+                <p className="text-text-primary text-sm font-semibold md:text-base">
                   Nessun esercizio completato ancora
                 </p>
-                <p className="text-text-tertiary mt-1 text-xs min-[834px]:text-sm">
+                <p className="text-text-tertiary mt-1 text-xs md:text-sm">
                   Avvia o completa sessioni con serie sul log per vedere le statistiche.
                 </p>
               </div>

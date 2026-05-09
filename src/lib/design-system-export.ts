@@ -224,7 +224,7 @@ export function buildDesignSystemPdf(doc: JsPDFDoc): void {
   // Layouts
   sectionTitle('5. Layouts')
   bodyLines(
-    'Patterns: header glass (backdrop-blur, gradient teal), header compatto. Container: px-3 sm:px-4 min-[834px]:px-6, py-4. Griglia blocchi home: grid grid-cols-2 min-[834px]:grid-cols-3, gap-3 min-[834px]:gap-5. Breakpoint tablet: min-[834px].',
+    'Patterns: header glass (backdrop-blur, gradient teal), header compatto. Container: px-3 sm:px-4 md:px-6, py-4. Griglia blocchi home: grid grid-cols-2 md:grid-cols-3, gap-3 md:gap-5. Breakpoint tablet: md (768px).',
   )
 
   // Icone

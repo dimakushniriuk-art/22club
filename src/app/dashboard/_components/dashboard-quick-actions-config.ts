@@ -10,7 +10,7 @@ import {
   CreditCard,
   CalendarCheck,
   Megaphone,
-  Settings2,
+  Settings,
   Calendar,
 } from 'lucide-react'
 import type { StaffDashboardQuickActionId } from '@/lib/dashboard/staff-dashboard-layout-prefs'
@@ -54,9 +54,9 @@ export const DASHBOARD_QUICK_ACTIONS: DashboardQuickActionItem[] = [
   },
   {
     id: 'bookings',
-    href: '/dashboard/prenotazioni',
+    href: '/dashboard/appuntamenti',
     icon: CalendarCheck,
-    label: 'Prenotazioni',
+    label: 'Appuntamenti',
     iconBoxClass: 'border-orange-500/30 bg-orange-500/20 text-orange-300',
   },
   {
@@ -118,7 +118,7 @@ export const DASHBOARD_QUICK_ACTIONS: DashboardQuickActionItem[] = [
   {
     id: 'settings',
     href: '/dashboard/impostazioni',
-    icon: Settings2,
+    icon: Settings,
     label: 'Impostazioni',
     iconBoxClass: 'border-zinc-500/30 bg-zinc-500/20 text-zinc-300',
   },

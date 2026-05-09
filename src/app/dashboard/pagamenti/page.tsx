@@ -23,6 +23,7 @@ import {
   StaffDashboardSegmentSkeleton,
   StaffLazyChunkFallback,
 } from '@/components/layout/route-loading-skeletons'
+import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 
 // Lazy load NewPaymentModal per ridurre bundle size iniziale
 const NewPaymentModal = lazy(() =>
@@ -213,34 +214,19 @@ export default function PagamentiPage() {
   }
 
   return (
-    <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-indigo-500/5 via-transparent to-transparent" />
-      </div>
-
-      <div className="mx-auto flex w-full min-w-0 max-w-[min(100%,2160px)] flex-1 flex-col space-y-4 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Gestione Pagamenti
-            </h1>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Monitora entrate e saldi lezioni atleti
-            </p>
-          </div>
-          <Button
-            onClick={handleNewPayment}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nuovo Pagamento
-          </Button>
-        </div>
-
-        {/* KPI Cards */}
+    <StaffContentLayout
+      title="Gestione pagamenti"
+      description="Monitora entrate e saldi lezioni atleti."
+      theme="teal"
+      className="min-h-0"
+      actions={
+        <Button onClick={handleNewPayment} variant="primary" size="sm">
+          <Plus className="mr-2 h-4 w-4" />
+          Nuovo pagamento
+        </Button>
+      }
+    >
+      <div className="space-y-4 sm:space-y-6">
         <PaymentsKPICards
           totalRevenue={stats.totalRevenue}
           totalLessons={stats.totalLessons}
@@ -383,6 +369,6 @@ export default function PagamentiPage() {
           loading={isReversing}
         />
       )}
-    </div>
+    </StaffContentLayout>
   )
 }

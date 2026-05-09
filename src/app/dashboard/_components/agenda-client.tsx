@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { cn } from '@/lib/utils'
 import { AgendaTimeline } from '@/components/dashboard'
 import { useToast } from '@/components/ui/toast'
 import type { AgendaEvent } from '@/types/agenda-event'
@@ -10,6 +11,10 @@ interface AgendaClientProps {
   hasMoreAppointments?: boolean
   appointmentsTotalCount?: number
   loadError?: string | null
+  /** Arricchimento crediti lezioni dopo il fetch agenda (evita sensazione di lista “finale” prematura). */
+  lessonsLoading?: boolean
+  /** Errore fetch crediti lezioni (non blocca la lista appuntamenti). */
+  lessonsLoadError?: string | null
   /** Layout colonna dashboard (stesso stile degli altri widget) */
   embedded?: boolean
 }
@@ -19,6 +24,8 @@ export function AgendaClient({
   hasMoreAppointments = false,
   appointmentsTotalCount = 0,
   loadError = null,
+  lessonsLoading = false,
+  lessonsLoadError = null,
   embedded = false,
 }: AgendaClientProps) {
   const { addToast } = useToast()
@@ -62,12 +69,53 @@ export function AgendaClient({
           </p>
         </div>
       )}
+      {lessonsLoadError ? (
+        <p
+          className={
+            embedded
+              ? 'shrink-0 rounded-md border border-state-error/20 bg-state-error/10 px-2 py-1.5 text-[10px] text-state-error'
+              : 'mb-2 rounded-md border border-state-error/25 bg-state-error/10 px-2.5 py-2 text-xs text-state-error'
+          }
+          role="status"
+        >
+          {lessonsLoadError}
+        </p>
+      ) : null}
+      {!lessonsLoadError ? (
+        <p
+          className={cn(
+            embedded
+              ? 'shrink-0 text-[10px] text-text-secondary/90'
+              : 'mb-2 text-xs text-text-secondary',
+            !lessonsLoading && 'invisible',
+          )}
+          aria-live={lessonsLoading ? 'polite' : undefined}
+          aria-hidden={!lessonsLoading}
+        >
+          <span
+            className={cn(
+              'inline-block h-2 w-2 rounded-full bg-cyan-400/80 align-middle',
+              lessonsLoading ? 'animate-pulse' : 'animate-none',
+            )}
+            aria-hidden="true"
+          />{' '}
+          Aggiornamento crediti lezioni…
+        </p>
+      ) : null}
       <AgendaTimeline events={initialEvents} loading={false} embedded={embedded} />
     </>
   )
 
   if (embedded) {
-    return <div className="flex min-h-0 flex-1 flex-col gap-2">{body}</div>
+    return (
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-2"
+        aria-busy={lessonsLoading}
+        aria-label={lessonsLoading ? 'Agenda, caricamento crediti lezioni in corso' : undefined}
+      >
+        {body}
+      </div>
+    )
   }
 
   return body

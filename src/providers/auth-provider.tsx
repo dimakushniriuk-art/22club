@@ -1,13 +1,30 @@
 'use client'
 import { supabase, handleRefreshTokenError } from '@/lib/supabase/client'
+import { getUserResilient, isAuthNetworkLikeError } from '@/lib/supabase/singleflight-get-user'
+import {
+  dispatchAuthTokenRefreshed,
+  dispatchSessionResumed,
+} from '@/lib/session-stability/app-events'
+import { sessionStabilityBreadcrumb } from '@/lib/session-stability/sentry-session-stability'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
-import type { AuthContext as AuthContextType, UserProfile, UserRole } from '@/types/user'
+import type {
+  AuthContext as AuthContextType,
+  AuthRecoveryState,
+  UserProfile,
+  UserRole,
+} from '@/types/user'
 import { normalizeRole } from '@/lib/utils/role-normalizer'
 import { useRouter } from 'next/navigation'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 const logger = createLogger('providers:auth-provider')
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000
+const IDLE_CHECK_INTERVAL_MS = 30 * 1000
+const ACTIVITY_WRITE_THROTTLE_MS = 15 * 1000
+const LAST_ACTIVITY_STORAGE_KEY = 'auth:last_activity_at'
+/** Rinnovo JWT periodico (tab visibile) per sessioni lunghe; evita timeout salvataggi. */
+const SESSION_KEEPALIVE_INTERVAL_MS = 5 * 60 * 1000
 
 type ProfileRow = Tables<'profiles'>
 
@@ -151,6 +168,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<UserRole | null>(null)
   const [orgId, setOrgId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authRecovery, setAuthRecovery] = useState<AuthRecoveryState>('idle')
   const [actorProfile, setActorProfile] = useState<UserProfile | null>(null)
   const [isImpersonating, setIsImpersonating] = useState(false)
   const router = useRouter()
@@ -163,6 +181,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Cache anti-storm: TTL 30 secondi
   const profileCacheRef = useRef<Map<string, CachedProfile>>(new Map())
   const initialSessionHandledRef = useRef(false)
+  const idleLogoutInProgressRef = useRef(false)
+  const lastActivityWriteAtRef = useRef(0)
   // Singleflight: previene query duplicate simultanee per stesso userId
   const inFlightRef = useRef<Map<string, Promise<FetchProfileResult>>>(new Map())
 
@@ -413,6 +433,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return
       }
       if (isAuthNetworkFailure) {
+        setAuthRecovery('degraded')
+        sessionStabilityBreadcrumb('auth_network', 'unhandled_rejection', {
+          errorName: name,
+          errorMessage: msg,
+        })
         event.preventDefault()
         event.stopPropagation()
         return
@@ -440,30 +465,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         // getUser() valida con il server; getSession() legge solo da cookie e può restituire
         // una sessione residua (cookie scaduto) → fetchProfile fallisce prima ancora del login.
-        let {
-          data: { user: authUser },
-          error: userError,
-        } = await supabase.auth.getUser()
+        const { user: authUser, error: userError } = await getUserResilient(supabase)
 
         if (!isMounted) return
-
-        const is429 =
-          !!userError && (userError.code === 'over_request_rate_limit' || userError.status === 429)
-        if ((userError || !authUser) && is429) {
-          const {
-            data: { session: stored },
-            error: sessionError,
-          } = await supabase.auth.getSession()
-          if (!sessionError && stored?.user) {
-            authUser = stored.user
-            userError = null
-          }
-        }
 
         if (userError || !authUser) {
           if (handleRefreshTokenError(userError)) {
             setLoading(false)
             return
+          }
+          if (isAuthNetworkLikeError(userError)) {
+            setAuthRecovery('degraded')
+            sessionStabilityBreadcrumb('auth_network', 'bootstrap_getUser_failed')
           }
           setLoading(false)
           return
@@ -475,6 +488,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const applied = await applyAuthContext()
           if (isMounted && applied) {
             initialSessionHandledRef.current = true
+            setAuthRecovery('idle')
             return
           }
           if (process.env.NODE_ENV !== 'production') {
@@ -490,10 +504,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (shouldMarkInitialProfileHandled(result)) {
               initialSessionHandledRef.current = true
             }
+            setAuthRecovery('idle')
           }
         } else {
           // Già gestita, solo setta loading
           setLoading(false)
+          setAuthRecovery('idle')
         }
       } catch (error) {
         if (isMounted) {
@@ -509,6 +525,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (isAbort) {
             setLoading(false)
             return
+          }
+          if (isAuthNetworkLikeError(error)) {
+            setAuthRecovery('degraded')
+            sessionStabilityBreadcrumb('auth_network', 'bootstrap_catch')
           }
           logger.error('Errore bootstrap auth provider', error)
           setLoading(false)
@@ -528,6 +548,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (typeof document === 'undefined') return
 
     const MIN_HIDDEN_MS = 3000
+    const lastRecoveryAtRef = { current: 0 }
+    const RECOVERY_THROTTLE_MS = 2500
+
+    const runRecovery = (source: 'visibility' | 'focus' | 'online') => {
+      const now = Date.now()
+      if (now - lastRecoveryAtRef.current < RECOVERY_THROTTLE_MS) return
+      lastRecoveryAtRef.current = now
+
+      void (async () => {
+        try {
+          const { user: authUser, error: userError } = await getUserResilient(supabase)
+
+          if (userError) {
+            if (handleRefreshTokenError(userError)) return
+            if (isAuthNetworkLikeError(userError)) {
+              setAuthRecovery('degraded')
+              sessionStabilityBreadcrumb('auth_network', `${source}_getUser_failed`)
+            }
+            return
+          }
+
+          if (!authUser?.id) return
+
+          if (!userRef.current) {
+            const applied = await applyAuthContext()
+            if (applied) {
+              dispatchSessionResumed()
+              return
+            }
+            const result = await fetchProfile(authUser.id)
+            updateUserFromProfile(result.profile)
+          } else {
+            profileCacheRef.current.delete(authUser.id)
+            const result = await fetchProfile(authUser.id)
+            if (result.profile) {
+              updateUserFromProfile(result.profile)
+            }
+          }
+          setAuthRecovery('idle')
+          dispatchSessionResumed()
+        } catch (error) {
+          void handleRefreshTokenError(error)
+        }
+      })()
+    }
 
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') {
@@ -540,50 +605,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       lastTabHiddenAtRef.current = null
       if (hiddenAt == null) return
       if (Date.now() - hiddenAt < MIN_HIDDEN_MS) return
-
-      void (async () => {
-        try {
-          let {
-            data: { user: authUser },
-            error: userError,
-          } = await supabase.auth.getUser()
-
-          const is429 =
-            !!userError &&
-            (userError.code === 'over_request_rate_limit' || userError.status === 429)
-          if ((userError || !authUser) && is429) {
-            const {
-              data: { session: stored },
-              error: sessionError,
-            } = await supabase.auth.getSession()
-            if (!sessionError && stored?.user) {
-              authUser = stored.user
-              userError = null
-            }
-          }
-
-          if (userError) {
-            if (handleRefreshTokenError(userError)) return
-            return
-          }
-
-          if (!authUser?.id) return
-
-          if (!userRef.current) {
-            const applied = await applyAuthContext()
-            if (applied) return
-            const result = await fetchProfile(authUser.id)
-            updateUserFromProfile(result.profile)
-          }
-        } catch (error) {
-          void handleRefreshTokenError(error)
-        }
-      })()
+      runRecovery('visibility')
     }
 
     document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') runRecovery('focus')
+    }
+    const onOnline = () => {
+      if (document.visibilityState === 'visible') runRecovery('online')
+    }
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('online', onOnline)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('online', onOnline)
+    }
   }, [applyAuthContext, fetchProfile, updateUserFromProfile])
+
+  /** iOS bfcache: rivalida leggera al restore pagina. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return
+      void (async () => {
+        try {
+          const { user: authUser, error } = await getUserResilient(supabase, { networkRetries: 2 })
+          if (error && handleRefreshTokenError(error)) return
+          if (!error && authUser?.id) {
+            setAuthRecovery('idle')
+            dispatchSessionResumed()
+          }
+        } catch (err) {
+          void handleRefreshTokenError(err)
+        }
+      })()
+    }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -612,6 +673,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setActorProfile(null)
           setIsImpersonating(false)
           setLoading(false)
+          setAuthRecovery('idle')
           initialSessionHandledRef.current = false
           return
         }
@@ -667,7 +729,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Non usare stato `user` (stale closure in useEffect([]))
         // Il profilo viene gestito da INITIAL_SESSION / SIGNED_IN / USER_UPDATED
         if (event === 'TOKEN_REFRESHED') {
-          // Non fare nulla, il profilo è già in cache/stato
+          setAuthRecovery('idle')
+          dispatchAuthTokenRefreshed()
+          sessionStabilityBreadcrumb('token_refreshed', 'onAuthStateChange')
           return
         }
 
@@ -736,6 +800,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { success: false, error: 'Errore durante il login' }
       } finally {
         setLoading(false)
+        setAuthRecovery('idle')
       }
     },
     [router, fetchProfile, updateUserFromProfile],
@@ -757,6 +822,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { success: false, error: 'Errore durante il logout' }
     } finally {
       setLoading(false)
+    }
+  }, [router])
+
+  const updateLastActivity = useCallback((force = false) => {
+    if (typeof window === 'undefined') return
+    const now = Date.now()
+    if (!force && now - lastActivityWriteAtRef.current < ACTIVITY_WRITE_THROTTLE_MS) {
+      return
+    }
+    lastActivityWriteAtRef.current = now
+    try {
+      window.localStorage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(now))
+    } catch {
+      // no-op: private mode / localStorage non disponibile
+    }
+  }, [])
+
+  const signOutForIdleTimeout = useCallback(async () => {
+    if (idleLogoutInProgressRef.current) return
+    idleLogoutInProgressRef.current = true
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      logger.error('Errore durante logout per inattivita', error)
+    } finally {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login?reason=idle_timeout'
+      } else {
+        router.replace('/login?reason=idle_timeout')
+      }
     }
   }, [router])
 
@@ -786,10 +881,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (applied) {
         return
       }
-      const {
-        data: { user: authUser },
-        error: userError,
-      } = await supabase.auth.getUser()
+      const { user: authUser, error: userError } = await getUserResilient(supabase)
       if (userError || !authUser?.id) {
         if (handleRefreshTokenError(userError)) return
         return
@@ -802,12 +894,144 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [applyAuthContext, fetchProfile, updateUserFromProfile])
 
+  const retryAuthSession = useCallback(async () => {
+    setAuthRecovery('retrying')
+    try {
+      const { user: authUser, error: userError } = await getUserResilient(supabase)
+      if (userError && handleRefreshTokenError(userError)) {
+        setAuthRecovery('idle')
+        return
+      }
+      if (userError || !authUser?.id) {
+        setAuthRecovery('degraded')
+        sessionStabilityBreadcrumb('auth_network', 'retry_exhausted', {
+          hasUser: !!authUser?.id,
+        })
+        return
+      }
+      const applied = await applyAuthContext()
+      if (applied) {
+        setAuthRecovery('idle')
+        dispatchSessionResumed()
+        return
+      }
+      profileCacheRef.current.delete(authUser.id)
+      const result = await fetchProfile(authUser.id)
+      updateUserFromProfile(result.profile)
+      setAuthRecovery('idle')
+      dispatchSessionResumed()
+    } catch (error) {
+      if (handleRefreshTokenError(error)) {
+        setAuthRecovery('idle')
+        return
+      }
+      if (isAuthNetworkLikeError(error)) {
+        setAuthRecovery('degraded')
+        sessionStabilityBreadcrumb('auth_network', 'retry_catch')
+        return
+      }
+      setAuthRecovery('degraded')
+    }
+  }, [applyAuthContext, fetchProfile, updateUserFromProfile])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!user?.id) return
+
+    const readLastActivity = (): number => {
+      try {
+        const raw = window.localStorage.getItem(LAST_ACTIVITY_STORAGE_KEY)
+        const parsed = raw ? Number(raw) : NaN
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          updateLastActivity(true)
+          return Date.now()
+        }
+        return parsed
+      } catch {
+        return Date.now()
+      }
+    }
+
+    const checkIdleTimeout = () => {
+      const lastActivityAt = readLastActivity()
+      const now = Date.now()
+      const inactivityMs = now - lastActivityAt
+      if (process.env.NODE_ENV !== 'production') {
+        logger.debug('[idle-timeout] check', {
+          userId: user.id,
+          lastActivityAt,
+          now,
+          inactivityMs,
+          timeoutMs: IDLE_TIMEOUT_MS,
+          shouldLogout: inactivityMs >= IDLE_TIMEOUT_MS,
+        })
+      }
+      if (inactivityMs >= IDLE_TIMEOUT_MS) {
+        void signOutForIdleTimeout()
+      }
+    }
+
+    const onUserActivity = () => {
+      updateLastActivity(false)
+      if (process.env.NODE_ENV !== 'production') {
+        logger.debug('[idle-timeout] activity', { userId: user.id, at: Date.now() })
+      }
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        updateLastActivity(true)
+        if (process.env.NODE_ENV !== 'production') {
+          logger.debug('[idle-timeout] visibility visible', { userId: user.id, at: Date.now() })
+        }
+      }
+    }
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === LAST_ACTIVITY_STORAGE_KEY) {
+        checkIdleTimeout()
+      }
+    }
+
+    updateLastActivity(true)
+    checkIdleTimeout()
+
+    window.addEventListener('pointerdown', onUserActivity, { passive: true })
+    window.addEventListener('keydown', onUserActivity, { passive: true })
+    window.addEventListener('touchstart', onUserActivity, { passive: true })
+    window.addEventListener('scroll', onUserActivity, { passive: true })
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('storage', onStorage)
+
+    const intervalId = window.setInterval(checkIdleTimeout, IDLE_CHECK_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('pointerdown', onUserActivity)
+      window.removeEventListener('keydown', onUserActivity)
+      window.removeEventListener('touchstart', onUserActivity)
+      window.removeEventListener('scroll', onUserActivity)
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [user?.id, signOutForIdleTimeout, updateLastActivity])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.id) return
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return
+      void supabase.auth.getSession()
+    }
+    const id = window.setInterval(tick, SESSION_KEEPALIVE_INTERVAL_MS)
+    return () => window.clearInterval(id)
+  }, [user?.id])
+
   const contextValue = useMemo<AuthContextType>(
     () => ({
       user,
       role,
       org_id: orgId,
       loading,
+      authRecovery,
+      retryAuthSession,
       actorProfile: isImpersonating ? actorProfile : null,
       effectiveProfile: isImpersonating ? user : null,
       isImpersonating,
@@ -821,6 +1045,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       role,
       orgId,
       loading,
+      authRecovery,
+      retryAuthSession,
       actorProfile,
       isImpersonating,
       signIn,

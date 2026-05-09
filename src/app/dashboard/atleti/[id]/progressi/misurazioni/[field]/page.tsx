@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useMemo, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Lock, Scale, Unlock } from 'lucide-react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { StaffAthleteSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
@@ -22,15 +22,20 @@ import {
 } from '@/lib/progressi/misurazione-progress-log-row'
 import { buildStandardPdfBlob } from '@/lib/pdf'
 import { useNotify } from '@/lib/ui/notify'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const CARD_DS =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 
-export default function StaffAtletaMisurazioneStoricoPage() {
-  const params = useParams()
+export default function StaffAtletaMisurazioneStoricoPage({
+  params,
+}: {
+  params: Promise<{ id: string; field: string }>
+}) {
+  const resolved = useResolvedParams(params)
   const router = useRouter()
-  const id = typeof params?.id === 'string' ? params.id : null
-  const rawField = typeof params?.field === 'string' ? params.field : ''
+  const id = typeof resolved.id === 'string' ? resolved.id : null
+  const rawField = typeof resolved.field === 'string' ? resolved.field : ''
   const field = useMemo(() => {
     try {
       return decodeURIComponent(rawField)

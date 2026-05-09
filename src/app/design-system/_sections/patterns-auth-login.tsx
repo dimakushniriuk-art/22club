@@ -26,7 +26,7 @@ const AUTH_LOGIN_TOKENS: Array<{ token: string; value: string; Icon: LucideIcon 
   {
     token: 'Container',
     value:
-      'min-h-full flex flex-1 w-full items-center justify-center px-4 py-4 min-[834px]:px-6 min-[834px]:py-6 bg-background, minHeight 100dvh',
+      'min-h-full flex flex-1 w-full items-center justify-center px-4 py-4 md:px-6 md:py-6 bg-background, minHeight 100dvh',
     Icon: LayoutDashboard,
   },
   {
@@ -40,13 +40,13 @@ const AUTH_LOGIN_TOKENS: Array<{ token: string; value: string; Icon: LucideIcon 
       'variant default, border-white/10 rounded-lg bg-background-secondary/95 backdrop-blur-xl',
     Icon: PanelTop,
   },
-  { token: 'CardContent', value: 'p-5 sm:p-6 min-[834px]:p-8', Icon: Square },
+  { token: 'CardContent', value: 'p-5 sm:p-6 md:p-8', Icon: Square },
   {
     token: 'Titolo / Intro',
     value: 'h2 text-xl sm:text-2xl font-bold text-text-primary; intro text-sm text-text-secondary',
     Icon: Lock,
   },
-  { token: 'Form', value: 'space-y-5 min-[834px]:space-y-6; campi space-y-2', Icon: Lock },
+  { token: 'Form', value: 'space-y-5 md:space-y-6; campi space-y-2', Icon: Lock },
   {
     token: 'Input',
     value:

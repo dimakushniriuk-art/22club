@@ -66,14 +66,11 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
-        <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+        <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
           <Card variant="default" className={AUTH_CARD_CLASS}>
             <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
-              <div
-                className="mb-6 min-[834px]:mb-8 animate-fade-in"
-                style={{ animationDelay: '100ms' }}
-              >
-                <div className="mb-4 min-[834px]:mb-6 flex justify-center">
+              <div className="mb-6 md:mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <div className="mb-4 md:mb-6 flex justify-center">
                   <Image
                     src="/logo.svg"
                     alt="22 PERSONAL TRAINING Club"
@@ -147,7 +144,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
-      <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+      <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
         <Card variant="default" className={AUTH_CARD_CLASS}>
           <CardContent className={AUTH_CARD_CONTENT_CLASS}>
             <div className="mb-6 animate-fade-in">
@@ -157,10 +154,10 @@ export default function ForgotPasswordPage() {
               </Link>
             </div>
             <div
-              className="text-center mb-6 min-[834px]:mb-8 animate-fade-in"
+              className="text-center mb-6 md:mb-8 animate-fade-in"
               style={{ animationDelay: '100ms' }}
             >
-              <div className="mb-4 min-[834px]:mb-6 flex justify-center">
+              <div className="mb-4 md:mb-6 flex justify-center">
                 <Image
                   src="/logo.svg"
                   alt="22 PERSONAL TRAINING Club"
@@ -170,7 +167,7 @@ export default function ForgotPasswordPage() {
                   priority
                 />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2 min-[834px]:mb-3 text-text-primary mt-4 min-[834px]:mt-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 md:mb-3 text-text-primary mt-4 md:mt-6">
                 Password dimenticata?
               </h2>
               <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
@@ -178,7 +175,7 @@ export default function ForgotPasswordPage() {
               </p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-              <form onSubmit={handleResetPassword} className="space-y-5 min-[834px]:space-y-6">
+              <form onSubmit={handleResetPassword} className="space-y-5 md:space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-text-primary">
                     Email

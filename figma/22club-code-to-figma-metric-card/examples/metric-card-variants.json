@@ -1,0 +1,72 @@
+[
+  {
+    "type": "MetricCard",
+    "name": "Lead attivi",
+    "variant": "compact",
+    "tone": "teal",
+    "title": "Lead attivi",
+    "value": "24",
+    "status": "success",
+    "statusText": "+12%",
+    "icon": "Users",
+    "loading": false
+  },
+  {
+    "type": "MetricCard",
+    "name": "Nuovi lead",
+    "variant": "default",
+    "tone": "blue",
+    "title": "Nuovi lead",
+    "value": "8",
+    "status": "info",
+    "statusText": "+3 oggi",
+    "icon": "UserPlus",
+    "loading": false
+  },
+  {
+    "type": "MetricCard",
+    "name": "Trial prenotati",
+    "variant": "compact",
+    "tone": "amber",
+    "title": "Trial prenotati",
+    "value": "11",
+    "status": "warning",
+    "statusText": "2 in attesa",
+    "icon": "CalendarCheck",
+    "loading": false
+  },
+  {
+    "type": "MetricCard",
+    "name": "Convertiti",
+    "variant": "compact",
+    "tone": "emerald",
+    "title": "Convertiti",
+    "value": "5",
+    "status": "success",
+    "statusText": "21%",
+    "icon": "BadgeCheck",
+    "loading": false
+  },
+  {
+    "type": "MetricCard",
+    "name": "Persi",
+    "variant": "minimal",
+    "tone": "zinc",
+    "title": "Persi",
+    "value": "3",
+    "status": "error",
+    "statusText": "-1 vs ieri",
+    "icon": "UserX",
+    "loading": false
+  },
+  {
+    "type": "MetricCard",
+    "name": "Loading",
+    "variant": "default",
+    "tone": "teal",
+    "title": "Lead attivi",
+    "value": "--",
+    "icon": "Loader",
+    "loading": true
+  }
+]

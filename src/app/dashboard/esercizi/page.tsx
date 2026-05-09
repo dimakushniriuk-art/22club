@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback, lazy, Suspense, useRef } fro
 import Image from 'next/image'
 import { createLogger } from '@/lib/logger'
 import { ExerciseMedia } from '@/components/dashboard/exercise-media'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { apiGet, apiDelete } from '@/lib/api-client'
 import { supabase } from '@/lib/supabase/client'
 
@@ -31,7 +32,7 @@ import {
   exerciseMatchesMuscleGroupFilter,
   type MuscleGroupFilterType,
 } from '@/components/dashboard/muscle-group-filter'
-import { EQUIPMENT } from '@/lib/exercises-data'
+import { DEFAULT_EXERCISE_CATEGORY, EQUIPMENT } from '@/lib/exercises-data'
 import { designColorato } from '@/lib/design-tokens'
 import {
   Search,
@@ -132,6 +133,23 @@ const DIFFICULTY_OPTIONS = [
 ] as const
 
 const DIFF_ORDER: Record<Exercise['difficulty'], number> = { bassa: 1, media: 2, alta: 3 }
+
+function TableExerciseVideoThumb({ src }: { src: string }) {
+  const ref = useAutoplayPreviewVideo({ enabled: true, pauseWhenOffscreen: true })
+  return (
+    <video
+      ref={ref}
+      src={src}
+      className="h-full w-full object-cover rounded"
+      preload="auto"
+      muted
+      loop
+      playsInline
+      autoPlay
+      style={{ display: 'block' }}
+    />
+  )
+}
 
 function EserciziEmptyState({
   hasActiveFilters,
@@ -297,6 +315,7 @@ export default function EserciziPage() {
 
       const normalized = exercisesArray.map((item) => ({
         ...item,
+        category: (item.category && String(item.category).trim()) || DEFAULT_EXERCISE_CATEGORY,
         difficulty: normalizeDifficulty(item.difficulty),
       }))
       setItems(normalized)
@@ -842,28 +861,7 @@ export default function EserciziPage() {
                                   />
                                 ) : e.video_url ? (
                                   <div className="relative h-12 w-20 rounded overflow-hidden bg-background-tertiary">
-                                    <video
-                                      src={e.video_url}
-                                      className="h-full w-full object-cover rounded"
-                                      preload="metadata"
-                                      muted
-                                      playsInline
-                                      style={{ display: 'block' }}
-                                      onMouseEnter={(e) => {
-                                        const video = e.currentTarget
-                                        video.play().catch(() => {
-                                          // Ignora errori di autoplay
-                                        })
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        const video = e.currentTarget
-                                        video.pause()
-                                        video.currentTime = 0
-                                      }}
-                                      onError={() => {
-                                        // In caso di errore, mostra un placeholder
-                                      }}
-                                    />
+                                    <TableExerciseVideoThumb src={e.video_url} />
                                   </div>
                                 ) : (
                                   <div className="bg-background-tertiary h-12 w-20 rounded" />

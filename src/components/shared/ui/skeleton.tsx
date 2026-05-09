@@ -1,4 +1,6 @@
 import React from 'react'
+import { Skeleton as UiSkeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 type SkeletonProps = {
   height?: number
@@ -13,9 +15,13 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   className = '',
   rounded = true,
 }) => (
-  <div
-    className={`animate-pulse bg-surface-200 ${rounded ? 'rounded-xl' : ''} ${className}`}
-    style={{ height, width }}
+  <UiSkeleton
+    variant="rectangular"
+    animation="pulse"
+    width={width}
+    height={height}
+    rounded={rounded}
+    className={cn('bg-surface-200', className)}
   />
 )
 

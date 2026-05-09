@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { X, Plus, Trash2, AlertCircle, ChevronDown } from 'lucide-react'
 import { Button, SimpleSelect } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -24,8 +25,8 @@ const REST_PRESET_STEP_SEC = 15
 const REST_PRESET_MAX_I = 20
 
 function buildRestPresetOptions(currentSec?: number | null): SimpleSelectOption[] {
-  const base: SimpleSelectOption[] = Array.from({ length: REST_PRESET_MAX_I + 1 }, (_, i) => {
-    const sec = i * REST_PRESET_STEP_SEC
+  const base: SimpleSelectOption[] = Array.from({ length: REST_PRESET_MAX_I }, (_, i) => {
+    const sec = (i + 1) * REST_PRESET_STEP_SEC
     return { value: String(sec), label: `${sec} s` }
   })
   const presetValues = new Set(base.map((o) => Number(o.value)))
@@ -36,9 +37,13 @@ function buildRestPresetOptions(currentSec?: number | null): SimpleSelectOption[
     currentSec <= REST_SEC_MAX &&
     !presetValues.has(currentSec)
   ) {
-    return [{ value: String(currentSec), label: `${currentSec} s` }, ...base]
+    return [
+      { value: NONE_PRESET_VALUE, label: 'Senza tempo' },
+      { value: String(currentSec), label: `${currentSec} s` },
+      ...base,
+    ]
   }
-  return base
+  return [{ value: NONE_PRESET_VALUE, label: 'Senza tempo' }, ...base]
 }
 
 function clampRestSeconds(n: number): number {
@@ -78,11 +83,12 @@ const NUMBER_INPUT_NO_SPINNER =
   '[-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
 
 const EXEC_TIME_SEC_MAX = 3600
+const NONE_PRESET_VALUE = '__none__'
 
-/** Stessi preset del recupero (0…300 s a step 15); digitazione fino a 3600 s. */
+/** Stessi preset del recupero (0…300 s a step 15) + opzione "senza tempo"; digitazione fino a 3600 s. */
 function buildExecutionPresetOptions(currentSec?: number | null): SimpleSelectOption[] {
-  const base: SimpleSelectOption[] = Array.from({ length: REST_PRESET_MAX_I + 1 }, (_, i) => {
-    const sec = i * REST_PRESET_STEP_SEC
+  const base: SimpleSelectOption[] = Array.from({ length: REST_PRESET_MAX_I }, (_, i) => {
+    const sec = (i + 1) * REST_PRESET_STEP_SEC
     return { value: String(sec), label: `${sec} s` }
   })
   const presetValues = new Set(base.map((o) => Number(o.value)))
@@ -93,9 +99,13 @@ function buildExecutionPresetOptions(currentSec?: number | null): SimpleSelectOp
     currentSec <= EXEC_TIME_SEC_MAX &&
     !presetValues.has(currentSec)
   ) {
-    return [{ value: String(currentSec), label: `${currentSec} s` }, ...base]
+    return [
+      { value: NONE_PRESET_VALUE, label: 'Senza tempo' },
+      { value: String(currentSec), label: `${currentSec} s` },
+      ...base,
+    ]
   }
-  return base
+  return [{ value: NONE_PRESET_VALUE, label: 'Senza tempo' }, ...base]
 }
 
 function clampExecutionSeconds(n: number): number {
@@ -146,7 +156,7 @@ function PresetComboField({
   const selectedOption =
     value != null && Number.isFinite(value)
       ? (options.find((o) => matchSelected(o, value)) ?? null)
-      : null
+      : (options.find((o) => o.value === NONE_PRESET_VALUE) ?? null)
 
   const updateDropdownPosition = useCallback(() => {
     if (isOpen && containerRef.current) {
@@ -313,6 +323,11 @@ function PresetComboField({
                           : 'text-text-primary hover:bg-primary/15 focus:bg-primary/20',
                       )}
                       onClick={() => {
+                        if (option.value === NONE_PRESET_VALUE) {
+                          onChange(undefined)
+                          setIsOpen(false)
+                          return
+                        }
                         onChange(clamp(Number(option.value)))
                         setIsOpen(false)
                       }}
@@ -360,7 +375,10 @@ export function RestSecondsField({
       className={className}
       label={label}
       options={options}
-      matchSelected={(o, v) => v != null && Number.isFinite(v) && o.value === String(v)}
+      matchSelected={(o, v) =>
+        (v == null && o.value === NONE_PRESET_VALUE) ||
+        (v != null && Number.isFinite(v) && o.value === String(v))
+      }
       clamp={clampRestSeconds}
       inputMin={0}
       inputMax={REST_SEC_MAX}
@@ -390,7 +408,10 @@ export function ExecutionSecondsField({
       className={className}
       label={label}
       options={options}
-      matchSelected={(o, v) => v != null && Number.isFinite(v) && o.value === String(v)}
+      matchSelected={(o, v) =>
+        (v == null && o.value === NONE_PRESET_VALUE) ||
+        (v != null && Number.isFinite(v) && o.value === String(v))
+      }
       clamp={clampExecutionSeconds}
       inputMin={0}
       inputMax={EXEC_TIME_SEC_MAX}
@@ -473,6 +494,10 @@ export function WorkoutExerciseTargetPanel({
   const hasVideoUrl = isValidHttpUrl(catalogExercise?.video_url)
   const posterUrl = catalogExercise?.thumb_url || catalogExercise?.image_url || null
   const showExerciseMedia = hasVideoUrl || isValidHttpUrl(posterUrl)
+  const targetPanelVideoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(hasVideoUrl && catalogExercise?.video_url),
+    pauseWhenOffscreen: true,
+  })
   const targetConfigured = isWorkoutExerciseConfigured(exercise)
   const noteFieldId = `exercise-note-${dayIndex}-${itemIndex}`
 
@@ -533,13 +558,15 @@ export function WorkoutExerciseTargetPanel({
           >
             {hasVideoUrl && catalogExercise?.video_url ? (
               <video
+                ref={targetPanelVideoRef}
                 src={catalogExercise.video_url}
                 poster={isValidHttpUrl(posterUrl) ? posterUrl : undefined}
                 className="w-full h-full object-cover"
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                autoPlay
+                preload="auto"
                 controls
               />
             ) : isValidHttpUrl(posterUrl) ? (
@@ -621,7 +648,7 @@ export function WorkoutExerciseTargetPanel({
                   <td className="px-4 py-4 border-l border-white/10">
                     <ExecutionSecondsField
                       value={exercise.execution_time_sec}
-                      onChange={(sec) => onUpdate({ execution_time_sec: sec ?? 0 })}
+                      onChange={(sec) => onUpdate({ execution_time_sec: sec })}
                       className="w-full"
                     />
                   </td>
@@ -673,8 +700,8 @@ export function WorkoutExerciseTargetPanel({
                   set_number: currentSets.length + 2,
                   reps: exercise.target_reps || 10,
                   weight_kg: exercise.target_weight || undefined,
-                  execution_time_sec: exercise.execution_time_sec || undefined,
-                  rest_timer_sec: exercise.rest_timer_sec || undefined,
+                  execution_time_sec: exercise.execution_time_sec ?? undefined,
+                  rest_timer_sec: exercise.rest_timer_sec ?? undefined,
                 }
                 onUpdate({
                   sets_detail: [...currentSets, newSet],

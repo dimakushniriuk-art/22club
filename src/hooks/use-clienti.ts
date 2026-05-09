@@ -7,6 +7,8 @@ import { useAuth } from '@/providers/auth-provider'
 import { handleApiError } from '@/lib/error-handler'
 import { useSupabaseWithRetry } from './use-api-with-retry'
 import { queryKeys } from '@/lib/query-keys'
+import { subscribePostgresChanges } from '@/lib/realtimeClient'
+import { useRealtimeResubscribeToken } from '@/hooks/useRealtimeChannel'
 import { fetchClientiList, fetchClientiStats } from '@/lib/clienti/fetch-clienti-data'
 import type { Cliente, ClienteFilters, ClienteSort, ClienteStats } from '@/types/cliente'
 
@@ -69,6 +71,7 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
   const userId = authProfile?.user_id ?? authProfile?.id ?? null
   const { executeSupabaseCall } = useSupabaseWithRetry()
   const queryClient = useQueryClient()
+  const realtimeResubscribeToken = useRealtimeResubscribeToken()
 
   const mergedFilters = useMemo(() => ({ ...defaultFilters, ...filters }), [filters])
 
@@ -201,26 +204,18 @@ export function useClienti(options: UseClientiOptions = {}): UseClientiReturn {
   useEffect(() => {
     if (!realtime) return
 
-    const channel = supabase
-      .channel('clienti-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles',
-          filter: 'role=eq.athlete',
-        },
-        () => {
+    return subscribePostgresChanges('realtime:profiles:clienti-athletes', [
+      {
+        event: '*',
+        schema: 'public',
+        table: 'profiles',
+        filter: 'role=eq.athlete',
+        onEvent: () => {
           void queryClient.invalidateQueries({ queryKey: queryKeys.clienti.all })
         },
-      )
-      .subscribe()
-
-    return () => {
-      channel.unsubscribe()
-    }
-  }, [realtime, queryClient])
+      },
+    ])
+  }, [realtime, queryClient, realtimeResubscribeToken])
 
   const listErr = listQuery.error
   const errorMessage =

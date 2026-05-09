@@ -20,6 +20,7 @@ const eslintConfig = [
       'next-env.d.ts',
       'src/lib/supabase/types.ts', // File generato automaticamente da Supabase CLI
       'playwright-report/**', // File generati da Playwright
+      'storybook-static/**', // Export static Storybook (bundle minificati — no lint)
       'test-results/**', // Risultati test Playwright
       '.playwright/**', // Cache Playwright
       'coverage/**', // Coverage reports

@@ -1,10 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import {
-  StaffDashboardSegmentSkeleton,
-  StaffLazyChunkFallback,
-} from '@/components/layout/route-loading-skeletons'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
 import { useRouter } from 'next/navigation'
 import { createLogger } from '@/lib/logger'
 
@@ -16,6 +13,18 @@ import { useToast } from '@/components/ui/toast'
 import { useSearchParams } from 'next/navigation'
 import type { WorkoutWizardData, WorkoutDayExerciseData } from '@/types/workout'
 import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizard'
+
+/** Stesso markup del branch loading in `NuovaSchedaContent`: evita hydration mismatch col fallback `Suspense` (useSearchParams). */
+function WizardNuovaSchedaLoadingShell() {
+  return (
+    <div className="relative flex min-h-[50vh] flex-col items-center justify-center p-6">
+      <StaffLazyChunkFallback
+        className="w-full max-w-sm border-white/5 bg-transparent"
+        label="Caricamento dati wizard…"
+      />
+    </div>
+  )
+}
 
 function NuovaSchedaContent() {
   const router = useRouter()
@@ -68,14 +77,7 @@ function NuovaSchedaContent() {
   }
 
   if (loading || wizardDataLoading) {
-    return (
-      <div className="relative flex min-h-[50vh] flex-col items-center justify-center p-6">
-        <StaffLazyChunkFallback
-          className="w-full max-w-sm border-white/5 bg-transparent"
-          label="Caricamento dati wizard…"
-        />
-      </div>
-    )
+    return <WizardNuovaSchedaLoadingShell />
   }
 
   if (error || exercisesLoadError) {
@@ -93,13 +95,14 @@ function NuovaSchedaContent() {
       exercises={exercises}
       initialAthleteId={initialAthleteId}
       onCancel={handleCancel}
+      localDraftScope="nuova"
     />
   )
 }
 
 export default function NuovaSchedaPage() {
   return (
-    <Suspense fallback={<StaffDashboardSegmentSkeleton />}>
+    <Suspense fallback={<WizardNuovaSchedaLoadingShell />}>
       <NuovaSchedaContent />
     </Suspense>
   )

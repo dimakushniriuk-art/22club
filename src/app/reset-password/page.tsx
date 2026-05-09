@@ -455,10 +455,10 @@ function ResetPasswordContent() {
   if (checkingSession) {
     return (
       <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
-        <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+        <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
           <Card variant="default" className={AUTH_CARD_CLASS}>
             <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
-              <div className="mb-6 min-[834px]:mb-8">
+              <div className="mb-6 md:mb-8">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10 bg-white/[0.04]">
                   <span
                     className="inline-block w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"
@@ -482,10 +482,10 @@ function ResetPasswordContent() {
   if (urlError) {
     return (
       <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
-        <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+        <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
           <Card variant="default" className={AUTH_CARD_CLASS}>
             <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
-              <div className="mb-6 min-[834px]:mb-8 animate-fade-in">
+              <div className="mb-6 md:mb-8 animate-fade-in">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-state-error/10 border border-state-error/20">
                   <AlertCircle className="w-10 h-10 text-state-error" />
                 </div>
@@ -522,14 +522,11 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
-        <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+        <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
           <Card variant="default" className={AUTH_CARD_CLASS}>
             <CardContent className={`${AUTH_CARD_CONTENT_CLASS} text-center`}>
-              <div
-                className="mb-6 min-[834px]:mb-8 animate-fade-in"
-                style={{ animationDelay: '100ms' }}
-              >
-                <div className="mb-4 min-[834px]:mb-6 flex justify-center">
+              <div className="mb-6 md:mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <div className="mb-4 md:mb-6 flex justify-center">
                   <Image
                     src="/logo.svg"
                     alt="22 PERSONAL TRAINING Club"
@@ -571,7 +568,7 @@ function ResetPasswordContent() {
 
   return (
     <div className={AUTH_PAGE_WRAPPER_CLASS} style={{ minHeight: '100dvh' }}>
-      <div className="w-full max-w-md min-[834px]:max-w-lg animate-fade-in relative z-10">
+      <div className="w-full max-w-md md:max-w-lg animate-fade-in relative z-10">
         <Card variant="default" className={AUTH_CARD_CLASS}>
           <CardContent className={AUTH_CARD_CONTENT_CLASS}>
             <div className="mb-6 animate-fade-in">
@@ -581,10 +578,10 @@ function ResetPasswordContent() {
               </Link>
             </div>
             <div
-              className="text-center mb-6 min-[834px]:mb-8 animate-fade-in"
+              className="text-center mb-6 md:mb-8 animate-fade-in"
               style={{ animationDelay: '100ms' }}
             >
-              <div className="mb-4 min-[834px]:mb-6 flex justify-center">
+              <div className="mb-4 md:mb-6 flex justify-center">
                 <Image
                   src="/logo.svg"
                   alt="22 PERSONAL TRAINING Club"
@@ -594,7 +591,7 @@ function ResetPasswordContent() {
                   priority
                 />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2 min-[834px]:mb-3 text-text-primary mt-4 min-[834px]:mt-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 md:mb-3 text-text-primary mt-4 md:mt-6">
                 Imposta nuova password
               </h2>
               <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
@@ -602,7 +599,7 @@ function ResetPasswordContent() {
               </p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-              <form onSubmit={handleResetPassword} className="space-y-5 min-[834px]:space-y-6">
+              <form onSubmit={handleResetPassword} className="space-y-5 md:space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium text-text-primary">
                     Nuova Password

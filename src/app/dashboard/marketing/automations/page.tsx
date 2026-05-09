@@ -103,10 +103,10 @@ export default function MarketingAutomationsPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
-      <header className="flex flex-col gap-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold min-[834px]:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
             <Zap className="h-6 w-6 text-cyan-400" />
             Automazioni
           </h1>

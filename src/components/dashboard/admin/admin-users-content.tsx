@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Select } from '@/components/ui/select'
 import { Skeleton } from '@/components/shared/ui/skeleton'
-import { ModernKPICard } from '@/components/dashboard/modern-kpi-card'
+import { MetricCard } from '@/components'
 import { UserFormModal } from './user-form-modal'
 import { UserDeleteDialog } from './user-delete-dialog'
 import { UserResetPasswordDialog } from './user-reset-password-dialog'
@@ -602,43 +602,43 @@ export function AdminUsersContent() {
 
       {/* Statistiche KPI (compact: ~50% ingombro) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-        <ModernKPICard
+        <MetricCard
           title="Totale Utenti"
           value={stats.total}
           icon="👥"
-          color="blue"
+          tone="blue"
           animationDelay="0ms"
           compact
         />
-        <ModernKPICard
+        <MetricCard
           title="Utenti Attivi"
           value={stats.attivi}
           icon="✅"
-          color="green"
+          tone="emerald"
           animationDelay="100ms"
           compact
         />
-        <ModernKPICard
+        <MetricCard
           title="Personal Trainer"
           value={stats.pt}
           icon="💪"
-          color="orange"
+          tone="amber"
           animationDelay="200ms"
           compact
         />
-        <ModernKPICard
+        <MetricCard
           title="Atleti"
           value={stats.atleti}
           icon="🏃"
-          color="purple"
+          tone="purple"
           animationDelay="300ms"
           compact
         />
-        <ModernKPICard
+        <MetricCard
           title="Marketing"
           value={stats.marketing}
           icon="📢"
-          color="cyan"
+          tone="teal"
           animationDelay="400ms"
           compact
         />

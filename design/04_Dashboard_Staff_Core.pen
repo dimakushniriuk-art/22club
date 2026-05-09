@@ -1,0 +1,284 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "04Dashbo-cover",
+      "name": "00_Cover",
+      "x": 0,
+      "y": 0,
+      "width": 1680,
+      "height": 420,
+      "fill": "#0f172a",
+      "layout": "vertical",
+      "gap": 14,
+      "padding": 36,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-t1",
+          "name": "title",
+          "content": "22Club — 04_Dashboard_Staff_Core",
+          "fontFamily": "Inter",
+          "fontSize": 26,
+          "fontWeight": "600",
+          "fill": "#f8fafc"
+        },
+        {
+          "type": "text",
+          "id": "04Dashbo-t2",
+          "name": "meta",
+          "content": "routes_count=26 · status=not_started · desktop/tablet/mobile=not_started",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "normal",
+          "fill": "#94a3b8"
+        },
+        {
+          "type": "text",
+          "id": "04Dashbo-t3",
+          "name": "routes",
+          "content": "Routes:\n/dashboard\n/dashboard/abbonamenti\n/dashboard/allenamenti\n/dashboard/appuntamenti\n/dashboard/calendario\n/dashboard/calendario/impostazioni\n/dashboard/chat\n/dashboard/clienti\n/dashboard/comunicazioni\n/dashboard/comunicazioni/template\n/dashboard/database\n/dashboard/documenti\n/dashboard/esercizi\n/dashboard/impostazioni\n/dashboard/invita-atleta\n/dashboard/notifiche\n/dashboard/pagamenti\n/dashboard/pagamenti/atleta/[athleteId]\n/dashboard/prenotazioni\n/dashboard/prenotazioni/atleti/[id]\n/dashboard/profilo\n/dashboard/schede\n/dashboard/schede/nuova\n/dashboard/schede/[id]/modifica\n/dashboard/statistiche\n/dashboard/workouts",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal",
+          "fill": "#e2e8f0",
+          "textGrowth": "fixed-width",
+          "width": 1500
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "04Dashbo-desk",
+      "name": "01_Desktop",
+      "x": 0,
+      "y": 460,
+      "width": 1440,
+      "height": 900,
+      "fill": "#f1f5f9",
+      "layout": "vertical",
+      "padding": 28,
+      "gap": 10,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-dt",
+          "name": "hint",
+          "content": "Desktop 1440×900 — wireframes & captures",
+          "fontFamily": "Inter",
+          "fontSize": 15,
+          "fontWeight": "600",
+          "fill": "#0f172a"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "04Dashbo-tab",
+      "name": "02_Tablet",
+      "x": 1480,
+      "y": 460,
+      "width": 768,
+      "height": 1024,
+      "fill": "#f8fafc",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-tt",
+          "name": "hint",
+          "content": "Tablet 768×1024",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600",
+          "fill": "#334155"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "04Dashbo-mob",
+      "name": "03_Mobile",
+      "x": 2280,
+      "y": 460,
+      "width": 360,
+      "height": 800,
+      "fill": "#ffffff",
+      "layout": "vertical",
+      "padding": 20,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-mt",
+          "name": "hint",
+          "content": "Mobile 360×800",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "600",
+          "fill": "#334155"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "04Dashbo-st",
+      "name": "04_States",
+      "x": 0,
+      "y": 1380,
+      "width": 1440,
+      "height": 340,
+      "fill": "#eef2ff",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-stt",
+          "name": "hint",
+          "content": "States: default · loading · empty · error",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600",
+          "fill": "#312e81"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "04Dashbo-ov",
+      "name": "05_Overlays",
+      "x": 0,
+      "y": 1740,
+      "width": 1440,
+      "height": 300,
+      "fill": "#ecfdf5",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-ovt",
+          "name": "hint",
+          "content": "Overlays: dialog · drawer · popover (if present)",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600",
+          "fill": "#14532d"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "04Dashbo-mx",
+      "name": "06_Inventory_Matrix",
+      "x": 0,
+      "y": 2060,
+      "width": 2800,
+      "height": 880,
+      "fill": "#fffbeb",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 12,
+      "children": [
+        {
+          "type": "text",
+          "id": "04Dashbo-mh",
+          "name": "matrix_header",
+          "content": "Route | Desktop | Tablet | Mobile | Loading | Empty | Error | Overlays | Status | Notes",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "700",
+          "fill": "#78350f"
+        },
+        {
+          "type": "text",
+          "id": "04Dashbo-mb",
+          "name": "matrix_body",
+          "content": "Route | Desktop | Tablet | Mobile | Loading | Empty | Error | Overlays | Status | Notes\n/dashboard | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/abbonamenti | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/allenamenti | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/appuntamenti | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/calendario | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/calendario/impostazioni | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/chat | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/clienti | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/comunicazioni | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/comunicazioni/template | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/database | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/documenti | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/esercizi | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/impostazioni | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/invita-atleta | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/notifiche | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/pagamenti | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/pagamenti/atleta/[athleteId] | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/prenotazioni | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/prenotazioni/atleti/[id] | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/profilo | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/schede | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/schede/nuova | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/schede/[id]/modifica | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/statistiche | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\n/dashboard/workouts | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |",
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal",
+          "fill": "#92400e",
+          "textGrowth": "fixed-width",
+          "width": 2700
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "color.bg": {
+      "type": "color",
+      "value": "#0d0d0d"
+    },
+    "color.text.primary": {
+      "type": "color",
+      "value": "#EAF0F2"
+    },
+    "color.text.secondary": {
+      "type": "color",
+      "value": "#A5AFB4"
+    },
+    "color.text.muted": {
+      "type": "color",
+      "value": "#6C757D"
+    },
+    "color.primary": {
+      "type": "color",
+      "value": "#02B3BF"
+    },
+    "color.border.white10": {
+      "type": "color",
+      "value": "#FFFFFF1A"
+    },
+    "color.surface.zinc800": {
+      "type": "color",
+      "value": "#27272a"
+    },
+    "color.surface.zinc900": {
+      "type": "color",
+      "value": "#18181b"
+    },
+    "color.black.70": {
+      "type": "color",
+      "value": "#000000B3"
+    },
+    "color.cyan.500": {
+      "type": "color",
+      "value": "#06b6d4"
+    },
+    "color.slate.600": {
+      "type": "color",
+      "value": "#475569"
+    },
+    "color.error": {
+      "type": "color",
+      "value": "#FF3B30"
+    },
+    "color.red.500": {
+      "type": "color",
+      "value": "#ef4444"
+    },
+    "radius.input": {
+      "type": "number",
+      "value": 12
+    },
+    "radius.card": {
+      "type": "number",
+      "value": 16
+    },
+    "radius.panel": {
+      "type": "number",
+      "value": 24
+    },
+    "radius.pill": {
+      "type": "number",
+      "value": 9999
+    }
+  }
+}

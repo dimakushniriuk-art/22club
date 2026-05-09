@@ -1,0 +1,9 @@
+{
+  "type": "Dialog",
+  "variant": "default",
+  "title": "Conferma eliminazione",
+  "description": "Questa azione rimuove in modo permanente il record selezionato.",
+  "state": "default",
+  "actions": ["Annulla", "Conferma"],
+  "items": []
+}

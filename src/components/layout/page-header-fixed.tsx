@@ -22,20 +22,28 @@ export interface PageHeaderFixedProps {
 }
 
 const HEADER_BASE =
-  'overflow-hidden bg-background px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
-const HEADER_BASE_CHAT = 'overflow-hidden bg-black border-b border-white/10 p-3 min-[834px]:p-4'
+  'overflow-hidden bg-background px-3 pb-3 md:px-4 md:pb-4 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
+const HEADER_BASE_CHAT = 'overflow-hidden bg-black border-b border-white/10 p-3 md:p-4'
 const HEADER_FIXED_TOP = 'fixed inset-x-0 z-20 border-x-0 border-t-0'
 const HEADER_FIXED_PT_SAFE = 'top-0 pt-[calc(10px+env(safe-area-inset-top,0px))]'
-const HEADER_FIXED_PT_STACKED = 'top-[var(--home-athlete-brand-top,0px)] pt-[10px] min-[834px]:pt-3'
+const HEADER_FIXED_PT_STACKED = 'top-[var(--home-athlete-brand-top,0px)] pt-[10px] md:pt-3'
 const HEADER_STATIC = 'relative rounded-lg pt-3 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)] shrink-0'
 /** Chat embed / split pane: speculare alla barra navigazione oggi (rounded-b, blur, bordo-b, ombra verso il basso). */
 const HEADER_CHAT_EMBED =
-  'relative z-10 shrink-0 overflow-hidden rounded-b-2xl border-b border-white/10 bg-black/95 px-3 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md min-[834px]:px-4 min-[834px]:py-3'
+  'relative z-10 shrink-0 overflow-hidden rounded-b-2xl border-b border-white/10 bg-black/95 px-3 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md md:px-4 md:py-3'
 
 const CYAN_LINE_STYLE = {
   background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
 }
 
+/**
+ * Header **atleta / home / embed / view speciali** (fixed o statico, varianti `default` | `chat`, opzionale `embedStatic`).
+ * Può delegare al contesto top bar atleta quando lo stacking è attivo; back tramite `StaffHeaderBackButton`.
+ *
+ * **Contratto confine:** non è la shell staff della dashboard. Per route staff usare `StaffContentLayout`
+ * (`@/components/shared/dashboard/staff-content-layout`); per la riga titoli sotto quella shell in drill-down,
+ * `StaffAthleteSubpageHeader` — non invertire i ruoli con questo componente sulle sole pagine staff-only.
+ */
 export function PageHeaderFixed({
   title,
   subtitle,
@@ -110,7 +118,7 @@ export function PageHeaderFixed({
           <h1
             className={cn(
               'font-semibold text-text-primary truncate',
-              compactEmbed ? 'text-base md:text-lg' : 'text-lg md:text-xl',
+              compactEmbed ? 'text-fluid-page-header-embed' : 'text-fluid-page-header',
             )}
           >
             {title}

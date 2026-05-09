@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -30,8 +31,6 @@ interface AllenamentoOggiCardProps {
   oggi: AllenamentoOggiData
   oggiMedia: OggiMedia | null
   onStart: () => void
-  onVideoPlay: (e: React.SyntheticEvent<HTMLVideoElement>) => void
-  onVideoPause: (e: React.SyntheticEvent<HTMLVideoElement>) => void
   onVideoError: () => void
 }
 
@@ -39,10 +38,13 @@ export function AllenamentoOggiCard({
   oggi,
   oggiMedia,
   onStart,
-  onVideoPlay,
-  onVideoPause,
   onVideoError,
 }: AllenamentoOggiCardProps) {
+  const oggiVideoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(oggiMedia?.video_url),
+    pauseWhenOffscreen: true,
+  })
+
   return (
     <Card className={CARD_DS}>
       <CardHeader className="px-3 pb-2.5 sm:px-4">
@@ -67,14 +69,15 @@ export function AllenamentoOggiCard({
           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5 sm:h-28 sm:w-28">
             {oggiMedia?.video_url ? (
               <video
+                ref={oggiVideoRef}
                 src={oggiMedia.video_url}
                 className="h-full w-full rounded-lg object-cover"
                 poster={oggiMedia.thumb_url || oggiMedia.image_url || undefined}
-                preload="metadata"
+                preload="auto"
                 muted
+                loop
                 playsInline
-                onMouseEnter={onVideoPlay}
-                onMouseLeave={onVideoPause}
+                autoPlay
                 onError={onVideoError}
               />
             ) : oggiMedia?.thumb_url || oggiMedia?.image_url ? (

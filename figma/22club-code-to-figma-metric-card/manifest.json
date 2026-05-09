@@ -1,0 +1,7 @@
+{
+  "name": "22Club Code → Figma · MetricCard",
+  "id": "22club-code-to-figma-metric-card",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}

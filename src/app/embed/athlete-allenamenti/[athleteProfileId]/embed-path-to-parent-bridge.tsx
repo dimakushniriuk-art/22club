@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useParams, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   EMBED_ATHLETE_PATH_UPDATE,
   isValidEmbedPathForAthlete,
@@ -14,10 +14,9 @@ import {
 } from '@/lib/embed/staff-workouts-embed-events'
 
 /** Invia al parent (dashboard Workouts) il path corrente: sessionStorage iframe ≠ parent. */
-export function EmbedPathToParentBridge() {
+export function EmbedPathToParentBridge({ athleteProfileId }: { athleteProfileId: string }) {
   const pathname = usePathname()
-  const params = useParams()
-  const rawId = typeof params?.athleteProfileId === 'string' ? params.athleteProfileId : ''
+  const rawId = athleteProfileId
 
   useEffect(() => {
     if (typeof window === 'undefined') return

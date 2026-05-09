@@ -16,10 +16,18 @@ import type {
   AllenamentoDettaglio,
 } from '@/types/allenamento'
 
-import type { Tables, TablesUpdate } from '@/types/supabase'
+import type { Tables } from '@/types/supabase'
 import type { PostgrestError } from '@supabase/supabase-js'
 import { isSupabaseAuthLockStealAbortError } from '@/lib/supabase/supabase-lock-abort'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { isLikelyNetworkFetchFailure } from '@/lib/is-network-fetch-error'
+import {
+  enqueuePendingWrite,
+  workoutLogsDeleteIdempotencyKey,
+  workoutLogsUpdateIdempotencyKey,
+} from '@/lib/session-stability/pending-write-queue'
+import { notifyInfo } from '@/lib/notifications'
+import { buildWorkoutLogUpdatePayload } from '@/lib/workout-logs/build-workout-log-update-payload'
 
 const logger = createLogger('hooks:use-allenamenti')
 
@@ -496,6 +504,18 @@ export function useAllenamenti(
       queryClient.invalidateQueries({ queryKey: queryKeys.allenamenti.all })
     },
     onError: (err, id) => {
+      if (isLikelyNetworkFetchFailure(err)) {
+        enqueuePendingWrite({
+          kind: 'workout_logs_delete',
+          idempotencyKey: workoutLogsDeleteIdempotencyKey(id),
+          payload: { id },
+        })
+        notifyInfo(
+          'Connessione instabile',
+          'Eliminazione in coda: verrà inviata al ripristino della rete.',
+        )
+        return
+      }
       const apiError = handleApiError(err, 'useAllenamenti.deleteAllenamento')
       logger.error('Error deleting allenamento', apiError, { allenamentoId: id })
     },
@@ -510,23 +530,7 @@ export function useAllenamenti(
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Allenamento> }) => {
       await executeSupabaseCall(
         async () => {
-          const payload: TablesUpdate<'workout_logs'> = {
-            updated_at: new Date().toISOString(),
-          }
-
-          if (updates.stato) payload.stato = updates.stato
-          if (updates.esercizi_completati !== undefined) {
-            payload.esercizi_completati = updates.esercizi_completati
-          }
-          if (updates.volume_totale !== undefined) {
-            payload.volume_totale = updates.volume_totale
-          }
-          if (updates.note !== undefined) {
-            payload.note = updates.note
-          }
-          if (updates.durata_minuti !== undefined) {
-            payload.durata_minuti = updates.durata_minuti
-          }
+          const payload = buildWorkoutLogUpdatePayload(updates)
 
           const { error } = await supabase
             .from('workout_logs')
@@ -543,6 +547,22 @@ export function useAllenamenti(
       queryClient.invalidateQueries({ queryKey: queryKeys.allenamenti.all })
     },
     onError: (err, variables) => {
+      if (isLikelyNetworkFetchFailure(err)) {
+        const updates: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(variables.updates)) {
+          if (v !== undefined) updates[k] = v as unknown
+        }
+        enqueuePendingWrite({
+          kind: 'workout_logs_update',
+          idempotencyKey: workoutLogsUpdateIdempotencyKey(variables.id, updates),
+          payload: { id: variables.id, updates: variables.updates },
+        })
+        notifyInfo(
+          'Connessione instabile',
+          'Salvataggio in coda: verrà inviato al ripristino della rete.',
+        )
+        return
+      }
       const apiError = handleApiError(err, 'useAllenamenti.updateAllenamento')
       logger.error('Error updating allenamento', apiError, { allenamentoId: variables.id })
     },

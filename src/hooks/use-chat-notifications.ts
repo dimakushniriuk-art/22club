@@ -1,14 +1,12 @@
 'use client'
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
-import { useNotifications } from './use-notifications'
 
 const logger = createLogger('hooks:use-chat-notifications')
 
-export function useChatNotifications(_userId?: string) {
-  const { createNotification } = useNotifications()
+export function useChatNotifications() {
   const profileIdRef = useRef<string | null>(null)
 
   const getCurrentProfileId = useCallback(async () => {
@@ -29,88 +27,21 @@ export function useChatNotifications(_userId?: string) {
 
     if (!profile?.id) return null
 
-    profileIdRef.current = profile.id
-    return profile.id as string
+    profileIdRef.current = profile.id as string
+    return profileIdRef.current
   }, [])
 
-  // Listen for new chat messages
-  useEffect(() => {
-    const channel = supabase
-      .channel('chat_messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-        },
-        async (payload: { new?: Record<string, unknown> }) => {
-          const message = payload.new as {
-            receiver_id: string
-            sender_id: string
-            message: string
-            type: string
-          }
-
-          // Get current user
-          const profileId = await getCurrentProfileId()
-          if (!profileId) return
-
-          // Only notify if message is for current user
-          if (message.receiver_id !== profileId) return
-
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
-          if (!user?.id) return
-
-          // Get sender info
-          const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('nome, cognome, role')
-            .eq('id', message.sender_id)
-            .maybeSingle()
-
-          if (!senderProfile) return
-
-          const senderName = `${senderProfile.nome} ${senderProfile.cognome}`
-          const senderRole = senderProfile.role === 'trainer' ? 'Trainer' : 'Staff'
-
-          try {
-            await createNotification(
-              `💬 Nuovo messaggio da ${senderName}`,
-              message.type === 'file'
-                ? `📎 Hai ricevuto un file dal tuo ${senderRole}`
-                : message.message.length > 40
-                  ? `${message.message.substring(0, 40)}...`
-                  : message.message,
-              'chat',
-              '/home/chat',
-              'Rispondi',
-              { recipientUserId: user.id },
-            )
-          } catch (err) {
-            logger.error('Chat INSERT→createNotification failed', err, {
-              sender_id: message.sender_id,
-            })
-          }
-        },
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [createNotification, getCurrentProfileId])
-
-  // Send notification when message is sent
+  /**
+   * Notifica il destinatario dopo invio messaggio.
+   * INSERT su `notifications` con `user_id` = auth del destinatario viola RLS dal browser:
+   * si usa `POST /api/notifications/chat` (service role dopo verifica `chat_messages`).
+   */
   const notifyMessageSent = useCallback(
     async (receiverId: string, message: string, type: 'text' | 'file') => {
       try {
         const currentProfileId = await getCurrentProfileId()
         if (!currentProfileId) return
 
-        // Get receiver info
         const { data: receiverProfile } = await supabase
           .from('profiles')
           .select('nome, cognome, role, user_id')
@@ -129,24 +60,42 @@ export function useChatNotifications(_userId?: string) {
         const senderName = `${senderProfile.nome} ${senderProfile.cognome}`
         const receiverRole = receiverProfile.role === 'athlete' ? 'athlete' : 'trainer'
 
-        // Create notification for receiver (user_id = destinatario auth)
-        await createNotification(
-          `💬 Nuovo messaggio da ${senderName}`,
+        const title = `💬 Nuovo messaggio da ${senderName}`
+        const body =
           type === 'file'
             ? `📎 Hai ricevuto un file dal tuo ${receiverRole}`
             : message.length > 40
               ? `${message.substring(0, 40)}...`
-              : message,
-          'chat',
-          receiverRole === 'athlete' ? '/home/chat' : `/dashboard/atleti/${receiverId}/chat`,
-          'Rispondi',
-          { recipientUserId: receiverProfile.user_id },
-        )
+              : message
+        const link =
+          receiverRole === 'athlete' ? '/home/chat' : `/dashboard/atleti/${receiverId}/chat`
+
+        const res = await fetch('/api/notifications/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            recipientAuthUserId: receiverProfile.user_id,
+            title,
+            body,
+            link,
+            actionText: 'Rispondi',
+          }),
+        })
+
+        const json = (await res.json().catch(() => ({}))) as { error?: string }
+        if (!res.ok) {
+          logger.warn('Chat notify API failed', {
+            status: res.status,
+            error: json.error,
+            receiverId,
+          })
+        }
       } catch (error) {
         logger.error('Error sending chat notification', error, { receiverId })
       }
     },
-    [createNotification, getCurrentProfileId],
+    [getCurrentProfileId],
   )
 
   return {

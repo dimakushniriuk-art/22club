@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Lock, Unlock } from 'lucide-react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { PageHeaderFixed } from '@/components/layout'
@@ -17,16 +17,17 @@ import {
   buildMisurazioneListItemsFromProgressLogs,
   progressLogListItemsToChartHistory,
 } from '@/lib/progressi/misurazione-progress-log-row'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const CARD_DS =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 
 const SCROLL_CONTAINER_STYLE = { minHeight: 'calc(100dvh - var(--nav-height, 56px))' } as const
 
-function MisurazioneStoricoContent() {
+function MisurazioneStoricoContent({ routeParams }: { routeParams: Promise<{ field: string }> }) {
   const router = useRouter()
-  const params = useParams()
-  const rawField = typeof params?.field === 'string' ? params.field : ''
+  const resolved = useResolvedParams(routeParams)
+  const rawField = typeof resolved.field === 'string' ? resolved.field : ''
   const field = useMemo(() => {
     try {
       return decodeURIComponent(rawField)
@@ -74,9 +75,9 @@ function MisurazioneStoricoContent() {
   if (loading) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:px-6">
           <Card className={`relative overflow-hidden ${CARD_DS}`}>
-            <CardContent className="p-8 min-[834px]:p-12 text-center">
+            <CardContent className="p-8 md:p-12 text-center">
               <p className="text-text-secondary text-sm font-medium">Caricamento...</p>
             </CardContent>
           </Card>
@@ -93,7 +94,7 @@ function MisurazioneStoricoContent() {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
         <div
-          className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6"
+          className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:space-y-6 md:px-6"
           style={SCROLL_CONTAINER_STYLE}
         >
           <PageHeaderFixed
@@ -120,7 +121,7 @@ function MisurazioneStoricoContent() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       <div
-        className="min-h-0 flex-1 space-y-4 sm:space-y-6 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6"
+        className="min-h-0 flex-1 space-y-4 sm:space-y-6 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:px-6"
         style={SCROLL_CONTAINER_STYLE}
       >
         <PageHeaderFixed
@@ -131,7 +132,7 @@ function MisurazioneStoricoContent() {
         />
 
         <Card className={`relative overflow-hidden ${CARD_DS}`}>
-          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4">
+          <CardHeader className="relative z-10 border-b border-white/10 px-4 pb-3 pt-4 md:px-5 md:pt-5 md:pb-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 space-y-1.5">
                 <CardTitle className="text-base font-bold text-text-primary md:text-lg">
@@ -158,7 +159,7 @@ function MisurazioneStoricoContent() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4 space-y-6">
+          <CardContent className="relative z-10 p-4 pt-3 md:p-5 md:pt-4 space-y-6">
             {progressLoading ? (
               <p className="text-text-secondary text-sm py-8 text-center">Caricamento dati...</p>
             ) : error ? (
@@ -199,10 +200,14 @@ function MisurazioneStoricoContent() {
   )
 }
 
-export default function HomeMisurazioneStoricoPage() {
+export default function HomeMisurazioneStoricoPage({
+  params,
+}: {
+  params: Promise<{ field: string }>
+}) {
   return (
     <Suspense fallback={null}>
-      <MisurazioneStoricoContent />
+      <MisurazioneStoricoContent routeParams={params} />
     </Suspense>
   )
 }

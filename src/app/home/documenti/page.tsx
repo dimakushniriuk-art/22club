@@ -342,8 +342,8 @@ function DocumentiPageContent() {
         subtitle="Gestisci i tuoi certificati e documenti"
         onBack={handleBack}
       />
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24">
-        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 md:px-6 md:pb-24">
+        <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 lg:max-w-3xl">
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Button
               onClick={() => handleUploadDocument()}

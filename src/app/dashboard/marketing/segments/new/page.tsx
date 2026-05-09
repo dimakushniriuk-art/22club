@@ -72,7 +72,7 @@ export default function NewSegmentPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/segments">
@@ -80,7 +80,7 @@ export default function NewSegmentPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-xl font-bold min-[834px]:text-2xl">Nuovo segmento</h1>
+          <h1 className="text-xl font-bold md:text-2xl">Nuovo segmento</h1>
           <p className="text-sm text-text-secondary">Nome, descrizione e regole di filtro.</p>
         </div>
       </header>
@@ -129,7 +129,7 @@ export default function NewSegmentPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 min-[834px]:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="inactivity_days">Inattività (giorni minimi)</Label>
                 <Input

@@ -118,7 +118,7 @@ function getTimeRemaining(time: string) {
 }
 
 /** Cornice uniforme (stesso spessore del ring), senza barra sinistra. */
-const AGENDA_CARD_CYAN_FRAME = 'ring-2 ring-cyan-500/60 ring-offset-2 ring-offset-black/80'
+export const AGENDA_CARD_CYAN_FRAME = 'ring-2 ring-cyan-500/60 ring-offset-2 ring-offset-black/80'
 
 function sortAgendaEventsByStart(a: AgendaEvent, b: AgendaEvent): number {
   const ta = a.starts_at ? Date.parse(a.starts_at) : NaN
@@ -260,6 +260,75 @@ export function AgendaSelectedAthleteSummary({ event }: { event: AgendaEvent }) 
         paddingClass="px-4 py-4 sm:px-5 sm:py-5"
         trailing={<AgendaEndsInTimer endsAt={event.ends_at} startsAt={event.starts_at} />}
       />
+    </div>
+  )
+}
+
+/**
+ * Stessa griglia / tipografia di {@link AgendaEventRowInner} per atleta in colonna Workouts
+ * senza slot agenda oggi (niente card aggiuntiva: solo `mb-3` come {@link AgendaSelectedAthleteSummary}).
+ */
+export function AgendaWorkoutsPaneAthleteSummary({
+  athleteName,
+  avatarUrl,
+}: {
+  athleteName: string
+  avatarUrl?: string | null
+}) {
+  const subtitle = 'Non in agenda oggi'
+  return (
+    <div
+      className="relative mb-3 w-full min-w-0 shrink-0"
+      role="status"
+      aria-label={`${athleteName}. ${subtitle}.`}
+    >
+      <div className="relative flex min-w-0 w-full items-start gap-2 px-4 py-4 sm:px-5 sm:py-5">
+        <div className="flex min-w-[3.25rem] flex-col items-start shrink-0 pt-0.5 tabular-nums">
+          <div className="font-mono text-lg font-bold text-text-tertiary">—</div>
+          <div className="mt-1 text-xs font-medium text-text-tertiary">Fuori slot</div>
+        </div>
+        <div className="w-px shrink-0 self-stretch min-h-[3.25rem] bg-border/30" aria-hidden />
+        <div className="flex min-w-0 flex-1 items-start gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <div className="shrink-0 pt-0.5">
+              <div className="relative inline-block">
+                <div className="absolute -inset-0.5 rounded-full bg-primary/40 blur-[2px]" />
+                <div className="relative">
+                  <Avatar
+                    src={avatarUrl ?? undefined}
+                    alt={athleteName}
+                    fallbackText={
+                      athleteName
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .slice(0, 2) || '?'
+                    }
+                    size="md"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="min-w-0 flex-1 py-0.5">
+              <div className="break-words text-base font-bold leading-snug text-text-primary">
+                {athleteName}
+              </div>
+              <div className="mt-0.5 break-words text-sm leading-snug text-text-secondary">
+                {subtitle}
+              </div>
+            </div>
+          </div>
+          <div
+            className="flex shrink-0 flex-col items-end justify-center gap-0.5 border-l border-white/10 pl-3 tabular-nums"
+            aria-hidden
+          >
+            <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
+              Fine tra
+            </span>
+            <span className="font-mono text-lg font-bold tabular-nums text-text-tertiary">—</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

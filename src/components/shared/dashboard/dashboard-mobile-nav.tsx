@@ -22,6 +22,7 @@ import {
   Layers,
   Zap,
   ClipboardList,
+  CalendarCheck,
   ClipboardCheck,
   TrendingUp,
   Activity,
@@ -42,9 +43,10 @@ const STAFF_NAV_NO_PREFETCH = new Set<string>(['/dashboard/comunicazioni', '/das
 
 const staffNav = [
   { label: 'Dashboard', icon: Home, href: '/dashboard' },
-  { label: 'Prenotazioni', icon: ClipboardList, href: '/dashboard/prenotazioni' },
+  { label: 'Appuntamenti', icon: CalendarCheck, href: '/dashboard/appuntamenti' },
   { label: 'Workouts', icon: Activity, href: '/dashboard/workouts' },
   { label: 'Chat', icon: MessageSquare, href: '/dashboard/chat' },
+  { label: 'Statistiche', icon: BarChart2, href: '/dashboard/statistiche' },
   { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
   { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
   { label: 'Comunicazioni', icon: Send, href: '/dashboard/comunicazioni' },

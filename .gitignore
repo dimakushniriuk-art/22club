@@ -99,3 +99,6 @@ debug-*.log
 /audit/
 /dashboard-trainer-perf/
 verification-report.json
+
+# Storybook static export (artefatto di build)
+/storybook-static/

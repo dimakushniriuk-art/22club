@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useMemo, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Dumbbell, Lock, Unlock } from 'lucide-react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { StaffAthleteSubpageHeader } from '@/components/shared/dashboard/staff-athlete-subpage-header'
@@ -10,15 +10,20 @@ import { StaffAthleteSegmentSkeleton } from '@/components/layout/route-loading-s
 import { useAthleteProfileData } from '@/hooks/athlete-profile/use-athlete-profile-data'
 import { WorkoutExerciseStoricoContent } from '@/components/progressi/workout-exercise-storico-content'
 import { useWorkoutExerciseStats } from '@/hooks/use-workout-exercise-stats'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const CARD_DS =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
 
-function StoricoBody() {
-  const params = useParams()
+function StoricoBody({
+  routeParams,
+}: {
+  routeParams: Promise<{ id: string; exerciseId: string }>
+}) {
+  const resolved = useResolvedParams(routeParams)
   const router = useRouter()
-  const id = typeof params?.id === 'string' ? params.id : null
-  const rawExerciseId = typeof params?.exerciseId === 'string' ? params.exerciseId : ''
+  const id = typeof resolved.id === 'string' ? resolved.id : null
+  const rawExerciseId = typeof resolved.exerciseId === 'string' ? resolved.exerciseId : ''
   const exerciseId = useMemo(() => {
     try {
       return decodeURIComponent(rawExerciseId)
@@ -124,10 +129,14 @@ function StoricoBody() {
   )
 }
 
-export default function StaffAtletaProgressiAllenamentiEsercizioPage() {
+export default function StaffAtletaProgressiAllenamentiEsercizioPage({
+  params,
+}: {
+  params: Promise<{ id: string; exerciseId: string }>
+}) {
   return (
     <Suspense fallback={<StaffAthleteSegmentSkeleton />}>
-      <StoricoBody />
+      <StoricoBody routeParams={params} />
     </Suspense>
   )
 }

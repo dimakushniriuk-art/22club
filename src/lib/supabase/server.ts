@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseJsClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 
 function getEnvVar(name: string): string {
@@ -35,6 +37,27 @@ export async function createClient(passedCookieStore?: CookieStore) {
         } catch {
           // Ignorato se in contesto dove i cookie non sono scrivibili (es. middleware)
         }
+      },
+    },
+  })
+}
+
+/**
+ * Client anon con JWT in header (no cookie, no adapter SSR).
+ * Per `getUser(jwt)` e query RLS con lo stesso JWT verso PostgREST.
+ */
+export function createJwtForwardClient(accessToken: string): SupabaseClient<Database> {
+  const supabaseUrl = getEnvVar('NEXT_PUBLIC_SUPABASE_URL')
+  const supabaseAnonKey = getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  const token = accessToken.trim()
+  return createSupabaseJsClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     },
   })

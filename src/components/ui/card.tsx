@@ -35,7 +35,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={cn(
           CARD_RADIUS,
-          'p-4 text-text-primary',
+          'min-w-0 p-4 text-text-primary',
           masterAnimations.transition,
           masterAnimations.focus.ring,
           masterAnimations.focus.outline,

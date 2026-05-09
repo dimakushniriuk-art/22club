@@ -1,6 +1,7 @@
 'use client'
 
-import { forwardRef, useEffect, useRef, useState, type ReactNode } from 'react'
+import { forwardRef, useEffect, useState, type ReactNode } from 'react'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import {
   Activity,
   CheckCircle2,
@@ -179,7 +180,12 @@ function InstagramExerciseShareMedia({
 }) {
   const [imgFailed, setImgFailed] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const showImgFlag = Boolean(imageUrl && !imgFailed)
+  const videoShouldPlay = Boolean(videoUrl && !videoFailed && !showImgFlag)
+  const videoRef = useAutoplayPreviewVideo({
+    enabled: videoShouldPlay,
+    pauseWhenOffscreen: true,
+  })
 
   useEffect(() => {
     setImgFailed(false)
@@ -206,8 +212,8 @@ function InstagramExerciseShareMedia({
     return () => el.removeEventListener('loadeddata', bumpFrame)
   }, [videoUrl])
 
-  const showImg = Boolean(imageUrl && !imgFailed)
-  const showVideo = Boolean(videoUrl && !showImg && !videoFailed)
+  const showImg = showImgFlag
+  const showVideo = videoShouldPlay
   const showPlaceholder = !showImg && !showVideo
 
   return (
@@ -233,7 +239,9 @@ function InstagramExerciseShareMedia({
           src={videoUrl!}
           crossOrigin="anonymous"
           muted
+          loop
           playsInline
+          autoPlay
           preload="auto"
           onError={() => setVideoFailed(true)}
           style={{

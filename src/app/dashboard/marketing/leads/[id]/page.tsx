@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { ArrowLeft, CheckCircle, Search, UserCheck, ExternalLink } from 'lucide-react'
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 import { invalidateClientiQueries } from '@/lib/react-query/post-mutation-cache'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'Nuovo',
@@ -57,12 +58,12 @@ function formatDate(s: string | null): string {
   })
 }
 
-export default function LeadDetailPage() {
+export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const queryClient = useQueryClient()
   const router = useRouter()
-  const params = useParams()
+  const resolved = useResolvedParams(params)
   const { role, loading: authLoading } = useAuth()
-  const id = typeof params.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
   const [lead, setLead] = useState<LeadRow | null>(null)
   const [notes, setNotes] = useState<NoteRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -217,7 +218,7 @@ export default function LeadDetailPage() {
 
   if (error || !lead) {
     return (
-      <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
+      <div className="space-y-6 bg-background p-4 md:p-6">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/leads">
             <ArrowLeft className="h-4 w-4" />
@@ -233,7 +234,7 @@ export default function LeadDetailPage() {
   const isConverted = lead.status === 'converted'
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/leads">
@@ -241,7 +242,7 @@ export default function LeadDetailPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-xl font-bold min-[834px]:text-2xl">
+          <h1 className="text-xl font-bold md:text-2xl">
             {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || lead.email}
           </h1>
           <p className="text-sm text-text-secondary">{lead.email}</p>

@@ -1,0 +1,284 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "midx-cover",
+      "name": "00_Cover",
+      "x": 0,
+      "y": 0,
+      "width": 1760,
+      "height": 480,
+      "fill": "#0b1220",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 40,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-t1",
+          "name": "title",
+          "content": "22Club Pencil Design System — Master Index",
+          "fontFamily": "Inter",
+          "fontSize": 30,
+          "fontWeight": "700",
+          "fill": "#f8fafc"
+        },
+        {
+          "type": "text",
+          "id": "midx-t2",
+          "name": "subtitle",
+          "content": "Grouped route files under design/. Next: reconstruct screens per group (3 viewports + states + overlays).",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "fill": "#cbd5e1"
+        },
+        {
+          "type": "text",
+          "id": "midx-tg",
+          "name": "groups",
+          "content": "Groups:\n01_Public_Auth\n02_Design_Dev\n03_Home_Atleta\n04_Dashboard_Staff_Core\n05_Dashboard_Admin\n06_Dashboard_Atleti\n07_Dashboard_Marketing\n08_Dashboard_Massaggiatore\n09_Dashboard_Nutrizionista\n10_Embed\n99_Components_Patterns_Library",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "normal",
+          "fill": "#e2e8f0",
+          "textGrowth": "fixed-width",
+          "width": 1600
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "midx-desk",
+      "name": "01_Desktop",
+      "x": 0,
+      "y": 520,
+      "width": 1440,
+      "height": 900,
+      "fill": "#f1f5f9",
+      "layout": "vertical",
+      "padding": 28,
+      "gap": 10,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-dt",
+          "name": "hint",
+          "content": "Desktop 1440×900 — master overview (optional)",
+          "fontFamily": "Inter",
+          "fontSize": 15,
+          "fontWeight": "600",
+          "fill": "#0f172a"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "midx-tab",
+      "name": "02_Tablet",
+      "x": 1480,
+      "y": 520,
+      "width": 768,
+      "height": 1024,
+      "fill": "#f8fafc",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-tt",
+          "name": "hint",
+          "content": "Tablet 768×1024",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600",
+          "fill": "#334155"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "midx-mob",
+      "name": "03_Mobile",
+      "x": 2280,
+      "y": 520,
+      "width": 360,
+      "height": 800,
+      "fill": "#ffffff",
+      "layout": "vertical",
+      "padding": 20,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-mt",
+          "name": "hint",
+          "content": "Mobile 360×800",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "600",
+          "fill": "#334155"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "midx-st",
+      "name": "04_States",
+      "x": 0,
+      "y": 1440,
+      "width": 1440,
+      "height": 320,
+      "fill": "#eef2ff",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-stt",
+          "name": "hint",
+          "content": "States roll-up (per group in own file)",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "fill": "#312e81"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "midx-ov",
+      "name": "05_Overlays",
+      "x": 0,
+      "y": 1780,
+      "width": 1440,
+      "height": 280,
+      "fill": "#ecfdf5",
+      "layout": "vertical",
+      "padding": 24,
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-ovt",
+          "name": "hint",
+          "content": "Overlays roll-up",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "fill": "#14532d"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "midx-mx",
+      "name": "06_Inventory_Matrix",
+      "x": 0,
+      "y": 2080,
+      "width": 2800,
+      "height": 900,
+      "fill": "#fffbeb",
+      "layout": "vertical",
+      "padding": 28,
+      "gap": 12,
+      "children": [
+        {
+          "type": "text",
+          "id": "midx-mh",
+          "name": "matrix_header",
+          "content": "Per-group rollout (status + viewport readiness)",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "700",
+          "fill": "#78350f"
+        },
+        {
+          "type": "text",
+          "id": "midx-mb",
+          "name": "matrix_body",
+          "content": "Group | routes_count | status | desktop | tablet | mobile\n01_Public_Auth | 9 | not_started | not_started | not_started | not_started\n02_Design_Dev | 2 | not_started | not_started | not_started | not_started\n03_Home_Atleta | 25 | not_started | not_started | not_started | not_started\n04_Dashboard_Staff_Core | 26 | not_started | not_started | not_started | not_started\n05_Dashboard_Admin | 6 | not_started | not_started | not_started | not_started\n06_Dashboard_Atleti | 14 | not_started | not_started | not_started | not_started\n07_Dashboard_Marketing | 18 | not_started | not_started | not_started | not_started\n08_Dashboard_Massaggiatore | 10 | not_started | not_started | not_started | not_started\n09_Dashboard_Nutrizionista | 15 | not_started | not_started | not_started | not_started\n10_Embed | 6 | not_started | not_started | not_started | not_started\n99_Components_Patterns_Library | library | not_started | not_started | not_started | not_started",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal",
+          "fill": "#92400e",
+          "textGrowth": "fixed-width",
+          "width": 2700
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "color.bg": {
+      "type": "color",
+      "value": "#0d0d0d"
+    },
+    "color.text.primary": {
+      "type": "color",
+      "value": "#EAF0F2"
+    },
+    "color.text.secondary": {
+      "type": "color",
+      "value": "#A5AFB4"
+    },
+    "color.text.muted": {
+      "type": "color",
+      "value": "#6C757D"
+    },
+    "color.primary": {
+      "type": "color",
+      "value": "#02B3BF"
+    },
+    "color.border.white10": {
+      "type": "color",
+      "value": "#FFFFFF1A"
+    },
+    "color.surface.zinc800": {
+      "type": "color",
+      "value": "#27272a"
+    },
+    "color.surface.zinc900": {
+      "type": "color",
+      "value": "#18181b"
+    },
+    "color.black.70": {
+      "type": "color",
+      "value": "#000000B3"
+    },
+    "color.cyan.500": {
+      "type": "color",
+      "value": "#06b6d4"
+    },
+    "color.slate.600": {
+      "type": "color",
+      "value": "#475569"
+    },
+    "color.error": {
+      "type": "color",
+      "value": "#FF3B30"
+    },
+    "color.red.500": {
+      "type": "color",
+      "value": "#ef4444"
+    },
+    "radius.input": {
+      "type": "number",
+      "value": 12
+    },
+    "radius.card": {
+      "type": "number",
+      "value": 16
+    },
+    "radius.panel": {
+      "type": "number",
+      "value": 24
+    },
+    "radius.pill": {
+      "type": "number",
+      "value": 9999
+    }
+  }
+}

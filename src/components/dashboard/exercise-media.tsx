@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react'
 import Image from 'next/image'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { Dumbbell } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
 import type { Exercise } from '@/types/exercise'
@@ -23,10 +24,16 @@ export const ExerciseMedia = memo(({ exercise }: ExerciseMediaProps) => {
     (exercise.video_url.startsWith('http://') || exercise.video_url.startsWith('https://')) &&
     !videoError
 
+  const videoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(isValidVideoUrl),
+    pauseWhenOffscreen: true,
+  })
+
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-gradient-to-br from-black/25 via-primary/5 to-transparent">
       {isValidVideoUrl ? (
         <video
+          ref={videoRef}
           className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
           src={exercise.video_url!}
           poster={exercise.thumb_url || undefined}

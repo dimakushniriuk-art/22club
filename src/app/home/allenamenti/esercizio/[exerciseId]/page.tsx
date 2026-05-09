@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { PageHeaderFixed } from '@/components/layout'
 import { Card, CardContent } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -11,6 +11,13 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
 import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
+import {
+  workoutsPaneEmbedBodyClass,
+  workoutsPaneEmbedRootClass,
+} from '@/lib/embed/workouts-pane-body-layout'
+import { cn } from '@/lib/utils'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 
 type ExerciseRow = {
   id: string
@@ -26,17 +33,20 @@ type ExerciseRow = {
 
 export function EsercizioDetailPageContent({
   exerciseIdOverride,
+  routeParams,
 }: {
   exerciseIdOverride?: string
-} = {}) {
-  const params = useParams()
+  routeParams: Promise<{ exerciseId?: string }>
+}) {
+  const resolved = useResolvedParams(routeParams)
   const searchParams = useSearchParams()
   const supabase = useSupabaseClient()
   const { loading: authLoading } = useAuth()
   const { pathBase } = useAthleteAllenamentiPaths()
   const workoutsPane = useWorkoutsPaneOptional()
+  const workoutsPaneNaturalFlow = Boolean(workoutsPane)
   const exerciseId =
-    exerciseIdOverride ?? (typeof params?.exerciseId === 'string' ? params.exerciseId : null)
+    exerciseIdOverride ?? (typeof resolved.exerciseId === 'string' ? resolved.exerciseId : null)
   const planId = searchParams.get('planId')
 
   const backHref = workoutsPane
@@ -77,10 +87,29 @@ export function EsercizioDetailPageContent({
     }
   }, [exerciseId, supabase])
 
+  const hasVideoUrlForAutoplay =
+    Boolean(exercise?.video_url) &&
+    typeof exercise?.video_url === 'string' &&
+    (exercise.video_url.startsWith('http://') || exercise.video_url.startsWith('https://'))
+
+  const detailVideoRef = useAutoplayPreviewVideo({
+    enabled: hasVideoUrlForAutoplay,
+    pauseWhenOffscreen: true,
+  })
+
   if (authLoading || !exerciseId) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-28 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6 flex items-center justify-center">
+      <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
+        <div
+          className={cn(
+            workoutsPaneEmbedBodyClass(
+              workoutsPaneNaturalFlow,
+              undefined,
+              'px-3 pt-4 pb-28 safe-area-inset-bottom sm:px-4 sm:pt-5 md:px-6 md:pt-6',
+            ),
+            'flex items-center justify-center',
+          )}
+        >
           <p className="text-text-secondary text-sm">Caricamento...</p>
         </div>
       </div>
@@ -89,8 +118,14 @@ export function EsercizioDetailPageContent({
 
   if (error || !exercise) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 pt-4 pb-28 safe-area-inset-bottom sm:px-5 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6">
+      <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
+        <div
+          className={workoutsPaneEmbedBodyClass(
+            workoutsPaneNaturalFlow,
+            undefined,
+            'space-y-4 px-4 pt-4 pb-28 safe-area-inset-bottom sm:px-5 sm:pt-5 md:px-6 md:pt-6',
+          )}
+        >
           <PageHeaderFixed
             variant="chat"
             title="Esercizio"
@@ -116,8 +151,14 @@ export function EsercizioDetailPageContent({
   const posterUrl = exercise.thumb_url || exercise.image_url || null
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pt-4 pb-28 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 min-[834px]:pt-6">
+    <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
+      <div
+        className={workoutsPaneEmbedBodyClass(
+          workoutsPaneNaturalFlow,
+          undefined,
+          'space-y-5 px-4 pt-4 pb-28 safe-area-inset-bottom sm:px-5 sm:space-y-6 md:px-6 md:pt-6',
+        )}
+      >
         <PageHeaderFixed
           variant="chat"
           title={exercise.name}
@@ -129,12 +170,16 @@ export function EsercizioDetailPageContent({
           <div className="relative aspect-video w-full overflow-hidden rounded-t-lg bg-black/40">
             {hasVideo && exercise.video_url ? (
               <video
+                ref={detailVideoRef}
                 src={exercise.video_url}
                 poster={posterUrl || undefined}
                 className="h-full w-full object-contain"
                 controls
+                muted
+                loop
                 playsInline
-                preload="metadata"
+                autoPlay
+                preload="auto"
               />
             ) : posterUrl ? (
               <Image
@@ -144,7 +189,7 @@ export function EsercizioDetailPageContent({
                 height={450}
                 className="h-full w-full object-contain"
                 unoptimized={posterUrl.startsWith('http')}
-                sizes="(min-width: 834px) 800px, 100vw"
+                sizes="(min-width: 768px) 800px, 100vw"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
@@ -175,9 +220,9 @@ export function EsercizioDetailPageContent({
                 <Badge
                   variant="info"
                   size="sm"
-                  className="text-[10px] min-[834px]:text-xs bg-blue-500/20 text-blue-300 border-blue-500/40"
+                  className="text-[10px] md:text-xs bg-blue-500/20 text-blue-300 border-blue-500/40"
                 >
-                  <Activity className="h-2.5 w-2.5 min-[834px]:h-3 min-[834px]:w-3 mr-0.5" />
+                  <Activity className="h-2.5 w-2.5 md:h-3 md:w-3 mr-0.5" />
                   {exercise.muscle_group}
                 </Badge>
               )}
@@ -185,7 +230,7 @@ export function EsercizioDetailPageContent({
                 <Badge
                   variant="warning"
                   size="sm"
-                  className="text-[10px] min-[834px]:text-xs bg-amber-500/20 text-amber-300 border-amber-500/40"
+                  className="text-[10px] md:text-xs bg-amber-500/20 text-amber-300 border-amber-500/40"
                 >
                   {exercise.equipment}
                 </Badge>
@@ -200,9 +245,9 @@ export function EsercizioDetailPageContent({
                         : 'warning'
                   }
                   size="sm"
-                  className="text-[10px] min-[834px]:text-xs"
+                  className="text-[10px] md:text-xs"
                 >
-                  <Target className="h-2.5 w-2.5 min-[834px]:h-3 min-[834px]:w-3 mr-0.5" />
+                  <Target className="h-2.5 w-2.5 md:h-3 md:w-3 mr-0.5" />
                   {['bassa', 'beginner', 'easy'].includes(exercise.difficulty)
                     ? 'Principiante'
                     : ['alta', 'advanced', 'hard'].includes(exercise.difficulty)
@@ -218,6 +263,10 @@ export function EsercizioDetailPageContent({
   )
 }
 
-export default function EsercizioDetailPage() {
-  return <EsercizioDetailPageContent />
+export default function EsercizioDetailPage({
+  params,
+}: {
+  params: Promise<{ exerciseId: string }>
+}) {
+  return <EsercizioDetailPageContent routeParams={params} />
 }

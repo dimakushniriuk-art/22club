@@ -139,7 +139,7 @@ export function RangeStatusMeter({
         </div>
       )}
 
-      <div className="mt-2 rounded-md border border-white/10 bg-black/20 p-2 min-[834px]:p-3">
+      <div className="mt-2 rounded-md border border-white/10 bg-black/20 p-2 md:p-3">
         {hasChartData ? (
           (() => {
             const ys = chartDataNumeric.map((p) => p.value)
@@ -148,13 +148,19 @@ export function RangeStatusMeter({
             const pad = ys.length > 0 ? Math.max(2, (yMax - yMin) * 0.08) : 1
             const span = yMax - yMin || 1
             const yNullMarker = ys.length > 0 ? yMin - Math.max(span * 0.12, 1) : 0
-            const chartRows = sortedHistory.map((h) => ({
+            const chartRows = sortedHistory.map((h, i) => ({
+              // Recharts tick keys use the X category value; duplicate `date` strings break React keys.
+              tickKey: String(i),
               date: h.date,
               value: h.value,
               traceY:
                 h.value != null && Number.isFinite(h.value) ? (h.value as number) : yNullMarker,
             }))
-            const xTicks = chartRows.map((r) => r.date)
+            const xTicks = chartRows.map((r) => r.tickKey)
+            const labelForTick = (raw: string | number) => {
+              const row = chartRows[Number(raw)]
+              return row ? formatDate(row.date) : String(raw)
+            }
             const chart = (
               <ResponsiveContainer width="100%" height={height}>
                 <ComposedChart
@@ -163,11 +169,11 @@ export function RangeStatusMeter({
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.08)" />
                   <XAxis
-                    dataKey="date"
+                    dataKey="tickKey"
                     type="category"
                     ticks={xTicks}
                     interval={0}
-                    tickFormatter={formatDate}
+                    tickFormatter={labelForTick}
                     stroke="rgba(255,255,255,.45)"
                     fontSize={10}
                     angle={-32}
@@ -181,7 +187,7 @@ export function RangeStatusMeter({
                     tickFormatter={(raw: number) => `${Math.round(raw)}`}
                   />
                   <Tooltip
-                    labelFormatter={(raw: string | number) => formatDate(String(raw))}
+                    labelFormatter={(raw: string | number) => labelForTick(raw)}
                     formatter={(
                       _raw: number | string,
                       _name: string,

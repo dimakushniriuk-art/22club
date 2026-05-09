@@ -12,6 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
   Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import {
@@ -94,7 +98,7 @@ export function DashboardLayoutSettingsDialog({
       >
         <Settings className="h-5 w-5" aria-hidden />
       </Button>
-      <DialogContent className="max-h-[min(90dvh,52rem)] max-w-[min(36rem,calc(100vw-2rem))] overflow-y-auto">
+      <DialogContent className="w-full max-w-[min(36rem,calc(100vw-2rem))] max-[851px]:w-full max-h-[min(90dvh,52rem)] overflow-hidden flex flex-col">
         <DialogHeader className="space-y-1 pr-8">
           <DialogTitle>Personalizza dashboard</DialogTitle>
           <DialogDescription>
@@ -103,118 +107,142 @@ export function DashboardLayoutSettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-8 pb-1">
-          <section aria-labelledby="dash-settings-quick-heading">
-            <div className="mb-3 flex items-end justify-between gap-2 border-b border-white/[0.08] pb-2.5">
-              <h2
-                id="dash-settings-quick-heading"
-                className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary/90 sm:text-xs"
-              >
-                Blocchi scorciatoie
-              </h2>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
-              {DASHBOARD_QUICK_ACTIONS.map((item) => {
-                const on = prefs.quick[item.id]
-                const Icon = item.icon
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => setQuickVisible(item.id, !on)}
-                    className={cn(
-                      DASHBOARD_QUICK_ACTION_CARD_CLASS,
-                      'relative cursor-pointer select-none touch-manipulation pt-7 sm:pt-8',
-                      on
-                        ? 'ring-1 ring-cyan-500/30 border-white/[0.12]'
-                        : 'opacity-[0.38] saturate-[0.65] border-white/[0.06]',
-                    )}
-                  >
-                    <div
-                      className="absolute right-1.5 top-1.5 z-10 sm:right-2 sm:top-2"
-                      onClick={stopSwitchBubble}
-                    >
-                      <Switch
-                        checked={on}
-                        onCheckedChange={(v) => setQuickVisible(item.id, v)}
-                        aria-label={`${item.label}, ${on ? 'visibile' : 'nascosto'}`}
-                      />
-                    </div>
-                    <div
-                      className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-                        item.iconBoxClass,
-                      )}
-                    >
-                      <Icon className="h-4 w-4" aria-hidden />
-                    </div>
-                    <span className="mt-1.5 block px-1 text-[10px] font-semibold leading-tight text-text-primary sm:mt-2 sm:text-[11px]">
-                      {item.label}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
+        <Tabs defaultValue="quick" className="flex min-h-0 flex-1 flex-col">
+          <div className="shrink-0 pt-3">
+            <TabsList variant="pills" className="w-full justify-start !h-auto">
+              <TabsTrigger variant="pills" value="quick">
+                Scorciatoie
+              </TabsTrigger>
+              <TabsTrigger variant="pills" value="widgets">
+                Pannelli
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <section aria-labelledby="dash-settings-panels-heading">
-            <div className="mb-3 flex items-end justify-between gap-2 border-b border-white/[0.08] pb-2.5">
-              <h2
-                id="dash-settings-panels-heading"
-                className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary/90 sm:text-xs"
-              >
-                Blocchi pannelli
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
-              {WIDGET_BLOCKS.map((block) => {
-                const on = prefs.widgets[block.id]
-                const Icon = block.icon
-                return (
-                  <div
-                    key={block.id}
-                    onClick={() => setWidgetVisible(block.id, !on)}
-                    className={cn(
-                      DASHBOARD_COLUMN_PANEL_CLASS,
-                      'relative min-h-[5.75rem] cursor-pointer select-none p-3 text-left touch-manipulation sm:min-h-[6rem] sm:p-4',
-                      on
-                        ? 'ring-1 ring-cyan-500/25 border-white/[0.12]'
-                        : 'opacity-[0.38] saturate-[0.65] border-white/[0.06]',
-                    )}
+          <div className="min-h-0 flex-1 pt-3">
+            <TabsContent value="quick" className="mt-0">
+              <section aria-labelledby="dash-settings-quick-heading">
+                <div className="mb-2 flex items-end justify-between gap-2 border-b border-white/[0.08] pb-2">
+                  <h2
+                    id="dash-settings-quick-heading"
+                    className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary/90 sm:text-xs"
                   >
-                    <div
-                      className="absolute right-2 top-2 z-10 sm:right-3 sm:top-3"
-                      onClick={stopSwitchBubble}
-                    >
-                      <Switch
-                        checked={on}
-                        onCheckedChange={(v) => setWidgetVisible(block.id, v)}
-                        aria-label={`${block.title}, ${on ? 'visibile' : 'nascosto'}`}
-                      />
-                    </div>
-                    <div className="flex min-w-0 items-start gap-2.5 pr-10">
+                    Blocchi scorciatoie
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                  {DASHBOARD_QUICK_ACTIONS.map((item) => {
+                    const on = prefs.quick[item.id]
+                    const Icon = item.icon
+                    return (
                       <div
+                        key={item.id}
+                        onClick={() => setQuickVisible(item.id, !on)}
                         className={cn(
-                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border sm:h-10 sm:w-10',
-                          block.iconBoxClass,
+                          DASHBOARD_QUICK_ACTION_CARD_CLASS,
+                          'relative cursor-pointer select-none touch-manipulation pt-7 sm:pt-8',
+                          on
+                            ? 'ring-1 ring-cyan-500/30 border-white/[0.12]'
+                            : 'border-white/[0.06]',
                         )}
                       >
-                        <Icon className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" aria-hidden />
+                        <div
+                          className="absolute right-1.5 top-1.5 z-10 sm:right-2 sm:top-2"
+                          onClick={stopSwitchBubble}
+                        >
+                          <Switch
+                            checked={on}
+                            onCheckedChange={(v) => setQuickVisible(item.id, v)}
+                            aria-label={`${item.label}, ${on ? 'visibile' : 'nascosto'}`}
+                          />
+                        </div>
+                        <div className={cn(!on && 'opacity-[0.38] saturate-[0.65]')}>
+                          <div
+                            className={cn(
+                              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+                              item.iconBoxClass,
+                            )}
+                          >
+                            <Icon className="h-4 w-4" aria-hidden />
+                          </div>
+                          <span className="mt-1.5 block px-1 text-[10px] font-semibold leading-tight text-text-primary sm:mt-2 sm:text-[11px]">
+                            {item.label}
+                          </span>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1 pt-0.5">
-                        <h3 className="text-[11px] font-semibold uppercase leading-snug tracking-[0.06em] text-text-secondary/95 sm:text-xs">
-                          {block.title}
-                        </h3>
-                        <p className="mt-1 text-[10px] leading-snug text-text-tertiary sm:text-[11px]">
-                          {block.hint}
-                        </p>
+                    )
+                  })}
+                </div>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="widgets" className="mt-0">
+              <section aria-labelledby="dash-settings-panels-heading">
+                <div className="mb-2 flex items-end justify-between gap-2 border-b border-white/[0.08] pb-2">
+                  <h2
+                    id="dash-settings-panels-heading"
+                    className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary/90 sm:text-xs"
+                  >
+                    Blocchi pannelli
+                  </h2>
+                </div>
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
+                  {WIDGET_BLOCKS.map((block) => {
+                    const on = prefs.widgets[block.id]
+                    const Icon = block.icon
+                    return (
+                      <div
+                        key={block.id}
+                        onClick={() => setWidgetVisible(block.id, !on)}
+                        className={cn(
+                          DASHBOARD_COLUMN_PANEL_CLASS,
+                          'relative min-h-[5.75rem] cursor-pointer select-none p-3 text-left touch-manipulation sm:min-h-[6rem] sm:p-4',
+                          on
+                            ? 'ring-1 ring-cyan-500/25 border-white/[0.12]'
+                            : 'border-white/[0.06]',
+                        )}
+                      >
+                        <div
+                          className="absolute right-2 top-2 z-10 sm:right-3 sm:top-3"
+                          onClick={stopSwitchBubble}
+                        >
+                          <Switch
+                            checked={on}
+                            onCheckedChange={(v) => setWidgetVisible(block.id, v)}
+                            aria-label={`${block.title}, ${on ? 'visibile' : 'nascosto'}`}
+                          />
+                        </div>
+                        <div className={cn(!on && 'opacity-[0.38] saturate-[0.65]')}>
+                          <div className="flex min-w-0 items-start gap-2.5 pr-10">
+                            <div
+                              className={cn(
+                                'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border sm:h-10 sm:w-10',
+                                block.iconBoxClass,
+                              )}
+                            >
+                              <Icon
+                                className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]"
+                                aria-hidden
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1 pt-0.5">
+                              <h3 className="text-[11px] font-semibold uppercase leading-snug tracking-[0.06em] text-text-secondary/95 sm:text-xs">
+                                {block.title}
+                              </h3>
+                              <p className="mt-1 text-[10px] leading-snug text-text-tertiary sm:text-[11px]">
+                                {block.hint}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        </div>
+                    )
+                  })}
+                </div>
+              </section>
+            </TabsContent>
+          </div>
+        </Tabs>
 
         <DialogFooter className="mt-6 flex-col gap-2 border-t border-white/[0.06] pt-4 sm:flex-row sm:justify-between">
           <Button
@@ -227,7 +255,7 @@ export function DashboardLayoutSettingsDialog({
             Ripristina predefinito
           </Button>
           <Button type="button" variant="primary" size="sm" onClick={() => setOpen(false)}>
-            Chiudi
+            Salva
           </Button>
         </DialogFooter>
       </DialogContent>

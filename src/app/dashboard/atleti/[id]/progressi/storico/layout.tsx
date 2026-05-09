@@ -1,16 +1,23 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { StaffAthleteSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 import { StaffAthleteSubpageHeader } from '@/components/shared/dashboard/staff-athlete-subpage-header'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { useAthleteProfileData } from '@/hooks/athlete-profile/use-athlete-profile-data'
 import { StoricoAtletaProvider } from './storico-atleta-context'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
-export default function StoricoAllenamentiLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams()
+export default function StoricoAllenamentiLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode
+  params: Promise<{ id: string }>
+}) {
+  const resolved = useResolvedParams(params)
   const router = useRouter()
-  const id = typeof params?.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
 
   const { athlete, stats, loading, error, loadAthleteData } = useAthleteProfileData(id ?? '')
 
@@ -41,7 +48,7 @@ export default function StoricoAllenamentiLayout({ children }: { children: React
   const name = [athlete.nome, athlete.cognome].filter(Boolean).join(' ').trim()
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto w-full">
+    <div className="flex w-full flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto">
       <StaffAthleteSubpageHeader
         backHref={backHref}
         backAriaLabel="Torna ai progressi"

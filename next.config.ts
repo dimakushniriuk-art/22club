@@ -40,6 +40,16 @@ const nextConfig: NextConfig = {
   compress: true,
   generateEtags: true,
 
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/prenotazioni',
+        destination: '/dashboard/appuntamenti',
+        permanent: true,
+      },
+    ]
+  },
+
   // Header di sicurezza (solo per web, non per Capacitor)
   // Nota: Headers non vengono applicati con output: 'export'
   // Per Capacitor, la sicurezza è gestita dal sistema operativo

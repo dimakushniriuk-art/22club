@@ -1,0 +1,93 @@
+{
+  "type": "Screen",
+  "name": "Dashboard",
+  "layout": "dashboard_base",
+  "header": {
+    "title": "Dashboard",
+    "subtitle": "22Club · vista staff"
+  },
+  "sections": [
+    {
+      "type": "kpi",
+      "items": [
+        {
+          "type": "MetricCard",
+          "name": "Lezioni oggi",
+          "variant": "default",
+          "tone": "teal",
+          "title": "Lezioni oggi",
+          "value": "8",
+          "subtitle": "Agenda",
+          "status": "success",
+          "statusText": "In linea",
+          "icon": "Calendar",
+          "loading": false
+        },
+        {
+          "type": "MetricCard",
+          "name": "Clienti attivi",
+          "variant": "default",
+          "tone": "blue",
+          "title": "Clienti attivi",
+          "value": "142",
+          "subtitle": "Organizzazione",
+          "status": "info",
+          "statusText": "Stabile",
+          "icon": "Users",
+          "loading": false
+        },
+        {
+          "type": "MetricCard",
+          "name": "Pagamenti in sospeso",
+          "variant": "compact",
+          "tone": "amber",
+          "title": "Pagamenti",
+          "value": "3",
+          "subtitle": "Da incassare",
+          "status": "warning",
+          "statusText": "Follow-up",
+          "icon": "CreditCard",
+          "loading": false
+        },
+        {
+          "type": "MetricCard",
+          "name": "Lead",
+          "variant": "compact",
+          "tone": "purple",
+          "title": "Lead",
+          "value": "12",
+          "subtitle": "Marketing",
+          "status": "success",
+          "statusText": "+2",
+          "icon": "Target",
+          "loading": false
+        }
+      ]
+    },
+    {
+      "type": "columns",
+      "columns": [
+        {
+          "type": "panel",
+          "state": "list",
+          "title": "Agenda di oggi",
+          "items": [
+            "09:00 · PT · Marco R.",
+            "10:30 · Nutrizione · Sara L.",
+            "12:00 · Massaggio · Alex P."
+          ]
+        },
+        {
+          "type": "emptyState",
+          "title": "Nessun messaggio",
+          "description": "Quando arrivano notifiche o chat, le vedi qui.",
+          "actions": ["Apri centro messaggi"]
+        },
+        {
+          "type": "skeleton",
+          "items": [1, 1, 1, 1]
+        }
+      ]
+    }
+  ]
+}

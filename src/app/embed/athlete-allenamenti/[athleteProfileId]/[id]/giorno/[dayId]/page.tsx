@@ -4,10 +4,14 @@ import { Suspense } from 'react'
 import { GiornoPreviewContent } from '@/app/home/allenamenti/[id]/giorno/[dayId]/page'
 import { EmbedAthleteAllenamentiPageSkeleton } from '@/components/layout/route-loading-skeletons'
 
-export default function EmbedGiornoPage() {
+export default function EmbedGiornoPage({
+  params,
+}: {
+  params: Promise<{ athleteProfileId: string; id: string; dayId: string }>
+}) {
   return (
     <Suspense fallback={<EmbedAthleteAllenamentiPageSkeleton />}>
-      <GiornoPreviewContent />
+      <GiornoPreviewContent routeParams={params} />
     </Suspense>
   )
 }

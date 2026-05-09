@@ -1,0 +1,39 @@
+---
+description: Upload/deploy su GitHub e Vercel tramite npm run upload (versioning e policy documentazione).
+alwaysApply: true
+---
+
+# Upload GitHub + Vercel (flusso obbligatorio)
+
+Quando l'utente chiede di **fare upload**, **pubblicare**, **push su GitHub**, **deploy su Vercel** (o equivalente), **non** limitarti a spiegare i comandi: **esegui** il flusso dalla root del repo.
+
+## Comando
+
+```bash
+npm run upload -- "messaggio commit chiaro in italiano o inglese"
+```
+
+- Messaggio: sintetico, descrive cosa va in produzione (es. fix login massaggiatore, invito cliente email).
+
+## Opzioni (solo se l'utente le chiede esplicitamente)
+
+- `--no-vercel` — solo commit + push, senza Vercel.
+- `--no-push` — solo commit locale.
+- `--no-version-bump` — non incrementare `version` in `package.json` (eccezioni rare; di default **si incrementa**).
+
+## Versione
+
+Lo script incrementa automaticamente la versione in formato `MAJOR.MINOR.PP` (es. `1.0.01` → `1.0.02`) prima del commit quando ci sono modifiche da versionare. Il build espone `NEXT_PUBLIC_APP_VERSION` da `package.json`.
+
+## Documentazione
+
+Non reintrodurre su GitHub cartelle di documentazione escluse da `.gitignore` (`Cervello/`, `DOCUMENTAZIONE/`, `docs/`, `audit/`, `dashboard-trainer-perf/`, `verification-report.json`, ecc.) salvo richiesta esplicita di cambiare policy.
+
+## Esecuzione (agente)
+
+1. Esegui `npm run upload` dal workspace con permessi **git** e **rete**; il flusso può richiedere **molti minuti** (test, build, pre-push, Vercel): usa timeout adeguati o attendi il completamento.
+2. Se il push è ok ma resta **working tree sporco** (spesso Prettier post-hook), allinea con un commit di formattazione e un nuovo push (o `git status` e commit mirato), così `main` resta coerente con il disco.
+
+## Esito
+
+Riporta all'utente: esito Git push, esito Vercel (se eseguito), nuova **versione** in `package.json`, e eventuali avvisi (file locali ignorati, secondo commit formattazione).

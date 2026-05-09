@@ -41,7 +41,7 @@ const StatCard = memo(function StatCard({
       className="relative overflow-hidden rounded-xl border border-cyan-400/50 backdrop-blur-md"
       style={CARD_STATS_STYLE}
     >
-      <CardContent className="relative z-10 flex items-center gap-3 p-3 min-[834px]:p-3.5">
+      <CardContent className="relative z-10 flex items-center gap-3 p-3 md:p-3.5">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/20">
           <Icon className="h-4 w-4 text-cyan-400" />
         </div>
@@ -49,7 +49,7 @@ const StatCard = memo(function StatCard({
           <p className="truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
             {label}
           </p>
-          <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 min-[834px]:text-2xl">
+          <p className="text-xl font-bold tabular-nums leading-tight text-cyan-400 md:text-2xl">
             {value}
           </p>
           {isZero && valueSubtext && (
@@ -62,7 +62,7 @@ const StatCard = memo(function StatCard({
 })
 
 const PAGE_WRAPPER_CLASS =
-  'bg-background w-full max-w-full space-y-4 px-3 sm:px-4 min-[834px]:px-6 pb-24 safe-area-inset-bottom'
+  'bg-background w-full max-w-full space-y-4 px-3 sm:px-4 md:px-6 pb-24 safe-area-inset-bottom'
 
 const HEADER_STYLE = {
   border: '1px solid rgba(2, 179, 191, 0.4)',
@@ -153,10 +153,10 @@ function MassaggiatorePageContent() {
   return (
     <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
       {/* Area scrollabile: header pagina + stats + card Dati Massaggi */}
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:space-y-6 md:px-6 md:pb-24">
         {/* Header - glass + accento #02b3bf (pattern design doc) */}
         <div
-          className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl min-[834px]:p-5"
+          className="relative overflow-hidden rounded-2xl p-4 backdrop-blur-xl md:p-5"
           style={HEADER_STYLE}
         >
           <div
@@ -176,10 +176,10 @@ function MassaggiatorePageContent() {
             </Button>
             <div className="flex flex-1 items-center gap-3 min-w-0">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl min-[834px]:h-14 min-[834px]:w-14"
+                className="flex h-12 w-12 items-center justify-center rounded-xl md:h-14 md:w-14"
                 style={HEADER_ICON_STYLE}
               >
-                <Hand className="h-6 w-6 min-[834px]:h-7 min-[834px]:w-7 text-primary" />
+                <Hand className="h-6 w-6 md:h-7 md:w-7 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="truncate text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
@@ -194,7 +194,7 @@ function MassaggiatorePageContent() {
         </div>
 
         {/* Stats - card compatte con sfondo colorato trasparente */}
-        <div className="grid grid-cols-2 gap-3 min-[834px]:gap-4">
+        <div className="grid grid-cols-2 gap-3 md:gap-4">
           <StatCard
             iconKey="calendar"
             label="Trattamenti"
@@ -222,14 +222,14 @@ function MassaggiatorePageContent() {
             aria-hidden
           />
           <CardHeader
-            className="relative z-10 border-b px-4 pb-3 pt-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4"
+            className="relative z-10 border-b px-4 pb-3 pt-4 md:px-5 md:pt-5 md:pb-4"
             style={CARD_HEADER_BORDER_STYLE}
           >
             <CardTitle className="text-base font-bold text-text-primary md:text-lg">
               Dati Massaggi
             </CardTitle>
           </CardHeader>
-          <CardContent className="relative z-10 p-4 pt-3 min-[834px]:p-5 min-[834px]:pt-4">
+          <CardContent className="relative z-10 p-4 pt-3 md:p-5 md:pt-4">
             <Suspense fallback={null}>
               <AthleteMassageTab athleteId={athleteUserId} />
             </Suspense>

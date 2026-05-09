@@ -241,7 +241,7 @@ export function WorkoutExerciseSessioniByDateList({
           return (
             <li
               key={`${row.date}-${row.workoutLogId ?? 'nolog'}-${row.workoutDayExerciseId ?? 'nowde'}-${index}`}
-              className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2.5 min-[834px]:px-4"
+              className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2.5 md:px-4"
             >
               <span className="text-text-secondary text-sm capitalize min-w-0 text-left">
                 {formatDateFull(row.date)}

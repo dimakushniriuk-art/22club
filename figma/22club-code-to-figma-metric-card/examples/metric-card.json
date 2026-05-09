@@ -1,0 +1,13 @@
+{
+  "type": "MetricCard",
+  "name": "Lead attivi",
+  "variant": "compact",
+  "tone": "teal",
+  "title": "Lead attivi",
+  "value": "24",
+  "subtitle": "Totale filtrato",
+  "status": "success",
+  "statusText": "+12%",
+  "icon": "Users",
+  "loading": false
+}

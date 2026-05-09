@@ -1,5 +1,9 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  loadProfileLocalStorageJson,
+  saveProfileLocalStorageJson,
+} from '@/lib/prefs/profile-local-storage'
 
 type Theme = 'dark' | 'light'
 
@@ -19,9 +23,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('dark')
 
   useEffect(() => {
-    // Leggi il tema dal localStorage o usa 'dark' come default
-    const stored = localStorage.getItem('theme') as Theme | null
-    const initialTheme = stored || 'dark'
+    const stored = loadProfileLocalStorageJson<Theme>(
+      'theme',
+      null,
+      (raw) => (raw === 'light' || raw === 'dark' ? raw : 'dark'),
+      { legacyKeys: ['theme'], defaultValue: 'dark' },
+    )
+    const initialTheme = stored.value
 
     setThemeState(initialTheme)
     document.documentElement.classList.toggle('dark', initialTheme === 'dark')
@@ -29,7 +37,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
-    localStorage.setItem('theme', newTheme)
+    saveProfileLocalStorageJson('theme', null, newTheme)
     document.documentElement.classList.toggle('dark', newTheme === 'dark')
   }
 

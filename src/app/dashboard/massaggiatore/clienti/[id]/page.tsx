@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { useAuth } from '@/hooks/use-auth'
@@ -24,9 +24,13 @@ type ProfileView = {
   created_at: string | null
 }
 
-export default function MassaggiatoreClienteProfiloPage() {
-  const params = useParams()
-  const id = typeof params?.id === 'string' ? params.id : null
+export default function MassaggiatoreClienteProfiloPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolved = useResolvedParams(params)
+  const id = typeof resolved.id === 'string' ? resolved.id : null
   const { showLoader } = useStaffDashboardGuard('massaggiatore')
   const { user } = useAuth()
   const supabase = useSupabaseClient()

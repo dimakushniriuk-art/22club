@@ -1,19 +1,26 @@
 'use client'
 
 import { useEffect, type ReactNode } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { AthleteAllenamentiPreviewProvider } from '@/contexts/athlete-allenamenti-preview-context'
 import { isValidUUID } from '@/lib/utils/type-guards'
 import { useNormalizedRole } from '@/lib/utils/role-normalizer-client'
 import { EmbedPathToParentBridge } from './embed-path-to-parent-bridge'
 import { STAFF_WORKOUTS_EMBED_AUTH_REQUIRED } from '@/lib/embed/staff-workouts-embed-events'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
-export default function EmbedAthleteAllenamentiLayout({ children }: { children: ReactNode }) {
-  const params = useParams()
+export default function EmbedAthleteAllenamentiLayout({
+  children,
+  params,
+}: {
+  children: ReactNode
+  params: Promise<{ athleteProfileId: string }>
+}) {
+  const resolved = useResolvedParams(params)
   const router = useRouter()
   const { user, loading } = useAuth()
-  const rawId = typeof params?.athleteProfileId === 'string' ? params.athleteProfileId : ''
+  const rawId = typeof resolved.athleteProfileId === 'string' ? resolved.athleteProfileId : ''
   const normalizedRole = useNormalizedRole(user?.role)
 
   useEffect(() => {
@@ -106,7 +113,7 @@ export default function EmbedAthleteAllenamentiLayout({ children }: { children: 
 
   return (
     <AthleteAllenamentiPreviewProvider value={{ subjectProfileId: rawId, pathBase }}>
-      <EmbedPathToParentBridge />
+      <EmbedPathToParentBridge athleteProfileId={rawId} />
       <div className="min-h-dvh w-full min-w-0">{children}</div>
     </AthleteAllenamentiPreviewProvider>
   )

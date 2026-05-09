@@ -17,12 +17,15 @@ interface MiniCalendarProps {
   selectedDate?: Date
   onDateSelect?: (date: Date) => void
   appointmentDates?: string[]
+  /** false = anteprima statica (sidebar/dashboard), senza click su giorni o cambio mese */
+  interactive?: boolean
 }
 
 export function MiniCalendar({
   selectedDate = new Date(),
   onDateSelect,
   appointmentDates = [],
+  interactive = true,
 }: MiniCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate))
 
@@ -91,23 +94,38 @@ export function MiniCalendar({
   const monthName = currentMonth.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="w-[220px] select-none">
+    <div className={cn('w-[220px] select-none', !interactive && 'pointer-events-none opacity-95')}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2 px-1">
-        <span className="text-sm font-medium text-text-primary capitalize">{monthName}</span>
+      <div className="mb-2 flex items-center justify-between px-1">
+        <span className="text-sm font-medium capitalize text-text-primary">{monthName}</span>
         <div className="flex items-center gap-0.5">
-          <button
-            onClick={goToPrevMonth}
-            className="p-1.5 rounded-full hover:bg-primary/10 text-text-tertiary hover:text-primary transition-colors duration-200"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            onClick={goToNextMonth}
-            className="p-1.5 rounded-full hover:bg-primary/10 text-text-tertiary hover:text-primary transition-colors duration-200"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          {interactive ? (
+            <>
+              <button
+                type="button"
+                onClick={goToPrevMonth}
+                className="rounded-full p-1.5 text-text-tertiary transition-colors duration-200 hover:bg-primary/10 hover:text-primary"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={goToNextMonth}
+                className="rounded-full p-1.5 text-text-tertiary transition-colors duration-200 hover:bg-primary/10 hover:text-primary"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-0.5 opacity-35" aria-hidden>
+              <span className="rounded-full p-1.5">
+                <ChevronLeft className="h-4 w-4 text-text-tertiary" />
+              </span>
+              <span className="rounded-full p-1.5">
+                <ChevronRight className="h-4 w-4 text-text-tertiary" />
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -123,27 +141,46 @@ export function MiniCalendar({
       </div>
 
       <div className="grid grid-cols-7">
-        {calendarDays.map((day, i) => (
-          <button
-            key={i}
-            onClick={() => onDateSelect?.(day.date)}
-            className={cn(
-              'h-7 w-7 flex items-center justify-center text-xs rounded-full relative transition-colors duration-200 mx-auto border border-transparent',
-              day.isCurrentMonth ? 'text-text-primary' : 'text-text-tertiary',
-              isToday(day.date) &&
-                !isSelected(day.date) &&
-                'text-primary font-medium ring-2 ring-primary/50 ring-offset-2 ring-offset-[var(--background)]',
-              isSelected(day.date) &&
-                'bg-primary/20 text-primary border border-primary/30 font-medium',
-              !isToday(day.date) && !isSelected(day.date) && 'hover:bg-primary/10',
-            )}
-          >
-            {day.date.getDate()}
-            {day.hasAppointment && !isSelected(day.date) && (
-              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
-            )}
-          </button>
-        ))}
+        {calendarDays.map((day, i) => {
+          const cellClass = cn(
+            'relative mx-auto flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-xs',
+            day.isCurrentMonth ? 'text-text-primary' : 'text-text-tertiary',
+            isToday(day.date) &&
+              !isSelected(day.date) &&
+              'font-medium text-primary ring-2 ring-primary/50 ring-offset-2 ring-offset-[var(--background)]',
+            isSelected(day.date) &&
+              'border border-primary/30 bg-primary/20 font-medium text-primary',
+            interactive &&
+              !isToday(day.date) &&
+              !isSelected(day.date) &&
+              'transition-colors duration-200 hover:bg-primary/10',
+          )
+          const dot =
+            day.hasAppointment && !isSelected(day.date) ? (
+              <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
+            ) : null
+
+          if (interactive) {
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => onDateSelect?.(day.date)}
+                className={cellClass}
+              >
+                {day.date.getDate()}
+                {dot}
+              </button>
+            )
+          }
+
+          return (
+            <div key={i} className={cellClass}>
+              {day.date.getDate()}
+              {dot}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -1,4 +1,31 @@
 /**
+ * Categoria esercizio (colonna `exercises.category`), distinta dalla categoria attrezzi in UI.
+ * Allineata al fallback `Generale` usato in workout-transformers e reporting.
+ */
+export const EXERCISE_CATEGORIES = [
+  'Generale',
+  'Forza',
+  'Ipertrofia',
+  'Cardio',
+  'Mobilità / stretching',
+  'Core / addominali',
+  'Pliometrico / esplosività',
+  'Funzionale',
+] as const
+
+export type ExerciseCategory = (typeof EXERCISE_CATEGORIES)[number]
+
+export const DEFAULT_EXERCISE_CATEGORY: ExerciseCategory = 'Generale'
+
+/** Ruoli che possono creare/modificare esercizi (allineato alle policy RLS INSERT). */
+export const EXERCISE_MANAGER_ROLES = ['admin', 'trainer', 'pt'] as const
+
+export function isExerciseManagerRole(role: string | null | undefined): boolean {
+  if (!role) return false
+  return (EXERCISE_MANAGER_ROLES as readonly string[]).includes(String(role).trim())
+}
+
+/**
  * Lista completa di gruppi muscolari basata sulla classificazione professionale
  */
 export const MUSCLE_GROUPS = [

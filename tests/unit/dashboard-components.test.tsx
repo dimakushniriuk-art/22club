@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { KpiCard } from '@/components/shared/dashboard/kpi-card'
+import { MetricCard } from '@/components'
 import { Sidebar } from '@/components/shared/dashboard/sidebar'
 import { RoleLayout } from '@/components/shared/dashboard/role-layout'
 import { AuthProvider } from '@/providers/auth-provider'
@@ -44,32 +44,43 @@ describe('Dashboard Components', () => {
       writable: true,
     })
   })
-  describe('KpiCard', () => {
-    it('renders with label and value', () => {
-      render(<KpiCard label="Test Label" value="123" />)
+  describe('MetricCard', () => {
+    const defaultIcon = <span data-testid="metric-default-icon">●</span>
+
+    it('renders with title and value', () => {
+      render(<MetricCard variant="minimal" title="Test Label" value="123" icon={defaultIcon} />)
 
       expect(screen.getByText('Test Label')).toBeInTheDocument()
       expect(screen.getByText('123')).toBeInTheDocument()
     })
 
     it('renders with trend indicator', () => {
-      render(<KpiCard label="Test Label" value="123" trend="up" />)
+      render(
+        <MetricCard
+          variant="minimal"
+          title="Test Label"
+          value="123"
+          trend="up"
+          icon={defaultIcon}
+        />,
+      )
 
       expect(screen.getByText('↗')).toBeInTheDocument()
     })
 
     it('renders with icon', () => {
       const icon = <span data-testid="icon">🏋️</span>
-      render(<KpiCard label="Test Label" value="123" icon={icon} />)
+      render(<MetricCard variant="minimal" title="Test Label" value="123" icon={icon} />)
 
       expect(screen.getByTestId('icon')).toBeInTheDocument()
     })
 
-    it('applies correct styling', () => {
-      render(<KpiCard label="Test Label" value="123" />)
+    it('applies minimal variant surface classes', () => {
+      const { container } = render(
+        <MetricCard variant="minimal" title="Test Label" value="123" icon={defaultIcon} />,
+      )
 
-      const card = screen.getByText('Test Label').closest('div')
-      expect(card).toHaveClass('flex', 'flex-col', 'justify-center', 'items-center')
+      expect(container.querySelector('[class*="from-zinc-900"]')).toBeInTheDocument()
     })
   })
 

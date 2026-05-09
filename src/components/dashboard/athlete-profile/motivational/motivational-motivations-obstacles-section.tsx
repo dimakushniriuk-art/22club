@@ -1,16 +1,15 @@
 // ============================================================
 // Componente Sezione Motivazioni Secondarie e Ostacoli (FASE C - Split File Lunghi)
 // ============================================================
-// Estratto da athlete-motivational-tab.tsx per migliorare manutenibilità
+// Allineato a FitnessActivitiesZonesSection: griglia + micro-intestazioni, niente Card interne.
 // ============================================================
 
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Input } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
-import { Plus, X, ListOrdered, OctagonAlert } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 
 interface MotivationalMotivationsObstaclesSectionProps {
   isEditing: boolean
@@ -44,18 +43,14 @@ export function MotivationalMotivationsObstaclesSection({
   onNewMotivazioneChange,
   onNewOstacoloChange,
 }: MotivationalMotivationsObstaclesSectionProps) {
-  if (isEditing) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader className="pb-3 pt-4 px-6 space-y-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
-              <ListOrdered className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
-              Motivazioni Secondarie
-            </CardTitle>
-            <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
-          </CardHeader>
-          <CardContent className="pt-2 pb-6 px-6 space-y-3">
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Motivazioni secondarie
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi motivazione"
@@ -66,12 +61,13 @@ export function MotivationalMotivationsObstaclesSection({
                     onMotivazioneAdd(newMotivazione)
                   }
                 }}
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
               <Button
                 type="button"
-                size="sm"
-                className="shrink-0"
+                size="icon"
                 onClick={() => newMotivazione && onMotivazioneAdd(newMotivazione)}
+                className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -87,18 +83,27 @@ export function MotivationalMotivationsObstaclesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : motivational?.motivazioni_secondarie &&
+          motivational.motivazioni_secondarie.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {motivational.motivazioni_secondarie.map((motivazione, index) => (
+              <Badge key={index} variant="secondary">
+                {motivazione}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessuna motivazione secondaria</p>
+        )}
+      </div>
 
-        <Card variant="default" className="overflow-hidden">
-          <CardHeader className="pb-3 pt-4 px-6 space-y-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
-              <OctagonAlert className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
-              Ostacoli Percepiti
-            </CardTitle>
-            <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
-          </CardHeader>
-          <CardContent className="pt-2 pb-6 px-6 space-y-3">
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Ostacoli percepiti
+        </p>
+        {isEditing ? (
+          <>
             <div className="flex gap-2">
               <Input
                 placeholder="Aggiungi ostacolo"
@@ -109,12 +114,13 @@ export function MotivationalMotivationsObstaclesSection({
                     onOstacoloAdd(newOstacolo)
                   }
                 }}
+                className="border-white/10 bg-white/[0.04] text-xs"
               />
               <Button
                 type="button"
-                size="sm"
-                className="shrink-0"
+                size="icon"
                 onClick={() => newOstacolo && onOstacoloAdd(newOstacolo)}
+                className="h-9 shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -127,60 +133,19 @@ export function MotivationalMotivationsObstaclesSection({
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </>
+        ) : motivational?.ostacoli_percepiti && motivational.ostacoli_percepiti.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {motivational.ostacoli_percepiti.map((ostacolo, index) => (
+              <Badge key={index} variant="secondary">
+                {ostacolo}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">Nessun ostacolo percepito</p>
+        )}
       </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader className="pb-3 pt-4 px-6 space-y-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
-            <ListOrdered className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
-            Motivazioni Secondarie
-          </CardTitle>
-          <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-6 px-6">
-          {motivational?.motivazioni_secondarie &&
-          motivational.motivazioni_secondarie.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {motivational.motivazioni_secondarie.map((motivazione, index) => (
-                <Badge key={index} variant="secondary">
-                  {motivazione}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm">Nessuna motivazione secondaria</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card variant="default" className="overflow-hidden">
-        <CardHeader className="pb-3 pt-4 px-6 space-y-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-text-primary">
-            <OctagonAlert className="h-3.5 w-3.5 text-primary flex-shrink-0" aria-hidden />
-            Ostacoli Percepiti
-          </CardTitle>
-          <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-primary/80 to-transparent" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-6 px-6">
-          {motivational?.ostacoli_percepiti && motivational.ostacoli_percepiti.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {motivational.ostacoli_percepiti.map((ostacolo, index) => (
-                <Badge key={index} variant="secondary">
-                  {ostacolo}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-secondary text-sm">Nessun ostacolo percepito</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }

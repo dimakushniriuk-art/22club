@@ -58,6 +58,22 @@ export async function fetchStaffTodayAgenda(
   supabaseClient: SupabaseClient<Database>,
   staffProfileId: string,
 ): Promise<AgendaEvent[]> {
+  // Senza JWT la richiesta PostgREST usa il ruolo `anon`, che su `appointments` non ha GRANT → 42501.
+  // Attesa breve: dopo bootstrap AuthProvider la sessione è quasi sempre al primo getSession; evitare
+  // fino a ~320ms di sleep cumulativo (5×80ms) che peggiorava TTI dashboard.
+  const sessionMaxAttempts = 4
+  for (let s = 0; s < sessionMaxAttempts; s++) {
+    const {
+      data: { session },
+    } = await supabaseClient.auth.getSession()
+    if (session?.access_token) break
+    if (s < sessionMaxAttempts - 1) await sleep(s === 0 ? 30 : 45)
+    else {
+      logger.debug('Agenda: nessuna sessione sul client, skip query appuntamenti')
+      return []
+    }
+  }
+
   const now = new Date()
   const { dayStart: todayStart, dayEnd: todayEnd } = getStaffLocalDayBoundsISO(now)
 

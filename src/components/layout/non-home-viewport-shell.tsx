@@ -6,15 +6,22 @@ type NonHomeViewportShellProps = {
   className?: string
   scrollClassName?: string
   /**
-   * `scroll`: un solo scroll verticale nel wrapper (login, welcome, privacy…).
-   * `fill`: solo limite 100dvh + flex; lo scroll resta ai figli (es. RoleLayout dashboard).
+   * Viewport contract:
+   * - `scroll`: root con scroll verticale interno (`non-home-viewport-scroll`; es. login, welcome, privacy…).
+   * - `fill`: root flex fill (`flex flex-col`); nessuno scroll dedicato nello shell — lo scroll resta ai figli (es. `RoleLayout` in dashboard).
    */
   variant?: 'scroll' | 'fill'
 }
 
 /**
- * Contenitore viewport per pagine fuori da `/home/*`: altezza = 100dvh,
- * orientamento landscape/portrait stabile (niente catena flex rotta).
+ * **NonHomeViewportShell** — viewport shell per route **non-home** (fuori dalla home atleta / albero “home” di prodotto):
+ * altezza = `100dvh`, orientamento landscape/portrait stabile senza rompere la catena flex.
+ *
+ * Contratto varianti:
+ * - `variant="scroll"`: root + wrapper interno = **scroll interno** unico verticale.
+ * - `variant="fill"`: root **flex fill** per composizione di layout figli che gestiscono overflow/scroll.
+ *
+ * Uso dashboard globale: `src/app/dashboard/layout.tsx` avvolge l’albero dashboard in `NonHomeViewportShell` (tipicamente `variant="fill"`).
  */
 export function NonHomeViewportShell({
   children,

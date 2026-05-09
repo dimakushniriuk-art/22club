@@ -20,6 +20,10 @@ import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
 import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
 import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
+import {
+  workoutsPaneEmbedBodyClass,
+  workoutsPaneEmbedRootClass,
+} from '@/lib/embed/workouts-pane-body-layout'
 
 const logger = createLogger('app:home:allenamenti:page')
 
@@ -133,6 +137,7 @@ export function AllenamentiHomePageContent() {
   const supabase = useSupabaseClient()
   const { isPreview, pathBase } = useAthleteAllenamentiPaths()
   const workoutsPane = useWorkoutsPaneOptional()
+  const workoutsPaneNaturalFlow = Boolean(workoutsPane)
   const { athleteProfileId, authLoading } = useResolvedAthleteProfileForAllenamenti()
   const [trainerAvatarUrl, setTrainerAvatarUrl] = useState<string | null>(null)
 
@@ -253,7 +258,7 @@ export function AllenamentiHomePageContent() {
 
   if (!user || !isValidUser) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
+      <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
         <AllenamentiPageHeader onBack={handleBack} />
         <div className="min-h-0 flex-1" aria-hidden />
       </div>
@@ -262,9 +267,11 @@ export function AllenamentiHomePageContent() {
 
   if (!athleteProfileId && !authLoading) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
+      <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
         <AllenamentiPageHeader onBack={handleBack} />
-        <div className="min-h-0 flex-1 overflow-auto px-3 py-4">
+        <div
+          className={workoutsPaneEmbedBodyClass(workoutsPaneNaturalFlow, undefined, 'px-3 py-4')}
+        >
           <p className="text-sm text-text-secondary">Profilo atleta non disponibile.</p>
         </div>
       </div>
@@ -272,20 +279,28 @@ export function AllenamentiHomePageContent() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
+    <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
       <AllenamentiPageHeader onBack={handleBack} />
       <div
         className={
           isPreview
-            ? 'min-h-0 flex-1 overflow-auto px-3 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pt-6'
-            : 'min-h-0 flex-1 overflow-auto px-3 pb-[calc(9.5rem+env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 min-[834px]:px-6'
+            ? workoutsPaneEmbedBodyClass(
+                workoutsPaneNaturalFlow,
+                undefined,
+                'px-3 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 sm:pt-5 md:px-6 md:pt-6',
+              )
+            : workoutsPaneEmbedBodyClass(
+                workoutsPaneNaturalFlow,
+                undefined,
+                'px-3 pb-[calc(9.5rem+env(safe-area-inset-bottom))] safe-area-inset-bottom sm:px-4 md:px-6',
+              )
         }
       >
         <div
           className={
             isPreview
               ? 'mx-auto w-full max-w-none space-y-4 sm:space-y-6'
-              : 'mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl'
+              : 'mx-auto w-full max-w-lg space-y-4 sm:space-y-6 lg:max-w-3xl'
           }
         >
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
@@ -336,7 +351,7 @@ export function AllenamentiHomePageContent() {
         </div>
 
         {!isPreview ? (
-          <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/95 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 min-[834px]:px-5">
+          <Card className="fixed inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-2xl border-x-0 border-t border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/95 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-md px-3 pb-safe pt-3 sm:px-4 md:px-5">
             <CardContent className="flex flex-col gap-2.5 p-0 sm:gap-3">
               <div className="mx-auto h-0.5 w-8 rounded-full bg-cyan-400/70" aria-hidden />
               <div className="flex items-center justify-center gap-3 sm:gap-3.5">

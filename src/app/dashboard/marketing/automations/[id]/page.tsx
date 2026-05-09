@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { Zap, ArrowLeft, Play } from 'lucide-react'
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Database } from '@/lib/supabase/types'
 import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 type AutomationRow = Database['public']['Tables']['marketing_automations']['Row']
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
@@ -30,11 +31,11 @@ function formatDate(s: string | null): string {
   })
 }
 
-export default function AutomationDetailPage() {
+export default function AutomationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const params = useParams()
+  const resolved = useResolvedParams(params)
   const { role, loading: authLoading } = useAuth()
-  const id = typeof params.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
   const [automation, setAutomation] = useState<AutomationRow | null>(null)
   const [segment, setSegment] = useState<SegmentRow | null>(null)
   const [loading, setLoading] = useState(true)
@@ -110,7 +111,7 @@ export default function AutomationDetailPage() {
 
   if (error || !automation) {
     return (
-      <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
+      <div className="space-y-6 bg-background p-4 md:p-6">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/automations">
             <ArrowLeft className="h-4 w-4" />
@@ -124,8 +125,8 @@ export default function AutomationDetailPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
-      <header className="flex flex-col gap-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard/marketing/automations">
@@ -133,7 +134,7 @@ export default function AutomationDetailPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="flex items-center gap-2 text-xl font-bold min-[834px]:text-2xl">
+            <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
               <Zap className="h-6 w-6 text-cyan-400" />
               {automation.name}
             </h1>

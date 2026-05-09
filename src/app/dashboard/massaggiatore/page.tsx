@@ -11,7 +11,7 @@ import {
   CalendarDays,
   CalendarCheck,
   CreditCard,
-  Settings2,
+  Settings,
 } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
@@ -96,7 +96,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
   },
   {
     href: '/dashboard/massaggiatore/impostazioni',
-    icon: Settings2,
+    icon: Settings,
     label: 'Impostazioni',
     iconBoxClass: 'border-zinc-500/30 bg-zinc-500/20 text-zinc-300',
   },
@@ -131,6 +131,8 @@ export default function MassaggiatorePage() {
     loading: agendaLoading,
     loadError: agendaLoadError,
     reload: reloadAgenda,
+    lessonsLoading,
+    lessonsLoadError,
   } = useStaffTodayAgenda()
 
   const massageAgendaEvents = useMemo(
@@ -368,7 +370,12 @@ export default function MassaggiatorePage() {
                 </Button>
               </DashboardColumnEmpty>
             ) : (
-              <AgendaClient initialEvents={massageAgendaEvents} embedded />
+              <AgendaClient
+                initialEvents={massageAgendaEvents}
+                lessonsLoading={lessonsLoading}
+                lessonsLoadError={lessonsLoadError}
+                embedded
+              />
             )}
           </DashboardColumnPanel>
         </div>

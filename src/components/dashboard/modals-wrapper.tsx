@@ -52,6 +52,21 @@ export function useModalActions() {
   return useContext(ModalContext)
 }
 
+function DashboardModalLazyFallback() {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md"
+      role="status"
+      aria-live="polite"
+      aria-label="Caricamento modale"
+    >
+      <div className="rounded-2xl border border-white/10 bg-surface-200/90 px-5 py-4 text-sm text-text-secondary shadow-xl">
+        Caricamento...
+      </div>
+    </div>
+  )
+}
+
 export function ModalsWrapper() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
@@ -71,7 +86,7 @@ export function ModalsWrapper() {
 
   return (
     <ModalContext.Provider value={modalActions}>
-      <Suspense fallback={null}>
+      <Suspense fallback={<DashboardModalLazyFallback />}>
         <AppointmentModal
           open={showAppointmentModal}
           onOpenChange={setShowAppointmentModal}
@@ -81,7 +96,7 @@ export function ModalsWrapper() {
         />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<DashboardModalLazyFallback />}>
         <PaymentFormModal
           open={showPaymentModal}
           onOpenChange={setShowPaymentModal}
@@ -91,7 +106,7 @@ export function ModalsWrapper() {
         />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<DashboardModalLazyFallback />}>
         <AssignWorkoutModal
           open={showWorkoutModal}
           onOpenChange={setShowWorkoutModal}
@@ -101,7 +116,7 @@ export function ModalsWrapper() {
         />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<DashboardModalLazyFallback />}>
         <DocumentUploaderModal
           open={showDocumentModal}
           onOpenChange={setShowDocumentModal}

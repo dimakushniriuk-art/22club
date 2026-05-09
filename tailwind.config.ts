@@ -10,7 +10,10 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    // Breakpoints ottimizzati per tablet 10+ landscape
+    /**
+     * Breakpoint canonici (fonte unica con src/styles/design-tokens.css --breakpoint-*).
+     * sm/md: mobile-first; tablet-landscape: iPad orizzontale; lg+: desktop contenuto.
+     */
     screens: {
       sm: '640px',
       md: '768px',

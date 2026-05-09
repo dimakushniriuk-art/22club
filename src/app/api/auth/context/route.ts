@@ -54,6 +54,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    const impersonateProfileIdEarly = request.cookies.get(COOKIE_IMPERSONATE_PROFILE)?.value?.trim()
+    // Senza cookie impersonation il client usa solo `fetchProfile` (Supabase client): evita round-trip
+    // admin + SELECT actor che la risposta GET non sfrutta comunque (`applyAuthContext` controlla solo isImpersonating).
+    if (!impersonateProfileIdEarly) {
+      return NextResponse.json({
+        role: null,
+        org_id: null,
+        isImpersonating: false,
+      })
+    }
+
     type ProfileRow = Pick<
       Tables<'profiles'>,
       | 'id'
@@ -135,7 +146,7 @@ export async function GET(request: NextRequest) {
     } as ProfileRow
     const actorProfilePayload = toAuthProfile(profileTyped)
     const normalizedRole = actorProfilePayload.role
-    const impersonateProfileId = request.cookies.get(COOKIE_IMPERSONATE_PROFILE)?.value
+    const impersonateProfileId = impersonateProfileIdEarly
     // Parita cross-platform: su Capacitor il middleware puo essere bypassato, quindi il cleanup cookie avviene qui.
     if (impersonateProfileId && normalizedRole !== 'admin') {
       const fullName =

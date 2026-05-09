@@ -1,20 +1,28 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import {
   subscribeToTable,
   subscribeToChannel,
+  subscribePostgresChanges,
   cleanupRealtimeChannels,
   getChannelsCount,
   cleanupChannel,
 } from '@/lib/realtimeClient'
-import { useRealtimeChannel, useCustomChannel } from '@/hooks/useRealtimeChannel'
+import {
+  useRealtimeChannel,
+  useCustomChannel,
+  useRealtimeResubscribeToken,
+} from '@/hooks/useRealtimeChannel'
 
 // Mock Supabase client
 const mockUnsubscribe = vi.fn()
 const mockChannel = {
   on: vi.fn().mockReturnThis(),
-  subscribe: vi.fn(),
+  subscribe: vi.fn((cb?: (status: string) => void) => {
+    cb?.('SUBSCRIBED')
+    return mockChannel
+  }),
   unsubscribe: mockUnsubscribe,
 } as unknown as RealtimeChannel
 
@@ -71,6 +79,22 @@ describe('Realtime Memory Leak Prevention', () => {
 
       cleanup2() // Non dovrebbe crashare anche se già pulito
       expect(getChannelsCount()).toBe(0)
+    })
+  })
+
+  describe('subscribePostgresChanges cleanup', () => {
+    it('should remove channel from Map when cleanup function is called', () => {
+      const callback = vi.fn()
+
+      const cleanup = subscribePostgresChanges('realtime:custom:multi', [
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', onEvent: callback },
+        { event: 'UPDATE', schema: 'public', table: 'chat_messages', onEvent: callback },
+      ])
+
+      expect(getChannelsCount()).toBe(1)
+      cleanup()
+      expect(getChannelsCount()).toBe(0)
+      expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -153,6 +177,17 @@ describe('Realtime Memory Leak Prevention', () => {
 
       // Verifica che Map sia vuota
       expect(getChannelsCount()).toBe(0)
+    })
+  })
+
+  describe('useRealtimeResubscribeToken', () => {
+    it('should bump token when realtime resubscribe event fires', () => {
+      const { result } = renderHook(() => useRealtimeResubscribeToken())
+      expect(result.current).toBe(0)
+      act(() => {
+        window.dispatchEvent(new CustomEvent('app:realtime-resubscribe'))
+      })
+      expect(result.current).toBe(1)
     })
   })
 

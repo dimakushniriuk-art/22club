@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +29,10 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '@/providers/auth-provider'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { loadFormDraft } from '@/lib/browser-form-draft'
+import { useToast } from '@/components/ui/toast'
 
 const CARD_DS =
   'rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] hover:border-white/20 transition-all duration-200'
@@ -127,10 +131,17 @@ interface FormData {
   date: string
 }
 
+function isMeaningfulProgressDraft(data: FormData): boolean {
+  return Object.values(data).some((v) => typeof v === 'string' && v.trim() !== '')
+}
+
 export default function NuovoProgressoPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const supabase = createClient()
+  const { user } = useAuth()
+  const { addToast } = useToast()
+  const draftRestoreRan = useRef(false)
   const [loading, setLoading] = useState(false)
   const [loadingLastMeasurement, setLoadingLastMeasurement] = useState(true)
 
@@ -223,6 +234,16 @@ export default function NuovoProgressoPage() {
     // Note
     note: '',
     date: new Date().toISOString().split('T')[0],
+  })
+
+  const draftScope = user?.user_id ?? null
+  const isMeaningfulDraftCb = useCallback((d: FormData) => isMeaningfulProgressDraft(d), [])
+  const { clearDraft } = useBrowserFormDraft({
+    feature: 'progressi-nuovo',
+    scope: draftScope,
+    value: formData,
+    isMeaningful: isMeaningfulDraftCb,
+    restoreEnabled: false,
   })
 
   // Funzione helper per convertire un valore numerico in stringa (per il form)
@@ -487,6 +508,21 @@ export default function NuovoProgressoPage() {
     loadLastMeasurement()
   }, [supabase])
 
+  useEffect(() => {
+    if (loadingLastMeasurement || !draftScope || draftRestoreRan.current) return
+    draftRestoreRan.current = true
+    const env = loadFormDraft<FormData>('progressi-nuovo', draftScope)
+    if (env && isMeaningfulProgressDraft(env.payload)) {
+      setFormData(env.payload)
+      addToast({
+        title: 'Bozza recuperata',
+        message:
+          'Ripristinati i dati salvati nel browser. Controlla e salva per registrarli sul server.',
+        variant: 'success',
+      })
+    }
+  }, [loadingLastMeasurement, draftScope, addToast])
+
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
@@ -738,6 +774,7 @@ export default function NuovoProgressoPage() {
       }
 
       logger.debug('Progress saved successfully', undefined, { athleteId: authUser.id })
+      clearDraft()
       await invalidateProgressAnalyticsQueries(queryClient, authUser.id)
       invalidateProgressPhotosFrequentCache(authUser.id)
       router.push('/home/progressi')
@@ -757,7 +794,7 @@ export default function NuovoProgressoPage() {
   if (loadingLastMeasurement) {
     return (
       <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
-        <div className="space-y-4 px-3 pb-24 py-4 sm:px-4 min-[834px]:px-6">
+        <div className="space-y-4 px-3 pb-24 py-4 sm:px-4 md:px-6">
           <PageHeaderFixed
             variant="chat"
             title="Nuova Misurazione"
@@ -777,7 +814,7 @@ export default function NuovoProgressoPage() {
 
   return (
     <div className="min-h-0 flex-1 flex flex-col bg-background overflow-auto">
-      <div className="space-y-4 px-3 pb-24 py-4 sm:px-4 min-[834px]:px-6">
+      <div className="space-y-4 px-3 pb-24 py-4 sm:px-4 md:px-6">
         <PageHeaderFixed
           variant="chat"
           title="Nuova Misurazione"

@@ -158,14 +158,21 @@ export function WorkoutsPane({
         {view.kind === 'oggi' ? (
           <AllenamentiOggiPageContent />
         ) : view.kind === 'scheda' ? (
-          <SchedaAllenamentoContent workoutPlanIdOverride={view.workoutPlanId} />
+          <SchedaAllenamentoContent
+            workoutPlanIdOverride={view.workoutPlanId}
+            routeParams={Promise.resolve({ id: view.workoutPlanId })}
+          />
         ) : view.kind === 'giorno' ? (
           <GiornoPreviewContent
             workoutPlanIdOverride={view.workoutPlanId}
             dayIdOverride={view.dayId}
+            routeParams={Promise.resolve({ id: view.workoutPlanId, dayId: view.dayId })}
           />
         ) : view.kind === 'esercizio' ? (
-          <EsercizioDetailPageContent exerciseIdOverride={view.exerciseId} />
+          <EsercizioDetailPageContent
+            exerciseIdOverride={view.exerciseId}
+            routeParams={Promise.resolve({ exerciseId: view.exerciseId })}
+          />
         ) : view.kind === 'riepilogo' ? (
           <RiepilogoPageContent workoutLogIdOverride={view.workoutLogId} />
         ) : (

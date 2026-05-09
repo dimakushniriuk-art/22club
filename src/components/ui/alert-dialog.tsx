@@ -1,9 +1,6 @@
 'use client'
 
 import * as React from 'react'
-// Nota: X icon potrebbe essere usato in futuro per chiusura dialog
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
 
@@ -50,6 +47,15 @@ interface AlertDialogCancelProps {
   className?: string
 }
 
+function collectFocusables(panel: HTMLElement): HTMLElement[] {
+  const nodes = panel.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )
+  return Array.from(nodes).filter(
+    (el) => !el.hasAttribute('disabled') && !el.closest('[aria-hidden="true"]'),
+  )
+}
+
 const AlertDialogContext = React.createContext<{
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -79,6 +85,68 @@ export function AlertDialog({ open, onOpenChange, children }: AlertDialogProps) 
 
 export function AlertDialogContent({ children, className }: AlertDialogContentProps) {
   const { open, onOpenChange } = React.useContext(AlertDialogContext)
+  const panelRef = React.useRef<HTMLDivElement>(null)
+  const previouslyFocusedRef = React.useRef<Element | null>(null)
+  const onOpenChangeRef = React.useRef(onOpenChange)
+
+  React.useEffect(() => {
+    onOpenChangeRef.current = onOpenChange
+  }, [onOpenChange])
+
+  React.useEffect(() => {
+    if (!open) return
+    const panel = panelRef.current
+    if (!panel) return
+
+    previouslyFocusedRef.current = document.activeElement
+
+    const focusFirst = () => {
+      const list = collectFocusables(panel)
+      const target = list[0]
+      window.requestAnimationFrame(() => target?.focus())
+    }
+    focusFirst()
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onOpenChangeRef.current(false)
+        return
+      }
+      if (e.key !== 'Tab') return
+      if (!panel.contains(document.activeElement)) {
+        e.preventDefault()
+        collectFocusables(panel)[0]?.focus()
+        return
+      }
+      const list = collectFocusables(panel)
+      if (list.length === 0) return
+      const firstEl = list[0]
+      const lastEl = list[list.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === firstEl) {
+          e.preventDefault()
+          lastEl.focus()
+        }
+      } else if (document.activeElement === lastEl) {
+        e.preventDefault()
+        firstEl.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown, true)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true)
+      const prev = previouslyFocusedRef.current
+      if (prev instanceof HTMLElement) {
+        try {
+          prev.focus()
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }, [open])
 
   if (!open) return null
 
@@ -93,6 +161,7 @@ export function AlertDialogContent({ children, className }: AlertDialogContentPr
 
       {/* Dialog */}
       <div
+        ref={panelRef}
         className={cn(
           'bg-background border-border relative z-50 w-full max-w-md rounded-lg border p-6 shadow-lg',
           className,

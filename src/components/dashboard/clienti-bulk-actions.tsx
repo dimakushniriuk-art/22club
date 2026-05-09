@@ -17,7 +17,7 @@ export function ClientiBulkActions({
   if (selectedCount === 0) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 animate-fade-in">
+    <div className="fixed z-40 animate-fade-in bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-4">
       {/* Glow effect */}
       <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-br from-teal-500/20 via-cyan-500/20 to-blue-500/20 blur-xl" />
 
@@ -38,7 +38,7 @@ export function ClientiBulkActions({
               size="sm"
               variant="outline"
               onClick={onSendEmail}
-              className="gap-2 border-teal-500/30 hover:bg-teal-500/10 hover:border-teal-500/50"
+              className="gap-2 border-teal-500/30 hover:bg-teal-500/10 hover:border-teal-500/50 touch-target-min"
             >
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Email</span>
@@ -48,7 +48,7 @@ export function ClientiBulkActions({
                 size="sm"
                 variant="outline"
                 onClick={onDelete}
-                className="gap-2 border-red-500/30 text-state-error hover:bg-state-error/10 hover:border-red-500/50"
+                className="touch-target-min gap-2 border-red-500/30 text-state-error hover:bg-state-error/10 hover:border-red-500/50"
               >
                 <Trash className="h-4 w-4" />
                 <span className="hidden sm:inline">Elimina</span>
@@ -59,7 +59,7 @@ export function ClientiBulkActions({
               variant="ghost"
               onClick={onClear}
               aria-label="Deseleziona tutti"
-              className="hover:bg-background-tertiary/50"
+              className="touch-target-min hover:bg-background-tertiary/50"
             >
               <X className="h-4 w-4" />
             </Button>

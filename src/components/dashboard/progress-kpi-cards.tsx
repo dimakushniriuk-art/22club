@@ -1,20 +1,11 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { Badge } from '@/components/ui'
-import { Skeleton } from '@/components/ui'
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Target,
-  Zap,
-  Flame,
-  AlertTriangle,
-  CheckCircle2,
-} from 'lucide-react'
+import { MetricCard } from '@/components'
+import { Card, CardContent } from '@/components/ui'
+import { TrendingUp, TrendingDown, Minus, Target, Zap, Flame } from 'lucide-react'
 import type { ProgressKPI } from '@/hooks/use-progress-analytics'
 import { getValueRange, getRangeColor } from '@/lib/constants/progress-ranges'
+import { cn } from '@/lib/utils'
 
 interface ProgressKPICardsProps {
   data: ProgressKPI | undefined
@@ -26,15 +17,15 @@ export function ProgressKPICards({ data, loading }: ProgressKPICardsProps) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} variant="trainer" className="border-teal-500/30 bg-transparent">
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-20" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="mb-2 h-8 w-16" />
-              <Skeleton className="h-4 w-24" />
-            </CardContent>
-          </Card>
+          <MetricCard
+            key={i}
+            variant="trainer"
+            tone="teal"
+            title=" "
+            value={0}
+            icon={<Target className="h-4 w-4" aria-hidden />}
+            loading
+          />
         ))}
       </div>
     )
@@ -84,6 +75,23 @@ export function ProgressKPICards({ data, loading }: ProgressKPICardsProps) {
     return 'secondary'
   }
 
+  const weightChangeTrend = (change: number | null): 'up' | 'down' | 'neutral' | undefined => {
+    if (change === null) return undefined
+    if (change > 0) return 'up'
+    if (change < 0) return 'down'
+    return 'neutral'
+  }
+
+  const variazioneStatusFromBadge = (
+    change: number | null,
+  ): 'success' | 'error' | 'info' | undefined => {
+    if (change === null) return 'info'
+    const c = getWeightChangeColor(change)
+    if (c === 'success') return 'success'
+    if (c === 'error') return 'error'
+    return 'info'
+  }
+
   const getMotivationalMessage = () => {
     if (data.variazionePeso7gg !== null && data.variazionePeso7gg < 0) {
       return `Hai perso ${Math.abs(data.variazionePeso7gg).toFixed(1)}kg questa settimana! 🔥`
@@ -96,6 +104,27 @@ export function ProgressKPICards({ data, loading }: ProgressKPICardsProps) {
     }
     return 'Continua così! 💪'
   }
+
+  const pesoRange = getValueRange('valoriPrincipali', 'peso_kg')
+  const pesoColor = data.pesoAttuale
+    ? getRangeColor('valoriPrincipali', 'peso_kg', data.pesoAttuale)
+    : 'default'
+  const isInRange =
+    pesoRange && data.pesoAttuale
+      ? data.pesoAttuale >= pesoRange.min && data.pesoAttuale <= pesoRange.max
+      : null
+
+  const pesoStatus: 'success' | 'error' | undefined =
+    data.pesoAttuale && isInRange !== null ? (isInRange ? 'success' : 'error') : undefined
+  const pesoStatusText =
+    data.pesoAttuale && isInRange !== null ? (isInRange ? 'Nel range' : 'Fuori range') : undefined
+
+  const variazioneStatusText =
+    data.variazionePeso7gg !== null
+      ? data.variazionePeso7gg > 0
+        ? 'In aumento'
+        : 'In diminuzione'
+      : 'Nessun dato'
 
   return (
     <div className="space-y-6">
@@ -115,170 +144,104 @@ export function ProgressKPICards({ data, loading }: ProgressKPICardsProps) {
       {/* KPI Cards - Migliorate visivamente con animazioni */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         {/* Peso Attuale */}
-        {(() => {
-          const pesoRange = getValueRange('valoriPrincipali', 'peso_kg')
-          const pesoColor = data.pesoAttuale
-            ? getRangeColor('valoriPrincipali', 'peso_kg', data.pesoAttuale)
-            : 'default'
-          const isInRange =
-            pesoRange && data.pesoAttuale
-              ? data.pesoAttuale >= pesoRange.min && data.pesoAttuale <= pesoRange.max
-              : null
-
-          return (
-            <Card
-              variant="trainer"
-              className={`group relative overflow-hidden border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-cyan-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-teal-400/50 hover:shadow-xl hover:shadow-teal-500/30 ${
-                pesoColor === 'error'
-                  ? 'border-red-500/40 hover:border-red-400/60 hover:shadow-red-500/20'
-                  : pesoColor === 'warning'
-                    ? 'border-yellow-500/40 hover:border-yellow-400/60 hover:shadow-yellow-500/20'
-                    : ''
-              }`}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle size="sm" className="flex items-center justify-between text-white">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-teal-500/20 group-hover:bg-teal-500/30 transition-colors">
-                      <Target className="text-teal-400 h-4 w-4" />
-                    </div>
-                    Peso Attuale
-                  </div>
-                  {data.pesoAttuale && isInRange !== null && (
-                    <div className="flex items-center gap-1">
-                      {isInRange ? (
-                        <CheckCircle2
-                          className="h-3.5 w-3.5 text-state-success"
-                          aria-label="Valore nel range ottimale"
-                        />
-                      ) : (
-                        <AlertTriangle
-                          className="h-3.5 w-3.5 text-state-error"
-                          aria-label="Valore fuori range"
-                        />
-                      )}
-                    </div>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-teal-400 mb-2 text-3xl font-bold">
-                  {data.pesoAttuale ? `${data.pesoAttuale}kg` : 'N/A'}
-                </div>
-                <div className="flex items-center gap-1.5 mb-1">
-                  {getWeightChangeIcon(data.variazionePeso7gg)}
-                  <span className="text-text-secondary text-xs">
-                    {getWeightChangeText(data.variazionePeso7gg)} ultimi 7gg
-                  </span>
-                </div>
-                {pesoRange && data.pesoAttuale && (
-                  <div className="text-text-tertiary text-xs">
-                    Range: {pesoRange.min}-{pesoRange.max}kg
-                    {pesoRange.note && ` (${pesoRange.note})`}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        })()}
+        <div className="relative h-full min-h-[140px]">
+          <MetricCard
+            variant="trainer"
+            tone="teal"
+            title="Peso Attuale"
+            value={data.pesoAttuale ? `${data.pesoAttuale}kg` : 'N/A'}
+            icon={<Target className="h-4 w-4" aria-hidden />}
+            trend={weightChangeTrend(data.variazionePeso7gg)}
+            status={pesoStatus}
+            statusText={pesoStatusText}
+            className={cn(
+              'group relative overflow-hidden border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-cyan-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-teal-400/50 hover:shadow-xl hover:shadow-teal-500/30 !pb-16',
+              pesoColor === 'error' &&
+                'border-red-500/40 hover:border-red-400/60 hover:shadow-red-500/20',
+              pesoColor === 'warning' &&
+                'border-yellow-500/40 hover:border-yellow-400/60 hover:shadow-yellow-500/20',
+            )}
+          />
+          <div className="pointer-events-none absolute bottom-3 left-4 right-14 z-[1] flex flex-col gap-0.5 text-xs">
+            <div className="flex items-center gap-1.5 text-text-secondary">
+              {getWeightChangeIcon(data.variazionePeso7gg)}
+              <span>{getWeightChangeText(data.variazionePeso7gg)} ultimi 7gg</span>
+            </div>
+            {pesoRange && data.pesoAttuale ? (
+              <div className="text-text-tertiary">
+                Range: {pesoRange.min}-{pesoRange.max}kg
+                {pesoRange.note ? ` (${pesoRange.note})` : ''}
+              </div>
+            ) : null}
+          </div>
+          {data.pesoAttuale && isInRange !== null ? (
+            <span className="sr-only">
+              {isInRange ? 'Valore nel range ottimale' : 'Valore fuori range'}
+            </span>
+          ) : null}
+        </div>
 
         {/* Variazione Peso */}
-        <Card
+        <MetricCard
           variant="trainer"
+          tone="emerald"
+          title="Variazione 7gg"
+          value={
+            data.variazionePeso7gg !== null
+              ? `${data.variazionePeso7gg > 0 ? '+' : ''}${data.variazionePeso7gg.toFixed(1)}kg`
+              : 'N/A'
+          }
+          icon={<TrendingUp className="h-4 w-4" aria-hidden />}
+          trend={weightChangeTrend(data.variazionePeso7gg)}
+          status={variazioneStatusFromBadge(data.variazionePeso7gg)}
+          statusText={variazioneStatusText}
           className="group relative overflow-hidden border-green-500/30 bg-gradient-to-br from-green-500/10 via-transparent to-emerald-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-green-400/50 hover:shadow-xl hover:shadow-green-500/30"
-        >
-          <CardHeader className="pb-2">
-            <CardTitle size="sm" className="flex items-center gap-2 text-white">
-              <div className="p-1.5 rounded bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
-                <TrendingUp className="text-green-400 h-4 w-4" />
-              </div>
-              Variazione 7gg
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-green-400 mb-2 text-3xl font-bold">
-              {data.variazionePeso7gg !== null
-                ? `${data.variazionePeso7gg > 0 ? '+' : ''}${data.variazionePeso7gg.toFixed(1)}kg`
-                : 'N/A'}
-            </div>
-            <Badge
-              variant={getWeightChangeColor(data.variazionePeso7gg)}
-              size="sm"
-              className="shadow-md"
-            >
-              {data.variazionePeso7gg !== null
-                ? data.variazionePeso7gg > 0
-                  ? 'In aumento'
-                  : 'In diminuzione'
-                : 'Nessun dato'}
-            </Badge>
-          </CardContent>
-        </Card>
+        />
 
         {/* Forza Massima */}
-        <Card
-          variant="trainer"
-          className="group relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-transparent to-red-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-orange-400/50 hover:shadow-xl hover:shadow-orange-500/30"
-        >
-          <CardHeader className="pb-2">
-            <CardTitle size="sm" className="flex items-center gap-2 text-white">
-              <div className="p-1.5 rounded bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
-                <Zap className="text-orange-400 h-4 w-4" />
-              </div>
-              Forza Massima
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-orange-400 mb-2 text-3xl font-bold">
-              {data.forzaMassima ? `${data.forzaMassima}kg` : 'N/A'}
-            </div>
-            <p className="text-text-secondary text-xs">
-              {data.forzaMassima ? 'Nuovo record! 💪' : 'Nessun dato'}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="relative h-full min-h-[140px]">
+          <MetricCard
+            variant="trainer"
+            tone="amber"
+            title="Forza Massima"
+            value={data.forzaMassima ? `${data.forzaMassima}kg` : 'N/A'}
+            icon={<Zap className="h-4 w-4" aria-hidden />}
+            className="group relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-transparent to-red-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-orange-400/50 hover:shadow-xl hover:shadow-orange-500/30 !pb-11"
+          />
+          <p className="pointer-events-none absolute bottom-3 left-4 right-14 z-[1] text-text-secondary text-xs">
+            {data.forzaMassima ? 'Nuovo record! 💪' : 'Nessun dato'}
+          </p>
+        </div>
 
         {/* Completamento Schede */}
-        <Card
-          variant="trainer"
-          className="group relative overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-transparent to-blue-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/30"
-        >
-          <CardHeader className="pb-2">
-            <CardTitle size="sm" className="flex items-center gap-2 text-white">
-              <div className="p-1.5 rounded bg-cyan-500/20 group-hover:bg-cyan-500/30 transition-colors">
-                <Target className="text-cyan-400 h-4 w-4" />
-              </div>
-              Schede Completate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-cyan-400 mb-2 text-3xl font-bold">
-              {data.percentualeCompletamento}%
-            </div>
-            <p className="text-text-secondary text-xs">Ultimi 30gg</p>
-          </CardContent>
-        </Card>
+        <div className="relative h-full min-h-[140px]">
+          <MetricCard
+            variant="trainer"
+            tone="blue"
+            title="Schede Completate"
+            value={`${data.percentualeCompletamento}%`}
+            icon={<Target className="h-4 w-4" aria-hidden />}
+            className="group relative overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-transparent to-blue-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/30 !pb-11"
+          />
+          <p className="pointer-events-none absolute bottom-3 left-4 right-14 z-[1] text-text-secondary text-xs">
+            Ultimi 30gg
+          </p>
+        </div>
 
         {/* Streak */}
-        <Card
-          variant="trainer"
-          className="group relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-transparent to-red-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-orange-400/50 hover:shadow-xl hover:shadow-orange-500/30"
-        >
-          <CardHeader className="pb-2">
-            <CardTitle size="sm" className="flex items-center gap-2 text-white">
-              <div className="p-1.5 rounded bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
-                <Flame className="text-orange-400 h-4 w-4" />
-              </div>
-              Streak Allenamenti
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-orange-400 mb-2 text-3xl font-bold">{data.streak} giorni</div>
-            <p className="text-text-secondary text-xs">
-              {data.streak > 0 ? 'Continua così! 🔥' : 'Inizia oggi! 💪'}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="relative h-full min-h-[140px]">
+          <MetricCard
+            variant="trainer"
+            tone="amber"
+            title="Streak Allenamenti"
+            value={`${data.streak} giorni`}
+            icon={<Flame className="h-4 w-4" aria-hidden />}
+            className="group relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-transparent to-red-500/5 transition-all duration-300 hover:scale-[1.02] hover:border-orange-400/50 hover:shadow-xl hover:shadow-orange-500/30 !pb-11"
+          />
+          <p className="pointer-events-none absolute bottom-3 left-4 right-14 z-[1] text-text-secondary text-xs">
+            {data.streak > 0 ? 'Continua così! 🔥' : 'Inizia oggi! 💪'}
+          </p>
+        </div>
       </div>
     </div>
   )

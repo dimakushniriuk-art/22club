@@ -1,10 +1,24 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import type { SupabaseDatabase } from '@/types/supabase'
+import { REALTIME_RESUBSCRIBE_EVENT } from '@/lib/session-stability/app-events'
 import { subscribeToTable, subscribeToChannel } from '@/lib/realtimeClient'
 
 type TableEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
+
+/** Token incrementato su `app:realtime-resubscribe` (sessione / visibility). */
+export function useRealtimeResubscribeToken(): number {
+  const [resubscribeToken, setResubscribeToken] = useState(0)
+
+  useEffect(() => {
+    const bump = () => setResubscribeToken((t) => t + 1)
+    window.addEventListener(REALTIME_RESUBSCRIBE_EVENT, bump)
+    return () => window.removeEventListener(REALTIME_RESUBSCRIBE_EVENT, bump)
+  }, [])
+
+  return resubscribeToken
+}
 
 export function useRealtimeChannel<TableName extends keyof SupabaseDatabase['public']['Tables']>(
   table: TableName,
@@ -19,11 +33,13 @@ export function useRealtimeChannel<TableName extends keyof SupabaseDatabase['pub
     onEventRef.current = onEvent
   }, [onEvent])
 
+  const resubscribeToken = useRealtimeResubscribeToken()
+
   useEffect(() => {
     const unsubscribe = subscribeToTable(table, (payload) => onEventRef.current(payload), eventType)
 
     return unsubscribe
-  }, [table, eventType])
+  }, [table, eventType, resubscribeToken])
 }
 
 export function useCustomChannel<T>(
@@ -37,6 +53,8 @@ export function useCustomChannel<T>(
     onEventRef.current = onEvent
   }, [onEvent])
 
+  const resubscribeToken = useRealtimeResubscribeToken()
+
   useEffect(() => {
     if (!channelName) {
       return undefined
@@ -47,7 +65,7 @@ export function useCustomChannel<T>(
     )
 
     return unsubscribe
-  }, [channelName, eventName])
+  }, [channelName, eventName, resubscribeToken])
 }
 
 export function useRealtimeNotifications(userId?: string) {

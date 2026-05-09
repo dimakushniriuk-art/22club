@@ -1,6 +1,6 @@
 {
   "name": "22club-setup",
-  "version": "1.0.01",
+  "version": "1.0.03",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "fix-ts-auto": "npm run lint:fix && npm run format && npm run typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "session-stability:matrix": "node scripts/generate-session-stability-route-matrix.mjs",
     "db:verify": "node scripts/verify-supabase-setup.js",
     "db:test": "node scripts/test-supabase.js",
     "db:create-athletes": "npx tsx scripts/create-test-athletes.ts",

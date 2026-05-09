@@ -4,6 +4,24 @@ import type { SupabaseDatabase } from '@/types/supabase'
 
 const channels = new Map<string, RealtimeChannel>()
 
+function removeChannel(name: string) {
+  const ch = channels.get(name)
+  if (!ch) return
+  // Remove from the map before unsubscribe(): CLOSED/error callbacks run synchronously
+  // during unsubscribe and call removeChannel again — keeping the entry caused stack overflow.
+  channels.delete(name)
+  try {
+    void ch.unsubscribe()
+  } catch {
+    // ignore
+  }
+}
+
+/** Alias pubblico per test e cleanup mirato. */
+export function cleanupChannel(name: string) {
+  removeChannel(name)
+}
+
 export function getRealtimeChannel(name: string): RealtimeChannel {
   const existing = channels.get(name)
   if (existing) {
@@ -16,6 +34,14 @@ export function getRealtimeChannel(name: string): RealtimeChannel {
 }
 
 type TableEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
+
+export type PostgresChangesSpec<Row extends Record<string, any> = Record<string, any>> = {
+  event: TableEvent
+  schema?: string
+  table: string
+  filter?: string
+  onEvent: (payload: RealtimePostgresChangesPayload<Row>) => void
+}
 
 type BroadcastPayload<T> = {
   event: string
@@ -50,12 +76,14 @@ export function subscribeToTable<TableName extends keyof SupabaseDatabase['publi
       },
       onEvent as (payload: unknown) => void,
     )
-    .subscribe()
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        removeChannel(channelName)
+      }
+    })
 
-  // Cleanup function che rimuove canale da Map
   return () => {
-    channel.unsubscribe()
-    channels.delete(channelName)
+    removeChannel(channelName)
   }
 }
 
@@ -78,12 +106,64 @@ export function subscribeToChannel<T>(
     .on('broadcast', { event: eventName }, (payload: BroadcastPayload<T>) =>
       onEvent(payload.payload),
     )
-    .subscribe()
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        removeChannel(channelName)
+      }
+    })
 
-  // Cleanup function che rimuove canale da Map
   return () => {
-    channel.unsubscribe()
-    channels.delete(channelName)
+    removeChannel(channelName)
+  }
+}
+
+/**
+ * Una subscription Realtime con nome canale dedicato e una o più clausole `postgres_changes`
+ * (filtri inclusi). Usare un `channelName` stabile e univoco per contesto (es. suffisso profilo).
+ * Allineato a cleanup su errore / timeout come `subscribeToTable`.
+ */
+export function subscribePostgresChanges<Row extends Record<string, any> = Record<string, any>>(
+  channelName: string,
+  specs: PostgresChangesSpec<Row>[],
+) {
+  if (specs.length === 0) {
+    return () => {}
+  }
+
+  const channel = getRealtimeChannel(channelName)
+
+  for (const spec of specs) {
+    const schema = spec.schema ?? 'public'
+    const opts: Record<string, unknown> = {
+      event: spec.event,
+      schema,
+      table: spec.table,
+    }
+    if (spec.filter) {
+      opts.filter = spec.filter
+    }
+
+    ;(
+      channel as unknown as {
+        on: (
+          event: string,
+          options: Record<string, unknown>,
+          callback: (payload: unknown) => void,
+        ) => RealtimeChannel
+      }
+    ).on('postgres_changes', opts, (payload: unknown) =>
+      spec.onEvent(payload as RealtimePostgresChangesPayload<Row>),
+    )
+  }
+
+  channel.subscribe((status) => {
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+      removeChannel(channelName)
+    }
+  })
+
+  return () => {
+    removeChannel(channelName)
   }
 }
 
@@ -100,25 +180,13 @@ export function broadcastToChannel<T>(channelName: string, eventName: string, pa
   })
 }
 
-// Funzione esplicita per cleanup canale singolo
-export function cleanupChannel(name: string) {
-  const channel = channels.get(name)
-  if (channel) {
-    channel.unsubscribe()
-    channels.delete(name)
+export function cleanupRealtimeChannels() {
+  for (const name of [...channels.keys()]) {
+    removeChannel(name)
   }
 }
 
-// Cleanup function per rimuovere tutti i canali
-export function cleanupRealtimeChannels() {
-  channels.forEach((channel) => {
-    channel.unsubscribe()
-  })
-  channels.clear()
-}
-
 /**
- * Helper per test: ritorna il numero di canali attivi
  * @internal - Solo per test e debugging
  */
 export function getChannelsCount(): number {

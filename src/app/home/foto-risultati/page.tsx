@@ -98,7 +98,7 @@ export default function FotoRisultatiPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 min-[834px]:px-6 space-y-4">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 sm:space-y-6 md:px-6 space-y-4">
         <PageHeaderFixed
           variant="chat"
           title="Foto / Risultati"
@@ -111,20 +111,20 @@ export default function FotoRisultatiPage() {
           href="/home/foto-risultati/aggiungi"
           className={`flex flex-col items-center justify-center gap-3 p-6 text-center sm:p-8 ${CARD_DS}`}
         >
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-16 min-[834px]:w-16">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-16 md:w-16">
             <Image
               src="/images/fotocamera.png"
               alt="Carica foto"
               width={56}
               height={56}
-              className="h-12 w-12 min-[834px]:h-14 min-[834px]:w-14 object-contain"
+              className="h-12 w-12 md:h-14 md:w-14 object-contain"
             />
           </div>
           <div>
-            <span className="block text-base font-semibold text-text-primary min-[834px]:text-lg">
+            <span className="block text-base font-semibold text-text-primary md:text-lg">
               Carica nuove foto
             </span>
-            <span className="mt-1 block text-xs text-text-tertiary min-[834px]:text-sm">
+            <span className="mt-1 block text-xs text-text-tertiary md:text-sm">
               Apri il modulo e carica una foto di progresso
             </span>
           </div>

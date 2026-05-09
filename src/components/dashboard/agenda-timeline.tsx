@@ -29,7 +29,7 @@ function formatLocalHHmm(iso: string | undefined): string | undefined {
 }
 
 const EMBEDDED_LIST_CLASS =
-  'w-full flex-1 space-y-2 overflow-y-auto overscroll-contain min-h-[12rem] max-h-[min(52vh,440px)] lg:min-h-[14rem]'
+  'w-full flex-1 space-y-2 overflow-y-auto overscroll-contain min-h-[12rem] max-h-[min(104vh,880px)] lg:min-h-[14rem]'
 
 const EMBEDDED_ROW_CLASS =
   'rounded-lg border border-white/5 bg-black/25 px-3 py-2.5 transition-colors hover:border-white/12 hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/30'

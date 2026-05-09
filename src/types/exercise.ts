@@ -1,8 +1,11 @@
+import type { ExerciseCategory } from '@/lib/exercises-data'
+
 export interface Exercise {
   id: string
   org_id: string
   name: string
-  category: string
+  /** Tipologia esercizio (DB); in lista preferita usare ExerciseCategory */
+  category: ExerciseCategory | string
   muscle_group: string
   difficulty: 'bassa' | 'media' | 'alta'
   description?: string | null

@@ -30,7 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ModernKPICard } from '@/components/dashboard/modern-kpi-card'
+import { MetricCard } from '@/components'
 import { UserResetPasswordDialog } from './user-reset-password-dialog'
 import { UserDeleteDialog } from './user-delete-dialog'
 import {
@@ -790,29 +790,29 @@ export function AdminRolesContent() {
 
       {/* Statistiche KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ModernKPICard
+        <MetricCard
           title="Totale Ruoli"
           value={stats.totalRoles}
           icon={<Shield className="h-5 w-5" />}
-          color="blue"
+          tone="blue"
         />
-        <ModernKPICard
+        <MetricCard
           title="Utenti Totali"
           value={stats.totalUsers}
           icon={<Users className="h-5 w-5" />}
-          color="green"
+          tone="emerald"
         />
-        <ModernKPICard
+        <MetricCard
           title="Permessi Attivi"
           value={stats.totalPermissions}
           icon={<Key className="h-5 w-5" />}
-          color="purple"
+          tone="purple"
         />
-        <ModernKPICard
+        <MetricCard
           title="Ruoli Attivi"
           value={stats.rolesWithUsers}
           icon={<Lock className="h-5 w-5" />}
-          color="orange"
+          tone="amber"
         />
       </div>
 

@@ -195,9 +195,10 @@ function ConversationItem({
   formatLastMessageTime: (dateString: string) => string
   getRoleIcon: (role: string) => string
 }) {
+  const unread = conversation.unread_count > 0
+
   return (
     <div
-      key={conversation.other_user_id}
       role="button"
       tabIndex={0}
       onClick={() => onSelectConversation(conversation.other_user_id)}
@@ -207,18 +208,32 @@ function ConversationItem({
           onSelectConversation(conversation.other_user_id)
         }
       }}
+      aria-label={
+        unread
+          ? `Apri chat con ${conversation.other_user_name}, ${conversation.unread_count} messaggi non letti`
+          : `Apri chat con ${conversation.other_user_name}`
+      }
       className={cn(
         'w-full text-left rounded-lg border border-white/10 bg-white/[0.02] p-3 transition-colors min-h-[56px] flex items-center gap-2 sm:gap-3 hover:border-white/20 cursor-pointer group touch-manipulation active:scale-[0.99]',
         currentConversationId === conversation.other_user_id && t.selectedItem,
+        unread && 'ring-1 ring-red-500/25 border-red-500/20',
       )}
     >
-      <Avatar
-        src={conversation.avatar ?? undefined}
-        alt={conversation.other_user_name}
-        fallbackText={getInitial(conversation.other_user_name)}
-        size="md"
-        className="h-9 w-9 sm:h-10 sm:w-10 shrink-0"
-      />
+      <div className="relative shrink-0">
+        {unread && (
+          <span
+            className="pointer-events-none absolute -left-0.5 -top-0.5 z-20 h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_12px_3px_rgba(239,68,68,0.65)] ring-2 ring-black/60"
+            aria-hidden
+          />
+        )}
+        <Avatar
+          src={conversation.avatar ?? undefined}
+          alt={conversation.other_user_name}
+          fallbackText={getInitial(conversation.other_user_name)}
+          size="md"
+          className="h-9 w-9 sm:h-10 sm:w-10 shrink-0"
+        />
+      </div>
       <div className="min-w-0 flex-1">
         <div className="mb-0.5 flex items-center gap-1.5 sm:gap-2">
           <h4 className="text-text-primary truncate text-sm font-medium">
@@ -232,8 +247,12 @@ function ConversationItem({
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        {conversation.unread_count > 0 && (
-          <Badge variant="success" size="sm">
+        {unread && (
+          <Badge
+            variant="destructive"
+            size="sm"
+            className="tabular-nums min-w-[1.25rem] justify-center"
+          >
             {conversation.unread_count}
           </Badge>
         )}

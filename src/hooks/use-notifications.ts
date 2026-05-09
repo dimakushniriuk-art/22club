@@ -4,6 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import type { NotificationType } from '@/lib/notifications/types'
+import { isLikelyNetworkFetchFailure } from '@/lib/is-network-fetch-error'
+import {
+  enqueuePendingWrite,
+  notificationMarkAllReadIdempotencyKey,
+  notificationMarkReadIdempotencyKey,
+} from '@/lib/session-stability/pending-write-queue'
+import { notifyInfo } from '@/lib/notifications'
 
 const logger = createLogger('hooks:use-notifications')
 
@@ -92,6 +99,18 @@ export function useNotifications({ userId }: UseNotificationsProps = {}) {
         )
         setUnreadCount((prev) => Math.max(0, prev - 1))
       } catch (err) {
+        if (isLikelyNetworkFetchFailure(err) && userId) {
+          enqueuePendingWrite({
+            kind: 'notifications_mark_read',
+            idempotencyKey: notificationMarkReadIdempotencyKey(notificationId, userId),
+            payload: { notificationId, userId },
+          })
+          notifyInfo(
+            'Connessione instabile',
+            'Segna come letto in coda: verrà inviato al ripristino della rete.',
+          )
+          return
+        }
         logger.error('Error marking notification as read', err, { notificationId })
         setError(err instanceof Error ? err.message : 'Errore nel marcare la notifica come letta')
         throw err
@@ -126,6 +145,18 @@ export function useNotifications({ userId }: UseNotificationsProps = {}) {
       )
       setUnreadCount(0)
     } catch (err) {
+      if (isLikelyNetworkFetchFailure(err) && userId) {
+        enqueuePendingWrite({
+          kind: 'notifications_mark_all_read',
+          idempotencyKey: notificationMarkAllReadIdempotencyKey(userId),
+          payload: { userId },
+        })
+        notifyInfo(
+          'Connessione instabile',
+          'Segna tutte come lette in coda: verrà inviato al ripristino della rete.',
+        )
+        return
+      }
       logger.error('Error marking all notifications as read', err, { userId })
       setError(
         err instanceof Error ? err.message : 'Errore nel marcare tutte le notifiche come lette',

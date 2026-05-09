@@ -16,13 +16,14 @@ export const createClient = (request: NextRequest) => {
     request,
   })
 
-  // Client usato solo dal middleware Next: no refresh token, no retry, evita 429 / spam su /auth/v1/token
+  // autoRefreshToken: true — altrimenti il JWT scade e getUser() fallisce su ogni navigazione → redirect a /login.
+  // I cookie aggiornati dal refresh restano su `response` (withMiddlewareSupabaseCookies). persistSession: false = niente storage lato server oltre ai cookie della richiesta.
   const supabase = createServerClient<Database>(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
     requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     {
       auth: {
-        autoRefreshToken: false,
+        autoRefreshToken: true,
         persistSession: false,
         detectSessionInUrl: false,
       },

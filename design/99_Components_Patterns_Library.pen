@@ -1,0 +1,284 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "99Compon-cover",
+      "x": 0,
+      "y": 0,
+      "name": "00_Cover",
+      "width": 1680,
+      "height": 420,
+      "fill": "#0f172a",
+      "layout": "vertical",
+      "gap": 14,
+      "padding": 36,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-t1",
+          "name": "title",
+          "fill": "#f8fafc",
+          "content": "22Club — 99_Components_Patterns_Library",
+          "fontFamily": "Inter",
+          "fontSize": 26,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "99Compon-t2",
+          "name": "meta",
+          "fill": "#94a3b8",
+          "content": "routes_count=library · status=not_started · desktop/tablet/mobile=not_started",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "99Compon-t3",
+          "name": "routes",
+          "fill": "#e2e8f0",
+          "textGrowth": "fixed-width",
+          "width": 1500,
+          "content": "Routes:\nDesign tokens + reusable components (copied from 22Club Design System (Pencil).pen).\nDo not delete lib-offscreen; add screens to 04_Screens / group files as needed.",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "99Compon-desk",
+      "x": 0,
+      "y": 460,
+      "name": "01_Desktop",
+      "width": 1440,
+      "height": 900,
+      "fill": "#f1f5f9",
+      "layout": "vertical",
+      "gap": 10,
+      "padding": 28,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-dt",
+          "name": "hint",
+          "fill": "#0f172a",
+          "content": "Desktop 1440×900 — wireframes & captures",
+          "fontFamily": "Inter",
+          "fontSize": 15,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "99Compon-tab",
+      "x": 1480,
+      "y": 460,
+      "name": "02_Tablet",
+      "width": 768,
+      "height": 1024,
+      "fill": "#f8fafc",
+      "layout": "vertical",
+      "gap": 8,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-tt",
+          "name": "hint",
+          "fill": "#334155",
+          "content": "Tablet 768×1024",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "99Compon-mob",
+      "x": 2280,
+      "y": 460,
+      "name": "03_Mobile",
+      "width": 360,
+      "height": 800,
+      "fill": "#ffffff",
+      "layout": "vertical",
+      "gap": 8,
+      "padding": 20,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-mt",
+          "name": "hint",
+          "fill": "#334155",
+          "content": "Mobile 360×800",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "99Compon-st",
+      "x": 0,
+      "y": 1380,
+      "name": "04_States",
+      "width": 1440,
+      "height": 340,
+      "fill": "#eef2ff",
+      "layout": "vertical",
+      "gap": 8,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-stt",
+          "name": "hint",
+          "fill": "#312e81",
+          "content": "States: default · loading · empty · error",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "99Compon-ov",
+      "x": 0,
+      "y": 1740,
+      "name": "05_Overlays",
+      "width": 1440,
+      "height": 300,
+      "fill": "#ecfdf5",
+      "layout": "vertical",
+      "gap": 8,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-ovt",
+          "name": "hint",
+          "fill": "#14532d",
+          "content": "Overlays: dialog · drawer · popover (if present)",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "99Compon-mx",
+      "x": 0,
+      "y": 2060,
+      "name": "06_Inventory_Matrix",
+      "width": 2800,
+      "height": 880,
+      "fill": "#fffbeb",
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "99Compon-mh",
+          "name": "matrix_header",
+          "fill": "#78350f",
+          "content": "Route | Desktop | Tablet | Mobile | Loading | Empty | Error | Overlays | Status | Notes",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "99Compon-mb",
+          "name": "matrix_body",
+          "fill": "#92400e",
+          "textGrowth": "fixed-width",
+          "width": 2700,
+          "content": "Route | Desktop | Tablet | Mobile | Loading | Empty | Error | Overlays | Status | Notes\nDesign tokens + reusable components (copied from 22Club Design System (Pencil).pen). | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |\nDo not delete lib-offscreen; add screens to 04_Screens / group files as needed. | not_started | not_started | not_started | not_started | not_started | not_started | not_started | not_started |",
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "color.bg": {
+      "type": "color",
+      "value": "#0d0d0d"
+    },
+    "color.text.primary": {
+      "type": "color",
+      "value": "#EAF0F2"
+    },
+    "color.text.secondary": {
+      "type": "color",
+      "value": "#A5AFB4"
+    },
+    "color.text.muted": {
+      "type": "color",
+      "value": "#6C757D"
+    },
+    "color.primary": {
+      "type": "color",
+      "value": "#02B3BF"
+    },
+    "color.border.white10": {
+      "type": "color",
+      "value": "#FFFFFF1A"
+    },
+    "color.surface.zinc800": {
+      "type": "color",
+      "value": "#27272a"
+    },
+    "color.surface.zinc900": {
+      "type": "color",
+      "value": "#18181b"
+    },
+    "color.black.70": {
+      "type": "color",
+      "value": "#000000B3"
+    },
+    "color.cyan.500": {
+      "type": "color",
+      "value": "#06b6d4"
+    },
+    "color.slate.600": {
+      "type": "color",
+      "value": "#475569"
+    },
+    "color.error": {
+      "type": "color",
+      "value": "#FF3B30"
+    },
+    "color.red.500": {
+      "type": "color",
+      "value": "#ef4444"
+    },
+    "radius.input": {
+      "type": "number",
+      "value": 12
+    },
+    "radius.card": {
+      "type": "number",
+      "value": 16
+    },
+    "radius.panel": {
+      "type": "number",
+      "value": 24
+    },
+    "radius.pill": {
+      "type": "number",
+      "value": 9999
+    }
+  }
+}

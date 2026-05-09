@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import Image from 'next/image'
 import { createLogger } from '@/lib/logger'
 
@@ -19,6 +19,7 @@ import { SimpleSelect } from '@/components/ui/simple-select'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
 import { useSupabase } from '@/hooks/use-supabase'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { apiPost, apiPut } from '@/lib/api-client'
 import { supabase as supabaseClient } from '@/lib/supabase/client'
 import {
@@ -26,6 +27,9 @@ import {
   // EQUIPMENT, // Non utilizzato in questo componente
   EQUIPMENT_BY_CATEGORY,
   EQUIPMENT_CATEGORIES,
+  EXERCISE_CATEGORIES,
+  DEFAULT_EXERCISE_CATEGORY,
+  isExerciseManagerRole,
 } from '@/lib/exercises-data'
 import {
   validateVideoFile,
@@ -35,7 +39,11 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   formatFileSize,
 } from '@/lib/exercise-upload-utils'
-import { isValidVideoUrl, VIDEO_URL_ERROR_MESSAGE } from '@/lib/validations/video-url'
+import {
+  validateExerciseVideoUrl,
+  validateExerciseThumbUrl,
+} from '@/lib/validations/exercise-media-urls'
+import { deleteExerciseMediaFiles } from '@/lib/exercises-storage'
 import {
   Video,
   Image as ImageIcon,
@@ -50,6 +58,25 @@ import {
 
 import type { Database } from '@/lib/supabase/types'
 import type { Exercise } from '@/types/exercise'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { loadFormDraft } from '@/lib/browser-form-draft'
+
+type ExerciseModalDraftPayload = {
+  form: Partial<Exercise>
+  equipmentCategory: string
+  selectedEquipment: string[]
+  selectedMuscleGroups: string[]
+}
+
+function isMeaningfulExerciseDraft(p: ExerciseModalDraftPayload): boolean {
+  return Boolean(
+    p.form.name?.trim() ||
+    p.selectedMuscleGroups.length > 0 ||
+    (p.form.description && String(p.form.description).trim()) ||
+    p.form.video_url ||
+    p.form.thumb_url,
+  )
+}
 
 interface ExerciseFormModalProps {
   open: boolean
@@ -66,7 +93,10 @@ export function ExerciseFormModal({
 }: ExerciseFormModalProps) {
   const { addToast } = useToast()
   const { supabase, user } = useSupabase()
-  const [form, setForm] = useState<Partial<Exercise>>({ difficulty: 'media' })
+  const [form, setForm] = useState<Partial<Exercise>>({
+    difficulty: 'media',
+    category: DEFAULT_EXERCISE_CATEGORY,
+  })
   const [loading, setLoading] = useState(false)
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [uploadingThumb, setUploadingThumb] = useState(false)
@@ -80,13 +110,48 @@ export function ExerciseFormModal({
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
   const initialFormSnapshotRef = useRef<string>('')
   const openJustBecameTrueRef = useRef(false)
+  const uploadedClipPreviewRef = useAutoplayPreviewVideo({
+    enabled: Boolean(open && form.video_url && !(videoError && form.thumb_url)),
+    pauseWhenOffscreen: false,
+  })
+  const thumbPromptClipRef = useAutoplayPreviewVideo({
+    enabled: Boolean(open && form.video_url && !form.thumb_url),
+    pauseWhenOffscreen: false,
+  })
+
+  const exerciseDraftPayload = useMemo(
+    (): ExerciseModalDraftPayload => ({
+      form,
+      equipmentCategory,
+      selectedEquipment,
+      selectedMuscleGroups,
+    }),
+    [form, equipmentCategory, selectedEquipment, selectedMuscleGroups],
+  )
+  const exerciseDraftScope = open && user?.id ? `${user.id}:${editing?.id ?? 'new'}` : null
+  const meaningfulExerciseDraft = useCallback(
+    (p: ExerciseModalDraftPayload) => isMeaningfulExerciseDraft(p),
+    [],
+  )
+  const { clearDraft: clearExerciseDraft } = useBrowserFormDraft({
+    feature: 'exercise-modal',
+    scope: exerciseDraftScope,
+    value: exerciseDraftPayload,
+    isMeaningful: meaningfulExerciseDraft,
+    restoreEnabled: false,
+  })
+
+  const exerciseDraftRestoreKeyRef = useRef<string | null>(null)
 
   // Reset form when modal opens/closes or editing changes
   useEffect(() => {
     if (open) {
       openJustBecameTrueRef.current = true
       if (editing) {
-        setForm(editing)
+        setForm({
+          ...editing,
+          category: editing.category?.trim() || DEFAULT_EXERCISE_CATEGORY,
+        })
         // Parsa i gruppi muscolari dalla stringa (separati da virgole)
         if (editing.muscle_group) {
           const muscleList = editing.muscle_group
@@ -120,7 +185,7 @@ export function ExerciseFormModal({
           setEquipmentCategory('')
         }
       } else {
-        setForm({ difficulty: 'media' })
+        setForm({ difficulty: 'media', category: DEFAULT_EXERCISE_CATEGORY })
         setEquipmentCategory('')
         setSelectedEquipment([])
         setSelectedMuscleGroups([])
@@ -128,7 +193,7 @@ export function ExerciseFormModal({
       setVideoError(false)
       setVideoLoading(false)
     } else {
-      setForm({ difficulty: 'media' })
+      setForm({ difficulty: 'media', category: DEFAULT_EXERCISE_CATEGORY })
       initialFormSnapshotRef.current = ''
       openJustBecameTrueRef.current = false
       setEquipmentCategory('')
@@ -138,6 +203,27 @@ export function ExerciseFormModal({
       setVideoLoading(false)
     }
   }, [open, editing])
+
+  useEffect(() => {
+    if (!open || !user?.id) {
+      exerciseDraftRestoreKeyRef.current = null
+      return
+    }
+    const key = `${editing?.id ?? 'new'}`
+    if (exerciseDraftRestoreKeyRef.current === key) return
+    exerciseDraftRestoreKeyRef.current = key
+    const env = loadFormDraft<ExerciseModalDraftPayload>('exercise-modal', `${user.id}:${key}`)
+    if (!env?.payload || !isMeaningfulExerciseDraft(env.payload)) return
+    setForm(env.payload.form)
+    setEquipmentCategory(env.payload.equipmentCategory)
+    setSelectedEquipment(env.payload.selectedEquipment)
+    setSelectedMuscleGroups(env.payload.selectedMuscleGroups)
+    addToast({
+      title: 'Bozza recuperata',
+      message: 'Ripristinati nome, gruppi muscolari e URL media salvati nel browser.',
+      variant: 'success',
+    })
+  }, [open, editing?.id, user?.id, addToast])
 
   // Cattura snapshot iniziale dopo che form è stato inizializzato (editing o nuovo)
   useEffect(() => {
@@ -538,13 +624,14 @@ export function ExerciseFormModal({
       return
     }
 
-    // Validazione formato URL video (P4-006)
-    if (form.video_url && !isValidVideoUrl(form.video_url)) {
-      addToast({
-        title: 'Errore validazione',
-        message: VIDEO_URL_ERROR_MESSAGE,
-        variant: 'error',
-      })
+    const videoErr = validateExerciseVideoUrl(form.video_url)
+    if (videoErr) {
+      addToast({ title: 'Errore validazione', message: videoErr, variant: 'error' })
+      return
+    }
+    const thumbErr = validateExerciseThumbUrl(form.thumb_url)
+    if (thumbErr) {
+      addToast({ title: 'Errore validazione', message: thumbErr, variant: 'error' })
       return
     }
 
@@ -558,6 +645,7 @@ export function ExerciseFormModal({
       // Converti undefined in null per video_url e thumb_url (per gestire correttamente la rimozione)
       const normalizedFormData = {
         ...formData,
+        category: formData.category ?? DEFAULT_EXERCISE_CATEGORY,
         video_url: formData.video_url ?? null,
         thumb_url: formData.thumb_url ?? null,
       }
@@ -593,14 +681,26 @@ export function ExerciseFormModal({
           requestBody,
           // Fallback Supabase (usato su mobile o se API fallisce)
           async () => {
-            const profileId = user?.id ?? ''
-            const orgId = (user as { org_id?: string } | null)?.org_id ?? ''
+            if (!user) throw new Error('Sessione non valida')
+            const { data: profile, error: pe } = await supabaseClient
+              .from('profiles')
+              .select('id, org_id, org_id_text, role')
+              .eq('user_id', user.id)
+              .single()
+            if (pe || !profile) throw new Error('Profilo non trovato')
+            if (!isExerciseManagerRole(profile.role)) {
+              throw new Error('Permesso negato: solo trainer, PT o admin possono gestire esercizi.')
+            }
             type ExercisesInsert =
               import('@/lib/supabase/types').Database['public']['Tables']['exercises']['Insert']
             const insertPayload: ExercisesInsert = {
               ...requestBody,
-              created_by_profile_id: profileId,
-              org_id: orgId,
+              created_by_profile_id: profile.id,
+              org_id: profile.org_id as string,
+              org_id_text:
+                profile.org_id_text != null && profile.org_id_text !== ''
+                  ? profile.org_id_text
+                  : null,
             } as ExercisesInsert
             const { data, error } = await supabaseClient
               .from('exercises')
@@ -618,6 +718,16 @@ export function ExerciseFormModal({
           requestBody,
           // Fallback Supabase (usato su mobile o se API fallisce)
           async () => {
+            if (!user) throw new Error('Sessione non valida')
+            const { data: profile, error: pe } = await supabaseClient
+              .from('profiles')
+              .select('id, org_id, org_id_text, role')
+              .eq('user_id', user.id)
+              .single()
+            if (pe || !profile) throw new Error('Profilo non trovato')
+            if (!isExerciseManagerRole(profile.role)) {
+              throw new Error('Permesso negato: solo trainer, PT o admin possono gestire esercizi.')
+            }
             type RequestBodyWithId = typeof requestBody & { id: string }
             const rb = requestBody as RequestBodyWithId
             const exerciseId = rb.id
@@ -663,6 +773,7 @@ export function ExerciseFormModal({
         message: 'Esercizio salvato correttamente',
         variant: 'success',
       })
+      if (user?.id) clearExerciseDraft()
       onOpenChange(false)
       onSuccess?.()
     } catch (e) {
@@ -679,6 +790,11 @@ export function ExerciseFormModal({
               ? String((e as { message: unknown }).message)
               : 'Salvataggio fallito. Riprova.'
       logger.error('Errore salvataggio esercizio', e, { editing: !!editing })
+      if (!editing) {
+        void deleteExerciseMediaFiles(supabaseClient, form.video_url, form.thumb_url).catch(() => {
+          /* cleanup best-effort */
+        })
+      }
       addToast({
         title: 'Errore',
         message: message || 'Salvataggio fallito. Riprova.',
@@ -776,12 +892,44 @@ export function ExerciseFormModal({
                     </div>
                   </div>
                 )}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
+                      <Target className="h-4 w-4 text-emerald-400" />
+                      Categoria esercizio
+                    </label>
+                    <SimpleSelect
+                      value={form.category || DEFAULT_EXERCISE_CATEGORY}
+                      onValueChange={(value) => setForm({ ...form, category: value })}
+                      placeholder="Tipologia (scheda, report)"
+                      options={[...EXERCISE_CATEGORIES].map((c) => ({ value: c, label: c }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
+                      <Target className="h-4 w-4 text-orange-400" />
+                      Difficoltà
+                    </label>
+                    <SimpleSelect
+                      value={form.difficulty || 'media'}
+                      onValueChange={(value) =>
+                        setForm({ ...form, difficulty: value as Exercise['difficulty'] })
+                      }
+                      placeholder="Seleziona difficoltà"
+                      options={[
+                        { value: 'alta', label: 'Avanzato' },
+                        { value: 'media', label: 'Intermedio' },
+                        { value: 'bassa', label: 'Principiante' },
+                      ].sort((a, b) => a.label.localeCompare(b.label, 'it'))}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
                         <Dumbbell className="h-4 w-4 text-cyan-400" />
-                        Categoria
+                        Categoria attrezzi
                       </label>
                       <SimpleSelect
                         value={equipmentCategory}
@@ -789,7 +937,7 @@ export function ExerciseFormModal({
                           setEquipmentCategory(value)
                           // Non resettare gli attrezzi già selezionati quando cambia categoria
                         }}
-                        placeholder="Seleziona categoria"
+                        placeholder="Filtra attrezzi per tipologia"
                         options={[...EQUIPMENT_CATEGORIES]
                           .sort((a, b) => a.localeCompare(b, 'it'))
                           .map((cat) => ({ value: cat, label: cat }))}
@@ -798,7 +946,7 @@ export function ExerciseFormModal({
                     <div>
                       <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
                         <Dumbbell className="h-4 w-4 text-cyan-400" />
-                        Aggiungi Attrezzo
+                        Attrezzo
                       </label>
                       <SimpleSelect
                         value=""
@@ -851,27 +999,6 @@ export function ExerciseFormModal({
                     </div>
                   )}
                 </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="text-text-primary mb-2 block text-sm font-medium flex items-center gap-2">
-                      <Target className="h-4 w-4 text-orange-400" />
-                      Difficoltà
-                    </label>
-                    <SimpleSelect
-                      value={form.difficulty || 'media'}
-                      onValueChange={(value) =>
-                        setForm({ ...form, difficulty: value as Exercise['difficulty'] })
-                      }
-                      placeholder="Seleziona difficoltà"
-                      options={[
-                        { value: 'alta', label: 'Avanzato' },
-                        { value: 'media', label: 'Intermedio' },
-                        { value: 'bassa', label: 'Principiante' },
-                      ].sort((a, b) => a.label.localeCompare(b.label, 'it'))}
-                    />
-                  </div>
-                  <div />
-                </div>
               </div>
 
               {/* Media Upload Section */}
@@ -884,7 +1011,7 @@ export function ExerciseFormModal({
                   {/* Video Upload */}
                   <div className="space-y-2">
                     <label className="text-text-primary mb-2 block text-sm font-medium">
-                      Video MP4 *
+                      Video (consigliato — MP4, WebM, link YouTube/Vimeo)
                     </label>
                     <div
                       className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
@@ -946,12 +1073,15 @@ export function ExerciseFormModal({
                                 </div>
                               )}
                               <video
+                                ref={uploadedClipPreviewRef}
                                 src={form.video_url}
                                 className="w-full h-full object-contain rounded-lg"
                                 controls
                                 muted
+                                loop
                                 playsInline
-                                preload="metadata"
+                                autoPlay
+                                preload="auto"
                                 onLoadStart={() => {
                                   setVideoLoading(true)
                                   setVideoError(false)
@@ -1095,11 +1225,14 @@ export function ExerciseFormModal({
                           <label htmlFor="thumb-upload" className="block cursor-pointer">
                             <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-background-secondary group">
                               <video
+                                ref={thumbPromptClipRef}
                                 src={form.video_url}
                                 className="w-full h-full object-contain rounded-lg"
-                                preload="metadata"
+                                preload="auto"
                                 muted
+                                loop
                                 playsInline
+                                autoPlay
                               />
                               <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-200 flex items-center justify-center">
                                 <div className="flex flex-col items-center gap-2 text-white">

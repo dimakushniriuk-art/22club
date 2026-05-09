@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
 } from 'react'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -48,7 +49,7 @@ const HomeAthleteTopChrome = forwardRef<HTMLElement>(function HomeAthleteTopChro
       ref={ref}
       className="fixed inset-x-0 top-0 z-50 overflow-hidden border-b border-white/10 bg-black safe-area-inset-top"
     >
-      <div className="relative z-10 flex items-center gap-3 px-3 sm:px-4 min-[834px]:px-6 py-2.5 sm:py-3 min-[834px]:py-3">
+      <div className="relative z-10 flex items-center gap-3 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {backEl}
           {config != null ? (
@@ -69,7 +70,7 @@ const HomeAthleteTopChrome = forwardRef<HTMLElement>(function HomeAthleteTopChro
         </div>
       </div>
       {config?.secondaryRow != null ? (
-        <div className="relative z-10 border-t border-white/10 px-3 pb-2 pt-1.5 sm:px-4 min-[834px]:px-6 min-[834px]:pb-2.5 min-[834px]:pt-2">
+        <div className="relative z-10 border-t border-white/10 px-3 pb-2 pt-1.5 sm:px-4 md:px-6 md:pb-2.5 md:pt-2">
           {config.secondaryRow}
         </div>
       ) : null}
@@ -104,6 +105,8 @@ function TrialBanner() {
 
 function HomeLayoutShell({ children }: HomeLayoutClientProps) {
   const pathname = usePathname()
+  /** Chat a tutta altezza sotto l’header: niente padding top che crea “banda” grigia. */
+  const isChatRoute = pathname === '/home/chat'
 
   const shellRef = useRef<HTMLDivElement>(null)
   const chromeRef = useRef<HTMLElement>(null)
@@ -137,7 +140,10 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
   return (
     <div
       ref={shellRef}
-      className="relative flex min-h-dvh flex-col overflow-hidden bg-background"
+      className={cn(
+        'relative flex flex-col overflow-hidden bg-background',
+        isChatRoute ? 'min-h-0 h-full flex-1' : 'min-h-dvh',
+      )}
       style={shellStyle}
     >
       <HomeAthleteTopChrome ref={chromeRef} />
@@ -150,10 +156,12 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
         className={
           pathname === '/home' || pathname === '/home/'
             ? 'relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto bg-background pt-4 sm:pt-6'
-            : 'relative z-10 flex min-h-0 flex-1 flex-col bg-background pt-4 sm:pt-6'
+            : isChatRoute
+              ? 'relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-background pt-0'
+              : 'relative z-10 flex min-h-0 flex-1 flex-col bg-background pt-4 sm:pt-6'
         }
       >
-        <HomeAthleteStackHeadersProvider value>
+        <HomeAthleteStackHeadersProvider value={true}>
           <ErrorBoundary>{children}</ErrorBoundary>
         </HomeAthleteStackHeadersProvider>
       </main>

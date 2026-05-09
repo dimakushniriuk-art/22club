@@ -7,9 +7,15 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Play, Image as ImageIcon } from 'lucide-react'
 import { formatWorkoutRepsLabel } from '@/lib/constants/workout-reps-select'
+import {
+  formatScheduledRestTableCell,
+  resolveScheduledRestSeconds,
+} from '@/lib/workout/scheduled-rest-display'
 import { cn } from '@/lib/utils'
 
 interface WorkoutDayCardProps {
@@ -26,7 +32,8 @@ interface WorkoutDayCardProps {
       target_sets: number
       target_reps: number
       target_weight: number | null
-      rest_timer_sec: number
+      /** Recupero a livello esercizio (scheda); può essere null se non impostato */
+      rest_timer_sec: number | null
       order_index: number
       note?: string | null
       sets?: Array<{
@@ -43,6 +50,10 @@ interface WorkoutDayCardProps {
 
 export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; name: string } | null>(null)
+  const modalVideoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(selectedVideo),
+    pauseWhenOffscreen: false,
+  })
 
   // Espandi gli esercizi in righe per ogni serie
   const tableRows = day.exercises.flatMap((exercise, exerciseIndex) => {
@@ -55,7 +66,7 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
             reps: exercise.target_reps || 0,
             weight_kg: exercise.target_weight,
             execution_time_sec: null,
-            rest_timer_sec: exercise.rest_timer_sec || 60,
+            rest_timer_sec: null,
           }))
 
     return sets.map((set, setIndex) => ({
@@ -69,7 +80,7 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
       setNumber: set.set_number,
       reps: set.reps,
       weightKg: set.weight_kg,
-      restSec: set.rest_timer_sec || exercise.rest_timer_sec || 60,
+      restSec: resolveScheduledRestSeconds(set.rest_timer_sec, exercise.rest_timer_sec),
       isFirstSet: setIndex === 0,
       totalSets: sets.length,
     }))
@@ -130,7 +141,7 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
               <tbody>
                 {tableRows.map((row, index) => (
                   <tr
-                    key={`${row.exerciseId}-${row.setNumber}`}
+                    key={`${row.exerciseIndex}-${row.setIndex}`}
                     className={cn(
                       'border-b border-white/10 transition-colors',
                       index % 2 === 0 ? 'bg-white/[0.02]' : 'bg-transparent',
@@ -151,24 +162,59 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
                       {row.isFirstSet && (row.videoUrl || row.imageUrl) ? (
                         <div className="flex flex-col gap-2">
                           <button
+                            type="button"
                             onClick={() => {
                               if (row.videoUrl) {
                                 setSelectedVideo({ url: row.videoUrl, name: row.exerciseName })
                               }
                             }}
-                            className={cn(
-                              'flex items-center justify-center w-12 h-12 rounded-lg border border-white/10 transition-all duration-200',
-                              row.videoUrl
-                                ? 'bg-primary/10 hover:bg-primary/20 hover:border-primary/30 cursor-pointer'
-                                : 'bg-white/[0.04] cursor-not-allowed opacity-50',
-                            )}
                             disabled={!row.videoUrl}
+                            aria-label={
+                              row.videoUrl
+                                ? `Riproduci video: ${row.exerciseName}`
+                                : 'Video non disponibile'
+                            }
                             title={row.videoUrl ? 'Riproduci video' : 'Video non disponibile'}
+                            className={cn(
+                              'group relative flex aspect-video w-[7.5rem] shrink-0 overflow-hidden rounded-lg border transition-all duration-200 sm:w-[8.75rem]',
+                              row.videoUrl
+                                ? 'cursor-pointer border-white/10 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+                                : 'cursor-not-allowed border-white/10 opacity-60',
+                            )}
                           >
                             {row.videoUrl ? (
-                              <Play className="h-5 w-5 text-primary" fill="currentColor" />
+                              <>
+                                <video
+                                  src={row.videoUrl}
+                                  muted
+                                  playsInline
+                                  preload="metadata"
+                                  poster={row.imageUrl ?? undefined}
+                                  className="pointer-events-none h-full w-full object-cover bg-black/50"
+                                  aria-hidden
+                                />
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/30 transition-[background] group-hover:bg-black/45">
+                                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-primary shadow-lg ring-1 ring-white/15 backdrop-blur-[2px]">
+                                    <Play className="h-5 w-5 drop-shadow" fill="currentColor" />
+                                  </span>
+                                </span>
+                              </>
                             ) : row.imageUrl ? (
-                              <ImageIcon className="h-5 w-5 text-text-tertiary" />
+                              <>
+                                <div className="relative h-full min-h-[4.5rem] w-full">
+                                  <Image
+                                    src={row.imageUrl}
+                                    alt=""
+                                    fill
+                                    sizes="140px"
+                                    className="object-cover"
+                                    unoptimized={row.imageUrl.startsWith('http')}
+                                  />
+                                </div>
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                  <ImageIcon className="h-7 w-7 text-white/90 drop-shadow" />
+                                </span>
+                              </>
                             ) : null}
                           </button>
                           {/* Nota esercizio sotto il video */}
@@ -223,7 +269,13 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
 
                     {/* Recupero */}
                     <td className="py-4 px-4 text-center">
-                      <span className="text-text-primary font-semibold">{row.restSec}s</span>
+                      {row.restSec === null ? (
+                        <span className="text-text-tertiary text-sm">—</span>
+                      ) : (
+                        <span className="text-text-primary font-semibold">
+                          {formatScheduledRestTableCell(row.restSec)}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -259,11 +311,15 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <video
+                ref={modalVideoRef}
                 src={selectedVideo.url}
                 className="w-full h-full object-contain"
                 controls
+                muted
+                loop
                 autoPlay
                 playsInline
+                preload="auto"
               >
                 Il tuo browser non supporta la riproduzione video.
               </video>

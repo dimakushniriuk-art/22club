@@ -13,6 +13,8 @@ import { FileUpload } from './file-upload'
 import { Send, Paperclip } from 'lucide-react'
 import type { ChatFile } from '@/types/chat'
 
+export type MessageInputVariant = 'default' | 'whatsapp-dark'
+
 interface MessageInputProps {
   onSendMessage: (
     message: string,
@@ -25,6 +27,8 @@ interface MessageInputProps {
   className?: string
   /** Notifica quando c'è una bozza (testo o file non inviato) per conferma uscita */
   onDraftChange?: (hasDraft: boolean) => void
+  /** Stile barra input (es. chat atleta allineata a MessageList WA) */
+  variant?: MessageInputVariant
 }
 
 export function MessageInput({
@@ -34,6 +38,7 @@ export function MessageInput({
   placeholder = 'Scrivi un consiglio motivazionale...',
   className,
   onDraftChange,
+  variant = 'default',
 }: MessageInputProps) {
   const [message, setMessage] = useState('')
   const [selectedFile, setSelectedFile] = useState<ChatFile | null>(null)
@@ -96,6 +101,7 @@ export function MessageInput({
 
   const canSend = message.trim() || selectedFile
   const showFileUpload = !selectedFile
+  const isWa = variant === 'whatsapp-dark'
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -116,7 +122,12 @@ export function MessageInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || isUploading}
-            className="max-h-32 min-h-[44px] resize-none pr-24 rounded-lg border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+            className={cn(
+              'max-h-32 resize-none pr-24 transition-all duration-200',
+              isWa
+                ? 'min-h-[52px] rounded-xl border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary shadow-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/30'
+                : 'min-h-[44px] rounded-lg border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20',
+            )}
             rows={1}
           />
 
@@ -127,7 +138,12 @@ export function MessageInput({
                 size="icon-sm"
                 onClick={() => document.getElementById('file-input')?.click()}
                 disabled={disabled || isUploading}
-                className="min-h-[44px] min-w-[44px] h-8 w-8 text-text-secondary hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-200 touch-manipulation"
+                className={cn(
+                  'min-h-[44px] min-w-[44px] h-8 w-8 rounded-lg transition-all duration-200 touch-manipulation',
+                  isWa
+                    ? 'border-0 text-text-tertiary hover:text-text-primary hover:bg-white/[0.08] rounded-full'
+                    : 'text-text-secondary hover:text-primary hover:bg-white/5',
+                )}
                 aria-label="Allega file"
               >
                 <Paperclip className="h-4 w-4" />
@@ -136,7 +152,11 @@ export function MessageInput({
 
             <EmojiPicker
               onEmojiSelect={handleEmojiSelect}
-              className="text-text-secondary hover:text-primary hover:bg-white/5"
+              className={
+                isWa
+                  ? 'border-0 text-text-tertiary hover:text-text-primary hover:bg-white/[0.08] rounded-full'
+                  : 'text-text-secondary hover:text-primary hover:bg-white/5'
+              }
             />
           </div>
 
@@ -168,7 +188,12 @@ export function MessageInput({
           onClick={handleSend}
           disabled={disabled || !canSend || isUploading}
           size="icon"
-          className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 rounded-lg border border-white/10 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+          className={cn(
+            'min-h-[44px] min-w-[44px] shrink-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation',
+            isWa
+              ? 'h-[52px] w-[52px] rounded-xl border border-cyan-500/35 bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_18px_-6px_rgba(34,211,238,0.45)]'
+              : 'h-11 w-11 rounded-lg border border-white/10 bg-primary text-primary-foreground hover:bg-primary/90',
+          )}
           aria-label="Invia messaggio"
         >
           <Send className="h-4 w-4" />

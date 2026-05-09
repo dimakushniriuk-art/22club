@@ -58,10 +58,12 @@ export function ExportReportButton({
   return (
     <>
       <Button
+        variant="outline"
+        size="sm"
         onClick={() => void handleExport()}
         disabled={pdfLoading}
         aria-busy={pdfLoading}
-        className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transition-all duration-200"
+        className="shrink-0 border-white/20 hover:bg-white/5 hover:border-white/30"
       >
         <FileText className="mr-2 h-4 w-4" />
         Esporta PDF

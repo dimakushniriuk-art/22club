@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -12,6 +12,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { Database } from '@/lib/supabase/types'
 import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { loadFormDraft, clearFormDraft } from '@/lib/browser-form-draft'
+import { useToast } from '@/components/ui/toast'
 
 type CampaignRow = Database['public']['Tables']['marketing_campaigns']['Row']
 
@@ -40,12 +44,13 @@ function toDatetimeLocal(iso: string | null): string {
   return `${y}-${m}-${day}T${h}:${min}`
 }
 
-export default function EditCampaignPage() {
+export default function EditCampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const params = useParams()
+  const resolved = useResolvedParams(params)
   const supabase = useSupabaseClient()
-  const { role, loading: authLoading } = useAuth()
-  const id = typeof params.id === 'string' ? params.id : null
+  const { role, loading: authLoading, user } = useAuth()
+  const { addToast } = useToast()
+  const id = typeof resolved.id === 'string' ? resolved.id : null
   const [campaign, setCampaign] = useState<CampaignRow | null>(null)
   const [name, setName] = useState('')
   const [channel, setChannel] = useState<string>('email')
@@ -56,6 +61,43 @@ export default function EditCampaignPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  type CampaignEditDraftPayload = {
+    name: string
+    channel: string
+    budget: string
+    startAt: string
+    endAt: string
+    status: string
+  }
+
+  const campaignEditDraftPayload = useMemo(
+    (): CampaignEditDraftPayload => ({
+      name,
+      channel,
+      budget,
+      startAt,
+      endAt,
+      status,
+    }),
+    [name, channel, budget, startAt, endAt, status],
+  )
+
+  const campaignDraftScope = user?.user_id && id ? `${user.user_id}:${id}` : null
+
+  const campaignDraftMeaningful = useCallback((p: CampaignEditDraftPayload) => {
+    return Boolean(p.name?.trim())
+  }, [])
+
+  const { clearDraft: clearCampaignEditDraft } = useBrowserFormDraft({
+    feature: 'marketing-campaign-edit',
+    scope: campaignDraftScope,
+    value: campaignEditDraftPayload,
+    isMeaningful: campaignDraftMeaningful,
+    restoreEnabled: false,
+  })
+
+  const campaignDraftRestoreRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!id) {
@@ -92,6 +134,34 @@ export default function EditCampaignPage() {
     }
   }, [id, supabase])
 
+  useEffect(() => {
+    if (!campaign || !user?.user_id || !id || loading) return
+    const rk = `${user.user_id}:${id}`
+    if (campaignDraftRestoreRef.current === rk) return
+    campaignDraftRestoreRef.current = rk
+    const env = loadFormDraft<CampaignEditDraftPayload>('marketing-campaign-edit', rk)
+    if (!env?.payload?.name?.trim()) return
+    const draftMs = new Date(env.savedAt).getTime()
+    const serverMs = new Date(campaign.updated_at).getTime()
+    if (!Number.isFinite(draftMs) || draftMs <= serverMs) {
+      clearFormDraft('marketing-campaign-edit', rk)
+      return
+    }
+    const p = env.payload
+    setName(p.name)
+    setChannel(p.channel || 'email')
+    setBudget(p.budget)
+    setStartAt(p.startAt)
+    setEndAt(p.endAt)
+    setStatus(p.status || 'draft')
+    addToast({
+      title: 'Bozza recuperata',
+      message:
+        'Ripristinati i campi salvati nel browser (più recenti dell’ultimo salvataggio sul server).',
+      variant: 'success',
+    })
+  }, [campaign, loading, user?.user_id, id, addToast])
+
   const allowed = role != null && ['admin', 'marketing'].includes(role as string)
   if (authLoading || (role !== null && !allowed)) {
     if (!authLoading && role !== null && !allowed) {
@@ -123,6 +193,7 @@ export default function EditCampaignPage() {
       setError(err.message)
       return
     }
+    if (user?.user_id && id) clearCampaignEditDraft()
     router.push(`/dashboard/marketing/campaigns/${id}`)
   }
 
@@ -132,7 +203,7 @@ export default function EditCampaignPage() {
 
   if (error && !campaign) {
     return (
-      <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
+      <div className="space-y-6 bg-background p-4 md:p-6">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/campaigns">
             <ArrowLeft className="h-4 w-4" />
@@ -146,14 +217,14 @@ export default function EditCampaignPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href={`/dashboard/marketing/campaigns/${id}`}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-xl font-bold min-[834px]:text-2xl">Modifica campagna</h1>
+        <h1 className="text-xl font-bold md:text-2xl">Modifica campagna</h1>
       </header>
 
       <Card className="border-border bg-background-secondary/80">
@@ -212,7 +283,7 @@ export default function EditCampaignPage() {
                 className="mt-1 border-border bg-background"
               />
             </div>
-            <div className="grid gap-4 min-[834px]:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="start_at" className="text-text-secondary">
                   Data inizio

@@ -14,7 +14,7 @@ export interface PageHeaderGlassProps {
 }
 
 const HEADER_CLASS =
-  'fixed inset-x-0 top-0 z-20 overflow-hidden bg-background border-b border-white/10 px-3 pb-3 min-[834px]:px-4 min-[834px]:pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-[calc(10px+env(safe-area-inset-top,0px))]'
+  'fixed inset-x-0 top-0 z-20 overflow-hidden bg-background border-b border-white/10 px-3 pb-3 md:px-4 md:pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-[calc(10px+env(safe-area-inset-top,0px))]'
 
 const CYAN_LINE_STYLE = {
   background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',

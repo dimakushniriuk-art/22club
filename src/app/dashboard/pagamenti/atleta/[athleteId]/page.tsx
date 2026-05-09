@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge, Checkbox } from '@/components/ui'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
@@ -29,6 +29,7 @@ import {
   Unlock,
   Plus,
 } from 'lucide-react'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 import { COACHED_APP_DEBIT_REASON_PREFIX } from '@/lib/credits/coached-debit-reason'
 import {
   parseServiceFromUrl,
@@ -178,9 +179,13 @@ function toDatetimeLocalValue(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export default function PagamentiAtletaPage() {
-  const params = useParams<{ athleteId: string }>()
-  const athleteId = params?.athleteId
+export default function PagamentiAtletaPage({
+  params,
+}: {
+  params: Promise<{ athleteId: string }>
+}) {
+  const resolved = useResolvedParams(params)
+  const athleteId = resolved.athleteId
   const searchParams = useSearchParams()
   const serviceType: ServiceType = parseServiceFromUrl(searchParams.get('service')) ?? 'training'
 

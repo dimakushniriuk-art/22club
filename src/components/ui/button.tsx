@@ -102,10 +102,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const sizes = {
-      sm: 'h-9 min-h-9 px-3 text-xs rounded-md',
-      md: 'h-11 min-h-11 px-5 text-sm rounded-lg',
-      lg: 'h-12 min-h-12 px-6 text-base rounded-lg',
-      xl: 'h-14 min-h-14 px-7 text-lg rounded-lg',
+      /** Toolbar compatto: testo piccolo; touch ok dove si usa con icone esplicite */
+      sm: 'h-9 min-h-9 px-3 text-xs rounded-md sm:min-h-9',
+      /** Default: area touch ≥44px su mobile, scala su sm+ */
+      md: 'min-h-[44px] h-10 px-4 text-xs rounded-lg sm:h-11 sm:min-h-11 sm:px-5 sm:text-sm',
+      lg: 'min-h-[44px] h-11 px-5 text-sm rounded-lg md:h-12 md:min-h-12 md:px-6 md:text-base',
+      xl: 'min-h-[48px] h-12 px-6 text-base rounded-lg md:h-14 md:min-h-14 md:px-7 md:text-lg',
       icon: 'h-10 w-10 min-h-10 min-w-10 rounded-lg',
       'icon-sm': 'h-8 w-8 min-h-8 min-w-8 rounded-md',
       'icon-lg': 'h-12 w-12 min-h-12 min-w-12 rounded-lg',

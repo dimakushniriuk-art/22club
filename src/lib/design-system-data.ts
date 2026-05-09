@@ -219,7 +219,7 @@ export const HOME_PAGES_DESIGN: HomePageDesignItem[] = [
     ],
     moduli: ['Link (blocchi card)', 'Card athlete', 'professional-icons (emoji)'],
     radius: ['rounded-xl', 'rounded-2xl'],
-    spacing: ['gap-4', 'p-4 min-[834px]:p-5', 'min-h-[44px]'],
+    spacing: ['gap-4', 'p-4 md:p-5', 'min-h-[44px]'],
   },
   {
     path: '/home/profilo',
@@ -260,7 +260,7 @@ export const HOME_PAGES_DESIGN: HomePageDesignItem[] = [
       'ErrorState',
     ],
     radius: ['rounded-xl', 'rounded-lg', 'min-h-[44px]'],
-    spacing: ['px-3 sm:px-4 min-[834px]:px-6', 'py-4 min-[834px]:py-5', 'space-y-4', 'gap-3'],
+    spacing: ['px-3 sm:px-4 md:px-6', 'py-4 md:py-5', 'space-y-4', 'gap-3'],
   },
   {
     path: '/home/allenamenti',
@@ -291,7 +291,7 @@ export const HOME_PAGES_DESIGN: HomePageDesignItem[] = [
     ],
     moduli: ['Card', 'CardHeader', 'CardTitle', 'CardContent', 'Button', 'Badge', 'Link'],
     radius: ['rounded-xl', 'rounded-lg'],
-    spacing: ['gap-3', 'p-3 min-[834px]:p-4', 'min-h-[44px]'],
+    spacing: ['gap-3', 'p-3 md:p-4', 'min-h-[44px]'],
   },
   {
     path: '/home/allenamenti/[id]',
@@ -378,7 +378,7 @@ export const HOME_PAGES_DESIGN: HomePageDesignItem[] = [
     icone: ['Scale', 'TrendingUp', 'Activity', 'BarChart3', 'ArrowLeft', 'History', 'Image'],
     moduli: ['Card', 'CardContent', 'CardHeader', 'CardTitle', 'Button', 'Link'],
     radius: ['rounded-xl', 'rounded-l-xl (barra)', 'rounded-lg'],
-    spacing: ['gap-4', 'space-y-4', 'min-[834px]:space-y-5', 'min-h-[44px]'],
+    spacing: ['gap-4', 'space-y-4', 'md:space-y-5', 'min-h-[44px]'],
   },
   {
     path: '/home/progressi/misurazioni',
@@ -448,7 +448,7 @@ export const HOME_PAGES_DESIGN: HomePageDesignItem[] = [
     icone: ['Calendar', 'Clock', 'MapPin', 'User', 'MessageSquare', 'ArrowLeft'],
     moduli: ['Card', 'CardHeader', 'CardTitle', 'CardContent', 'Badge', 'Button'],
     radius: ['rounded-xl'],
-    spacing: ['gap-3', 'p-3 min-[834px]:p-4', 'min-h-[44px]'],
+    spacing: ['gap-3', 'p-3 md:p-4', 'min-h-[44px]'],
   },
   {
     path: '/home/chat',
@@ -495,8 +495,16 @@ export const HOME_PAGES_DESIGN: HomePageDesignItem[] = [
     label: 'Nutrizionista',
     colori: ['Glass primary', 'border-primary/30', 'bg-primary/10', 'emerald'],
     tipografia: ['text-2xl md:text-3xl font-semibold', 'text-sm', 'text-xs text-text-tertiary'],
-    icone: ['ArrowLeft', 'Salad', 'Utensils', 'Apple'],
-    moduli: ['Card', 'CardHeader', 'CardTitle', 'CardContent', 'Button', 'AthleteNutritionTab'],
+    icone: ['ArrowLeft', 'Salad', 'Utensils', 'Apple', 'ChevronRight', 'FileText', 'Calendar'],
+    moduli: [
+      'PageHeaderFixed',
+      'Card',
+      'CardHeader',
+      'CardTitle',
+      'CardContent',
+      'Link',
+      'AthleteNutritionTab',
+    ],
     radius: ['rounded-xl'],
     spacing: ['gap-4', 'min-h-[44px]'],
   },
@@ -579,19 +587,18 @@ export const PATH_META: Record<string, PathMetaItem> = {
       { token: 'Layout', value: 'flex flex-col, overflow-auto, minHeight 100dvh - 56px' },
       {
         token: 'Container',
-        value:
-          'px-3 sm:px-4 min-[834px]:px-6, py-4 min-[834px]:py-5, space-y-5 min-[834px]:space-y-6',
+        value: 'px-3 sm:px-4 md:px-6, py-4 md:py-5, space-y-5 md:space-y-6',
       },
       {
         token: 'Griglia blocchi',
-        value: 'grid grid-cols-2 min-[834px]:grid-cols-3, gap-3 min-[834px]:gap-5',
+        value: 'grid grid-cols-2 md:grid-cols-3, gap-3 md:gap-5',
       },
       {
         token: 'Blocco (card)',
-        value: 'min-h-[100px] min-[834px]:min-h-[112px], rounded-2xl, barra inset 6px 0 0 bar',
+        value: 'min-h-[100px] md:min-h-[112px], rounded-2xl, barra inset 6px 0 0 bar',
       },
       { token: 'Header Benvenuto', value: 'Glass primary, rounded-2xl, backdrop-blur-xl' },
-      { token: 'Breakpoint', value: 'min-[834px] (tablet)' },
+      { token: 'Breakpoint', value: 'md (768px) tablet' },
       { token: 'Focus', value: 'ring-2 ring-primary ring-offset-2 ring-offset-background' },
     ],
   },
@@ -600,12 +607,12 @@ export const PATH_META: Record<string, PathMetaItem> = {
       { token: 'Layout', value: 'flex flex-col, overflow-auto, minHeight 100dvh - 56px' },
       {
         token: 'Container',
-        value: 'px-3 sm:px-4 min-[834px]:px-6, py-4 min-[834px]:py-5, space-y-4',
+        value: 'px-3 sm:px-4 md:px-6, py-4 md:py-5, space-y-4',
       },
       { token: 'Header', value: 'Glass (primary)' },
       { token: 'Accento', value: 'teal' },
       { token: 'Tabs', value: 'Anagrafica, Medico, Fitness, Nutrizione, Massaggi' },
-      { token: 'Breakpoint', value: 'min-[834px]' },
+      { token: 'Breakpoint', value: 'md (768px)' },
       { token: 'Focus', value: 'ring-2 ring-primary ring-offset-2 ring-offset-background' },
     ],
     header: 'glass',
@@ -616,7 +623,7 @@ export const PATH_META: Record<string, PathMetaItem> = {
       { token: 'Header', value: 'Compatto (primary)' },
       { token: 'Accento', value: 'cyan' },
       { token: 'Layout', value: 'Lista schede, Badge stato, Link a [id] / oggi' },
-      { token: 'Breakpoint', value: 'min-[834px]' },
+      { token: 'Breakpoint', value: 'md (768px)' },
     ],
     header: 'compact',
     accent: 'cyan',
@@ -730,11 +737,16 @@ export const PATH_META: Record<string, PathMetaItem> = {
   },
   '/home/nutrizionista': {
     tokenTable: [
-      { token: 'Header', value: 'Glass (primary)' },
-      { token: 'Accento', value: 'teal, emerald AthleteNutritionTab' },
+      { token: 'Header', value: 'PageHeaderFixed chat (come allenamenti)' },
+      { token: 'Card', value: 'CARD_DS — stats 2 col, link liste, Piano nutrizionale' },
+      { token: 'Accento', value: 'cyan stats, AthleteNutritionTab' },
+      {
+        token: 'Liste',
+        value: 'documenti, appuntamenti, chat, foto-risultati',
+      },
     ],
-    header: 'glass',
-    accent: 'teal',
+    header: 'compact',
+    accent: 'cyan',
   },
   '/home/massaggiatore': {
     tokenTable: [

@@ -364,6 +364,7 @@ export function useWorkoutSession() {
 
           return {
             id: exerciseRow.id,
+            exercise_id: exerciseRow.exercise_id ?? relatedExercise?.id ?? null,
             circuit_block_id: exerciseRow.circuit_block_id ?? null,
             exercise: relatedExercise
               ? {

@@ -394,7 +394,7 @@ export function AthleteMassageTab({ athleteId }: AthleteMassageTabProps) {
           )}
 
           {showMassaggioForm && (
-            <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-4 min-[834px]:p-5">
+            <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-4 md:p-5">
               <div className="space-y-2">
                 <Label htmlFor="massaggio-data" className="text-text-tertiary">
                   Data

@@ -13,6 +13,9 @@ export const queryKeys = {
     all: ['appointments'] as const,
     byUser: (userId: string) => ['appointments', userId] as const,
     byDate: (userId: string, date: string) => ['appointments', userId, date] as const,
+    /** Agenda “oggi” staff dashboard (profilo effettivo = profiles.id); invalidata da `invalidateAppointmentsQueries`. */
+    staffToday: (staffProfileId: string) =>
+      ['appointments', 'staff-today', staffProfileId] as const,
   },
   documents: {
     all: ['documents'] as const,
@@ -35,5 +38,15 @@ export const queryKeys = {
   payments: {
     all: ['payments'] as const,
     byAthlete: (athleteId: string) => ['payments', athleteId] as const,
+  },
+  /**
+   * Prefissi React Query con `refetchOnWindowFocus` via `setQueryDefaults` (solo query leggere).
+   */
+  lightWindowFocus: {
+    clientiStats: ['clienti', 'stats'] as const,
+    athleteAiData: ['athlete-ai-data'] as const,
+    athleteAnagrafica: ['athlete-anagrafica'] as const,
+    /** Liste pagamenti staff: staleness dopo alt-tab breve. */
+    paymentsLists: ['payments'] as const,
   },
 } as const

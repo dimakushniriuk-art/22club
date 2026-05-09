@@ -504,8 +504,8 @@
     }
   }
 
-  /* Login: iPad portrait 834×1194 — più respiro (gestito da min-[834px] in pagina) */
-  /* Login: iPad landscape 1194×834 — card centrata, padding generoso (stesso breakpoint) */
+  /* Login: iPad portrait — più respiro da breakpoint Tailwind md (768px) in pagina */
+  /* Login: iPad landscape — card centrata, padding generoso (stesso breakpoint md) */
 
   /* Mobile portrait optimization */
   @media (max-width: 768px) {

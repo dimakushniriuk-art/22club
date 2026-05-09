@@ -1,0 +1,9 @@
+{
+  "type": "EmptyState",
+  "variant": "default",
+  "title": "Nessun appuntamento",
+  "description": "Non hai appuntamenti programmati per oggi.",
+  "state": "empty",
+  "actions": ["Nuovo appuntamento"],
+  "items": []
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -18,6 +18,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useAuth } from '@/hooks/use-auth'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useToast } from '@/components/ui/toast'
+import { ConfirmDialog } from '@/components/shared/ui/confirm-dialog'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { loadFormDraft, clearFormDraft } from '@/lib/browser-form-draft'
 import type { Database } from '@/lib/supabase/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { uploadDocument, validateDocumentFile } from '@/lib/documents'
@@ -135,6 +138,30 @@ export interface LiberatoriaState {
   duration: '' | 'fino_a_revoca' | 'illimitata'
   place: string
   firma_nome_cognome: string
+}
+
+export interface WelcomeBrowserDraftPayload {
+  form: OnboardingFormState
+  anamnesi: AnamnesiState
+  manleva: ManlevaState
+  liberatoria: LiberatoriaState
+  currentStep: number
+  finalConfirmation: boolean
+  obiettivoAltro: string
+  intolleranzaAltro: string
+  allergiaAlimentareAltro: string
+}
+
+function isMeaningfulWelcomeDraft(p: WelcomeBrowserDraftPayload): boolean {
+  if (p.currentStep > 0) return true
+  if (p.form.nome?.trim() || p.form.cognome?.trim() || p.form.phone?.trim()) return true
+  if (
+    Object.values(p.anamnesi).some((v) =>
+      typeof v === 'boolean' ? v : typeof v === 'string' ? v.trim() !== '' : false,
+    )
+  )
+    return true
+  return false
 }
 
 const LIBERATORIA_CHANNELS = [
@@ -625,6 +652,72 @@ function WelcomePageContent() {
   const [liberatoriaLeggiTuttoOpen, setLiberatoriaLeggiTuttoOpen] = useState(false)
   const [finalConfirmation, setFinalConfirmation] = useState(false)
 
+  const welcomeDraftPayload = useMemo(
+    (): WelcomeBrowserDraftPayload => ({
+      form,
+      anamnesi,
+      manleva,
+      liberatoria,
+      currentStep,
+      finalConfirmation,
+      obiettivoAltro,
+      intolleranzaAltro,
+      allergiaAlimentareAltro,
+    }),
+    [
+      form,
+      anamnesi,
+      manleva,
+      liberatoria,
+      currentStep,
+      finalConfirmation,
+      obiettivoAltro,
+      intolleranzaAltro,
+      allergiaAlimentareAltro,
+    ],
+  )
+
+  const welcomeDraftMeaningfulCb = useCallback(
+    (p: WelcomeBrowserDraftPayload) => isMeaningfulWelcomeDraft(p),
+    [],
+  )
+
+  const { clearDraft: clearWelcomeBrowserDraft } = useBrowserFormDraft({
+    feature: 'welcome-onboarding',
+    scope: authUserId ?? null,
+    value: welcomeDraftPayload,
+    isMeaningful: welcomeDraftMeaningfulCb,
+    restoreEnabled: false,
+  })
+
+  const [welcomeDraftDialogOpen, setWelcomeDraftDialogOpen] = useState(false)
+  const [welcomeDraftPending, setWelcomeDraftPending] = useState<WelcomeBrowserDraftPayload | null>(
+    null,
+  )
+  const welcomeDraftCheckedRef = useRef(false)
+
+  useEffect(() => {
+    if (loading || !authUserId || welcomeDraftCheckedRef.current) return
+    welcomeDraftCheckedRef.current = true
+    const env = loadFormDraft<WelcomeBrowserDraftPayload>('welcome-onboarding', authUserId)
+    if (env && isMeaningfulWelcomeDraft(env.payload)) {
+      setWelcomeDraftPending(env.payload)
+      setWelcomeDraftDialogOpen(true)
+    }
+  }, [loading, authUserId])
+
+  const applyWelcomeDraftPayload = useCallback((p: WelcomeBrowserDraftPayload) => {
+    setForm(p.form)
+    setAnamnesi(p.anamnesi)
+    setManleva(p.manleva)
+    setLiberatoria(p.liberatoria)
+    setCurrentStep(p.currentStep)
+    setFinalConfirmation(p.finalConfirmation)
+    setObiettivoAltro(p.obiettivoAltro)
+    setIntolleranzaAltro(p.intolleranzaAltro)
+    setAllergiaAlimentareAltro(p.allergiaAlimentareAltro)
+  }, [])
+
   // Complete-profile (crea profilo + collega invito se codice) poi fetch profile + PT + questionnaire.
   // Usa getSession() perché il context può avere user=null se il profilo non esiste ancora (AuthProvider imposta null su PGRST116).
   // Retry getSession dopo breve attesa se sessione non pronta (es. redirect da conferma email).
@@ -1067,6 +1160,10 @@ function WelcomePageContent() {
   }
 
   const handleGoHome = () => {
+    if (authUserId) {
+      clearFormDraft('welcome-onboarding', authUserId)
+      clearWelcomeBrowserDraft()
+    }
     router.push('/home')
   }
 
@@ -1156,9 +1253,9 @@ function WelcomePageContent() {
           </div>
 
           <Card
-            className={`mb-6 border-0 border-l-4 ${STEPS[step].borderLeft} bg-background-secondary/95 backdrop-blur-xl rounded-xl min-[834px]:rounded-2xl bg-gradient-to-br ${STEPS[step].accent}`}
+            className={`mb-6 border-0 border-l-4 ${STEPS[step].borderLeft} bg-background-secondary/95 backdrop-blur-xl rounded-xl md:rounded-2xl bg-gradient-to-br ${STEPS[step].accent}`}
           >
-            <CardContent className="p-5 sm:p-6 min-[834px]:p-8">
+            <CardContent className="p-5 sm:p-6 md:p-8">
               <div className="mb-4 text-center">
                 <h1 className="text-text-primary text-2xl font-bold">{STEPS[step].title}</h1>
                 {STEPS[step].description ? (
@@ -3268,6 +3365,40 @@ function WelcomePageContent() {
           </div>
         </div>
       </main>
+
+      <ConfirmDialog
+        open={welcomeDraftDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && welcomeDraftPending) {
+            if (authUserId) {
+              clearFormDraft('welcome-onboarding', authUserId)
+              clearWelcomeBrowserDraft()
+            }
+            setWelcomeDraftPending(null)
+          }
+          setWelcomeDraftDialogOpen(open)
+        }}
+        title="Trovata una bozza salvata nel browser"
+        description={
+          welcomeDraftPending?.form?.nome
+            ? `Ripristinare i dati compilati per «${welcomeDraftPending.form.nome}»? Ignora per continuare solo con i dati già salvati sul server.`
+            : 'Ripristinare i dati compilati in precedenza in questo browser? Ignora per continuare solo con i dati già salvati sul server.'
+        }
+        confirmText="Ripristina"
+        cancelText="Ignora"
+        onConfirm={async () => {
+          if (welcomeDraftPending) {
+            applyWelcomeDraftPayload(welcomeDraftPending)
+            addToast({
+              title: 'Bozza recuperata',
+              message: 'Puoi continuare il questionario.',
+              variant: 'success',
+            })
+          }
+          setWelcomeDraftPending(null)
+          setWelcomeDraftDialogOpen(false)
+        }}
+      />
     </div>
   )
 }

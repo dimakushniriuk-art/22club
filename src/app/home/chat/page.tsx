@@ -15,12 +15,21 @@ import { MessageList } from '@/components/chat/message-list'
 import { MessageInput } from '@/components/chat/message-input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User } from 'lucide-react'
+import { AlertTriangle, Loader2, MessageSquare, User } from 'lucide-react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { AthleteTopBarContext } from '@/components/athlete'
 
 const logger = createLogger('app:home:chat:page')
+
+/** Stesso accento della `HomeAthleteTopChrome` (linea cyan in basso sull’header → in alto sul footer chat). */
+const ATHLETE_HOME_CYAN_ACCENT_LINE = {
+  background: 'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
+} as const
+
+/** Padding come il wrapper della `secondaryRow` in `home-layout-client` + safe-area in basso. */
+const ATHLETE_CHAT_FOOTER_INNER_CLASS =
+  'relative z-10 w-full px-3 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-4 md:px-6 md:pt-2 md:pb-[calc(0.625rem+env(safe-area-inset-bottom))]'
 
 interface PersonalTrainer {
   id: string
@@ -48,16 +57,18 @@ function roleLabel(role: ChatRecipientRole): string {
 
 function ChatErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
-      <div className="mb-3 text-4xl opacity-50">😞</div>
-      <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">
+    <Card className="rounded-xl border border-state-error/25 bg-[#0b141a] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 md:p-8 text-center">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-state-error/15 ring-1 ring-state-error/25">
+        <AlertTriangle className="h-7 w-7 text-state-error" aria-hidden />
+      </div>
+      <h2 className="text-text-primary text-sm md:text-base font-semibold mb-1.5">
         Errore nel caricamento
       </h2>
-      <p className="text-text-secondary mb-4 text-xs min-[834px]:text-sm">{error}</p>
+      <p className="text-text-secondary mb-5 text-xs md:text-sm leading-relaxed">{error}</p>
       <Button
         onClick={onRetry}
         aria-label="Riprova a caricare le conversazioni"
-        className="rounded-lg border border-white/10 hover:bg-white/5 min-h-[44px] text-text-primary"
+        className="rounded-lg border border-white/15 bg-white/[0.06] hover:bg-white/10 min-h-[44px] text-text-primary"
       >
         Riprova
       </Button>
@@ -65,30 +76,31 @@ function ChatErrorState({ error, onRetry }: { error: string; onRetry: () => void
   )
 }
 
-function ChatEmptyState({
-  emoji,
-  title,
-  description,
-}: {
-  emoji: string
-  title: string
-  description: string
-}) {
+function ChatEmptyState({ title, description }: { title: string; description: string }) {
   return (
-    <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-4 min-[834px]:p-6 text-center">
-      <div className="mb-2.5 text-4xl opacity-50">{emoji}</div>
-      <h2 className="text-text-primary text-sm min-[834px]:text-base font-semibold mb-1.5">
-        {title}
-      </h2>
-      <p className="text-text-secondary text-xs min-[834px]:text-sm mb-1.5">{description}</p>
+    <Card className="rounded-xl border border-white/10 bg-[#0b141a] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.04)_1px,transparent_0)] [background-size:24px_24px] p-6 md:p-8 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10">
+        <MessageSquare className="h-7 w-7 text-cyan-400/90" aria-hidden />
+      </div>
+      <h2 className="text-text-primary text-sm md:text-base font-semibold mb-2">{title}</h2>
+      <p className="text-text-secondary text-xs md:text-sm leading-relaxed max-w-sm mx-auto">
+        {description}
+      </p>
     </Card>
   )
 }
 
 function ChatLoadingCard() {
   return (
-    <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
-      <div className="min-h-[120px] p-6 min-[834px]:p-8" aria-hidden />
+    <Card className="overflow-hidden rounded-xl border border-white/10 bg-[#0b141a] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+      <div className="flex min-h-[140px] flex-col items-center justify-center gap-4 p-6 md:p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-cyan-400/80" aria-hidden />
+        <div className="w-full max-w-[200px] space-y-2" aria-hidden>
+          <div className="h-2.5 w-3/4 animate-pulse rounded bg-white/10" />
+          <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/10" />
+        </div>
+        <p className="text-xs text-text-tertiary">Caricamento…</p>
+      </div>
     </Card>
   )
 }
@@ -97,18 +109,15 @@ function ChatLoadingFullPage({ footerChildren }: { footerChildren?: ReactNode })
   return (
     <div className="flex flex-col min-h-0 flex-1 bg-background w-full max-w-full overflow-hidden">
       <div className="flex-1 min-h-0 overflow-hidden" aria-hidden />
-      <footer className="relative z-20 shrink-0 w-full overflow-hidden bg-background border-t border-white/10 p-3 min-[834px]:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-px pb-[env(safe-area-inset-bottom)]">
+      <footer className="relative z-20 w-full shrink-0 overflow-hidden border-t border-white/10 bg-black">
         <div
-          className="absolute inset-x-0 top-0 h-px z-20"
-          style={{
-            background:
-              'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
-          }}
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px"
+          style={ATHLETE_HOME_CYAN_ACCENT_LINE}
           aria-hidden
         />
-        <div className="relative z-10 w-full">
+        <div className={ATHLETE_CHAT_FOOTER_INNER_CLASS}>
           {footerChildren ?? (
-            <div className="h-10 min-[834px]:h-11 rounded-xl border border-white/5 bg-white/5" />
+            <div className="min-h-[52px] rounded-xl border border-white/10 bg-white/[0.04]" />
           )}
         </div>
       </footer>
@@ -132,7 +141,11 @@ function ChatRecipientSecondaryRow({
   avatarUrl: string | null
 }) {
   return (
-    <div className="relative z-10 flex items-center gap-2 min-[834px]:gap-3 overflow-x-auto pb-0.5">
+    <div
+      role="tablist"
+      aria-label="Seleziona con chi chattare"
+      className="relative z-10 -mx-1 flex snap-x snap-mandatory items-center gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1 custom-scrollbar md:gap-3"
+    >
       {availableRecipients.length >= 1 ? (
         availableRecipients.map((r) => {
           const isSelected = (currentConversationId ?? availableRecipients[0]?.id) === r.id
@@ -141,30 +154,31 @@ function ChatRecipientSecondaryRow({
             <button
               key={r.id}
               type="button"
+              role="tab"
               onClick={() => onSelectRecipient(r.id)}
               className={cn(
-                'flex items-center gap-2 shrink-0 rounded-lg p-2 min-[834px]:p-2.5 border transition-all text-left',
+                'flex snap-start items-center gap-2 shrink-0 rounded-xl p-2 md:p-2.5 border text-left transition-all duration-200',
                 isSelected
-                  ? 'border-white/20 bg-white/10'
-                  : 'border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/5',
+                  ? 'border-cyan-500/35 bg-white/[0.12] ring-1 ring-cyan-500/25 shadow-[0_0_20px_-8px_rgba(34,211,238,0.35)]'
+                  : 'border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.07]',
               )}
               aria-label={`Chatta con ${name}, ${roleLabel(r.role)}`}
-              aria-pressed={isSelected}
+              aria-selected={isSelected}
             >
-              <div className="relative h-9 w-9 min-[834px]:h-10 min-[834px]:w-10 shrink-0 rounded-full overflow-hidden border border-white/10 bg-white/5">
+              <div className="relative h-9 w-9 md:h-10 md:w-10 shrink-0 rounded-full overflow-hidden border border-white/10 bg-white/5">
                 {r.avatar_url ? (
                   <Image src={r.avatar_url} alt={name} fill className="object-cover" sizes="40px" />
                 ) : (
                   <span className="absolute inset-0 flex items-center justify-center text-cyan-400">
-                    <User className="h-4 w-4 min-[834px]:h-5 min-[834px]:w-5" />
+                    <User className="h-4 w-4 md:h-5 md:w-5" />
                   </span>
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-text-primary truncate max-w-[100px] min-[834px]:max-w-[140px]">
+                <p className="text-sm font-semibold text-text-primary truncate max-w-[120px] md:max-w-[160px]">
                   {name}
                 </p>
-                <p className="text-[10px] min-[834px]:text-xs text-text-tertiary truncate max-w-[100px] min-[834px]:max-w-[140px]">
+                <p className="text-[10px] md:text-xs text-text-tertiary truncate max-w-[120px] md:max-w-[160px]">
                   {roleLabel(r.role)}
                 </p>
               </div>
@@ -183,12 +197,10 @@ function ChatRecipientSecondaryRow({
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-sm min-[834px]:text-base font-semibold text-text-primary truncate">
+            <p className="text-sm md:text-base font-semibold text-text-primary truncate">
               {displayName}
             </p>
-            <p className="text-text-tertiary text-[10px] min-[834px]:text-xs truncate">
-              {displayRole}
-            </p>
+            <p className="text-text-tertiary text-[10px] md:text-xs truncate">{displayRole}</p>
           </div>
         </div>
       )}
@@ -651,7 +663,7 @@ function AthleteChatPageContent() {
 
     const sub =
       chatBarDisplayName && chatBarDisplayRole
-        ? `${chatBarDisplayRole} · ${chatBarDisplayName}`
+        ? `${chatBarDisplayName} — ${chatBarDisplayRole}`
         : chatBarDisplayName || chatBarDisplayRole || undefined
     setTopBarConfig({
       title: 'Chat',
@@ -686,7 +698,7 @@ function AthleteChatPageContent() {
   if (!user || !isValidUser) {
     return (
       <div
-        className="flex min-h-0 flex-1 flex-col bg-background w-full max-w-full p-3 sm:px-4 min-[834px]:px-6"
+        className="flex min-h-0 flex-1 flex-col bg-background w-full max-w-full p-3 sm:px-4 md:px-6"
         role="main"
         aria-label="Chat - caricamento"
       >
@@ -697,8 +709,8 @@ function AthleteChatPageContent() {
 
   if (error) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+      <div className="flex min-h-0 flex-1 flex-col bg-[#0b141a]">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-8 pt-2 safe-area-inset-bottom sm:px-4 md:px-6 md:pb-10">
           <ChatErrorState error={error} onRetry={fetchConversations} />
         </div>
       </div>
@@ -708,20 +720,19 @@ function AthleteChatPageContent() {
   if (conversations.length === 0 && availableRecipients.length === 0) {
     if (loadingRecipients) {
       return (
-        <div className="flex min-h-0 flex-1 flex-col bg-background">
-          <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+        <div className="flex min-h-0 flex-1 flex-col bg-[#0b141a]">
+          <div className="min-h-0 flex-1 overflow-auto px-3 pb-8 pt-2 safe-area-inset-bottom sm:px-4 md:px-6">
             <ChatLoadingCard />
           </div>
         </div>
       )
     }
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+      <div className="flex min-h-0 flex-1 flex-col bg-[#0b141a]">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-8 pt-2 safe-area-inset-bottom sm:px-4 md:px-6">
           <ChatEmptyState
-            emoji="💬"
-            title="Nessuna conversazione"
-            description="Qui puoi chattare con il trainer quando assegnato."
+            title="Nessun trainer assegnato"
+            description="Quando il tuo club ti assegna un trainer, potrai scrivere qui e ricevere messaggi."
           />
         </div>
       </div>
@@ -730,38 +741,29 @@ function AthleteChatPageContent() {
 
   if (!effectiveConversation) {
     return (
-      <div className="flex flex-col min-h-0 flex-1 bg-background w-full max-w-full overflow-hidden">
-        <div className="flex-1 min-h-0 overflow-hidden" aria-hidden />
-        <footer className="relative z-20 shrink-0 w-full overflow-hidden bg-background border-t border-white/10 p-3 min-[834px]:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-px pb-[env(safe-area-inset-bottom)]">
-          <div
-            className="absolute inset-x-0 top-0 h-px z-20"
-            style={{
-              background:
-                'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
-            }}
-            aria-hidden
-          />
-          <div className="relative z-10 w-full">
-            <MessageInput
-              onSendMessage={handleSendMessage}
-              onUploadFile={handleUploadFile}
-              placeholder="Hai completato l'allenamento? Raccontalo qui!"
-              disabled={true}
-            />
-          </div>
-        </footer>
+      <div
+        className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 bg-[#0b141a] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.04)_1px,transparent_0)] [background-size:24px_24px] px-6 py-12"
+        role="status"
+        aria-live="polite"
+        aria-label="Caricamento conversazione"
+      >
+        <Loader2 className="h-10 w-10 animate-spin text-cyan-400/85" aria-hidden />
+        <div className="text-center">
+          <p className="text-sm font-medium text-[#e9edef]">Caricamento conversazione</p>
+          <p className="mt-1 text-xs text-[#8696a0]">Attendi un attimo…</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col w-full max-w-full overflow-hidden bg-background"
+      className="flex min-h-0 flex-1 flex-col w-full max-w-full overflow-hidden bg-[#0b141a]"
       role="main"
       aria-label="Chat"
     >
       <main
-        className="relative z-0 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden overscroll-y-contain flex flex-col space-y-1 p-4 bg-background"
+        className="relative z-0 flex min-h-0 flex-1 flex-col overflow-hidden"
         aria-label="Messaggi della conversazione"
       >
         <MessageList
@@ -772,27 +774,27 @@ function AthleteChatPageContent() {
           onLoadMore={loadMoreMessages}
           hasMore={effectiveConversation.hasMore}
           onDeleteMessage={deleteMessage}
+          className="min-h-0 flex-1 w-full"
+          scrollAreaClassName="pb-[calc(6.125rem+env(safe-area-inset-bottom))]"
         />
       </main>
 
       <footer
-        className="relative z-20 w-full shrink-0 overflow-hidden bg-black border-t border-white/10 px-3 min-[834px]:px-4 py-[10px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] pt-[calc(10px+1px)] pb-[calc(10px+env(safe-area-inset-bottom))]"
+        className="fixed bottom-0 left-0 right-0 z-40 w-full shrink-0 overflow-hidden border-t border-white/10 bg-black"
         aria-label="Input messaggio"
       >
         <div
-          className="absolute inset-x-0 top-0 h-px z-20"
-          style={{
-            background:
-              'linear-gradient(to right, transparent 0%, rgb(34 211 238) 50%, transparent 100%)',
-          }}
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px"
+          style={ATHLETE_HOME_CYAN_ACCENT_LINE}
           aria-hidden
         />
-        <div className="relative z-10 w-full">
+        <div className={ATHLETE_CHAT_FOOTER_INNER_CLASS}>
           <MessageInput
             onSendMessage={handleSendMessage}
             onUploadFile={handleUploadFile}
             placeholder="Hai completato l'allenamento? Raccontalo qui!"
             disabled={false}
+            variant="whatsapp-dark"
           />
         </div>
       </footer>

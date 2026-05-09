@@ -104,6 +104,27 @@ function authErrorMessage(error: unknown): string {
   return String(error ?? '')
 }
 
+/** Solo classificazione: usata da console filter e da handleRefreshTokenError. */
+function isRefreshTokenAuthFailure(error: unknown): boolean {
+  if (error == null) return false
+  const errorMessage = authErrorMessage(error)
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: string }).code ?? '')
+      : ''
+  const lowered = errorMessage.toLowerCase()
+  // Non usare "includes('refresh')" su AuthApiError: match troppo largo (logout ingiusti).
+  return (
+    code === 'refresh_token_not_found' ||
+    errorMessage.includes('Invalid Refresh Token') ||
+    errorMessage.includes('Refresh Token Not Found') ||
+    lowered.includes('refresh_token_not_found') ||
+    lowered.includes('invalid refresh token') ||
+    lowered.includes('refresh token not found') ||
+    lowered.includes('refresh token revoked')
+  )
+}
+
 /** Client browser per signOut su refresh invalido (evita TDZ su `supabase` durante init modulo). */
 function getClientForRefreshTokenCleanup(): SupabaseClient<Database> {
   if (typeof window !== 'undefined' && browserSingleton) {
@@ -113,43 +134,28 @@ function getClientForRefreshTokenCleanup(): SupabaseClient<Database> {
 }
 
 export function handleRefreshTokenError(error: unknown): boolean {
-  if (error == null) return false
+  if (!isRefreshTokenAuthFailure(error)) return false
+  if (refreshTokenErrorHandling) return true
+  refreshTokenErrorHandling = true
   const errorMessage = authErrorMessage(error)
-  const code =
-    typeof error === 'object' && error !== null && 'code' in error
-      ? String((error as { code?: string }).code ?? '')
-      : ''
-  const lowered = errorMessage.toLowerCase()
-  const isRefreshTokenError =
-    code === 'refresh_token_not_found' ||
-    errorMessage.includes('Invalid Refresh Token') ||
-    errorMessage.includes('Refresh Token Not Found') ||
-    lowered.includes('refresh_token_not_found') ||
-    (error instanceof Error && error.name === 'AuthApiError' && lowered.includes('refresh'))
-
-  if (isRefreshTokenError) {
-    if (refreshTokenErrorHandling) return true
-    refreshTokenErrorHandling = true
-    logger.warn('Errore refresh token rilevato, disconnessione automatica', error, {
-      errorMessage,
-      errorName: error instanceof Error ? error.name : 'Unknown',
+  logger.warn('Errore refresh token rilevato, disconnessione automatica', error, {
+    errorMessage,
+    errorName: error instanceof Error ? error.name : 'Unknown',
+  })
+  // scope: 'local' evita un altro round-trip auth con refresh token già invalido
+  void getClientForRefreshTokenCleanup()
+    .auth.signOut({ scope: 'local' })
+    .finally(() => {
+      refreshTokenErrorHandling = false
     })
-    // scope: 'local' evita un altro round-trip auth con refresh token già invalido
-    void getClientForRefreshTokenCleanup()
-      .auth.signOut({ scope: 'local' })
-      .finally(() => {
-        refreshTokenErrorHandling = false
-      })
-    // Reindirizza al login se siamo in un contesto client-side
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname
-      if (path !== '/login' && !path.startsWith('/auth')) {
-        window.location.href = '/login?reason=session_expired'
-      }
+  // Reindirizza al login se siamo in un contesto client-side
+  if (typeof window !== 'undefined') {
+    const path = window.location.pathname
+    if (path !== '/login' && !path.startsWith('/auth')) {
+      window.location.href = '/login?reason=session_expired'
     }
-    return true
   }
-  return false
+  return true
 }
 
 /**
@@ -164,19 +170,46 @@ function installStaleRefreshRejectionHandlerOnce(): void {
   w.__22clubSbRtRejectionHandler = true
   window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
     const reason = event.reason
-    const msg = authErrorMessage(reason)
-    const lowered = msg.toLowerCase()
-    const isRefreshTokenRejection =
-      msg.includes('Invalid Refresh Token') ||
-      msg.includes('Refresh Token Not Found') ||
-      lowered.includes('refresh_token_not_found')
-    if (!isRefreshTokenRejection) return
+    if (!isRefreshTokenAuthFailure(reason)) return
     if (handleRefreshTokenError(reason)) {
       event.preventDefault()
     }
   })
 }
 
+/**
+ * GoTrueClient fa `console.error(error)` su refresh fallito (non è una Promise rejection).
+ * Intercettiamo così l'overlay Next "Console AuthApiError" non rumoreggia su sessioni stale.
+ */
+function installStaleRefreshConsoleErrorFilterOnce(): void {
+  if (typeof window === 'undefined') return
+  const w = window as Window & { __22clubSbRtConsoleFilter?: boolean }
+  if (w.__22clubSbRtConsoleFilter) return
+  w.__22clubSbRtConsoleFilter = true
+
+  const origError = console.error.bind(console) as (...args: unknown[]) => void
+  console.error = (...args: unknown[]) => {
+    const staleArg = args.find((a) => isRefreshTokenAuthFailure(a))
+    if (staleArg !== undefined) {
+      void handleRefreshTokenError(staleArg)
+      return
+    }
+    // Next 15 dynamic API warning can be triggered by devtools/inspectors that enumerate
+    // `params`/`searchParams` proxies while introspecting React trees in dev mode.
+    const maybeMessage = args.find((a) => typeof a === 'string') as string | undefined
+    if (
+      maybeMessage != null &&
+      maybeMessage.includes('sync-dynamic-apis') &&
+      (maybeMessage.includes('params are being enumerated') ||
+        maybeMessage.includes('keys of `searchParams` were accessed directly'))
+    ) {
+      return
+    }
+    origError(...args)
+  }
+}
+
+installStaleRefreshConsoleErrorFilterOnce()
 installStaleRefreshRejectionHandlerOnce()
 
 export const supabase = createClient()

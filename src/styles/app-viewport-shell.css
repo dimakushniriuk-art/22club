@@ -24,3 +24,16 @@
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
 }
+
+/** Footer / CTA sticky: rispetta safe-area iOS (vedi Cervello sessione_rete_stabilita). */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+/** Target touch minimi su pointer coarse (linee guida mobile). */
+@media (pointer: coarse) {
+  .touch-target-min {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

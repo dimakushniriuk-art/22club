@@ -4,103 +4,30 @@ import { createLogger } from '@/lib/logger'
 import { useNotify } from '@/lib/ui/notify'
 
 const logger = createLogger('components:shared:dashboard:sidebar')
-import {
-  Home,
-  Dumbbell,
-  CalendarCheck,
-  CalendarDays,
-  Users,
-  Settings,
-  MessageSquare,
-  Euro,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Mail,
-  Shield,
-  UserPlus,
-  Megaphone,
-  BarChart2,
-  FileText,
-  Layers,
-  Zap,
-  ClipboardList,
-  ClipboardCheck,
-  TrendingUp,
-  Activity,
-  Database,
-} from 'lucide-react'
+import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Logo22Club } from '../logo-22club'
 import { useAuth } from '@/providers/auth-provider'
 import { useStaffWorkoutSlotsIndicator } from '@/hooks/use-staff-workout-slots-indicator'
-
-const staffNav = [
-  { label: 'Dashboard', icon: Home, href: '/dashboard' },
-  { label: 'Prenotazioni', icon: ClipboardList, href: '/dashboard/prenotazioni' },
-  { label: 'Workouts', icon: Activity, href: '/dashboard/workouts' },
-  { label: 'Chat', icon: MessageSquare, href: '/dashboard/chat' },
-  { label: 'Schede', icon: Dumbbell, href: '/dashboard/schede' },
-  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/abbonamenti' },
-  { label: 'Comunicazioni', icon: Mail, href: '/dashboard/comunicazioni' },
-  { label: 'Database', icon: Database, href: '/dashboard/database' },
-  { label: 'Impostazioni', icon: Settings, href: '/dashboard/impostazioni' },
-]
-
-const nutrizionistaNav = [
-  { label: 'Dashboard', icon: Home, href: '/dashboard/nutrizionista' },
-  { label: 'Clienti', icon: Users, href: '/dashboard/nutrizionista/atleti' },
-  { label: 'Piani', icon: ClipboardList, href: '/dashboard/nutrizionista/piani' },
-  { label: 'Progressi', icon: TrendingUp, href: '/dashboard/nutrizionista/progressi' },
-  { label: 'Check-in', icon: ClipboardCheck, href: '/dashboard/nutrizionista/checkin' },
-  { label: 'Analisi settimanale', icon: BarChart2, href: '/dashboard/nutrizionista/analisi' },
-  { label: 'Calendario', icon: CalendarDays, href: '/dashboard/nutrizionista/calendario' },
-  { label: 'Chat', icon: MessageSquare, href: '/dashboard/nutrizionista/chat' },
-  { label: 'Documenti', icon: FileText, href: '/dashboard/nutrizionista/documenti' },
-  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/nutrizionista/abbonamenti' },
-  { label: 'Impostazioni', icon: Settings, href: '/dashboard/nutrizionista/impostazioni' },
-]
-
-const massaggiatoreNav = [
-  { label: 'Dashboard', icon: Home, href: '/dashboard/massaggiatore' },
-  { label: 'Clienti', icon: Users, href: '/dashboard/massaggiatore/clienti' },
-  { label: 'Appuntamenti', icon: CalendarCheck, href: '/dashboard/massaggiatore/appuntamenti' },
-  { label: 'Calendario', icon: CalendarDays, href: '/dashboard/massaggiatore/calendario' },
-  { label: 'Chat', icon: MessageSquare, href: '/dashboard/massaggiatore/chat' },
-  { label: 'Statistiche', icon: BarChart2, href: '/dashboard/massaggiatore/statistiche' },
-  { label: 'Abbonamenti', icon: Euro, href: '/dashboard/massaggiatore/abbonamenti' },
-  { label: 'Impostazioni', icon: Settings, href: '/dashboard/massaggiatore/impostazioni' },
-]
+import {
+  loadProfileLocalStorageJson,
+  saveProfileLocalStorageJson,
+} from '@/lib/prefs/profile-local-storage'
+import {
+  dashboardSidebarAdminLinkMetadata,
+  getDashboardSidebarNavForRole,
+} from '@/config/navigation/dashboard-sidebar'
 
 export const Sidebar = ({ role }: { role: 'staff' }) => {
   const path = usePathname()
-  const { role: userRole, signOut } = useAuth()
+  const { role: userRole, signOut, user } = useAuth()
   const isAdmin = userRole === 'admin'
+  const profileId = user?.id ?? null
   const { notify } = useNotify()
   const staffWorkoutsSlotsActive = useStaffWorkoutSlotsIndicator()
 
-  // Filtra nav in base al ruolo
-  let nav = staffNav
-  if (userRole === 'marketing') {
-    nav = [
-      { label: 'Overview', icon: Home, href: '/dashboard/marketing' },
-      { label: 'Atleti', icon: Users, href: '/dashboard/marketing/athletes' },
-      { label: 'Segmenti', icon: Layers, href: '/dashboard/marketing/segments' },
-      { label: 'Automazioni', icon: Zap, href: '/dashboard/marketing/automations' },
-      { label: 'Leads', icon: UserPlus, href: '/dashboard/marketing/leads' },
-      { label: 'Campagne', icon: Megaphone, href: '/dashboard/marketing/campaigns' },
-      { label: 'Analytics', icon: BarChart2, href: '/dashboard/marketing/analytics' },
-      { label: 'Report', icon: FileText, href: '/dashboard/marketing/report' },
-      { label: 'Impostazioni', icon: Settings, href: '/dashboard/marketing/impostazioni' },
-    ]
-  } else if (userRole === 'nutrizionista') {
-    nav = nutrizionistaNav
-  } else if (userRole === 'massaggiatore') {
-    nav = massaggiatoreNav
-  } else {
-    nav = staffNav
-  }
+  const nav = getDashboardSidebarNavForRole(userRole)
 
   // Stato per sidebar collassata - inizializzato sempre a false per evitare hydration mismatch
   // Verrà aggiornato da localStorage solo dopo il mount (client-side)
@@ -111,17 +38,15 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
   // Leggi da localStorage solo dopo il mount (client-side)
   useEffect(() => {
     setIsMounted(true)
-    try {
-      const saved = localStorage.getItem('sidebar-collapsed')
-      if (saved !== null) {
-        const parsed = JSON.parse(saved)
-        setIsCollapsed(parsed)
-        isCollapsedRef.current = parsed
-      }
-    } catch {
-      // Ignora errori di parsing
-    }
-  }, [])
+    const stored = loadProfileLocalStorageJson<boolean>(
+      'sidebar-collapsed',
+      profileId,
+      (raw) => (typeof raw === 'boolean' ? raw : false),
+      { legacyKeys: ['sidebar-collapsed'], defaultValue: false },
+    )
+    setIsCollapsed(stored.value)
+    isCollapsedRef.current = stored.value
+  }, [profileId])
 
   // Sincronizza ref con stato
   useEffect(() => {
@@ -131,9 +56,9 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
   // Salva stato in localStorage quando cambia (solo dopo mount)
   useEffect(() => {
     if (isMounted && typeof window !== 'undefined') {
-      localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed))
+      saveProfileLocalStorageJson('sidebar-collapsed', profileId, isCollapsed)
     }
-  }, [isCollapsed, isMounted])
+  }, [isCollapsed, isMounted, profileId])
 
   const [logoutPending, setLogoutPending] = useState(false)
 
@@ -175,6 +100,11 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
   const linkActive = 'bg-white/[0.06] border-white/10 text-primary font-medium'
   const linkInactive =
     'border-transparent text-text-secondary hover:text-primary hover:bg-white/[0.04] hover:border-white/20'
+
+  const adminHref = dashboardSidebarAdminLinkMetadata.href
+  const adminLabel = dashboardSidebarAdminLinkMetadata.label
+  const AdminIcon = dashboardSidebarAdminLinkMetadata.icon
+  const adminNavActive = path === adminHref || path.startsWith(`${adminHref}/`)
 
   return (
     <aside
@@ -241,29 +171,25 @@ export const Sidebar = ({ role }: { role: 'staff' }) => {
           {/* Link Admin - solo se l'utente è admin */}
           {role === 'staff' && isAdmin && (
             <Link
-              href="/dashboard/admin"
+              href={adminHref}
               onClick={handleLinkClick}
               className={`${linkBase} ${isCollapsed ? 'justify-center' : ''} ${
-                path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
-                  ? linkActive
-                  : linkInactive
+                adminNavActive ? linkActive : linkInactive
               }`}
-              title={isCollapsed ? 'Admin' : undefined}
+              title={isCollapsed ? adminLabel : undefined}
               suppressHydrationWarning
             >
-              <Shield
+              <AdminIcon
                 className={`w-5 h-5 shrink-0 transition-colors ${
-                  path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
-                    ? 'text-primary'
-                    : 'text-text-secondary group-hover:text-primary'
+                  adminNavActive ? 'text-primary' : 'text-text-secondary group-hover:text-primary'
                 }`}
               />
               {!isCollapsed && (
                 <>
                   <span className="text-sm font-medium whitespace-nowrap min-w-0 flex-1 truncate">
-                    Admin
+                    {adminLabel}
                   </span>
-                  {(path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')) && (
+                  {adminNavActive && (
                     <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                   )}
                 </>

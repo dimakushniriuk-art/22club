@@ -31,11 +31,17 @@ export interface UserProfile {
   first_login?: boolean | null
 }
 
+export type AuthRecoveryState = 'idle' | 'degraded' | 'retrying'
+
 export interface AuthContext {
   user: UserProfile | null
   role: UserRole | null
   org_id: string | null
   loading: boolean
+  /** Dopo errori di rete sull’auth: UI può offrire “Riprova”. */
+  authRecovery: AuthRecoveryState
+  /** Rivalida sessione e notifica il resto dell’app (query / realtime). */
+  retryAuthSession: () => Promise<void>
   /** Profilo reale (admin) quando isImpersonating; altrimenti uguale a user */
   actorProfile?: UserProfile | null
   /** Profilo effettivo (target) quando isImpersonating; altrimenti uguale a user */

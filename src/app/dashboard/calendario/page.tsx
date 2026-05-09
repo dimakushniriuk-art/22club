@@ -2,7 +2,13 @@
 
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback, useRef, memo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CalendarView, AppointmentPopover, MiniCalendar } from '@/components/calendar'
+import {
+  CalendarView,
+  AppointmentPopover,
+  MiniCalendar,
+  CALENDAR_FAB_BUTTON_CLASS,
+  type CalendarViewHandle,
+} from '@/components/calendar'
 import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
 import { useCalendarPage } from '@/hooks/calendar/use-calendar-page'
 import { useCalendarPageGuard } from '@/hooks/calendar/use-calendar-page-guard'
@@ -13,7 +19,9 @@ import { useCalendarKeyboardShortcuts } from '@/hooks/calendar/use-calendar-keyb
 import { useAuth } from '@/providers/auth-provider'
 import {
   Clock,
+  ChevronLeft,
   ChevronRight,
+  Plus,
   Search,
   X,
   Filter,
@@ -38,6 +46,18 @@ import { APPOINTMENT_COLORS, type AppointmentColor } from '@/types/appointment'
 import { APPOINTMENT_TYPE_LABELS, getEnabledAppointmentTypeKeys } from '@/lib/calendar-defaults'
 
 type AthleteOption = { id: string; name: string }
+
+/** `?day=YYYY-MM-DD` (locale) da link esterni (es. mini calendario dashboard). */
+function parseCalendarDayParam(s: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.trim())
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2]) - 1
+  const d = Number(m[3])
+  const dt = new Date(y, mo, d)
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo || dt.getDate() !== d) return null
+  return dt
+}
 
 export type CalendarTheme = 'default' | 'teal' | 'amber'
 
@@ -793,6 +813,16 @@ export function CalendarPageContent({
 
   // Stato per comunicare navigazione al CalendarView
   const [navigateToDate, setNavigateToDate] = useState<Date | null>(null)
+  const calendarNavRef = useRef<CalendarViewHandle | null>(null)
+
+  const urlDay = searchParams.get('day')
+  useEffect(() => {
+    if (!urlDay) return
+    const parsed = parseCalendarDayParam(urlDay)
+    if (!parsed) return
+    setSelectedDate(parsed)
+    setNavigateToDate(parsed)
+  }, [urlDay])
 
   const handleCloseForm = useCallback(() => {
     if (loading) return
@@ -997,29 +1027,103 @@ export function CalendarPageContent({
 
   const closeKeyboardHelp = useCallback(() => setShowKeyboardHelp(false), [])
 
+  const staffLayoutTheme = calendarTheme === 'teal' ? 'teal' : 'default'
+
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1">
-      {/* Drawer filtri e prossimi - mobile (aperto da altro punto se necessario) */}
-      <Drawer
-        open={showFiltersDrawer}
-        onOpenChange={handleDrawerOpenChange}
-        side="left"
-        size="md"
-        className="w-[280px] max-w-[90vw] h-full"
-      >
-        <div className="flex flex-col h-full bg-background-secondary">
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <span className="text-sm font-semibold text-text-primary">Filtri e prossimi</span>
+    <StaffContentLayout
+      title="Calendario"
+      description="Pianificazione appuntamenti, disponibilità e prenotazioni."
+      theme={staffLayoutTheme}
+      className="flex-1 min-h-0"
+      contentClassName="flex-1 min-h-0 flex flex-col"
+      actions={
+        <div className="flex w-full flex-wrap items-center justify-end gap-3 sm:gap-4 md:gap-8 lg:gap-14 sm:w-auto">
+          <div
+            className="flex flex-row items-center gap-3 sm:gap-4 md:gap-8 lg:gap-14"
+            role="group"
+            aria-label="Navigazione periodo"
+          >
             <button
               type="button"
-              onClick={closeFiltersDrawer}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/5 text-text-secondary touch-manipulation"
-              aria-label="Chiudi"
+              onClick={() => calendarNavRef.current?.goPrev()}
+              className={CALENDAR_FAB_BUTTON_CLASS}
+              aria-label="Periodo precedente"
             >
-              <X className="w-5 h-5" />
+              <ChevronLeft className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+            </button>
+            <button
+              type="button"
+              onClick={() => calendarNavRef.current?.goNext()}
+              className={CALENDAR_FAB_BUTTON_CLASS}
+              aria-label="Periodo successivo"
+            >
+              <ChevronRight className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
             </button>
           </div>
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <button
+            type="button"
+            onClick={handleNewAppointment}
+            className={CALENDAR_FAB_BUTTON_CLASS}
+            aria-label="Nuovo appuntamento"
+          >
+            <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+          </button>
+        </div>
+      }
+    >
+      <div className="relative flex min-h-0 min-w-0 flex-1">
+        {/* Drawer filtri e prossimi - mobile (aperto da altro punto se necessario) */}
+        <Drawer
+          open={showFiltersDrawer}
+          onOpenChange={handleDrawerOpenChange}
+          side="left"
+          size="md"
+          className="w-[280px] max-w-[90vw] h-full"
+        >
+          <div className="flex flex-col h-full bg-background-secondary">
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <span className="text-sm font-semibold text-text-primary">Filtri e prossimi</span>
+              <button
+                type="button"
+                onClick={closeFiltersDrawer}
+                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/5 text-text-secondary touch-manipulation"
+                aria-label="Chiudi"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <CalendarSidebarContent
+                searchQuery={searchQuery}
+                onSearchQueryChange={onSearchQueryChange}
+                selectedAthleteFilter={selectedAthleteFilter}
+                onAthleteFilterChange={onAthleteFilterChange}
+                typeOptions={typeOptions}
+                selectedTypeFilter={selectedTypeFilter}
+                onTypeFilterChange={onTypeFilterChange}
+                statusOptions={statusOptions}
+                selectedStatusFilter={selectedStatusFilter}
+                onStatusFilterChange={onStatusFilterChange}
+                athletes={athletes}
+                appointmentDates={appointmentDates}
+                selectedDate={selectedDate}
+                onDateSelect={handleMiniCalendarDateSelect}
+                filteredAppointments={filteredAppointments}
+                upcomingAppointments={upcomingAppointments}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={clearFilters}
+                onEventClickFromList={handleEventClickFromList}
+                onOpenKeyboardHelp={openKeyboardHelp}
+                theme={calendarTheme}
+                birthdays={birthdays}
+              />
+            </div>
+          </div>
+        </Drawer>
+
+        {/* Sidebar - desktop lg+ (nascondibile) */}
+        {showSidebar && (
+          <aside className="hidden lg:flex lg:h-full lg:max-h-full w-[280px] shrink-0 flex-col border-r border-white/10 bg-gradient-to-b from-zinc-950 to-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] lg:min-h-0">
             <CalendarSidebarContent
               searchQuery={searchQuery}
               onSearchQueryChange={onSearchQueryChange}
@@ -1044,288 +1148,263 @@ export function CalendarPageContent({
               theme={calendarTheme}
               birthdays={birthdays}
             />
-          </div>
-        </div>
-      </Drawer>
-
-      {/* Sidebar - desktop lg+ (nascondibile) */}
-      {showSidebar && (
-        <aside className="hidden lg:flex lg:h-full lg:max-h-full w-[280px] shrink-0 flex-col border-r border-white/10 bg-gradient-to-b from-zinc-950 to-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] lg:min-h-0">
-          <CalendarSidebarContent
-            searchQuery={searchQuery}
-            onSearchQueryChange={onSearchQueryChange}
-            selectedAthleteFilter={selectedAthleteFilter}
-            onAthleteFilterChange={onAthleteFilterChange}
-            typeOptions={typeOptions}
-            selectedTypeFilter={selectedTypeFilter}
-            onTypeFilterChange={onTypeFilterChange}
-            statusOptions={statusOptions}
-            selectedStatusFilter={selectedStatusFilter}
-            onStatusFilterChange={onStatusFilterChange}
-            athletes={athletes}
-            appointmentDates={appointmentDates}
-            selectedDate={selectedDate}
-            onDateSelect={handleMiniCalendarDateSelect}
-            filteredAppointments={filteredAppointments}
-            upcomingAppointments={upcomingAppointments}
-            hasActiveFilters={hasActiveFilters}
-            onClearFilters={clearFilters}
-            onEventClickFromList={handleEventClickFromList}
-            onOpenKeyboardHelp={openKeyboardHelp}
-            theme={calendarTheme}
-            birthdays={birthdays}
-          />
-        </aside>
-      )}
-
-      <main className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
-        <div role="status" aria-live="polite" className="sr-only">
-          {filteredAppointments.length === 1
-            ? '1 appuntamento'
-            : `${filteredAppointments.length} appuntamenti`}
-        </div>
-        {appointmentsLoading ? null : (
-          <>
-            <CalendarView
-              appointments={filteredAppointments}
-              onEventClick={handleEventClick}
-              onDateClick={handleDateClick}
-              onNewAppointment={handleNewAppointment}
-              onEventDrop={handleEventDrop}
-              onEventResize={handleEventResize}
-              onSelectSlot={handleSelectSlot}
-              navigateToDate={navigateToDate}
-              onNavigateComplete={onNavigateComplete}
-              initialView={initialCalendarView}
-              initialWeekStart={initialWeekStart}
-              calendarBlocks={calendarBlocks}
-              toolbarLeftContent={
-                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={openFiltersDrawer}
-                    className="lg:hidden min-h-[44px] px-3 min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors flex"
-                    title="Filtri e prossimi"
-                    aria-label="Apri filtri"
-                  >
-                    <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSidebar((v) => !v)}
-                    className="hidden lg:flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors"
-                    title={showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'}
-                    aria-label={showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'}
-                  >
-                    {showSidebar ? (
-                      <PanelLeftClose className="h-4 w-4 sm:h-5 sm:w-5" />
-                    ) : (
-                      <PanelLeftOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-                    )}
-                  </button>
-                  <Link
-                    href={`${basePath}/impostazioni`}
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors"
-                    title="Impostazioni calendario"
-                    aria-label="Impostazioni calendario"
-                  >
-                    <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </Link>
-                </div>
-              }
-            />
-          </>
+          </aside>
         )}
-      </main>
 
-      {/* Modal Form */}
-      {showForm && (
-        <div
-          data-testid="appointment-form-overlay"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
-        >
-          <div className="w-full max-h-[90dvh] sm:max-h-[85dvh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
-            <Suspense
-              fallback={
-                <StaffLazyChunkFallback
-                  className="min-h-[min(70dvh,520px)] w-full"
-                  label="Caricamento modulo…"
-                />
-              }
-            >
-              <AppointmentForm
-                appointment={formInitialAppointment}
-                athletes={athletes}
-                showOpenBookingOption={role !== 'massaggiatore' && role !== 'nutrizionista'}
-                defaultType={
-                  role === 'massaggiatore'
-                    ? 'massaggio'
-                    : role === 'nutrizionista'
-                      ? 'nutrizionista'
-                      : undefined
-                }
-                defaultColor={
-                  role === 'massaggiatore'
-                    ? 'giallo'
-                    : role === 'nutrizionista'
-                      ? 'verde_chiaro'
-                      : undefined
-                }
-                onSubmit={handleFormSubmitClick}
-                onCancel={handleFormCancel}
-                loading={loading || athletesLoading}
-              />
-            </Suspense>
+        <main className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
+          <div role="status" aria-live="polite" className="sr-only">
+            {filteredAppointments.length === 1
+              ? '1 appuntamento'
+              : `${filteredAppointments.length} appuntamenti`}
           </div>
-        </div>
-      )}
+          {appointmentsLoading ? null : (
+            <>
+              <CalendarView
+                ref={calendarNavRef}
+                appointments={filteredAppointments}
+                onEventClick={handleEventClick}
+                onDateClick={handleDateClick}
+                onNewAppointment={handleNewAppointment}
+                onEventDrop={handleEventDrop}
+                onEventResize={handleEventResize}
+                onSelectSlot={handleSelectSlot}
+                navigateToDate={navigateToDate}
+                onNavigateComplete={onNavigateComplete}
+                initialView={initialCalendarView}
+                initialWeekStart={initialWeekStart}
+                calendarBlocks={calendarBlocks}
+                toolbarLeftContent={
+                  <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={openFiltersDrawer}
+                      className="lg:hidden min-h-[44px] px-3 min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors flex"
+                      title="Filtri e prossimi"
+                      aria-label="Apri filtri"
+                    >
+                      <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSidebar((v) => !v)}
+                      className="hidden lg:flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors"
+                      title={showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'}
+                      aria-label={
+                        showSidebar ? 'Nascondi pannello filtri' : 'Mostra pannello filtri'
+                      }
+                    >
+                      {showSidebar ? (
+                        <PanelLeftClose className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <PanelLeftOpen className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
+                    </button>
+                    <Link
+                      href={`${basePath}/impostazioni`}
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-text-secondary hover:bg-white/[0.04] hover:text-primary transition-colors"
+                      title="Impostazioni calendario"
+                      aria-label="Impostazioni calendario"
+                    >
+                      <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Link>
+                  </div>
+                }
+              />
+            </>
+          )}
+        </main>
 
-      {/* Popover (modal full width su mobile < 852px) */}
-      {showPopover && selectedAppointment && (
-        <AppointmentPopover
-          appointment={selectedAppointment}
-          position={popoverPosition}
-          onEdit={handleEdit}
-          onCancel={handlePopoverCancel}
-          onDelete={handlePopoverDelete}
-          onClose={handleClosePopover}
-          onComplete={handlePopoverComplete}
-          onNoShow={
-            handleNoShow
-              ? () => handleNoShow(selectedAppointment.id, selectedAppointment)
-              : undefined
-          }
-          canComplete={canCompleteAppointment}
-          canNoShow={
-            !!selectedAppointment.athlete_id &&
-            (selectedAppointment.status === 'attivo' || selectedAppointment.status === 'in_corso')
-          }
-          loading={loading}
-          asModal={isMobile}
-        />
-      )}
-
-      {confirmState && (
-        <ConfirmDialog
-          open={!!confirmState}
-          onOpenChange={(open) => !open && setConfirmState(null)}
-          title={
-            confirmState.action === 'delete'
-              ? 'Elimina appuntamento'
-              : confirmState.action === 'complete'
-                ? 'Completa seduta'
-                : 'Annulla appuntamento'
-          }
-          description={
-            confirmState.action === 'delete'
-              ? "L'appuntamento verrà eliminato definitivamente. Continuare?"
-              : confirmState.action === 'complete'
-                ? 'Confermi di completare la seduta? Verrà scalato 1 credito.'
-                : "L'appuntamento verrà annullato. Continuare?"
-          }
-          confirmText={
-            confirmState.action === 'delete'
-              ? 'Elimina'
-              : confirmState.action === 'complete'
-                ? 'Completa'
-                : 'Annulla'
-          }
-          variant={confirmState.action === 'complete' ? 'default' : 'destructive'}
-          onConfirm={handleConfirmDialogConfirm}
-          loading={loading}
-          confirmTestId="appointment-confirm-dialog-confirm"
-          cancelTestId="appointment-confirm-dialog-cancel"
-        />
-      )}
-
-      {overlapConfirmData && (
-        <ConfirmDialog
-          open={!!overlapConfirmData}
-          onOpenChange={(open) => !open && setOverlapConfirmData(null)}
-          title="Slot occupato"
-          description="Questo slot è già occupato. Procedi comunque con la creazione/modifica?"
-          confirmText="Procedi comunque"
-          variant="default"
-          onConfirm={async () => {
-            if (!overlapConfirmData) return
-            await handleFormSubmit(overlapConfirmData.data, overlapConfirmData.editingAppointment, {
-              forceOverwrite: true,
-            })
-            setOverlapConfirmData(null)
-            setSelectedSlot(null)
-            handleCloseForm()
-          }}
-          loading={loading}
-        />
-      )}
-
-      {cancelChoiceAppointment && (
-        <Dialog
-          open={!!cancelChoiceAppointment}
-          onOpenChange={(open) => !open && setCancelChoiceAppointment(null)}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Annulla appuntamento</DialogTitle>
-              <DialogDescription>
-                {cancelWithin24h
-                  ? 'Annullando con meno di 24 ore di preavviso puoi scegliere di scalare la lezione o annullare senza scalare.'
-                  : "L'appuntamento verrà annullato. La lezione non verrà scalata."}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col gap-2 pt-2">
-              {cancelWithin24h ? (
-                <>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleCancelWithChoice(true, false)}
-                    disabled={loading}
-                    data-testid="appointment-cancel-choice-debit"
-                  >
-                    Annulla e scala lezione
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleCancelWithChoice(false, true)}
-                    disabled={loading}
-                    data-testid="appointment-cancel-choice-no-debit"
-                  >
-                    Annulla senza scalare
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleCancelWithChoice(false, false)}
-                    disabled={loading}
-                    data-testid="appointment-cancel-choice-confirm"
-                  >
-                    Annulla
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setCancelChoiceAppointment(null)}
-                    data-testid="appointment-confirm-dialog-cancel"
-                  >
-                    Indietro
-                  </Button>
-                </>
-              )}
+        {/* Modal Form */}
+        {showForm && (
+          <div
+            data-testid="appointment-form-overlay"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
+          >
+            <div className="w-full max-h-[90dvh] sm:max-h-[85dvh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] p-4">
+              <Suspense
+                fallback={
+                  <StaffLazyChunkFallback
+                    className="min-h-[min(70dvh,520px)] w-full"
+                    label="Caricamento modulo…"
+                  />
+                }
+              >
+                <AppointmentForm
+                  appointment={formInitialAppointment}
+                  athletes={athletes}
+                  showOpenBookingOption={role !== 'massaggiatore' && role !== 'nutrizionista'}
+                  defaultType={
+                    role === 'massaggiatore'
+                      ? 'massaggio'
+                      : role === 'nutrizionista'
+                        ? 'nutrizionista'
+                        : undefined
+                  }
+                  defaultColor={
+                    role === 'massaggiatore'
+                      ? 'giallo'
+                      : role === 'nutrizionista'
+                        ? 'verde_chiaro'
+                        : undefined
+                  }
+                  onSubmit={handleFormSubmitClick}
+                  onCancel={handleFormCancel}
+                  loading={loading || athletesLoading}
+                />
+              </Suspense>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          </div>
+        )}
 
-      <KeyboardShortcutsModal open={showKeyboardHelp} onClose={closeKeyboardHelp} />
-    </div>
+        {/* Popover (modal full width su mobile < 852px) */}
+        {showPopover && selectedAppointment && (
+          <AppointmentPopover
+            appointment={selectedAppointment}
+            position={popoverPosition}
+            onEdit={handleEdit}
+            onCancel={handlePopoverCancel}
+            onDelete={handlePopoverDelete}
+            onClose={handleClosePopover}
+            onComplete={handlePopoverComplete}
+            onNoShow={
+              handleNoShow
+                ? () => handleNoShow(selectedAppointment.id, selectedAppointment)
+                : undefined
+            }
+            canComplete={canCompleteAppointment}
+            canNoShow={
+              !!selectedAppointment.athlete_id &&
+              (selectedAppointment.status === 'attivo' || selectedAppointment.status === 'in_corso')
+            }
+            loading={loading}
+            asModal={isMobile}
+          />
+        )}
+
+        {confirmState && (
+          <ConfirmDialog
+            open={!!confirmState}
+            onOpenChange={(open) => !open && setConfirmState(null)}
+            title={
+              confirmState.action === 'delete'
+                ? 'Elimina appuntamento'
+                : confirmState.action === 'complete'
+                  ? 'Completa seduta'
+                  : 'Annulla appuntamento'
+            }
+            description={
+              confirmState.action === 'delete'
+                ? "L'appuntamento verrà eliminato definitivamente. Continuare?"
+                : confirmState.action === 'complete'
+                  ? 'Confermi di completare la seduta? Verrà scalato 1 credito.'
+                  : "L'appuntamento verrà annullato. Continuare?"
+            }
+            confirmText={
+              confirmState.action === 'delete'
+                ? 'Elimina'
+                : confirmState.action === 'complete'
+                  ? 'Completa'
+                  : 'Annulla'
+            }
+            variant={confirmState.action === 'complete' ? 'default' : 'destructive'}
+            onConfirm={handleConfirmDialogConfirm}
+            loading={loading}
+            confirmTestId="appointment-confirm-dialog-confirm"
+            cancelTestId="appointment-confirm-dialog-cancel"
+          />
+        )}
+
+        {overlapConfirmData && (
+          <ConfirmDialog
+            open={!!overlapConfirmData}
+            onOpenChange={(open) => !open && setOverlapConfirmData(null)}
+            title="Slot occupato"
+            description="Questo slot è già occupato. Procedi comunque con la creazione/modifica?"
+            confirmText="Procedi comunque"
+            variant="default"
+            onConfirm={async () => {
+              if (!overlapConfirmData) return
+              await handleFormSubmit(
+                overlapConfirmData.data,
+                overlapConfirmData.editingAppointment,
+                {
+                  forceOverwrite: true,
+                },
+              )
+              setOverlapConfirmData(null)
+              setSelectedSlot(null)
+              handleCloseForm()
+            }}
+            loading={loading}
+          />
+        )}
+
+        {cancelChoiceAppointment && (
+          <Dialog
+            open={!!cancelChoiceAppointment}
+            onOpenChange={(open) => !open && setCancelChoiceAppointment(null)}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Annulla appuntamento</DialogTitle>
+                <DialogDescription>
+                  {cancelWithin24h
+                    ? 'Annullando con meno di 24 ore di preavviso puoi scegliere di scalare la lezione o annullare senza scalare.'
+                    : "L'appuntamento verrà annullato. La lezione non verrà scalata."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-2 pt-2">
+                {cancelWithin24h ? (
+                  <>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleCancelWithChoice(true, false)}
+                      disabled={loading}
+                      data-testid="appointment-cancel-choice-debit"
+                    >
+                      Annulla e scala lezione
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCancelWithChoice(false, true)}
+                      disabled={loading}
+                      data-testid="appointment-cancel-choice-no-debit"
+                    >
+                      Annulla senza scalare
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleCancelWithChoice(false, false)}
+                      disabled={loading}
+                      data-testid="appointment-cancel-choice-confirm"
+                    >
+                      Annulla
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setCancelChoiceAppointment(null)}
+                      data-testid="appointment-confirm-dialog-cancel"
+                    >
+                      Indietro
+                    </Button>
+                  </>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        <KeyboardShortcutsModal open={showKeyboardHelp} onClose={closeKeyboardHelp} />
+      </div>
+    </StaffContentLayout>
   )
 }
 
 export default function CalendarioPage() {
   const { showLoader: showGuardLoader } = useCalendarPageGuard()
-  const { role } = useAuth()
-  const layoutTheme = role === 'nutrizionista' ? 'teal' : 'default'
   if (showGuardLoader) {
     return (
       <div className={CALENDAR_LOADING_CLASS}>
@@ -1333,15 +1412,5 @@ export default function CalendarioPage() {
       </div>
     )
   }
-  return (
-    <StaffContentLayout
-      title="Calendario"
-      description="Pianificazione appuntamenti, disponibilità e prenotazioni."
-      theme={layoutTheme}
-      className="flex-1 min-h-0"
-      contentClassName="flex-1 min-h-0 flex flex-col"
-    >
-      <CalendarPageContent />
-    </StaffContentLayout>
-  )
+  return <CalendarPageContent />
 }

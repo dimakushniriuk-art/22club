@@ -8,7 +8,8 @@ config({ path: '.env.local' })
  * Ottimizzata per esecuzione in ambiente CI
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
+  testMatch: ['e2e/**/*.spec.ts', 'runtime/**/*.spec.ts'],
   timeout: 60 * 1000, // Timeout più lungo per CI
   expect: {
     timeout: 10000,

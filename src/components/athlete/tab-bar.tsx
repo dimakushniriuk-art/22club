@@ -62,7 +62,7 @@ export function TabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50"
+      className="fixed bottom-0 left-0 right-0 z-50 pb-safe"
       role="navigation"
       aria-label="Navigazione principale"
     >
@@ -80,7 +80,7 @@ export function TabBar() {
               aria-label={`Vai a ${item.label}`}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'relative flex items-center justify-center py-4 transition-all duration-300 ease-out',
+                'relative flex items-center justify-center py-4 transition-all duration-300 ease-out touch-target-min',
                 // Focus ring rimosso
                 'focus:outline-none',
                 // Stati colore

@@ -74,9 +74,9 @@ export default function MarketingAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
       <header>
-        <h1 className="flex items-center gap-2 text-xl font-bold min-[834px]:text-2xl">
+        <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
           <BarChart2 className="h-6 w-6 text-cyan-400" />
           Analytics
         </h1>
@@ -96,7 +96,7 @@ export default function MarketingAnalyticsPage() {
       ) : (
         <>
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 gap-4 min-[834px]:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             <Card className="border-border bg-background-secondary/80">
               <CardContent className="p-4">
                 <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
@@ -171,7 +171,7 @@ export default function MarketingAnalyticsPage() {
           </Card>
 
           {/* Trend leads 7d e 30d */}
-          <div className="grid gap-6 min-[834px]:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <Card className="border-border bg-background-secondary/80">
               <CardHeader>
                 <CardTitle className="text-base text-text-primary">
@@ -231,7 +231,7 @@ export default function MarketingAnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4 min-[834px]:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                 <div className="rounded-lg border border-border/50 px-3 py-2">
                   <div className="text-xs text-text-muted">Coached 7d</div>
                   <div className="text-lg font-semibold tabular-nums">

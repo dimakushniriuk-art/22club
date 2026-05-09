@@ -383,7 +383,7 @@ export default function FotoProgressiPage() {
   if (loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4 min-[834px]:space-y-5">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6 space-y-4 md:space-y-5">
           <PageHeaderFixed
             variant="chat"
             title="Foto Progressi"
@@ -397,7 +397,7 @@ export default function FotoProgressiPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4 min-[834px]:space-y-5">
+      <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6 space-y-4 md:space-y-5">
         <PageHeaderFixed
           variant="chat"
           title="Foto Progressi"

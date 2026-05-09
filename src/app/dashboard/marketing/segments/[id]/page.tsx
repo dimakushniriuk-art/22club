@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -20,6 +20,7 @@ import { applySegmentRules, type SegmentRules } from '@/lib/marketing/segment-ru
 import type { Database } from '@/lib/supabase/types'
 import type { MarketingAthleteRow } from '@/app/api/marketing/athletes/route'
 import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 type SegmentRow = Database['public']['Tables']['marketing_segments']['Row']
 type AthleteRow = MarketingAthleteRow
@@ -33,12 +34,12 @@ function formatDate(s: string | null): string {
   })
 }
 
-export default function SegmentDetailPage() {
+export default function SegmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const params = useParams()
+  const resolved = useResolvedParams(params)
   const supabase = useSupabaseClient()
   const { role, loading: authLoading } = useAuth()
-  const id = typeof params.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
   const [segment, setSegment] = useState<SegmentRow | null>(null)
   const [athletes, setAthletes] = useState<AthleteRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -115,7 +116,7 @@ export default function SegmentDetailPage() {
 
   if (error || !segment) {
     return (
-      <div className="space-y-4 bg-background p-4 min-[834px]:p-6">
+      <div className="space-y-4 bg-background p-4 md:p-6">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/segments">
             <ArrowLeft className="h-4 w-4" />
@@ -129,8 +130,8 @@ export default function SegmentDetailPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
-      <header className="flex flex-col gap-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard/marketing/segments">
@@ -138,7 +139,7 @@ export default function SegmentDetailPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-xl font-bold min-[834px]:text-2xl">{segment.name}</h1>
+            <h1 className="text-xl font-bold md:text-2xl">{segment.name}</h1>
             {segment.description && (
               <p className="text-sm text-text-secondary">{segment.description}</p>
             )}

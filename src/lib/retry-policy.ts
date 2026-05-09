@@ -61,8 +61,13 @@ export function shouldRetryError(error: unknown): boolean {
         return true
       }
 
-      // 4xx: errori client, NON ritentare (404, 401, 403, etc.)
+      // 4xx: errori client, NON ritentare — eccezione JWT scaduto (spesso 401 + PGRST301)
       if (status >= 400 && status < 500) {
+        const c =
+          'code' in errorObj && typeof errorObj.code === 'string' ? errorObj.code.toLowerCase() : ''
+        if (c === 'pgrst301') {
+          return true
+        }
         return false
       }
     }
@@ -76,6 +81,7 @@ export function shouldRetryError(error: unknown): boolean {
         'pgrst_001', // Connection error
         'pgrst_002', // Timeout
         'pgrst_003', // Network error
+        'pgrst301', // JWT scaduto: un retry dopo refresh lato client spesso recupera
       ]
 
       if (transientCodes.includes(code)) {

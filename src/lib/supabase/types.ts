@@ -1180,6 +1180,7 @@ export type Database = {
           profile_id: string
           workout_day_exercise_id: string
           note: string
+          image_storage_path: string | null
           created_at: string
           updated_at: string
         }
@@ -1188,6 +1189,7 @@ export type Database = {
           profile_id: string
           workout_day_exercise_id: string
           note?: string
+          image_storage_path?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -1196,6 +1198,7 @@ export type Database = {
           profile_id?: string
           workout_day_exercise_id?: string
           note?: string
+          image_storage_path?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -4661,6 +4664,7 @@ export type Database = {
           stato: string | null
           stato_cliente: string | null
           stato_profilo: string | null
+          staff_dashboard_layout_prefs: Json | null
           telefono: string | null
           tipo_abbonamento: string | null
           tipo_atleta: string | null
@@ -4737,6 +4741,7 @@ export type Database = {
           stato?: string | null
           stato_cliente?: string | null
           stato_profilo?: string | null
+          staff_dashboard_layout_prefs?: Json | null
           telefono?: string | null
           tipo_abbonamento?: string | null
           tipo_atleta?: string | null
@@ -4813,6 +4818,7 @@ export type Database = {
           stato?: string | null
           stato_cliente?: string | null
           stato_profilo?: string | null
+          staff_dashboard_layout_prefs?: Json | null
           telefono?: string | null
           tipo_abbonamento?: string | null
           tipo_atleta?: string | null
@@ -7315,6 +7321,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string | null
+          exercise_id: string | null
           execution_time_sec: number | null
           id: string
           reps: number | null
@@ -7323,12 +7330,13 @@ export type Database = {
           set_number: number
           weight_kg: number | null
           weight_used: number | null
-          workout_day_exercise_id: string
+          workout_day_exercise_id: string | null
           workout_log_id: string | null
         }
         Insert: {
           completed_at?: string | null
           created_at?: string | null
+          exercise_id?: string | null
           execution_time_sec?: number | null
           id?: string
           reps?: number | null
@@ -7337,12 +7345,13 @@ export type Database = {
           set_number: number
           weight_kg?: number | null
           weight_used?: number | null
-          workout_day_exercise_id: string
+          workout_day_exercise_id?: string | null
           workout_log_id?: string | null
         }
         Update: {
           completed_at?: string | null
           created_at?: string | null
+          exercise_id?: string | null
           execution_time_sec?: number | null
           id?: string
           reps?: number | null
@@ -7351,10 +7360,17 @@ export type Database = {
           set_number?: number
           weight_kg?: number | null
           weight_used?: number | null
-          workout_day_exercise_id?: string
+          workout_day_exercise_id?: string | null
           workout_log_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: 'workout_sets_exercise_id_fkey'
+            columns: ['exercise_id']
+            isOneToOne: false
+            referencedRelation: 'exercises'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'workout_sets_workout_day_exercise_id_fkey'
             columns: ['workout_day_exercise_id']
@@ -8699,6 +8715,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_workout_plan_bundle: {
+        Args: { p_bundle: Json }
+        Returns: string
+      }
       current_org_id: { Args: never; Returns: string }
       current_profile: {
         Args: never
@@ -8770,6 +8790,7 @@ export type Database = {
           stato: string | null
           stato_cliente: string | null
           stato_profilo: string | null
+          staff_dashboard_layout_prefs: Json | null
           telefono: string | null
           tipo_abbonamento: string | null
           tipo_atleta: string | null
@@ -9156,6 +9177,10 @@ export type Database = {
       nutrition_generate_adjusted_version: {
         Args: { p_version_id: string }
         Returns: Json
+      }
+      replace_workout_plan_bundle: {
+        Args: { p_bundle: Json; p_plan_id: string }
+        Returns: string
       }
       refresh_athlete_marketing_kpis:
         | { Args: never; Returns: undefined }

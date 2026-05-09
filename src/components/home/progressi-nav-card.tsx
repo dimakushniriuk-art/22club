@@ -81,8 +81,8 @@ function ProgressiNavCardComponent({
         }`}
       >
         <CardHeader
-          className={`relative z-10 px-4 min-[834px]:px-5 ${
-            compact ? 'pb-2 pt-3.5 min-[834px]:pt-4' : 'pb-2.5 pt-4 min-[834px]:pt-5'
+          className={`relative z-10 px-4 md:px-5 ${
+            compact ? 'pb-2 pt-3.5 md:pt-4' : 'pb-2.5 pt-4 md:pt-5'
           }`}
         >
           <div className="flex items-start gap-3">
@@ -97,7 +97,7 @@ function ProgressiNavCardComponent({
               <CardTitle
                 size="sm"
                 className={`text-text-primary font-semibold flex-1 min-w-0 truncate ${
-                  compact ? 'text-sm' : 'text-sm min-[834px]:text-base font-bold'
+                  compact ? 'text-sm' : 'text-sm md:text-base font-bold'
                 }`}
               >
                 {title}
@@ -106,15 +106,13 @@ function ProgressiNavCardComponent({
           </div>
         </CardHeader>
         <CardContent
-          className={`relative z-10 pt-0 px-4 min-[834px]:px-5 ${
-            compact ? 'pb-3.5' : 'pb-3 min-[834px]:pb-4'
-          }`}
+          className={`relative z-10 pt-0 px-4 md:px-5 ${compact ? 'pb-3.5' : 'pb-3 md:pb-4'}`}
         >
           <p
             className={`mb-2.5 text-text-secondary/95 ${
               compact
                 ? 'text-xs line-clamp-2 leading-snug'
-                : 'text-xs min-[834px]:text-sm line-clamp-3 leading-relaxed'
+                : 'text-xs md:text-sm line-clamp-3 leading-relaxed'
             }`}
           >
             {description}
@@ -124,7 +122,7 @@ function ProgressiNavCardComponent({
           >
             <span
               className={`font-medium uppercase tracking-wide ${
-                compact ? 'text-[10px]' : 'text-[10px] min-[834px]:text-xs'
+                compact ? 'text-[10px]' : 'text-[10px] md:text-xs'
               }`}
             >
               {ctaText}

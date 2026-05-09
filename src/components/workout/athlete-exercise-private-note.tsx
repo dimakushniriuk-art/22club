@@ -1,14 +1,24 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { Button } from '@/components/ui'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui'
 import { Textarea } from '@/components/ui/textarea'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useToast } from '@/components/ui/toast'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
-import { ChevronDown, ChevronUp, Lock, Trash2 } from 'lucide-react'
+import { Camera, ImagePlus, Trash2, X } from 'lucide-react'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TablesInsert } from '@/types/supabase'
+import type { Database } from '@/lib/supabase/types'
 import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
 import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
 import {
@@ -17,22 +27,86 @@ import {
   STAFF_WORKOUTS_EMBED_SAVE_OK,
   STAFF_WORKOUTS_EMBED_SAVE_START,
 } from '@/lib/embed/staff-workouts-embed-events'
+import { ATHLETE_WDE_NOTE_IMAGE_MAX_BYTES } from '@/lib/storage/athlete-wde-note-images'
+import { isMissingAthleteWdeNoteImageColumnError } from '@/lib/workout/athlete-wde-private-note-db'
 
 const logger = createLogger('workout:athlete-exercise-private-note')
 
-export type AthleteWdeNoteRow = { id: string; note: string }
+export type AthleteWdeNoteRow = {
+  id: string
+  note: string
+  image_storage_path?: string | null
+}
 
 type Props = {
   workoutDayExerciseId: string
   athleteProfileId: string
   savedRow: AthleteWdeNoteRow | null | undefined
   onSaved: (workoutDayExerciseId: string, row: AthleteWdeNoteRow | null) => void
+  /** Incrementato dal genitore per aprire il dialog nota (es. da menu sul numero set). */
+  expandRequestSerial?: number
 }
 
-function notePreview(text: string, max = 52): string {
-  const t = text.trim()
-  if (!t) return ''
-  return t.length <= max ? t : `${t.slice(0, max).trim()}…`
+/** Messaggio API leggibile (evita testo tecnico tipo JWS in toast). */
+function userFacingNoteImageApiError(raw: string | undefined): string {
+  const s = (raw ?? '').trim()
+  if (!s) return 'Operazione non riuscita.'
+  const m = s.toLowerCase()
+  if (
+    m.includes('jws') ||
+    m.includes('jwt') ||
+    m.includes('malformed') ||
+    m.includes('invalid compact')
+  ) {
+    return 'Sessione non valida o scaduta. Ricarica la pagina o effettua di nuovo il login.'
+  }
+  if (
+    m.includes('non autenticato') ||
+    m.includes('unauthorized') ||
+    m.includes('not authenticated')
+  ) {
+    return 'Sessione non valida o scaduta. Ricarica la pagina o effettua di nuovo il login.'
+  }
+  return s
+}
+
+const WDE_NOTE_IMAGE_ACCESS_HEADER = 'x-22club-access-token'
+
+async function bearerAuthHeaders(
+  supabase: SupabaseClient<Database>,
+): Promise<Record<string, string>> {
+  let {
+    data: { session },
+  } = await supabase.auth.getSession()
+  if (!session?.access_token) {
+    const { data } = await supabase.auth.refreshSession()
+    session = data.session ?? null
+  }
+  if (!session?.access_token) return {}
+  const t = session.access_token
+  return {
+    Authorization: `Bearer ${t}`,
+    [WDE_NOTE_IMAGE_ACCESS_HEADER]: t,
+  }
+}
+
+/** POST immagine: invia JWT in header (le cookie della route spesso sono rotte); su 401 refresh + retry. */
+async function postWdeNoteImageWithAuthRetry(
+  supabase: SupabaseClient<Database>,
+  formData: () => FormData,
+): Promise<Response> {
+  const run = async () =>
+    fetch('/api/athlete/wde-note-image', {
+      method: 'POST',
+      body: formData(),
+      credentials: 'same-origin',
+      headers: await bearerAuthHeaders(supabase),
+    })
+  const res = await run()
+  if (res.status !== 401) return res
+  const { error } = await supabase.auth.refreshSession()
+  if (error) return res
+  return run()
 }
 
 export function AthleteExercisePrivateNoteBlock({
@@ -40,6 +114,7 @@ export function AthleteExercisePrivateNoteBlock({
   athleteProfileId,
   savedRow,
   onSaved,
+  expandRequestSerial = 0,
 }: Props) {
   const supabase = useSupabaseClient()
   const { addToast } = useToast()
@@ -47,15 +122,94 @@ export function AthleteExercisePrivateNoteBlock({
   const workoutsPane = useWorkoutsPaneOptional()
   const [draft, setDraft] = useState(savedRow?.note ?? '')
   const [saving, setSaving] = useState(false)
-  const [open, setOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null)
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null)
+  const [removedSavedImage, setRemovedSavedImage] = useState(false)
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setDraft(savedRow?.note ?? '')
   }, [workoutDayExerciseId, savedRow?.id, savedRow?.note])
 
   useEffect(() => {
-    setOpen(false)
+    setDialogOpen(false)
   }, [workoutDayExerciseId])
+
+  const expandSerialPairRef = React.useRef<{ id: string; s: number }>({
+    id: workoutDayExerciseId,
+    s: expandRequestSerial,
+  })
+  useEffect(() => {
+    const s = expandRequestSerial
+    if (workoutDayExerciseId !== expandSerialPairRef.current.id) {
+      expandSerialPairRef.current = { id: workoutDayExerciseId, s }
+      return
+    }
+    if (s > expandSerialPairRef.current.s) {
+      setDialogOpen(true)
+    }
+    expandSerialPairRef.current = { id: workoutDayExerciseId, s }
+  }, [workoutDayExerciseId, expandRequestSerial])
+
+  useEffect(() => {
+    if (!pendingImageFile) {
+      setPendingPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+      return
+    }
+    const url = URL.createObjectURL(pendingImageFile)
+    setPendingPreviewUrl(url)
+    return () => {
+      URL.revokeObjectURL(url)
+    }
+  }, [pendingImageFile])
+
+  useEffect(() => {
+    if (!dialogOpen || !savedRow?.image_storage_path || removedSavedImage || pendingImageFile) {
+      setSignedImageUrl(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const url = `/api/athlete/wde-note-image?path=${encodeURIComponent(savedRow.image_storage_path!)}`
+      const load = async () =>
+        fetch(url, {
+          credentials: 'same-origin',
+          headers: await bearerAuthHeaders(supabase),
+        })
+      try {
+        const loadWithRefresh = async (): Promise<Response> => {
+          let r = await load()
+          if (r.status === 401) {
+            const { error } = await supabase.auth.refreshSession()
+            if (!error && !cancelled) r = await load()
+          }
+          return r
+        }
+        const res = await loadWithRefresh()
+        const json = (await res.json()) as { signedUrl?: string; error?: string }
+        if (!res.ok) {
+          logger.warn('signed url wde note image api', {
+            error: json.error,
+            status: res.status,
+            path: savedRow.image_storage_path,
+          })
+          return
+        }
+        if (!cancelled && json.signedUrl) setSignedImageUrl(json.signedUrl)
+      } catch (e) {
+        logger.warn('signed url wde note image fetch', e)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [dialogOpen, savedRow?.image_storage_path, removedSavedImage, pendingImageFile, supabase])
 
   const postToParent = useCallback(
     (payload: Record<string, unknown>) => {
@@ -102,6 +256,28 @@ export function AthleteExercisePrivateNoteBlock({
     [athleteProfileId, postToParent],
   )
 
+  const removeNoteImageApi = useCallback(
+    async (path: string | null | undefined) => {
+      if (!path) return
+      try {
+        const auth = await bearerAuthHeaders(supabase)
+        const res = await fetch('/api/athlete/wde-note-image', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', ...auth },
+          credentials: 'same-origin',
+          body: JSON.stringify({ path }),
+        })
+        if (!res.ok) {
+          const json = (await res.json().catch(() => ({}))) as { error?: string }
+          logger.warn('remove wde note image api', { error: json.error, status: res.status, path })
+        }
+      } catch (e) {
+        logger.warn('remove wde note image fetch', e, { path })
+      }
+    },
+    [supabase],
+  )
+
   const persistDelete = async (noteId: string) => {
     const { error } = await supabase
       .from('athlete_workout_day_exercise_notes')
@@ -115,24 +291,115 @@ export function AthleteExercisePrivateNoteBlock({
     return true
   }
 
+  const resetFormToSaved = useCallback(() => {
+    setDraft(savedRow?.note ?? '')
+    setPendingImageFile(null)
+    setRemovedSavedImage(false)
+  }, [savedRow?.note])
+
+  const discardAndClose = useCallback(() => {
+    resetFormToSaved()
+    setDialogOpen(false)
+  }, [resetFormToSaved])
+
+  const onPickFiles = (files: FileList | null) => {
+    const file = files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+    if (file.size > ATHLETE_WDE_NOTE_IMAGE_MAX_BYTES) {
+      notifyError(
+        'File troppo grande',
+        `L'immagine supera ${ATHLETE_WDE_NOTE_IMAGE_MAX_BYTES / (1024 * 1024)} MB.`,
+      )
+      return
+    }
+    setPendingImageFile(file)
+    setRemovedSavedImage(false)
+  }
+
   const handleSave = async () => {
     const trimmed = draft.trim()
-    if (trimmed === '') {
-      if (savedRow?.id) {
-        emitSaveStart()
-        setSaving(true)
-        try {
-          const ok = await persistDelete(savedRow.id)
-          if (ok) {
-            onSaved(workoutDayExerciseId, null)
-            addToast({ title: 'Nota rimossa', message: '', variant: 'success' })
-            emitDirty(false)
-            emitSaveOk()
-            setOpen(false)
-          }
-        } finally {
-          setSaving(false)
+    const savedPath = savedRow?.image_storage_path ?? null
+
+    let uploadedPath: string | null = null
+    if (pendingImageFile) {
+      emitSaveStart()
+      setSaving(true)
+      try {
+        const authHeaders = await bearerAuthHeaders(supabase)
+        if (!authHeaders.Authorization) {
+          notifyError(
+            'Accesso richiesto',
+            'Sessione non disponibile per caricare la foto. Effettua di nuovo il login e riprova.',
+          )
+          emitSaveError('Nessun access_token per upload immagine.')
+          return
         }
+        const buildFormData = () => {
+          const fd = new FormData()
+          fd.append('file', pendingImageFile)
+          fd.append('workoutDayExerciseId', workoutDayExerciseId)
+          fd.append('athleteProfileId', athleteProfileId)
+          return fd
+        }
+        const res = await postWdeNoteImageWithAuthRetry(supabase, buildFormData)
+        const json = (await res.json()) as { path?: string; error?: string }
+        if (!res.ok) {
+          const rawMsg = json.error ?? 'Upload fallito'
+          const msg = userFacingNoteImageApiError(rawMsg)
+          if (res.status === 503) {
+            notifyError(
+              'Server storage',
+              rawMsg ||
+                'Aggiungi SUPABASE_SERVICE_ROLE_KEY in .env.local (stesso progetto Supabase di NEXT_PUBLIC_SUPABASE_URL). Il server crea il bucket e carica la foto.',
+            )
+            emitSaveError(rawMsg)
+          } else {
+            logger.warn('upload wde note image api', { msg: rawMsg, workoutDayExerciseId })
+            notifyError('Errore', msg)
+            emitSaveError('Upload immagine fallito.')
+          }
+          return
+        }
+        if (!json.path) {
+          notifyError('Errore', 'Risposta upload non valida.')
+          emitSaveError('Upload immagine fallito.')
+          return
+        }
+        uploadedPath = json.path
+      } finally {
+        setSaving(false)
+      }
+    }
+
+    let imagePath: string | null
+    if (uploadedPath) {
+      imagePath = uploadedPath
+    } else if (removedSavedImage) {
+      imagePath = null
+    } else {
+      imagePath = savedPath
+    }
+
+    const hasText = trimmed.length > 0
+    const hasImage = Boolean(imagePath)
+
+    if (!hasText && !hasImage) {
+      if (!savedRow?.id) return
+      emitSaveStart()
+      setSaving(true)
+      try {
+        const ok = await persistDelete(savedRow.id)
+        if (ok) {
+          await removeNoteImageApi(savedPath)
+          onSaved(workoutDayExerciseId, null)
+          addToast({ title: 'Nota rimossa', message: '', variant: 'success' })
+          emitDirty(false)
+          emitSaveOk()
+          resetFormToSaved()
+          setDialogOpen(false)
+        }
+      } finally {
+        setSaving(false)
       }
       return
     }
@@ -140,10 +407,15 @@ export function AthleteExercisePrivateNoteBlock({
     emitSaveStart()
     setSaving(true)
     try {
+      /** Senza migrazione DB la colonna non esiste: omettiamo il campo se non serve (solo testo). */
+      const includeImageStoragePath =
+        imagePath !== null || (removedSavedImage && Boolean(savedPath))
+
       const payload: TablesInsert<'athlete_workout_day_exercise_notes'> = {
         profile_id: athleteProfileId,
         workout_day_exercise_id: workoutDayExerciseId,
         note: trimmed,
+        ...(includeImageStoragePath ? { image_storage_path: imagePath } : {}),
       }
       const { data, error } = await supabase
         .from('athlete_workout_day_exercise_notes')
@@ -154,16 +426,41 @@ export function AthleteExercisePrivateNoteBlock({
         .single()
 
       if (error) {
-        logger.error('upsert athlete note', error, { workoutDayExerciseId })
-        notifyError('Errore', 'Impossibile salvare la nota.')
-        emitSaveError('Impossibile salvare la nota.')
+        if (uploadedPath) await removeNoteImageApi(uploadedPath)
+        if (isMissingAthleteWdeNoteImageColumnError(error)) {
+          logger.warn('upsert athlete note: colonna image_storage_path assente sul DB', {
+            workoutDayExerciseId,
+            code: error.code,
+          })
+          notifyError(
+            'Database da aggiornare',
+            'Esegui sul progetto Supabase supabase/migrations/20260428123000_athlete_wde_note_images.sql (Dashboard → SQL). Senza la colonna image_storage_path non puoi salvare le foto in nota.',
+          )
+          emitSaveError('Colonna image_storage_path assente.')
+        } else {
+          logger.error('upsert athlete note', error, { workoutDayExerciseId })
+          notifyError('Errore', 'Impossibile salvare la nota.')
+          emitSaveError('Impossibile salvare la nota.')
+        }
         return
       }
       if (data) {
-        onSaved(workoutDayExerciseId, { id: data.id, note: data.note ?? trimmed })
+        const nextImagePath = includeImageStoragePath
+          ? imagePath
+          : (savedRow?.image_storage_path ?? null)
+        if (savedPath && savedPath !== nextImagePath) {
+          await removeNoteImageApi(savedPath)
+        }
+        onSaved(workoutDayExerciseId, {
+          id: data.id,
+          note: data.note ?? trimmed,
+          image_storage_path: nextImagePath,
+        })
         addToast({ title: 'Nota salvata', message: '', variant: 'success' })
         emitDirty(false)
         emitSaveOk()
+        resetFormToSaved()
+        setDialogOpen(false)
       }
     } finally {
       setSaving(false)
@@ -173,119 +470,150 @@ export function AthleteExercisePrivateNoteBlock({
   const handleDelete = async () => {
     if (!savedRow?.id) {
       setDraft('')
+      setPendingImageFile(null)
+      setRemovedSavedImage(false)
       return
     }
     emitSaveStart()
     setSaving(true)
     try {
+      const path = savedRow.image_storage_path ?? null
       const ok = await persistDelete(savedRow.id)
       if (ok) {
+        await removeNoteImageApi(path)
         setDraft('')
         onSaved(workoutDayExerciseId, null)
         addToast({ title: 'Nota eliminata', message: '', variant: 'success' })
         emitDirty(false)
         emitSaveOk()
-        setOpen(false)
+        resetFormToSaved()
+        setDialogOpen(false)
       }
     } finally {
       setSaving(false)
     }
   }
 
-  const handleClose = () => {
-    setDraft(savedRow?.note ?? '')
-    setOpen(false)
-  }
-
-  const dirty = draft.trim() !== (savedRow?.note ?? '').trim()
-  const savedText = savedRow?.note?.trim() ?? ''
-  const hasSaved = Boolean(savedText)
-  const preview = hasSaved ? notePreview(savedRow?.note ?? '') : ''
+  const savedNote = savedRow?.note ?? ''
+  const savedPath = savedRow?.image_storage_path ?? null
+  const dirty =
+    draft.trim() !== savedNote.trim() ||
+    Boolean(pendingImageFile) ||
+    (removedSavedImage && Boolean(savedPath))
 
   useEffect(() => {
-    if (!open) return
+    if (!dialogOpen) return
     emitDirty(dirty)
-  }, [dirty, emitDirty, open])
+  }, [dirty, emitDirty, dialogOpen])
+
+  const displayImageUrl = pendingPreviewUrl ?? (!removedSavedImage ? signedImageUrl : null)
 
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
-      {!open ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left transition-colors hover:border-white/15 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 sm:px-4"
-          aria-expanded={false}
-          aria-label={
-            hasSaved
-              ? 'Apri per modificare o eliminare la nota privata'
-              : 'Apri per aggiungere una nota privata'
-          }
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-amber-400/90" aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-xs font-medium text-text-primary">
-              {hasSaved ? 'Nota privata' : 'Aggiungi nota privata'}
-            </span>
-            {hasSaved ? (
-              <span className="mt-0.5 block truncate text-[11px] text-text-tertiary">
-                {preview}
-              </span>
-            ) : (
-              <span className="mt-0.5 block text-[11px] text-text-tertiary">
-                Solo tu la vedi, legata a questo esercizio
-              </span>
-            )}
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-text-tertiary" aria-hidden />
-        </button>
-      ) : (
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-          <div className="mb-3 flex items-start justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                <Lock className="h-3.5 w-3.5 shrink-0 text-amber-400/90" aria-hidden />
-              </span>
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-                  La tua nota privata
-                </div>
-                <p className="text-[11px] leading-snug text-text-tertiary">
-                  Solo tu la vedi. Resta collegata a questo esercizio nella scheda.
-                </p>
-              </div>
-            </div>
-            <button
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="sr-only"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => {
+          onPickFiles(e.target.files)
+          e.target.value = ''
+        }}
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => {
+          onPickFiles(e.target.files)
+          e.target.value = ''
+        }}
+      />
+
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(next) => {
+          setDialogOpen(next)
+          if (!next) resetFormToSaved()
+        }}
+      >
+        <DialogContent className="flex w-full max-w-[min(94vw,36rem)] flex-col gap-5 overflow-hidden px-6 py-6 sm:max-w-2xl sm:gap-6 sm:px-8 sm:py-8 md:max-w-3xl">
+          <DialogHeader className="space-y-2.5 pr-10 text-left sm:space-y-3">
+            <DialogTitle className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
+              La tua nota privata
+            </DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed text-text-secondary sm:text-base">
+              Solo tu la vedi. Resta collegata a questo esercizio nella scheda. Puoi allegare una
+              foto (galleria o fotocamera).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
               type="button"
-              onClick={handleClose}
-              className="flex shrink-0 items-center gap-0.5 rounded-lg px-2 py-1 text-[11px] font-medium text-text-tertiary transition-colors hover:bg-white/5 hover:text-text-primary"
-              aria-label="Chiudi"
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2 rounded-lg border-white/15 bg-white/5 text-xs sm:text-sm"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={saving}
             >
-              Chiudi
-              <ChevronUp className="h-3.5 w-3.5" aria-hidden />
-            </button>
+              <Camera className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              Scatta foto
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2 rounded-lg border-white/15 bg-white/5 text-xs sm:text-sm"
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={saving}
+            >
+              <ImagePlus className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              Scegli dalla galleria
+            </Button>
           </div>
+
+          {displayImageUrl ? (
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/30">
+              {/* eslint-disable-next-line @next/next/no-img-element -- blob / signed URL */}
+              <img
+                src={displayImageUrl}
+                alt="Anteprima allegato"
+                className="max-h-[min(40dvh,320px)] w-full object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingImageFile(null)
+                  setRemovedSavedImage(true)
+                }}
+                className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white transition-colors hover:bg-black/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                aria-label="Rimuovi immagine"
+                disabled={saving}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
+
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Aggiungi un promemoria (dolore, sensazioni, carico…)"
-            className="min-h-[88px] resize-y rounded-xl border-white/10 bg-white/5 text-sm text-text-primary placeholder:text-text-tertiary/70"
+            className="min-h-[min(42dvh,220px)] resize-y rounded-xl border-white/10 bg-white/5 text-sm leading-relaxed text-text-primary placeholder:text-text-tertiary/70 sm:min-h-[min(48dvh,320px)] sm:text-base"
             disabled={saving}
             maxLength={2000}
             aria-label="Nota privata esercizio"
           />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              className="h-8 rounded-lg text-xs"
-              onClick={handleSave}
-              disabled={saving || !dirty}
-            >
-              {saving ? 'Salvataggio…' : 'Salva'}
-            </Button>
-            {(savedRow?.id || draft.trim() !== '') && (
+
+          {savedRow?.id ? (
+            <div className="flex justify-start">
               <Button
                 type="button"
                 variant="ghost"
@@ -296,12 +624,32 @@ export function AthleteExercisePrivateNoteBlock({
                 aria-label="Elimina nota"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Elimina
+                Elimina tutto
               </Button>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          ) : null}
+
+          <DialogFooter className="mt-0 flex-col gap-2 sm:flex-row sm:justify-stretch">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-white/15 bg-white/5 sm:flex-1"
+              onClick={discardAndClose}
+              disabled={saving}
+            >
+              Annulla
+            </Button>
+            <Button
+              type="button"
+              className="w-full sm:flex-1"
+              onClick={handleSave}
+              disabled={saving || !dirty}
+            >
+              {saving ? 'Salvataggio…' : 'Salva'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

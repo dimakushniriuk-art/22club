@@ -9,7 +9,7 @@ import {
   BarChart3,
   ClipboardList,
   CreditCard,
-  Settings2,
+  Settings,
   Users,
 } from 'lucide-react'
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
@@ -90,7 +90,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
   },
   {
     href: '/dashboard/nutrizionista/impostazioni',
-    icon: Settings2,
+    icon: Settings,
     label: 'Impostazioni',
     iconBoxClass: 'border-zinc-500/30 bg-zinc-500/20 text-zinc-300',
   },
@@ -126,6 +126,8 @@ export default function NutrizionistaPage() {
     loading: agendaLoading,
     loadError: agendaLoadError,
     reload: reloadAgenda,
+    lessonsLoading,
+    lessonsLoadError,
   } = useStaffTodayAgenda()
 
   const nutritionAgendaEvents = useMemo(
@@ -403,7 +405,12 @@ export default function NutrizionistaPage() {
                 </Button>
               </DashboardColumnEmpty>
             ) : (
-              <AgendaClient initialEvents={nutritionAgendaEvents} embedded />
+              <AgendaClient
+                initialEvents={nutritionAgendaEvents}
+                lessonsLoading={lessonsLoading}
+                lessonsLoadError={lessonsLoadError}
+                embedded
+              />
             )}
           </DashboardColumnPanel>
         </div>

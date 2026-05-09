@@ -35,7 +35,9 @@ export function WorkoutWizardStep1({
           <div className="mb-6">
             <h3 className="text-text-primary mb-2 text-xl font-bold">Informazioni generali</h3>
             <p className="text-text-secondary text-sm leading-relaxed">
-              Definisci il nome, le note e seleziona l&apos;atleta per la scheda di allenamento
+              Nome e obiettivo sono obbligatori per procedere. L&apos;atleta puoi assegnarlo qui o
+              dopo aver impostato giorni ed esercizi; per pubblicare la scheda serve un atleta reale
+              (o «Salva bozza» senza).
             </p>
           </div>
 
@@ -90,8 +92,9 @@ export function WorkoutWizardStep1({
                 placeholder="Seleziona un atleta"
               />
               <p className="text-text-tertiary mt-2 text-sm leading-relaxed">
-                <span className="text-amber-400/90 font-medium">BOZZA</span>: salva la scheda senza
-                atleta (solo bozza). Per pubblicare la scheda serve un atleta reale.
+                <span className="text-amber-400/90 font-medium">BOZZA</span>: nessun atleta
+                assegnato; puoi comunque completare giorni ed esercizi. «Salva scheda»
+                (pubblicazione) richiede un atleta reale; altrimenti usa «Salva bozza».
               </p>
             </div>
 

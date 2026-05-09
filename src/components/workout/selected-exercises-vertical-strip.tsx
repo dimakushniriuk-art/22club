@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import Image from 'next/image'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Exercise } from '@/types/workout'
@@ -26,7 +27,6 @@ export type StripEntry =
     }
 
 function SmallExerciseMedia({ exercise }: { exercise: Exercise | undefined }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
   const [videoError, setVideoError] = useState(false)
   const [imageError, setImageError] = useState(false)
 
@@ -34,6 +34,11 @@ function SmallExerciseMedia({ exercise }: { exercise: Exercise | undefined }) {
   const hasVideoUrl =
     url !== '' && (url.startsWith('http://') || url.startsWith('https://')) && !videoError
   const posterUrl = exercise?.thumb_url || exercise?.image_url || null
+
+  const videoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(exercise && hasVideoUrl),
+    pauseWhenOffscreen: true,
+  })
 
   if (exercise && hasVideoUrl) {
     return (
@@ -46,18 +51,10 @@ function SmallExerciseMedia({ exercise }: { exercise: Exercise | undefined }) {
           muted
           loop
           playsInline
+          autoPlay
           preload="metadata"
           draggable={false}
           onError={() => setVideoError(true)}
-          onMouseEnter={(ev) => {
-            const v = ev.currentTarget
-            v.play().catch(() => {})
-          }}
-          onMouseLeave={(ev) => {
-            const v = ev.currentTarget
-            v.pause()
-            v.currentTime = 0
-          }}
         />
       </div>
     )

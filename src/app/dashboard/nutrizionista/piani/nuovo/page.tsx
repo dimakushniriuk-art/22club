@@ -55,6 +55,8 @@ import {
   macroTargetsFromPlanMacros,
 } from '@/lib/nutrition-plan-version-macros'
 import type { Json } from '@/types/supabase'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { saveFormDraftSync, loadFormDraft } from '@/lib/browser-form-draft'
 
 const logger = createLogger('app:dashboard:nutrizionista:piani:nuovo')
 
@@ -70,6 +72,25 @@ const STEPS = [
 const MEAL_TYPES = ['Colazione', 'Pranzo', 'Cena', 'Spuntino', 'Spuntino 2', 'Spuntino 3']
 
 type MealItemDraft = { name: string; quantity: number; unit: 'g' | 'pz' }
+
+type NutritionPlanNuovoDraftPayload = {
+  caloriesTarget: string
+  proteinTarget: string
+  carbTarget: string
+  fatTarget: string
+  selectedMealsOrder: string[]
+  numDays: number
+  dayMealItems: Record<string, MealItemDraft[]>
+  selectedAthleteId: string | null
+  step: number
+}
+
+function isMeaningfulNutritionDraft(p: NutritionPlanNuovoDraftPayload): boolean {
+  if (p.step > 0) return true
+  if (p.selectedAthleteId) return true
+  if (p.selectedMealsOrder.length > 0) return true
+  return Object.keys(p.dayMealItems).length > 0
+}
 
 const MEAL_ICONS: Record<string, React.ReactNode> = {
   Colazione: <Coffee className="h-4 w-4" />,
@@ -186,6 +207,43 @@ export default function NutrizionistaPianoNuovoPage() {
       duration: numDays,
     }
   }, [numDays])
+
+  const nutritionPlanNuovoDraftPayload = useMemo((): NutritionPlanNuovoDraftPayload => {
+    return {
+      caloriesTarget,
+      proteinTarget,
+      carbTarget,
+      fatTarget,
+      selectedMealsOrder,
+      numDays,
+      dayMealItems,
+      selectedAthleteId,
+      step: step >= 1 && step <= 6 ? step : 1,
+    }
+  }, [
+    caloriesTarget,
+    proteinTarget,
+    carbTarget,
+    fatTarget,
+    selectedMealsOrder,
+    numDays,
+    dayMealItems,
+    selectedAthleteId,
+    step,
+  ])
+
+  const nutritionDraftMeaningfulCb = useCallback(
+    (p: NutritionPlanNuovoDraftPayload) => isMeaningfulNutritionDraft(p),
+    [],
+  )
+
+  const { clearDraft: clearNutritionPlanDraft } = useBrowserFormDraft({
+    feature: 'nutrition-plan-nuovo',
+    scope: profileId,
+    value: nutritionPlanNuovoDraftPayload,
+    isMeaningful: nutritionDraftMeaningfulCb,
+    restoreEnabled: false,
+  })
 
   const activeMeals = selectedMealsOrder
   const numMeals = activeMeals.length
@@ -304,7 +362,29 @@ export default function NutrizionistaPianoNuovoPage() {
   }, [profileId, supabase])
 
   useEffect(() => {
-    const savedDraft = sessionStorage.getItem('nutritionPlanDraft')
+    if (!profileId) return
+
+    const env = loadFormDraft<NutritionPlanNuovoDraftPayload>('nutrition-plan-nuovo', profileId)
+    if (env?.payload && isMeaningfulNutritionDraft(env.payload)) {
+      const d = env.payload
+      setCaloriesTarget(d.caloriesTarget || '2000')
+      setProteinTarget(d.proteinTarget || '120')
+      setCarbTarget(d.carbTarget || '250')
+      setFatTarget(d.fatTarget || '65')
+      if (Array.isArray(d.selectedMealsOrder) && d.selectedMealsOrder.length <= 6) {
+        setSelectedMealsOrder(d.selectedMealsOrder)
+      }
+      setDayMealItems(d.dayMealItems ?? {})
+      setNumDays(d.numDays ?? 7)
+      if (d.selectedAthleteId) setSelectedAthleteId(d.selectedAthleteId)
+      const savedStep = typeof d.step === 'number' && d.step >= 1 && d.step <= 6 ? d.step : 1
+      setStep(savedStep)
+      setIsDraftSaved(true)
+      return
+    }
+
+    const savedDraft =
+      typeof window !== 'undefined' ? sessionStorage.getItem('nutritionPlanDraft') : null
     if (!savedDraft) return
     try {
       const draft = JSON.parse(savedDraft) as Record<string, unknown> & {
@@ -324,31 +404,47 @@ export default function NutrizionistaPianoNuovoPage() {
       }
       setNumDays((draft.numDays as number) ?? 7)
       if (draft.selectedAthleteId) setSelectedAthleteId(draft.selectedAthleteId as string)
-      const savedStep =
+      const savedStepLegacy =
         typeof draft.step === 'number' && draft.step >= 1 && draft.step <= 6 ? draft.step : 1
-      setStep(savedStep)
+      setStep(savedStepLegacy)
       setIsDraftSaved(true)
+      sessionStorage.removeItem('nutritionPlanDraft')
+      if (profileId) {
+        saveFormDraftSync('nutrition-plan-nuovo', profileId, {
+          caloriesTarget: (draft.caloriesTarget as string) || '2000',
+          proteinTarget: (draft.proteinTarget as string) || '120',
+          carbTarget: (draft.carbTarget as string) || '250',
+          fatTarget: (draft.fatTarget as string) || '65',
+          selectedMealsOrder: Array.isArray(draft.selectedMealsOrder)
+            ? (draft.selectedMealsOrder as string[])
+            : [],
+          numDays: (draft.numDays as number) ?? 7,
+          dayMealItems:
+            draft.dayMealItems && typeof draft.dayMealItems === 'object'
+              ? (draft.dayMealItems as Record<string, MealItemDraft[]>)
+              : {},
+          selectedAthleteId: (draft.selectedAthleteId as string | null) ?? null,
+          step: savedStepLegacy,
+        })
+      }
     } catch {
       // ignore parse errors
     }
-  }, [atletaFromUrl])
+  }, [atletaFromUrl, profileId])
 
   const saveDraft = useCallback(() => {
-    sessionStorage.setItem(
-      'nutritionPlanDraft',
-      JSON.stringify({
-        caloriesTarget,
-        proteinTarget,
-        carbTarget,
-        fatTarget,
-        selectedMealsOrder,
-        numDays,
-        dayMealItems,
-        selectedAthleteId,
-        step: step >= 1 && step <= 6 ? step : 1,
-        timestamp: Date.now(),
-      }),
-    )
+    if (!profileId) return
+    saveFormDraftSync('nutrition-plan-nuovo', profileId, {
+      caloriesTarget,
+      proteinTarget,
+      carbTarget,
+      fatTarget,
+      selectedMealsOrder,
+      numDays,
+      dayMealItems,
+      selectedAthleteId,
+      step: step >= 1 && step <= 6 ? step : 1,
+    })
     setIsDraftSaved(true)
     setTimeout(() => setIsDraftSaved(false), 2000)
   }, [
@@ -361,6 +457,7 @@ export default function NutrizionistaPianoNuovoPage() {
     dayMealItems,
     selectedAthleteId,
     step,
+    profileId,
   ])
 
   const alignMacrosToCalories = useCallback(() => {
@@ -512,7 +609,12 @@ export default function NutrizionistaPianoNuovoPage() {
         }
       }
 
-      sessionStorage.removeItem('nutritionPlanDraft')
+      try {
+        sessionStorage.removeItem('nutritionPlanDraft')
+      } catch {
+        /* ignore */
+      }
+      if (profileId) clearNutritionPlanDraft()
       router.push(`/dashboard/nutrizionista/atleti/${selectedAthleteId}?tab=piani`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Errore creazione piano')
@@ -533,6 +635,7 @@ export default function NutrizionistaPianoNuovoPage() {
     dateRange,
     dayMealItems,
     router,
+    clearNutritionPlanDraft,
   ])
 
   const handleCreate = useCallback(async () => {

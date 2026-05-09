@@ -7,19 +7,28 @@ import { StaffHeaderBackButton } from '@/components/shared/dashboard/staff-heade
 import { useAuth } from '@/providers/auth-provider'
 import { getDefaultAppPathForRole } from '@/lib/utils/role-redirect-paths'
 
-export type StaffContentTheme = 'teal' | 'amber' | 'default'
+type StaffContentTheme = 'teal' | 'amber' | 'default'
 
-export type StaffContentLayoutProps = {
+/** Classi titolo (h1) per tema: `teal` e `default` allineati al look attuale; `amber` accento documentato staff massaggiatore. */
+const STAFF_CONTENT_THEME_TITLE_CLASS: Record<StaffContentTheme, string> = {
+  teal: 'text-white',
+  default: 'text-white',
+  amber:
+    'bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent',
+}
+
+type StaffContentLayoutProps = {
   /** Titolo principale (header) */
   title: string
   /**
    * Mostra una freccia "Indietro" a sinistra del titolo.
    * Se omesso, viene mostrata automaticamente nelle pagine `/dashboard/*` (escluso `/dashboard`).
+   * Il controllo usa `StaffHeaderBackButton` in variante **solo `onClick`** (mai `href` da questo layout).
    */
   onBack?: () => void
   /** Sottotitolo/descrizione sotto il titolo */
   description?: string
-  /** Tema header: teal (staff / PT), amber (legacy), default */
+  /** Tema titolo header: `teal`/`default` = bianco attuale; `amber` = gradiente leggero su h1. */
   theme?: StaffContentTheme
   /** Contenuto della pagina */
   children: ReactNode
@@ -34,9 +43,14 @@ export type StaffContentLayoutProps = {
 }
 
 /**
- * Layout condiviso per pagine staff (nutrizionista, massaggiatore):
- * wrapper full-height, contenitore max-w-[1800px], header con titolo e descrizione.
- * Stile allineato alla pagina Statistiche trainer.
+ * Shell canonica della dashboard **staff**: wrapper full-height, contenitore a max-width,
+ * header integrato (titolo, descrizione, azioni, indietro opzionale via `StaffHeaderBackButton` solo `onClick`).
+ *
+ * **Contratto confine header (staff vs atleta / view speciali):** questo componente è la shell
+ * **e** l’header principale delle route staff dentro il layout dashboard. Per viste atleta, home,
+ * embed e altre fuori dalla shell staff usare `PageHeaderFixed` (`@/components/layout/page-header-fixed`).
+ * `StaffAthleteSubpageHeader` non sostituisce `PageHeaderFixed`: è la riga header **sottopagina**
+ * da comporre **dentro** questa shell (drill-down staff→atleta), non l’header chrome delle route atleta.
  */
 export function StaffContentLayout({
   title,
@@ -49,7 +63,7 @@ export function StaffContentLayout({
   contentClassName,
   hideHeader = false,
 }: StaffContentLayoutProps) {
-  void theme
+  const titleThemeClass = STAFF_CONTENT_THEME_TITLE_CLASS[theme]
   const router = useRouter()
   const pathname = usePathname()
   const { role } = useAuth()
@@ -83,7 +97,12 @@ export function StaffContentLayout({
             <div className="flex min-w-0 flex-1 items-center gap-x-2 sm:gap-x-2.5">
               {handleAutoBack != null && <StaffHeaderBackButton onClick={handleAutoBack} />}
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                <h1 className="line-clamp-1 min-w-0 text-sm font-bold leading-tight tracking-tight text-white sm:text-base md:text-xl lg:text-2xl">
+                <h1
+                  className={cn(
+                    'line-clamp-2 min-w-0 text-fluid-shell-title font-bold tracking-tight sm:line-clamp-1',
+                    titleThemeClass,
+                  )}
+                >
                   {title}
                 </h1>
                 {description != null && description !== '' ? (
@@ -100,7 +119,12 @@ export function StaffContentLayout({
             )}
           </div>
         )}
-        <div className={cn('flex flex-col space-y-4 sm:space-y-6 md:space-y-8', contentClassName)}>
+        <div
+          className={cn(
+            'flex min-h-0 flex-col space-y-4 sm:space-y-6 md:space-y-8',
+            contentClassName,
+          )}
+        >
           {children}
         </div>
       </div>

@@ -387,10 +387,10 @@ export default function StoricoAllenamentiAtletaPage() {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
         <div
-          className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
+          className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 md:px-6 md:pb-24"
           style={{ minHeight: 'calc(100dvh - var(--nav-height, 56px))' }}
         >
-          <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+          <div className="mx-auto w-full max-w-lg lg:max-w-3xl">
             <ErrorState message={error} onRetry={loadData} />
           </div>
         </div>
@@ -405,10 +405,10 @@ export default function StoricoAllenamentiAtletaPage() {
     <>
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
         <div
-          className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 min-[834px]:pb-24"
+          className="min-h-0 flex-1 overflow-auto px-3 pb-28 safe-area-inset-bottom sm:px-4 md:px-6 md:pb-24"
           style={{ minHeight: 'calc(100dvh - var(--nav-height, 56px))' }}
         >
-          <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 min-[1100px]:max-w-3xl">
+          <div className="mx-auto w-full max-w-lg space-y-4 sm:space-y-6 lg:max-w-3xl">
             <PageHeaderFixed
               variant="chat"
               title="Storico Allenamenti"
@@ -420,17 +420,17 @@ export default function StoricoAllenamentiAtletaPage() {
               onBack={handleBack}
             />
 
-            <div className="grid grid-cols-3 gap-1.5 min-[834px]:gap-3">
+            <div className="grid grid-cols-3 gap-1.5 md:gap-3">
               <Card className={`relative overflow-hidden ${CARD_DS}`}>
-                <CardContent className="relative z-10 flex items-center gap-1.5 p-2 min-[834px]:gap-2 min-[834px]:p-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-8 min-[834px]:w-8">
+                <CardContent className="relative z-10 flex items-center gap-1.5 p-2 md:gap-2 md:p-2.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-8 md:w-8">
                     <User className="h-3.5 w-3.5 text-cyan-400" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
                       Da solo
                     </p>
-                    <p className="text-base font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-lg">
+                    <p className="text-base font-bold tabular-nums leading-tight text-text-primary md:text-lg">
                       {stats.solo_count}
                     </p>
                   </div>
@@ -438,15 +438,15 @@ export default function StoricoAllenamentiAtletaPage() {
               </Card>
 
               <Card className={`relative overflow-hidden ${CARD_DS}`}>
-                <CardContent className="relative z-10 flex items-center gap-1.5 p-2 min-[834px]:gap-2 min-[834px]:p-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-8 min-[834px]:w-8">
+                <CardContent className="relative z-10 flex items-center gap-1.5 p-2 md:gap-2 md:p-2.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-8 md:w-8">
                     <Users className="h-3.5 w-3.5 text-cyan-400" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
                       Con trainer
                     </p>
-                    <p className="text-base font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-lg">
+                    <p className="text-base font-bold tabular-nums leading-tight text-text-primary md:text-lg">
                       {stats.coached_count}
                     </p>
                   </div>
@@ -454,15 +454,15 @@ export default function StoricoAllenamentiAtletaPage() {
               </Card>
 
               <Card className={`relative overflow-hidden ${CARD_DS}`}>
-                <CardContent className="relative z-10 flex items-center gap-1.5 p-2 min-[834px]:gap-2 min-[834px]:p-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-8 min-[834px]:w-8">
+                <CardContent className="relative z-10 flex items-center gap-1.5 p-2 md:gap-2 md:p-2.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-8 md:w-8">
                     <Clock className="h-3.5 w-3.5 text-cyan-400" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
                       Ore totali
                     </p>
-                    <p className="text-base font-bold tabular-nums leading-tight text-text-primary min-[834px]:text-lg">
+                    <p className="text-base font-bold tabular-nums leading-tight text-text-primary md:text-lg">
                       {stats.total_hours}h
                     </p>
                   </div>
@@ -471,7 +471,7 @@ export default function StoricoAllenamentiAtletaPage() {
             </div>
 
             <Card className={`relative min-w-0 overflow-hidden ${CARD_DS}`}>
-              <CardHeader className="relative z-10 flex flex-col gap-3 border-b border-white/10 px-4 pb-3 pt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-[834px]:px-5 min-[834px]:pt-5 min-[834px]:pb-4">
+              <CardHeader className="relative z-10 flex flex-col gap-3 border-b border-white/10 px-4 pb-3 pt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:px-5 md:pt-5 md:pb-4">
                 <div className="min-w-0">
                   <CardTitle className="text-base font-bold text-text-primary md:text-lg">
                     Allenamenti completati
@@ -513,16 +513,16 @@ export default function StoricoAllenamentiAtletaPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4 min-[834px]:p-5 min-[834px]:pt-4">
+              <CardContent className="relative z-10 p-4 pt-3 sm:p-6 sm:pt-4 md:p-5 md:pt-4">
                 {workouts.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 min-[834px]:py-12 text-center">
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 min-[834px]:h-16 min-[834px]:w-16">
-                      <Dumbbell className="h-7 w-7 text-cyan-400 min-[834px]:h-8 min-[834px]:w-8" />
+                  <div className="flex flex-col items-center justify-center py-10 md:py-12 text-center">
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg border border-white/10 bg-white/5 md:h-16 md:w-16">
+                      <Dumbbell className="h-7 w-7 text-cyan-400 md:h-8 md:w-8" />
                     </div>
-                    <h3 className="text-text-primary text-sm font-semibold min-[834px]:text-base">
+                    <h3 className="text-text-primary text-sm font-semibold md:text-base">
                       Nessun allenamento
                     </h3>
-                    <p className="text-text-tertiary mt-1 text-xs min-[834px]:text-sm">
+                    <p className="text-text-tertiary mt-1 text-xs md:text-sm">
                       Cambia il filtro periodo o verifica che gli allenamenti siano stati
                       registrati.
                     </p>
@@ -532,15 +532,15 @@ export default function StoricoAllenamentiAtletaPage() {
                     {workouts.map((workout) => (
                       <div
                         key={workout.id}
-                        className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-3 transition-colors hover:border-white/20 min-[834px]:rounded-lg min-[834px]:p-3.5"
+                        className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-3 transition-colors hover:border-white/20 md:rounded-lg md:p-3.5"
                       >
-                        <div className="flex flex-col gap-3 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between min-[834px]:gap-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
                           <div className="min-w-0 flex-1">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
                               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
                                 <Dumbbell className="h-4 w-4 text-cyan-400" />
                               </div>
-                              <h3 className="text-text-primary min-w-0 flex-1 truncate text-sm font-semibold min-[834px]:text-base">
+                              <h3 className="text-text-primary min-w-0 flex-1 truncate text-sm font-semibold md:text-base">
                                 {workout.workout?.titolo || 'Allenamento'}
                               </h3>
                               <Badge
@@ -560,7 +560,7 @@ export default function StoricoAllenamentiAtletaPage() {
                               </p>
                             )}
                           </div>
-                          <div className="flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 self-stretch rounded-xl border border-white/10 bg-white/5 px-3 py-2 min-[834px]:min-h-0 min-[834px]:self-auto min-[834px]:rounded-lg min-[834px]:px-2.5 min-[834px]:py-1.5">
+                          <div className="flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 self-stretch rounded-xl border border-white/10 bg-white/5 px-3 py-2 md:min-h-0 md:self-auto md:rounded-lg md:px-2.5 md:py-1.5">
                             <Clock className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
                             <span className="text-text-primary text-sm font-semibold tabular-nums">
                               {displayDurationForWorkout(workout)}

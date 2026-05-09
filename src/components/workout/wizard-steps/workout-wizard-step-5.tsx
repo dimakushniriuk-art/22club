@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui'
 import { Check, List, User, Calendar, Dumbbell, Goal, RefreshCw } from 'lucide-react'
 import type { WorkoutWizardData, WorkoutDayExerciseData, DayItem } from '@/types/workout'
 import { getObjectiveLabel } from '@/lib/constants/workout-objectives'
+import { isWorkoutPlanRealAthleteId } from '@/lib/constants/workout-plan-wizard'
 
 function getDayItemsFallback(day: {
   items?: DayItem[]
@@ -37,6 +38,7 @@ export function WorkoutWizardStep5({
   getDayItems = getDayItemsFallback,
   circuitList = [],
 }: WorkoutWizardStep5Props) {
+  const hasRealAthlete = isWorkoutPlanRealAthleteId(wizardData.athlete_id)
   const selectedAthlete = athletes.find((a) => a.id === wizardData.athlete_id)
   const totalExercises = wizardData.days.reduce((total, day) => {
     const items = getDayItems(day)
@@ -56,8 +58,10 @@ export function WorkoutWizardStep5({
         <div className="space-y-6">
           <div className="mb-6">
             <h3 className="text-text-primary mb-2 text-xl font-bold">Riepilogo e conferma</h3>
-            <p className="text-text-secondary text-sm">
-              Verifica le informazioni prima di salvare la scheda
+            <p className="text-text-secondary text-sm leading-relaxed">
+              Verifica nome, obiettivo e allenamento. Gli step precedenti non richiedono
+              l&apos;atleta; per <span className="text-text-primary font-medium">pubblicare</span>{' '}
+              serve un atleta in Info generali, altrimenti usa «Salva bozza».
             </p>
           </div>
 
@@ -87,8 +91,12 @@ export function WorkoutWizardStep5({
                       Atleta:
                     </span>
                     <span className="text-text-primary font-semibold">
-                      {selectedAthlete?.name || (
-                        <span className="text-text-tertiary italic">Non selezionato</span>
+                      {hasRealAthlete ? (
+                        (selectedAthlete?.name ?? (
+                          <span className="text-text-secondary">Atleta assegnato</span>
+                        ))
+                      ) : (
+                        <span className="text-amber-400/95 font-medium">Bozza — nessun atleta</span>
                       )}
                     </span>
                   </div>

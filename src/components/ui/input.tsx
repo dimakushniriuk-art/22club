@@ -47,8 +47,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
 
     const sizes = {
-      sm: 'h-9 px-3 text-sm',
-      md: 'h-11 px-3.5 text-sm',
+      /** text-base su viewport stretta riduce zoom automatico iOS su focus */
+      sm: 'h-9 px-3 text-base md:text-sm',
+      md: 'h-11 px-3.5 text-base md:text-sm',
       lg: 'h-12 px-4 text-base',
     }
 

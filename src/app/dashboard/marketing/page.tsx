@@ -77,9 +77,9 @@ export default function MarketingPage() {
       : null
 
   return (
-    <div className="p-4 min-[834px]:p-6 space-y-6 bg-background text-text-primary">
+    <div className="p-4 md:p-6 space-y-6 bg-background text-text-primary">
       <header>
-        <h1 className="text-xl min-[834px]:text-2xl font-bold flex items-center gap-2">
+        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
           <BarChart3 className="w-6 h-6 text-cyan-400" />
           KPI Marketing
         </h1>

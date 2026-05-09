@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui'
 import { StaffAthleteSubpageHeader } from '@/components/shared/dashboard/staff-athlete-subpage-header'
 import { ErrorState } from '@/components/dashboard/error-state'
@@ -13,13 +13,18 @@ import { useAuth } from '@/providers/auth-provider'
 import { formatDate } from '@/lib/format'
 import { ProgressPhotoImage } from '@/components/progress-photo-image'
 import type { ProgressPhoto } from '@/types/progress'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const ANGLES = ['fronte', 'profilo', 'retro'] as const
 
-export default function StaffAtletaProgressiFotoPage() {
-  const params = useParams()
+export default function StaffAtletaProgressiFotoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolved = useResolvedParams(params)
   const router = useRouter()
-  const id = typeof params?.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
 
   const { role, loading: authLoading } = useAuth()
   const { athlete, loading, error, loadAthleteData } = useAthleteProfileData(id ?? '')

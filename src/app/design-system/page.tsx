@@ -18,7 +18,9 @@ import { PatternsLayouts } from './_sections/patterns-layouts'
 import { SectionIcone } from './_sections/section-icone'
 import { SectionComponenti } from './_sections/section-componenti'
 import { SectionModuli } from './_sections/section-moduli'
+import { SectionScreens } from './_sections/section-screens'
 import { PatternsHeaders } from './_sections/patterns-headers'
+import { PatternsComposition } from './_sections/patterns-composition'
 import { DesignHomeSection } from './_sections/design-home'
 import { PatternsAuthLogin } from './_sections/patterns-auth-login'
 import { DesignAreeRoute } from './_sections/design-aree-route'
@@ -80,7 +82,9 @@ import {
   Info,
   Keyboard,
   Layout,
+  LayoutDashboard,
   LayoutGrid,
+  Layers,
   List,
   Loader2,
   Lock,
@@ -207,7 +211,9 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Info,
   Keyboard,
   Layout,
+  LayoutDashboard,
   LayoutGrid,
+  Layers,
   List,
   Loader2,
   Lock,
@@ -284,8 +290,10 @@ const NAV = [
   { id: 'icone', label: 'Icone', icon: Sparkles },
   { id: 'layouts', label: 'Layouts', icon: Layout },
   { id: 'headers', label: 'Headers', icon: Layout },
+  { id: 'patterns', label: 'Patterns', icon: Layers },
   { id: 'componenti', label: 'Componenti', icon: Box },
   { id: 'moduli', label: 'Moduli', icon: LayoutGrid },
+  { id: 'screens', label: 'Screens', icon: LayoutDashboard },
   { id: 'aree-route', label: 'Aree', icon: Globe },
   { id: 'home', label: 'Area atleta', icon: Home },
   { id: 'auth', label: 'Auth', icon: LogIn },
@@ -427,9 +435,13 @@ export default function DesignSystemPage() {
         <Separator className="bg-white/10" />
         <PatternsHeaders />
         <Separator className="bg-white/10" />
+        <PatternsComposition />
+        <Separator className="bg-white/10" />
         <SectionComponenti />
         <Separator className="bg-white/10" />
         <SectionModuli />
+        <Separator className="bg-white/10" />
+        <SectionScreens />
         <Separator className="bg-white/10" />
         <DesignAreeRoute />
         <Separator className="bg-white/10" />

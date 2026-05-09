@@ -1,0 +1,5021 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "01Public-cover",
+      "x": 0,
+      "y": 0,
+      "name": "00_Cover",
+      "width": 1680,
+      "height": 420,
+      "fill": "#0f172a",
+      "layout": "vertical",
+      "gap": 14,
+      "padding": 36,
+      "children": [
+        {
+          "type": "text",
+          "id": "01Public-t1",
+          "name": "title",
+          "fill": "#f8fafc",
+          "content": "22Club — 01_Public_Auth (PUBLIC / AUTH)",
+          "fontFamily": "Inter",
+          "fontSize": 26,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "01Public-t2",
+          "name": "meta",
+          "fill": "#94a3b8",
+          "content": "batch=PUBLIC_AUTH · code-synced · bg #0d0d0d · card zinc-900/95 → black/80 · CTA teal→cyan",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "01Public-t3",
+          "name": "routes",
+          "fill": "#e2e8f0",
+          "textGrowth": "fixed-width",
+          "width": 1500,
+          "content": "Routes:\n/\n/login\n/registrati\n/forgot-password\n/reset-password\n/welcome\n/post-login\n/privacy\n/termini",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "o1OuW",
+          "name": "hdNote",
+          "fill": "#64748b",
+          "textGrowth": "fixed-width",
+          "width": 1400,
+          "content": "Opzionale ref: Desktop HD 1920×1080 — non ricostruito in questo batch (stesso layout 1440 centrato).",
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "01Public-desk",
+      "x": 0,
+      "y": 460,
+      "name": "01_Desktop",
+      "width": 1440,
+      "height": 32000,
+      "fill": "#f1f5f9",
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 28,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Mm7Dm",
+          "name": "ScreenSet / Login · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "6czOj",
+              "name": "card 512px",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "7AXaq",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "lQMUf",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 440,
+                  "content": "Inserisci le tue credenziali per accedere al tuo account.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "vh3I9",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "2jy2d",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "frame",
+                  "id": "0XLXa",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fThUw",
+                      "fill": "#ffffff",
+                      "content": "Accedi",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "JwwcW",
+                  "fill": "#a5afb4",
+                  "content": "Password dimenticata? Reimposta password",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "znanM",
+          "name": "ScreenSet / Login · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "x1D4O",
+              "name": "ldLc",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "pLcMV",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "n7JqN",
+                  "fill": "#a5afb4",
+                  "content": "Caricamento...",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "PaUQ6",
+                  "fill": "#ffffff0d",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "Lparq",
+                  "fill": "#ffffff0d",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "hlEMx",
+                  "fill": "#ffffff0d",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "9p7f7",
+          "name": "ScreenSet / Login · Desktop · Error",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "UoVKz",
+              "name": "ldEc",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zs3GW",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Zsej6",
+                  "fill": "#ff3b30",
+                  "textGrowth": "fixed-width",
+                  "width": 440,
+                  "content": "Profilo non trovato. Contatta l'amministratore per completare la registrazione.",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "Sprgx",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "3YAcA",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "frame",
+                  "id": "nXVaB",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2B4au",
+          "name": "ScreenSet / Root · Desktop · note",
+          "width": 1440,
+          "height": 400,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 32,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "RaSvu",
+              "fill": "#eaf0f2",
+              "content": "/ → redirect('/login')",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Jy54K",
+          "name": "ScreenSet / Registrati · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "byHB2",
+              "name": "rdW",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 22,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "09a7H",
+                  "fill": "#eaf0f2",
+                  "content": "Crea il tuo account",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "yFP2I",
+                  "fill": "#a5afb4",
+                  "content": "Compila i campi per registrarti.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "jkUmQ",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "Udxkk",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "NAMsU",
+          "name": "ScreenSet / Forgot Password · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "GCrNF",
+              "name": "fdW",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 22,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AWSxj",
+                  "fill": "#eaf0f2",
+                  "content": "Password dimenticata?",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "iHl4p",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 440,
+                  "content": "Inserisci la tua email e ti invieremo le istruzioni per reimpostare la password.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "yG29E",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "UNYye",
+          "name": "ScreenSet / Reset Password · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "pRPyx",
+              "name": "rsdW",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "LwXRH",
+                  "fill": "#eaf0f2",
+                  "content": "Imposta nuova password",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "itkyg",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "d03Rq",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "oAkOn",
+          "name": "ScreenSet / Welcome · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": 24,
+          "children": [
+            {
+              "type": "text",
+              "id": "eDyzk",
+              "fill": "#a5afb4",
+              "content": "Passo 1 di 15",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "zRlTr",
+              "fill": "#eaf0f2",
+              "content": "Welcome in 22 Club!",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "BEktQ",
+              "fill": "#a5afb4",
+              "textGrowth": "fixed-width",
+              "width": 900,
+              "content": "È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Oc9US",
+          "name": "ScreenSet / Privacy · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ADSA8",
+              "name": "pDh",
+              "width": "fill_container",
+              "height": 64,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 32,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FZTSZ",
+                  "fill": "#a5afb4",
+                  "content": "Torna indietro",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "iSGYT",
+              "fill": "#121820",
+              "width": 768,
+              "height": 520,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zAnSS",
+          "name": "ScreenSet / Termini · Desktop · Default",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "yCSR1",
+              "name": "tDh",
+              "width": "fill_container",
+              "height": 64,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 32,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "26gpv",
+                  "fill": "#a5afb4",
+                  "content": "Torna indietro",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "FUFjm",
+              "name": "tDc",
+              "width": 768,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1huse",
+                  "fill": "#eaf0f2",
+                  "content": "Termini e Condizioni di utilizzo",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "rW4P6",
+                  "fill": "#eaf0f2",
+                  "content": "1. Oggetto  ▾",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "s8etY",
+          "name": "ScreenSet / Post Login · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "WHXpH",
+              "fill": "#6c757d",
+              "content": "Spinner (useAuth loading)",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wqDYY",
+          "name": "ScreenSet / Welcome · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ysn4m",
+              "fill": "#a5afb4",
+              "content": "Caricamento...",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nKA5x",
+          "name": "ScreenSet / Privacy · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "8QZkY",
+              "fill": "#0d0d0d",
+              "width": "fill_container",
+              "height": 64,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              }
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "2l7BL",
+              "fill": "#ffffff05",
+              "width": 768,
+              "height": 480,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "4Hatz",
+          "name": "ScreenSet / Termini · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "9aGQ8",
+              "fill": "#0d0d0d",
+              "width": "fill_container",
+              "height": 64
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "a5R92",
+              "fill": "#ffffff05",
+              "width": 768,
+              "height": 480,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AS92K",
+          "name": "ScreenSet / Registrati · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "iZilI",
+              "fill": "#a5afb4",
+              "content": "RegisterFormFallback: Crea account + Caricamento...",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cFoEB",
+          "name": "ScreenSet / Forgot Password · Desktop · Loading",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "rRtHT",
+              "fill": "#a5afb4",
+              "content": "Invio in corso…",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "IuBV3",
+          "name": "ScreenSet / Reset Password · Desktop · Loading (AuthCardSegmentSkeleton)",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "G7UPR",
+              "fill": "#6c757d",
+              "textGrowth": "fixed-width",
+              "width": 600,
+              "content": "Suspense fallback: rounded-xl border skeleton (route-loading-skeletons)",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2d3fa",
+          "name": "ScreenSet / Reset Password · Desktop · Error",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "XT0XS",
+              "fill": "#eaf0f2",
+              "content": "Link non valido (urlError)",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Wxspf",
+          "name": "ScreenSet / Reset Password · Desktop · Success",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "xspwm",
+              "fill": "#eaf0f2",
+              "content": "Password aggiornata!",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HQFoo",
+          "name": "ScreenSet / Registrati · Desktop · Error",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "EYkvs",
+              "fill": "#ff3b30",
+              "content": "AUTH_ERROR_BOX (messaggio validazione / signup)",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Opyq3",
+          "name": "ScreenSet / Registrati · Desktop · Success",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "I714L",
+              "fill": "#eaf0f2",
+              "content": "Account creato + Vai al login + Invia di nuovo…",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mBwhG",
+          "name": "ScreenSet / Forgot Password · Desktop · Success",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "1i2bi",
+              "fill": "#eaf0f2",
+              "content": "Email inviata! + Torna al Login",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wG9Jl",
+          "name": "ScreenSet / Forgot Password · Desktop · Error",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "rb4A3",
+              "fill": "#ff3b30",
+              "content": "Errore + messaggio API",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cQdUE",
+          "name": "ScreenSet / Welcome · Desktop · Error",
+          "width": 1440,
+          "height": 900,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 32,
+          "children": [
+            {
+              "type": "text",
+              "id": "ktKU0",
+              "fill": "#ff3b30",
+              "content": "stepError / completeError",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "01Public-tab",
+      "x": 1480,
+      "y": 460,
+      "name": "02_iPad (login 834×1194)",
+      "width": 900,
+      "height": 36000,
+      "fill": "#0d0d0d",
+      "layout": "vertical",
+      "gap": 28,
+      "padding": 24,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "SDKru",
+          "name": "ScreenSet / Login · iPad · Default",
+          "width": 834,
+          "height": 1194,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "iEQr7",
+              "name": "LoginCard (match /login)",
+              "width": 512,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#ffffff0a",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  }
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#00000080",
+                  "offset": {
+                    "x": 0,
+                    "y": 4
+                  },
+                  "blur": 24,
+                  "spread": -4
+                },
+                {
+                  "type": "background_blur",
+                  "radius": 24
+                }
+              ],
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "qTvej",
+                  "name": "logo",
+                  "width": 200,
+                  "height": 128,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../../public/logo.svg",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "NoWPN",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "DhRcp",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 420,
+                  "content": "Inserisci le tue credenziali per accedere al tuo account.",
+                  "lineHeight": 1.625,
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "hvdu6",
+                  "fill": "#eaf0f2",
+                  "content": "Email",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "YNhsc",
+                  "name": "input-email",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#ffffff0a",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    12,
+                    0,
+                    36
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5XXaL",
+                      "fill": "#6c757d",
+                      "content": "la.tua@email.com",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "VCAGG",
+                  "fill": "#eaf0f2",
+                  "content": "Password",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "VZ5ga",
+                  "name": "input-password",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#ffffff0a",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "padding": [
+                    0,
+                    40,
+                    0,
+                    36
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "MUwKh",
+                      "fill": "#6c757d",
+                      "content": "••••••••",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "R1AiQ",
+                      "fill": "#6c757d",
+                      "content": "👁",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JnMJo",
+                  "name": "Button primary",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#14b8a650"
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qv6My",
+                      "fill": "#ffffff",
+                      "content": "Accedi",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "74qRU",
+                  "name": "forgot-password-link",
+                  "width": "fill_container",
+                  "gap": 4,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wZ9d8",
+                      "fill": "#a5afb4",
+                      "content": "Password dimenticata?",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "85P06",
+                      "fill": "#02b3bf",
+                      "content": "Reimposta password",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Uzq7C",
+          "name": "ScreenSet / Login · iPad · Loading",
+          "width": 834,
+          "height": 1194,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "45ebg",
+              "name": "skelPad",
+              "width": 512,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#ffffff0a",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  }
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#00000080",
+                  "offset": {
+                    "x": 0,
+                    "y": 4
+                  },
+                  "blur": 24,
+                  "spread": -4
+                }
+              ],
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "3AR71",
+                  "name": "logo-skel",
+                  "width": 200,
+                  "height": 128,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../../public/logo.svg",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "YLnPs",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "WUd0X",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 400,
+                  "content": "Caricamento...",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "A27Cx",
+                  "fill": "#242a2e80",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "EiocV",
+                  "fill": "#242a2e80",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "QZZVO",
+                  "fill": "#242a2e80",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Nt9Tt",
+          "name": "ScreenSet / Root · Tablet · note",
+          "width": 768,
+          "height": 400,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "dyMlH",
+              "fill": "#eaf0f2",
+              "content": "/ → redirect('/login') — nessuna UI",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "UYPDr",
+          "name": "ScreenSet / Registrati · Tablet · Default",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "XR3Pq",
+              "name": "rgTw",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UxCKW",
+                  "fill": "#eaf0f2",
+                  "content": "Crea il tuo account",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "mmEph",
+                  "fill": "#a5afb4",
+                  "content": "Compila i campi per registrarti.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "1rZe7",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "liBM2",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "jSRh7",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "IvpgB",
+          "name": "ScreenSet / Forgot Password · Tablet · Default",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "aa8gS",
+              "name": "fgTw",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UPIQC",
+                  "fill": "#eaf0f2",
+                  "content": "Password dimenticata?",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "kinGX",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 440,
+                  "content": "Inserisci la tua email e ti invieremo le istruzioni per reimpostare la password.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "AWTIr",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "JvTD5",
+          "name": "ScreenSet / Reset Password · Tablet · Default",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "iSWGM",
+              "name": "rTw",
+              "width": 512,
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "QmxD6",
+                  "fill": "#eaf0f2",
+                  "content": "Imposta nuova password",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "NA8MT",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "jsp5F",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "oAYxy",
+          "name": "ScreenSet / Welcome · Tablet · Default",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "Vp9Y1",
+              "fill": "#eaf0f2",
+              "content": "Passo 1 di 15 · Welcome in 22 Club!",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "wbKS7",
+              "fill": "#a5afb4",
+              "textGrowth": "fixed-width",
+              "width": 700,
+              "content": "È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "JBr88",
+          "name": "ScreenSet / Privacy · Tablet · Default",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "koJbT",
+              "name": "pTh",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 24,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xWoKU",
+                  "fill": "#a5afb4",
+                  "content": "Torna indietro",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "k3klM",
+                  "fill": "#eaf0f2",
+                  "content": "logo",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "joGMD",
+              "fill": "#121820",
+              "width": "fill_container",
+              "height": 400,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "I6CI3",
+          "name": "ScreenSet / Termini · Tablet · Default",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "PbXyN",
+              "name": "tTh",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 24,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AScIk",
+                  "fill": "#a5afb4",
+                  "content": "Torna indietro",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WkR24",
+              "name": "tBody",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "s7MgN",
+                  "name": "tBox",
+                  "width": "fill_container",
+                  "fill": "#121820",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5ufqk",
+                      "fill": "#eaf0f2",
+                      "content": "Termini e Condizioni di utilizzo",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VGN2b",
+                      "fill": "#eaf0f2",
+                      "content": "1. Oggetto  ▾",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "FXXur",
+          "name": "ScreenSet / Registrati · Tablet · Loading",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "NF78H",
+              "fill": "#eaf0f2",
+              "content": "Crea il tuo account + Caricamento...",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qwLgM",
+          "name": "ScreenSet / Welcome · Tablet · Loading",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "QiL5M",
+              "fill": "#a5afb4",
+              "content": "Caricamento... (Card + Loader2)",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "pwAjE",
+          "name": "ScreenSet / Forgot Password · Tablet · Loading",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "HiGyl",
+              "fill": "#a5afb4",
+              "content": "Invio in corso… (submit)",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qMPdf",
+          "name": "ScreenSet / Privacy · Tablet · Loading",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "dHdvc",
+              "fill": "#0d0d0d",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              }
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "AueFT",
+              "fill": "#ffffff05",
+              "width": "fill_container",
+              "height": 360,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Yfr05",
+          "name": "ScreenSet / Termini · Tablet · Loading",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "rzO6e",
+              "fill": "#0d0d0d",
+              "width": "fill_container",
+              "height": 56
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "AEECx",
+              "fill": "#ffffff05",
+              "width": "fill_container",
+              "height": 360,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "tVGAX",
+          "name": "ScreenSet / Post Login · Tablet · Loading",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "qDPbv",
+              "fill": "#6c757d",
+              "content": "border-t-primary spinner",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "0dF9Y",
+          "name": "ScreenSet / Registrati · Tablet · Error",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "wGj4i",
+              "fill": "#a5afb4",
+              "textGrowth": "fixed-width",
+              "width": 480,
+              "content": "Stesso form + AUTH_ERROR_BOX (es. Le password non corrispondono)",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wzBuc",
+          "name": "ScreenSet / Reset Password · Tablet · Loading verify",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "OFGTd",
+              "fill": "#eaf0f2",
+              "content": "Verifica link...",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GA1tS",
+          "name": "ScreenSet / Reset Password · Tablet · Error",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "opZUS",
+              "fill": "#eaf0f2",
+              "content": "Link non valido + CTA",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "BiAk3",
+          "name": "ScreenSet / Reset Password · Tablet · Success",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "WqDU3",
+              "fill": "#eaf0f2",
+              "content": "Password aggiornata!",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "OA6Qm",
+          "name": "ScreenSet / Welcome · Tablet · Error",
+          "width": 768,
+          "height": 1024,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "children": [
+            {
+              "type": "text",
+              "id": "tA6XM",
+              "fill": "#ff3b30",
+              "content": "stepError / completeError (runtime)",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "01Public-mob",
+      "x": 2280,
+      "y": 460,
+      "name": "03_Smartphone (login 390×844)",
+      "width": 430,
+      "height": 32000,
+      "fill": "#0d0d0d",
+      "layout": "vertical",
+      "gap": 28,
+      "padding": 20,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "0k67W",
+          "name": "ScreenSet / Root · Mobile · note",
+          "width": 360,
+          "height": 200,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "J7dVD",
+              "fill": "#eaf0f2",
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "Route / — nessuna UI",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "PCrjt",
+              "fill": "#a5afb4",
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "page.tsx → redirect('/login')",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YHaiQ",
+          "name": "ScreenSet / Login · Smartphone · Default",
+          "width": 390,
+          "height": 844,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "7RPXv",
+              "name": "LoginCard (match /login)",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#ffffff0a",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  }
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "#00000080",
+                  "offset": {
+                    "x": 0,
+                    "y": 4
+                  },
+                  "blur": 24,
+                  "spread": -4
+                },
+                {
+                  "type": "background_blur",
+                  "radius": 24
+                }
+              ],
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "STNfw",
+                  "name": "logo",
+                  "width": 200,
+                  "height": 96,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../../public/logo.svg",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "esxcM",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "qzx6z",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Inserisci le tue credenziali per accedere al tuo account.",
+                  "lineHeight": 1.4,
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ngqZO",
+                  "fill": "#eaf0f2",
+                  "content": "Email",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "bOGar",
+                  "name": "input-email",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#ffffff0a",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    12,
+                    0,
+                    36
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "pyFAg",
+                      "fill": "#6c757d",
+                      "content": "la.tua@email.com",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "wmdMp",
+                  "fill": "#eaf0f2",
+                  "content": "Password",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "8XUZP",
+                  "name": "input-password",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#ffffff0a",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "padding": [
+                    0,
+                    40,
+                    0,
+                    36
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DaThB",
+                      "fill": "#6c757d",
+                      "content": "••••••••",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wqTcR",
+                      "fill": "#6c757d",
+                      "content": "👁",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vXqRH",
+                  "name": "Button primary",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#14b8a650"
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "prFjT",
+                      "fill": "#ffffff",
+                      "content": "Accedi",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E9XdN",
+                  "name": "forgot-password-link",
+                  "width": "fill_container",
+                  "gap": 4,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VkYCJ",
+                      "fill": "#a5afb4",
+                      "content": "Password dimenticata?",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "1IVFE",
+                      "fill": "#02b3bf",
+                      "content": "Reimposta password",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qoOT6",
+          "name": "ScreenSet / Login · Smartphone · Loading",
+          "width": 390,
+          "height": 844,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "TrhUu",
+              "name": "LoginCard skeleton",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yFUsK",
+                  "name": "logo-skel",
+                  "width": 200,
+                  "height": 96,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../../public/logo.svg",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "nkNYp",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "lMUWy",
+                  "fill": "#a5afb4",
+                  "content": "Caricamento...",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "g6m1Q",
+                  "fill": "#242a2e80",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "s61sC",
+                  "fill": "#242a2e80",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "45Ftj",
+                  "fill": "#242a2e80",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "T1jDL",
+          "name": "ScreenSet / Login · Mobile · Error",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "9UVXd",
+              "name": "LoginCard + error",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "BVZKY",
+                  "fill": "#eaf0f2",
+                  "content": "Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "0cUgH",
+                  "name": "login-info",
+                  "width": "fill_container",
+                  "fill": "#02b3bf1a",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#02b3bf4d"
+                  },
+                  "gap": 12,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZVFc2",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "#02b3bf",
+                      "cornerRadius": 99,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "P1Eez",
+                          "fill": "#0d0d0d",
+                          "content": "i",
+                          "textAlign": "center",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "8MU9O",
+                      "fill": "#eaf0f2f2",
+                      "textGrowth": "fixed-width",
+                      "width": 232,
+                      "content": "Sessione scaduta o non più valida. Accedi di nuovo per continuare.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KpQbC",
+                  "name": "login-error",
+                  "width": "fill_container",
+                  "fill": "#ff3b301a",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ff3b3033"
+                  },
+                  "gap": 12,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RgsYg",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "#ff3b3000",
+                      "cornerRadius": 99,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 2,
+                        "fill": "#ff3b30"
+                      },
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3AQ9A",
+                          "fill": "#ff3b30",
+                          "content": "!",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XRHvJ",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MRUAx",
+                          "fill": "#ff3b30",
+                          "content": "Errore",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "1RwpF",
+                          "fill": "#ff3b30e6",
+                          "content": "Credenziali non valide",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "lTxmQ",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "H8OSJ",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "frame",
+                  "id": "q0Fr4",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0WQ04",
+                      "fill": "#ffffff",
+                      "content": "Accedi",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HrIRQ",
+          "name": "ScreenSet / Registrati · Mobile · Default",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "sAz5i",
+              "name": "rgC",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "jUJg7",
+                  "fill": "#eaf0f2",
+                  "content": "Crea il tuo account",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "SJcKY",
+                  "fill": "#a5afb4",
+                  "content": "Compila i campi per registrarti.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "4OEbX",
+                  "name": "nome-cognome-grid",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "42MRO",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MITLl",
+                          "fill": "#eaf0f2",
+                          "content": "Nome",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "haAJU",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#ffffff0a",
+                          "cornerRadius": 6,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff1a"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dPmWG",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "I3GMX",
+                          "fill": "#eaf0f2",
+                          "content": "Cognome",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kO4Tf",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#ffffff0a",
+                          "cornerRadius": 6,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff1a"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "d6aCY",
+                  "name": "field-email",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ALPQT",
+                      "fill": "#eaf0f2",
+                      "content": "Email",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GzNn4",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "#ffffff0a",
+                      "cornerRadius": 6,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff1a"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MjiSW",
+                  "name": "field-password",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "2n2dP",
+                      "fill": "#eaf0f2",
+                      "content": "Password",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "1du1D",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "#ffffff0a",
+                      "cornerRadius": 6,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff1a"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "faY1C",
+                  "name": "field-confirm-password",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mLXdG",
+                      "fill": "#eaf0f2",
+                      "content": "Conferma Password",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "5L2IH",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "#ffffff0a",
+                      "cornerRadius": 6,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff1a"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "0yiAq",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ey9AD",
+                      "fill": "#ffffff",
+                      "content": "Registrati",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "a7rKZ",
+                  "name": "login-link-row",
+                  "width": "fill_container",
+                  "gap": 4,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TazSs",
+                      "fill": "#a5afb4",
+                      "content": "Hai già un account?",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EI6UZ",
+                      "fill": "#02b3bf",
+                      "content": "Accedi",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "6pABg",
+          "name": "ScreenSet / Registrati · Mobile · Loading",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "0K2Hd",
+              "name": "rgLc",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "7itWf",
+                  "fill": "#eaf0f2",
+                  "content": "Crea il tuo account",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "xoHLz",
+                  "fill": "#a5afb4",
+                  "content": "Caricamento...",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "TWLVy",
+                  "fill": "#ffffff05",
+                  "width": "fill_container",
+                  "height": 200
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mABOB",
+          "name": "ScreenSet / Registrati · Mobile · Error",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "WACay",
+              "name": "rgEc",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "DR6k2",
+                  "fill": "#eaf0f2",
+                  "content": "Crea il tuo account",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "7BIca",
+                  "name": "errRg",
+                  "width": "fill_container",
+                  "fill": "#ff3b301a",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ff3b3033"
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wtHSu",
+                      "fill": "#ff3b30",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "Le password non corrispondono",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "VZXCO",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mzTLI",
+          "name": "ScreenSet / Registrati · Mobile · Success",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "bHs0i",
+              "name": "rgSc",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "tzyo4",
+                  "fill": "#eaf0f2",
+                  "content": "Account creato",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "AOejk",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Abbiamo inviato un'email di conferma…",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Kf1uT",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Clicca sul link nell'email per attivare l'account. Poi accedi per completare il profilo.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "6BA2U",
+                  "name": "btnV",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "llIMz",
+                      "fill": "#ffffff",
+                      "content": "Vai al login",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "3FlEb",
+                  "fill": "#a5afb4",
+                  "content": "Invia di nuovo l'email di conferma",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "noTNg",
+          "name": "ScreenSet / Forgot Password · Mobile · Default",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "pqWJ1",
+              "name": "fgC",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 180,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#18181bf2",
+                    "position": 0
+                  },
+                  {
+                    "color": "#000000cc",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "psLSC",
+                  "fill": "#a5afb4",
+                  "content": "Torna al Login",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "6s9n1",
+                  "fill": "#eaf0f2",
+                  "content": "Password dimenticata?",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "cvalr",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Inserisci la tua email e ti invieremo le istruzioni per reimpostare la password.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Mg851",
+                  "fill": "#eaf0f2",
+                  "content": "Email",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "oNH4e",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "frame",
+                  "id": "qCHvk",
+                  "name": "fgBtn",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bs3yb",
+                      "fill": "#ffffff",
+                      "content": "Invia istruzioni",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "YLayX",
+                  "fill": "#a5afb4",
+                  "content": "Ricordi la password? Accedi",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "OxLf1",
+          "name": "ScreenSet / Forgot Password · Mobile · Loading",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "vmpZc",
+              "name": "fc1",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XVLUo",
+                  "fill": "#eaf0f2",
+                  "content": "Password dimenticata?",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "D2PsK",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "text",
+                  "id": "V3Zi2",
+                  "fill": "#a5afb4",
+                  "content": "Invio in corso…",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nCztO",
+          "name": "ScreenSet / Forgot Password · Mobile · Success",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nmtW0",
+              "name": "fs",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "d3IWa",
+                  "fill": "#eaf0f2",
+                  "content": "Email inviata!",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "EU00k",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Controlla la tua casella email e segui le istruzioni per reimpostare la password.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "qxQmn",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Non hai ricevuto l'email? Controlla anche la cartella spam.",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "Pn5cl",
+                  "name": "fsb",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VnOOd",
+                      "fill": "#ffffff",
+                      "content": "Torna al Login",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "RwmWA",
+          "name": "ScreenSet / Forgot Password · Mobile · Error",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "KywW9",
+              "name": "fe",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nzVNt",
+                  "fill": "#eaf0f2",
+                  "content": "Password dimenticata?",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "MM0Fu",
+                  "name": "erF",
+                  "width": "fill_container",
+                  "fill": "#ff3b301a",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ff3b3033"
+                  },
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VTbOZ",
+                      "fill": "#ff3b30",
+                      "content": "Errore",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "p6qi9",
+                      "fill": "#ff3b30e6",
+                      "content": "Errore durante l'invio della richiesta",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "FXBPl",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "k7hrh",
+          "name": "ScreenSet / Reset Password · Mobile · Loading (Verifica link)",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "cy8Pr",
+              "name": "rk",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "yBaST",
+                  "fill": "#eaf0f2",
+                  "content": "Verifica link...",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "MfM4l",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Stiamo verificando il tuo link di reset password.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "9IbcG",
+          "name": "ScreenSet / Reset Password · Mobile · Error (url)",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "lQdE8",
+              "name": "re",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Kzamj",
+                  "fill": "#eaf0f2",
+                  "content": "Link non valido",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "VAUF6",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Il link di reset password è scaduto. Richiedi un nuovo link.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "XS0hp",
+                  "name": "rb1",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Q025l",
+                      "fill": "#ffffff",
+                      "content": "Richiedi nuovo link",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "osPHf",
+                  "fill": "#a5afb4",
+                  "content": "Torna al Login (outline)",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gTH0D",
+          "name": "ScreenSet / Reset Password · Mobile · Default",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "LVbiu",
+              "name": "rd",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "A4apG",
+                  "fill": "#a5afb4",
+                  "content": "Torna al Login",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "2Dlpr",
+                  "fill": "#eaf0f2",
+                  "content": "Imposta nuova password",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "2xRKQ",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "Inserisci una nuova password sicura per il tuo account.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "vqWvB",
+                  "fill": "#eaf0f2",
+                  "content": "Nuova Password",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "cCOOL",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "text",
+                  "id": "oMMMK",
+                  "fill": "#eaf0f2",
+                  "content": "Conferma Password",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "ckq8y",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "frame",
+                  "id": "OVqBx",
+                  "name": "rbU",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kXP71",
+                      "fill": "#ffffff",
+                      "content": "Aggiorna Password",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "WMyCw",
+                  "fill": "#a5afb4",
+                  "content": "La password deve essere di almeno 6 caratteri",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "7gsQz",
+          "name": "ScreenSet / Reset Password · Mobile · Loading submit",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "w91DJ",
+              "name": "rl",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FRBq5",
+                  "fill": "#eaf0f2",
+                  "content": "Imposta nuova password",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "TIdIb",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "agP9a",
+                  "fill": "#ffffff0a",
+                  "width": "fill_container",
+                  "height": 44
+                },
+                {
+                  "type": "text",
+                  "id": "GEURK",
+                  "fill": "#a5afb4",
+                  "content": "Aggiornamento in corso…",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "6LJGT",
+          "name": "ScreenSet / Reset Password · Mobile · Success",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "wVF6y",
+              "name": "ro",
+              "width": "fill_container",
+              "fill": "#121820",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "PaokP",
+                  "fill": "#eaf0f2",
+                  "content": "Password aggiornata!",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "tTGts",
+                  "fill": "#a5afb4",
+                  "textGrowth": "fixed-width",
+                  "width": 300,
+                  "content": "La tua password è stata aggiornata con successo. Verrai reindirizzato al login tra pochi secondi.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "SDOJz",
+                  "name": "rob",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0d9488",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0891b2",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gII9U",
+                      "fill": "#ffffff",
+                      "content": "Vai al Login",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "9ypsF",
+          "name": "ScreenSet / Welcome · Mobile · Loading",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "2pAYT",
+              "name": "wc",
+              "width": 300,
+              "fill": "#10171ce6",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff14"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "DARyt",
+                  "fill": "#a5afb4",
+                  "content": "Caricamento...",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "8rBsy",
+          "name": "ScreenSet / Welcome · Mobile · Default",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "XIr5K",
+              "name": "wh",
+              "width": "fill_container",
+              "height": 52,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": [
+                8,
+                16
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "gyzrn",
+                  "fill": "#a5afb4",
+                  "content": "Torna all'app",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "oe4cx",
+                  "fill": "#eaf0f2",
+                  "content": "logo /logo.svg",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "CM2Ig",
+              "fill": "#a5afb4",
+              "content": "Passo 1 di 15",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "LHbT0",
+              "fill": "#eaf0f2",
+              "content": "Welcome in 22 Club!",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "zwCzi",
+              "fill": "#a5afb4",
+              "textGrowth": "fixed-width",
+              "width": 320,
+              "content": "È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "br2kG",
+          "name": "ScreenSet / Welcome · Mobile · Error",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "dwPRY",
+              "fill": "#ff3b30",
+              "textGrowth": "fixed-width",
+              "width": 320,
+              "content": "Messaggio da stepError / completeError (testo runtime)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HZ4iI",
+          "name": "ScreenSet / Post Login · Mobile · Loading",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "K2Et6",
+              "name": "spinner",
+              "width": 32,
+              "height": 32,
+              "fill": "#00000000",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "center",
+                "thickness": 2,
+                "fill": "#02b3bf"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "yPY65",
+          "name": "ScreenSet / Privacy · Mobile · Default",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "RY93d",
+              "name": "header",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Eoknz",
+                  "fill": "#a5afb4",
+                  "content": "Torna indietro",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "r2ayB",
+                  "fill": "#eaf0f2",
+                  "content": "logo h-10 w-auto",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "qok93",
+                  "name": "spacer-w-24",
+                  "width": 96,
+                  "height": 12
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IEWwY",
+              "name": "pm",
+              "width": "fill_container",
+              "height": 700,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Td0Jw",
+                  "name": "pmc",
+                  "width": "fill_container",
+                  "fill": "#121820",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "4d2od",
+                      "fill": "#eaf0f2",
+                      "content": "1. Titolare del trattamento  ▾",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "2xVqB",
+                      "fill": "#eaf0f2",
+                      "content": "2. Tipologie di dati trattati  ▾",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "8co1F",
+                      "fill": "#6c757d",
+                      "content": "… PrivacyAccordion",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "EYbK7",
+          "name": "ScreenSet / Privacy · Mobile · Loading",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "b6sbr",
+              "name": "plh",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 16,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "liIpn",
+                  "fill": "#ffffff14",
+                  "width": 112,
+                  "height": 20
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "W9luN",
+                  "fill": "#ffffff0f",
+                  "width": 120,
+                  "height": 40
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lzN8n",
+              "name": "pm2",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "GfuXy",
+                  "fill": "#ffffff05",
+                  "width": "fill_container",
+                  "height": 280,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "1JSDW",
+          "name": "ScreenSet / Termini · Mobile · Default",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Qs5ZU",
+              "name": "th",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FVVv1",
+                  "fill": "#a5afb4",
+                  "content": "Torna indietro",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "vIErz",
+                  "fill": "#eaf0f2",
+                  "content": "logo",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "HeZy6",
+                  "name": "spacer-termini",
+                  "width": 96,
+                  "height": 12
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RSeC4",
+              "name": "tm",
+              "width": "fill_container",
+              "height": 700,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "YnLd2",
+                  "name": "tmc",
+                  "width": "fill_container",
+                  "fill": "#121820",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fkgav",
+                      "fill": "#eaf0f2",
+                      "content": "Termini e Condizioni di utilizzo",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EN9SC",
+                      "fill": "#eaf0f2",
+                      "content": "1. Oggetto  ▾",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EL7h4",
+                      "fill": "#eaf0f2",
+                      "content": "2. Registrazione e account  ▾",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mCzyZ",
+          "name": "ScreenSet / Termini · Mobile · Loading",
+          "width": 360,
+          "height": 800,
+          "fill": "#0d0d0d",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fU0Gn",
+              "name": "tl",
+              "width": "fill_container",
+              "height": 56,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "#ffffff1a"
+              },
+              "padding": 16,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "X3hQK",
+                  "fill": "#ffffff14",
+                  "width": 112,
+                  "height": 20
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 6,
+                  "id": "UUnPi",
+                  "fill": "#ffffff0f",
+                  "width": 120,
+                  "height": 40
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 8,
+              "id": "1Rfhc",
+              "fill": "#ffffff05",
+              "width": "fill_container",
+              "height": 300,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "01Public-st",
+      "x": -6573,
+      "y": -590,
+      "name": "04_States",
+      "width": 1440,
+      "height": 4200,
+      "fill": "#eef2ff",
+      "layout": "vertical",
+      "gap": 20,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "aL1GX",
+          "name": "state_notes",
+          "fill": "#312e81",
+          "textGrowth": "fixed-width",
+          "width": 1300,
+          "content": "state_not_found_in_code:\n- / (root): Mobile/Tablet/Desktop Loading·Error (solo redirect)\n- /login: Tablet / Error (solo Mobile+Desktop in codice UI)\n- /registrati: Tablet / Error (stesso form; nessun layout dedicato)\n- /forgot-password: Tablet / Loading (stesso form inline)\n- /post-login: solo spinner (stesso stato tutti i viewport)\n- /privacy /termini: Error UI non presente\n- Overlay Dialog/Drawer: assenti nel codice auth pubblico",
+          "lineHeight": 1.45,
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "01Public-ov",
+      "x": -4609,
+      "y": -420,
+      "name": "05_Overlays",
+      "width": 1440,
+      "height": 420,
+      "fill": "#ecfdf5",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "x5IdJ",
+          "name": "ovNote",
+          "fill": "#14532d",
+          "textGrowth": "fixed-width",
+          "width": 900,
+          "content": "Auth pubblico: nessun Dialog/Drawer nel codice analizzato → state_not_found_in_code per Overlay.",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "01Public-mx",
+      "x": -4350,
+      "y": 1070,
+      "name": "06_Inventory_Matrix",
+      "width": 2800,
+      "height": 880,
+      "fill": "#fffbeb",
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "01Public-mh",
+          "name": "matrix_header",
+          "fill": "#78350f",
+          "content": "Route | Desktop | Tablet | Mobile | Loading | Empty | Error | Overlays | Status | Notes",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "01Public-mb",
+          "name": "matrix_body",
+          "fill": "#92400e",
+          "textGrowth": "fixed-width",
+          "width": 2600,
+          "content": "Route | Mobile | Tablet | Desktop | Loading | Error | Overlay | Status | Notes\n/ | n/a | note | note | n/a | n/a | n/a | captured | redirect\n/login | recon | recon | recon | yes | yes | n/a | reconstructed | Tablet/Err N/A\n/registrati | recon+success | recon | recon | yes | yes | n/a | reconstructed |\n/forgot-password | recon | recon | recon | inline | yes | n/a | reconstructed | +success\n/reset-password | recon | recon | recon | yes | url+form | n/a | reconstructed |\n/welcome | recon | recon | recon | yes | yes | n/a | reconstructed | 15 steps\n/post-login | spinner | spinner | spinner | n/a | n/a | n/a | reconstructed |\n/privacy | recon | recon | recon | LegalDocSkel | n/a | n/a | reconstructed |\n/termini | recon | recon | recon | LegalDocSkel | n/a | n/a | reconstructed |",
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "color.bg": {
+      "type": "color",
+      "value": "#0d0d0d"
+    },
+    "color.text.primary": {
+      "type": "color",
+      "value": "#EAF0F2"
+    },
+    "color.text.secondary": {
+      "type": "color",
+      "value": "#A5AFB4"
+    },
+    "color.text.muted": {
+      "type": "color",
+      "value": "#6C757D"
+    },
+    "color.primary": {
+      "type": "color",
+      "value": "#02B3BF"
+    },
+    "color.border.white10": {
+      "type": "color",
+      "value": "#FFFFFF1A"
+    },
+    "color.surface.zinc800": {
+      "type": "color",
+      "value": "#27272a"
+    },
+    "color.surface.zinc900": {
+      "type": "color",
+      "value": "#18181b"
+    },
+    "color.black.70": {
+      "type": "color",
+      "value": "#000000B3"
+    },
+    "color.cyan.500": {
+      "type": "color",
+      "value": "#06b6d4"
+    },
+    "color.slate.600": {
+      "type": "color",
+      "value": "#475569"
+    },
+    "color.error": {
+      "type": "color",
+      "value": "#FF3B30"
+    },
+    "color.red.500": {
+      "type": "color",
+      "value": "#ef4444"
+    },
+    "radius.input": {
+      "type": "number",
+      "value": 12
+    },
+    "radius.card": {
+      "type": "number",
+      "value": 16
+    },
+    "radius.panel": {
+      "type": "number",
+      "value": 24
+    },
+    "radius.pill": {
+      "type": "number",
+      "value": 9999
+    }
+  }
+}

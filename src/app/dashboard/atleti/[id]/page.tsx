@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, lazy, Suspense } from 'react'
-import { useParams } from 'next/navigation'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 import { useRouter } from 'next/navigation'
 import { ErrorState } from '@/components/dashboard/error-state'
 import { LoadingState } from '@/components/dashboard/loading-state'
@@ -31,11 +31,11 @@ function formatDate(dateString: string | null): string {
   }
 }
 
-export default function AtletaPage() {
-  const params = useParams()
+export default function AtletaPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: rawId } = useResolvedParams(params)
   const router = useRouter()
   const { role } = useAuth()
-  const id = typeof params?.id === 'string' ? params.id : null
+  const id = typeof rawId === 'string' ? rawId : null
   const [showModifica, setShowModifica] = useState(false)
   const canEdit = role === 'trainer' || role === 'admin'
 

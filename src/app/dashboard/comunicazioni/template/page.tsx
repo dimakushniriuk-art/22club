@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import {
   Button,
@@ -16,6 +16,10 @@ import {
 } from '@/components/ui'
 import { ArrowLeft, Code2 } from 'lucide-react'
 import { generateEmailHTML } from '@/lib/communications/email-template'
+import { useAuth } from '@/providers/auth-provider'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { loadFormDraft } from '@/lib/browser-form-draft'
+import { useToast } from '@/components/ui/toast'
 
 const DEFAULT_TITLE = 'Esempio: Benvenuto in 22Club'
 const DEFAULT_MESSAGE =
@@ -60,7 +64,37 @@ body{ margin:0; padding:0; background:#000000; font-family:-apple-system,BlinkMa
 </body>
 </html>`
 
+type ComunicazioniTemplateDraft = {
+  title: string
+  message: string
+  athleteName: string
+  orgName: string
+  infoBlock: string
+  ctaLink: string
+  ctaText: string
+  logoUrl: string
+  customHtml: string
+  editorTab: 'campi' | 'html'
+}
+
+function isMeaningfulTemplateDraft(p: ComunicazioniTemplateDraft): boolean {
+  return (
+    p.title.trim() !== DEFAULT_TITLE ||
+    p.message.trim() !== DEFAULT_MESSAGE ||
+    p.athleteName.trim() !== DEFAULT_ATHLETE_NAME ||
+    p.orgName.trim() !== '22Club' ||
+    Boolean(p.infoBlock.trim()) ||
+    Boolean(p.ctaLink.trim()) ||
+    Boolean(p.ctaText.trim()) ||
+    Boolean(p.logoUrl.trim()) ||
+    Boolean(p.customHtml.trim())
+  )
+}
+
 export default function ComunicazioniTemplatePage() {
+  const { user } = useAuth()
+  const { addToast } = useToast()
+  const draftRestoreRan = useRef(false)
   const [title, setTitle] = useState(DEFAULT_TITLE)
   const [message, setMessage] = useState(DEFAULT_MESSAGE)
   const [athleteName, setAthleteName] = useState(DEFAULT_ATHLETE_NAME)
@@ -71,6 +105,71 @@ export default function ComunicazioniTemplatePage() {
   const [logoUrl, setLogoUrl] = useState('')
   const [customHtml, setCustomHtml] = useState('')
   const [editorTab, setEditorTab] = useState<'campi' | 'html'>('campi')
+
+  const templateDraftPayload = useMemo(
+    (): ComunicazioniTemplateDraft => ({
+      title,
+      message,
+      athleteName,
+      orgName,
+      infoBlock,
+      ctaLink,
+      ctaText,
+      logoUrl,
+      customHtml,
+      editorTab,
+    }),
+    [
+      title,
+      message,
+      athleteName,
+      orgName,
+      infoBlock,
+      ctaLink,
+      ctaText,
+      logoUrl,
+      customHtml,
+      editorTab,
+    ],
+  )
+
+  const meaningfulTemplateCb = useCallback(
+    (p: ComunicazioniTemplateDraft) => isMeaningfulTemplateDraft(p),
+    [],
+  )
+
+  useBrowserFormDraft({
+    feature: 'comunicazioni-template',
+    scope: user?.user_id ?? null,
+    value: templateDraftPayload,
+    isMeaningful: meaningfulTemplateCb,
+    restoreEnabled: false,
+  })
+
+  useEffect(() => {
+    const uid = user?.user_id
+    if (!uid || draftRestoreRan.current) return
+    draftRestoreRan.current = true
+    const env = loadFormDraft<ComunicazioniTemplateDraft>('comunicazioni-template', uid)
+    if (env && isMeaningfulTemplateDraft(env.payload)) {
+      const p = env.payload
+      setTitle(p.title)
+      setMessage(p.message)
+      setAthleteName(p.athleteName)
+      setOrgName(p.orgName)
+      setInfoBlock(p.infoBlock)
+      setCtaLink(p.ctaLink)
+      setCtaText(p.ctaText)
+      setLogoUrl(p.logoUrl)
+      setCustomHtml(p.customHtml)
+      setEditorTab(p.editorTab === 'html' ? 'html' : 'campi')
+      addToast({
+        title: 'Bozza recuperata',
+        message: 'Ripristinati i campi del template salvati nel browser.',
+        variant: 'success',
+      })
+    }
+  }, [user?.user_id, addToast])
 
   const metadata = useMemo(
     () => ({

@@ -3,8 +3,32 @@ import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type { Database } from '@/lib/supabase/types'
+import {
+  DEFAULT_EXERCISE_CATEGORY,
+  EXERCISE_CATEGORIES,
+  isExerciseManagerRole,
+} from '@/lib/exercises-data'
+import {
+  validateExerciseThumbUrl,
+  validateExerciseVideoUrl,
+} from '@/lib/validations/exercise-media-urls'
 
 const logger = createLogger('api:exercises')
+
+type ProfileStaffRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'org_id_text' | 'role'>
+
+function parseCategoryInput(
+  raw: unknown,
+): { ok: true; value: string } | { ok: false; error: string } {
+  if (raw === undefined || raw === null || raw === '') {
+    return { ok: true, value: DEFAULT_EXERCISE_CATEGORY }
+  }
+  if (typeof raw !== 'string') return { ok: false, error: 'Categoria non valida' }
+  const t = raw.trim()
+  if (!t) return { ok: true, value: DEFAULT_EXERCISE_CATEGORY }
+  if ((EXERCISE_CATEGORIES as readonly string[]).includes(t)) return { ok: true, value: t }
+  return { ok: false, error: 'Categoria esercizio non riconosciuta' }
+}
 
 /**
  * GET /api/exercises
@@ -55,49 +79,91 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = (await request.json()) as Record<string, unknown>
 
-    // Valida campi obbligatori
-    if (!body.name) {
+    if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
       return NextResponse.json({ error: 'Nome esercizio richiesto' }, { status: 400 })
     }
 
-    // Ottieni il profilo dello staff corrente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'org_id_text'>
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, org_id, org_id_text')
+      .select('id, org_id, org_id_text, role')
       .eq('user_id', session.user.id)
       .single()
 
     if (profileError || !profile) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
-    const profileTyped = profile as ProfileRow
+    const profileTyped = profile as ProfileStaffRow
 
-    // muscle_group: form invia muscle_group (string), API accetta anche muscle_groups (array)
+    if (!isExerciseManagerRole(profileTyped.role)) {
+      return NextResponse.json(
+        { error: 'Permesso negato: solo trainer, PT o admin possono creare esercizi.' },
+        { status: 403 },
+      )
+    }
+
     const muscleGroupValue =
       body.muscle_groups !== undefined
         ? Array.isArray(body.muscle_groups)
           ? body.muscle_groups.join(', ')
-          : body.muscle_groups
+          : String(body.muscle_groups)
         : body.muscle_group !== undefined
           ? typeof body.muscle_group === 'string'
             ? body.muscle_group
             : String(body.muscle_group)
           : null
 
+    const trimmedMg = typeof muscleGroupValue === 'string' ? muscleGroupValue.trim() : ''
+    if (!trimmedMg) {
+      return NextResponse.json({ error: 'Gruppo muscolare richiesto' }, { status: 400 })
+    }
+
+    const catParsed = parseCategoryInput(body.category)
+    if (!catParsed.ok) {
+      return NextResponse.json({ error: catParsed.error }, { status: 400 })
+    }
+
+    let difficulty: 'bassa' | 'media' | 'alta' = 'media'
+    if (body.difficulty === 'bassa' || body.difficulty === 'media' || body.difficulty === 'alta') {
+      difficulty = body.difficulty
+    }
+
+    const videoErr = validateExerciseVideoUrl(
+      typeof body.video_url === 'string' ? body.video_url : null,
+    )
+    if (videoErr) {
+      return NextResponse.json({ error: videoErr }, { status: 400 })
+    }
+    const thumbErr = validateExerciseThumbUrl(
+      typeof body.thumb_url === 'string' ? body.thumb_url : null,
+    )
+    if (thumbErr) {
+      return NextResponse.json({ error: thumbErr }, { status: 400 })
+    }
+
+    let durationSeconds: number | null = null
+    if (body.duration_seconds !== undefined && body.duration_seconds !== null) {
+      const n = Number(body.duration_seconds)
+      if (!Number.isFinite(n) || n < 0) {
+        return NextResponse.json({ error: 'Durata (secondi) non valida' }, { status: 400 })
+      }
+      durationSeconds = Math.round(n)
+    }
+
     const exerciseData: Database['public']['Tables']['exercises']['Insert'] = {
-      name: body.name,
-      description: body.description || null,
-      muscle_group: muscleGroupValue,
-      equipment: body.equipment || null,
-      difficulty: body.difficulty || null,
-      video_url: body.video_url || null,
-      image_url: body.image_url || null,
-      thumb_url: body.thumb_url || null,
+      name: body.name.trim(),
+      description: typeof body.description === 'string' ? body.description || null : null,
+      muscle_group: trimmedMg,
+      equipment: typeof body.equipment === 'string' ? body.equipment || null : null,
+      difficulty,
+      category: catParsed.value,
+      duration_seconds: durationSeconds,
+      video_url: typeof body.video_url === 'string' ? body.video_url || null : null,
+      image_url: typeof body.image_url === 'string' ? body.image_url || null : null,
+      thumb_url: typeof body.thumb_url === 'string' ? body.thumb_url || null : null,
       created_by_profile_id: profileTyped.id,
-      org_id: profileTyped.org_id ?? undefined,
+      org_id: profileTyped.org_id,
       org_id_text:
         profileTyped.org_id_text != null && profileTyped.org_id_text !== ''
           ? profileTyped.org_id_text
@@ -138,30 +204,36 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = (await request.json()) as Record<string, unknown>
 
-    if (!body.id) {
+    if (!body.id || typeof body.id !== 'string') {
       return NextResponse.json({ error: 'ID esercizio richiesto' }, { status: 400 })
     }
+    const exerciseId = body.id
 
-    // Verifica che l'esercizio esista e appartenga all'organizzazione dell'utente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'org_id_text'>
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, org_id, org_id_text')
+      .select('id, org_id, org_id_text, role')
       .eq('user_id', session.user.id)
       .single()
 
     if (!profile) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
-    const profileTyped = profile as ProfileRow
+    const profileTyped = profile as ProfileStaffRow
+
+    if (!isExerciseManagerRole(profileTyped.role)) {
+      return NextResponse.json(
+        { error: 'Permesso negato: solo trainer, PT o admin possono modificare esercizi.' },
+        { status: 403 },
+      )
+    }
 
     type ExerciseRow = Pick<Tables<'exercises'>, 'id' | 'org_id' | 'org_id_text'>
     const { data: existingExercise, error: fetchError } = await supabase
       .from('exercises')
       .select('id, org_id, org_id_text')
-      .eq('id', body.id)
+      .eq('id', exerciseId)
       .single()
 
     if (fetchError || !existingExercise) {
@@ -174,27 +246,98 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
     }
 
+    if (body.video_url !== undefined) {
+      const ve = validateExerciseVideoUrl(
+        typeof body.video_url === 'string' ? body.video_url : null,
+      )
+      if (ve) return NextResponse.json({ error: ve }, { status: 400 })
+    }
+    if (body.thumb_url !== undefined) {
+      const te = validateExerciseThumbUrl(
+        typeof body.thumb_url === 'string' ? body.thumb_url : null,
+      )
+      if (te) return NextResponse.json({ error: te }, { status: 400 })
+    }
+
     // Prepara i dati per l'aggiornamento
     type ExerciseUpdate = Database['public']['Tables']['exercises']['Update']
     const updateData: ExerciseUpdate = {}
-    if (body.name !== undefined) updateData.name = body.name
-    if (body.description !== undefined) updateData.description = body.description
-    if (body.muscle_groups !== undefined) {
-      updateData.muscle_group = Array.isArray(body.muscle_groups)
-        ? body.muscle_groups.join(', ')
-        : body.muscle_groups
-    } else if (body.muscle_group !== undefined) {
-      updateData.muscle_group =
-        typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group)
+    if (body.name !== undefined) {
+      if (typeof body.name !== 'string' || !body.name.trim()) {
+        return NextResponse.json({ error: 'Nome esercizio non valido' }, { status: 400 })
+      }
+      updateData.name = body.name.trim()
     }
-    if (body.equipment !== undefined) updateData.equipment = body.equipment
-    if (body.difficulty !== undefined) updateData.difficulty = body.difficulty
-    if (body.video_url !== undefined) updateData.video_url = body.video_url
-    if (body.image_url !== undefined) updateData.image_url = body.image_url
-    if (body.thumb_url !== undefined) updateData.thumb_url = body.thumb_url
-    if (body.category !== undefined) updateData.category = body.category
+    if (body.description !== undefined) {
+      if (body.description === null) {
+        updateData.description = null
+      } else {
+        updateData.description =
+          typeof body.description === 'string'
+            ? body.description || null
+            : String(body.description ?? '')
+      }
+    }
+    if (body.muscle_groups !== undefined) {
+      const joined = Array.isArray(body.muscle_groups)
+        ? body.muscle_groups.join(', ')
+        : String(body.muscle_groups)
+      updateData.muscle_group = joined.trim()
+    } else if (body.muscle_group !== undefined) {
+      updateData.muscle_group = (
+        typeof body.muscle_group === 'string' ? body.muscle_group : String(body.muscle_group)
+      ).trim()
+    }
+    if (body.muscle_group !== undefined || body.muscle_groups !== undefined) {
+      const mg = updateData.muscle_group
+      if (typeof mg === 'string' && !mg.trim()) {
+        return NextResponse.json(
+          { error: 'Gruppo muscolare non può essere vuoto' },
+          { status: 400 },
+        )
+      }
+    }
+    if (body.equipment !== undefined) {
+      updateData.equipment =
+        typeof body.equipment === 'string' ? body.equipment || null : String(body.equipment)
+    }
+    if (body.difficulty !== undefined) {
+      if (
+        body.difficulty === 'bassa' ||
+        body.difficulty === 'media' ||
+        body.difficulty === 'alta'
+      ) {
+        updateData.difficulty = body.difficulty
+      } else {
+        return NextResponse.json({ error: 'Difficoltà non valida' }, { status: 400 })
+      }
+    }
+    if (body.video_url !== undefined) {
+      updateData.video_url = typeof body.video_url === 'string' ? body.video_url || null : null
+    }
+    if (body.image_url !== undefined) {
+      updateData.image_url = typeof body.image_url === 'string' ? body.image_url || null : null
+    }
+    if (body.thumb_url !== undefined) {
+      updateData.thumb_url = typeof body.thumb_url === 'string' ? body.thumb_url || null : null
+    }
+    if (body.category !== undefined) {
+      const catParsed = parseCategoryInput(body.category)
+      if (!catParsed.ok) {
+        return NextResponse.json({ error: catParsed.error }, { status: 400 })
+      }
+      updateData.category = catParsed.value
+    }
     if (body.duration_seconds !== undefined) {
-      updateData.duration_seconds = body.duration_seconds
+      if (body.duration_seconds === null) {
+        updateData.duration_seconds = null
+      } else {
+        const n = Number(body.duration_seconds)
+        if (!Number.isFinite(n) || n < 0) {
+          return NextResponse.json({ error: 'Durata (secondi) non valida' }, { status: 400 })
+        }
+        updateData.duration_seconds = Math.round(n)
+      }
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -213,7 +356,7 @@ export async function PUT(request: NextRequest) {
     let { data: exercise, error: updateError } = await supabase
       .from('exercises')
       .update(updatePayload)
-      .eq('id', body.id)
+      .eq('id', exerciseId)
       .select()
       .single()
 
@@ -224,7 +367,7 @@ export async function PUT(request: NextRequest) {
         const retry = await admin
           .from('exercises')
           .update(updatePayload)
-          .eq('id', body.id)
+          .eq('id', exerciseId)
           .select()
           .single()
         exercise = retry.data
@@ -234,7 +377,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Aggiornamento bloccato da RLS (nessuna riga). Correggi le policy UPDATE su public.exercises (vedi supabase/manual_exercises_update_rls.sql) oppure imposta SUPABASE_SERVICE_ROLE_KEY valida in .env.local per il ripiego server-side.',
+              'Aggiornamento bloccato da RLS (nessuna riga). Applica la migration Supabase su public.exercises (policy UPDATE) oppure imposta SUPABASE_SERVICE_ROLE_KEY valida in .env.local per il ripiego server-side.',
           },
           { status: 503 },
         )
@@ -243,7 +386,7 @@ export async function PUT(request: NextRequest) {
 
     if (updateError) {
       logger.error("Errore durante l'aggiornamento dell'esercizio", updateError, {
-        exerciseId: body.id,
+        exerciseId,
         updateData,
       })
       const msg = (updateError.message ?? '').toLowerCase()
@@ -317,18 +460,24 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID esercizio richiesto' }, { status: 400 })
     }
 
-    // Verifica che l'esercizio esista e appartenga all'organizzazione dell'utente
-    type ProfileRow = Pick<Tables<'profiles'>, 'id' | 'org_id'>
+    type ProfileDeleteRow = Pick<Tables<'profiles'>, 'id' | 'org_id' | 'role'>
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, org_id')
+      .select('id, org_id, role')
       .eq('user_id', session.user.id)
       .single()
 
     if (!profile) {
       return NextResponse.json({ error: 'Profilo non trovato' }, { status: 404 })
     }
-    const profileTyped = profile as ProfileRow
+    const profileTyped = profile as ProfileDeleteRow
+
+    if (!isExerciseManagerRole(profileTyped.role)) {
+      return NextResponse.json(
+        { error: 'Permesso negato: solo trainer, PT o admin possono eliminare esercizi.' },
+        { status: 403 },
+      )
+    }
 
     type ExerciseRow = Pick<Tables<'exercises'>, 'id' | 'org_id'>
     const { data: existingExercise, error: fetchError } = await supabase

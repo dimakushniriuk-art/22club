@@ -33,7 +33,7 @@ export function AthleteStatsCards({
   loading = false,
 }: AthleteStatsCardsProps) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:gap-3 min-[834px]:gap-4">
+    <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
       <Card variant="default" className={CARD_DS}>
         <CardContent className="relative p-3 text-center sm:p-4">
           {!hideIcons && (

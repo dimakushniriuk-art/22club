@@ -1,0 +1,7 @@
+{
+  "name": "22Club Code → Figma · App (multi-screen)",
+  "id": "22club-code-to-figma-app",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}

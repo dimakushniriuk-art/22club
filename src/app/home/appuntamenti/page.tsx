@@ -240,7 +240,7 @@ function AppuntamentiPageContent() {
   if (!user || !isValidUser) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6">
           <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
         </div>
       </div>
@@ -250,9 +250,9 @@ function AppuntamentiPageContent() {
   if (isAthlete && statoCliente === 'non_ancora_cliente') {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6 space-y-4">
           <AppuntamentiPageHeader subtitle="Appuntamenti" onBack={handleBack} />
-          <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
+          <Card className="rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 md:p-8 text-center">
             <p className="text-text-primary text-sm font-medium">
               Non hai accesso al calendario. Contatta l&apos;organizzazione per attivare il tuo
               profilo cliente.
@@ -266,9 +266,9 @@ function AppuntamentiPageContent() {
   if (error && !loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6 space-y-4">
+        <div className="min-h-0 flex-1 overflow-auto px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6 space-y-4">
           <AppuntamentiPageHeader onBack={handleBack} />
-          <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 min-[834px]:p-8 text-center">
+          <Card className="rounded-lg border border-state-error/20 bg-state-error/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-6 md:p-8 text-center">
             <div className="mb-3 text-4xl opacity-50">❌</div>
             <p className="text-text-primary mb-4 text-sm font-medium line-clamp-3">
               {typeof error === 'string'
@@ -378,7 +378,7 @@ function AppuntamentiPageContent() {
 
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 flex flex-col px-3 pb-24 safe-area-inset-bottom sm:px-4 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 flex flex-col px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6">
           <AppuntamentiPageHeader
             subtitle="Calendario e appuntamenti con il trainer"
             onBack={handleBack}

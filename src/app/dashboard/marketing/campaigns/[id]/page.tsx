@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Database } from '@/lib/supabase/types'
 import { StaffMarketingSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 type CampaignRow = Database['public']['Tables']['marketing_campaigns']['Row']
 
@@ -38,12 +39,12 @@ function formatDate(s: string | null): string {
   })
 }
 
-export default function CampaignDetailPage() {
+export default function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const params = useParams()
+  const resolved = useResolvedParams(params)
   const supabase = useSupabaseClient()
   const { role, loading: authLoading } = useAuth()
-  const id = typeof params.id === 'string' ? params.id : null
+  const id = typeof resolved.id === 'string' ? resolved.id : null
   const [campaign, setCampaign] = useState<CampaignRow | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -107,7 +108,7 @@ export default function CampaignDetailPage() {
 
   if (error || !campaign) {
     return (
-      <div className="space-y-6 bg-background p-4 min-[834px]:p-6">
+      <div className="space-y-6 bg-background p-4 md:p-6">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/marketing/campaigns">
             <ArrowLeft className="h-4 w-4" />
@@ -121,8 +122,8 @@ export default function CampaignDetailPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
-      <header className="flex flex-col gap-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard/marketing/campaigns">
@@ -130,7 +131,7 @@ export default function CampaignDetailPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-xl font-bold min-[834px]:text-2xl">{campaign.name}</h1>
+            <h1 className="text-xl font-bold md:text-2xl">{campaign.name}</h1>
             <p className="text-sm text-text-secondary">
               {CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'} ·{' '}
               {STATUS_LABELS[campaign.status]}
@@ -150,7 +151,7 @@ export default function CampaignDetailPage() {
           <CardTitle className="text-base text-text-primary">Dettaglio</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-2 text-sm min-[834px]:grid-cols-2">
+          <div className="grid gap-2 text-sm md:grid-cols-2">
             <div>
               <span className="text-text-muted">Canale:</span>{' '}
               {CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'}

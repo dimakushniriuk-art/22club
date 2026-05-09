@@ -33,7 +33,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/shared/ui/skeleton'
-import { ModernKPICard } from '@/components/dashboard/modern-kpi-card'
+import { MetricCard } from '@/components'
 import { notifySuccess, notifyError } from '@/lib/notifications'
 import { createClient } from '@/lib/supabase/client'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
@@ -295,32 +295,32 @@ export function AdminOrganizationsContent() {
 
       {/* Statistiche KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ModernKPICard
+        <MetricCard
           title="Totale Organizzazioni"
           value={stats.total}
           icon={<Building2 className="h-5 w-5" />}
-          color="orange"
+          tone="amber"
           animationDelay="0ms"
         />
-        <ModernKPICard
+        <MetricCard
           title="Totale Utenti"
           value={stats.totalUsers}
           icon={<Users className="h-5 w-5" />}
-          color="blue"
+          tone="blue"
           animationDelay="100ms"
         />
-        <ModernKPICard
+        <MetricCard
           title="Media Utenti/Org"
           value={stats.avgUsersPerOrg}
           icon={<TrendingUp className="h-5 w-5" />}
-          color="green"
+          tone="emerald"
           animationDelay="200ms"
         />
-        <ModernKPICard
+        <MetricCard
           title="Org con Utenti"
           value={stats.orgsWithUsers}
           icon={<User className="h-5 w-5" />}
-          color="purple"
+          tone="purple"
           animationDelay="300ms"
         />
       </div>

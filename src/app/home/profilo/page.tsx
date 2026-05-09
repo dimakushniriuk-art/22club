@@ -34,7 +34,7 @@ const CARD_DS =
 const TABS_SHELL =
   'rounded-2xl border border-white/10 bg-black/35 p-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] backdrop-blur-md sm:p-1.5'
 const MAIN_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary h-auto w-full grid grid-cols-3 gap-0.5 min-h-[48px] sm:gap-1 ${TABS_SHELL}`
-const PROFILE_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary !flex-nowrap max-[851px]:gap-1 ${TABS_SHELL} inline-flex h-auto w-max max-w-none gap-1 min-h-[48px] min-[834px]:mb-0 min-[834px]:grid min-[834px]:w-full min-[834px]:max-w-full min-[834px]:grid-cols-3 min-[834px]:gap-1 min-[834px]:flex-none min-[1100px]:grid-cols-6`
+const PROFILE_TABS_LIST_CLASS = `items-stretch justify-center text-text-tertiary !flex-nowrap max-[851px]:gap-1 ${TABS_SHELL} inline-flex h-auto w-max max-w-none gap-1 min-h-[48px] md:mb-0 md:grid md:w-full md:max-w-full md:grid-cols-3 md:gap-1 md:flex-none lg:grid-cols-6`
 
 const TAB_TRIGGER_CLASS =
   'touch-manipulation text-xs px-2 sm:px-3 py-2.5 sm:py-3 rounded-xl font-medium transition-none data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 flex items-center justify-center gap-1.5 min-h-[44px] min-w-0'
@@ -207,7 +207,7 @@ export default function ProfiloPage() {
   if (statsError && !user) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:px-6">
           <ErrorState
             message={statsError || 'Impossibile caricare il profilo'}
             onRetry={handleRetry}
@@ -220,7 +220,7 @@ export default function ProfiloPage() {
   if (!user || !athleteUserId) {
     return (
       <div className="flex min-h-0 w-full max-w-full flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 min-[834px]:px-6">
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-24 safe-area-inset-bottom sm:px-5 md:px-6">
           <ErrorState message="Utente non trovato" onRetry={handleRetry} />
         </div>
       </div>
@@ -235,8 +235,8 @@ export default function ProfiloPage() {
         subtitle="Informazioni e statistiche"
         onBack={handleBack}
       />
-      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-3 pb-28 pt-1 safe-area-inset-bottom sm:space-y-5 sm:px-4 min-[834px]:space-y-6 min-[834px]:px-6 min-[834px]:pb-24">
-        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto px-3 pb-28 pt-1 safe-area-inset-bottom sm:space-y-5 sm:px-4 md:space-y-6 md:px-6 md:pb-24">
+        <div className="mx-auto w-full max-w-lg lg:max-w-3xl">
           <AthleteProfileHeaderHome user={user} avatarInitials={avatarInitials} />
 
           <div className="mt-4 sm:mt-5">
@@ -245,7 +245,7 @@ export default function ProfiloPage() {
         </div>
 
         {/* Card principale */}
-        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+        <div className="mx-auto w-full max-w-lg lg:max-w-3xl">
           <Card
             className={cn(
               CARD_DS,
@@ -299,7 +299,7 @@ export default function ProfiloPage() {
                     >
                       <div className={PROFILE_TABS_SCROLL}>
                         <TabsList
-                          className={`mb-4 w-full min-w-0 sm:mb-5 min-[834px]:mb-4 ${PROFILE_TABS_LIST_CLASS}`}
+                          className={`mb-4 w-full min-w-0 sm:mb-5 md:mb-4 ${PROFILE_TABS_LIST_CLASS}`}
                         >
                           <TabsTrigger value="anagrafica" className={PROFILE_TAB_TRIGGER_CLASS}>
                             <User className="h-3 w-3 shrink-0" />
@@ -372,12 +372,12 @@ export default function ProfiloPage() {
         </div>
 
         {/* Privacy / cookie */}
-        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+        <div className="mx-auto w-full max-w-lg lg:max-w-3xl">
           <CookiePreferencesSettingRow />
         </div>
 
         {/* Azioni */}
-        <div className="mx-auto w-full max-w-lg min-[1100px]:max-w-3xl">
+        <div className="mx-auto w-full max-w-lg lg:max-w-3xl">
           <div className={`overflow-hidden ${CARD_DS}`}>
             <button
               type="button"

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -65,6 +65,7 @@ import {
   invalidateProgressAnalyticsQueries,
   invalidateProgressPhotosFrequentCache,
 } from '@/lib/react-query/post-mutation-cache'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 const logger = createLogger('app:dashboard:nutrizionista:atleti:[id]')
 
@@ -153,11 +154,15 @@ const ATHLETE_PROFILE_TABS = [
 
 type AthleteProfileTab = (typeof ATHLETE_PROFILE_TABS)[number]
 
-export default function NutrizionistaAtletaProfilePage() {
-  const params = useParams()
+export default function NutrizionistaAtletaProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolved = useResolvedParams(params)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const id = params?.id as string | undefined
+  const id = typeof resolved.id === 'string' ? resolved.id : undefined
   const tabParam = searchParams.get('tab')
   const resolvedTab: AthleteProfileTab = useMemo(
     () => ATHLETE_PROFILE_TABS.find((t) => t === tabParam) ?? 'overview',

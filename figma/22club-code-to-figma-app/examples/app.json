@@ -1,0 +1,10 @@
+{
+  "type": "App",
+  "name": "22Club",
+  "screens": [
+    { "type": "Screen", "name": "Dashboard", "layout": "dashboard_base" },
+    { "type": "Screen", "name": "Abbonamenti", "layout": "table_base" },
+    { "type": "Screen", "name": "Pagamenti", "layout": "table_base" },
+    { "type": "Screen", "name": "Marketing Leads", "layout": "pipeline" }
+  ]
+}

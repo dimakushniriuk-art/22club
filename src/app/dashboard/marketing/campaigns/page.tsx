@@ -114,10 +114,10 @@ export default function MarketingCampaignsPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background p-4 text-text-primary min-[834px]:p-6">
-      <header className="flex flex-col gap-4 min-[834px]:flex-row min-[834px]:items-center min-[834px]:justify-between">
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold min-[834px]:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
             <Megaphone className="h-6 w-6 text-cyan-400" />
             Campagne
           </h1>
@@ -141,7 +141,7 @@ export default function MarketingCampaignsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 min-[834px]:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <Card className="border-border bg-background-secondary/80">
               <CardContent className="p-4">
                 <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
@@ -160,7 +160,7 @@ export default function MarketingCampaignsPage() {
                 <p className="text-2xl font-bold text-emerald-400">{kpis.active}</p>
               </CardContent>
             </Card>
-            <Card className="border-border bg-background-secondary/80 min-[834px]:col-span-1">
+            <Card className="border-border bg-background-secondary/80 md:col-span-1">
               <CardContent className="p-4">
                 <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
                   <Euro className="h-4 w-4" />
@@ -173,8 +173,8 @@ export default function MarketingCampaignsPage() {
             </Card>
           </div>
 
-          <div className="flex flex-col gap-3 min-[834px]:flex-row min-[834px]:items-center">
-            <div className="relative flex-1 min-[834px]:max-w-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1 md:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
               <Input
                 placeholder="Cerca per nome..."

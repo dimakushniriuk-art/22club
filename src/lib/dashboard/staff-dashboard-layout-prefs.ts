@@ -1,5 +1,13 @@
 export const STAFF_DASHBOARD_LAYOUT_STORAGE_KEY = '22club_staff_dashboard_layout_v1'
 
+function staffDashboardLayoutStorageKey(profileId?: string | null): string {
+  return `${STAFF_DASHBOARD_LAYOUT_STORAGE_KEY}:${profileId ?? 'anon'}`
+}
+
+function staffDashboardLayoutSavedAtKey(profileId?: string | null): string {
+  return `${staffDashboardLayoutStorageKey(profileId)}:savedAt`
+}
+
 export const STAFF_DASHBOARD_QUICK_IDS = [
   'workouts',
   'calendar',
@@ -80,6 +88,13 @@ function mergeWidgets(
   return next
 }
 
+export function staffDashboardPrefsEqual(
+  a: StaffDashboardLayoutPrefs,
+  b: StaffDashboardLayoutPrefs,
+): boolean {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
 export function normalizeStaffDashboardLayoutPrefs(raw: unknown): StaffDashboardLayoutPrefs {
   if (raw == null || typeof raw !== 'object') {
     return {
@@ -94,34 +109,70 @@ export function normalizeStaffDashboardLayoutPrefs(raw: unknown): StaffDashboard
   }
 }
 
-export function loadStaffDashboardLayoutPrefs(): StaffDashboardLayoutPrefs {
+export function loadStaffDashboardLayoutPrefs(profileId?: string | null): {
+  prefs: StaffDashboardLayoutPrefs
+  savedAt: string | null
+} {
   if (typeof window === 'undefined') {
     return {
-      quick: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.quick },
-      widgets: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.widgets },
+      prefs: {
+        quick: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.quick },
+        widgets: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.widgets },
+      },
+      savedAt: null,
     }
   }
   try {
-    const stored = window.localStorage.getItem(STAFF_DASHBOARD_LAYOUT_STORAGE_KEY)
-    if (stored == null || stored === '') {
-      return {
+    const key = staffDashboardLayoutStorageKey(profileId)
+    const stored = window.localStorage.getItem(key)
+    const savedAt = window.localStorage.getItem(staffDashboardLayoutSavedAtKey(profileId))
+
+    if (stored != null && stored !== '') {
+      return { prefs: normalizeStaffDashboardLayoutPrefs(JSON.parse(stored) as unknown), savedAt }
+    }
+
+    // Legacy fallback (pre per-profile storage)
+    const legacy = window.localStorage.getItem(STAFF_DASHBOARD_LAYOUT_STORAGE_KEY)
+    if (legacy != null && legacy !== '') {
+      const prefs = normalizeStaffDashboardLayoutPrefs(JSON.parse(legacy) as unknown)
+      // Migrate forward to per-profile key (best effort)
+      try {
+        window.localStorage.setItem(key, JSON.stringify(prefs))
+        if (savedAt) window.localStorage.setItem(staffDashboardLayoutSavedAtKey(profileId), savedAt)
+      } catch {
+        /* ignore */
+      }
+      return { prefs, savedAt: null }
+    }
+
+    return {
+      prefs: {
         quick: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.quick },
         widgets: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.widgets },
-      }
+      },
+      savedAt: null,
     }
-    return normalizeStaffDashboardLayoutPrefs(JSON.parse(stored) as unknown)
   } catch {
     return {
-      quick: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.quick },
-      widgets: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.widgets },
+      prefs: {
+        quick: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.quick },
+        widgets: { ...STAFF_DASHBOARD_LAYOUT_DEFAULTS.widgets },
+      },
+      savedAt: null,
     }
   }
 }
 
-export function saveStaffDashboardLayoutPrefs(prefs: StaffDashboardLayoutPrefs): void {
+export function saveStaffDashboardLayoutPrefs(
+  prefs: StaffDashboardLayoutPrefs,
+  profileId?: string | null,
+  savedAt?: string,
+): void {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(STAFF_DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(prefs))
+    const now = savedAt ?? new Date().toISOString()
+    window.localStorage.setItem(staffDashboardLayoutStorageKey(profileId), JSON.stringify(prefs))
+    window.localStorage.setItem(staffDashboardLayoutSavedAtKey(profileId), now)
   } catch {
     /* ignore quota / private mode */
   }

@@ -1,9 +1,9 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Layers, Play } from 'lucide-react'
 import { AllenamentiPageHeader } from '../../../AllenamentiPageHeader'
 import { Button } from '@/components/ui'
@@ -16,6 +16,13 @@ import { isValidUUID } from '@/lib/utils/type-guards'
 import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
 import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
 import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
+import {
+  workoutsPaneEmbedBodyClass,
+  workoutsPaneEmbedRootClass,
+} from '@/lib/embed/workouts-pane-body-layout'
+import { coalesceWorkoutDayExerciseRest } from '@/lib/workout/scheduled-rest-display'
+import { useResolvedParams } from '@/lib/next/use-resolved-params'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 
 const logger = createLogger('app:home:allenamenti:giorno:page')
 
@@ -43,6 +50,7 @@ type ExerciseRow = {
   target_reps: number | null
   target_weight: number | null
   rest_timer_sec: number | null
+  rest_seconds: number | null
   note: string | null
   circuit_block_id: string | null
   exercises: ExerciseMedia | null
@@ -62,6 +70,14 @@ function isStreamableVideoUrl(u: string | null | undefined): u is string {
   )
 }
 
+/** Poster URL valido per l'attributo `poster` (http(s) o path assoluto same-origin). */
+function videoPosterAttr(raw: string | null | undefined): string | undefined {
+  if (raw == null || raw === '') return undefined
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw
+  if (raw.startsWith('/')) return raw
+  return undefined
+}
+
 function ExercisePreviewMedia({
   exercise,
   name,
@@ -77,34 +93,101 @@ function ExercisePreviewMedia({
   const thumbUrl = exercise?.thumb_url
   const imageUrl = exercise?.image_url
   const posterRaw = thumbUrl || imageUrl || undefined
-  const poster = posterRaw && isStreamableVideoUrl(posterRaw) ? posterRaw : undefined
+  const poster = videoPosterAttr(posterRaw)
   const hasVideo = isStreamableVideoUrl(videoUrl)
   const imageSrc = thumbUrl || imageUrl
-  const showImage = isRemoteOrPathImage(imageSrc) && !hasVideo
+  const stillForVideoUnderlay = hasVideo && isRemoteOrPathImage(imageSrc) ? imageSrc : null
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [shouldAttachVideoSrc, setShouldAttachVideoSrc] = useState(false)
+  const [videoReady, setVideoReady] = useState(false)
+  const [videoFailed, setVideoFailed] = useState(false)
+
+  useEffect(() => {
+    setVideoReady(false)
+    setVideoFailed(false)
+    setShouldAttachVideoSrc(false)
+  }, [exercise?.id, videoUrl])
+
+  useEffect(() => {
+    if (!hasVideo || !videoUrl || videoFailed) return
+    const root = containerRef.current
+    if (!root) return
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setShouldAttachVideoSrc(true)
+            io.disconnect()
+            break
+          }
+        }
+      },
+      { rootMargin: '220px 0px 200px 0px', threshold: 0.01 },
+    )
+    io.observe(root)
+    return () => io.disconnect()
+  }, [hasVideo, videoUrl, videoFailed])
+
+  const previewVideoRef = useAutoplayPreviewVideo({
+    enabled: Boolean(hasVideo && videoUrl && shouldAttachVideoSrc && !videoFailed),
+    pauseWhenOffscreen: true,
+  })
 
   const boxClass = compact
     ? 'relative h-16 w-[5.25rem] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40 sm:h-[4.5rem] sm:w-24'
     : 'relative h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40 sm:h-24 sm:w-36'
 
+  const imageSizes = compact ? '96px' : '144px'
+
   const inner = (
-    <div className={boxClass}>
-      {hasVideo && videoUrl ? (
-        <video
-          src={videoUrl}
-          className="h-full w-full object-cover"
-          poster={poster}
-          preload="metadata"
-          muted
-          playsInline
-          aria-label={`Anteprima video: ${name}`}
-        />
-      ) : showImage && imageSrc ? (
+    <div ref={containerRef} className={boxClass}>
+      {hasVideo && videoUrl && !videoFailed ? (
+        <>
+          {stillForVideoUnderlay ? (
+            <Image
+              src={stillForVideoUnderlay}
+              alt=""
+              fill
+              className={`object-cover transition-opacity duration-200 ${videoReady ? 'opacity-0' : 'opacity-100'}`}
+              sizes={imageSizes}
+              unoptimized={stillForVideoUnderlay.startsWith('http')}
+              aria-hidden
+            />
+          ) : (
+            <div
+              className={`absolute inset-0 flex items-center justify-center bg-white/5 transition-opacity duration-200 ${videoReady ? 'opacity-0' : 'opacity-100'}`}
+              aria-hidden
+            >
+              <Play className="h-6 w-6 text-cyan-400/50" aria-hidden />
+            </div>
+          )}
+          {shouldAttachVideoSrc ? (
+            <video
+              ref={previewVideoRef}
+              src={videoUrl}
+              className={`relative z-10 h-full w-full object-cover transition-opacity duration-200 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+              poster={poster}
+              preload="metadata"
+              muted
+              loop
+              playsInline
+              autoPlay
+              onLoadedData={() => setVideoReady(true)}
+              onCanPlay={() => setVideoReady(true)}
+              onError={() => setVideoFailed(true)}
+              aria-label={`Anteprima video: ${name}`}
+            />
+          ) : null}
+        </>
+      ) : isRemoteOrPathImage(imageSrc) ? (
         <Image
           src={imageSrc}
           alt={name}
           fill
           className="object-cover"
-          sizes={compact ? '96px' : '144px'}
+          sizes={imageSizes}
           unoptimized={imageSrc.startsWith('http')}
         />
       ) : (
@@ -200,19 +283,28 @@ function ExerciseExecutionExpand({
 export function GiornoPreviewContent({
   workoutPlanIdOverride,
   dayIdOverride,
+  routeParams,
 }: {
   workoutPlanIdOverride?: string
   dayIdOverride?: string
-} = {}) {
+  routeParams: Promise<{ id?: string; dayId?: string }>
+}) {
   const router = useRouter()
-  const params = useParams()
-  const planId = workoutPlanIdOverride ?? (typeof params?.id === 'string' ? params.id : null)
-  const dayId = dayIdOverride ?? (typeof params?.dayId === 'string' ? params.dayId : null)
+  const resolved = useResolvedParams(routeParams)
+  const planId = workoutPlanIdOverride ?? (typeof resolved.id === 'string' ? resolved.id : null)
+  const dayId = dayIdOverride ?? (typeof resolved.dayId === 'string' ? resolved.dayId : null)
   const { loading: authLoading } = useAuth()
   const supabase = useSupabaseClient()
   const { pathBase } = useAthleteAllenamentiPaths()
   const workoutsPane = useWorkoutsPaneOptional()
+  const workoutsPaneNaturalFlow = Boolean(workoutsPane)
   const { athleteProfileId } = useResolvedAthleteProfileForAllenamenti()
+
+  const giornoScrollBodyClass = workoutsPaneEmbedBodyClass(
+    workoutsPaneNaturalFlow,
+    undefined,
+    'px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 md:px-6 md:pb-28 md:pt-6',
+  )
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -304,6 +396,7 @@ export function GiornoPreviewContent({
             target_reps,
             target_weight,
             rest_timer_sec,
+            rest_seconds,
             note,
             circuit_block_id,
             exercises ( id, name, muscle_group, description, video_url, thumb_url, image_url )
@@ -353,18 +446,18 @@ export function GiornoPreviewContent({
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
+      <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
         <AllenamentiPageHeader onBack={backToScheda} />
-        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6" />
+        <div className={giornoScrollBodyClass} />
       </div>
     )
   }
 
   if (error || !planId || !dayId) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
+      <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
         <AllenamentiPageHeader onBack={() => router.push(pathBase)} />
-        <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6">
+        <div className={giornoScrollBodyClass}>
           <p className="pt-2 text-sm text-text-secondary">{error ?? 'Contenuto non disponibile'}</p>
         </div>
       </div>
@@ -372,15 +465,15 @@ export function GiornoPreviewContent({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
+    <div className={workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow)}>
       <AllenamentiPageHeader
         title={dayLabel}
         subtitle={planName}
         onBack={backToScheda}
         withBottomMargin
       />
-      <div className="min-h-0 flex-1 overflow-auto px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 min-[834px]:px-6 min-[834px]:pb-28 min-[834px]:pt-6">
-        <div className="mx-auto w-full max-w-lg space-y-5 sm:space-y-6 min-[1100px]:max-w-3xl">
+      <div className={giornoScrollBodyClass}>
+        <div className="mx-auto w-full max-w-lg space-y-5 sm:space-y-6 lg:max-w-3xl">
           <p className="text-xs leading-relaxed text-text-secondary sm:mb-0.5 sm:text-sm">
             Controlla esercizi e serie; quando sei pronto avvia l&apos;allenamento.
           </p>
@@ -459,11 +552,17 @@ export function GiornoPreviewContent({
                                         {r.note.trim()}
                                       </p>
                                     ) : null}
-                                    {r.rest_timer_sec != null && r.rest_timer_sec > 0 ? (
-                                      <p className="text-[11px] text-text-tertiary">
-                                        Recupero indicativo: {r.rest_timer_sec}s
-                                      </p>
-                                    ) : null}
+                                    {(() => {
+                                      const rest = coalesceWorkoutDayExerciseRest(
+                                        r.rest_timer_sec,
+                                        r.rest_seconds,
+                                      )
+                                      return rest !== null ? (
+                                        <p className="text-[11px] text-text-tertiary">
+                                          Recupero indicativo: {rest}s
+                                        </p>
+                                      ) : null
+                                    })()}
                                   </div>
                                 </div>
                                 {isOpen && desc ? (
@@ -527,11 +626,17 @@ export function GiornoPreviewContent({
                           {r.note?.trim() ? (
                             <p className="text-xs text-text-tertiary">{r.note.trim()}</p>
                           ) : null}
-                          {r.rest_timer_sec != null && r.rest_timer_sec > 0 ? (
-                            <p className="text-[11px] text-text-tertiary">
-                              Recupero indicativo: {r.rest_timer_sec}s
-                            </p>
-                          ) : null}
+                          {(() => {
+                            const rest = coalesceWorkoutDayExerciseRest(
+                              r.rest_timer_sec,
+                              r.rest_seconds,
+                            )
+                            return rest !== null ? (
+                              <p className="text-[11px] text-text-tertiary">
+                                Recupero indicativo: {rest}s
+                              </p>
+                            ) : null
+                          })()}
                         </div>
                       </div>
                       {isOpen && desc ? (
@@ -569,10 +674,14 @@ export function GiornoPreviewContent({
   )
 }
 
-export default function GiornoPreviewPage() {
+export default function GiornoPreviewPage({
+  params,
+}: {
+  params: Promise<{ id: string; dayId: string }>
+}) {
   return (
     <Suspense fallback={null}>
-      <GiornoPreviewContent />
+      <GiornoPreviewContent routeParams={params} />
     </Suspense>
   )
 }

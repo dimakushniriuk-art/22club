@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { createLogger } from '@/lib/logger'
 import {
@@ -23,6 +23,9 @@ import { SimpleSelect } from '@/components/ui/simple-select'
 import { Edit2, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 import type { Cliente } from '@/types/cliente'
+import { useAuth } from '@/providers/auth-provider'
+import { useBrowserFormDraft } from '@/hooks/use-browser-form-draft'
+import { loadFormDraft } from '@/lib/browser-form-draft'
 
 interface ModificaAtletaModalProps {
   open: boolean
@@ -41,6 +44,12 @@ interface FormData {
   note: string
 }
 
+function isMeaningfulModificaAtletaDraft(d: FormData): boolean {
+  return Boolean(
+    d.nome.trim() || d.cognome.trim() || d.note.trim() || d.phone.trim() || d.email.trim(),
+  )
+}
+
 export function ModificaAtletaModal({
   open,
   onOpenChange,
@@ -49,6 +58,8 @@ export function ModificaAtletaModal({
 }: ModificaAtletaModalProps) {
   const queryClient = useQueryClient()
   const { addToast } = useToast()
+  const { user } = useAuth()
+  const modificaDraftRestoreKeyRef = useRef<string | null>(null)
   const [formData, setFormData] = useState<FormData>({
     nome: '',
     cognome: '',
@@ -62,6 +73,19 @@ export function ModificaAtletaModal({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const modificaDraftPayload = useMemo(() => formData, [formData])
+  const modificaDraftScope =
+    open && user?.user_id && athlete?.id ? `${user.user_id}:${athlete.id}` : null
+  const meaningfulModificaCb = useCallback((d: FormData) => isMeaningfulModificaAtletaDraft(d), [])
+
+  const { clearDraft: clearModificaAtletaDraft } = useBrowserFormDraft({
+    feature: 'modifica-atleta',
+    scope: modificaDraftScope,
+    value: modificaDraftPayload,
+    isMeaningful: meaningfulModificaCb,
+    restoreEnabled: false,
+  })
 
   // Popola il form quando l'atleta cambia o il modal si apre
   useEffect(() => {
@@ -81,6 +105,24 @@ export function ModificaAtletaModal({
       setSubmitError(null)
     }
   }, [athlete, open])
+
+  useEffect(() => {
+    if (!open || !user?.user_id || !athlete?.id) {
+      modificaDraftRestoreKeyRef.current = null
+      return
+    }
+    const rk = `${user.user_id}:${athlete.id}`
+    if (modificaDraftRestoreKeyRef.current === rk) return
+    modificaDraftRestoreKeyRef.current = rk
+    const env = loadFormDraft<FormData>('modifica-atleta', rk)
+    if (!env?.payload || !isMeaningfulModificaAtletaDraft(env.payload)) return
+    setFormData(env.payload)
+    addToast({
+      title: 'Bozza recuperata',
+      message: 'Ripristinati i campi salvati nel browser.',
+      variant: 'success',
+    })
+  }, [open, user?.user_id, athlete?.id, addToast])
 
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -174,6 +216,8 @@ export function ModificaAtletaModal({
         message: `Profilo di ${formData.nome} ${formData.cognome} aggiornato con successo`,
         variant: 'success',
       })
+
+      if (user?.user_id && athlete?.id) clearModificaAtletaDraft()
 
       onOpenChange(false)
 

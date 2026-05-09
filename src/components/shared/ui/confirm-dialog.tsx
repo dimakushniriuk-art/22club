@@ -44,8 +44,6 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const cancelButtonRef = React.useRef<HTMLButtonElement>(null)
-  const confirmButtonRef = React.useRef<HTMLButtonElement>(null)
-  const dialogContentRef = React.useRef<HTMLDivElement>(null)
 
   const handleConfirm = async () => {
     setIsSubmitting(true)
@@ -84,47 +82,12 @@ export function ConfirmDialog({
     return undefined
   }, [open])
 
-  // Focus trap: gestisce Tab e Shift+Tab
-  React.useEffect(() => {
-    if (!open || !dialogContentRef.current) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-
-      const focusableElements = dialogContentRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      ) as NodeListOf<HTMLElement>
-
-      if (!focusableElements || focusableElements.length === 0) return
-
-      const firstElement = focusableElements[0]
-      const lastElement = focusableElements[focusableElements.length - 1]
-
-      if (e.shiftKey) {
-        // Shift+Tab: vai all'elemento precedente
-        if (document.activeElement === firstElement) {
-          e.preventDefault()
-          lastElement?.focus()
-        }
-      } else {
-        // Tab: vai all'elemento successivo
-        if (document.activeElement === lastElement) {
-          e.preventDefault()
-          firstElement?.focus()
-        }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [open])
-
   const isDisabled = disabled || loading || isSubmitting
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
       <DialogContent className="relative max-w-md overflow-hidden bg-gradient-to-br from-background-secondary via-background-secondary to-background-tertiary border-border shadow-lg backdrop-blur-xl">
-        <div ref={dialogContentRef}>
+        <>
           <DialogHeader className="relative z-10">
             <div className="flex items-center gap-3 mb-2">
               <div
@@ -156,7 +119,6 @@ export function ConfirmDialog({
               {cancelText}
             </Button>
             <Button
-              ref={confirmButtonRef}
               variant={variant === 'destructive' ? 'destructive' : 'default'}
               onClick={handleConfirm}
               disabled={isDisabled}
@@ -178,7 +140,7 @@ export function ConfirmDialog({
               )}
             </Button>
           </DialogFooter>
-        </div>
+        </>
       </DialogContent>
     </Dialog>
   )

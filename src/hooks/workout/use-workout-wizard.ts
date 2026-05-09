@@ -19,11 +19,31 @@ function getDayItems(day: WorkoutDayData): DayItem[] {
 }
 
 const STEPS = [
-  { id: 1, title: 'Info generali', description: 'Nome, atleta e note della scheda' },
-  { id: 2, title: 'Giorni', description: 'Organizza i giorni di allenamento' },
-  { id: 3, title: 'Esercizi', description: 'Scegli gli esercizi per ogni giorno' },
-  { id: 4, title: 'Target', description: 'Imposta serie, ripetizioni e pesi' },
-  { id: 5, title: 'Riepilogo', description: 'Verifica e conferma la scheda' },
+  {
+    id: 1,
+    title: 'Info generali',
+    description: 'Nome, obiettivo e note; atleta anche dopo (obbligatorio solo per pubblicare)',
+  },
+  {
+    id: 2,
+    title: 'Giorni',
+    description: 'Struttura giorni; atleta non necessario per proseguire',
+  },
+  {
+    id: 3,
+    title: 'Esercizi',
+    description: 'Catalogo per giorno; atleta non necessario per proseguire',
+  },
+  {
+    id: 4,
+    title: 'Target',
+    description: 'Serie e carichi; atleta non necessario per proseguire',
+  },
+  {
+    id: 5,
+    title: 'Riepilogo',
+    description: 'Controllo finale — pubblicazione richiede atleta reale o usa Salva bozza',
+  },
 ]
 
 export type WorkoutWizardSaveOptions = { draft?: boolean }
@@ -51,22 +71,31 @@ export function useWorkoutWizard({
     difficulty: 'media',
   })
 
-  // Reset wizard quando si apre o quando cambiano i dati iniziali
+  /** Reset completo solo quando si apre o cambiano i dati server (`initialData`). */
   useEffect(() => {
-    if (isOpen) {
-      setCurrentStep(1)
-      if (initialData) {
-        setWizardData(initialData)
-      } else {
-        setWizardData({
-          title: '',
-          notes: '',
-          days: [],
-          athlete_id: initialAthleteId || '',
-          difficulty: 'media',
-        })
-      }
+    if (!isOpen) return
+    setCurrentStep(1)
+    if (initialData) {
+      setWizardData(initialData)
+    } else {
+      setWizardData({
+        title: '',
+        notes: '',
+        days: [],
+        athlete_id: initialAthleteId || '',
+        difficulty: 'media',
+      })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialAthleteId: effetto dedicato sotto (evita riazzeramento bozza/URL)
+  }, [isOpen, initialData])
+
+  /** Prefill atleta da URL senza azzerare giorni/esercizi (bozza locale / idle). */
+  useEffect(() => {
+    if (!isOpen || initialData) return
+    setWizardData((prev) => ({
+      ...prev,
+      athlete_id: initialAthleteId ?? prev.athlete_id ?? '',
+    }))
   }, [isOpen, initialAthleteId, initialData])
 
   const progress = (currentStep / STEPS.length) * 100
@@ -288,26 +317,51 @@ export function useWorkoutWizard({
     [],
   )
 
-  const canProceed = useCallback(() => {
-    switch (currentStep) {
-      case 1:
-        return (
-          wizardData.title.trim().length > 0 &&
-          (wizardData.athlete_id?.length ?? 0) > 0 &&
-          (wizardData.objective?.length ?? 0) > 0
-        )
-      case 2:
-        return wizardData.days.length > 0
-      case 3:
-        return wizardData.days.every((day) => getDayItems(day).length > 0)
-      case 4:
-        return true // I target sono opzionali
-      case 5:
-        return true // L'atleta è già selezionato nello step 1
-      default:
-        return false
-    }
-  }, [currentStep, wizardData])
+  /** Validazione per uscire dallo `step` (stessi criteri del pulsante Avanti su quello step). */
+  const canLeaveStep = useCallback(
+    (step: number): boolean => {
+      switch (step) {
+        case 1:
+          /** Atleta opzionale finché non si pubblica; nome + obiettivo bastano per «Giorni» e oltre. */
+          return wizardData.title.trim().length > 0 && (wizardData.objective?.length ?? 0) > 0
+        case 2:
+          return wizardData.days.length > 0
+        case 3:
+          return wizardData.days.every((day) => getDayItems(day).length > 0)
+        case 4:
+          return true
+        case 5:
+          return true
+        default:
+          return false
+      }
+    },
+    [wizardData],
+  )
+
+  const canProceed = useCallback(() => canLeaveStep(currentStep), [canLeaveStep, currentStep])
+
+  /** Indietro sempre; in avanti solo se ogni step intermedio consente di procedere. */
+  const isStepReachable = useCallback(
+    (targetStep: number): boolean => {
+      if (targetStep < 1 || targetStep > STEPS.length) return false
+      if (targetStep <= currentStep) return true
+      for (let s = currentStep; s < targetStep; s++) {
+        if (!canLeaveStep(s)) return false
+      }
+      return true
+    },
+    [currentStep, canLeaveStep],
+  )
+
+  const goToStep = useCallback(
+    (targetStep: number) => {
+      if (targetStep < 1 || targetStep > STEPS.length || targetStep === currentStep) return
+      if (!isStepReachable(targetStep)) return
+      setCurrentStep(targetStep)
+    },
+    [currentStep, isStepReachable],
+  )
 
   return {
     currentStep,
@@ -330,6 +384,9 @@ export function useWorkoutWizard({
     reorderDayItems,
     reorderStandaloneExercisesInDay,
     canProceed,
+    canLeaveStep,
+    isStepReachable,
+    goToStep,
     getDayItems,
     STEPS,
   }

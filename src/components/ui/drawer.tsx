@@ -4,11 +4,20 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 
-export interface DrawerProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DrawerProps extends React.HTMLAttributes<HTMLDivElement> {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   side?: 'left' | 'right' | 'top' | 'bottom'
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+}
+
+function collectFocusables(panel: HTMLElement): HTMLElement[] {
+  const nodes = panel.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )
+  return Array.from(nodes).filter(
+    (el) => !el.hasAttribute('disabled') && !el.closest('[aria-hidden="true"]'),
+  )
 }
 
 const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
@@ -17,6 +26,9 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     ref,
   ) => {
     const [isOpen, setIsOpen] = React.useState(open)
+    const panelRef = React.useRef<HTMLDivElement>(null)
+    const previouslyFocusedRef = React.useRef<Element | null>(null)
+    const handleCloseRef = React.useRef<() => void>(() => {})
 
     React.useEffect(() => {
       setIsOpen(open)
@@ -26,6 +38,77 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       setIsOpen(false)
       onOpenChange?.(false)
     }, [onOpenChange])
+
+    React.useEffect(() => {
+      handleCloseRef.current = handleClose
+    }, [handleClose])
+
+    const setPanelRef = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        panelRef.current = node
+        if (typeof ref === 'function') {
+          ref(node)
+        } else if (ref) {
+          ref.current = node
+        }
+      },
+      [ref],
+    )
+
+    React.useEffect(() => {
+      if (!isOpen) return
+      const panel = panelRef.current
+      if (!panel) return
+
+      previouslyFocusedRef.current = document.activeElement
+
+      const focusFirst = () => {
+        const list = collectFocusables(panel)
+        const target = list[0]
+        window.requestAnimationFrame(() => target?.focus())
+      }
+      focusFirst()
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          handleCloseRef.current()
+          return
+        }
+        if (e.key !== 'Tab') return
+        if (!panel.contains(document.activeElement)) {
+          e.preventDefault()
+          collectFocusables(panel)[0]?.focus()
+          return
+        }
+        const list = collectFocusables(panel)
+        if (list.length === 0) return
+        const firstEl = list[0]
+        const lastEl = list[list.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === firstEl) {
+            e.preventDefault()
+            lastEl.focus()
+          }
+        } else if (document.activeElement === lastEl) {
+          e.preventDefault()
+          firstEl.focus()
+        }
+      }
+
+      document.addEventListener('keydown', onKeyDown, true)
+      return () => {
+        document.removeEventListener('keydown', onKeyDown, true)
+        const prev = previouslyFocusedRef.current
+        if (prev instanceof HTMLElement) {
+          try {
+            prev.focus()
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }, [isOpen])
 
     const handleBackdropClick = React.useCallback(
       (e: React.MouseEvent) => {
@@ -54,13 +137,15 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     if (!isOpen) return null
 
     return (
-      <div className="fixed inset-0 z-[100]" aria-modal="true">
-        {/* Backdrop */}
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md" onClick={handleBackdropClick} />
-
-        {/* Drawer Content */}
+      <div className="fixed inset-0 z-[100]">
         <div
-          ref={ref}
+          className="fixed inset-0 bg-black/70 backdrop-blur-md"
+          onClick={handleBackdropClick}
+          aria-hidden="true"
+        />
+
+        <div
+          ref={setPanelRef}
           className={cn(
             'fixed border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/90 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out',
             sideClasses[side],
@@ -72,6 +157,8 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
             className,
           )}
           {...props}
+          role="dialog"
+          aria-modal="true"
         >
           {children}
         </div>
@@ -81,7 +168,7 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
 )
 Drawer.displayName = 'Drawer'
 
-export interface DrawerContentProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DrawerContentProps extends React.HTMLAttributes<HTMLDivElement> {
   showCloseButton?: boolean
   onClose?: () => void
 }
@@ -94,8 +181,10 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex-1" />
             <button
+              type="button"
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
+              aria-label="Chiudi drawer"
             >
               <X className="w-4 h-4 text-text-secondary" />
             </button>
@@ -108,7 +197,7 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
 )
 DrawerContent.displayName = 'DrawerContent'
 
-export interface DrawerHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DrawerHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string
   description?: string
 }
@@ -143,7 +232,7 @@ const DrawerFooter = React.forwardRef<HTMLDivElement, DrawerFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'p-6 border-t border-white/10 flex items-center justify-end gap-3',
+          'p-6 border-t border-white/10 flex items-center justify-end gap-3 pb-safe',
           className,
         )}
         {...props}
