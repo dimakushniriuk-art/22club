@@ -242,52 +242,62 @@ const nextConfig: NextConfig = {
     }
 
     if (!isServer) {
-      // Riduci bundle size per client
+      // Split chunks: niente `maxSize` aggressivo (su 4G mobile l'handshake TLS per chunk supera il
+      // beneficio del parallelismo HTTP/2). Manteniamo i gruppi dedicati per librerie pesanti così
+      // restano in chunk separati cacheabili, ma lasciamo Next/webpack scegliere la dimensione.
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxInitialRequests: 25,
-          maxAsyncRequests: 25,
           cacheGroups: {
             default: false,
             vendors: false,
-            // Vendor chunk per node_modules
-            vendor: {
-              name: 'vendor',
-              chunks: 'all',
-              test: /node_modules/,
-              priority: 20,
-              maxSize: 244000, // 244KB
-            },
-            // Chunk separato per librerie pesanti
             fullcalendar: {
-              test: /@fullcalendar/,
+              test: /[\\/]node_modules[\\/]@fullcalendar[\\/]/,
               name: 'fullcalendar',
               chunks: 'all',
               priority: 30,
-              maxSize: 244000,
+              reuseExistingChunk: true,
             },
             recharts: {
-              test: /recharts/,
+              test: /[\\/]node_modules[\\/]recharts[\\/]/,
               name: 'recharts',
               chunks: 'all',
               priority: 30,
-              maxSize: 244000,
+              reuseExistingChunk: true,
             },
             lucide: {
-              test: /lucide-react/,
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
               name: 'lucide',
               chunks: 'all',
               priority: 25,
-              maxSize: 244000,
+              reuseExistingChunk: true,
             },
-            // Common chunk per codice condiviso
+            framerMotion: {
+              test: /[\\/]node_modules[\\/](framer-motion|motion-dom)[\\/]/,
+              name: 'framer-motion',
+              chunks: 'all',
+              priority: 25,
+              reuseExistingChunk: true,
+            },
+            sentry: {
+              test: /[\\/]node_modules[\\/]@sentry(-internal)?[\\/]/,
+              name: 'sentry',
+              chunks: 'all',
+              priority: 25,
+              reuseExistingChunk: true,
+            },
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/]/,
+              priority: 20,
+              reuseExistingChunk: true,
+            },
             common: {
               minChunks: 2,
               priority: 10,
               reuseExistingChunk: true,
-              maxSize: 244000,
             },
           },
         },

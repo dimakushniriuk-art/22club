@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import '../styles/sidebar-enhanced.css'
 import '../styles/tablet-landscape.css'
@@ -18,15 +17,9 @@ import { InstallPwaPrompt } from '@/components/shared/install-pwa-prompt'
 import { SentryNavigationContext } from '@/providers/sentry-navigation-context'
 import { PendingWriteBootstrap } from '@/providers/pending-write-bootstrap'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+// Geist Sans/Mono erano caricati via next/font ma le variabili CSS `--font-geist-sans` e
+// `--font-geist-mono` non sono referenziate da nessun selettore: il body in globals.css usa
+// direttamente Inter / SF Pro Display / system-ui. Rimossi per liberare il critical path mobile.
 
 export const metadata: Metadata = {
   title: '22Club - Fitness Management',
@@ -79,7 +72,7 @@ export default function RootLayout({
   return (
     <html lang="it">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased"
         style={{ backgroundColor: '#0d0d0d' }}
         suppressHydrationWarning
       >

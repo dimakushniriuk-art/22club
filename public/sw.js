@@ -2,9 +2,9 @@
 // Service Worker per Push Notifications (PWA)
 // =====================================================
 
-const CACHE_NAME = '22club-v4'
-/** Precache minimo: nessun URL inesistente; fallimenti singoli non bloccano install */
-const URLS_TO_PRECACHE = ['/', '/login', '/home', '/manifest.json']
+const CACHE_NAME = '22club-v5'
+/** Precache minimo: solo route pubbliche + manifest. `/home` è privata: il precache faceva 302→/login. */
+const URLS_TO_PRECACHE = ['/login', '/manifest.json']
 
 // Install event
 self.addEventListener('install', (event) => {

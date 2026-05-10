@@ -591,8 +591,10 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - api (API routes)
+     * - manifest.json / icon-*.png / robots / sitemap (asset PWA pubblici)
+     * - Estensioni statiche (immagini, font, css, js, mappe, pdf worker) → Vercel li serve direttamente senza invocare il middleware (riduce cold start / TTFB su mobile).
      */
-    '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api|manifest.json|icon-|sw\\.js|pdf\\.worker\\.min\\.mjs|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|ico|webp|avif|woff|woff2|ttf|eot|css|js|map|mjs)$).*)',
   ],
   runtime: 'nodejs',
 }
