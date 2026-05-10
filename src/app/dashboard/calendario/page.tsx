@@ -1151,7 +1151,7 @@ export function CalendarPageContent({
           </aside>
         )}
 
-        <main className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
+        <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
           <div role="status" aria-live="polite" className="sr-only">
             {filteredAppointments.length === 1
               ? '1 appuntamento'

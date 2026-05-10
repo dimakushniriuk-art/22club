@@ -107,6 +107,9 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
   const pathname = usePathname()
   /** Chat a tutta altezza sotto l’header: niente padding top che crea “banda” grigia. */
   const isChatRoute = pathname === '/home/chat'
+  /** Calendario atleta: un solo scroll interno; evita main alto migliaia di px su smartphone. */
+  const isAthleteAppuntamentiRoute =
+    pathname === '/home/appuntamenti' || pathname.startsWith('/home/appuntamenti/')
 
   const shellRef = useRef<HTMLDivElement>(null)
   const chromeRef = useRef<HTMLElement>(null)
@@ -140,10 +143,7 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
   return (
     <div
       ref={shellRef}
-      className={cn(
-        'relative flex flex-col overflow-hidden bg-background',
-        isChatRoute ? 'min-h-0 h-full flex-1' : 'min-h-dvh',
-      )}
+      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background"
       style={shellStyle}
     >
       <HomeAthleteTopChrome ref={chromeRef} />
@@ -158,7 +158,9 @@ function HomeLayoutShell({ children }: HomeLayoutClientProps) {
             ? 'relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto bg-background pt-4 sm:pt-6'
             : isChatRoute
               ? 'relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-background pt-0'
-              : 'relative z-10 flex min-h-0 flex-1 flex-col bg-background pt-4 sm:pt-6'
+              : isAthleteAppuntamentiRoute
+                ? 'relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-background pt-3 sm:pt-6'
+                : 'relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto bg-background pt-4 sm:pt-6'
         }
       >
         <HomeAthleteStackHeadersProvider value={true}>

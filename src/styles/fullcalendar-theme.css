@@ -331,6 +331,132 @@
 }
 
 /*
+ * Riempimento contenitore (staff + atleta): evita scrollgrid shrink-width e colonne mese stabili.
+ */
+.fc-calendar-fill .fc.fc-media-screen,
+.fc-athlete-full-cell .fc.fc-media-screen {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.fc-calendar-fill .fc .fc-view-harness,
+.fc-athlete-full-cell .fc .fc-view-harness {
+  width: 100% !important;
+}
+
+/*
+ * Nota: niente flex forzato su .fc-scrollgrid / section-body in vista mese: con FC v6
+ * poteva collassare il corpo (solo header LUN–DOM, griglia date invisibile).
+ * Il riempimento verticale resta da height in px + updateSize in CalendarView.
+ */
+
+.fc-calendar-fill .fc .fc-scrollgrid,
+.fc-athlete-full-cell .fc .fc-scrollgrid {
+  width: 100% !important;
+}
+
+.fc-calendar-fill .fc .fc-scrollgrid table,
+.fc-athlete-full-cell .fc .fc-scrollgrid table {
+  width: 100% !important;
+}
+
+.fc-calendar-fill .fc-dayGridMonth-view .fc-scrollgrid-sync-table,
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table {
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+
+/*
+ * Calendario atleta — vista mese su sfondo nero: bordi più leggibili + celle leggibili al touch.
+ * (--fc-border-color globale a 0.05 è quasi invisibile.)
+ */
+.fc-athlete-full-cell .fc {
+  --fc-border-color: rgba(255, 255, 255, 0.17);
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table td,
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table th {
+  border-color: rgba(255, 255, 255, 0.17) !important;
+}
+
+/* Griglia leggibile: linee orizzontali + verticali (collapse + solo verticali era fuorviante). */
+/* Sovrascrive .fc .fc-col-header-cell { border: none } così LUN–DOM ha gli stessi bordi verticali delle celle sotto */
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table th.fc-col-header-cell {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.17) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table th.fc-col-header-cell:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.17) !important;
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table td.fc-daygrid-day {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.17) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.17) !important;
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table td.fc-daygrid-day:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.17) !important;
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-section-body .fc-scroller {
+  /* Riempie leggermente lo spazio sotto l’ultima settimana (resto ancora “vuoto” ma meno “buco nero”) */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 55%,
+    rgba(255, 255, 255, 0.05) 100%
+  ) !important;
+}
+
+/*
+ * Vista mese atleta (smartphone): header e corpo sono due scroller separati.
+ * Su iOS/WebKit la scrollbar overlay + scrollbar-gutter può sfasare LUN–DOM rispetto alle colonne.
+ * Nascondiamo la scrollbar verticale nel corpo (scroll resta) e togliamo gutter solo qui.
+ */
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-section-header .fc-scroller,
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-section-body .fc-scroller {
+  scrollbar-gutter: unset !important;
+  overflow-x: hidden !important;
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-section-body .fc-scroller {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-section-body .fc-scroller::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/*
+ * Vista mese staff / fc-calendar-fill: mantieni gutter stabile dove la scrollbar è visibile.
+ */
+.fc-calendar-fill:not(.fc-athlete-full-cell)
+  .fc-dayGridMonth-view
+  .fc-scrollgrid-section-header
+  .fc-scroller,
+.fc-calendar-fill:not(.fc-athlete-full-cell)
+  .fc-dayGridMonth-view
+  .fc-scrollgrid-section-body
+  .fc-scroller {
+  scrollbar-gutter: stable !important;
+  overflow-x: hidden !important;
+}
+
+.fc-calendar-fill .fc-dayGridMonth-view .fc-col-header-cell,
+.fc-calendar-fill .fc-dayGridMonth-view .fc-daygrid-day,
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-col-header-cell,
+.fc-athlete-full-cell .fc-dayGridMonth-view .fc-daygrid-day {
+  box-sizing: border-box !important;
+}
+
+/*
  * Calendario atleta (timeGrid): con slotEventOverlap: false FC affianca gli eventi nella stessa fascia
  * in N colonne uguali (nessuna sovrapposizione); non forzare left/width sul harness.
  */
@@ -703,6 +829,14 @@
 
   .fc .fc-event {
     font-size: 11px !important;
+  }
+}
+
+/** Smartphone / calendario atleta — vista mese: celle più basse (meno “fasce” lunghe). */
+@media (max-width: 640px) {
+  .fc-athlete-full-cell .fc-dayGridMonth-view .fc-daygrid-day-frame {
+    min-height: 52px !important;
+    padding: 3px !important;
   }
 }
 

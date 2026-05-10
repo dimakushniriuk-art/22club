@@ -1,13 +1,76 @@
 'use client'
 
+import Image from 'next/image'
 import { useMemo } from 'react'
 import { RangeStatusMeter } from '@/components/dashboard/range-status-meter'
 import {
   WorkoutExerciseSessioniByDateList,
   type WorkoutExerciseSessionRow,
 } from '@/components/progressi/workout-exercise-sessioni-by-date-list'
+import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { useWorkoutExerciseStats } from '@/hooks/use-workout-exercise-stats'
 import { buildWorkoutExerciseSeries } from '@/lib/workout-exercise-chart-series'
+
+function WorkoutExerciseStoricoMediaPreview({
+  exerciseName,
+  videoUrl,
+  thumbUrl,
+  imageUrl,
+}: {
+  exerciseName: string
+  videoUrl: string | null | undefined
+  thumbUrl: string | null | undefined
+  imageUrl: string | null | undefined
+}) {
+  const hasVideo =
+    Boolean(videoUrl) &&
+    typeof videoUrl === 'string' &&
+    (videoUrl.startsWith('http://') || videoUrl.startsWith('https://'))
+  const posterUrl = thumbUrl || imageUrl || null
+  const hasPoster =
+    Boolean(posterUrl) &&
+    typeof posterUrl === 'string' &&
+    (posterUrl.startsWith('http://') || posterUrl.startsWith('https://'))
+
+  const videoRef = useAutoplayPreviewVideo({
+    enabled: hasVideo,
+    pauseWhenOffscreen: true,
+  })
+
+  if (!hasVideo && !hasPoster) {
+    return null
+  }
+
+  return (
+    <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-black/40">
+      {hasVideo && videoUrl ? (
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          poster={hasPoster ? posterUrl! : undefined}
+          className="h-full w-full object-contain"
+          controls
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="auto"
+        />
+      ) : (
+        <Image
+          src={posterUrl!}
+          alt=""
+          width={800}
+          height={450}
+          className="h-full w-full object-contain"
+          unoptimized={posterUrl!.startsWith('http')}
+          sizes="(min-width: 768px) 800px, 100vw"
+        />
+      )}
+      <span className="sr-only">Anteprima video esercizio {exerciseName}</span>
+    </div>
+  )
+}
 
 export function WorkoutExerciseStoricoContent({
   exerciseId,
@@ -78,6 +141,12 @@ export function WorkoutExerciseStoricoContent({
 
   return (
     <>
+      <WorkoutExerciseStoricoMediaPreview
+        exerciseName={exercise.exercise_name}
+        videoUrl={exercise.video_url}
+        thumbUrl={exercise.thumb_url}
+        imageUrl={exercise.image_url}
+      />
       <RangeStatusMeter
         value={series.currentValue}
         history={series.history}

@@ -775,12 +775,16 @@ function AthleteChatPageContent() {
           hasMore={effectiveConversation.hasMore}
           onDeleteMessage={deleteMessage}
           className="min-h-0 flex-1 w-full"
-          scrollAreaClassName="pb-[calc(6.125rem+env(safe-area-inset-bottom))]"
         />
       </main>
 
+      {/* Footer NON fixed: con AthleteHomeViewportScale (transform: scale) un antenato
+          trasformato diventa containing block per i figli `position: fixed`, quindi
+          `bottom: 0` punterebbe al div scalato (alto 100dvh/scale) e non alla viewport.
+          Tenendolo come flex child del wrapper `flex-col`, resta sempre in basso e
+          si comporta correttamente anche con tastiera virtuale (dvh aggiornato). */}
       <footer
-        className="fixed bottom-0 left-0 right-0 z-40 w-full shrink-0 overflow-hidden border-t border-white/10 bg-black"
+        className="relative z-10 w-full shrink-0 overflow-hidden border-t border-white/10 bg-black"
         aria-label="Input messaggio"
       >
         <div

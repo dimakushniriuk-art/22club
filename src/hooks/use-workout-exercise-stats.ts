@@ -75,6 +75,10 @@ export interface ExerciseStat {
   exercise_id: string
   exercise_name: string
   exercise_category?: string | null
+  /** Catalogo `exercises`: media per preview (es. storico progressi). */
+  video_url?: string | null
+  thumb_url?: string | null
+  image_url?: string | null
   total_sessions: number
   total_sets: number
   average_weight: number | null
@@ -456,12 +460,19 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
           ]),
         ]
 
-        type ExRow = { id: string; name: string; category?: string | null }
+        type ExRow = {
+          id: string
+          name: string
+          category?: string | null
+          video_url?: string | null
+          thumb_url?: string | null
+          image_url?: string | null
+        }
         const exercisesAccum: ExRow[] = []
         for (const exChunk of chunkForSupabaseIn(exerciseIdsForNames)) {
           const { data: exercisesData, error: exercisesNamesError } = await supabase
             .from('exercises')
-            .select('id, name, category')
+            .select('id, name, category, video_url, thumb_url, image_url')
             .in('id', exChunk)
           if (exercisesNamesError) {
             logger.error('Error fetching exercises names', exercisesNamesError, {
@@ -473,7 +484,16 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
         }
 
         const exercisesMap = new Map(
-          exercisesAccum.map((e) => [e.id, { name: e.name, category: e.category }]),
+          exercisesAccum.map((e) => [
+            e.id,
+            {
+              name: e.name,
+              category: e.category,
+              video_url: e.video_url ?? null,
+              thumb_url: e.thumb_url ?? null,
+              image_url: e.image_url ?? null,
+            },
+          ]),
         )
 
         const uniqueExerciseIds = uniqueExerciseIdsFromPlan
@@ -505,6 +525,9 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
               exercise_id: exerciseId,
               exercise_name: exerciseInfo.name,
               exercise_category: exerciseInfo.category,
+              video_url: exerciseInfo.video_url,
+              thumb_url: exerciseInfo.thumb_url,
+              image_url: exerciseInfo.image_url,
               total_sessions: 0,
               total_sets: 0,
               average_weight: null,
@@ -543,6 +566,9 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
             exercise_id: exerciseId,
             exercise_name: exerciseInfo.name,
             exercise_category: exerciseInfo.category,
+            video_url: exerciseInfo.video_url,
+            thumb_url: exerciseInfo.thumb_url,
+            image_url: exerciseInfo.image_url,
             total_sessions: 0,
             total_sets: 0,
             average_weight: null,

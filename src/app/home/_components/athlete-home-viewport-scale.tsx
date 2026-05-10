@@ -63,11 +63,14 @@ export function AthleteHomeViewportScale({ children }: AthleteHomeViewportScaleP
       return {
         width: '100%',
         minHeight: '100dvh',
+        height: '100%',
       }
     }
+    const scaledFrame = `calc(100dvh / ${scale})`
     return {
       width: ATHLETE_HOME_DESIGN_WIDTH_PX,
-      minHeight: `calc(100dvh / ${scale})`,
+      minHeight: scaledFrame,
+      height: scaledFrame,
       transform: `scale(${scale})`,
       transformOrigin: 'top left',
     }
@@ -84,12 +87,17 @@ export function AthleteHomeViewportScale({ children }: AthleteHomeViewportScaleP
     <div
       className={cn(
         'w-full min-w-0',
-        isChatRoute ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-dvh overflow-x-hidden',
+        isChatRoute
+          ? 'h-dvh max-h-dvh min-h-0 overflow-hidden'
+          : 'flex min-h-dvh min-h-0 flex-col overflow-x-hidden',
       )}
       style={outerStyle}
     >
       <div
-        className={cn('min-w-0', isChatRoute ? 'flex h-full min-h-0 flex-col' : 'min-h-dvh')}
+        className={cn(
+          'flex min-h-0 w-full min-w-0 flex-col',
+          isChatRoute ? 'h-full flex-1' : 'min-h-0 flex-1',
+        )}
         style={innerStyle}
       >
         {children}

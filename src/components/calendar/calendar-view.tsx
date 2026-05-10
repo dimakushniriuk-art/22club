@@ -4,6 +4,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useCallback,
   useImperativeHandle,
@@ -19,7 +20,7 @@ import type {
   EventDropArg,
 } from '@fullcalendar/core'
 import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
-import { ChevronLeft, ChevronRight, Plus, ZoomIn, ZoomOut } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import type { AppointmentUI, AppointmentColor } from '@/types/appointment'
 import { APPOINTMENT_COLORS } from '@/types/appointment'
 import type { CalendarBlock } from '@/types/calendar-block'
@@ -129,7 +130,7 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
       appointments,
       onEventClick,
       onDateClick: _onDateClick,
-      onNewAppointment,
+      onNewAppointment: _onNewAppointment,
       onEventDrop,
       onEventResize,
       onSelectSlot,
@@ -147,6 +148,9 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
       compactToolbar = false,
       peerReadonlyProfileId = null,
     } = props
+    // onNewAppointment è retrocompatibile ma il FAB è renderizzato dalla pagina
+    // chiamante (es. atleta compattata → src/app/home/appuntamenti/page.tsx).
+    void _onNewAppointment
     const slotSelectionEnabled = Boolean(onSelectSlot)
     const { settings, mutate: mutateSettings } = useStaffCalendarSettings()
     const typeLabelMap = useMemo(() => {
@@ -250,6 +254,9 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
     const [calendarComponents, setCalendarComponents] = useState<CalendarModules | null>(null)
     const calendarRef = useRef<FullCalendarComponent | null>(null)
     const apiRef = useRef<CalendarApi | null>(null)
+    const calendarShellRef = useRef<HTMLDivElement | null>(null)
+    /** Altezza esplicita (px): `height="parent"` fallisce con flex/transform (es. AthleteHomeViewportScale). */
+    const [calendarFillHeightPx, setCalendarFillHeightPx] = useState(480)
 
     // Carica FullCalendar dinamicamente
     useEffect(() => {
@@ -308,6 +315,42 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
       api.setOption('slotDuration', slotDurationStr)
       api.setOption('snapDuration', snapDurationStr)
     }, [isLoaded, slotMinTime, slotMaxTime, slotDurationStr, snapDurationStr])
+
+    /** Altezza griglia (px) + updateSize. Vista mese atleta: `height="auto"` (nessuna fascia nera sotto la tabella). */
+    useLayoutEffect(() => {
+      if (!isLoaded) return
+      const shell = calendarShellRef.current
+      if (!shell) return
+
+      if (compactToolbar && view === 'dayGridMonth') {
+        const bump = () => {
+          const api = apiRef.current
+          if (api) queueMicrotask(() => api.updateSize())
+        }
+        bump()
+        requestAnimationFrame(bump)
+        return
+      }
+
+      const measureAndApply = () => {
+        const raw = Math.round(shell.clientHeight)
+        const next = Math.max(raw, 160)
+        setCalendarFillHeightPx((prev) => (prev === next ? prev : next))
+        const api = apiRef.current
+        if (api) queueMicrotask(() => api.updateSize())
+      }
+
+      const sync = () => {
+        measureAndApply()
+        requestAnimationFrame(measureAndApply)
+      }
+
+      sync()
+
+      const ro = new ResizeObserver(sync)
+      ro.observe(shell)
+      return () => ro.disconnect()
+    }, [isLoaded, view, zoomPercent, compactToolbar])
 
     // Aggiorna il titolo quando cambia la vista
     useEffect(() => {
@@ -900,6 +943,7 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
           setView(currentView)
         }
         setCurrentTitle(calendarApi.view.title)
+        queueMicrotask(() => calendarApi.updateSize())
       }
 
       calendarApi.on('datesSet', handleViewChange)
@@ -924,11 +968,19 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
     const { FullCalendar, dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin } =
       calendarComponents
 
+    /** Mese + toolbar atleta: altezza naturale FC → niente vuoto sotto l’ultima settimana dentro il riquadro. */
+    const monthAthleteAutoHeight = compactToolbar && view === 'dayGridMonth'
+
     return (
-      <div className="h-full min-h-[220px] flex flex-1 flex-col">
+      <div
+        className={cn(
+          'flex w-full min-h-0 flex-col',
+          monthAthleteAutoHeight ? 'h-auto shrink-0 flex-none' : 'h-full flex-1 flex-col',
+        )}
+      >
         {/* Header: colonne stack fino a lg per evitare sovrapposizioni; wrap ovunque serve */}
-        <div className="flex flex-col gap-3 py-2 px-1 sm:py-3 lg:flex-row lg:items-start lg:justify-between lg:gap-4 rounded-t-xl bg-gradient-to-r from-primary/10 via-transparent to-transparent border-b border-white/10 backdrop-blur-sm">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-2">
+        <div className="flex flex-col gap-2.5 shrink-0 px-1 py-2 touch-manipulation max-sm:gap-2 sm:gap-3 sm:py-2.5 lg:flex-row lg:items-start lg:justify-between lg:gap-4 lg:px-1 lg:py-3 rounded-t-xl bg-gradient-to-r from-primary/10 via-transparent to-transparent border-b border-white/10 backdrop-blur-sm [overflow:visible]">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-2 max-sm:justify-center sm:justify-start">
             {toolbarLeftContent}
             <button
               data-action="today"
@@ -953,11 +1005,11 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
-            <h2 className="min-w-0 basis-full truncate text-base font-semibold capitalize text-text-primary sm:text-xl lg:basis-auto lg:flex-1 lg:min-w-[12ch]">
+            <h2 className="min-w-0 basis-full truncate text-center text-[clamp(0.95rem,4.2vw,1.125rem)] font-semibold capitalize leading-tight text-text-primary max-sm:order-last max-sm:px-1 sm:text-left sm:text-base lg:basis-auto lg:order-none lg:flex-1 lg:min-w-[12ch] lg:text-xl lg:leading-normal">
               {currentTitle}
             </h2>
           </div>
-          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 self-stretch sm:gap-3 lg:w-auto lg:max-w-full lg:justify-end lg:self-auto">
+          <div className="flex w-full min-w-0 flex-col gap-2 self-stretch sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 lg:w-auto lg:max-w-full lg:flex-row lg:justify-end lg:self-auto">
             {!compactToolbar && (
               <>
                 {/* Step griglia (slot duration) */}
@@ -1013,17 +1065,29 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
                 </div>
               </>
             )}
-            <div className="flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-white/5 bg-background-secondary/40 p-1">
+            <div
+              className={cn(
+                'flex max-w-full min-w-0 items-stretch gap-1 rounded-lg border border-white/5 bg-background-secondary/40 p-1',
+                /* smartphone: scorrimento orizzontale così Mese/Settimana/… restano comodi col pollice */
+                'overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+                'snap-x snap-mandatory touch-pan-x max-sm:flex-nowrap max-sm:pb-0.5 sm:flex-wrap',
+              )}
+              role="tablist"
+              aria-label="Tipo di vista calendario"
+            >
               {(Object.keys(VIEW_LABELS) as ViewType[]).map((viewKey) => (
                 <button
                   key={viewKey}
+                  type="button"
                   data-view={viewKey}
                   onClick={() => changeView(viewKey)}
+                  role="tab"
+                  aria-selected={view === viewKey}
                   className={cn(
-                    'min-h-[40px] px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 sm:px-3',
+                    'min-h-[44px] shrink-0 snap-start rounded-md px-3 py-2 text-xs font-medium transition-all duration-200 sm:min-h-[40px] sm:px-2.5 sm:py-1.5 sm:text-sm md:px-3',
                     view === viewKey
                       ? 'bg-primary/15 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,255,200,0.15)]'
-                      : 'text-text-secondary border border-transparent hover:bg-background-tertiary/50 hover:text-text-primary',
+                      : 'border border-transparent text-text-secondary hover:bg-background-tertiary/50 hover:text-text-primary active:bg-background-tertiary/70',
                   )}
                 >
                   {VIEW_LABELS[viewKey]}
@@ -1034,10 +1098,17 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
         </div>
 
         {/* Calendar Content: wrapper scrollabile + zoom sulla griglia */}
-        <div className="flex-1 min-h-0 min-w-0 overflow-auto relative">
+        <div
+          ref={calendarShellRef}
+          className={cn(
+            'relative flex min-w-0 flex-col',
+            monthAthleteAutoHeight ? 'h-auto flex-none overflow-visible' : 'min-h-0 flex-1 overflow-hidden',
+          )}
+        >
           <div
             className={cn(
-              'relative origin-top-left',
+              'relative flex w-full min-w-0 flex-col origin-top-left fc-calendar-fill',
+              monthAthleteAutoHeight ? 'h-auto flex-none' : 'h-full min-h-0 flex-1',
               densityClass,
               compactToolbar && 'fc-athlete-full-cell',
             )}
@@ -1073,7 +1144,7 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
               }
               selectMinDistance={5}
               unselectAuto={true}
-              height="auto"
+              height={monthAthleteAutoHeight ? 'auto' : calendarFillHeightPx}
               locale="it"
               buttonText={{
                 today: 'Oggi',
@@ -1086,6 +1157,13 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
                 const dayName = arg.date
                   .toLocaleDateString('it-IT', { weekday: 'short' })
                   .toUpperCase()
+                // In vista mese le colonne sono solo LUN–DOM: il numero nel header era fuorviante
+                // (la data FC è della prima settimana visibile, non del giorno nella cella).
+                if (view === 'dayGridMonth') {
+                  return {
+                    html: `<span class="fc-col-header-day">${dayName}</span>`,
+                  }
+                }
                 const dayNum = arg.date.getDate()
                 return {
                   html: `<span class="fc-col-header-day">${dayName}</span><span class="fc-col-header-date">${dayNum}</span>`,
@@ -1254,46 +1332,8 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
           </div>
         )}
 
-        {/* FAB in basso: solo vista compatta atleta (staff usa header StaffContentLayout) */}
-        {onNewAppointment && compactToolbar && (
-          <>
-            <div
-              className="fixed z-50 bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-row items-center gap-2"
-              role="group"
-              aria-label="Navigazione periodo"
-            >
-              <button
-                type="button"
-                onClick={handlePrev}
-                className={CALENDAR_FAB_BUTTON_CLASS}
-                aria-label="Periodo precedente"
-              >
-                <ChevronLeft className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
-              </button>
-              <div className="min-w-[56px] w-14 shrink-0 pointer-events-none" aria-hidden />
-              <div className="min-w-[56px] w-14 shrink-0 pointer-events-none" aria-hidden />
-              <button
-                type="button"
-                onClick={handleNext}
-                className={CALENDAR_FAB_BUTTON_CLASS}
-                aria-label="Periodo successivo"
-              >
-                <ChevronRight className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={onNewAppointment}
-              className={cn(
-                'fixed z-50 right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]',
-                CALENDAR_FAB_BUTTON_CLASS,
-              )}
-              aria-label="Nuovo appuntamento"
-            >
-              <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
-            </button>
-          </>
-        )}
+        {/* FAB rimosso: ora renderizzati dalla pagina chiamante tra calendario e
+            paragrafo info (es. atleta → src/app/home/appuntamenti/page.tsx). */}
       </div>
     )
   },

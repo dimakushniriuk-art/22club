@@ -2,9 +2,15 @@
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Card } from '@/components/ui'
 import { RefreshButton } from '@/components/common/RefreshButton'
-import { CalendarView, AppointmentPopover } from '@/components/calendar'
+import {
+  CalendarView,
+  AppointmentPopover,
+  CALENDAR_FAB_BUTTON_CLASS,
+  type CalendarViewHandle,
+} from '@/components/calendar'
 import type { AppointmentUI, CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
 import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
@@ -110,6 +116,7 @@ function AppuntamentiPageContent() {
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null)
   const [navigateToDate, setNavigateToDate] = useState<Date | null>(null)
   const formPreviousFocusRef = useRef<HTMLElement | null>(null)
+  const calendarRef = useRef<CalendarViewHandle | null>(null)
 
   const futureAppointments = useMemo(() => {
     const now = new Date()
@@ -378,17 +385,17 @@ function AppuntamentiPageContent() {
 
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        <div className="min-h-0 flex-1 flex flex-col px-3 pb-24 safe-area-inset-bottom sm:px-4 md:px-6">
+        <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-2 pb-[max(1.25rem,calc(0.85rem+env(safe-area-inset-bottom)))] pt-0 safe-area-inset-bottom touch-manipulation sm:px-4 md:px-6 md:pb-[max(1.75rem,calc(1rem+env(safe-area-inset-bottom)))]">
           <AppuntamentiPageHeader
             subtitle="Calendario e appuntamenti con il trainer"
             onBack={handleBack}
           />
 
-          <div className="flex min-h-[min(420px,55dvh)] flex-1 flex-col rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] overflow-hidden">
+          <div className="flex min-h-0 w-full shrink-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] sm:rounded-lg">
             <CalendarView
+              ref={calendarRef}
               appointments={calendarAppointments}
               onEventClick={handleEventClick}
-              onNewAppointment={trainerStaffId ? handleNewAppointment : undefined}
               onEventDrop={handleEventDrop}
               onEventResize={handleEventResize}
               onSelectSlot={trainerStaffId ? handleSelectSlot : undefined}
@@ -408,9 +415,42 @@ function AppuntamentiPageContent() {
             />
           </div>
 
-          <div className="mt-3 space-y-2">
+          {trainerStaffId && (
+            <div
+              className="mt-2 flex shrink-0 flex-row flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:mt-3 sm:gap-x-8"
+              role="toolbar"
+              aria-label="Calendario: navigazione periodo e nuovo appuntamento"
+            >
+              <button
+                type="button"
+                onClick={() => calendarRef.current?.goPrev()}
+                className={CALENDAR_FAB_BUTTON_CLASS}
+                aria-label="Periodo precedente"
+              >
+                <ChevronLeft className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNewAppointment}
+                className={CALENDAR_FAB_BUTTON_CLASS}
+                aria-label="Nuovo appuntamento"
+              >
+                <Plus className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+              </button>
+              <button
+                type="button"
+                onClick={() => calendarRef.current?.goNext()}
+                className={CALENDAR_FAB_BUTTON_CLASS}
+                aria-label="Periodo successivo"
+              >
+                <ChevronRight className="h-7 w-7 shrink-0 stroke-[2.5] text-white" />
+              </button>
+            </div>
+          )}
+
+          <div className="mt-2 space-y-2 sm:mt-3">
             {trainerStaffId && (
-              <p className="text-center text-xs text-text-secondary px-1">
+              <p className="mx-auto max-w-md px-1 text-center text-[11px] leading-snug text-text-secondary sm:text-xs">
                 Libera prenotazione: max {openBookingSlotMax} prenotazioni per ogni fascia da 15
                 minuti (griglia oraria).
               </p>

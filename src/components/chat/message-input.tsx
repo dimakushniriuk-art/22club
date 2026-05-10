@@ -123,7 +123,9 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled || isUploading}
             className={cn(
-              'max-h-32 resize-none pr-24 transition-all duration-200',
+              // text-base (16px) evita l'auto-zoom di iOS Safari al focus su input/textarea
+              // con font < 16px (causa principale del "tutto si ingrandisce" sul telefono).
+              'max-h-32 resize-none pr-24 text-base transition-all duration-200',
               isWa
                 ? 'min-h-[52px] rounded-xl border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary shadow-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/30'
                 : 'min-h-[44px] rounded-lg border border-white/10 bg-white/[0.04] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20',

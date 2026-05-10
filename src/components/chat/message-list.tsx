@@ -91,6 +91,10 @@ export function MessageList({
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesStartRef = useRef<HTMLDivElement>(null)
+  /** Ref allo scroller interno: evitiamo `scrollIntoView` che, in presenza di un
+      antenato con `transform: scale()` (es. AthleteHomeViewportScale), può scrollare
+      anche il documento e far "saltare" la pagina dopo l'invio. */
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null)
   /** Id messaggio per cui sono visibili le azioni (bottone Elimina); null = tutti mostrano i 3 puntini */
@@ -113,9 +117,12 @@ export function MessageList({
     })
   }, [])
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages — usiamo scrollTo sul container così lo scroll
+  // resta confinato all'area messaggi e non propaga ad antenati (document/body).
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = scrollContainerRef.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [messages.length])
 
   // Prepara le icone per i file
@@ -431,6 +438,7 @@ export function MessageList({
 
         {/* Messages - raggruppati per data; scroll interno così l’input resta sul fondo del pannello chat */}
         <div
+          ref={scrollContainerRef}
           className={cn(
             'flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y',
             CHAT_WALLPAPER,
