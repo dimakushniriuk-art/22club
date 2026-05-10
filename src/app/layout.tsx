@@ -71,11 +71,7 @@ export default function RootLayout({
 
   return (
     <html lang="it">
-      <body
-        className="antialiased"
-        style={{ backgroundColor: '#0d0d0d' }}
-        suppressHydrationWarning
-      >
+      <body className="antialiased" style={{ backgroundColor: '#0d0d0d' }} suppressHydrationWarning>
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
         <ErrorBoundary>
           <QueryProvider>
