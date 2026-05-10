@@ -388,7 +388,10 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.22) !important;
 }
 
-.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table th.fc-col-header-cell:first-child {
+.fc-athlete-full-cell
+  .fc-dayGridMonth-view
+  .fc-scrollgrid-sync-table
+  th.fc-col-header-cell:first-child {
   border-left: 1px solid rgba(255, 255, 255, 0.17) !important;
 }
 
@@ -399,7 +402,10 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.17) !important;
 }
 
-.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-sync-table td.fc-daygrid-day:first-child {
+.fc-athlete-full-cell
+  .fc-dayGridMonth-view
+  .fc-scrollgrid-sync-table
+  td.fc-daygrid-day:first-child {
   border-left: 1px solid rgba(255, 255, 255, 0.17) !important;
 }
 
@@ -429,7 +435,10 @@
   -ms-overflow-style: none !important;
 }
 
-.fc-athlete-full-cell .fc-dayGridMonth-view .fc-scrollgrid-section-body .fc-scroller::-webkit-scrollbar {
+.fc-athlete-full-cell
+  .fc-dayGridMonth-view
+  .fc-scrollgrid-section-body
+  .fc-scroller::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
 }

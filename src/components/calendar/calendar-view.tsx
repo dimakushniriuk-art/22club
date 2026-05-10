@@ -1102,7 +1102,9 @@ export const CalendarView = forwardRef<CalendarViewHandle, CalendarViewProps>(
           ref={calendarShellRef}
           className={cn(
             'relative flex min-w-0 flex-col',
-            monthAthleteAutoHeight ? 'h-auto flex-none overflow-visible' : 'min-h-0 flex-1 overflow-hidden',
+            monthAthleteAutoHeight
+              ? 'h-auto flex-none overflow-visible'
+              : 'min-h-0 flex-1 overflow-hidden',
           )}
         >
           <div
