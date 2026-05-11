@@ -1,5 +1,10 @@
 export function getSentryEnvironment(): string {
-  return process.env.SENTRY_ENVIRONMENT ?? process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'development'
+  return (
+    process.env.SENTRY_ENVIRONMENT ??
+    process.env.VERCEL_ENV ??
+    process.env.NODE_ENV ??
+    'development'
+  )
 }
 
 export function getSentryRelease(): string | undefined {

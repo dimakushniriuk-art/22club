@@ -4,10 +4,7 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { isConfiguredSentryDsn } from '@/lib/sentry/is-configured-dsn'
-import {
-  getSentryEnvironment,
-  getSentryRelease,
-} from '@/lib/sentry/sentry-runtime-metadata'
+import { getSentryEnvironment, getSentryRelease } from '@/lib/sentry/sentry-runtime-metadata'
 
 const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
 const isProd = process.env.NODE_ENV === 'production'

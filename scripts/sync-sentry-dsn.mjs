@@ -65,7 +65,9 @@ function upsertVercelEnv(name, value, { sensitive = false } = {}) {
     } catch (error) {
       const stderr = error.stderr?.toString?.() ?? ''
       const stdout = error.stdout?.toString?.() ?? ''
-      console.error(`Vercel ${name} → ${target.join('/')} failed: ${stderr || stdout || error.message}`)
+      console.error(
+        `Vercel ${name} → ${target.join('/')} failed: ${stderr || stdout || error.message}`,
+      )
     }
   }
 }
