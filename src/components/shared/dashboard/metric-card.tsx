@@ -175,9 +175,13 @@ function metricHeading(props: MetricCardProps): string {
   return 'title' in props ? props.title : props.label
 }
 
-function buildMetricAriaLabel(props: MetricCardProps, displayValue: string | number): string {
-  const parts = [metricHeading(props), String(displayValue)]
-  if (props.statusText) parts.push(props.statusText)
+function buildMetricAriaLabel(
+  heading: string,
+  statusText: string | undefined,
+  displayValue: string | number,
+): string {
+  const parts = [heading, String(displayValue)]
+  if (statusText) parts.push(statusText)
   return parts.join('. ')
 }
 
@@ -406,8 +410,8 @@ export const MetricCard = memo(function MetricCard(props: MetricCardProps) {
 
   const heading = metricHeading(props)
   const ariaLabel = useMemo(
-    () => buildMetricAriaLabel(props, displayValue),
-    [props.statusText, displayValue, heading],
+    () => buildMetricAriaLabel(heading, props.statusText, displayValue),
+    [heading, displayValue, props.statusText],
   )
 
   const shouldHaptic = enableHaptic ?? Boolean(onClick)

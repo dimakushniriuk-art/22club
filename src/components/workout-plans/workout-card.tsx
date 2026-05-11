@@ -149,7 +149,6 @@ export function WorkoutCard({
     'group relative overflow-hidden cursor-pointer rounded-lg border border-white/10 bg-gradient-to-b from-zinc-900/95 to-black/80 p-4 sm:p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/20'
   const iconClass = 'h-4 w-4 shrink-0 text-text-tertiary'
   const labelClass = 'text-xs text-text-tertiary font-medium'
-  const valueClass = 'text-sm text-text-primary'
 
   const creationNum = workout.creation_order_number
   const titleWithOrder = (

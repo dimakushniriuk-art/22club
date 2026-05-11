@@ -326,7 +326,7 @@ function ExerciseMediaDisplay({
       .catch(() => {
         setAutoplayBlocked(true)
       })
-  }, [])
+  }, [videoRef])
 
   useEffect(() => {
     if (!videoUrl || !isValidVideoUrl || videoError) return
@@ -593,6 +593,9 @@ function useSmoothCircuitProgressPercent(opts: {
   }, [opts.active, opts.running, opts.phaseKey])
 
   return React.useMemo(() => {
+    // Invalidazione memo su tick RAF e cambio fase (corpo legge solo ref / Date.now)
+    void rafTick
+    void opts.phaseKey
     if (!opts.active) return opts.stalePercent
     if (opts.phaseTotalSeconds <= 0) return opts.stalePercent
     if (!opts.running) {
@@ -973,8 +976,8 @@ export function AllenamentiOggiPageContent() {
   >('idle')
   const [circuitAutoSeconds, setCircuitAutoSeconds] = useState<number | null>(null)
   const [circuitAutoRunning, setCircuitAutoRunning] = useState(false)
-  const [circuitCycleTarget, setCircuitCycleTarget] = useState(1)
-  const [circuitCompletedCycles, setCircuitCompletedCycles] = useState(0)
+  const circuitCycleTargetRef = React.useRef(1)
+  const circuitCompletedCyclesRef = React.useRef(0)
   const lastCircuitExercisesRef = React.useRef<Record<string, unknown>[] | null>(null)
   const [weightPicker, setWeightPicker] = useState<{
     exerciseId: string
@@ -1488,8 +1491,8 @@ export function AllenamentiOggiPageContent() {
       setCircuitAutoPhase('idle')
       setCircuitAutoSeconds(null)
       setCircuitAutoRunning(false)
-      setCircuitCycleTarget(1)
-      setCircuitCompletedCycles(0)
+      circuitCycleTargetRef.current = 1
+      circuitCompletedCyclesRef.current = 0
       lastCircuitExercisesRef.current = null
       return
     }
@@ -1500,8 +1503,8 @@ export function AllenamentiOggiPageContent() {
     const { totalCycles, completedCycles } = getCircuitCycleStats(
       circuitFullscreenPreview.exercises,
     )
-    setCircuitCycleTarget(totalCycles)
-    setCircuitCompletedCycles(completedCycles)
+    circuitCycleTargetRef.current = totalCycles
+    circuitCompletedCyclesRef.current = completedCycles
   }, [circuitFullscreenPreview, getCircuitCycleStats])
 
   /** Allinea la lista esercizi del fullscreen al workout session (serie completate da autoplay circuito). */
@@ -1657,8 +1660,8 @@ export function AllenamentiOggiPageContent() {
       const { totalCycles, completedCycles } = getCircuitCycleStats(
         circuitFullscreenPreview.exercises,
       )
-      setCircuitCycleTarget(totalCycles)
-      setCircuitCompletedCycles(completedCycles)
+      circuitCycleTargetRef.current = totalCycles
+      circuitCompletedCyclesRef.current = completedCycles
     }
     setCircuitAutoPhase('prepare')
     setCircuitAutoSeconds(CIRCUIT_FULLSCREEN_PREPARE_SECONDS)
@@ -1677,10 +1680,6 @@ export function AllenamentiOggiPageContent() {
       circuitFullscreenPreview.exercises,
     )
     const currentCycleNumber = Math.min(Math.max(1, tc), Math.max(1, rc + 1))
-    const cycleIndexes = getCircuitExerciseIndexesForCycle(
-      circuitFullscreenPreview.exercises,
-      currentCycleNumber,
-    )
     const safeIndex =
       totalExercises > 0
         ? Math.min(Math.max(circuitFullscreenPreview.activeIndex, 0), totalExercises - 1)
@@ -1775,7 +1774,6 @@ export function AllenamentiOggiPageContent() {
     circuitAutoPhase,
     circuitAutoSeconds,
     getCircuitCycleStats,
-    getCircuitExerciseIndexesForCycle,
   ])
 
   const smoothCircuitProgressPercent = useSmoothCircuitProgressPercent(
@@ -2496,7 +2494,13 @@ export function AllenamentiOggiPageContent() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [inlineExecutionTimerRunning, inlineExecutionTimerSeconds, inlineExecutionPreRollRemaining])
+  }, [
+    inlineExecutionTimerRunning,
+    inlineExecutionTimerSeconds,
+    inlineExecutionPreRollRemaining,
+    updateSet,
+    updateSetByIndex,
+  ])
 
   const nextExercise = () => {
     if (currentBlockIndex < blocks.length - 1) {
@@ -3119,8 +3123,6 @@ export function AllenamentiOggiPageContent() {
                     (firstCircuitExercise.video_url as string | undefined | null) ?? null
                   const firstCircuitThumbUrl =
                     (firstCircuitExercise.thumb_url as string | undefined | null) ?? null
-                  const firstCircuitName =
-                    (firstCircuitExercise.name as string | undefined) ?? 'Primo esercizio circuito'
                   const canStartCircuitPreview = Boolean(
                     (firstCircuitVideoUrl &&
                       typeof firstCircuitVideoUrl === 'string' &&
@@ -4920,20 +4922,6 @@ export function AllenamentiOggiPageContent() {
                         : circuitAutoPhase === 'completed'
                           ? 'Recupero terminato'
                           : `Recupero ${valueRest != null && valueRest > 0 ? valueRest : 60} dopo esecuzione`
-            const circuitPhaseTotalSeconds =
-              circuitAutoPhase === 'prepare'
-                ? CIRCUIT_FULLSCREEN_PREPARE_SECONDS
-                : circuitAutoPhase === 'execution'
-                  ? valueExecution != null && valueExecution > 0
-                    ? valueExecution
-                    : circuitTimerMainValue
-                  : circuitAutoPhase === 'reps'
-                    ? 0
-                    : circuitAutoPhase === 'rest'
-                      ? valueRest != null && valueRest > 0
-                        ? valueRest
-                        : 60
-                      : 0
             const circuitProgressColorClass =
               circuitAutoPhase === 'prepare'
                 ? circuitPrepareTierBarClass
@@ -5234,8 +5222,8 @@ export function AllenamentiOggiPageContent() {
                         setCircuitAutoPhase('idle')
                         setCircuitAutoSeconds(null)
                         setCircuitAutoRunning(false)
-                        setCircuitCompletedCycles(0)
-                        setCircuitCycleTarget(1)
+                        circuitCompletedCyclesRef.current = 0
+                        circuitCycleTargetRef.current = 1
                         setCircuitFullscreenPreview(null)
                       }}
                     >
@@ -5261,8 +5249,8 @@ export function AllenamentiOggiPageContent() {
                           setCircuitAutoPhase('idle')
                           setCircuitAutoSeconds(null)
                           setCircuitAutoRunning(false)
-                          setCircuitCompletedCycles(0)
-                          setCircuitCycleTarget(1)
+                          circuitCompletedCyclesRef.current = 0
+                          circuitCycleTargetRef.current = 1
                           setCircuitFullscreenPreview(null)
                         }}
                         variant={isBlockCompleted ? 'success' : 'default'}

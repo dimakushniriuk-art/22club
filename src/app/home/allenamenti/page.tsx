@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useMemo, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -16,7 +16,7 @@ import { createLogger } from '@/lib/logger'
 import { notifyError } from '@/lib/notifications'
 import { useNormalizedRole, toLegacyRole } from '@/lib/utils/role-normalizer-client'
 import { isValidProfile } from '@/lib/utils/type-guards'
-import { useSupabaseClient } from '@/hooks/use-supabase-client'
+import { useMyTrainerProfile } from '@/hooks/use-my-trainer-profile'
 import { useAthleteAllenamentiPaths } from '@/contexts/athlete-allenamenti-preview-context'
 import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
 import { useWorkoutsPaneOptional } from '@/contexts/workouts-pane-context'
@@ -134,12 +134,12 @@ function computeStatsFromLogs(
 export function AllenamentiHomePageContent() {
   const router = useRouter()
   const { user } = useAuth()
-  const supabase = useSupabaseClient()
   const { isPreview, pathBase } = useAthleteAllenamentiPaths()
   const workoutsPane = useWorkoutsPaneOptional()
   const workoutsPaneNaturalFlow = Boolean(workoutsPane)
   const { athleteProfileId, authLoading } = useResolvedAthleteProfileForAllenamenti()
-  const [trainerAvatarUrl, setTrainerAvatarUrl] = useState<string | null>(null)
+  const { data: trainerRow } = useMyTrainerProfile(!isPreview && Boolean(user?.id))
+  const trainerAvatarUrl = trainerRow?.pt_avatar_url ?? null
 
   // Type guard per user
   const isValidUser = user && isValidProfile(user)
@@ -150,23 +150,6 @@ export function AllenamentiHomePageContent() {
   const normalizedRole = useMemo(() => {
     return toLegacyRole(normalizedRoleRaw)
   }, [normalizedRoleRaw])
-
-  // Carica avatar del trainer assegnato (per card motivazionale) — solo vista atleta
-  useEffect(() => {
-    if (isPreview || !user?.id) return
-    let cancelled = false
-    supabase.rpc('get_my_trainer_profile').then((res: { data: unknown; error: unknown }) => {
-      const { data, error } = res
-      if (cancelled) return
-      if (error || !Array.isArray(data) || data.length === 0) return
-      const row = data[0] as { pt_avatar_url?: string | null }
-      const url = row?.pt_avatar_url ?? null
-      if (url && typeof url === 'string') setTrainerAvatarUrl(url)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [user?.id, supabase, isPreview])
 
   // Stabilizza filters per evitare re-fetch continui
   // Usa athleteProfileId (profiles.id) per workout_logs.atleta_id

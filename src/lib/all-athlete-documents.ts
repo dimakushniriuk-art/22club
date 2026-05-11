@@ -123,6 +123,48 @@ function documentsPathFromNutritionPdfRef(
  * @param profileId - profiles.id (per documents e payments)
  * @param userId - profiles.user_id / auth.uid() (per athlete_medical_data e athlete_administrative_data); opzionale
  */
+/**
+ * True se esiste almeno un documento con stato `scaduto` nella stessa logica aggregata di
+ * {@link getAllAthleteDocuments} (tabella `documents` + certificato medico con scadenza passata).
+ * Evita il caricamento dell’intero elenco unificato sulla home per il solo pallino tile DOCUMENTI.
+ */
+export async function hasAthleteExpiredDocuments(
+  profileId: string,
+  userId: string | null,
+): Promise<boolean> {
+  const supabase = createClient()
+
+  const expiredRowInDocuments = supabase
+    .from('documents')
+    .select('id')
+    .eq('athlete_id', profileId)
+    .eq('status', 'scaduto')
+    .limit(1)
+    .maybeSingle()
+    .then(({ data, error }) => !error && data != null)
+
+  if (!userId) {
+    return await expiredRowInDocuments
+  }
+
+  const expiredMedicalCert = supabase
+    .from('athlete_medical_data')
+    .select('certificato_medico_url, certificato_medico_scadenza')
+    .eq('athlete_id', userId)
+    .maybeSingle()
+    .then(({ data, error }) => {
+      if (error || !data) return false
+      const url = (data as { certificato_medico_url?: string | null }).certificato_medico_url
+      const scadenza = (data as { certificato_medico_scadenza?: string | null })
+        .certificato_medico_scadenza
+      if (!url?.trim() || !scadenza) return false
+      return new Date(scadenza) < new Date()
+    })
+
+  const [a, b] = await Promise.all([expiredRowInDocuments, expiredMedicalCert])
+  return a || b
+}
+
 export async function getAllAthleteDocuments(
   profileId: string,
   userId: string | null,

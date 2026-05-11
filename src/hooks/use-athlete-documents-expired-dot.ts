@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { getAllAthleteDocuments } from '@/lib/all-athlete-documents'
+import { hasAthleteExpiredDocuments } from '@/lib/all-athlete-documents'
 import { subscribePostgresChanges } from '@/lib/realtimeClient'
 import { useRealtimeResubscribeToken } from '@/hooks/useRealtimeChannel'
 
@@ -22,8 +22,7 @@ export function useAthleteDocumentsExpiredDot(
       return
     }
     try {
-      const list = await getAllAthleteDocuments(profileId, athleteUserId)
-      setHasExpired(list.some((d) => d.status === 'scaduto'))
+      setHasExpired(await hasAthleteExpiredDocuments(profileId, athleteUserId))
     } catch {
       setHasExpired(false)
     }

@@ -39,6 +39,10 @@ export const queryKeys = {
     all: ['payments'] as const,
     byAthlete: (athleteId: string) => ['payments', athleteId] as const,
   },
+  /** RPC `get_my_trainer_profile` — cache condivisa tra /home/allenamenti, calendario atleta, ecc. */
+  athlete: {
+    myTrainerProfile: ['athlete', 'my-trainer-profile'] as const,
+  },
   /**
    * Prefissi React Query con `refetchOnWindowFocus` via `setQueryDefaults` (solo query leggere).
    */

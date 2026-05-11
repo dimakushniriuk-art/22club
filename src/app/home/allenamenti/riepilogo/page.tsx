@@ -52,7 +52,11 @@ import {
   formatWorkoutRepsLabel,
 } from '@/lib/constants/workout-reps-select'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
-import type { WorkoutInstagramShareExerciseLine } from './workout-instagram-share-target'
+import { buildWorkoutShareHighlights } from '@/lib/workouts/build-workout-share-highlights'
+import type {
+  WorkoutShareCardProps,
+  WorkoutShareExerciseMediaLine,
+} from '@/lib/workouts/workout-share-types'
 import { WorkoutInstagramSharePreviewDialog } from './workout-instagram-share-preview-dialog'
 
 const logger = createLogger('app:home:allenamenti:riepilogo:page')
@@ -239,9 +243,9 @@ export function RiepilogoPageContent({
   const [isSubmitted, _setIsSubmitted] = useState(false)
   const [paneFinalizeLoading, setPaneFinalizeLoading] = useState(false)
   const [instagramSharePreviewOpen, setInstagramSharePreviewOpen] = useState(false)
-  const [instagramShareLines, setInstagramShareLines] = useState<
-    WorkoutInstagramShareExerciseLine[]
-  >([])
+  const [instagramShareLines, setInstagramShareLines] = useState<WorkoutShareExerciseMediaLine[]>(
+    [],
+  )
   const [gymLogoShareSrc, setGymLogoShareSrc] = useState('/logo.svg')
 
   /** Dashboard Workouts: testi riepilogo coerenti con sessione vista staff (non "in autonomia"). */
@@ -264,7 +268,7 @@ export function RiepilogoPageContent({
       return
     }
 
-    const fallbackLines: WorkoutInstagramShareExerciseLine[] = summary.exercises.map((ex) => ({
+    const fallbackLines: WorkoutShareExerciseMediaLine[] = summary.exercises.map((ex) => ({
       name: ex.exercise.name,
       maxWeightKg: Math.max(0, ...ex.sets.map((s) => s.performed_weight)),
       isPersonalRecord: false,
@@ -336,7 +340,7 @@ export function RiepilogoPageContent({
           }
         }
 
-        const lines: WorkoutInstagramShareExerciseLine[] = summary.exercises.map((ex) => {
+        const lines: WorkoutShareExerciseMediaLine[] = summary.exercises.map((ex) => {
           const sessionMax = Math.max(0, ...ex.sets.map((s) => s.performed_weight))
           const hist = maxByExercise.get(ex.exercise.id)
           const histVal = hist !== undefined ? hist : null
@@ -361,24 +365,6 @@ export function RiepilogoPageContent({
       cancelled = true
     }
   }, [summary, athleteProfileId, supabase])
-
-  const instagramShareRevision = useMemo(() => {
-    if (!summary) return ''
-    try {
-      return JSON.stringify({
-        id: summary.workout_log_id,
-        title: summary.workout_title,
-        completed: summary.completed_at,
-        vol: summary.performance_stats.total_volume,
-        time: summary.total_time,
-        coached: summary.is_coached,
-        lines: instagramShareLines,
-        logo: gymLogoShareSrc,
-      })
-    } catch {
-      return summary.workout_log_id
-    }
-  }, [summary, instagramShareLines, gymLogoShareSrc])
 
   // Recupera workout_id da query params se disponibile (passato dalla pagina precedente)
   const workoutIdFromParams = workoutLogIdOverride ?? searchParams.get('workout_id')
@@ -1047,6 +1033,91 @@ export function RiepilogoPageContent({
     return `${mins}m`
   }
 
+  const workoutShareCardProps = useMemo((): WorkoutShareCardProps | null => {
+    if (!summary) return null
+    const completionPctLocal = summary.completion_percent
+    const completionSessionLabel =
+      summary.total_sets > 0
+        ? 'Completamento serie'
+        : summary.total_exercises > 0
+          ? 'Esercizi completati'
+          : 'Completamento'
+
+    const prCount = instagramShareLines.filter((l) => l.isPersonalRecord).length
+
+    const exercisesDisplay = summary.exercises.slice(0, 4).map((ex, idx) => {
+      const line = instagramShareLines[idx]
+      const setsDone = ex.sets.filter((s) => s.is_completed).length
+      const setsTotal = ex.sets.length
+      const repsLabel =
+        ex.sets.length > 0 ? ex.sets.map((s) => String(s.performed_reps)).join(' · ') : '—'
+      const maxW = Math.max(0, ...ex.sets.map((s) => s.performed_weight))
+      const weightLabel = maxW > 0 ? `${Math.round(maxW)} kg` : null
+      return {
+        name: ex.exercise.name,
+        imageUrl: line?.mediaPreviewUrl ?? pickExerciseSharePreviewUrl(ex.exercise),
+        videoUrl: line?.mediaVideoUrl ?? pickExerciseShareVideoUrl(ex.exercise),
+        setsLabel: `${setsDone}/${setsTotal} serie`,
+        repsLabel,
+        weightLabel,
+        completed: ex.is_completed,
+        highlightPr: Boolean(line?.isPersonalRecord),
+      }
+    })
+
+    const highlights = buildWorkoutShareHighlights({
+      completionPct: completionPctLocal,
+      completedExercises: summary.completed_exercises,
+      totalExercises: summary.total_exercises,
+      completedSets: summary.completed_sets,
+      totalSets: summary.total_sets,
+      personalRecordsCount: prCount,
+    })
+
+    return {
+      completedAtLabel: formatDateTime(summary.completed_at),
+      completedAtIso: summary.completed_at,
+      workoutTitle: summary.workout_title,
+      completionPct: completionPctLocal,
+      completionSessionLabel,
+      stats: {
+        volumeKgFormatted: formatVolumeIt(summary.performance_stats.total_volume),
+        durationLabel: formatTime(summary.total_time),
+        durationMinutes: summary.total_time,
+        exercisesCompleted: summary.completed_exercises,
+        exercisesTotal: summary.total_exercises,
+        setsCompleted: summary.completed_sets,
+        setsTotal: summary.total_sets,
+        averageLoadPerSetKg: summary.performance_stats.average_load_per_set,
+        completionPct: completionPctLocal,
+      },
+      exercises: exercisesDisplay,
+      exercisesOverflowCount: Math.max(0, summary.exercises.length - 4),
+      highlights,
+      brand: { name: '22Club', logoSrc: gymLogoShareSrc },
+      trainerOrGymName: null,
+    }
+  }, [summary, instagramShareLines, gymLogoShareSrc])
+
+  const instagramShareRevision = useMemo(() => {
+    if (!summary) return ''
+    try {
+      return JSON.stringify({
+        id: summary.workout_log_id,
+        title: summary.workout_title,
+        completed: summary.completed_at,
+        vol: summary.performance_stats.total_volume,
+        time: summary.total_time,
+        coached: summary.is_coached,
+        lines: instagramShareLines,
+        logo: gymLogoShareSrc,
+        card: workoutShareCardProps,
+      })
+    } catch {
+      return summary.workout_log_id
+    }
+  }, [summary, instagramShareLines, gymLogoShareSrc, workoutShareCardProps])
+
   const getMuscleGroupIcon = (muscleGroup: string): LucideIcon => {
     const raw = (muscleGroup ?? '').toLowerCase().trim()
     const alias: Record<string, string> = {
@@ -1661,7 +1732,7 @@ export function RiepilogoPageContent({
               onClick={() => setInstagramSharePreviewOpen(true)}
             >
               <Instagram className="h-4 w-4 shrink-0 text-pink-400" aria-hidden />
-              Pubblica i tuoi risultati
+              Condividi risultati
             </Button>
             <Button
               type="button"
@@ -1686,22 +1757,7 @@ export function RiepilogoPageContent({
             open={instagramSharePreviewOpen}
             onOpenChange={setInstagramSharePreviewOpen}
             shareRevision={instagramShareRevision}
-            gymLogoSrc={gymLogoShareSrc}
-            workoutTitle={summary.workout_title}
-            completedAtLabel={formatDateTime(summary.completed_at)}
-            modeIsCoached={summary.is_coached || Boolean(workoutsPane)}
-            completedExercises={summary.completed_exercises}
-            totalExercises={summary.total_exercises}
-            completedSets={summary.completed_sets}
-            totalSets={summary.total_sets}
-            durationLabel={formatTime(summary.total_time)}
-            volumeKgFormatted={formatVolumeIt(summary.performance_stats.total_volume)}
-            completionPct={completionPct}
-            completionLabel={completionLabel}
-            exerciseLines={instagramShareLines}
-            summaryAverageLoadPerSet={summary.performance_stats.average_load_per_set}
-            summaryConsistencyScore={summary.performance_stats.consistency_score}
-            summaryPersonalRecords={summary.performance_stats.personal_records}
+            data={workoutShareCardProps}
           />
         </div>
       </div>

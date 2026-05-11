@@ -1,6 +1,6 @@
 {
   "name": "22club-setup",
-  "version": "1.0.05",
+  "version": "1.0.06",
   "private": true,
   "type": "module",
   "scripts": {
@@ -168,6 +168,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",

@@ -35,7 +35,7 @@ export function getRealtimeChannel(name: string): RealtimeChannel {
 
 type TableEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
 
-export type PostgresChangesSpec<Row extends Record<string, any> = Record<string, any>> = {
+export type PostgresChangesSpec<Row extends Record<string, unknown> = Record<string, unknown>> = {
   event: TableEvent
   schema?: string
   table: string
@@ -122,7 +122,9 @@ export function subscribeToChannel<T>(
  * (filtri inclusi). Usare un `channelName` stabile e univoco per contesto (es. suffisso profilo).
  * Allineato a cleanup su errore / timeout come `subscribeToTable`.
  */
-export function subscribePostgresChanges<Row extends Record<string, any> = Record<string, any>>(
+export function subscribePostgresChanges<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(
   channelName: string,
   specs: PostgresChangesSpec<Row>[],
 ) {

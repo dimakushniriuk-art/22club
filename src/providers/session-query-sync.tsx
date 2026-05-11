@@ -1,7 +1,7 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import {
   AUTH_TOKEN_REFRESHED_EVENT,
   SESSION_RESUMED_EVENT,
@@ -19,10 +19,11 @@ const DEBOUNCE_MS = 450
  */
 export function SessionQuerySync() {
   const queryClient = useQueryClient()
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    let sessionDebounce: ReturnType<typeof setTimeout> | null = null
+    let tokenDebounce: ReturnType<typeof setTimeout> | null = null
+
     const runInvalidate = (source: 'session_resumed' | 'token_refreshed') => {
       sessionStabilityBreadcrumb(
         source === 'session_resumed' ? 'session_resumed' : 'token_refreshed',
@@ -39,12 +40,19 @@ export function SessionQuerySync() {
     }
 
     const schedule = (source: 'session_resumed' | 'token_refreshed') => {
-      const ref = source === 'session_resumed' ? timerRef : tokenTimerRef
-      if (ref.current) clearTimeout(ref.current)
-      ref.current = setTimeout(() => {
-        ref.current = null
-        runInvalidate(source)
-      }, DEBOUNCE_MS)
+      if (source === 'session_resumed') {
+        if (sessionDebounce) clearTimeout(sessionDebounce)
+        sessionDebounce = setTimeout(() => {
+          sessionDebounce = null
+          runInvalidate(source)
+        }, DEBOUNCE_MS)
+      } else {
+        if (tokenDebounce) clearTimeout(tokenDebounce)
+        tokenDebounce = setTimeout(() => {
+          tokenDebounce = null
+          runInvalidate(source)
+        }, DEBOUNCE_MS)
+      }
     }
 
     const onSession = () => schedule('session_resumed')
@@ -55,8 +63,8 @@ export function SessionQuerySync() {
     return () => {
       window.removeEventListener(SESSION_RESUMED_EVENT, onSession)
       window.removeEventListener(AUTH_TOKEN_REFRESHED_EVENT, onToken)
-      if (timerRef.current) clearTimeout(timerRef.current)
-      if (tokenTimerRef.current) clearTimeout(tokenTimerRef.current)
+      if (sessionDebounce) clearTimeout(sessionDebounce)
+      if (tokenDebounce) clearTimeout(tokenDebounce)
     }
   }, [queryClient])
 

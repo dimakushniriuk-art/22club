@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { frequentQueryCache } from '@/lib/cache/cache-strategies'
 import { localStorageCache } from '@/lib/cache/local-storage-cache'
 import { useChatNotifications } from './use-chat-notifications'

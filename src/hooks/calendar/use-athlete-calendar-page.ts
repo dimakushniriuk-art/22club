@@ -3,7 +3,7 @@
 // Creazione/eliminazione solo per created_by_role === 'athlete'
 // ============================================================
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
@@ -23,6 +23,7 @@ import {
   countBookingsOverlappingWindow,
 } from '@/lib/appointments/open-booking-grid-segments'
 import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
+import { useMyTrainerProfile } from '@/hooks/use-my-trainer-profile'
 
 const logger = createLogger('hooks:calendar:use-athlete-calendar-page')
 
@@ -61,15 +62,22 @@ export function useAthleteCalendarPage(profileId: string | null) {
   const [appointments, setAppointments] = useState<AppointmentUI[]>([])
   const [slotBookingCounts, setSlotBookingCounts] = useState<Record<string, number>>({})
   const [appointmentsLoading, setAppointmentsLoading] = useState(true)
-  const [staffId, setStaffId] = useState<string | null>(null)
   const [orgId, setOrgId] = useState<string | null>(null)
-  const [trainerName, setTrainerName] = useState<string | null>(null)
-  const [trainerLoading, setTrainerLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   /** Allineato a staff_calendar_settings / trigger check_open_slot_capacity (default 4) */
   const [openBookingSlotMax, setOpenBookingSlotMax] = useState(
     DEFAULT_MAX_FREE_PASS_ATHLETES_PER_SLOT,
   )
+
+  const trainerQueryEnabled = Boolean(profileId)
+  const { data: trainerRow, isPending: trainerPending } = useMyTrainerProfile(trainerQueryEnabled)
+  const staffId = trainerRow?.pt_id ?? null
+  const trainerName = useMemo(() => {
+    if (!trainerRow) return null
+    const name = [trainerRow.pt_nome, trainerRow.pt_cognome].filter(Boolean).join(' ').trim()
+    return name || null
+  }, [trainerRow])
+  const trainerLoading = trainerQueryEnabled && trainerPending
 
   // org_id del profilo atleta (per insert appuntamenti)
   useEffect(() => {
@@ -83,32 +91,6 @@ export function useAthleteCalendarPage(profileId: string | null) {
         if (data?.org_id) setOrgId(data.org_id as string)
       })
   }, [profileId])
-
-  // Trainer assegnato (pt_id = staff_id per creazione)
-  useEffect(() => {
-    let cancelled = false
-    setTrainerLoading(true)
-    supabase.rpc('get_my_trainer_profile').then(({ data, error }) => {
-      if (cancelled) return
-      setTrainerLoading(false)
-      if (error || !Array.isArray(data) || data.length === 0) {
-        setStaffId(null)
-        setTrainerName(null)
-        return
-      }
-      const row = data[0] as {
-        pt_id?: string
-        pt_nome?: string | null
-        pt_cognome?: string | null
-      }
-      setStaffId(row?.pt_id ?? null)
-      const name = [row?.pt_nome, row?.pt_cognome].filter(Boolean).join(' ').trim()
-      setTrainerName(name || null)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   useEffect(() => {
     if (!staffId) {
