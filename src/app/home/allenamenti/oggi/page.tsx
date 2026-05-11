@@ -1769,12 +1769,7 @@ export function AllenamentiOggiPageContent() {
       circuitProgressPercent,
       phaseKey,
     }
-  }, [
-    circuitFullscreenPreview,
-    circuitAutoPhase,
-    circuitAutoSeconds,
-    getCircuitCycleStats,
-  ])
+  }, [circuitFullscreenPreview, circuitAutoPhase, circuitAutoSeconds, getCircuitCycleStats])
 
   const smoothCircuitProgressPercent = useSmoothCircuitProgressPercent(
     circuitFullscreenProgressModel

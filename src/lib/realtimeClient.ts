@@ -124,10 +124,7 @@ export function subscribeToChannel<T>(
  */
 export function subscribePostgresChanges<
   Row extends Record<string, unknown> = Record<string, unknown>,
->(
-  channelName: string,
-  specs: PostgresChangesSpec<Row>[],
-) {
+>(channelName: string, specs: PostgresChangesSpec<Row>[]) {
   if (specs.length === 0) {
     return () => {}
   }

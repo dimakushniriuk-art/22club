@@ -106,7 +106,9 @@ function HeroStat({
     <div className="flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-6 text-center">
       <div className="mb-2 text-zinc-500">{icon}</div>
       <div className="text-zinc-50">{children}</div>
-      <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">{label}</p>
+      <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+        {label}
+      </p>
     </div>
   )
 }
@@ -155,7 +157,13 @@ export const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03]">
               {brand.logoSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={brand.logoSrc} alt="" width={28} height={28} className="object-contain opacity-95" />
+                <img
+                  src={brand.logoSrc}
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="object-contain opacity-95"
+                />
               ) : (
                 <span className="text-[11px] font-bold text-cyan-400/90">22</span>
               )}
@@ -225,16 +233,27 @@ export const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps
           {/* 3 — Statistiche principali (terzo focus) */}
           <section className="mt-8 shrink-0">
             <div className="grid grid-cols-3 gap-4">
-              <HeroStat label="Volume" icon={<Weight className="h-5 w-5 text-cyan-400/80" aria-hidden />}>
+              <HeroStat
+                label="Volume"
+                icon={<Weight className="h-5 w-5 text-cyan-400/80" aria-hidden />}
+              >
                 <p className="text-[28px] font-bold tabular-nums leading-none tracking-tight text-white">
                   {stats.volumeKgFormatted}
                   <span className="ml-1 text-[13px] font-medium text-zinc-500">kg</span>
                 </p>
               </HeroStat>
-              <HeroStat label="Serie" icon={<ListOrdered className="h-5 w-5 text-cyan-400/80" aria-hidden />}>
-                <p className="text-[28px] font-bold tabular-nums leading-none text-white">{stats.setsCompleted}</p>
+              <HeroStat
+                label="Serie"
+                icon={<ListOrdered className="h-5 w-5 text-cyan-400/80" aria-hidden />}
+              >
+                <p className="text-[28px] font-bold tabular-nums leading-none text-white">
+                  {stats.setsCompleted}
+                </p>
               </HeroStat>
-              <HeroStat label="Sessione" icon={<Flame className="h-5 w-5 text-cyan-400/80" aria-hidden />}>
+              <HeroStat
+                label="Sessione"
+                icon={<Flame className="h-5 w-5 text-cyan-400/80" aria-hidden />}
+              >
                 <p className="text-[28px] font-bold tabular-nums leading-none text-cyan-300">
                   {stats.completionPct}
                   <span className="text-[15px] font-semibold text-cyan-400/90">%</span>
@@ -245,8 +264,12 @@ export const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps
 
           {/* Footer minimale — sempre sotto il contenuto, niente overlap */}
           <footer className="mt-10 shrink-0 border-t border-white/[0.05] pt-8 text-center">
-            <p className="text-[11px] font-semibold tracking-[0.24em] text-zinc-500">{brand.name}</p>
-            <p className="mt-2 text-[9px] font-medium tracking-[0.14em] text-zinc-600">Condividi i tuoi risultati</p>
+            <p className="text-[11px] font-semibold tracking-[0.24em] text-zinc-500">
+              {brand.name}
+            </p>
+            <p className="mt-2 text-[9px] font-medium tracking-[0.14em] text-zinc-600">
+              Condividi i tuoi risultati
+            </p>
             {trainerOrGymName ? (
               <p className="mt-2 text-[9px] text-zinc-700">{trainerOrGymName}</p>
             ) : null}
