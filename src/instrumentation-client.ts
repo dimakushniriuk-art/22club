@@ -4,6 +4,10 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { isConfiguredSentryDsn } from '@/lib/sentry/is-configured-dsn'
+import {
+  getSentryEnvironment,
+  getSentryRelease,
+} from '@/lib/sentry/sentry-runtime-metadata'
 import { hasAnalyticsConsent } from '@/lib/cookie-consent-storage'
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
@@ -14,6 +18,8 @@ if (isConfiguredSentryDsn(dsn)) {
 
   Sentry.init({
     dsn,
+    environment: getSentryEnvironment(),
+    release: getSentryRelease(),
 
     integrations: [Sentry.replayIntegration()],
 

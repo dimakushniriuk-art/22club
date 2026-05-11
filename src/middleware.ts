@@ -101,7 +101,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname === '/favicon.ico' ||
     pathname === '/manifest.json' ||
-    pathname.startsWith('/icon')
+    pathname.startsWith('/icon') ||
+    pathname === '/monitoring' ||
+    pathname.startsWith('/monitoring/')
   ) {
     return NextResponse.next()
   }
@@ -594,7 +596,7 @@ export const config = {
      * - manifest.json / icon-*.png / robots / sitemap (asset PWA pubblici)
      * - Estensioni statiche (immagini, font, css, js, mappe, pdf worker) → Vercel li serve direttamente senza invocare il middleware (riduce cold start / TTFB su mobile).
      */
-    '/((?!_next/static|_next/image|favicon.ico|api|manifest.json|icon-|sw\\.js|pdf\\.worker\\.min\\.mjs|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|ico|webp|avif|woff|woff2|ttf|eot|css|js|map|mjs)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api|monitoring|manifest.json|icon-|sw\\.js|pdf\\.worker\\.min\\.mjs|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|ico|webp|avif|woff|woff2|ttf|eot|css|js|map|mjs)$).*)',
   ],
   runtime: 'nodejs',
 }

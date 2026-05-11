@@ -5,6 +5,10 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { isConfiguredSentryDsn } from '@/lib/sentry/is-configured-dsn'
+import {
+  getSentryEnvironment,
+  getSentryRelease,
+} from '@/lib/sentry/sentry-runtime-metadata'
 
 const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
 const isProd = process.env.NODE_ENV === 'production'
@@ -13,8 +17,10 @@ if (isConfiguredSentryDsn(dsn)) {
   // Edge runtime (middleware): vedi nota sentry.server.config.ts.
   Sentry.init({
     dsn,
+    environment: getSentryEnvironment(),
+    release: getSentryRelease(),
     tracesSampleRate: isProd ? 0.1 : 1,
-    enableLogs: isProd ? false : true,
+    enableLogs: !isProd,
     sendDefaultPii: false,
   })
 }
