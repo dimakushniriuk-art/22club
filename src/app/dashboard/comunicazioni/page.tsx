@@ -1,4 +1,4 @@
-import ComunicazioniPageClient from './comunicazioni-client'
+import ComunicazioniPageClient from '@/features/staff-trainer-comunicazioni'
 
 export default async function ComunicazioniPage({
   params,

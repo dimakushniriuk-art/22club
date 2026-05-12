@@ -75,14 +75,16 @@ function WorkoutExerciseStoricoMediaPreview({
 export function WorkoutExerciseStoricoContent({
   exerciseId,
   athleteUserId,
+  profileId,
   actionsUnlocked = false,
 }: {
   exerciseId: string
   athleteUserId: string | null
+  profileId?: string | null
   /** Allineato allo storico misurazioni: mostra modifica/elimina su `workout_sets`. */
   actionsUnlocked?: boolean
 }) {
-  const { data, isLoading, error } = useWorkoutExerciseStats(athleteUserId)
+  const { data, isLoading, error } = useWorkoutExerciseStats(athleteUserId, { profileId })
 
   const exercise = useMemo(
     () => data?.exercises.find((e) => e.exercise_id === exerciseId),

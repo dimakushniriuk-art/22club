@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import {
   fetchAthletesSortedByRemainingLessonsForStaff,
@@ -8,43 +9,61 @@ import {
   type StaffAthleteLessonsRow,
   type StaffExpiringPlanRow,
 } from '@/lib/dashboard/fetch-staff-dashboard-widgets'
+import { queryKeys } from '@/lib/query-keys'
 
-export function useStaffDashboardWidgets(staffProfileId: string | undefined) {
+const STALE_MS = 2 * 60 * 1000
+
+export function useStaffDashboardWidgets(staffProfileId: string | undefined, enabled = true) {
   const supabase = useMemo(() => createClient(), [])
-  const [expiring, setExpiring] = useState<StaffExpiringPlanRow[]>([])
-  const [athletes, setAthletes] = useState<StaffAthleteLessonsRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const load = useCallback(async () => {
-    if (!staffProfileId) {
-      setExpiring([])
-      setAthletes([])
-      setLoading(false)
-      setError(null)
-      return
-    }
-    setLoading(true)
-    setError(null)
-    try {
-      const [ex, ath] = await Promise.all([
+  const queryKey = useMemo(
+    () =>
+      staffProfileId
+        ? queryKeys.dashboard.widgets(staffProfileId)
+        : (['dashboard', 'widgets', '__disabled__'] as const),
+    [staffProfileId],
+  )
+
+  const query = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!staffProfileId) {
+        return { expiring: [] as StaffExpiringPlanRow[], athletes: [] as StaffAthleteLessonsRow[] }
+      }
+      const [expiring, athletes] = await Promise.all([
         fetchMergedStaffExpiringPlansForStaff(supabase, staffProfileId),
         fetchAthletesSortedByRemainingLessonsForStaff(supabase, staffProfileId),
       ])
-      setExpiring(ex)
-      setAthletes(ath)
-    } catch {
-      setExpiring([])
-      setAthletes([])
-      setError('Impossibile caricare i dati.')
-    } finally {
-      setLoading(false)
-    }
-  }, [staffProfileId, supabase])
+      return { expiring, athletes }
+    },
+    enabled: enabled && Boolean(staffProfileId),
+    staleTime: STALE_MS,
+    placeholderData: (previous) => previous,
+  })
+
+  const reload = useCallback(async () => {
+    if (!staffProfileId) return
+    await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.widgets(staffProfileId) })
+  }, [queryClient, staffProfileId])
 
   useEffect(() => {
-    void load()
-  }, [load])
+    if (!enabled || !staffProfileId) return
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void reload()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [enabled, staffProfileId, reload])
 
-  return { expiring, athletes, loading, error, reload: load }
+  const loading = Boolean(staffProfileId && enabled && query.isPending)
+  const error = query.error != null ? 'Impossibile caricare i dati.' : null
+
+  return {
+    expiring: query.data?.expiring ?? [],
+    athletes: query.data?.athletes ?? [],
+    loading,
+    error,
+    reload,
+  }
 }

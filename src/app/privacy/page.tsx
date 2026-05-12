@@ -18,13 +18,13 @@ export default function PrivacyPolicyPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 border-b border-white/10">
         <Link
-          href="/"
+          href="/login"
           className="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary text-sm font-medium transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
           Torna indietro
         </Link>
-        <Link href="/" className="flex items-center shrink-0">
+        <Link href="/login" className="flex items-center shrink-0">
           <Image
             src="/logo.svg"
             alt="22 Club"

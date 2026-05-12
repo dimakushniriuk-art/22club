@@ -1,12 +1,17 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import type { Tables } from '@/types/supabase'
 import type { Json } from '@/lib/supabase/types'
 import type { RecipientFilter } from '@/lib/communications/service'
 import { createLogger } from '@/lib/logger'
-import { apiGet } from '@/lib/api-client'
+import {
+  fetchStaffCommunicationsList,
+} from '@/lib/communications/fetch-staff-communications-list'
+import { queryKeys } from '@/lib/query-keys'
+import { invalidateStaffCommunicationsListQueries } from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('useCommunications')
 
@@ -45,89 +50,59 @@ interface UseCommunicationsOptions {
   autoRefresh?: boolean
 }
 
+const STALE_MS = 90 * 1000
+
+function communicationsStatusKey(
+  status: UseCommunicationsOptions['status'],
+): string {
+  if (!status) return ''
+  return Array.isArray(status) ? status.join(',') : status
+}
+
 export function useCommunications(options: UseCommunicationsOptions = {}) {
-  const [communications, setCommunications] = useState<Communication[]>([])
-  const [totalCount, setTotalCount] = useState<number | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<Error | null>(null)
+  const queryClient = useQueryClient()
+  const [mutationError, setMutationError] = useState<Error | null>(null)
 
-  // Fetch comunicazioni
+  const statusKey = communicationsStatusKey(options.status)
+  const queryKey = useMemo(
+    () =>
+      queryKeys.communications.staffList(
+        statusKey,
+        options.type,
+        options.limit,
+        options.offset,
+      ),
+    [statusKey, options.type, options.limit, options.offset],
+  )
+
+  const listQuery = useQuery({
+    queryKey,
+    queryFn: () =>
+      fetchStaffCommunicationsList({
+        status: options.status,
+        type: options.type,
+        limit: options.limit,
+        offset: options.offset,
+      }),
+    staleTime: STALE_MS,
+    refetchInterval: options.autoRefresh ? STALE_MS : false,
+    placeholderData: (previous) => previous,
+  })
+
+  const communications = (listQuery.data?.communications ?? []) as Communication[]
+  const totalCount = listQuery.data?.count ?? null
+  const loading = listQuery.isPending
+  const error =
+    mutationError ??
+    (listQuery.error instanceof Error
+      ? listQuery.error
+      : listQuery.error
+        ? new Error(String(listQuery.error))
+        : null)
+
   const fetchCommunications = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      // Usa API route su web, Supabase client su mobile
-      const queryParams: Record<string, string> = {}
-      if (options.status) {
-        queryParams.status = Array.isArray(options.status)
-          ? options.status.join(',')
-          : options.status
-      }
-      if (options.type) queryParams.type = options.type
-      if (options.limit) queryParams.limit = options.limit.toString()
-      if (options.offset !== undefined) queryParams.offset = options.offset.toString()
-
-      const result = await apiGet<{ communications: Communication[]; count: number }>(
-        '/api/communications/list',
-        queryParams,
-        // Fallback Supabase (usato su mobile o se API fallisce)
-        async (): Promise<{ communications: Communication[]; count: number }> => {
-          let query = supabase
-            .from('communications')
-            .select('*', { count: 'exact' })
-            .order('created_at', { ascending: false })
-
-          if (options.status) {
-            if (Array.isArray(options.status)) {
-              query = query.in('status', options.status)
-            } else {
-              query = query.eq('status', options.status)
-            }
-          }
-
-          if (options.type && options.type !== 'all') {
-            query = query.eq('type', options.type)
-          }
-
-          if (options.limit) {
-            if (options.offset !== undefined) {
-              query = query.range(options.offset, options.offset + options.limit - 1)
-            } else {
-              query = query.limit(options.limit)
-            }
-          }
-
-          const { data, error: fetchError, count } = await query
-
-          if (fetchError) {
-            throw new Error(fetchError.message || String(fetchError))
-          }
-
-          return {
-            communications: (data || []) as Communication[],
-            count: count ?? 0,
-          }
-        },
-      )
-
-      setCommunications(result.communications || [])
-      setTotalCount(result.count ?? null)
-    } catch (err) {
-      const error =
-        err instanceof Error
-          ? err
-          : err && typeof err === 'object' && 'message' in err
-            ? new Error(String((err as { message: unknown }).message))
-            : new Error(String(err))
-      setError(error)
-      logger.error('Error fetching communications', error)
-      setCommunications([])
-      setTotalCount(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [options.status, options.type, options.limit, options.offset])
+    await invalidateStaffCommunicationsListQueries(queryClient)
+  }, [queryClient])
 
   // Fetch comunicazione singola con recipients
   const fetchCommunicationById = useCallback(async (id: string): Promise<Communication | null> => {
@@ -170,7 +145,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const createCommunication = useCallback(
     async (input: CreateCommunicationInput): Promise<Communication | null> => {
       try {
-        setError(null)
+        setMutationError(null)
 
         const {
           data: { user },
@@ -223,7 +198,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         return data
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
-        setError(error)
+        setMutationError(error)
         logger.error('Error creating communication', error, { input })
         return null
       }
@@ -235,7 +210,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const updateCommunication = useCallback(
     async (id: string, input: UpdateCommunicationInput): Promise<Communication | null> => {
       try {
-        setError(null)
+        setMutationError(null)
 
         const updateData: Partial<CommunicationRow> = {}
 
@@ -266,7 +241,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         return data
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
-        setError(error)
+        setMutationError(error)
         logger.error('Error updating communication', error, { communicationId: id, input })
         return null
       }
@@ -278,7 +253,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const deleteCommunication = useCallback(
     async (id: string): Promise<boolean> => {
       try {
-        setError(null)
+        setMutationError(null)
 
         const { error: deleteError } = await supabase.from('communications').delete().eq('id', id)
 
@@ -292,7 +267,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         return true
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
-        setError(error)
+        setMutationError(error)
         logger.error('Error deleting communication', error, { communicationId: id })
         return false
       }
@@ -304,7 +279,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const sendCommunication = useCallback(
     async (id: string): Promise<{ success: boolean; error?: string; message?: string }> => {
       try {
-        setError(null)
+        setMutationError(null)
 
         // Chiama API route per gestire invio completo (creazione recipients + invio)
         const response = await fetch('/api/communications/send', {
@@ -318,7 +293,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         const text = await response.text()
         if (!text || text.trim().length === 0) {
           const errorMessage = 'Risposta vuota dal server'
-          setError(new Error(errorMessage))
+          setMutationError(new Error(errorMessage))
           logger.error('Error sending communication', null, { errorMessage, communicationId: id })
           return { success: false, error: errorMessage }
         }
@@ -327,7 +302,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
           const errorMessage = response.ok
             ? 'Risposta non valida dal server'
             : `Errore ${response.status}`
-          setError(new Error(errorMessage))
+          setMutationError(new Error(errorMessage))
           logger.error('Error sending communication', null, { errorMessage, communicationId: id })
           return { success: false, error: errorMessage }
         }
@@ -336,21 +311,21 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         try {
           result = JSON.parse(text)
         } catch {
-          setError(new Error('Risposta non valida dal server'))
+          setMutationError(new Error('Risposta non valida dal server'))
           logger.error('Error sending communication', null, { communicationId: id })
           return { success: false, error: 'Risposta non valida dal server' }
         }
 
         if (!response.ok) {
           const errorMessage = result.error || result.message || 'Failed to send communication'
-          setError(new Error(errorMessage))
+          setMutationError(new Error(errorMessage))
           logger.error('Error sending communication', null, { errorMessage, communicationId: id })
           return { success: false, error: errorMessage }
         }
 
         if (!result.success) {
           const errorMessage = result.message || result.error || 'Failed to send communication'
-          setError(new Error(errorMessage))
+          setMutationError(new Error(errorMessage))
           logger.error('Error sending communication', null, { errorMessage, communicationId: id })
           return { success: false, error: errorMessage, message: result.message }
         }
@@ -361,7 +336,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         return { success: true, message: result.message }
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
-        setError(error)
+        setMutationError(error)
         logger.error('Error sending communication', error, { communicationId: id })
         return { success: false, error: error.message }
       }
@@ -373,7 +348,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const resetCommunication = useCallback(
     async (id: string): Promise<boolean> => {
       try {
-        setError(null)
+        setMutationError(null)
 
         // Workaround necessario per inferenza tipo Supabase
         const { error: updateError } =
@@ -393,7 +368,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         return true
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
-        setError(error)
+        setMutationError(error)
         logger.error('Error resetting communication', error, { communicationId: id })
         return false
       }
@@ -405,7 +380,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const cancelCommunication = useCallback(
     async (id: string): Promise<boolean> => {
       try {
-        setError(null)
+        setMutationError(null)
 
         // Workaround necessario per inferenza tipo Supabase
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -424,7 +399,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
         return true
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
-        setError(error)
+        setMutationError(error)
         logger.error('Error cancelling communication', error, { communicationId: id })
         return false
       }
@@ -433,20 +408,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   )
 
   // Effetto per fetch iniziale e auto-refresh
-  useEffect(() => {
-    fetchCommunications()
-
-    if (options.autoRefresh) {
-      const interval = setInterval(() => {
-        fetchCommunications()
-      }, 90 * 1000) // Refresh ogni 90 secondi (evita aggiornamenti troppo frequenti)
-
-      return () => clearInterval(interval)
-    }
-
-    return undefined
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.status, options.type, options.limit, options.offset, options.autoRefresh])
+  // Lista gestita da React Query (`listQuery`).
 
   return {
     communications,

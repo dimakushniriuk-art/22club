@@ -7,6 +7,7 @@ import { useCallback } from 'react'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import type { SupabaseDatabase } from '@/types/supabase'
 import { getProfileIdFromUserId } from '@/lib/utils/profile-id-utils'
+import { queryKeys } from '@/lib/query-keys'
 import {
   toProgressLogMeasurementRow,
   type ProgressLogMeasurementRow,
@@ -162,30 +163,9 @@ export function useProgressAnalytics(athleteId?: string) {
   const queryClient = useQueryClient()
 
   const fetchProgressData = useCallback(async (): Promise<ProgressKPI> => {
-    // Verifica sessione prima di fare la query
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-
-    console.log('[use-progress-analytics] ========== VERIFICA SESSIONE ==========')
-    console.log('[use-progress-analytics] hasSession:', !!session)
-    console.log('[use-progress-analytics] sessionError:', sessionError)
-    if (session) {
-      console.log('[use-progress-analytics] session.user.id:', session.user.id)
-      console.log('[use-progress-analytics] session.user.email:', session.user.email)
-    }
-    console.log('[use-progress-analytics] athleteId passato:', athleteId)
-    console.log(
-      '[use-progress-analytics] corrispondenza session.user.id === athleteId:',
-      session?.user.id === athleteId,
-    )
-    console.log('[use-progress-analytics] ======================================')
-
     if (!athleteId) {
       logger.warn('Athlete ID is null, returning empty data', undefined, {
         athleteId,
-        hasSession: !!session,
       })
       // Restituisci dati vuoti invece di lanciare errore
       return {
@@ -248,26 +228,10 @@ export function useProgressAnalytics(athleteId?: string) {
     // progress_logs.athlete_id è FK a profiles.user_id, quindi athleteId dovrebbe essere user_id
     // workout_plans.athlete_id è FK a profiles.id, quindi dobbiamo convertire se necessario
     // Select esplicito per ridurre payload (solo campi necessari)
-    console.log('[use-progress-analytics] ========== INIZIO QUERY ==========')
-    console.log('[use-progress-analytics] Querying progress_logs with athleteId:', athleteId)
-    console.log('[use-progress-analytics] athleteId type:', typeof athleteId)
-    console.log('[use-progress-analytics] athleteId value:', JSON.stringify(athleteId))
-    console.log('[use-progress-analytics] athleteId length:', athleteId?.length)
-
-    // Verifica che athleteId sia un UUID valido
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (athleteId && !uuidRegex.test(athleteId)) {
-      console.error('[use-progress-analytics] ERRORE: athleteId non è un UUID valido!', athleteId)
+      logger.warn('athleteId non è un UUID valido', undefined, { athleteId })
     }
-
-    // Query esplicita con logging dettagliato
-    console.log('[use-progress-analytics] Eseguendo query Supabase...')
-    console.log('[use-progress-analytics] Query params:', {
-      table: 'progress_logs',
-      filter: { athlete_id: athleteId },
-      order: ['date DESC', 'created_at DESC'],
-      limit: 100,
-    })
 
     const queryBuilder = supabase
       .from('progress_logs')
@@ -314,37 +278,9 @@ export function useProgressAnalytics(athleteId?: string) {
       // Recupera le ultime 100 misurazioni (non filtriamo per data, solo limite)
       .order('date', { ascending: false }) // Ordina per data discendente (più recenti prima)
       .order('created_at', { ascending: false }) // In caso di stessa data, ordina per creazione
-      .limit(100) // Limite massimo di 100 misurazioni
-
-    console.log('[use-progress-analytics] Query builder creato, eseguendo...')
-
-    // Test diretto: verifica che la query funzioni
-    const testQuery = await supabase
-      .from('progress_logs')
-      .select('id, date, weight_kg, athlete_id')
-      .eq('athlete_id', athleteId)
-      .limit(1)
-
-    console.log('[use-progress-analytics] Test query diretta:', {
-      hasData: !!testQuery.data,
-      dataLength: testQuery.data?.length || 0,
-      hasError: !!testQuery.error,
-      error: testQuery.error,
-      firstRecord: testQuery.data?.[0],
-    })
+      .limit(100)
 
     const { data: progressLogsRaw, error: progressError } = await queryBuilder
-
-    console.log('[use-progress-analytics] Query completa eseguita, risultato:', {
-      hasData: !!progressLogsRaw,
-      dataLength: progressLogsRaw?.length || 0,
-      hasError: !!progressError,
-      error: progressError,
-      errorCode: progressError?.code,
-      errorMessage: progressError?.message,
-      errorDetails: progressError?.details,
-      errorHint: progressError?.hint,
-    })
 
     const progressLogs = progressLogsRaw as ProgressLogExtended[] | null
 
@@ -365,42 +301,6 @@ export function useProgressAnalytics(athleteId?: string) {
         athleteId,
       })
     }
-    console.log('[use-progress-analytics] rawDataLength:', progressLogsRaw?.length || 0)
-    console.log('[use-progress-analytics] totalLogs:', progressLogs?.length || 0)
-    if (progressLogs && progressLogs.length > 0) {
-      console.log('[use-progress-analytics] ✅ DATI RECUPERATI!')
-      console.log('[use-progress-analytics] First log (raw):', progressLogs[0])
-      console.log(
-        '[use-progress-analytics] First log (JSON):',
-        JSON.stringify(progressLogs[0], null, 2),
-      )
-      console.log('[use-progress-analytics] First log weight_kg:', progressLogs[0].weight_kg)
-      console.log(
-        '[use-progress-analytics] First log massa_grassa_percentuale:',
-        progressLogs[0].massa_grassa_percentuale,
-      )
-      console.log('[use-progress-analytics] First log chest_cm:', progressLogs[0].chest_cm)
-      if (progressLogs.length > 1) {
-        console.log('[use-progress-analytics] All logs count:', progressLogs.length)
-        console.log(
-          '[use-progress-analytics] Sample logs (primi 3):',
-          progressLogs.slice(0, 3).map((log) => ({
-            date: log.date,
-            weight_kg: log.weight_kg,
-            massa_grassa_percentuale: log.massa_grassa_percentuale,
-          })),
-        )
-      }
-    } else {
-      console.warn('[use-progress-analytics] ⚠️ Nessun log recuperato!')
-      console.warn(
-        '[use-progress-analytics] Verifica che athlete_id in progress_logs corrisponda a user_id in profiles',
-      )
-      console.warn(
-        '[use-progress-analytics] Esegui: docs/sql/VERIFICA_ATHLETE_ID_CORRETTO.sql per verificare',
-      )
-    }
-    console.log('[use-progress-analytics] ======================================')
 
     logger.debug('Progress logs recuperati', undefined, {
       totalLogs: progressLogs?.length || 0,
@@ -557,8 +457,6 @@ export function useProgressAnalytics(athleteId?: string) {
         ? progressLogsSorted[progressLogsSorted.length - 1].weight_kg
         : null
 
-    console.log('[use-progress-analytics] pesoAttuale calcolato:', pesoAttuale)
-
     // Weight variation in last 7 days
     const peso7GiorniFa = progressLogsSorted?.find(
       (log) => new Date(log.date) <= sevenDaysAgo,
@@ -683,23 +581,6 @@ export function useProgressAnalytics(athleteId?: string) {
         entry.massa_muscolare_kg != null ||
         entry.massa_muscolare_scheletrica_kg != null,
     )
-
-    console.log('[use-progress-analytics] Filtro composizione corporea:', {
-      prima: datasetComposizioneCorporea.length,
-      dopo: datasetComposizioneCorporeaFiltered.length,
-      differenza: datasetComposizioneCorporea.length - datasetComposizioneCorporeaFiltered.length,
-      samplePrima: datasetComposizioneCorporea[0],
-      sampleDopo: datasetComposizioneCorporeaFiltered[0],
-    })
-
-    // Log per debug
-    console.log('[use-progress-analytics] Dataset composizione corporea:', {
-      totalEntries: datasetComposizioneCorporea.length,
-      filteredEntries: datasetComposizioneCorporeaFiltered.length,
-      sampleEntry: datasetComposizioneCorporeaFiltered[0],
-      allEntries: datasetComposizioneCorporea,
-      filteredEntriesFull: datasetComposizioneCorporeaFiltered,
-    })
 
     logger.debug('Dataset composizione corporea', undefined, {
       totalEntries: datasetComposizioneCorporea.length,
@@ -916,20 +797,17 @@ export function useProgressAnalytics(athleteId?: string) {
   }, [athleteId])
 
   const query = useQuery({
-    queryKey: ['progress-analytics', athleteId],
+    queryKey: queryKeys.progressi.analytics(athleteId ?? ''),
     queryFn: fetchProgressData,
     enabled: !!athleteId,
-    staleTime: 10 * 1000, // 10 secondi (ridotto per aggiornamenti più frequenti)
-    refetchOnMount: 'always', // Ricarica sempre quando il componente viene montato
-    // Realtime invalida la query; evitare doppio refetch al focus (query pesante).
+    staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
-    gcTime: 5 * 60 * 1000, // 5 minuti (ex cacheTime)
+    gcTime: 5 * 60 * 1000,
   })
 
   // Realtime subscription per progress_logs
   useRealtimeChannel('progress_logs', (payload) => {
-    // Invalida query quando ci sono cambiamenti (INSERT, UPDATE, DELETE)
-    queryClient.invalidateQueries({ queryKey: ['progress-analytics', athleteId] })
+    queryClient.invalidateQueries({ queryKey: queryKeys.progressi.analytics(athleteId ?? '') })
     logger.debug('Realtime progress_logs event received', undefined, {
       eventType: payload.eventType,
       new: payload.new,
@@ -939,8 +817,7 @@ export function useProgressAnalytics(athleteId?: string) {
 
   // Realtime subscription per workout_plans (influisce su percentuale completamento)
   useRealtimeChannel('workout_plans', (payload) => {
-    // Invalida query quando ci sono cambiamenti (INSERT, UPDATE, DELETE)
-    queryClient.invalidateQueries({ queryKey: ['progress-analytics', athleteId] })
+    queryClient.invalidateQueries({ queryKey: queryKeys.progressi.analytics(athleteId ?? '') })
     logger.debug('Realtime workout_plans event received', undefined, {
       eventType: payload.eventType,
       new: payload.new,

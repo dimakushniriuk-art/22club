@@ -1,77 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Users, UserPlus, Shield, BarChart3, Building2 } from 'lucide-react'
-import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('AdminDashboardContent')
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/shared/ui/skeleton'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-
-interface AdminStats {
-  totalUsers: number
-  activeUsers: number
-  newUsersThisMonth: number
-  totalOrganizations: number
-  totalTrainers: number
-  totalAthletes: number
-}
+import { useAdminDashboardStats } from '@/hooks/use-admin-dashboard-stats'
 
 export function AdminDashboardContent() {
-  const [stats, setStats] = useState<AdminStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const supabase = createClient()
-
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const {
-          data: rows,
-          count,
-          error,
-        } = await supabase
-          .from('profiles')
-          .select('id, role, stato, created_at, org_id', { count: 'exact' })
-
-        if (error) {
-          logger.error('Errore nel caricamento statistiche', error)
-          return
-        }
-
-        const allUsers = rows || []
-        const now = new Date()
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-
-        const statsData: AdminStats = {
-          totalUsers: count || 0,
-          activeUsers: allUsers.filter((u: { stato?: string | null }) => u.stato === 'attivo')
-            .length,
-          newUsersThisMonth: allUsers.filter(
-            (u: { created_at?: string | null }) =>
-              u.created_at && new Date(u.created_at) >= startOfMonth,
-          ).length,
-          totalOrganizations: new Set(
-            allUsers
-              .map((p: { org_id?: string | null }) => p.org_id)
-              .filter((id): id is string => typeof id === 'string' && id.length > 0),
-          ).size,
-          totalTrainers: allUsers.filter((u: { role?: string }) => u.role === 'trainer').length,
-          totalAthletes: allUsers.filter((u: { role?: string }) => u.role === 'athlete').length,
-        }
-
-        setStats(statsData)
-      } catch (error) {
-        logger.error('Errore nel caricamento statistiche', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStats()
-  }, [supabase])
+  const { stats, loading } = useAdminDashboardStats()
 
   if (loading) {
     return (

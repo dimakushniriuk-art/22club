@@ -30,7 +30,11 @@ export const athleteFitnessKeys = {
  * Hook per ottenere dati fitness atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteFitness(athleteId: string | null) {
+export function useAthleteFitness(
+  athleteId: string | null,
+  options?: { enabled?: boolean },
+) {
+  const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteFitnessKeys.detail(athleteId || ''),
     queryFn: async (): Promise<AthleteFitnessData | null> => {
@@ -78,7 +82,7 @@ export function useAthleteFitness(athleteId: string | null) {
         throw new Error(apiError.message)
       }
     },
-    enabled: !!athleteId,
+    enabled: queryEnabled,
     staleTime: 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore

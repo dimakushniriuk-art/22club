@@ -41,9 +41,10 @@ interface Appointment {
 interface UseAppointmentsProps {
   userId?: string
   role?: string
+  enabled?: boolean
 }
 
-export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
+export function useAthleteAppointments({ userId, role, enabled = true }: UseAppointmentsProps) {
   const queryClient = useQueryClient()
 
   // Query key basata su userId e role per cache separata
@@ -59,6 +60,7 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
     refetch: refetchQuery,
   } = useQuery({
     queryKey,
+    enabled: enabled && Boolean(userId),
     queryFn: async () => {
       if (!userId) {
         return []
@@ -190,7 +192,6 @@ export function useAthleteAppointments({ userId, role }: UseAppointmentsProps) {
 
       return transformedData
     },
-    enabled: !!userId, // Query abilitata solo se userId è presente
   })
 
   // Converti error di React Query in string per compatibilità (PostgREST: message + details)

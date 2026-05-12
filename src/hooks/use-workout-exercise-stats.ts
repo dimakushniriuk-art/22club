@@ -5,6 +5,7 @@ import { useSupabase } from './use-supabase'
 import { createLogger } from '@/lib/logger'
 import { getProfileIdFromUserId } from '@/lib/utils/profile-id-utils'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
+import { queryKeys } from '@/lib/query-keys'
 
 const logger = createLogger('hooks:use-workout-exercise-stats')
 
@@ -135,13 +136,17 @@ export interface WorkoutExerciseStats {
  * `workout_sets`: paginazione `.range` per chunk (limite PostgREST ~1000 righe/richiesta), altrimenti
  * lo storico lungo viene troncato.
  *
- * @param athleteUserId - user_id dell'atleta (profiles.user_id, auth.uid())
+ * @param athleteUserId - `profiles.user_id` (auth) o `profiles.id` se `profileId` è valorizzato
  */
-export function useWorkoutExerciseStats(athleteUserId: string | null) {
+export function useWorkoutExerciseStats(
+  athleteUserId: string | null,
+  options?: { profileId?: string | null },
+) {
   const { supabase } = useSupabase()
+  const profileIdHint = options?.profileId ?? null
 
   const { data, isLoading, error, refetch } = useQuery<WorkoutExerciseStats>({
-    queryKey: ['workout-exercise-stats', athleteUserId],
+    queryKey: queryKeys.progressi.workoutExerciseStats(profileIdHint ?? athleteUserId ?? ''),
     queryFn: async () => {
       if (!athleteUserId) {
         return {
@@ -156,10 +161,21 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
       logger.debug('Fetching workout exercise stats', undefined, { athleteUserId })
 
       try {
-        // STEP 1: Converti user_id in profile_id (workout_plans.athlete_id è FK a profiles.id)
-        let athleteProfileId: string | null = null
-        try {
-          athleteProfileId = await getProfileIdFromUserId(athleteUserId)
+        // STEP 1: Profilo atleta per workout_plans.athlete_id (FK profiles.id)
+        let athleteProfileId: string | null = profileIdHint
+        if (!athleteProfileId) {
+          try {
+            athleteProfileId = await getProfileIdFromUserId(athleteUserId)
+          } catch (conversionError) {
+            logger.warn('Errore conversione user_id a profile_id', conversionError, { athleteUserId })
+            return {
+              exercises: [],
+              total_exercises: 0,
+              total_sessions: 0,
+              date_range: { from: null, to: null },
+              log_sessions: [],
+            }
+          }
           if (!athleteProfileId) {
             logger.warn('Profile not found for user_id', undefined, { athleteUserId })
             return {
@@ -169,15 +185,6 @@ export function useWorkoutExerciseStats(athleteUserId: string | null) {
               date_range: { from: null, to: null },
               log_sessions: [],
             }
-          }
-        } catch (conversionError) {
-          logger.warn('Errore conversione user_id a profile_id', conversionError, { athleteUserId })
-          return {
-            exercises: [],
-            total_exercises: 0,
-            total_sessions: 0,
-            date_range: { from: null, to: null },
-            log_sessions: [],
           }
         }
 

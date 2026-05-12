@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Users, Euro, Calendar, Send, TrendingUp, TrendingDown } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
 
@@ -24,74 +24,21 @@ import {
   ResponsiveContainer,
 } from '@/components/charts/client-recharts'
 import { notifyError } from '@/lib/notifications'
-
-interface AdminStatistics {
-  users: {
-    total: number
-    active: number
-    thisMonth: number
-    growth: number
-    byRole: Record<string, number>
-    byMonth: Array<{ month: string; count: number }>
-  }
-  payments: {
-    totalRevenue: number
-    thisMonth: number
-    growth: number
-    byMethod: Record<string, number>
-    byMonth: Array<{ month: string; revenue: number }>
-  }
-  appointments: {
-    total: number
-    thisMonth: number
-    byStatus: Record<string, number>
-  }
-  documents: {
-    total: number
-    byStatus: Record<string, number>
-    expired: number
-  }
-  communications: {
-    total: number
-    totalSent: number
-    totalDelivered: number
-    totalOpened: number
-    totalFailed: number
-    deliveryRate: number
-    openRate: number
-  }
-}
+import { useAdminStatistics } from '@/hooks/use-admin-statistics'
 
 const CHART_COLORS = ['#0FB5BA', '#22C55E', '#F59E0B', '#EF4444', '#60A5FA', '#A78BFA', '#F472B6']
 
 export function AdminStatisticsContent() {
-  const [stats, setStats] = useState<AdminStatistics | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { stats, loading, error } = useAdminStatistics()
 
   useEffect(() => {
-    fetchStatistics()
-  }, [])
-
-  async function fetchStatistics() {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/admin/statistics')
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Errore nel caricamento statistiche')
-      }
-
-      const data = await response.json()
-      setStats(data)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      logger.error('Errore nel caricamento statistiche', error)
-      notifyError('Errore', error.message || 'Errore nel caricamento statistiche')
-    } finally {
-      setLoading(false)
-    }
-  }
+    if (!error) return
+    logger.error('Errore nel caricamento statistiche', error)
+    notifyError(
+      'Errore',
+      error instanceof Error ? error.message : 'Errore nel caricamento statistiche',
+    )
+  }, [error])
 
   if (loading) {
     return (

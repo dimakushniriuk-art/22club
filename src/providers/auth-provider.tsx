@@ -23,8 +23,18 @@ const IDLE_TIMEOUT_MS = 60 * 60 * 1000
 const IDLE_CHECK_INTERVAL_MS = 30 * 1000
 const ACTIVITY_WRITE_THROTTLE_MS = 15 * 1000
 const LAST_ACTIVITY_STORAGE_KEY = 'auth:last_activity_at'
+const IMPERSONATE_PROFILE_COOKIE = 'impersonate_profile_id'
 /** Rinnovo JWT periodico (tab visibile) per sessioni lunghe; evita timeout salvataggi. */
 const SESSION_KEEPALIVE_INTERVAL_MS = 5 * 60 * 1000
+
+function hasImpersonationCookie(): boolean {
+  if (typeof document === 'undefined') return false
+  const match = document.cookie.match(
+    new RegExp(`(?:^|;\\s*)${IMPERSONATE_PROFILE_COOKIE}=([^;]*)`),
+  )
+  const value = match?.[1]?.trim()
+  return Boolean(value)
+}
 
 type ProfileRow = Tables<'profiles'>
 
@@ -205,10 +215,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false)
   }, [])
 
+  const hydrateFromServerProfile = useCallback(
+    (profile: ProfileRow) => {
+      if (userRef.current || hasImpersonationCookie()) return
+      const cacheKey = profile.user_id ?? profile.id
+      profileCacheRef.current.set(cacheKey, {
+        profile,
+        expires: Date.now() + 30_000,
+      })
+      updateUserFromProfile(profile)
+      initialSessionHandledRef.current = true
+      setAuthRecovery('idle')
+    },
+    [updateUserFromProfile],
+  )
+
   /**
    * Carica contesto da /api/auth/context; se isImpersonating usa effectiveProfile come user e actorProfile come admin
    */
   const applyAuthContext = useCallback(async (): Promise<boolean> => {
+    if (!hasImpersonationCookie()) return false
     try {
       const res = await fetch('/api/auth/context', {
         credentials: 'include',
@@ -485,6 +511,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Sessione valida: prima prova contesto (impersonation), altrimenti profilo.
         // Non impostare initialSessionHandledRef prima del fetch: se fallisce per 429, INITIAL_SESSION deve poter riprovare.
         if (!initialSessionHandledRef.current) {
+          if (userRef.current) {
+            initialSessionHandledRef.current = true
+            setLoading(false)
+            setAuthRecovery('idle')
+            return
+          }
           const applied = await applyAuthContext()
           if (isMounted && applied) {
             initialSessionHandledRef.current = true
@@ -1039,6 +1071,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signOut,
       resetPassword,
       refreshUserProfile,
+      hydrateFromServerProfile,
     }),
     [
       user,
@@ -1053,6 +1086,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signOut,
       resetPassword,
       refreshUserProfile,
+      hydrateFromServerProfile,
     ],
   )
 

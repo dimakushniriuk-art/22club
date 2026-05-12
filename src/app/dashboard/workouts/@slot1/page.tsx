@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
-import { WorkoutsPane } from '@/app/dashboard/workouts/_components/workouts-pane'
+import { WorkoutsPane } from '@/features/staff-workouts'
 import { useWorkoutsShellCallbacks } from '@/contexts/workouts-shell-context'
 import { agendaEventAllowsCoachedWorkoutCompletion } from '@/lib/appointments/agenda-event-coached-workout-eligibility'
 

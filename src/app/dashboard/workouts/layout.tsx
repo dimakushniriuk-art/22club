@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from 'react'
 import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
-import { WorkoutsShell } from '@/app/dashboard/workouts/_components/workouts-shell'
+import { WorkoutsShell } from '@/features/staff-workouts'
 
 type Props = {
   children: ReactNode

@@ -30,15 +30,15 @@ export default function HomeLayoutAuth({ children }: HomeLayoutAuthProps) {
     // Non fare nulla durante il loading iniziale
     if (loading) return
 
-    // Se non c'è utente, prova una sola volta a recuperare sessione prima del redirect.
+    // Se non c'è utente, prova recovery solo se il bootstrap non è già in degraded/retrying.
     if (!user) {
+      if (authRecovery === 'degraded' || authRecovery === 'retrying') {
+        return
+      }
       if (!hasRetriedSessionRef.current) {
         hasRetriedSessionRef.current = true
         logger.warn('Utente non presente in /home, tentativo recovery sessione')
         void retryAuthSession()
-        return
-      }
-      if (authRecovery === 'retrying' || authRecovery === 'degraded') {
         return
       }
       logger.warn('Utente non autenticato dopo recovery, redirect al login')

@@ -1,0 +1,250 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { Megaphone, Plus, Search, Euro, Target } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  StaffMarketingDataBlockSkeleton,
+  StaffMarketingSegmentSkeleton,
+} from '@/components/layout/route-loading-skeletons'
+import { useMarketingDashboardGuard } from '@/hooks/use-marketing-dashboard-guard'
+import { useMarketingCampaigns } from '@/hooks/use-marketing-campaigns'
+import {
+  MARKETING_CAMPAIGN_CHANNEL_LABELS,
+  MARKETING_CAMPAIGN_STATUS_LABELS,
+} from '@/lib/marketing/labels'
+import { formatMarketingDate } from '@/lib/marketing/format'
+
+export function MarketingCampaignsPageContent() {
+  const { showLoader, canAccess } = useMarketingDashboardGuard()
+  const { data, loading, error } = useMarketingCampaigns(canAccess)
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [channelFilter, setChannelFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    let list = data
+    if (statusFilter !== 'all') list = list.filter((c) => c.status === statusFilter)
+    if (channelFilter !== 'all') list = list.filter((c) => (c.channel ?? '') === channelFilter)
+    if (search.trim()) {
+      const s = search.toLowerCase().trim()
+      list = list.filter((c) => (c.name ?? '').toLowerCase().includes(s))
+    }
+    return list
+  }, [data, statusFilter, channelFilter, search])
+
+  const kpis = useMemo(() => {
+    const total = data.length
+    const active = data.filter((c) => c.status === 'active').length
+    const budgetActive = data
+      .filter((c) => c.status === 'active')
+      .reduce((sum, c) => sum + Number(c.budget ?? 0), 0)
+    return { total, active, budgetActive }
+  }, [data])
+
+  if (showLoader) {
+    return <StaffMarketingSegmentSkeleton />
+  }
+
+  return (
+    <div className="space-y-6 bg-background p-4 text-text-primary md:p-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
+            <Megaphone className="h-6 w-6 text-cyan-400" />
+            Campagne
+          </h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Crea e gestisci campagne (canale, budget, date).
+          </p>
+        </div>
+        <Button asChild className="shrink-0">
+          <Link href="/dashboard/marketing/campaigns/new">
+            <Plus className="mr-2 h-4 w-4" />
+            Nuova campagna
+          </Link>
+        </Button>
+      </header>
+
+      {loading ? (
+        <StaffMarketingDataBlockSkeleton />
+      ) : error ? (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {error}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            <Card className="border-border bg-background-secondary/80">
+              <CardContent className="p-4">
+                <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
+                  <Target className="h-4 w-4" />
+                  Totale campagne
+                </div>
+                <p className="text-2xl font-bold text-cyan-400">{kpis.total}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-border bg-background-secondary/80">
+              <CardContent className="p-4">
+                <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
+                  <Megaphone className="h-4 w-4" />
+                  Attive
+                </div>
+                <p className="text-2xl font-bold text-emerald-400">{kpis.active}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-border bg-background-secondary/80 md:col-span-1">
+              <CardContent className="p-4">
+                <div className="mb-1 flex items-center gap-2 text-sm text-text-secondary">
+                  <Euro className="h-4 w-4" />
+                  Budget (attive)
+                </div>
+                <p className="text-2xl font-bold text-text-primary">
+                  € {kpis.budgetActive.toLocaleString('it-IT')}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1 md:max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+              <Input
+                placeholder="Cerca per nome..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="border-border bg-background-secondary pl-9"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm text-text-primary"
+              >
+                <option value="all">Tutti gli stati</option>
+                {Object.entries(MARKETING_CAMPAIGN_STATUS_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={channelFilter}
+                onChange={(e) => setChannelFilter(e.target.value)}
+                className="rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm text-text-primary"
+              >
+                <option value="all">Tutti i canali</option>
+                {Object.entries(MARKETING_CAMPAIGN_CHANNEL_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <Card className="border-border bg-background-secondary/80">
+            <CardHeader>
+              <CardTitle className="text-base text-text-primary">
+                Elenco ({filtered.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {filtered.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Megaphone className="mb-3 h-12 w-12 text-text-muted" />
+                  <p className="text-center text-sm text-text-secondary">
+                    {data.length === 0
+                      ? 'Nessuna campagna. Creane una.'
+                      : 'Nessun risultato per i filtri.'}
+                  </p>
+                  {data.length === 0 && (
+                    <Button asChild className="mt-4">
+                      <Link href="/dashboard/marketing/campaigns/new">Nuova campagna</Link>
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border">
+                        <TableHead className="text-text-secondary">Nome</TableHead>
+                        <TableHead className="text-text-secondary">Canale</TableHead>
+                        <TableHead className="text-text-secondary">Budget</TableHead>
+                        <TableHead className="text-text-secondary">Periodo</TableHead>
+                        <TableHead className="text-text-secondary">Stato</TableHead>
+                        <TableHead className="text-text-secondary">Aggiornato</TableHead>
+                        <TableHead className="w-20 text-text-secondary"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="border-border/50 hover:bg-background-tertiary/30"
+                        >
+                          <TableCell className="font-medium">{row.name}</TableCell>
+                          <TableCell className="text-text-muted">
+                            {MARKETING_CAMPAIGN_CHANNEL_LABELS[row.channel ?? ''] ??
+                              row.channel ??
+                              '–'}
+                          </TableCell>
+                          <TableCell className="tabular-nums">
+                            {row.budget != null
+                              ? `€ ${Number(row.budget).toLocaleString('it-IT')}`
+                              : '–'}
+                          </TableCell>
+                          <TableCell className="text-sm text-text-muted">
+                            {formatMarketingDate(row.start_at)} → {formatMarketingDate(row.end_at)}
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                                row.status === 'active'
+                                  ? 'bg-emerald-500/20 text-emerald-400'
+                                  : row.status === 'draft'
+                                    ? 'bg-amber-500/20 text-amber-400'
+                                    : row.status === 'paused'
+                                      ? 'bg-orange-500/20 text-orange-400'
+                                      : 'bg-text-muted/20 text-text-muted'
+                              }`}
+                            >
+                              {MARKETING_CAMPAIGN_STATUS_LABELS[row.status] ?? row.status}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-sm text-text-muted">
+                            {formatMarketingDate(row.updated_at)}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/dashboard/marketing/campaigns/${row.id}`}>
+                                Dettaglio
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </div>
+  )
+}

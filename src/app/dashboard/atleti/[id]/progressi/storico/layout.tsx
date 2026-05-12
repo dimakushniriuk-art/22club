@@ -1,12 +1,10 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { StaffAthleteSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
-import { StaffAthleteSubpageHeader } from '@/components/shared/dashboard/staff-athlete-subpage-header'
-import { ErrorState } from '@/components/dashboard/error-state'
-import { useAthleteProfileData } from '@/hooks/athlete-profile/use-athlete-profile-data'
+import {
+  StaffAthleteProgressBootstrap,
+  StaffAthleteProgressSubpageFrame,
+} from '@/features/staff-athlete-progress'
 import { StoricoAtletaProvider } from './storico-atleta-context'
-import { useResolvedParams } from '@/lib/next/use-resolved-params'
 
 export default function StoricoAllenamentiLayout({
   children,
@@ -15,56 +13,29 @@ export default function StoricoAllenamentiLayout({
   children: React.ReactNode
   params: Promise<{ id: string }>
 }) {
-  const resolved = useResolvedParams(params)
-  const router = useRouter()
-  const id = typeof resolved.id === 'string' ? resolved.id : null
-
-  const { athlete, stats, loading, error, loadAthleteData } = useAthleteProfileData(id ?? '')
-
-  if (!id) {
-    return (
-      <div className="p-6">
-        <ErrorState
-          message="ID atleta mancante"
-          onRetry={() => router.push('/dashboard/clienti')}
-        />
-      </div>
-    )
-  }
-
-  if (loading && !athlete) {
-    return <StaffAthleteSegmentSkeleton />
-  }
-
-  if (error || !athlete) {
-    return (
-      <div className="p-6">
-        <ErrorState message={error ?? 'Atleta non trovato'} onRetry={() => loadAthleteData()} />
-      </div>
-    )
-  }
-
-  const backHref = `/dashboard/atleti/${id}?tab=progressi`
-  const name = [athlete.nome, athlete.cognome].filter(Boolean).join(' ').trim()
-
   return (
-    <div className="flex w-full flex-col space-y-4 sm:space-y-6 px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px] mx-auto">
-      <StaffAthleteSubpageHeader
-        backHref={backHref}
-        backAriaLabel="Torna ai progressi"
-        title={`Allenamenti e storico — ${name || 'Atleta'}`}
-        description="Panoramica, schede, sessioni, appuntamenti e storico completati."
-      />
-
-      <StoricoAtletaProvider
-        value={{
-          athleteProfileId: id,
-          displayName: name,
-          schedeAttive: stats.schede_attive,
-        }}
-      >
-        {children}
-      </StoricoAtletaProvider>
-    </div>
+    <StaffAthleteProgressBootstrap routeParams={params}>
+      {({ profileId, displayName, stats, tabBackHref }) => (
+        <StaffAthleteProgressSubpageFrame
+          variant="storico"
+          header={{
+            backHref: tabBackHref,
+            backAriaLabel: 'Torna ai progressi',
+            title: `Allenamenti e storico — ${displayName || 'Atleta'}`,
+            description: 'Panoramica, schede, sessioni, appuntamenti e storico completati.',
+          }}
+        >
+          <StoricoAtletaProvider
+            value={{
+              athleteProfileId: profileId,
+              displayName,
+              schedeAttive: stats.schede_attive,
+            }}
+          >
+            {children}
+          </StoricoAtletaProvider>
+        </StaffAthleteProgressSubpageFrame>
+      )}
+    </StaffAthleteProgressBootstrap>
   )
 }

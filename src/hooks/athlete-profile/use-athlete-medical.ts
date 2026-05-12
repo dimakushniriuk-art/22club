@@ -34,7 +34,11 @@ export const athleteMedicalKeys = {
  * Hook per ottenere dati medici atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteMedical(athleteId: string | null) {
+export function useAthleteMedical(
+  athleteId: string | null,
+  options?: { enabled?: boolean },
+) {
+  const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteMedicalKeys.detail(athleteId || ''),
     queryFn: async (): Promise<AthleteMedicalData | null> => {
@@ -81,7 +85,7 @@ export function useAthleteMedical(athleteId: string | null) {
         throw new Error(apiError.message)
       }
     },
-    enabled: !!athleteId,
+    enabled: queryEnabled,
     staleTime: 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore

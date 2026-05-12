@@ -57,6 +57,7 @@ describe('Type definitions', () => {
         signOut: async () => ({ success: true }),
         resetPassword: async () => ({ success: true }),
         refreshUserProfile: async () => {},
+        hydrateFromServerProfile: () => {},
       }
 
       expect(context.user).toBeNull()

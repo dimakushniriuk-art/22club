@@ -25,6 +25,8 @@ interface AthleteStats {
 
 interface UseAthleteStatsProps {
   athleteUserId: string | null
+  /** `profiles.id` quando già noto (evita lookup ridondante). */
+  athleteProfileId?: string | null
   authLoading: boolean
   anagrafica: { peso_iniziale_kg: number | null } | null
   fitness: { peso_attuale_kg: number | null; obiettivo_peso_kg: number | null } | null
@@ -34,6 +36,7 @@ interface UseAthleteStatsProps {
 
 export function useAthleteStats({
   athleteUserId,
+  athleteProfileId: athleteProfileIdProp,
   authLoading,
   anagrafica,
   fitness,
@@ -75,20 +78,26 @@ export function useAthleteStats({
       // Data locale (YYYY-MM-DD) per allineare il filtro mese a workout_logs.data (date)
       const monthStartStr = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-01`
 
-      const { data: profileResolveRow, error: profileResolveErr } = await supabase
-        .from('profiles')
-        .select('id')
-        .or(`id.eq.${athleteUserId},user_id.eq.${athleteUserId}`)
-        .maybeSingle()
+      let workoutOwnerId = athleteProfileIdProp ?? athleteUserId
+      let profileId = athleteProfileIdProp ?? null
 
-      if (profileResolveErr) {
-        logger.warn('Risoluzione profilo per conteggi workout', profileResolveErr, {
-          athleteUserId,
-        })
+      if (!profileId) {
+        const { data: profileResolveRow, error: profileResolveErr } = await supabase
+          .from('profiles')
+          .select('id')
+          .or(`id.eq.${athleteUserId},user_id.eq.${athleteUserId}`)
+          .maybeSingle()
+
+        if (profileResolveErr) {
+          logger.warn('Risoluzione profilo per conteggi workout', profileResolveErr, {
+            athleteUserId,
+          })
+        }
+
+        const profileRowTyped = profileResolveRow as { id?: string } | null
+        workoutOwnerId = profileRowTyped?.id ?? athleteUserId
+        profileId = profileRowTyped?.id ?? null
       }
-
-      const profileRowTyped = profileResolveRow as { id?: string } | null
-      const workoutOwnerId = profileRowTyped?.id ?? athleteUserId
 
       const [
         profileCompleteResult,
@@ -152,8 +161,6 @@ export function useAthleteStats({
       const pesoIniziale = anagrafica?.peso_iniziale_kg || null
       const pesoAttuale = fitness?.peso_attuale_kg || smartTracking?.peso_kg || null
       const obiettivoPeso = fitness?.obiettivo_peso_kg || null
-
-      const profileId = profileRowTyped?.id ?? null
 
       const progressScoreValue =
         typeof progressScore === 'object' && progressScore !== null
@@ -237,6 +244,7 @@ export function useAthleteStats({
     }
   }, [
     athleteUserId,
+    athleteProfileIdProp,
     authLoading,
     administrative?.lezioni_rimanenti,
     anagrafica?.peso_iniziale_kg,
@@ -265,6 +273,7 @@ export function useAthleteStats({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     athleteUserId,
+    athleteProfileIdProp,
     authLoading,
     anagrafica?.peso_iniziale_kg,
     fitness?.peso_attuale_kg,

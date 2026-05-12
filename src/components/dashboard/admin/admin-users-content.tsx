@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import {
   Search,
@@ -41,14 +42,22 @@ import { MetricCard } from '@/components'
 import { UserFormModal } from './user-form-modal'
 import { UserDeleteDialog } from './user-delete-dialog'
 import { UserResetPasswordDialog } from './user-reset-password-dialog'
-import { UserImportModal } from './user-import-modal'
-import { UserImpersonateModal } from './user-impersonate-modal'
 import { notifySuccess, notifyError } from '@/lib/notifications'
 import { createLogger } from '@/lib/logger'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { useAdminUsersList } from '@/hooks/use-admin-users-list'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
+
+const UserImportModal = dynamic(
+  () => import('./user-import-modal').then((m) => ({ default: m.UserImportModal })),
+  { ssr: false },
+)
+const UserImpersonateModal = dynamic(
+  () => import('./user-impersonate-modal').then((m) => ({ default: m.UserImpersonateModal })),
+  { ssr: false },
+)
 
 const logger = createLogger('AdminUsersContent')
 
@@ -86,8 +95,7 @@ type RoleFilter =
 type StatoFilter = 'tutti' | 'attivo' | 'inattivo' | 'sospeso'
 
 export function AdminUsersContent() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
+  const { users, loading, error, reload } = useAdminUsersList()
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('tutti')
   const [statoFilter, setStatoFilter] = useState<StatoFilter>('tutti')
@@ -113,49 +121,14 @@ export function AdminUsersContent() {
     onOpenChange: onPdfOpenChange,
   } = usePdfPreviewDialog()
 
-  // Ref per evitare chiamate multiple durante il mount
-  const fetchingRef = useRef(false)
-
-  const fetchUsers = useCallback(async () => {
-    // Evita chiamate parallele se già in corso
-    if (fetchingRef.current) return
-
-    try {
-      fetchingRef.current = true
-      setLoading(true)
-      const response = await fetch('/api/admin/users')
-
-      if (!response.ok) {
-        // Proteggi da risposte vuote
-        const text = await response.text()
-        const error = text ? JSON.parse(text) : { error: 'Errore nel caricamento utenti' }
-        throw new Error(error.error || 'Errore nel caricamento utenti')
-      }
-
-      // Proteggi da risposte vuote che causano "Unexpected end of JSON input"
-      const text = await response.text()
-      if (!text || text.trim().length === 0) {
-        setUsers([])
-        return
-      }
-
-      const data = JSON.parse(text)
-      // Supporta sia risposta semplice { users } che risposta paginata { users, pagination }
-      const usersData = data.users || []
-      setUsers(usersData)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      logger.error('Errore nel caricamento utenti', error)
-      notifyError('Errore', error.message || 'Errore nel caricamento utenti')
-    } finally {
-      setLoading(false)
-      fetchingRef.current = false
-    }
-  }, [])
-
   useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+    if (!error) return
+    logger.error('Errore nel caricamento utenti', error)
+    notifyError(
+      'Errore',
+      error instanceof Error ? error.message : 'Errore nel caricamento utenti',
+    )
+  }, [error])
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -384,7 +357,7 @@ export function AdminUsersContent() {
   }
 
   const handleFormSuccess = () => {
-    fetchUsers()
+    void reload()
     handleFormClose()
     // Toast notification gestito dal componente UserFormModal
   }
@@ -480,7 +453,7 @@ export function AdminUsersContent() {
       })
 
       notifySuccess('Utente eliminato', "L'utente è stato eliminato con successo")
-      fetchUsers()
+      void reload()
       setDeletingUser(null)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -557,7 +530,7 @@ export function AdminUsersContent() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={fetchUsers}
+            onClick={() => void reload()}
             className="bg-background-secondary border-border hover:bg-background-tertiary"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -941,7 +914,7 @@ export function AdminUsersContent() {
           open={showImportModal}
           onClose={() => setShowImportModal(false)}
           onSuccess={() => {
-            fetchUsers()
+            void reload()
             setShowImportModal(false)
           }}
         />

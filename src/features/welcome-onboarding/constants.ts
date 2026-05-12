@@ -1,0 +1,258 @@
+import {
+  Activity,
+  Apple,
+  CheckCircle,
+  FileText,
+  Heart,
+  Phone,
+  Sparkles,
+  Target,
+  User,
+} from 'lucide-react'
+
+export const QUESTIONNAIRE_VERSION = 'intake-v1-2026-02-08'
+
+export const LIBERATORIA_CHANNELS = [
+  'Sito 22club.it',
+  'Social (Facebook, Instagram, TikTok, X)',
+  'Stampa',
+  'Materiale promozionale',
+  'Altri canali futuri',
+] as const
+
+export const SESSO_OPTIONS = [
+  { value: '', label: 'Seleziona...' },
+  { value: 'Uomo', label: 'Uomo' },
+  { value: 'Donna', label: 'Donna' },
+  { value: 'Altro', label: 'Altro' },
+  { value: 'Preferisco non dirlo', label: 'Preferisco non dirlo' },
+] as const
+
+export const _LIVELLO_OPTIONS = [
+  { value: '', label: 'Seleziona...' },
+  { value: 'Principiante', label: 'Principiante' },
+  { value: 'Intermedio', label: 'Intermedio' },
+  { value: 'Avanzato', label: 'Avanzato' },
+] as const
+
+export const _TIPO_ATLETA_OPTIONS = [
+  { value: '', label: 'Seleziona...' },
+  { value: 'Dimagrimento', label: 'Dimagrimento' },
+  { value: 'Massa', label: 'Massa' },
+  { value: 'Forza', label: 'Forza' },
+  { value: 'Performance', label: 'Performance' },
+  { value: 'Benessere', label: 'Benessere' },
+] as const
+
+export const OBIETTIVI_FITNESS_OPZIONI = [
+  'Perdere peso',
+  'Aumentare massa muscolare',
+  'Tonificare',
+  'Migliorare postura',
+  'Aumentare forza',
+  'Migliorare resistenza',
+  'Mobilità / flessibilità',
+  'Ridurre stress',
+  'Recupero infortuni',
+  'Preparazione evento',
+] as const
+
+export const CERTIFICATO_MEDICO_TIPO_OPTIONS = [
+  { value: '', label: 'Seleziona...' },
+  { value: 'Agonistico', label: 'Agonistico' },
+  { value: 'Non agonistico', label: 'Non agonistico' },
+  { value: 'Altro', label: 'Altro' },
+] as const
+
+export const OBIETTIVO_NUTRIZIONALE_OPTIONS = [
+  { value: '', label: 'Seleziona...' },
+  { value: 'Dimagrimento', label: 'Dimagrimento' },
+  { value: 'Mantenimento', label: 'Mantenimento' },
+  { value: 'Massa', label: 'Massa' },
+  { value: 'Ricomposizione corporea', label: 'Ricomposizione corporea' },
+  { value: 'Benessere / Energia', label: 'Benessere / Energia' },
+  { value: 'Altro', label: 'Altro' },
+] as const
+
+export const INTOLLERANZE_PRESET = ['Lattosio', 'Glutine', 'Nichel', 'Istamina', 'Fruttosio'] as const
+export const ALLERGIE_ALIMENTARI_PRESET = [
+  'Frutta a guscio',
+  'Arachidi',
+  'Crostacei',
+  'Pesce',
+  'Uova',
+  'Latte',
+  'Soia',
+  'Sesamo',
+] as const
+
+export const STEPS = [
+  {
+    title: 'Welcome in 22 Club!',
+    description:
+      'È quasi tutto pronto per iniziare con i tuoi allenamenti, ma prima conosciamoci meglio!',
+    icon: Sparkles,
+    skippable: false,
+    emoji: '👋',
+    accent: 'from-[#02B3BF] to-[#02B3BF]',
+    borderLeft: 'border-l-[#02B3BF]',
+    progressRing: 'ring-[#02B3BF]/50',
+    progressBg: 'bg-[#02B3BF]',
+  },
+  {
+    title: 'Identità',
+    description: 'I tuoi dati anagrafici.',
+    icon: User,
+    skippable: false,
+    emoji: '🪪',
+    accent: 'from-amber-500/20 to-orange-500/10',
+    borderLeft: 'border-l-amber-500/60',
+    progressRing: 'ring-amber-500/50',
+    progressBg: 'bg-amber-500',
+  },
+  {
+    title: 'Contatto di emergenza',
+    description: 'Come contattarti e chi avvisare.',
+    icon: Phone,
+    skippable: false,
+    emoji: '📱',
+    accent: 'from-emerald-500/20 to-green-500/10',
+    borderLeft: 'border-l-emerald-500/60',
+    progressRing: 'ring-emerald-500/50',
+    progressBg: 'bg-emerald-500',
+  },
+  {
+    title: 'Residenza e dati fiscali',
+    description: "Ci servono per i documenti e l'identificazione.",
+    icon: User,
+    skippable: false,
+    emoji: '🏠',
+    accent: 'from-slate-500/20 to-zinc-500/10',
+    borderLeft: 'border-l-slate-500/60',
+    progressRing: 'ring-slate-500/50',
+    progressBg: 'bg-slate-500',
+  },
+  {
+    title: 'Dati fisici',
+    description: 'Altezza, peso e obiettivi.',
+    icon: Activity,
+    skippable: false,
+    emoji: '📏',
+    accent: 'from-violet-500/20 to-purple-500/10',
+    borderLeft: 'border-l-violet-500/60',
+    progressRing: 'ring-violet-500/50',
+    progressBg: 'bg-violet-500',
+  },
+  {
+    title: 'Obiettivi e livello',
+    description: 'Così il trainer può personalizzare il tuo percorso.',
+    icon: Target,
+    skippable: false,
+    emoji: '🎯',
+    accent: 'from-rose-500/20 to-pink-500/10',
+    borderLeft: 'border-l-rose-500/60',
+    progressRing: 'ring-rose-500/50',
+    progressBg: 'bg-rose-500',
+  },
+  {
+    title: 'Motivazione',
+    description: 'Capire cosa ti spinge ci aiuta a costruire un percorso migliore.',
+    icon: Heart,
+    skippable: false,
+    emoji: '🔥',
+    accent: 'from-red-500/20 to-orange-500/10',
+    borderLeft: 'border-l-red-500/60',
+    progressRing: 'ring-red-500/50',
+    progressBg: 'bg-red-500',
+  },
+  {
+    title: 'Salute',
+    description: 'Informazioni utili per allenarti in sicurezza.',
+    icon: Heart,
+    skippable: true,
+    emoji: '🩺',
+    accent: 'from-red-500/15 to-pink-500/10',
+    borderLeft: 'border-l-red-500/50',
+    progressRing: 'ring-red-500/50',
+    progressBg: 'bg-red-500',
+  },
+  {
+    title: 'Nutrizione',
+    description: 'Informazioni di base per personalizzare il percorso.',
+    icon: Apple,
+    skippable: true,
+    emoji: '🍽️',
+    accent: 'from-lime-500/20 to-green-500/10',
+    borderLeft: 'border-l-lime-500/60',
+    progressRing: 'ring-lime-500/50',
+    progressBg: 'bg-lime-500',
+  },
+  {
+    title: 'Anamnesi',
+    description: '',
+    icon: FileText,
+    skippable: false,
+    emoji: '📋',
+    accent: 'from-indigo-500/20 to-violet-500/10',
+    borderLeft: 'border-l-indigo-500/60',
+    progressRing: 'ring-indigo-500/50',
+    progressBg: 'bg-indigo-500',
+  },
+  {
+    title: 'Manleva',
+    description: 'Accettazione della manleva di responsabilità.',
+    icon: FileText,
+    skippable: false,
+    emoji: '🛡️',
+    accent: 'from-amber-600/20 to-orange-600/10',
+    borderLeft: 'border-l-amber-600/60',
+    progressRing: 'ring-amber-600/50',
+    progressBg: 'bg-amber-600',
+  },
+  {
+    title: 'Liberatoria foto e video',
+    description: "Scegli se autorizzi l'uso delle tue immagini.",
+    icon: FileText,
+    skippable: false,
+    emoji: '📸',
+    accent: 'from-teal-600/20 to-cyan-600/10',
+    borderLeft: 'border-l-teal-600/60',
+    progressRing: 'ring-teal-600/50',
+    progressBg: 'bg-teal-600',
+  },
+  {
+    title: 'Riepilogo',
+    description: 'Controlla i dati prima di completare.',
+    icon: CheckCircle,
+    skippable: false,
+    emoji: '✅',
+    accent: 'from-sky-500/20 to-cyan-500/10',
+    borderLeft: 'border-l-sky-500/60',
+    progressRing: 'ring-sky-500/50',
+    progressBg: 'bg-sky-500',
+  },
+  {
+    title: 'Conferma finale',
+    description: 'Prima di generare il documento, verifica e conferma.',
+    icon: CheckCircle,
+    skippable: false,
+    emoji: '✅',
+    accent: 'from-green-500/20 to-emerald-500/10',
+    borderLeft: 'border-l-green-500/60',
+    progressRing: 'ring-green-500/50',
+    progressBg: 'bg-green-500',
+  },
+  {
+    title: 'Genera documento',
+    description: 'Stiamo creando il tuo documento di riepilogo.',
+    icon: FileText,
+    skippable: false,
+    emoji: '📄',
+    accent: 'from-green-600/20 to-emerald-600/10',
+    borderLeft: 'border-l-green-600/60',
+    progressRing: 'ring-green-600/50',
+    progressBg: 'bg-green-600',
+  },
+] as const
+
+export const TOTAL_STEPS = STEPS.length

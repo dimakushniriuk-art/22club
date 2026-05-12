@@ -53,6 +53,8 @@ export interface AuthContext {
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>
   /** Invalida cache profilo in-memory e ricarica da DB (es. dopo salvataggio in Impostazioni). */
   refreshUserProfile: () => Promise<void>
+  /** Hint SSR layout /home: idrata profilo atleta senza secondo fetch client al cold start. */
+  hydrateFromServerProfile: (profile: import('@/types/supabase').Tables<'profiles'>) => void
 }
 
 export interface JWTClaims {

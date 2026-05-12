@@ -31,7 +31,11 @@ export const athleteAnagraficaKeys = {
  * Hook per ottenere dati anagrafici atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteAnagrafica(athleteId: string | null) {
+export function useAthleteAnagrafica(
+  athleteId: string | null,
+  options?: { enabled?: boolean },
+) {
+  const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteAnagraficaKeys.detail(athleteId || ''),
     queryFn: async (): Promise<AthleteAnagrafica | null> => {
@@ -114,7 +118,7 @@ export function useAthleteAnagrafica(athleteId: string | null) {
         throw new Error(apiError.message)
       }
     },
-    enabled: !!athleteId,
+    enabled: queryEnabled,
     staleTime: 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore

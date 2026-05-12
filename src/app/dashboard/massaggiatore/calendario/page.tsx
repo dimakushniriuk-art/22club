@@ -1,7 +1,7 @@
 'use client'
 
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
-import { CalendarPageContent } from '@/app/dashboard/calendario/page'
+import { CalendarPageContent } from '@/features/staff-calendar'
 import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 
 export default function MassaggiatoreCalendarioPage() {

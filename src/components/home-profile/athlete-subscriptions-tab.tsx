@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { ATHLETE_PROFILE_NESTED_CARD_CLASS } from '@/components/dashboard/athlete-profile/athlete-profile-ds'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui'
-import { createClient } from '@/lib/supabase/client'
 import { LoadingState } from '@/components/dashboard/loading-state'
 import { ErrorState } from '@/components/dashboard/error-state'
 import {
@@ -26,7 +25,7 @@ import {
   invoiceDocumentSuggestedFileName,
   resolveInvoiceDocumentsStoragePath,
 } from '@/lib/documents'
-import { computeAthleteTrainingLessonUsage } from '@/lib/credits/athlete-training-lessons-display'
+import { useAthletePayments } from '@/hooks/use-athlete-payments'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
@@ -52,11 +51,14 @@ export function AthleteSubscriptionsTab({
   athleteUserId,
   refreshKey = 0,
 }: AthleteSubscriptionsTabProps) {
-  const supabase = createClient()
-  const [pagamenti, setPagamenti] = useState<Pagamento[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const athleteProfileId = useProfileId(athleteUserId)
+  const {
+    data: pagamenti = [],
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useAthletePayments(athleteProfileId, refreshKey)
+  const error = queryError instanceof Error ? queryError.message : queryError ? 'Errore nel caricamento dei pagamenti' : null
   const {
     open: invoicePdfOpen,
     blob: invoicePdfBlob,
@@ -66,97 +68,27 @@ export function AthleteSubscriptionsTab({
   } = usePdfPreviewDialog()
   const [invoicePreviewLoadingId, setInvoicePreviewLoadingId] = useState<string | null>(null)
 
-  const loadPagamenti = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      if (!athleteProfileId) {
-        setError('Profilo atleta non trovato')
-        return
-      }
-
-      // Carica pagamenti
-      const { data: payments, error: paymentsError } = await supabase
-        .from('payments')
-        .select('id, payment_date, amount, invoice_url, lessons_purchased, status, created_at')
-        .eq('athlete_id', athleteProfileId)
-        .eq('status', 'completed')
-        .eq('service_type', 'training')
-        .order('payment_date', { ascending: false })
-
-      if (paymentsError) throw paymentsError
-
-      const totalPurchased = (payments || []).reduce(
-        (sum: number, p: { lessons_purchased?: number | null }) => sum + (p.lessons_purchased || 0),
-        0,
-      )
-
-      const { totalUsed, totalRemaining } = await computeAthleteTrainingLessonUsage(
-        supabase,
-        athleteProfileId,
-        totalPurchased,
-      )
-
-      // Distribuisci lezioni usate proporzionalmente tra i pagamenti
-      type PaymentRow = {
-        id: string
-        payment_date: string | null
-        amount: number | null
-        invoice_url: string | null
-        lessons_purchased: number | null
-        status: string | null
-        created_at?: string | null
-      }
-
-      const paymentRows = (payments ?? []) as PaymentRow[]
-
-      const formatted: Pagamento[] = paymentRows.map((p) => {
-        const lessonsPurchased = p.lessons_purchased ?? 0
-        // Per ogni pagamento: lessons_used / lessons_remaining = aggregati atleta (ledger + lesson_counters; fallback appuntamenti)
-        return {
-          id: p.id,
-          payment_date: p.payment_date ?? p.created_at ?? new Date().toISOString(),
-          lessons_purchased: lessonsPurchased,
-          lessons_used: totalUsed, // Totale aggregato per l'atleta
-          lessons_remaining: totalRemaining, // Totale aggregato per l'atleta
-          amount: p.amount ?? 0,
-          invoice_url: p.invoice_url ?? null,
-        }
-      })
-
-      setPagamenti(formatted)
-    } catch (error) {
-      logger.error('Errore caricamento pagamenti', error, { athleteUserId })
-      setError(error instanceof Error ? error.message : 'Errore nel caricamento dei pagamenti')
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase, athleteProfileId, athleteUserId])
-
   useEffect(() => {
-    if (athleteProfileId) {
-      void loadPagamenti()
-    }
-  }, [athleteProfileId, loadPagamenti, refreshKey])
+    if (refreshKey > 0) void refetch()
+  }, [refreshKey, refetch])
 
   useEffect(() => {
     if (!athleteProfileId) return
     const onVis = () => {
-      if (document.visibilityState === 'visible') void loadPagamenti()
+      if (document.visibilityState === 'visible') void refetch()
     }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
-  }, [athleteProfileId, loadPagamenti])
+  }, [athleteProfileId, refetch])
 
   useEffect(() => {
     if (!athleteProfileId) return
     const onLessonsRefresh = () => {
-      void loadPagamenti()
+      void refetch()
     }
     window.addEventListener('22club:athlete-lessons-refresh', onLessonsRefresh)
     return () => window.removeEventListener('22club:athlete-lessons-refresh', onLessonsRefresh)
-  }, [athleteProfileId, loadPagamenti])
+  }, [athleteProfileId, refetch])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('it-IT', {
@@ -217,7 +149,7 @@ export function AthleteSubscriptionsTab({
   if (error) {
     return (
       <div className="py-8">
-        <ErrorState message={error} onRetry={loadPagamenti} />
+        <ErrorState message={error} onRetry={() => void refetch()} />
       </div>
     )
   }

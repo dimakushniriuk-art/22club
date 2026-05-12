@@ -1,1 +1,1 @@
-export { default } from './_components/home-layout-auth'
+export { default } from './_components/home-layout-server'

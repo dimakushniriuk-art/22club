@@ -30,7 +30,8 @@ export const athleteMassageKeys = {
  * Hook per ottenere dati massaggi atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteMassage(athleteId: string | null) {
+export function useAthleteMassage(athleteId: string | null, options?: { enabled?: boolean }) {
+  const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteMassageKeys.detail(athleteId || ''),
     queryFn: async (): Promise<AthleteMassageData | null> => {
@@ -78,7 +79,7 @@ export function useAthleteMassage(athleteId: string | null) {
         throw new Error(apiError.message)
       }
     },
-    enabled: !!athleteId,
+    enabled: queryEnabled,
     staleTime: 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
@@ -89,8 +90,8 @@ export function useAthleteMassage(athleteId: string | null) {
  * Hook per statistiche massaggi atleta (trattamenti e preferenze).
  * Usato dalla pagina /home/massaggiatore per le StatCard.
  */
-export function useAthleteMassageStats(athleteId: string | null) {
-  const query = useAthleteMassage(athleteId)
+export function useAthleteMassageStats(athleteId: string | null, enabled = true) {
+  const query = useAthleteMassage(athleteId, { enabled })
   const trattamenti = query.data?.storico_massaggi?.length ?? 0
   const preferenze = query.data?.preferenze_tipo_massaggio?.length ?? 0
   return {

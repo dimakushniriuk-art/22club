@@ -3,7 +3,7 @@
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
-import { ChatPageContent } from '@/app/dashboard/chat/page'
+import { ChatPageContent } from '@/features/staff-trainer-chat'
 
 export default function NutrizionistaChatPage() {
   const { showLoader } = useStaffDashboardGuard('nutrizionista')

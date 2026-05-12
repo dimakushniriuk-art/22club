@@ -6,13 +6,13 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { Progress } from '@/components/ui'
 import { Mail, Phone, User, Target, TrendingUp, UserCircle } from 'lucide-react'
-import { useSupabaseClient } from '@/hooks/use-supabase-client'
+import { useMyTrainerProfile } from '@/hooks/use-my-trainer-profile'
 import { ATHLETE_PROFILE_NESTED_CARD_CLASS } from '@/components/dashboard/athlete-profile/athlete-profile-ds'
 
 type TrainerProfile = {
@@ -36,35 +36,28 @@ interface AthleteOverviewTabProps {
     obiettivo_peso: number | null
   }
   calculateProgress: () => number
+  /** Carica trainer solo quando la tab Overview è attiva. */
+  trainerQueryEnabled?: boolean
 }
 
 export function AthleteOverviewTab({
   user: _user,
   stats,
   calculateProgress,
+  trainerQueryEnabled = true,
 }: AthleteOverviewTabProps) {
-  const supabase = useSupabaseClient()
-  const [trainer, setTrainer] = useState<TrainerProfile | null>(null)
-  const [trainerLoading, setTrainerLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    setTrainerLoading(true)
-    supabase.rpc('get_my_trainer_profile').then((res: { data: unknown; error: unknown }) => {
-      const { data, error } = res
-      if (cancelled) return
-      setTrainerLoading(false)
-      if (error || !Array.isArray(data) || data.length === 0) {
-        setTrainer(null)
-        return
-      }
-      const row = data[0] as TrainerProfile
-      setTrainer(row)
-    })
-    return () => {
-      cancelled = true
+  const { data: trainerRow, isPending: trainerLoading } =
+    useMyTrainerProfile(trainerQueryEnabled)
+  const trainer = useMemo((): TrainerProfile | null => {
+    if (!trainerRow) return null
+    return {
+      pt_nome: trainerRow.pt_nome ?? '',
+      pt_cognome: trainerRow.pt_cognome ?? '',
+      pt_email: trainerRow.pt_email ?? null,
+      pt_telefono: trainerRow.pt_telefono ?? null,
+      pt_avatar_url: trainerRow.pt_avatar_url ?? null,
     }
-  }, [supabase])
+  }, [trainerRow])
 
   return (
     <div className="space-y-3 sm:space-y-4">

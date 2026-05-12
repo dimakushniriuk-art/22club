@@ -2,7 +2,7 @@
 
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
-import { ChatPageContent } from '@/app/dashboard/chat/page'
+import { ChatPageContent } from '@/features/staff-trainer-chat'
 import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 
 export default function MassaggiatoreChatPage() {

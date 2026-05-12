@@ -2,7 +2,7 @@
 
 import { useStaffDashboardGuard } from '@/hooks/use-staff-dashboard-guard'
 import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
-import { CalendarPageContent } from '@/app/dashboard/calendario/page'
+import { CalendarPageContent } from '@/features/staff-calendar'
 
 export default function NutrizionistaCalendarioPage() {
   const { showLoader } = useStaffDashboardGuard('nutrizionista')

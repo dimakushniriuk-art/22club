@@ -1,9 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { withNetworkRetry } from '@/lib/network-retry'
+import { fetchUserSettings } from '@/lib/user-settings/fetch-user-settings'
+import { queryKeys } from '@/lib/query-keys'
+import { invalidateUserSettingsQueries } from '@/lib/react-query/post-mutation-cache'
 
 const logger = createLogger('hooks:use-user-settings')
 
@@ -65,174 +69,34 @@ const DEFAULT_ACCOUNT: AccountSettings = {
   timeFormat: '24h',
 }
 
-export function useUserSettings() {
-  const [loading, setLoading] = useState(true)
-  const [settings, setSettings] = useState<UserSettings | null>(null)
+export function useUserSettings(authUserId?: string | null) {
+  const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
 
-  // Carica impostazioni utente
-  const loadSettings = useCallback(async (userId?: string) => {
-    try {
-      setLoading(true)
-      setError(null)
+  const queryKey = useMemo(
+    () =>
+      authUserId
+        ? queryKeys.userSettings.byAuthUser(authUserId)
+        : (['user-settings', 'self'] as const),
+    [authUserId],
+  )
 
-      let targetUserId = userId
+  const settingsQuery = useQuery({
+    queryKey,
+    queryFn: () => fetchUserSettings(authUserId),
+    staleTime: 2 * 60 * 1000,
+    placeholderData: (previous) => previous,
+  })
 
-      if (!targetUserId) {
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser()
-        targetUserId = authUser?.id
-      }
+  const settings = settingsQuery.data ?? null
+  const loading = settingsQuery.isPending
 
-      if (!targetUserId) {
-        setError('Utente non autenticato')
-        setLoading(false)
-        return
-      }
-
-      // Usa la funzione RPC per ottenere o creare impostazioni
-      // Workaround necessario per tipizzazione Supabase RPC
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error: rpcError } = await (supabase.rpc as any)('get_or_create_user_settings', {
-        p_user_id: targetUserId,
-      })
-
-      if (rpcError) {
-        // Se la funzione RPC non esiste o errore, prova query diretta
-        const queryResult = await supabase
-          .from('user_settings')
-          .select('*')
-          .eq('user_id', targetUserId)
-          .single()
-
-        let settingsData = queryResult.data
-        const queryError = queryResult.error
-
-        if (queryError) {
-          // Se errore 42703 (colonna non esiste) o PGRST116 (nessun record), gestisci
-          if (queryError.code === 'PGRST116' || queryError.code === '42703') {
-            // Nessun record trovato o colonna non esiste, crea impostazioni di default
-            // Prova insert con solo user_id (le colonne JSONB useranno i default del DB)
-            // Workaround necessario per inferenza tipo Supabase
-            const { data: newSettings, error: insertError } =
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (supabase.from('user_settings') as any)
-                .insert({
-                  user_id: targetUserId,
-                })
-                .select()
-                .single()
-
-            if (insertError) {
-              // Se anche l'insert fallisce per colonne mancanti, usa solo valori in memoria
-              logger.warn('Errore inserimento user_settings, usando valori default', insertError)
-              setSettings({
-                notifications: DEFAULT_NOTIFICATIONS,
-                privacy: DEFAULT_PRIVACY,
-                account: DEFAULT_ACCOUNT,
-                two_factor_enabled: false,
-                two_factor_secret: null,
-                two_factor_backup_codes: null,
-                two_factor_enabled_at: null,
-              })
-              setLoading(false)
-              return
-            }
-            settingsData = newSettings
-          } else {
-            // Altro tipo di errore
-            throw queryError
-          }
-        }
-
-        // Type assertion per settingsData
-        type UserSettingsRow = {
-          notification_settings?: NotificationSettings | null
-          privacy_settings?: PrivacySettings | null
-          account_settings?: AccountSettings | null
-          two_factor_enabled?: boolean | null
-          two_factor_secret?: string | null
-          two_factor_backup_codes?: string[] | null
-          two_factor_enabled_at?: string | null
-          [key: string]: unknown
-        }
-
-        const typedSettingsData = settingsData as UserSettingsRow | null
-
-        if (typedSettingsData) {
-          // Gestisci caso in cui colonne JSONB potrebbero non esistere ancora
-          setSettings({
-            notifications:
-              (typedSettingsData.notification_settings as NotificationSettings | null) ||
-              DEFAULT_NOTIFICATIONS,
-            privacy:
-              (typedSettingsData.privacy_settings as PrivacySettings | null) || DEFAULT_PRIVACY,
-            account:
-              (typedSettingsData.account_settings as AccountSettings | null) || DEFAULT_ACCOUNT,
-            two_factor_enabled: typedSettingsData.two_factor_enabled ?? false,
-            two_factor_secret: typedSettingsData.two_factor_secret ?? null,
-            two_factor_backup_codes: typedSettingsData.two_factor_backup_codes ?? null,
-            two_factor_enabled_at: typedSettingsData.two_factor_enabled_at ?? null,
-          })
-        } else {
-          // Fallback: usa valori default se non ci sono dati
-          setSettings({
-            notifications: DEFAULT_NOTIFICATIONS,
-            privacy: DEFAULT_PRIVACY,
-            account: DEFAULT_ACCOUNT,
-            two_factor_enabled: false,
-            two_factor_secret: null,
-            two_factor_backup_codes: null,
-            two_factor_enabled_at: null,
-          })
-        }
-      } else if (data) {
-        // Type assertion per data
-        type UserSettingsRow = {
-          notification_settings?: NotificationSettings | null
-          privacy_settings?: PrivacySettings | null
-          account_settings?: AccountSettings | null
-          two_factor_enabled?: boolean | null
-          two_factor_secret?: string | null
-          two_factor_backup_codes?: string[] | null
-          two_factor_enabled_at?: string | null
-          [key: string]: unknown
-        }
-
-        const typedData = data as UserSettingsRow
-
-        // Gestisci caso in cui colonne JSONB potrebbero non esistere ancora
-        setSettings({
-          notifications:
-            (typedData.notification_settings as NotificationSettings | null) ||
-            DEFAULT_NOTIFICATIONS,
-          privacy: (typedData.privacy_settings as PrivacySettings | null) || DEFAULT_PRIVACY,
-          account: (typedData.account_settings as AccountSettings | null) || DEFAULT_ACCOUNT,
-          two_factor_enabled: typedData.two_factor_enabled ?? false,
-          two_factor_secret: typedData.two_factor_secret ?? null,
-          two_factor_backup_codes: typedData.two_factor_backup_codes ?? null,
-          two_factor_enabled_at: typedData.two_factor_enabled_at ?? null,
-        })
-      } else {
-        // Fallback: usa valori default se non ci sono dati
-        setSettings({
-          notifications: DEFAULT_NOTIFICATIONS,
-          privacy: DEFAULT_PRIVACY,
-          account: DEFAULT_ACCOUNT,
-          two_factor_enabled: false,
-          two_factor_secret: null,
-          two_factor_backup_codes: null,
-          two_factor_enabled_at: null,
-        })
-      }
-    } catch (err) {
-      logger.error('Errore caricamento impostazioni', err)
-      setError(err instanceof Error ? err.message : 'Errore sconosciuto')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const loadSettings = useCallback(
+    async (userId?: string) => {
+      await invalidateUserSettingsQueries(queryClient, userId ?? authUserId ?? null)
+    },
+    [authUserId, queryClient],
+  )
 
   // Salva impostazioni notifiche
   const saveNotifications = useCallback(async (notifications: NotificationSettings) => {
@@ -269,14 +133,16 @@ export function useUserSettings() {
         }
       })
 
-      setSettings((prev) => (prev ? { ...prev, notifications } : null))
+      queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
+        prev ? { ...prev, notifications } : prev,
+      )
       return { success: true }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
       setError(errorMessage)
       return { success: false, error: errorMessage }
     }
-  }, [])
+  }, [queryClient, queryKey])
 
   // Salva impostazioni privacy
   const savePrivacy = useCallback(async (privacy: PrivacySettings) => {
@@ -313,14 +179,16 @@ export function useUserSettings() {
         }
       })
 
-      setSettings((prev) => (prev ? { ...prev, privacy } : null))
+      queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
+        prev ? { ...prev, privacy } : prev,
+      )
       return { success: true }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
       setError(errorMessage)
       return { success: false, error: errorMessage }
     }
-  }, [])
+  }, [queryClient, queryKey])
 
   // Salva impostazioni account
   const saveAccount = useCallback(async (account: AccountSettings) => {
@@ -357,7 +225,9 @@ export function useUserSettings() {
         }
       })
 
-      setSettings((prev) => (prev ? { ...prev, account } : null))
+      queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
+        prev ? { ...prev, account } : prev,
+      )
       return { success: true }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
@@ -365,7 +235,7 @@ export function useUserSettings() {
       logger.error('Errore salvataggio account', err)
       return { success: false, error: errorMessage }
     }
-  }, [])
+  }, [queryClient, queryKey])
 
   // Salva impostazioni 2FA
   const saveTwoFactor = useCallback(
@@ -423,7 +293,7 @@ export function useUserSettings() {
           }
         })
 
-        setSettings((prev) =>
+        queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
           prev
             ? {
                 ...prev,
@@ -432,7 +302,7 @@ export function useUserSettings() {
                 two_factor_backup_codes: backupCodes || null,
                 two_factor_enabled_at: enabled ? new Date().toISOString() : null,
               }
-            : null,
+            : prev,
         )
         return { success: true }
       } catch (err) {
@@ -441,18 +311,21 @@ export function useUserSettings() {
         return { success: false, error: errorMessage }
       }
     },
-    [],
+    [queryClient, queryKey],
   )
 
-  // Carica impostazioni al mount
-  useEffect(() => {
-    loadSettings()
-  }, [loadSettings])
+  const resolvedError =
+    error ??
+    (settingsQuery.error instanceof Error
+      ? settingsQuery.error.message
+      : settingsQuery.error
+        ? String(settingsQuery.error)
+        : null)
 
   return {
     settings,
     loading,
-    error,
+    error: resolvedError,
     loadSettings,
     saveNotifications,
     savePrivacy,

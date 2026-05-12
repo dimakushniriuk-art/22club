@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Calendar, Clock, Dumbbell, User, Users } from 'lucide-react'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import {
@@ -27,14 +27,11 @@ export interface AtletaStoricoAllenamentiPanelProps {
   athleteProfileId: string
   /** Nome completo per PDF e intestazioni */
   pdfSubjectName: string
-  /** Incrementato dal genitore (es. dopo finalizza sessione) per ricaricare lo storico */
-  reloadToken?: number
 }
 
 export function AtletaStoricoAllenamentiPanel({
   athleteProfileId,
   pdfSubjectName,
-  reloadToken = 0,
 }: AtletaStoricoAllenamentiPanelProps) {
   const { notify } = useNotify()
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
@@ -42,7 +39,6 @@ export function AtletaStoricoAllenamentiPanel({
     workouts,
     stats,
     error: storicoError,
-    reload,
   } = useStoricoAllenamentiProfile(athleteProfileId, selectedPeriod)
 
   const {
@@ -54,14 +50,6 @@ export function AtletaStoricoAllenamentiPanel({
     openWithBlob: openPdfWithBlob,
     onOpenChange: onPdfOpenChange,
   } = usePdfPreviewDialog()
-
-  const prevReloadToken = useRef(reloadToken)
-  useEffect(() => {
-    if (prevReloadToken.current !== reloadToken) {
-      prevReloadToken.current = reloadToken
-      void reload()
-    }
-  }, [reloadToken, reload])
 
   const formatDate = useCallback((dateString: string) => {
     return parseDisplayInstant(dateString).toLocaleDateString('it-IT', {

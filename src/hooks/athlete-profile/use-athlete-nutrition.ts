@@ -30,7 +30,11 @@ export const athleteNutritionKeys = {
  * Hook per ottenere dati nutrizionali atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteNutrition(athleteId: string | null) {
+export function useAthleteNutrition(
+  athleteId: string | null,
+  options?: { enabled?: boolean },
+) {
+  const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteNutritionKeys.detail(athleteId || ''),
     queryFn: async (): Promise<AthleteNutritionData | null> => {
@@ -91,11 +95,38 @@ export function useAthleteNutrition(athleteId: string | null) {
         throw new Error(apiError.message)
       }
     },
-    enabled: !!athleteId,
+    enabled: queryEnabled,
     staleTime: 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore
   })
+}
+
+/**
+ * Statistiche compatte per hub /home/nutrizionista (card in cima).
+ */
+export function useAthleteNutritionStats(athleteId: string | null, enabled = true) {
+  const query = useAthleteNutrition(athleteId, { enabled })
+  const data = query.data
+  const pianiAttivi =
+    data &&
+    (Boolean(data.dieta_seguita?.trim()) ||
+      Boolean(data.obiettivo_nutrizionale?.trim()) ||
+      data.calorie_giornaliere_target != null)
+      ? 1
+      : 0
+  const consigli =
+    (data?.alimenti_preferiti?.length ?? 0) +
+    (data?.intolleranze_alimentari?.length ?? 0) +
+    (data?.allergie_alimentari?.length ?? 0) +
+    (data?.note_nutrizionali?.trim() ? 1 : 0)
+  return {
+    pianiAttivi,
+    consigli,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+  }
 }
 
 /**

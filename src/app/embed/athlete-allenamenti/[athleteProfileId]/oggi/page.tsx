@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import { AllenamentiOggiPageContent } from '@/app/home/allenamenti/oggi/page'
+import { AllenamentiOggiPageContent } from '@/features/live-workout-session'
 import { EmbedAthleteAllenamentiPageSkeleton } from '@/components/layout/route-loading-skeletons'
 
 export default function EmbedOggiPage() {

@@ -54,6 +54,7 @@ import {
 import { notifySuccess, notifyError } from '@/lib/notifications'
 import { RolePermissionsEditor } from './role-permissions-editor'
 import { createLogger } from '@/lib/logger'
+import { useAdminRolesList } from '@/hooks/use-admin-roles-list'
 
 const logger = createLogger('AdminRolesContent')
 
@@ -259,8 +260,7 @@ const VALID_ROLE_NAMES = [
 ]
 
 export function AdminRolesContent() {
-  const [roles, setRoles] = useState<Role[]>([])
-  const [loading, setLoading] = useState(true)
+  const { roles, loading, error, reload } = useAdminRolesList()
   const [editingRole, setEditingRole] = useState<Role | null>(null)
   const [editedDescription, setEditedDescription] = useState('')
   const [editedPermissions, setEditedPermissions] = useState<RolePermissions>({})
@@ -279,28 +279,13 @@ export function AdminRolesContent() {
   const [verifyingLogin, setVerifyingLogin] = useState(false)
 
   useEffect(() => {
-    fetchRoles()
-  }, [])
-
-  async function fetchRoles() {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/admin/roles')
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Errore nel caricamento ruoli')
-      }
-
-      const { roles: rolesData } = await response.json()
-      setRoles(rolesData || [])
-    } catch (error: unknown) {
-      logger.error('Errore nel caricamento ruoli', error)
-      notifyError('Errore', error instanceof Error ? error.message : 'Errore nel caricamento ruoli')
-    } finally {
-      setLoading(false)
-    }
-  }
+    if (!error) return
+    logger.error('Errore nel caricamento ruoli', error)
+    notifyError(
+      'Errore',
+      error instanceof Error ? error.message : 'Errore nel caricamento ruoli',
+    )
+  }, [error])
 
   const handleEdit = (role: Role) => {
     setEditingRole(role)
@@ -334,7 +319,7 @@ export function AdminRolesContent() {
       }
 
       notifySuccess('Ruolo aggiornato', 'Il ruolo è stato aggiornato con successo')
-      fetchRoles()
+      void reload()
       handleCancel()
     } catch (error: unknown) {
       logger.error('Errore nel salvataggio ruolo', error, { roleId: editingRole?.id })
@@ -387,7 +372,7 @@ export function AdminRolesContent() {
       }
 
       notifySuccess('Ruolo creato', 'Il ruolo è stato creato con successo')
-      fetchRoles()
+      void reload()
       handleCancelCreate()
     } catch (error: unknown) {
       logger.error('Errore nella creazione ruolo', error)
@@ -417,7 +402,7 @@ export function AdminRolesContent() {
       }
 
       notifySuccess('Ruolo eliminato', 'Il ruolo è stato eliminato con successo')
-      fetchRoles()
+      void reload()
       handleCancelDelete()
     } catch (error: unknown) {
       logger.error("Errore nell'eliminazione ruolo", error, { roleId: roleToDelete.id })

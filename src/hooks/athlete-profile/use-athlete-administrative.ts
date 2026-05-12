@@ -34,7 +34,11 @@ export const athleteAdministrativeKeys = {
  * Hook per ottenere dati amministrativi atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteAdministrative(athleteId: string | null) {
+export function useAthleteAdministrative(
+  athleteId: string | null,
+  options?: { enabled?: boolean },
+) {
+  const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteAdministrativeKeys.detail(athleteId || ''),
     queryFn: async (): Promise<AthleteAdministrativeData | null> => {
@@ -86,7 +90,7 @@ export function useAthleteAdministrative(athleteId: string | null) {
         throw new Error(apiError.message)
       }
     },
-    enabled: !!athleteId,
+    enabled: queryEnabled,
     staleTime: 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1, // Riprova solo 1 volta in caso di errore

@@ -3,12 +3,19 @@
 // Approccio diretto con insert/update/delete via Supabase client
 // ============================================================
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { addDebitFromAppointment } from '@/lib/credits/ledger'
 import { hasOverlappingAppCoachedWorkoutDebit } from '@/lib/credits/session-debit-dedup'
 import { coerceLedgerServiceType } from '@/lib/abbonamenti-service-type'
+import {
+  fetchStaffAppointmentsFormAthletes,
+  fetchStaffAppointmentsTableRows,
+} from '@/lib/appointments/fetch-staff-appointments-table'
+import { queryKeys } from '@/lib/query-keys'
+import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 
 import type {
   AppointmentTable,
@@ -20,168 +27,71 @@ import {
   CALENDAR_BLOCK_CONFLICT_UI,
   checkStaffCalendarSlotOverlap,
   fetchStaffCalendarBlocksForUiValidation,
-  normalizeAppointmentStatus,
 } from '@/lib/appointment-utils'
 import type { CalendarBlock } from '@/types/calendar-block'
 import { useNotify } from '@/lib/ui/notify'
-import { listStaffAppointmentsForTable } from '@/lib/appointments/queries'
 import {
   requireCurrentOrgId,
   resolveOrgIdForAppointmentWrite,
 } from '@/lib/organizations/current-org'
 import { STAFF_APPOINTMENTS_INVALIDATE_EVENT } from '@/lib/staff-cross-tab-events'
-import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { useAuth } from '@/providers/auth-provider'
 
 const logger = createLogger('hooks:appointments:useStaffAppointmentsTable')
+const STALE_MS = 60 * 1000
+
 export function useStaffAppointmentsTable() {
+  const queryClient = useQueryClient()
   const { user: authUser, actorProfile, isImpersonating, loading: authLoading } = useAuth()
-  const [appointments, setAppointments] = useState<AppointmentTable[]>([])
-  const [appointmentsLoading, setAppointmentsLoading] = useState(true)
-  const [athletes, setAthletes] = useState<Array<{ id: string; name: string; email: string }>>([])
-  const [athletesLoading, setAthletesLoading] = useState(true)
-  const [staffId, setStaffId] = useState<string | null>(null)
-  const [staffOrgId, setStaffOrgId] = useState<string | null>(null)
   const [calendarBlocks, setCalendarBlocks] = useState<CalendarBlock[]>([])
-  const [staffName, setStaffName] = useState<string | null>(null)
-  const [staffRole, setStaffRole] = useState<string | null>(null)
   const { notify } = useNotify()
 
   /** Stesso vincolo della vecchia getUser()+profiles: in impersonation usa l’attore (admin). */
   const staffSource = isImpersonating && actorProfile ? actorProfile : authUser
-
-  useEffect(() => {
-    if (authLoading) return
-    if (!staffSource) {
-      setStaffId(null)
-      setStaffOrgId(null)
-      setStaffRole(null)
-      setStaffName(null)
-      setAppointments([])
-      setAppointmentsLoading(false)
-      setAthletes([])
-      setAthletesLoading(false)
-      return
-    }
-    setStaffId(staffSource.id)
-    setStaffOrgId(staffSource.org_id ?? null)
-    setStaffRole(staffSource.role)
+  const staffId = authLoading ? null : (staffSource?.id ?? null)
+  const staffOrgId = authLoading ? null : (staffSource?.org_id ?? null)
+  const staffRole = authLoading ? null : (staffSource?.role ?? null)
+  const staffName = useMemo(() => {
+    if (!staffSource) return null
     const fullName =
       staffSource.full_name?.trim() ||
       `${staffSource.first_name ?? ''} ${staffSource.last_name ?? ''}`.trim() ||
       null
-    setStaffName(fullName || null)
-  }, [authLoading, staffSource])
+    return fullName || null
+  }, [staffSource])
 
-  // Carica appuntamenti dal database
+  const appointmentsQueryKey = useMemo(
+    () =>
+      staffId
+        ? queryKeys.appointments.staffTable(staffId)
+        : (['appointments', 'staff-table', '__disabled__'] as const),
+    [staffId],
+  )
+
+  const appointmentsQuery = useQuery({
+    queryKey: appointmentsQueryKey,
+    queryFn: () => fetchStaffAppointmentsTableRows(supabase, staffId!, staffName),
+    enabled: Boolean(staffId),
+    staleTime: STALE_MS,
+    placeholderData: (previous) => previous,
+  })
+
+  const athletesQuery = useQuery({
+    queryKey: queryKeys.appointments.staffFormAthletes,
+    queryFn: () => fetchStaffAppointmentsFormAthletes(supabase),
+    enabled: Boolean(staffId),
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (previous) => previous,
+  })
+
+  const appointments = appointmentsQuery.data ?? []
+  const appointmentsLoading = Boolean(staffId && appointmentsQuery.isPending)
+  const athletes = athletesQuery.data ?? []
+  const athletesLoading = Boolean(staffId && athletesQuery.isPending)
+
   const fetchAppointments = useCallback(async () => {
-    if (!staffId) return
-
-    try {
-      setAppointmentsLoading(true)
-      const { data: appointmentsData, error: appointmentsError } =
-        await listStaffAppointmentsForTable(supabase, staffId)
-
-      if (appointmentsError) throw appointmentsError
-
-      if (appointmentsData) {
-        const athleteIds = [
-          ...new Set(appointmentsData.map((apt) => apt.athlete_id).filter(Boolean)),
-        ] as string[]
-
-        const nameByAthleteId = new Map<string, string>()
-        const avatarByAthleteId = new Map<string, string | null>()
-        if (athleteIds.length > 0) {
-          for (const idChunk of chunkForSupabaseIn(athleteIds)) {
-            const { data: profileRows, error: batchProfilesError } = await supabase
-              .from('profiles')
-              .select('id, nome, cognome, avatar, avatar_url')
-              .in('id', idChunk)
-
-            if (batchProfilesError) {
-              logger.error('Errore batch profili atleti (tab appuntamenti)', batchProfilesError)
-            } else {
-              for (const row of profileRows ?? []) {
-                const r = row as {
-                  id: string
-                  nome?: string | null
-                  cognome?: string | null
-                  avatar?: string | null
-                  avatar_url?: string | null
-                }
-                const label = `${r.nome ?? ''} ${r.cognome ?? ''}`.trim()
-                nameByAthleteId.set(r.id, label || 'Atleta')
-                const url = (r.avatar_url ?? r.avatar)?.trim() || null
-                avatarByAthleteId.set(r.id, url)
-              }
-            }
-          }
-        }
-
-        const appointmentsWithNames = appointmentsData.map((apt) => {
-          const athleteName = apt.athlete_id ? (nameByAthleteId.get(apt.athlete_id) ?? null) : null
-          const athleteAvatarUrl = apt.athlete_id
-            ? (avatarByAthleteId.get(apt.athlete_id) ?? null)
-            : null
-          return {
-            ...apt,
-            athlete_name: athleteName,
-            athlete_avatar_url: athleteAvatarUrl,
-            staff_name: staffName,
-            status: normalizeAppointmentStatus(apt.status),
-          } as AppointmentTable
-        })
-
-        setAppointments(appointmentsWithNames)
-      }
-    } catch (err) {
-      logger.error('Errore caricamento appuntamenti', err, { staffId })
-    } finally {
-      setAppointmentsLoading(false)
-    }
-  }, [staffId, staffName])
-
-  // Carica atleti
-  const fetchAthletes = useCallback(async () => {
-    try {
-      setAthletesLoading(true)
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('id, nome, cognome, email')
-        .in('role', ['athlete', 'atleta'])
-        .order('nome', { ascending: true })
-
-      if (error) throw error
-
-      if (profiles) {
-        setAthletes(
-          profiles.map(
-            (p: {
-              id: string
-              nome?: string | null
-              cognome?: string | null
-              email?: string | null
-            }) => ({
-              id: p.id,
-              name: `${p.nome || ''} ${p.cognome || ''}`.trim() || 'Atleta',
-              email: p.email || '',
-            }),
-          ),
-        )
-      }
-    } catch (err) {
-      logger.error('Errore caricamento atleti', err)
-    } finally {
-      setAthletesLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (staffId) {
-      void fetchAppointments()
-      void fetchAthletes()
-    }
-  }, [staffId, fetchAppointments, fetchAthletes])
+    await invalidateAppointmentsQueries(queryClient)
+  }, [queryClient])
 
   /** Stessa fonte di blocchi del calendario staff (`use-calendar-page`), solo per validazione UI. */
   useEffect(() => {
@@ -198,11 +108,11 @@ export function useStaffAppointmentsTable() {
   useEffect(() => {
     if (!staffId) return
     const onRemote = () => {
-      void fetchAppointments()
+      void invalidateAppointmentsQueries(queryClient)
     }
     window.addEventListener(STAFF_APPOINTMENTS_INVALIDATE_EVENT, onRemote)
     return () => window.removeEventListener(STAFF_APPOINTMENTS_INVALIDATE_EVENT, onRemote)
-  }, [staffId, fetchAppointments])
+  }, [staffId, queryClient])
 
   const handleFormSubmit = useCallback(
     async (

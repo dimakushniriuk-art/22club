@@ -9,7 +9,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useQueryClient } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, Button } from '@/components/ui'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -39,6 +39,17 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { queryKeys } from '@/lib/query-keys'
+import {
+  useAthleteWorkoutsHub,
+  type AthleteWorkoutsHubSection,
+} from '@/hooks/progressi/use-athlete-workouts-hub'
+import type {
+  AthleteWorkoutsHubAppointmentRow as AppointmentRow,
+  AthleteWorkoutsHubDayRow as WorkoutDayRow,
+  AthleteWorkoutsHubLogRow as WorkoutLogRow,
+  AthleteWorkoutsHubSchedaRow as SchedaRow,
+} from '@/hooks/progressi/fetch-athlete-workouts-hub-data'
 import { AtletaStoricoAllenamentiPanel } from '@/components/dashboard/athlete-profile/atleta-storico-allenamenti-panel'
 
 const DS_LIST_ITEM =
@@ -64,50 +75,7 @@ interface AthleteWorkoutsTabProps {
   /** Se true, niente Card esterna: blocco dentro la card Progressi */
   embedded?: boolean
   /** Hub `/progressi/storico` con tab → sottopagine */
-  hubSection?: 'overview' | 'schede' | 'sessioni-aperte' | 'appuntamenti' | 'completati'
-}
-
-interface SchedaRow {
-  id: string
-  name: string
-  start_date: string | null
-  end_date: string | null
-  is_active: boolean | null
-  created_at: string | null
-  description: string | null
-  objective: string | null
-  difficulty: string | null
-  is_draft: boolean
-}
-
-interface WorkoutLogRow {
-  id: string
-  data: string | null
-  completato: boolean | null
-  scheda_id: string | null
-  created_at: string | null
-  durata_minuti: number | null
-  duration_minutes: number | null
-  esercizi_completati: number | null
-  esercizi_totali: number | null
-  stato: string | null
-  is_coached: boolean
-  workout_day_id: string | null
-}
-
-interface WorkoutDayRow {
-  id: string
-  day_name: string
-  day_number: number
-  title: string | null
-}
-
-interface AppointmentRow {
-  id: string
-  starts_at: string
-  status: string | null
-  type: string
-  trainer_name: string | null
+  hubSection?: AthleteWorkoutsHubSection
 }
 
 function formatDate(dateStr: string | null): string {
@@ -334,7 +302,26 @@ export function AthleteWorkoutsTab({
 }: AthleteWorkoutsTabProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { addToast } = useToast()
+
+  const {
+    data: hubData,
+    isLoading: hubLoading,
+    error: hubError,
+  } = useAthleteWorkoutsHub(athleteId, { hubSection, embedded })
+
+  const schede = hubData?.schede ?? []
+  const workoutLogs = hubData?.workoutLogs ?? []
+  const appointments = hubData?.appointments ?? []
+  const workoutDaysById = hubData?.workoutDaysById ?? {}
+  const giorniPerScheda = hubData?.giorniPerScheda ?? {}
+  const loading = hubLoading
+  const loadError = hubError
+    ? hubError instanceof Error
+      ? hubError.message
+      : String(hubError)
+    : null
 
   const staffCalendarAthleteHref = useMemo(() => {
     const base = pathname?.startsWith('/dashboard/nutrizionista')
@@ -346,118 +333,10 @@ export function AthleteWorkoutsTab({
     q.set('athlete', athleteId)
     return `${base}?${q.toString()}`
   }, [pathname, athleteId])
-  const [schede, setSchede] = useState<SchedaRow[]>([])
-  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogRow[]>([])
-  const [appointments, setAppointments] = useState<AppointmentRow[]>([])
-  const [workoutDaysById, setWorkoutDaysById] = useState<Record<string, WorkoutDayRow>>({})
-  const [giorniPerScheda, setGiorniPerScheda] = useState<Record<string, number>>({})
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [listRefreshKey, setListRefreshKey] = useState(0)
   const [finalizeTarget, setFinalizeTarget] = useState<WorkoutLogRow | null>(null)
   const [finalizeCoached, setFinalizeCoached] = useState(false)
   const [finalizeRequestDebit, setFinalizeRequestDebit] = useState(false)
   const [finalizeBusy, setFinalizeBusy] = useState(false)
-
-  useEffect(() => {
-    if (!athleteId) return
-    const supabase = createClient()
-
-    const load = async () => {
-      setLoading(true)
-      setLoadError(null)
-      try {
-        const [workoutPlans, workoutLogsRes, athleteAppointments] = await Promise.all([
-          supabase
-            .from('workout_plans')
-            .select(
-              'id, name, start_date, end_date, is_active, created_at, description, objective, difficulty, is_draft',
-            )
-            .eq('athlete_id', athleteId)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('workout_logs')
-            .select(
-              'id, data, completato, scheda_id, created_at, durata_minuti, duration_minutes, esercizi_completati, esercizi_totali, stato, is_coached, workout_day_id',
-            )
-            .or(`atleta_id.eq.${athleteId},athlete_id.eq.${athleteId}`)
-            .order('data', { ascending: false, nullsFirst: false })
-            .limit(100),
-          supabase
-            .from('appointments')
-            .select('id, starts_at, status, type, trainer_name')
-            .eq('athlete_id', athleteId)
-            .order('starts_at', { ascending: false })
-            .limit(100),
-        ])
-
-        const errs = [workoutPlans.error, workoutLogsRes.error, athleteAppointments.error].filter(
-          Boolean,
-        ) as { message: string }[]
-
-        const plansData = (workoutPlans.data ?? []) as SchedaRow[]
-        const logsData = (workoutLogsRes.data ?? []) as WorkoutLogRow[]
-
-        const planIds = plansData.map((p) => p.id)
-        const dayIds = [
-          ...new Set(
-            logsData
-              .map((l) => l.workout_day_id)
-              .filter((id): id is string => typeof id === 'string' && id.length > 0),
-          ),
-        ]
-
-        let dayByPlanRows: { workout_plan_id: string | null }[] | null = null
-        if (planIds.length > 0) {
-          const dayCountRes = await supabase
-            .from('workout_days')
-            .select('workout_plan_id')
-            .in('workout_plan_id', planIds)
-          if (dayCountRes.error) errs.push(dayCountRes.error)
-          else dayByPlanRows = dayCountRes.data
-        }
-
-        let dayDetailRows: WorkoutDayRow[] | null = null
-        if (dayIds.length > 0) {
-          const dayDetailRes = await supabase
-            .from('workout_days')
-            .select('id, day_name, day_number, title')
-            .in('id', dayIds)
-          if (dayDetailRes.error) errs.push(dayDetailRes.error)
-          else dayDetailRows = (dayDetailRes.data ?? []) as WorkoutDayRow[]
-        }
-
-        if (errs.length > 0) {
-          setLoadError(errs.map((e) => e.message).join(' · '))
-        }
-
-        const giorniCount: Record<string, number> = {}
-        if (dayByPlanRows) {
-          for (const row of dayByPlanRows) {
-            const pid = row.workout_plan_id
-            if (pid) giorniCount[pid] = (giorniCount[pid] ?? 0) + 1
-          }
-        }
-
-        const dayMap: Record<string, WorkoutDayRow> = {}
-        if (dayDetailRows) {
-          for (const d of dayDetailRows) {
-            dayMap[d.id] = d
-          }
-        }
-
-        setGiorniPerScheda(giorniCount)
-        setWorkoutDaysById(dayMap)
-        setSchede(plansData)
-        setWorkoutLogs(logsData)
-        setAppointments((athleteAppointments.data ?? []) as AppointmentRow[])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    void load()
-  }, [athleteId, listRefreshKey])
 
   const openFinalizeDialog = (log: WorkoutLogRow) => {
     setFinalizeTarget(log)
@@ -531,7 +410,13 @@ export function AthleteWorkoutsTab({
         }
       }
       setFinalizeTarget(null)
-      setListRefreshKey((k) => k + 1)
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.progressi.workoutsHub(athleteId),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: ['progressi', 'workout-history', athleteId],
+        exact: false,
+      })
     } finally {
       setFinalizeBusy(false)
     }
@@ -612,6 +497,7 @@ export function AthleteWorkoutsTab({
 
   const progressiAllenamentiHref = `/dashboard/atleti/${athleteId}/progressi/allenamenti`
   const showHub = Boolean(hubSection) && !embedded
+  const showGlobalEmpty = !loading && isTotallyEmpty && (!showHub || hubSection !== 'completati')
   const storicoBase = `/dashboard/atleti/${athleteId}/progressi/storico`
   const pnorm = pathname.replace(/\/$/, '')
 
@@ -927,7 +813,7 @@ export function AthleteWorkoutsTab({
 
       {loading ? (
         <p className="text-text-secondary text-sm py-4">Caricamento...</p>
-      ) : isTotallyEmpty ? (
+      ) : showGlobalEmpty ? (
         <div className="text-center py-12">
           <div className="rounded-lg p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center border border-white/10 bg-white/[0.04] text-primary">
             <Dumbbell className="h-8 w-8" />
@@ -1206,7 +1092,6 @@ export function AthleteWorkoutsTab({
               <AtletaStoricoAllenamentiPanel
                 athleteProfileId={athleteId}
                 pdfSubjectName={athleteDisplayName?.trim() || 'Atleta'}
-                reloadToken={listRefreshKey}
               />
             </div>
           ) : null}

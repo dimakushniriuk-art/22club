@@ -1,0 +1,109 @@
+'use client'
+
+import { Suspense } from 'react'
+import { StaffLazyChunkFallback } from '@/components/layout/route-loading-skeletons'
+import { useRouter } from 'next/navigation'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('app:dashboard:schede:nuova:page')
+import { useWorkoutPlans } from '@/hooks/workout-plans/use-workout-plans'
+import { WorkoutWizardContent } from '@/components/workout/workout-wizard-content'
+import { ErrorState } from '@/components/dashboard/error-state'
+import { useToast } from '@/components/ui/toast'
+import { useSearchParams } from 'next/navigation'
+import type { WorkoutWizardData, WorkoutDayExerciseData } from '@/types/workout'
+import type { WorkoutWizardSaveOptions } from '@/hooks/workout/use-workout-wizard'
+
+/** Stesso markup del branch loading in `NuovaSchedaContent`: evita hydration mismatch col fallback `Suspense` (useSearchParams). */
+function WizardNuovaSchedaLoadingShell() {
+  return (
+    <div className="relative flex min-h-[50vh] flex-col items-center justify-center p-6">
+      <StaffLazyChunkFallback
+        className="w-full max-w-sm border-white/5 bg-transparent"
+        label="Caricamento dati wizard…"
+      />
+    </div>
+  )
+}
+
+function NuovaSchedaContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const {
+    athletes,
+    exercises,
+    loading,
+    wizardDataLoading,
+    error,
+    exercisesLoadError,
+    handleCreateWorkout,
+  } = useWorkoutPlans()
+  const { addToast } = useToast()
+
+  const initialAthleteId = searchParams.get('athlete_id') || undefined
+
+  const handleSave = async (
+    workoutData: WorkoutWizardData,
+    circuitList?: Array<{ id: string; params: WorkoutDayExerciseData[] }>,
+    options?: WorkoutWizardSaveOptions,
+  ) => {
+    try {
+      const newId = await handleCreateWorkout(workoutData, circuitList, options)
+      addToast({
+        title: options?.draft ? 'Bozza salvata' : 'Scheda creata',
+        message: options?.draft
+          ? 'Puoi continuare a modificare qui; i prossimi salvataggi aggiornano questa scheda.'
+          : 'La scheda di allenamento è stata creata con successo.',
+        variant: 'success',
+      })
+      if (options?.draft && newId) {
+        router.replace(`/dashboard/schede/${newId}/modifica`)
+      } else {
+        router.push('/dashboard/schede')
+      }
+    } catch (error) {
+      logger.error('Errore creazione scheda', error)
+      addToast({
+        title: 'Errore',
+        message: error instanceof Error ? error.message : 'Errore nella creazione della scheda',
+        variant: 'error',
+      })
+      throw error
+    }
+  }
+
+  const handleCancel = () => {
+    router.push('/dashboard/schede')
+  }
+
+  if (loading || wizardDataLoading) {
+    return <WizardNuovaSchedaLoadingShell />
+  }
+
+  if (error || exercisesLoadError) {
+    return (
+      <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col">
+        <ErrorState message={error || exercisesLoadError || ''} onRetry={() => router.refresh()} />
+      </div>
+    )
+  }
+
+  return (
+    <WorkoutWizardContent
+      onSave={handleSave}
+      athletes={athletes}
+      exercises={exercises}
+      initialAthleteId={initialAthleteId}
+      onCancel={handleCancel}
+      localDraftScope="nuova"
+    />
+  )
+}
+
+export default function StaffWorkoutPlanNewPage() {
+  return (
+    <Suspense fallback={<WizardNuovaSchedaLoadingShell />}>
+      <NuovaSchedaContent />
+    </Suspense>
+  )
+}

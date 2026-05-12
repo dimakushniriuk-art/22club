@@ -1,22 +1,22 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
-import { frequentQueryCache } from '@/lib/cache/cache-strategies'
+import { queryKeys } from '@/lib/query-keys'
 import { PROGRESS_PHOTOS_LIST_COLUMNS } from '@/lib/progress/progress-photos-columns'
 import type { ProgressPhoto } from '@/types/progress'
 
 const logger = createLogger('hooks:use-progress-photos')
 
 const PHOTOS_PER_PAGE = 20
-// const CACHE_TTL_MS = 30 * 60 * 1000 // 30 minuti (non utilizzato)
 
 interface UseProgressPhotosProps {
   userId?: string | null
   role?: string | null
   angle?: 'fronte' | 'profilo' | 'retro' | null
-  dateFilter?: string | null // Filtro per data (YYYY-MM-DD)
+  dateFilter?: string | null
 }
 
 interface UseProgressPhotosReturn {
@@ -30,183 +30,113 @@ interface UseProgressPhotosReturn {
   filterByDate: (date: string | null) => void
 }
 
+async function fetchProgressPhotosPage(args: {
+  userId: string
+  role?: string | null
+  angle: 'fronte' | 'profilo' | 'retro' | null
+  dateFilter: string | null
+  page: number
+}): Promise<ProgressPhoto[]> {
+  let query = supabase.from('progress_photos').select(PROGRESS_PHOTOS_LIST_COLUMNS)
+
+  if (args.role === 'athlete') {
+    query = query.eq('athlete_id', args.userId)
+  }
+
+  if (args.angle) {
+    query = query.eq('angle', args.angle)
+  }
+
+  if (args.dateFilter) {
+    query = query.eq('date', args.dateFilter)
+  }
+
+  const from = args.page * PHOTOS_PER_PAGE
+  const to = from + PHOTOS_PER_PAGE - 1
+
+  const { data, error } = await query
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) throw error
+  return (data ?? []) as ProgressPhoto[]
+}
+
 export function useProgressPhotos({
   userId,
   role,
   angle: initialAngle = null,
   dateFilter: initialDateFilter = null,
 }: UseProgressPhotosProps): UseProgressPhotosReturn {
-  const [photos, setPhotos] = useState<ProgressPhoto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [hasMore, setHasMore] = useState(true)
-  const [currentPage, setCurrentPage] = useState(0)
+  const queryClient = useQueryClient()
   const [angle, setAngle] = useState<'fronte' | 'profilo' | 'retro' | null>(initialAngle)
   const [dateFilter, setDateFilter] = useState<string | null>(initialDateFilter)
 
-  const loadingRef = useRef(false)
+  useEffect(() => {
+    setAngle(initialAngle)
+  }, [initialAngle])
 
-  // Costruisce chiave cache basata su filtri
-  const getCacheKey = useCallback(
-    (page: number) => {
-      const parts = ['progress-photos', userId || 'all', page.toString()]
-      if (angle) parts.push(`angle:${angle}`)
-      if (dateFilter) parts.push(`date:${dateFilter}`)
-      return parts.join(':')
-    },
-    [userId, angle, dateFilter],
-  )
+  useEffect(() => {
+    setDateFilter(initialDateFilter)
+  }, [initialDateFilter])
 
-  // Carica foto con paginazione
-  const fetchPhotos = useCallback(
-    async (page: number, append: boolean = false) => {
-      if (!userId || loadingRef.current) return
+  const angleKey = angle ?? 'all'
+  const dateKey = dateFilter ?? 'all'
 
+  const query = useInfiniteQuery({
+    queryKey: queryKeys.progressi.photos(userId ?? '', angleKey, dateKey),
+    queryFn: async ({ pageParam }) => {
       try {
-        loadingRef.current = true
-        setError(null)
-
-        // Controlla cache
-        const cacheKey = getCacheKey(page)
-        const cached = frequentQueryCache.get<{
-          photos: ProgressPhoto[]
-        }>(cacheKey)
-
-        if (cached && append) {
-          // Se stiamo appendendo e abbiamo cache, usa quella
-          setPhotos((prev) => [...prev, ...cached.photos])
-          setHasMore(cached.photos.length === PHOTOS_PER_PAGE)
-          setCurrentPage(page)
-          loadingRef.current = false
-          return
-        }
-
-        // Query base: colonne esplicite, nessun count exact (hasMore da pagina piena)
-        let query = supabase.from('progress_photos').select(PROGRESS_PHOTOS_LIST_COLUMNS)
-
-        // Filtri per ruolo
-        if (role === 'athlete' && userId) {
-          query = query.eq('athlete_id', userId)
-        }
-        // Staff può vedere tutte le foto (nessun filtro aggiuntivo)
-
-        // Filtro per angolo
-        if (angle) {
-          query = query.eq('angle', angle)
-        }
-
-        // Filtro per data
-        if (dateFilter) {
-          query = query.eq('date', dateFilter)
-        }
-
-        // Paginazione
-        const from = page * PHOTOS_PER_PAGE
-        const to = from + PHOTOS_PER_PAGE - 1
-
-        const { data, error: fetchError } = await query
-          .order('date', { ascending: false })
-          .order('created_at', { ascending: false })
-          .range(from, to)
-
-        if (fetchError) throw fetchError
-
-        const fetchedPhotos = (data || []) as ProgressPhoto[]
-
-        // Salva in cache
-        frequentQueryCache.set(cacheKey, { photos: fetchedPhotos })
-
-        // Aggiorna stato
-        if (append && fetchedPhotos.length === 0) {
-          setHasMore(false)
-        } else {
-          setHasMore(fetchedPhotos.length === PHOTOS_PER_PAGE)
-        }
-
-        if (append) {
-          setPhotos((prev) => [...prev, ...fetchedPhotos])
-        } else {
-          setPhotos(fetchedPhotos)
-        }
-
-        setCurrentPage(page)
+        return await fetchProgressPhotosPage({
+          userId: userId!,
+          role,
+          angle,
+          dateFilter,
+          page: pageParam,
+        })
       } catch (err) {
-        logger.error('Error fetching progress photos', err, { userId, page, angle, dateFilter })
-        setError(err instanceof Error ? err.message : 'Errore nel caricamento delle foto')
-      } finally {
-        loadingRef.current = false
-        setLoading(false)
+        logger.error('Error fetching progress photos', err, { userId, page: pageParam, angle, dateFilter })
+        throw err
       }
     },
-    [userId, role, angle, dateFilter, getCacheKey],
-  )
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      lastPage.length === PHOTOS_PER_PAGE ? lastPageParam + 1 : undefined,
+    enabled: Boolean(userId),
+    staleTime: 3 * 60 * 1000,
+  })
 
-  // Carica più foto (paginazione)
+  const photos = query.data?.pages.flat() ?? []
+  const loading = query.isLoading || query.isFetchingNextPage
+  const error =
+    query.error instanceof Error
+      ? query.error.message
+      : query.error
+        ? 'Errore nel caricamento delle foto'
+        : null
+  const hasMore = query.hasNextPage ?? false
+
   const loadMore = useCallback(async () => {
-    if (!hasMore || loadingRef.current) return
-    await fetchPhotos(currentPage + 1, true)
-  }, [hasMore, currentPage, fetchPhotos])
+    if (!hasMore || query.isFetchingNextPage) return
+    await query.fetchNextPage()
+  }, [hasMore, query])
 
-  // Refresh completo
   const refresh = useCallback(async () => {
-    // Invalida cache per questo utente
-    if (userId) {
-      for (let i = 0; i <= currentPage; i++) {
-        frequentQueryCache.invalidate(getCacheKey(i))
-      }
-    }
-    setCurrentPage(0)
-    setLoading(true)
-    await fetchPhotos(0, false)
-  }, [userId, currentPage, fetchPhotos, getCacheKey])
-
-  // Filtra per angolo
-  const filterByAngle = useCallback(
-    (newAngle: 'fronte' | 'profilo' | 'retro' | null) => {
-      setAngle(newAngle)
-      setCurrentPage(0)
-      setLoading(true)
-      // Invalida cache quando cambia filtro
-      if (userId) {
-        for (let i = 0; i <= currentPage; i++) {
-          frequentQueryCache.invalidate(getCacheKey(i))
-        }
-      }
-    },
-    [userId, currentPage, getCacheKey],
-  )
-
-  // Filtra per data
-  const filterByDate = useCallback(
-    (date: string | null) => {
-      setDateFilter(date)
-      setCurrentPage(0)
-      setLoading(true)
-      // Invalida cache quando cambia filtro
-      if (userId) {
-        for (let i = 0; i <= currentPage; i++) {
-          frequentQueryCache.invalidate(getCacheKey(i))
-        }
-      }
-    },
-    [userId, currentPage, getCacheKey],
-  )
-
-  // Carica iniziale
-  useEffect(() => {
-    if (!userId) {
-      setLoading(false)
-      return
-    }
-
-    fetchPhotos(0, false)
-  }, [userId, fetchPhotos])
-
-  // Ricarica quando cambiano i filtri
-  useEffect(() => {
     if (!userId) return
-    fetchPhotos(0, false)
-  }, [angle, dateFilter, userId, fetchPhotos])
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.progressi.photos(userId, angleKey, dateKey),
+    })
+    await query.refetch()
+  }, [angleKey, dateKey, query, queryClient, userId])
+
+  const filterByAngle = useCallback((newAngle: 'fronte' | 'profilo' | 'retro' | null) => {
+    setAngle(newAngle)
+  }, [])
+
+  const filterByDate = useCallback((date: string | null) => {
+    setDateFilter(date)
+  }, [])
 
   return {
     photos,

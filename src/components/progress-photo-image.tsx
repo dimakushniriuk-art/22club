@@ -89,6 +89,7 @@ export function ProgressPhotoImage({
       className={className ?? 'h-full w-full object-cover'}
       width={width ?? 256}
       height={height ?? 256}
+      loading="lazy"
       unoptimized
     />
   )

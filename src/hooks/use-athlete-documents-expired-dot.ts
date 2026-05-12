@@ -12,12 +12,13 @@ import { useRealtimeResubscribeToken } from '@/hooks/useRealtimeChannel'
 export function useAthleteDocumentsExpiredDot(
   profileId: string | null,
   athleteUserId: string | null,
+  enabled = true,
 ): boolean {
   const [hasExpired, setHasExpired] = useState(false)
   const resubscribeToken = useRealtimeResubscribeToken()
 
   const refresh = useCallback(async () => {
-    if (!profileId) {
+    if (!profileId || !enabled) {
       setHasExpired(false)
       return
     }
@@ -26,13 +27,19 @@ export function useAthleteDocumentsExpiredDot(
     } catch {
       setHasExpired(false)
     }
-  }, [profileId, athleteUserId])
+  }, [profileId, athleteUserId, enabled])
 
   useEffect(() => {
+    if (!enabled) {
+      setHasExpired(false)
+      return
+    }
     void refresh()
-  }, [refresh])
+  }, [refresh, enabled])
 
   useEffect(() => {
+    if (!enabled) return
+
     const onVisible = () => {
       if (document.visibilityState === 'visible') void refresh()
     }
@@ -42,11 +49,11 @@ export function useAthleteDocumentsExpiredDot(
       window.removeEventListener('focus', refresh)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [refresh])
+  }, [refresh, enabled])
 
   /** Best-effort: variazioni su `documents` (altre fonti = refresh al focus). */
   useEffect(() => {
-    if (!profileId) return
+    if (!profileId || !enabled) return
 
     return subscribePostgresChanges(`home-athlete-doc-expired:${profileId}`, [
       {
@@ -71,7 +78,7 @@ export function useAthleteDocumentsExpiredDot(
         onEvent: () => void refresh(),
       },
     ])
-  }, [profileId, refresh, resubscribeToken])
+  }, [profileId, refresh, resubscribeToken, enabled])
 
   return hasExpired
 }

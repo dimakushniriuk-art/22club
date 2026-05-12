@@ -4,9 +4,10 @@
  */
 
 import { useCallback } from 'react'
-import { athleteProfileCache } from '@/lib/cache/cache-strategies'
 import { useQueryClient } from '@tanstack/react-query'
+import { athleteProfileCache } from '@/lib/cache/cache-strategies'
 import { createLogger } from '@/lib/logger'
+import { queryKeys } from '@/lib/query-keys'
 
 const logger = createLogger('hooks:athlete-profile:use-athlete-profile-cache')
 
@@ -55,11 +56,11 @@ export function useAthleteProfileCache(athleteId: string) {
       // Invalida anche React Query cache
       if (section) {
         queryClient.invalidateQueries({
-          queryKey: ['athlete-profile', athleteId, section],
+          queryKey: [...queryKeys.athleteProfile.byId(athleteId), section],
         })
       } else {
         queryClient.invalidateQueries({
-          queryKey: ['athlete-profile', athleteId],
+          queryKey: queryKeys.athleteProfile.byId(athleteId),
         })
       }
     },
@@ -74,7 +75,7 @@ export function useAthleteProfileCache(athleteId: string) {
 
     // Invalida anche React Query cache
     queryClient.invalidateQueries({
-      queryKey: ['athlete-profile', athleteId],
+      queryKey: queryKeys.athleteProfile.byId(athleteId),
     })
   }, [athleteId, queryClient])
 

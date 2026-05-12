@@ -148,17 +148,25 @@ export function DashboardColumnListSkeleton() {
 export function DashboardWidgetColumns({
   widgetsVisibility,
   matrixPlacement = false,
+  secondaryDataEnabled = true,
 }: {
   widgetsVisibility: StaffDashboardLayoutPrefs['widgets']
   /** lg: griglia 4 colonne — ogni pannello span 2 righe. */
   matrixPlacement?: boolean
+  /** Dopo idle: carica widget secondari (schede, lezioni, chat). */
+  secondaryDataEnabled?: boolean
 }) {
   const { user } = useAuth()
   const staffProfileId = user?.id
-  const { expiring, athletes, loading, error } = useStaffDashboardWidgets(staffProfileId)
-  const { items: unreadChats, loading: chatLoading } = useStaffChatUnreadPreview(
-    Boolean(staffProfileId),
+  const { expiring, athletes, loading, error } = useStaffDashboardWidgets(
+    staffProfileId,
+    secondaryDataEnabled,
   )
+  const { items: unreadChats, loading: chatLoading } = useStaffChatUnreadPreview(
+    secondaryDataEnabled && Boolean(staffProfileId),
+  )
+  const widgetsLoading = !secondaryDataEnabled || loading
+  const chatPreviewLoading = !secondaryDataEnabled || chatLoading
 
   return (
     <>
@@ -171,14 +179,16 @@ export function DashboardWidgetColumns({
         >
           <DashboardColumnPanel
             title="Schede in scadenza"
-            badge={!loading && error == null && expiring.length > 0 ? expiring.length : undefined}
+            badge={
+              !widgetsLoading && error == null && expiring.length > 0 ? expiring.length : undefined
+            }
             footer={
               <DashboardColumnFooterLink href="/dashboard/schede">
                 Vai alle schede
               </DashboardColumnFooterLink>
             }
           >
-            {loading ? (
+            {widgetsLoading ? (
               <DashboardColumnListSkeleton />
             ) : error != null ? (
               <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
@@ -231,14 +241,16 @@ export function DashboardWidgetColumns({
         >
           <DashboardColumnPanel
             title="Lezioni in esaurimento"
-            badge={!loading && error == null && athletes.length > 0 ? athletes.length : undefined}
+            badge={
+              !widgetsLoading && error == null && athletes.length > 0 ? athletes.length : undefined
+            }
             footer={
               <DashboardColumnFooterLink href="/dashboard/abbonamenti">
                 Abbonamenti
               </DashboardColumnFooterLink>
             }
           >
-            {loading ? (
+            {widgetsLoading ? (
               <DashboardColumnListSkeleton />
             ) : error != null ? (
               <DashboardColumnEmpty>{error}</DashboardColumnEmpty>
@@ -295,7 +307,7 @@ export function DashboardWidgetColumns({
           <DashboardColumnPanel
             title="Messaggi non letti"
             badge={
-              !chatLoading && unreadChats.length > 0
+              !chatPreviewLoading && unreadChats.length > 0
                 ? unreadChats.reduce((n, c) => n + c.unread_count, 0)
                 : undefined
             }
@@ -305,7 +317,7 @@ export function DashboardWidgetColumns({
               </DashboardColumnFooterLink>
             }
           >
-            {chatLoading ? (
+            {chatPreviewLoading ? (
               <DashboardColumnListSkeleton />
             ) : unreadChats.length === 0 ? (
               <DashboardColumnEmpty>Nessun messaggio da leggere.</DashboardColumnEmpty>
