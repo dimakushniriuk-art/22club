@@ -110,14 +110,16 @@ async function verifyNextServer(): Promise<void> {
       console.log(`  ❌ Server risponde con errore: ${response.statusCode}`)
     }
   } catch (error) {
+    const rawMsg = error instanceof Error ? error.message : 'Errore sconosciuto'
+    const message =
+      rawMsg.trim() ||
+      'Server non in ascolto (es. ECONNREFUSED o timeout su /api/health)'
     results.push({
       service: 'Next.js Server',
       status: 'warning',
-      message: error instanceof Error ? error.message : 'Errore sconosciuto',
+      message,
     })
-    console.log(
-      `  ⚠️  Server non raggiungibile: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`,
-    )
+    console.log(`  ⚠️  Server non raggiungibile: ${message}`)
     console.log(`     💡 Per questa verifica avvia il dev server: npm run dev`)
   }
 }
