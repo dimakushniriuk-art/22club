@@ -11,7 +11,7 @@ import {
   fetchWelcomeAthleteProfile,
   fetchWelcomeQuestionnaire,
 } from '@/features/welcome-onboarding/lib/welcome-onboarding-fetch'
-import type { ProfileRow, SupabaseExt } from '@/features/welcome-onboarding/types'
+import type { SupabaseExt } from '@/features/welcome-onboarding/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 

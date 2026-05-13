@@ -9,6 +9,8 @@ import {
   STAFF_WORKOUTS_EMBED_SAVE_OK,
   STAFF_WORKOUTS_EMBED_SAVE_START,
 } from '@/lib/embed/staff-workouts-embed-events'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/supabase/types'
 import type { WorkoutSession } from '@/types/workout'
 import type { SessionExerciseSetsForLog } from '@/features/live-workout-session/lib/live-workout-session-helpers'
 
@@ -45,7 +47,7 @@ type UseLiveWorkoutLogSyncArgs = {
   athleteProfileId: string | null
   workoutSessionRef: MutableRefObject<WorkoutSession | null>
   activeWorkoutLogIdRef: MutableRefObject<string | null>
-  supabase: any
+  supabase: SupabaseClient<Database>
   addToast: (args: ToastArgs) => void
   clearEmbedDirty: () => void
   postEmbedSaveEvent: (event: EmbedSaveEvent) => void

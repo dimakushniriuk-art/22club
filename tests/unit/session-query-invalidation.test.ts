@@ -4,6 +4,8 @@ import { shouldInvalidateQueryOnSessionResume } from '@/lib/session-stability/se
 describe('shouldInvalidateQueryOnSessionResume', () => {
   it('returns true for known dashboard roots', () => {
     expect(shouldInvalidateQueryOnSessionResume(['appointments'])).toBe(true)
+    expect(shouldInvalidateQueryOnSessionResume(['notifications', 'staff-list', 'u'])).toBe(true)
+    expect(shouldInvalidateQueryOnSessionResume(['chat', 'unread', 'home', 'u'])).toBe(true)
     expect(shouldInvalidateQueryOnSessionResume(['clienti', 'list', 'u'])).toBe(true)
     expect(shouldInvalidateQueryOnSessionResume(['athlete-profile', 'id1'])).toBe(true)
   })

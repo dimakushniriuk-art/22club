@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { useChat } from '@/hooks/use-chat'
 import { useAuth } from '@/providers/auth-provider'
 import { createLogger } from '@/lib/logger'
-import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { notifyError } from '@/lib/notifications'
 import { useMyTrainerProfile } from '@/hooks/use-my-trainer-profile'
 import { isValidProfile, isValidUUID, isValidMessageType } from '@/lib/utils/type-guards'
@@ -210,7 +209,6 @@ function ChatRecipientSecondaryRow({
 
 function AthleteChatInteractive() {
   const router = useRouter()
-  const supabase = useSupabaseClient()
   const { user, loading: authLoading } = useAuth()
 
   const {

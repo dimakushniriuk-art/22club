@@ -36,7 +36,8 @@ export default defineConfig({
       '**/e2e/**',
       '**/tests/runtime/**',
     ],
-    pool: 'forks',
+    // `threads` riduce warning Node `--localstorage-file` sui worker (rispetto a `forks` su Windows)
+    pool: 'threads',
     isolate: true,
     fileParallelism: true,
     testTimeout: 10000,

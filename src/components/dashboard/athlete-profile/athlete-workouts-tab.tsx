@@ -45,7 +45,6 @@ import {
   type AthleteWorkoutsHubSection,
 } from '@/hooks/progressi/use-athlete-workouts-hub'
 import type {
-  AthleteWorkoutsHubAppointmentRow as AppointmentRow,
   AthleteWorkoutsHubDayRow as WorkoutDayRow,
   AthleteWorkoutsHubLogRow as WorkoutLogRow,
   AthleteWorkoutsHubSchedaRow as SchedaRow,
@@ -311,9 +310,9 @@ export function AthleteWorkoutsTab({
     error: hubError,
   } = useAthleteWorkoutsHub(athleteId, { hubSection, embedded })
 
-  const schede = hubData?.schede ?? []
-  const workoutLogs = hubData?.workoutLogs ?? []
-  const appointments = hubData?.appointments ?? []
+  const schede = useMemo(() => hubData?.schede ?? [], [hubData])
+  const workoutLogs = useMemo(() => hubData?.workoutLogs ?? [], [hubData])
+  const appointments = useMemo(() => hubData?.appointments ?? [], [hubData])
   const workoutDaysById = hubData?.workoutDaysById ?? {}
   const giorniPerScheda = hubData?.giorniPerScheda ?? {}
   const loading = hubLoading

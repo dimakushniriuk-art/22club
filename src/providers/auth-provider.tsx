@@ -6,6 +6,10 @@ import {
   dispatchSessionResumed,
 } from '@/lib/session-stability/app-events'
 import { sessionStabilityBreadcrumb } from '@/lib/session-stability/sentry-session-stability'
+import {
+  AUTH_VISIBILITY_MIN_HIDDEN_MS,
+  AUTH_VISIBILITY_RECOVERY_THROTTLE_MS,
+} from '@/lib/session-stability/platform-sync-constants'
 import { createLogger } from '@/lib/logger'
 import type { Tables } from '@/types/supabase'
 import type {
@@ -579,13 +583,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (typeof document === 'undefined') return
 
-    const MIN_HIDDEN_MS = 3000
     const lastRecoveryAtRef = { current: 0 }
-    const RECOVERY_THROTTLE_MS = 2500
 
     const runRecovery = (source: 'visibility' | 'focus' | 'online') => {
       const now = Date.now()
-      if (now - lastRecoveryAtRef.current < RECOVERY_THROTTLE_MS) return
+      if (now - lastRecoveryAtRef.current < AUTH_VISIBILITY_RECOVERY_THROTTLE_MS) return
       lastRecoveryAtRef.current = now
 
       void (async () => {
@@ -636,7 +638,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const hiddenAt = lastTabHiddenAtRef.current
       lastTabHiddenAtRef.current = null
       if (hiddenAt == null) return
-      if (Date.now() - hiddenAt < MIN_HIDDEN_MS) return
+      if (Date.now() - hiddenAt < AUTH_VISIBILITY_MIN_HIDDEN_MS) return
       runRecovery('visibility')
     }
 

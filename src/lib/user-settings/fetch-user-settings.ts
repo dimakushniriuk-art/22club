@@ -100,12 +100,9 @@ export async function fetchUserSettings(authUserId?: string | null): Promise<Use
 
   if (queryError) {
     if (queryError.code === 'PGRST116' || queryError.code === '42703') {
-      const { data: newSettings, error: insertError } = await (
-        supabase.from('user_settings') as any
-      )
-        .insert({ user_id: targetUserId })
-        .select()
-        .single()
+      const { data: newSettings, error: insertError } =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any -- fallback insert quando RPC non disponibile
+        (supabase.from('user_settings') as any).insert({ user_id: targetUserId }).select().single()
 
       if (insertError) {
         logger.warn('Errore inserimento user_settings, usando valori default', insertError)

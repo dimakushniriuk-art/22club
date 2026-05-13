@@ -25,7 +25,7 @@ try {
 
   // 3️⃣ Build dry run
   try {
-    execSync('npx next build --no-lint --debug', { stdio: 'pipe' })
+    execSync('npx next build --debug', { stdio: 'pipe' })
     console.log(chalk.green('✅ Build success'))
   } catch {
     console.error(chalk.red('\n❌ Build failed — push blocked.\n'))

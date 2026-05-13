@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback, useContext, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useContext } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -17,19 +17,7 @@ import {
 import { RestTimer } from '@/components/workout/rest-timer'
 import { AthleteExercisePrivateNoteBlock } from '@/components/workout/athlete-exercise-private-note'
 import type { AthleteWdeNoteRow } from '@/components/workout/athlete-exercise-private-note'
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Dumbbell,
-  FileText,
-  Info,
-  Lock,
-  Pencil,
-  PartyPopper,
-  Play,
-  X,
-} from 'lucide-react'
+import { Check, Dumbbell, FileText, Info, Lock, Pencil, Play, X } from 'lucide-react'
 import { useSupabaseClient } from '@/hooks/use-supabase-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useToast } from '@/components/ui/toast'
@@ -39,8 +27,8 @@ import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import { isValidProfile } from '@/lib/utils/type-guards'
 import { cn } from '@/lib/utils'
 import { useResolvedAthleteProfileForAllenamenti } from '@/hooks/use-resolved-athlete-profile-for-allenamenti'
+import { useWakeLock } from '@/hooks/use-wake-lock'
 import { AllenamentiPageHeader } from '@/features/athlete-allenamenti'
-import { WORKOUT_REPS_MAX_SENTINEL } from '@/lib/constants/workout-reps-select'
 import { isMissingAthleteWdeNoteImageColumnError } from '@/lib/workout/athlete-wde-private-note-db'
 import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
 import type { WorkoutSession } from '@/types/workout'
@@ -305,6 +293,18 @@ export function AllenamentiOggiPageContent() {
     setNumber: number
     initialKg: number
   } | null>(null)
+
+  /** Wake Lock mirato: timer / circuito / video a schermo (niente lock sulla sola lista esercizi). */
+  const liveWorkoutScreenAwake =
+    restTimersOverlayOpen ||
+    circuitAutoRunning ||
+    showRestTimer ||
+    inlineTimerRunning ||
+    inlineExecutionTimerRunning ||
+    inlineExecutionPreRollRemaining != null ||
+    enlargedCircuitVideo != null
+  useWakeLock(liveWorkoutScreenAwake)
+
   /** Serial per esercizio: incrementato apre il blocco nota privata (`AthleteExercisePrivateNoteBlock`). */
   const [privateNoteExpandSerialByWde, setPrivateNoteExpandSerialByWde] = useState<
     Record<string, number>
@@ -522,7 +522,7 @@ export function AllenamentiOggiPageContent() {
     if (blocks.length > 0 && currentBlockIndex >= blocks.length) {
       setCurrentBlockIndex(0)
     }
-  }, [blocks.length, currentBlockIndex])
+  }, [blocks.length, currentBlockIndex, setCurrentBlockIndex])
 
   const currentExercise = workoutSession?.exercises?.[currentExerciseIndex]
 
@@ -1511,6 +1511,7 @@ export function AllenamentiOggiPageContent() {
     inlineExecutionPreRollRemaining,
     updateSet,
     updateSetByIndex,
+    workoutSessionRef,
   ])
 
   const nextExercise = () => {

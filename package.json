@@ -1,6 +1,6 @@
 {
   "name": "22club-setup",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "analyze": "cross-env ANALYZE=true next build",
     "prepare": "husky || true",
     "prepush": "node scripts/prepush-check.js",
-    "check": "tsc --noEmit && eslint . --max-warnings=0 && next build --no-lint",
+    "check": "tsc --noEmit && eslint . --max-warnings=0 && next build",
     "check:roles": "node scripts/check-legacy-roles.js",
     "check:prod": "tsc --noEmit && eslint . --max-warnings=0 && npm run build:prod",
     "lint": "eslint .",
@@ -201,6 +201,7 @@
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.6.1",
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^20.19.22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -41,7 +41,6 @@ import {
 import { StaffContentLayout } from '@/components/shared/dashboard/staff-content-layout'
 import { StaffDashboardGuardSkeleton } from '@/components/layout/route-loading-skeletons'
 import { createLogger } from '@/lib/logger'
-import { NUTRITION_TABLES } from '@/lib/nutrition-tables'
 import { extractFileName } from '@/lib/documents'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'

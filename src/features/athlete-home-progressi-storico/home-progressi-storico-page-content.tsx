@@ -45,7 +45,7 @@ export function HomeProgressiStoricoPageContent() {
   const profileId = user?.id ?? null
   const { data, isLoading, error, refetch } = useAthleteWorkoutHistory(profileId, selectedPeriod)
 
-  const workouts = data?.workouts ?? []
+  const workouts = useMemo(() => data?.workouts ?? [], [data])
   const stats = data?.stats ?? { solo_count: 0, coached_count: 0, total_hours: 0 }
   const userProfile = useMemo(
     () =>

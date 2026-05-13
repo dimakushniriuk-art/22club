@@ -49,7 +49,7 @@ export function useNotifications({ userId, enabled = true }: UseNotificationsPro
     placeholderData: (previous) => previous,
   })
 
-  const notifications = query.data ?? []
+  const notifications = useMemo(() => query.data ?? [], [query.data])
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
   const loading = Boolean(userId && query.isPending)
   const error = query.error instanceof Error ? query.error.message : null

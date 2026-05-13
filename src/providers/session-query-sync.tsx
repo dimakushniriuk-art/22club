@@ -1,6 +1,7 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import {
   AUTH_TOKEN_REFRESHED_EVENT,
@@ -10,15 +11,16 @@ import {
 import { shouldInvalidateQueryOnSessionResume } from '@/lib/session-stability/session-query-invalidation'
 import { sessionStabilityBreadcrumb } from '@/lib/session-stability/sentry-session-stability'
 import { cleanupRealtimeChannels } from '@/lib/realtimeClient'
-
-const DEBOUNCE_MS = 450
+import { SESSION_QUERY_SYNC_DEBOUNCE_MS } from '@/lib/session-stability/platform-sync-constants'
 
 /**
  * Dopo risveglio tab o refresh JWT: invalida query whitelist, pulisce canali Realtime zombie,
  * notifica gli hook che devono ri-sottoscriversi.
+ * `router.refresh` solo su `session_resumed` (tab visibile): evita burst su `TOKEN_REFRESHED`.
  */
 export function SessionQuerySync() {
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   useEffect(() => {
     let sessionDebounce: ReturnType<typeof setTimeout> | null = null
@@ -37,6 +39,17 @@ export function SessionQuerySync() {
       void queryClient.invalidateQueries({
         predicate: (q) => shouldInvalidateQueryOnSessionResume(q.queryKey as readonly unknown[]),
       })
+      // `router.refresh` solo dopo risveglio tab: allinea RSC/cookie senza burst su ogni TOKEN_REFRESHED.
+      const canRefreshRsc =
+        source === 'session_resumed' &&
+        (typeof document === 'undefined' || document.visibilityState === 'visible')
+      if (canRefreshRsc) {
+        try {
+          router.refresh()
+        } catch {
+          /* no-op */
+        }
+      }
     }
 
     const schedule = (source: 'session_resumed' | 'token_refreshed') => {
@@ -45,13 +58,13 @@ export function SessionQuerySync() {
         sessionDebounce = setTimeout(() => {
           sessionDebounce = null
           runInvalidate(source)
-        }, DEBOUNCE_MS)
+        }, SESSION_QUERY_SYNC_DEBOUNCE_MS)
       } else {
         if (tokenDebounce) clearTimeout(tokenDebounce)
         tokenDebounce = setTimeout(() => {
           tokenDebounce = null
           runInvalidate(source)
-        }, DEBOUNCE_MS)
+        }, SESSION_QUERY_SYNC_DEBOUNCE_MS)
       }
     }
 
@@ -66,7 +79,7 @@ export function SessionQuerySync() {
       if (sessionDebounce) clearTimeout(sessionDebounce)
       if (tokenDebounce) clearTimeout(tokenDebounce)
     }
-  }, [queryClient])
+  }, [queryClient, router])
 
   return null
 }

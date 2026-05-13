@@ -73,11 +73,11 @@ describe('Realtime Memory Leak Prevention', () => {
       // Dovrebbe essere 1 canale (stesso nome)
       expect(getChannelsCount()).toBe(1)
 
-      // Cleanup
+      // Cleanup: il canale resta finché c’è almeno un listener (multiplex refcount)
       cleanup1()
-      expect(getChannelsCount()).toBe(0)
+      expect(getChannelsCount()).toBe(1)
 
-      cleanup2() // Non dovrebbe crashare anche se già pulito
+      cleanup2()
       expect(getChannelsCount()).toBe(0)
     })
   })

@@ -31,11 +31,11 @@ const CARD_DS =
 
 function MisurazioneFieldContent({
   field,
-  profileId,
+  profileId: _profileId,
   athlete,
   athleteUserId,
   displayName,
-  tabBackHref,
+  tabBackHref: _tabBackHref,
   progressiBasePath,
 }: StaffAthleteProgressReadyContext & { field: string }) {
   const mountPdfDialog = useDeferredPdfPreviewMount()

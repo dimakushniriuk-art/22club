@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, useCallback, lazy, Suspense, useRef } from 'react'
 import Image from 'next/image'
-import { createLogger } from '@/lib/logger'
 import { ExerciseMedia } from '@/components/dashboard/exercise-media'
 import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 import { useStaffExercisesList } from '@/hooks/use-staff-exercises-list'
@@ -15,7 +14,6 @@ import {
 import { apiDelete } from '@/lib/api-client'
 import { supabase } from '@/lib/supabase/client'
 
-const logger = createLogger('app:dashboard:esercizi:page')
 import {
   Card,
   CardContent,

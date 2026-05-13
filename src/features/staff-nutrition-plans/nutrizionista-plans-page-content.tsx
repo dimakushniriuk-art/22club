@@ -58,7 +58,6 @@ import {
   PLAN_VERSION_STATUS_ARCHIVED,
 } from '@/lib/nutrition-tables'
 import type { NutrizionistaPlanVersionRow } from '@/lib/dashboard/fetch-nutrizionista-plans-list'
-import type { Json } from '@/types/supabase'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
@@ -177,8 +176,7 @@ export function NutrizionistaPlansPageContent() {
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
   const { rows, assignedAthletes, loading, error, reload } = useNutrizionistaPlansList(profileId)
-  const [saveError, setSaveError] = useState<string | null>(null)
-  const displayError = saveError ?? error
+  const displayError = error
   const {
     open: pdfOpen,
     blob: pdfBlob,

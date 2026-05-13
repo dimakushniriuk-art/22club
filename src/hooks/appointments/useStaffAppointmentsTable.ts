@@ -17,11 +17,7 @@ import {
 import { queryKeys } from '@/lib/query-keys'
 import { invalidateAppointmentsQueries } from '@/lib/react-query/post-mutation-cache'
 
-import type {
-  AppointmentTable,
-  CreateAppointmentData,
-  EditAppointmentData,
-} from '@/types/appointment'
+import type { CreateAppointmentData, EditAppointmentData } from '@/types/appointment'
 import {
   appointmentSlotOverlapsAnyCalendarBlock,
   CALENDAR_BLOCK_CONFLICT_UI,

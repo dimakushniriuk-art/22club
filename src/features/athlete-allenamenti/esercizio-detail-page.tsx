@@ -18,18 +18,6 @@ import { cn } from '@/lib/utils'
 import { useResolvedParams } from '@/lib/next/use-resolved-params'
 import { useAutoplayPreviewVideo } from '@/hooks/use-autoplay-preview-video'
 
-type ExerciseRow = {
-  id: string
-  name: string
-  description: string | null
-  video_url: string | null
-  thumb_url: string | null
-  image_url: string | null
-  difficulty: string
-  equipment: string | null
-  muscle_group: string
-}
-
 export function EsercizioDetailPageContent({
   exerciseIdOverride,
   routeParams,

@@ -243,7 +243,7 @@ export function useResetPasswordSubmit(hasValidSession: boolean, router: AppRout
         setLoading(false)
       }
     },
-    [confirmPassword, hasValidSession, password, router, supabase.auth],
+    [confirmPassword, hasValidSession, password, router, supabase],
   )
 
   return {

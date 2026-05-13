@@ -1,10 +1,25 @@
 import { supabase } from '@/lib/supabase/client'
+import { sessionStabilityBreadcrumb } from '@/lib/session-stability/sentry-session-stability'
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import type { SupabaseDatabase } from '@/types/supabase'
 
 const channels = new Map<string, RealtimeChannel>()
 
+type TableEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
+
+/** Multiplex: più `subscribeToTable` sulla stessa tabella condividono un canale e un solo `postgres_changes` (`*`). */
+type TableMuxListener = {
+  eventType: TableEvent
+  onEvent: (payload: unknown) => void
+}
+const tableMuxByChannelName = new Map<
+  string,
+  { listeners: Map<number, TableMuxListener>; subscribed: boolean }
+>()
+let tableMuxListenerSeq = 0
+
 function removeChannel(name: string) {
+  tableMuxByChannelName.delete(name)
   const ch = channels.get(name)
   if (!ch) return
   // Remove from the map before unsubscribe(): CLOSED/error callbacks run synchronously
@@ -33,7 +48,15 @@ export function getRealtimeChannel(name: string): RealtimeChannel {
   return channel
 }
 
-type TableEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
+function dispatchTableMux(channelName: string, payload: unknown) {
+  const mux = tableMuxByChannelName.get(channelName)
+  if (!mux) return
+  const eventType = (payload as { eventType?: string }).eventType
+  for (const l of mux.listeners.values()) {
+    if (l.eventType !== '*' && l.eventType !== eventType) continue
+    l.onEvent(payload)
+  }
+}
 
 export type PostgresChangesSpec<Row extends Record<string, unknown> = Record<string, unknown>> = {
   event: TableEvent
@@ -56,34 +79,59 @@ export function subscribeToTable<TableName extends keyof SupabaseDatabase['publi
   eventType: TableEvent = '*',
 ) {
   const channelName = `realtime:${String(table)}`
-  const channel = getRealtimeChannel(channelName)
+  let mux = tableMuxByChannelName.get(channelName)
+  if (!mux) {
+    mux = { listeners: new Map(), subscribed: false }
+    tableMuxByChannelName.set(channelName, mux)
+  }
+  const listenerId = ++tableMuxListenerSeq
+  mux.listeners.set(listenerId, {
+    eventType,
+    onEvent: onEvent as (payload: unknown) => void,
+  })
 
-  ;(
-    channel as unknown as {
-      on: (
-        event: string,
-        options: Record<string, unknown>,
-        callback: (payload: unknown) => void,
-      ) => RealtimeChannel
-    }
-  )
-    .on(
-      'postgres_changes',
-      {
-        event: eventType,
-        schema: 'public',
-        table: String(table),
-      },
-      onEvent as (payload: unknown) => void,
-    )
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-        removeChannel(channelName)
+  const channel = getRealtimeChannel(channelName)
+  if (!mux.subscribed) {
+    mux.subscribed = true
+    const tableStr = String(table)
+    ;(
+      channel as unknown as {
+        on: (
+          event: string,
+          options: Record<string, unknown>,
+          callback: (payload: unknown) => void,
+        ) => RealtimeChannel
       }
-    })
+    )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: tableStr,
+        },
+        (payload: unknown) => {
+          dispatchTableMux(channelName, payload)
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          sessionStabilityBreadcrumb('realtime', 'postgres_table_channel_status', {
+            status,
+            channel: channelName,
+          })
+          removeChannel(channelName)
+        }
+      })
+  }
 
   return () => {
-    removeChannel(channelName)
+    const m = tableMuxByChannelName.get(channelName)
+    if (!m) return
+    m.listeners.delete(listenerId)
+    if (m.listeners.size === 0) {
+      removeChannel(channelName)
+    }
   }
 }
 
@@ -108,6 +156,10 @@ export function subscribeToChannel<T>(
     )
     .subscribe((status) => {
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        sessionStabilityBreadcrumb('realtime', 'broadcast_channel_status', {
+          status,
+          channel: channelName,
+        })
         removeChannel(channelName)
       }
     })
@@ -157,6 +209,10 @@ export function subscribePostgresChanges<
 
   channel.subscribe((status) => {
     if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+      sessionStabilityBreadcrumb('realtime', 'postgres_multi_channel_status', {
+        status,
+        channel: channelName,
+      })
       removeChannel(channelName)
     }
   })
@@ -180,6 +236,7 @@ export function broadcastToChannel<T>(channelName: string, eventName: string, pa
 }
 
 export function cleanupRealtimeChannels() {
+  tableMuxByChannelName.clear()
   for (const name of [...channels.keys()]) {
     removeChannel(name)
   }

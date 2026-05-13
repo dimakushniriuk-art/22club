@@ -11,6 +11,8 @@ const SESSION_INVALIDATION_ROOTS = new Set<string>([
   queryKeys.progressi.all[0],
   queryKeys.clienti.all[0],
   queryKeys.payments.all[0],
+  'notifications',
+  'chat',
   'athlete-profile',
   'athlete-profile-complete',
   'athlete-insights',

@@ -1,11 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
-import { createLogger } from '@/lib/logger'
 import { STAFF_ASSIGNMENT_STATUS_ACTIVE, STAFF_TYPE_NUTRIZIONISTA } from '@/lib/nutrition-tables'
 import { chunkForSupabaseIn } from '@/lib/supabase/in-query-chunks'
 import type { Tables } from '@/types/supabase'
-
-const logger = createLogger('lib:dashboard:fetch-nutrizionista-checkin-list')
 
 export type NutrizionistaCheckinRow = Tables<'nutrition_check_ins'>
 

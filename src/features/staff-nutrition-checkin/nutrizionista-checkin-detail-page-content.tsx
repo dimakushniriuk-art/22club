@@ -126,7 +126,6 @@ export function NutrizionistaCheckinDetailPageContent({
     notify,
     reload,
     queryClient,
-    profileId,
   ])
 
   if (showLoader) {

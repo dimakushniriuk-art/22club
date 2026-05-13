@@ -102,7 +102,7 @@ export function StaffImpostazioniPageContent() {
   const { user: authUser, loading: authLoading, refreshUserProfile } = useAuth()
   const { showLoader: showGuardLoader } = useImpostazioniPageGuard()
   const settingsAuthUserId = authUser?.user_id ?? null
-  const { settings, loadSettings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
+  const { settings, saveNotifications, savePrivacy, saveAccount, saveTwoFactor } =
     useUserSettings(settingsAuthUserId)
 
   const [notifications, setNotifications] = useState<NotificationSettings>({

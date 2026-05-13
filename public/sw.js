@@ -2,7 +2,7 @@
 // Service Worker per Push Notifications (PWA)
 // =====================================================
 
-const CACHE_NAME = '22club-v5'
+const CACHE_NAME = '22club-v6'
 /** Precache minimo: solo route pubbliche + manifest. `/home` è privata: il precache faceva 302→/login. */
 const URLS_TO_PRECACHE = ['/login', '/manifest.json']
 
@@ -90,7 +90,25 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(req))
     return
   }
-  event.respondWith(caches.match(req).then((response) => response || fetch(req)))
+  // Network-first: evita risposte HTML/JSON stale dopo standby o deploy (cache-first rompeva
+  // navigazioni Next / soft reload). La cache resta solo fallback offline.
+  event.respondWith(
+    fetch(req)
+      .then((networkRes) => {
+        if (networkRes.ok) {
+          const copy = networkRes.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            try {
+              void cache.put(req, copy)
+            } catch {
+              /* ignore */
+            }
+          })
+        }
+        return networkRes
+      })
+      .catch(() => caches.match(req).then((r) => r || fetch(req))),
+  )
 })
 
 // =====================================================

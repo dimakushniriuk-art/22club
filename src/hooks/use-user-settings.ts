@@ -45,30 +45,6 @@ export interface UserSettings {
   two_factor_enabled_at: string | null
 }
 
-const DEFAULT_NOTIFICATIONS: NotificationSettings = {
-  email: true,
-  push: true,
-  sms: false,
-  newClients: true,
-  payments: true,
-  appointments: true,
-  messages: true,
-}
-
-const DEFAULT_PRIVACY: PrivacySettings = {
-  profileVisible: true,
-  showEmail: true,
-  showPhone: false,
-  analytics: true,
-}
-
-const DEFAULT_ACCOUNT: AccountSettings = {
-  language: 'it',
-  timezone: 'Europe/Rome',
-  dateFormat: 'DD/MM/YYYY',
-  timeFormat: '24h',
-}
-
 export function useUserSettings(authUserId?: string | null) {
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)

@@ -16,6 +16,14 @@ import {
 } from '@/lib/dashboard/staff-dashboard-layout-prefs'
 
 const REMOTE_SAVE_DEBOUNCE_MS = 600
+/** Evita skeleton infinito se il client resta appeso dopo standby / rete instabile. */
+const REMOTE_SELECT_TIMEOUT_MS = 12_000
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
 
 export function useStaffDashboardLayoutPrefs() {
   const { user, loading: authLoading } = useAuth()
@@ -35,8 +43,6 @@ export function useStaffDashboardLayoutPrefs() {
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
-    if (authLoading) return
-
     let cancelled = false
     lastRemoteSerializedRef.current = ''
 
@@ -54,11 +60,29 @@ export function useStaffDashboardLayoutPrefs() {
         return
       }
 
-      const { data, error } = await supabase
+      // Auth ancora in risoluzione: mostra subito i prefs locali (evita skeleton eterno).
+      if (authLoading) {
+        if (cancelled) return
+        setPrefs(local)
+        lastRemoteSerializedRef.current = JSON.stringify(local)
+        setRemoteSynced(true)
+        setHydrated(true)
+        return
+      }
+
+      const selectPromise = supabase
         .from('profiles')
         .select('staff_dashboard_layout_prefs, updated_at')
         .eq('id', profileId)
         .maybeSingle()
+
+      const { data, error } = await Promise.race([
+        selectPromise,
+        sleep(REMOTE_SELECT_TIMEOUT_MS).then(() => ({
+          data: null,
+          error: { message: 'timeout', code: 'TIMEOUT' } as const,
+        })),
+      ])
 
       if (cancelled) return
 
@@ -75,6 +99,16 @@ export function useStaffDashboardLayoutPrefs() {
 
       const remoteUpdatedAt = typeof data?.updated_at === 'string' ? data.updated_at : null
 
+      const pushPrefsToRemote = (payload: StaffDashboardLayoutPrefs) => {
+        void supabase
+          .from('profiles')
+          .update({
+            staff_dashboard_layout_prefs: payload as unknown as Json,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', profileId)
+      }
+
       if (rawRemote != null && typeof rawRemote === 'object' && !Array.isArray(rawRemote)) {
         const remote = normalizeStaffDashboardLayoutPrefs(rawRemote)
 
@@ -85,24 +119,11 @@ export function useStaffDashboardLayoutPrefs() {
         // This protects navigation/re-login when remote updates are blocked (e.g. RLS).
         if (!localIsDefault && remoteIsDefault) {
           next = local
-          // Try to push local up to remote (best-effort; if RLS blocks, we still keep local).
-          await supabase
-            .from('profiles')
-            .update({
-              staff_dashboard_layout_prefs: next as unknown as Json,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', profileId)
+          pushPrefsToRemote(next)
         } else if (localSavedAt && remoteUpdatedAt && localSavedAt > remoteUpdatedAt) {
           // Local is newer than remote (same device) → prefer local and attempt sync.
           next = local
-          await supabase
-            .from('profiles')
-            .update({
-              staff_dashboard_layout_prefs: next as unknown as Json,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', profileId)
+          pushPrefsToRemote(next)
         } else {
           next = remote
         }
@@ -111,13 +132,7 @@ export function useStaffDashboardLayoutPrefs() {
       } else {
         next = local
         if (!staffDashboardPrefsEqual(local, STAFF_DASHBOARD_LAYOUT_DEFAULTS)) {
-          await supabase
-            .from('profiles')
-            .update({
-              staff_dashboard_layout_prefs: next as unknown as Json,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', profileId)
+          pushPrefsToRemote(next)
         }
       }
 

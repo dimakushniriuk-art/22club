@@ -2,6 +2,27 @@
 
 Eseguire prima di ogni release che tocca auth, React Query, Service Worker o Realtime.
 
+## Costanti piattaforma (timing)
+
+File unico: `src/lib/session-stability/platform-sync-constants.ts`
+
+- `SESSION_QUERY_SYNC_DEBOUNCE_MS` — debounce invalidazione RQ + `router.refresh` dopo eventi sessione/JWT (`SessionQuerySync`).
+- `PLATFORM_DATA_PULSE_MS` — intervallo pulse con tab visibile (`SessionDataPulse`): `getSession` + invalidazione whitelist `session-query-invalidation`.
+- `AUTH_VISIBILITY_MIN_HIDDEN_MS` / `AUTH_VISIBILITY_RECOVERY_THROTTLE_MS` — recovery auth su visibility (`AuthProvider`).
+- **`NEXT_PUBLIC_STAFF_DASHBOARD_REALTIME_DISABLE`** — lista opzionale (virgole): `appointments`, `profiles`, `notifications` per spegnere canali singoli senza disattivare tutto il layout.
+
+**Wake Lock:** disattivato di default. Abilitare solo se serve al prodotto: variabile build `NEXT_PUBLIC_WAKE_LOCK=1` (vedi `WakeLockProvider`). L’oscuramento schermo resta governato da OS/browser.
+
+**Wake Lock mirato (atleta):** durante sessione live su `/home/allenamenti/oggi`, il lock si attiva solo con timer recupero/circuito automazione/video ingrandito (`useWakeLock` in `live-workout-session-page.tsx`), non sulla sola lista esercizi.
+
+**Realtime staff — rollback:** `NEXT_PUBLIC_STAFF_DASHBOARD_REALTIME=0` o `false` disattiva tutte le subscription del layout (`StaffDashboardRealtimeBindings` non montato). Per rollback parziale usare `NEXT_PUBLIC_STAFF_DASHBOARD_REALTIME_DISABLE` (vedi costanti).
+
+**Subscribe tabella (client):** più listener sulla stessa tabella condividono un canale (`postgres_changes` `*` + dispatch); il canale si chiude solo quando non restano listener (`subscribeToTable` in `realtimeClient.ts`).
+
+**SessionQuerySync:** `router.refresh` viene eseguito solo su evento `session-resumed` (e tab visibile), non su `auth-token-refreshed` (invalidazione React Query resta attiva su entrambi).
+
+**Realtime osservabilità:** chiusura canale per `CHANNEL_ERROR` / `TIMED_OUT` / `CLOSED` → breadcrumb Sentry `session_stability.realtime` con `status` e nome canale (senza payload riga).
+
 ## Ambiente
 
 - iOS Safari (iPhone o iPad): PWA o browser, con e senza notifiche push (SW registrato).

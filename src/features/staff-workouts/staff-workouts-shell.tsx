@@ -14,7 +14,6 @@ import { completeStaffAppointmentById } from '@/lib/appointments/complete-staff-
 import { createClient } from '@/lib/supabase/client'
 import { isValidUUID } from '@/lib/utils/type-guards'
 import type { AgendaEvent } from '@/types/agenda-event'
-import type { Cliente } from '@/types/cliente'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/toast'
 import {

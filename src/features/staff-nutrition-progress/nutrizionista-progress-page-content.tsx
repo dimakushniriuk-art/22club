@@ -39,23 +39,13 @@ import {
 } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
 import { invalidateProgressAnalyticsQueries } from '@/lib/react-query/post-mutation-cache'
-import { NUTRITION_TABLES, nutritionFrom } from '@/lib/nutrition-tables'
 import { athleteIdForProgressLogsColumn } from '@/lib/nutrition-athlete-id'
-import type {
-  NutrizionistaProgressAssignedAthlete,
-  NutrizionistaProgressAthleteOverviewRow,
-  NutrizionistaProgressTimelineRow,
-} from '@/lib/dashboard/fetch-nutrizionista-progress-overview'
 import { buildTabularExportPdfBlob, type ExportData } from '@/lib/export-utils'
 import { usePdfPreviewDialog } from '@/hooks/use-pdf-preview-dialog'
 import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-dialog'
 
 const logger = createLogger('app:dashboard:nutrizionista:progressi')
 const DEBOUNCE_MS = 300
-
-type TimelineRow = NutrizionistaProgressTimelineRow
-type AthleteOverviewRow = NutrizionistaProgressAthleteOverviewRow
-type AssignedAthlete = NutrizionistaProgressAssignedAthlete
 
 type SortOption = 'recent' | 'atleta' | 'peso_delta'
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [

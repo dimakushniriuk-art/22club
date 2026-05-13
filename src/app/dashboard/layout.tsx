@@ -1,7 +1,6 @@
 'use client'
 
-import { Suspense, useRef } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { Suspense } from 'react'
 import { RoleLayout } from '@/components/shared/dashboard/role-layout'
 import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
 // RIMOSSO: NavigationLoading non serve più - Next.js Link gestisce già la navigazione
@@ -9,98 +8,15 @@ import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
 import { NotificationToast } from '@/components/shared/ui/notification-toast'
 // RIMOSSO: useNavigationState non serve più - Next.js Link gestisce già la navigazione
 // import { useNavigationState } from '@/hooks/use-navigation-state'
-import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
-import { useAuth } from '@/providers/auth-provider'
-import {
-  invalidateAppointmentsQueries,
-  invalidateClientiQueries,
-} from '@/lib/react-query/post-mutation-cache'
-import {
-  STAFF_APPOINTMENTS_INVALIDATE_EVENT,
-  type StaffAppointmentsInvalidateDetail,
-} from '@/lib/staff-cross-tab-events'
-import { notifyInfo } from '@/lib/notifications'
+import { isStaffDashboardRealtimeEnabled } from '@/lib/session-stability/platform-sync-constants'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
 import { ModalsWrapper } from '@/components/dashboard/modals-wrapper'
 import { StaffDashboardSegmentSkeleton } from '@/components/layout/route-loading-skeletons'
 import { NonHomeViewportShell } from '@/components/layout/non-home-viewport-shell'
-
-const STAFF_APPOINTMENTS_REALTIME_THROTTLE_MS = 450
-const STAFF_PROFILES_REALTIME_THROTTLE_MS = 600
-
-function isAthleteProfileRole(role: string | null | undefined): boolean {
-  const r = (role ?? '').toLowerCase()
-  return r === 'athlete' || r === 'atleta'
-}
+import { DashboardNavigationRecover } from '@/app/dashboard/_components/dashboard-navigation-recover'
+import { StaffDashboardRealtimeBindings } from '@/app/dashboard/_components/staff-dashboard-realtime-bindings'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { org_id: orgId } = useAuth()
-  const queryClient = useQueryClient()
-  const lastApptInvalidateAtRef = useRef(0)
-  const lastClientiInvalidateAtRef = useRef(0)
-
-  useRealtimeChannel(
-    'appointments',
-    (payload) => {
-      if (!orgId) return
-      const row = (payload.new ?? payload.old) as { org_id?: string | null } | null
-      const rowOrg = row?.org_id ?? null
-      if (!rowOrg || rowOrg !== orgId) return
-
-      const now = Date.now()
-      if (now - lastApptInvalidateAtRef.current < STAFF_APPOINTMENTS_REALTIME_THROTTLE_MS) {
-        return
-      }
-      lastApptInvalidateAtRef.current = now
-
-      void invalidateAppointmentsQueries(queryClient)
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent<StaffAppointmentsInvalidateDetail>(STAFF_APPOINTMENTS_INVALIDATE_EVENT, {
-            detail: { org_id: rowOrg },
-          }),
-        )
-      }
-    },
-    '*',
-  )
-
-  useRealtimeChannel(
-    'profiles',
-    (payload) => {
-      if (!orgId) return
-      const row = (payload.new ?? payload.old) as {
-        org_id?: string | null
-        role?: string | null
-      } | null
-      const rowOrg = row?.org_id ?? null
-      if (!rowOrg || rowOrg !== orgId) return
-      if (!isAthleteProfileRole(row?.role ?? null)) return
-
-      const now = Date.now()
-      if (now - lastClientiInvalidateAtRef.current < STAFF_PROFILES_REALTIME_THROTTLE_MS) {
-        return
-      }
-      lastClientiInvalidateAtRef.current = now
-
-      void invalidateClientiQueries(queryClient)
-    },
-    '*',
-  )
-
-  // Ascolta notifiche generali
-  useRealtimeChannel(
-    'notifications',
-    (payload) => {
-      const newNotification = (payload.new ?? null) as { message?: string } | null
-
-      if (newNotification) {
-        notifyInfo('Nuova notifica', newNotification.message || 'Hai ricevuto una nuova notifica')
-      }
-    },
-    'INSERT',
-  )
-
   return (
     <>
       {/*
@@ -108,6 +24,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
        * scroll/overflow delegati ai figli (RoleLayout / staff chrome). Contratto: `src/components/layout/non-home-viewport-shell.tsx`.
        */}
       <NonHomeViewportShell variant="fill" className="min-h-0">
+        {isStaffDashboardRealtimeEnabled() ? <StaffDashboardRealtimeBindings /> : null}
+        <DashboardNavigationRecover />
         <ImpersonationBanner />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <RoleLayout role="staff">

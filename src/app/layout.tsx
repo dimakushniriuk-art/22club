@@ -7,6 +7,7 @@ import '@/lib/dom-protection' // Protezione DOM per errori className
 import { QueryProvider } from '@/providers/query-provider'
 import { AuthProvider } from '@/providers/auth-provider'
 import { SessionQuerySync } from '@/providers/session-query-sync'
+import { SessionDataPulse } from '@/providers/session-data-pulse'
 import SwRegister from '@/components/sw-register'
 import { ToastProvider } from '@/components/ui/toast'
 import { ErrorBoundary } from '@/components/shared/ui/error-boundary'
@@ -77,6 +78,7 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <SessionQuerySync />
+              <SessionDataPulse />
               <SentryNavigationContext />
               <PendingWriteBootstrap />
               <ToastProvider>

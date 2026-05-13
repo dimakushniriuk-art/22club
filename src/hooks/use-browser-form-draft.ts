@@ -8,8 +8,7 @@ import {
   saveFormDraftSync,
   type BrowserFormDraftEnvelope,
 } from '@/lib/browser-form-draft'
-
-const DEFAULT_DEBOUNCE_MS = 450
+import { PLATFORM_FORM_AUTOSAVE_DEBOUNCE_MS } from '@/lib/session-stability/platform-sync-constants'
 
 export interface UseBrowserFormDraftOptions<T> {
   /** Prefisso feature (es. `progressi-nuovo`). */
@@ -36,7 +35,7 @@ export function useBrowserFormDraft<T>({
   scope,
   value,
   isMeaningful,
-  debounceMs = DEFAULT_DEBOUNCE_MS,
+  debounceMs = PLATFORM_FORM_AUTOSAVE_DEBOUNCE_MS,
   maxAgeMs,
   onRestore,
   restoreEnabled,

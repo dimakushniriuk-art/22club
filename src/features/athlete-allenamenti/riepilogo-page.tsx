@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useEffect, Suspense, createElement, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, createElement, useCallback, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -46,10 +46,7 @@ import { formatDateTime } from '@/lib/format'
 import { invalidateAfterWorkoutSessionWrite } from '@/lib/react-query/post-mutation-cache'
 import { requestCoachedSessionDebitClient } from '@/lib/credits/request-coached-session-debit-client'
 import { useToast } from '@/components/ui/toast'
-import {
-  WORKOUT_REPS_MAX_SENTINEL,
-  formatWorkoutRepsLabel,
-} from '@/lib/constants/workout-reps-select'
+import { formatWorkoutRepsLabel } from '@/lib/constants/workout-reps-select'
 import { useAthleteWorkoutSummary } from '@/hooks/use-athlete-workout-summary'
 import { useWorkoutInstagramShareLines } from '@/hooks/use-workout-instagram-share-lines'
 import {

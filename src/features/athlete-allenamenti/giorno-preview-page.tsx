@@ -84,7 +84,7 @@ export function GiornoPreviewContent({
         : null
   const planName = dayPreview?.planName ?? ''
   const dayLabel = dayPreview?.dayLabel ?? ''
-  const rows = dayPreview?.rows ?? []
+  const rows = useMemo(() => dayPreview?.rows ?? [], [dayPreview])
   const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(() => new Set())
 
   const toggleRowExpanded = (rowId: string) => {

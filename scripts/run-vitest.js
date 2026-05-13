@@ -6,10 +6,9 @@
  */
 
 import { spawn } from 'child_process'
-import { mkdirSync } from 'fs'
-import { resolve } from 'path'
+import { existsSync, mkdirSync } from 'fs'
+import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { dirname } from 'path'
 import os from 'os'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -41,12 +40,20 @@ if (process.platform === 'win32') {
   console.log(`[Vitest] Directory temporanea configurata: ${projectTempDir}`)
 }
 
-// Esegui Vitest con gli argomenti passati
+// Esegui Vitest via `node …/vitest.mjs` (niente shell: evita DEP0190 e PATH fragile su Windows)
 const vitestArgs = process.argv.slice(2)
-const vitestProcess = spawn('vitest', vitestArgs, {
+const vitestMain = join(projectRoot, 'node_modules', 'vitest', 'vitest.mjs')
+if (!existsSync(vitestMain)) {
+  console.error(
+    `[Vitest] File non trovato: ${vitestMain}\nEsegui npm install dalla root del progetto.`,
+  )
+  process.exit(1)
+}
+const vitestProcess = spawn(process.execPath, [vitestMain, ...vitestArgs], {
+  cwd: projectRoot,
   stdio: 'inherit',
-  shell: true,
   env: process.env,
+  shell: false,
 })
 
 vitestProcess.on('exit', (code) => {

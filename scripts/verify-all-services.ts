@@ -112,13 +112,13 @@ async function verifyNextServer(): Promise<void> {
   } catch (error) {
     results.push({
       service: 'Next.js Server',
-      status: 'error',
+      status: 'warning',
       message: error instanceof Error ? error.message : 'Errore sconosciuto',
     })
     console.log(
-      `  ❌ Errore connessione server: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`,
+      `  ⚠️  Server non raggiungibile: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`,
     )
-    console.log(`     💡 Assicurati che il server sia avviato con: npm run dev`)
+    console.log(`     💡 Per questa verifica avvia il dev server: npm run dev`)
   }
 }
 

@@ -14,6 +14,8 @@ import {
 } from '@/lib/embed/staff-workouts-embed-events'
 import type { WorkoutsPaneContextValue } from '@/contexts/workouts-pane-context'
 import type { WorkoutSession } from '@/types/workout'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/supabase/types'
 import type { Tables } from '@/types/supabase'
 import { sessionExercisesToPersistPayload } from '@/features/live-workout-session/lib/live-workout-session-helpers'
 
@@ -40,7 +42,7 @@ type CompleteLiveWorkoutSessionArgs = {
   withTrainer: boolean
   athleteProfileId: string | null
   isPreview: boolean
-  supabase: any
+  supabase: SupabaseClient<Database>
   queryClient: QueryClient
   trainerProfileForCoached: TrainerProfileLike
   workoutSession: WorkoutSession | null

@@ -31,16 +31,6 @@ import { PdfCanvasPreviewDialog } from '@/components/shared/pdf-canvas-preview-d
 
 const logger = createLogger('components:home-profile:athlete-subscriptions-tab')
 
-interface Pagamento {
-  id: string
-  payment_date: string
-  lessons_purchased: number
-  lessons_used: number
-  lessons_remaining: number
-  amount: number
-  invoice_url: string | null
-}
-
 interface AthleteSubscriptionsTabProps {
   athleteUserId: string | null
   /** Incrementare (es. aprendo il tab Abbonamenti) per forzare reload dopo scalatura in app. */
