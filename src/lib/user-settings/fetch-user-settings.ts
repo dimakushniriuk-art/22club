@@ -100,7 +100,6 @@ export async function fetchUserSettings(authUserId?: string | null): Promise<Use
 
   if (queryError) {
     if (queryError.code === 'PGRST116' || queryError.code === '42703') {
-       
       const { data: newSettings, error: insertError } = await (
         supabase.from('user_settings') as any
       )
