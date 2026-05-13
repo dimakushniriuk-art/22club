@@ -119,13 +119,8 @@ export function useAthleteWorkoutDayPreview(
   const queryEnabled = Boolean(athleteProfileId && planId && dayId) && enabled
 
   return useQuery({
-    queryKey: queryKeys.allenamenti.dayPreview(
-      athleteProfileId ?? '',
-      planId ?? '',
-      dayId ?? '',
-    ),
-    queryFn: () =>
-      fetchAthleteWorkoutDayPreview(supabase, athleteProfileId!, planId!, dayId!),
+    queryKey: queryKeys.allenamenti.dayPreview(athleteProfileId ?? '', planId ?? '', dayId ?? ''),
+    queryFn: () => fetchAthleteWorkoutDayPreview(supabase, athleteProfileId!, planId!, dayId!),
     enabled: queryEnabled,
     staleTime: 3 * 60 * 1000,
   })

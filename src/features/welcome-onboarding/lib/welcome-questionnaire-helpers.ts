@@ -11,9 +11,7 @@ export type WelcomeQuestionnaireRow = {
   liberatoria_media?: unknown
 }
 
-export function mapWelcomeQuestionnaireRow(
-  qRow: WelcomeQuestionnaireRow | null | undefined,
-): {
+export function mapWelcomeQuestionnaireRow(qRow: WelcomeQuestionnaireRow | null | undefined): {
   anamnesi: Partial<AnamnesiState>
   manleva: Partial<ManlevaState>
   liberatoria: Partial<LiberatoriaState>
@@ -35,9 +33,10 @@ export function mapWelcomeQuestionnaireRow(
     : typeof liberatoriaRaw.canali_consentiti === 'string' && liberatoriaRaw.canali_consentiti
       ? [liberatoriaRaw.canali_consentiti]
       : []
-  const duration = ((liberatoriaRaw.duration ?? liberatoriaRaw.durata) as
-    | LiberatoriaState['duration']
-    | undefined) ?? undefined
+  const duration =
+    ((liberatoriaRaw.duration ?? liberatoriaRaw.durata) as
+      | LiberatoriaState['duration']
+      | undefined) ?? undefined
   const place = (liberatoriaRaw.place ?? liberatoriaRaw.luogo ?? '') as string
   const firma = (liberatoriaRaw.signature_text ?? liberatoriaRaw.firma_nome_cognome ?? '') as string
 

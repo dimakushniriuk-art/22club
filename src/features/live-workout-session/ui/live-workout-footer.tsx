@@ -55,7 +55,9 @@ export function LiveWorkoutFooter({
             Precedente
           </Button>
           <div className="flex min-w-0 flex-col items-center">
-            <span className="text-[10px] uppercase tracking-wider text-text-secondary">Esercizio</span>
+            <span className="text-[10px] uppercase tracking-wider text-text-secondary">
+              Esercizio
+            </span>
             <span className="text-sm font-bold text-text-primary">
               {currentBlockIndex + 1} / {blocksLength}
             </span>

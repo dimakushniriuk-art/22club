@@ -424,7 +424,9 @@ export function StaffAthletePaymentsPageContent({
       await reload()
     } catch (err) {
       logger.error('Errore aggiornamento credit_ledger', err, { ledgerId: ledgerEditingId })
-      setActionError(err instanceof Error ? err.message : 'Errore durante il salvataggio del movimento')
+      setActionError(
+        err instanceof Error ? err.message : 'Errore durante il salvataggio del movimento',
+      )
     } finally {
       setLedgerEditSaving(false)
     }
@@ -552,7 +554,9 @@ export function StaffAthletePaymentsPageContent({
       await reload()
     } catch (err) {
       logger.error('Errore insert manuale credit_ledger', err, { athleteId })
-      setActionError(err instanceof Error ? err.message : 'Errore durante la creazione del movimento')
+      setActionError(
+        err instanceof Error ? err.message : 'Errore durante la creazione del movimento',
+      )
     } finally {
       setLedgerCreateSaving(false)
     }
@@ -575,7 +579,9 @@ export function StaffAthletePaymentsPageContent({
         setPdfPreviewOpen(true)
       } catch (err) {
         logger.error('Errore anteprima fattura PDF', err, { paymentId })
-        setActionError(err instanceof Error ? err.message : 'Errore durante il caricamento della fattura')
+        setActionError(
+          err instanceof Error ? err.message : 'Errore durante il caricamento della fattura',
+        )
       } finally {
         setInvoicePreviewLoadingPaymentId(null)
       }
@@ -624,7 +630,9 @@ export function StaffAthletePaymentsPageContent({
         logger.error('Errore caricamento fattura (solo allegato)', err, {
           paymentId: targetPayment.id,
         })
-        setActionError(err instanceof Error ? err.message : 'Errore durante il caricamento della fattura')
+        setActionError(
+          err instanceof Error ? err.message : 'Errore durante il caricamento della fattura',
+        )
       } finally {
         setInvoiceOnlyUploadingId(null)
       }

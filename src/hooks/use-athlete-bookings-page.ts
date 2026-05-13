@@ -31,7 +31,8 @@ export function useAthleteBookingsPage(athleteId: string | null | undefined) {
     profile: query.data?.profile ?? null,
     appointments: query.data?.appointments ?? [],
     loading: query.isLoading,
-    error: query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
+    error:
+      query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
     refetch: query.refetch,
   }
 }

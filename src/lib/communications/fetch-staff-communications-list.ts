@@ -22,9 +22,7 @@ export async function fetchStaffCommunicationsList(
 ): Promise<StaffCommunicationsListResult> {
   const queryParams: Record<string, string> = {}
   if (filters.status) {
-    queryParams.status = Array.isArray(filters.status)
-      ? filters.status.join(',')
-      : filters.status
+    queryParams.status = Array.isArray(filters.status) ? filters.status.join(',') : filters.status
   }
   if (filters.type) queryParams.type = filters.type
   if (filters.limit) queryParams.limit = filters.limit.toString()

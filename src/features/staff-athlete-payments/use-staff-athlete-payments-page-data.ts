@@ -46,7 +46,8 @@ export function useStaffAthletePaymentsPageData(
     debits: query.data?.debits ?? [],
     movements: query.data?.movements ?? [],
     loading: query.isLoading,
-    error: query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
+    error:
+      query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
     reload,
     refetch: query.refetch,
   }

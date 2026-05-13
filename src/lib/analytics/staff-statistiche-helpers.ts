@@ -1,7 +1,4 @@
-import {
-  STATS_PERIODS,
-  type StatsPeriod,
-} from '@/components/dashboard/statistiche-constants'
+import { STATS_PERIODS, type StatsPeriod } from '@/components/dashboard/statistiche-constants'
 import type { AnalyticsData, TrendData } from '@/lib/analytics'
 
 export const EMPTY_STAFF_LEGACY_ANALYTICS: AnalyticsData = {

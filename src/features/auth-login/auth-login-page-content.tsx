@@ -5,10 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoginCard } from '@/components/auth/LoginCard'
-import {
-  buildWelcomePath,
-  readPendingInviteCodice,
-} from '@/lib/auth/athlete-invite'
+import { buildWelcomePath, readPendingInviteCodice } from '@/lib/auth/athlete-invite'
 import {
   getUnknownLoginRoleError,
   resolveAthleteRedirectFromLoginQuery,

@@ -183,10 +183,10 @@ function DocumentiPageContent() {
 
   const isValidUser = user && isValidProfile(user)
 
-  const {
-    data: allDocuments = [],
-    refetch: refetchDocuments,
-  } = useAthleteUnifiedDocuments(athleteProfileId, athleteUserId)
+  const { data: allDocuments = [], refetch: refetchDocuments } = useAthleteUnifiedDocuments(
+    athleteProfileId,
+    athleteUserId,
+  )
 
   const [uploading, setUploading] = useState(false)
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)

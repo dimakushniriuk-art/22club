@@ -30,10 +30,7 @@ export const athleteNutritionKeys = {
  * Hook per ottenere dati nutrizionali atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteNutrition(
-  athleteId: string | null,
-  options?: { enabled?: boolean },
-) {
+export function useAthleteNutrition(athleteId: string | null, options?: { enabled?: boolean }) {
   const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteNutritionKeys.detail(athleteId || ''),

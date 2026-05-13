@@ -92,12 +92,12 @@ export function WelcomePageContent() {
 
   const { isLoading, profileRow, questionnaireRow, trainerProfile, questionnaireQuery } =
     useWelcomeOnboardingData({
-    authUserId,
-    codiceFromUrl,
-    user,
-    supabase,
-    supabaseExt,
-  })
+      authUserId,
+      codiceFromUrl,
+      user,
+      supabase,
+      supabaseExt,
+    })
 
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [form, setForm] = useState<OnboardingFormState>(emptyFormState())

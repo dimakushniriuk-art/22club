@@ -145,8 +145,7 @@ export function HomeProfiloPageContent() {
   const athleteProfileId = useProfileId(athleteUserId)
 
   const needAnagrafica =
-    activeTab === 'overview' ||
-    (activeTab === 'profilo' && activeProfileTab === 'anagrafica')
+    activeTab === 'overview' || (activeTab === 'profilo' && activeProfileTab === 'anagrafica')
   const needAdministrative =
     activeTab === 'abbonamenti' ||
     (activeTab === 'profilo' && activeProfileTab === 'amministrativo')
@@ -296,86 +295,86 @@ export function HomeProfiloPageContent() {
                 ) : null}
 
                 {activeTab === 'profilo' && athleteUserId ? (
-                    <Tabs
-                      value={activeProfileTab}
-                      onValueChange={setActiveProfileTab}
-                      className="w-full"
-                    >
-                      <div className={PROFILE_TABS_SCROLL}>
-                        <TabsList
-                          className={`mb-4 w-full min-w-0 sm:mb-5 md:mb-4 ${PROFILE_TABS_LIST_CLASS}`}
+                  <Tabs
+                    value={activeProfileTab}
+                    onValueChange={setActiveProfileTab}
+                    className="w-full"
+                  >
+                    <div className={PROFILE_TABS_SCROLL}>
+                      <TabsList
+                        className={`mb-4 w-full min-w-0 sm:mb-5 md:mb-4 ${PROFILE_TABS_LIST_CLASS}`}
+                      >
+                        <TabsTrigger
+                          value="anagrafica"
+                          className={PROFILE_TAB_TRIGGER_CLASS}
+                          onPointerEnter={() => handlePrefetchTab('anagrafica')}
                         >
-                          <TabsTrigger
-                            value="anagrafica"
-                            className={PROFILE_TAB_TRIGGER_CLASS}
-                            onPointerEnter={() => handlePrefetchTab('anagrafica')}
-                          >
-                            <User className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Anagrafica</span>
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="medica"
-                            className={PROFILE_TAB_TRIGGER_CLASS}
-                            onPointerEnter={() => handlePrefetchTab('medica')}
-                          >
-                            <Heart className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Medica</span>
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="fitness"
-                            className={PROFILE_TAB_TRIGGER_CLASS}
-                            onPointerEnter={() => handlePrefetchTab('fitness')}
-                          >
-                            <Dumbbell className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Fitness</span>
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="nutrizione"
-                            className={PROFILE_TAB_TRIGGER_CLASS}
-                            onPointerEnter={() => handlePrefetchTab('nutrizione')}
-                          >
-                            <Utensils className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Nutrizione</span>
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="massaggio"
-                            className={PROFILE_TAB_TRIGGER_CLASS}
-                            onPointerEnter={() => handlePrefetchTab('massaggio')}
-                          >
-                            <Hand className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Massaggio</span>
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="amministrativo"
-                            className={PROFILE_TAB_TRIGGER_CLASS}
-                            onPointerEnter={() => handlePrefetchTab('amministrativo')}
-                          >
-                            <CreditCard className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Amministrativo</span>
-                          </TabsTrigger>
-                        </TabsList>
-                      </div>
+                          <User className="h-3 w-3 shrink-0" />
+                          <span className="truncate">Anagrafica</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="medica"
+                          className={PROFILE_TAB_TRIGGER_CLASS}
+                          onPointerEnter={() => handlePrefetchTab('medica')}
+                        >
+                          <Heart className="h-3 w-3 shrink-0" />
+                          <span className="truncate">Medica</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="fitness"
+                          className={PROFILE_TAB_TRIGGER_CLASS}
+                          onPointerEnter={() => handlePrefetchTab('fitness')}
+                        >
+                          <Dumbbell className="h-3 w-3 shrink-0" />
+                          <span className="truncate">Fitness</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="nutrizione"
+                          className={PROFILE_TAB_TRIGGER_CLASS}
+                          onPointerEnter={() => handlePrefetchTab('nutrizione')}
+                        >
+                          <Utensils className="h-3 w-3 shrink-0" />
+                          <span className="truncate">Nutrizione</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="massaggio"
+                          className={PROFILE_TAB_TRIGGER_CLASS}
+                          onPointerEnter={() => handlePrefetchTab('massaggio')}
+                        >
+                          <Hand className="h-3 w-3 shrink-0" />
+                          <span className="truncate">Massaggio</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="amministrativo"
+                          className={PROFILE_TAB_TRIGGER_CLASS}
+                          onPointerEnter={() => handlePrefetchTab('amministrativo')}
+                        >
+                          <CreditCard className="h-3 w-3 shrink-0" />
+                          <span className="truncate">Amministrativo</span>
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
-                      {activeProfileTab === 'anagrafica' ? (
-                        <AthleteAnagraficaTab athleteId={athleteUserId} />
-                      ) : null}
-                      {activeProfileTab === 'medica' ? (
-                        <AthleteMedicalTab athleteId={athleteUserId} />
-                      ) : null}
-                      {activeProfileTab === 'fitness' ? (
-                        <AthleteFitnessTab athleteId={athleteUserId} />
-                      ) : null}
-                      {activeProfileTab === 'nutrizione' ? (
-                        <AthleteNutritionTab athleteId={athleteUserId} />
-                      ) : null}
-                      {activeProfileTab === 'massaggio' ? (
-                        <AthleteMassageTab athleteId={athleteUserId} />
-                      ) : null}
-                      {activeProfileTab === 'amministrativo' ? (
-                        <AthleteAdministrativeTab athleteId={athleteUserId} />
-                      ) : null}
-                    </Tabs>
-                  ) : null}
+                    {activeProfileTab === 'anagrafica' ? (
+                      <AthleteAnagraficaTab athleteId={athleteUserId} />
+                    ) : null}
+                    {activeProfileTab === 'medica' ? (
+                      <AthleteMedicalTab athleteId={athleteUserId} />
+                    ) : null}
+                    {activeProfileTab === 'fitness' ? (
+                      <AthleteFitnessTab athleteId={athleteUserId} />
+                    ) : null}
+                    {activeProfileTab === 'nutrizione' ? (
+                      <AthleteNutritionTab athleteId={athleteUserId} />
+                    ) : null}
+                    {activeProfileTab === 'massaggio' ? (
+                      <AthleteMassageTab athleteId={athleteUserId} />
+                    ) : null}
+                    {activeProfileTab === 'amministrativo' ? (
+                      <AthleteAdministrativeTab athleteId={athleteUserId} />
+                    ) : null}
+                  </Tabs>
+                ) : null}
 
                 {activeTab === 'abbonamenti' && athleteUserId ? (
                   <div className="mt-3 border-t border-white/5 pt-4 sm:mt-4 sm:pt-5">

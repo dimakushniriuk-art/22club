@@ -100,8 +100,10 @@ export async function fetchUserSettings(authUserId?: string | null): Promise<Use
 
   if (queryError) {
     if (queryError.code === 'PGRST116' || queryError.code === '42703') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: newSettings, error: insertError } = await (supabase.from('user_settings') as any)
+       
+      const { data: newSettings, error: insertError } = await (
+        supabase.from('user_settings') as any
+      )
         .insert({ user_id: targetUserId })
         .select()
         .single()

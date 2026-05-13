@@ -309,10 +309,7 @@ export function HomeHubPageContent() {
     }
   }, [isAtleta, profileId])
 
-  const chatUnreadDot = useAthleteChatUnreadDot(
-    isAtleta ? profileId : null,
-    deferSecondarySignals,
-  )
+  const chatUnreadDot = useAthleteChatUnreadDot(isAtleta ? profileId : null, deferSecondarySignals)
   const documentsExpiredDot = useAthleteDocumentsExpiredDot(
     isAtleta ? profileId : null,
     isAtleta ? (user?.user_id ?? null) : null,

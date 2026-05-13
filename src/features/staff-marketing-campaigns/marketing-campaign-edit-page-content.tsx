@@ -55,11 +55,7 @@ type CampaignEditDraftPayload = {
   status: string
 }
 
-export function MarketingCampaignEditPageContent({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export function MarketingCampaignEditPageContent({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const resolved = useResolvedParams(params)
   const { user } = useAuth()

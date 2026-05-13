@@ -2,11 +2,7 @@
 
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  AUTH_CARD_CLASS,
-  AUTH_CARD_CONTENT_CLASS,
-  AUTH_LOGO_CLASS,
-} from '@/lib/auth-page-styles'
+import { AUTH_CARD_CLASS, AUTH_CARD_CONTENT_CLASS, AUTH_LOGO_CLASS } from '@/lib/auth-page-styles'
 import { AuthPasswordPageFrame } from '@/features/auth-password-reset/ui/auth-password-page-frame'
 
 export function RegisterFormFallbackView() {

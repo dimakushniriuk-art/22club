@@ -1,1 +1,4 @@
-export { StaffTrainerChatPageContent as default, ChatPageContent } from './staff-trainer-chat-page-content'
+export {
+  StaffTrainerChatPageContent as default,
+  ChatPageContent,
+} from './staff-trainer-chat-page-content'

@@ -270,8 +270,11 @@ export function HomeProgressiFotoPageContent() {
     return dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
   }, [photos])
 
-  const { visibleItems: visibleCompareDates, loadMore: showMoreCompareDates, hasMore: hasMoreCompareDates } =
-    useProgressiveMount(uniqueDates, { initial: 12, step: 12 })
+  const {
+    visibleItems: visibleCompareDates,
+    loadMore: showMoreCompareDates,
+    hasMore: hasMoreCompareDates,
+  } = useProgressiveMount(uniqueDates, { initial: 12, step: 12 })
 
   const photosForCurrentAngle = useMemo(
     () =>

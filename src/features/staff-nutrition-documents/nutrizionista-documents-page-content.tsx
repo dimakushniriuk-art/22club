@@ -130,15 +130,8 @@ export function NutrizionistaDocumentsPageContent() {
   const queryClient = useQueryClient()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
-  const {
-    rows,
-    assignedAthletes,
-    myOrgId,
-    myOrgIdText,
-    loading,
-    error,
-    reload,
-  } = useNutrizionistaDocumentsList(profileId)
+  const { rows, assignedAthletes, myOrgId, myOrgIdText, loading, error, reload } =
+    useNutrizionistaDocumentsList(profileId)
   const [saveError, setSaveError] = useState<string | null>(null)
   const displayError = saveError ?? error
   const {

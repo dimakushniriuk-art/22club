@@ -140,7 +140,8 @@ export function useLiveWorkoutHostAdapter({
   }, [pathBase, workoutDayId, workoutPlanId])
 
   const resolveWithTrainer = useCallback(
-    () => (workoutsPane != null ? Boolean(workoutsPane.countCompletionAsCoached) : Boolean(isPreview)),
+    () =>
+      workoutsPane != null ? Boolean(workoutsPane.countCompletionAsCoached) : Boolean(isPreview),
     [isPreview, workoutsPane],
   )
 
@@ -161,15 +162,17 @@ export function useLiveWorkoutHostAdapter({
 
   const embedRootClass = useCallback(
     (...rest: ClassValue[]) =>
-      cn(workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow), workoutsPane && 'relative isolate', ...rest),
+      cn(
+        workoutsPaneEmbedRootClass(workoutsPaneNaturalFlow),
+        workoutsPane && 'relative isolate',
+        ...rest,
+      ),
     [workoutsPane, workoutsPaneNaturalFlow],
   )
 
   const embedBodyClass = useCallback(
-    (
-      opts: Parameters<typeof workoutsPaneEmbedBodyClass>[1],
-      ...rest: ClassValue[]
-    ) => workoutsPaneEmbedBodyClass(workoutsPaneNaturalFlow, opts, ...rest),
+    (opts: Parameters<typeof workoutsPaneEmbedBodyClass>[1], ...rest: ClassValue[]) =>
+      workoutsPaneEmbedBodyClass(workoutsPaneNaturalFlow, opts, ...rest),
     [workoutsPaneNaturalFlow],
   )
 

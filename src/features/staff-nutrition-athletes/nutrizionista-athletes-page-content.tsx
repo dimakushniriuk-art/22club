@@ -256,14 +256,8 @@ export function NutrizionistaAthletesPageContent() {
   const supabase = useSupabaseClient()
   const { notify } = useNotify()
   const profileId = user?.id ?? null
-  const {
-    rows,
-    pendingInvites,
-    invitesWarning,
-    loading,
-    error,
-    reload,
-  } = useNutrizionistaAtletiList(profileId)
+  const { rows, pendingInvites, invitesWarning, loading, error, reload } =
+    useNutrizionistaAtletiList(profileId)
   const clientiInvitatCount = pendingInvites.length
 
   const [searchInput, setSearchInput] = useState('')

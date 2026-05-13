@@ -20,7 +20,9 @@ export function ResetPasswordLinkErrorView({ message }: { message: string }) {
             <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-state-error/10 border border-state-error/20">
               <AlertCircle className="w-10 h-10 text-state-error" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">Link non valido</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">
+              Link non valido
+            </h2>
             <p className="text-sm leading-relaxed max-w-sm mx-auto mb-6 text-text-secondary">
               {message}
             </p>

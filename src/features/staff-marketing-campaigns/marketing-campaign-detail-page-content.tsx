@@ -64,9 +64,7 @@ export function MarketingCampaignDetailPageContent({
           <div>
             <h1 className="text-xl font-bold md:text-2xl">{campaign.name}</h1>
             <p className="text-sm text-text-secondary">
-              {MARKETING_CAMPAIGN_CHANNEL_LABELS[campaign.channel ?? ''] ??
-                campaign.channel ??
-                '–'}{' '}
+              {MARKETING_CAMPAIGN_CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'}{' '}
               · {MARKETING_CAMPAIGN_STATUS_LABELS[campaign.status]}
             </p>
           </div>
@@ -87,9 +85,7 @@ export function MarketingCampaignDetailPageContent({
           <div className="grid gap-2 text-sm md:grid-cols-2">
             <div>
               <span className="text-text-muted">Canale:</span>{' '}
-              {MARKETING_CAMPAIGN_CHANNEL_LABELS[campaign.channel ?? ''] ??
-                campaign.channel ??
-                '–'}
+              {MARKETING_CAMPAIGN_CHANNEL_LABELS[campaign.channel ?? ''] ?? campaign.channel ?? '–'}
             </div>
             <div>
               <span className="text-text-muted">Budget:</span>{' '}

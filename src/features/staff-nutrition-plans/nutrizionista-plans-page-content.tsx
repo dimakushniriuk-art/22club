@@ -176,13 +176,7 @@ export function NutrizionistaPlansPageContent() {
   const { user, org_id: orgId } = useAuth()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
-  const {
-    rows,
-    assignedAthletes,
-    loading,
-    error,
-    reload,
-  } = useNutrizionistaPlansList(profileId)
+  const { rows, assignedAthletes, loading, error, reload } = useNutrizionistaPlansList(profileId)
   const [saveError, setSaveError] = useState<string | null>(null)
   const displayError = saveError ?? error
   const {
@@ -227,7 +221,6 @@ export function NutrizionistaPlansPageContent() {
   const [validityEditLoading, setValidityEditLoading] = useState(false)
 
   const debouncedSearch = useDebounce(searchInput.trim().toLowerCase(), DEBOUNCE_MS)
-
 
   const [today, setToday] = useState(() => new Date())
   useEffect(() => {

@@ -22,7 +22,12 @@ export function useStaffTrainerAnalyticsReport(
   )
 
   return useQuery({
-    queryKey: queryKeys.statistics.trainerReport(orgId ?? '', trainerIdsKey, startBoundary.toISOString(), endBoundary.toISOString()),
+    queryKey: queryKeys.statistics.trainerReport(
+      orgId ?? '',
+      trainerIdsKey,
+      startBoundary.toISOString(),
+      endBoundary.toISOString(),
+    ),
     queryFn: () =>
       fetchTrainerAnalyticsReport(supabase, {
         orgId: orgId!,

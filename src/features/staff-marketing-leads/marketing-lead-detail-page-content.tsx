@@ -51,11 +51,7 @@ function patchLeadCache(
   })
 }
 
-export function MarketingLeadDetailPageContent({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export function MarketingLeadDetailPageContent({ params }: { params: Promise<{ id: string }> }) {
   const queryClient = useQueryClient()
   const resolved = useResolvedParams(params)
   const { showLoader, canAccess } = useMarketingDashboardGuard()

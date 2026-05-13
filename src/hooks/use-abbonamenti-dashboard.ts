@@ -35,13 +35,7 @@ export function useAbbonamentiDashboard({
 
   const queryKey = useMemo(
     () =>
-      queryKeys.payments.abbonamentiStaffList(
-        serviceType,
-        page,
-        enablePagination,
-        role,
-        profileId,
-      ),
+      queryKeys.payments.abbonamentiStaffList(serviceType, page, enablePagination, role, profileId),
     [serviceType, page, enablePagination, role, profileId],
   )
 
@@ -79,7 +73,8 @@ export function useAbbonamentiDashboard({
     totalCount: query.data?.totalCount ?? 0,
     loading: query.isLoading,
     isFetching: query.isFetching,
-    error: query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
+    error:
+      query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
     refetch: query.refetch,
     invalidateList,
     perPage: ABBONAMENTI_PER_PAGE,

@@ -52,17 +52,26 @@ export async function fetchAbbonamentiDashboard(
   }
   type ProfileRow = Tables<'profiles'>
 
-  const { supabase: supabaseClient, serviceType: currentServiceType, page: currentPage, enablePagination, role, profileId } = args
+  const {
+    supabase: supabaseClient,
+    serviceType: currentServiceType,
+    page: currentPage,
+    enablePagination,
+    role,
+    profileId,
+  } = args
 
   const isStaffOwnPayments =
     role === 'trainer' || role === 'nutrizionista' || role === 'massaggiatore'
 
   if (enablePagination && !isStaffOwnPayments) {
     try {
-      const { data: rpcData, error: rpcError } = await (supabaseClient.rpc as (
-        name: string,
-        params: Record<string, unknown>,
-      ) => ReturnType<SupabaseClient['rpc']>)('get_abbonamenti_with_stats', {
+      const { data: rpcData, error: rpcError } = await (
+        supabaseClient.rpc as (
+          name: string,
+          params: Record<string, unknown>,
+        ) => ReturnType<SupabaseClient['rpc']>
+      )('get_abbonamenti_with_stats', {
         p_page: currentPage,
         p_page_size: ABBONAMENTI_PER_PAGE,
         p_service_type: currentServiceType,

@@ -75,13 +75,14 @@ export function RestTimerOverlay({
             }
             if (executionTime === null) {
               const sets = (currentExercise?.sets as Record<string, unknown>[]) || []
-              const currentSetIndex = sets.findIndex((s) => !(s as { completed?: boolean }).completed)
-              const activeSet =
-                currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
+              const currentSetIndex = sets.findIndex(
+                (s) => !(s as { completed?: boolean }).completed,
+              )
+              const activeSet = currentSetIndex >= 0 ? sets[currentSetIndex] : sets[sets.length - 1]
               executionTime =
-                ((activeSet?.execution_time_sec ??
-                  currentExercise?.execution_time_sec ??
-                  null) as number | null) ?? null
+                ((activeSet?.execution_time_sec ?? currentExercise?.execution_time_sec ?? null) as
+                  | number
+                  | null) ?? null
             }
             if (executionTime === null || executionTime <= 0) {
               return null
@@ -106,7 +107,10 @@ export function RestTimerOverlay({
             }
 
             return (
-              <div key="timer-esecuzione-inline" className="flex flex-col items-center justify-center gap-3">
+              <div
+                key="timer-esecuzione-inline"
+                className="flex flex-col items-center justify-center gap-3"
+              >
                 {/* Cerchio animato esecuzione - Colore arancione/quasi rosso */}
                 <div
                   className="relative h-36 w-36 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95"
@@ -250,7 +254,10 @@ export function RestTimerOverlay({
             }
 
             return (
-              <div key="timer-recupero-unico" className="flex flex-col items-center justify-center gap-3">
+              <div
+                key="timer-recupero-unico"
+                className="flex flex-col items-center justify-center gap-3"
+              >
                 {/* Cerchio animato recupero */}
                 <div
                   className={`relative h-36 w-36 transition-transform duration-200 ${

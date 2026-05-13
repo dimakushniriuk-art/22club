@@ -20,10 +20,14 @@ type CircuitPhase = 'idle' | 'prepare' | 'execution' | 'reps' | 'rest' | 'comple
 type CircuitFullscreenOverlayProps = {
   circuitFullscreenPreview: CircuitPreview | null
   setCircuitFullscreenPreview: React.Dispatch<React.SetStateAction<CircuitPreview | null>>
-  getCircuitCycleStats: (
+  getCircuitCycleStats: (items: Record<string, unknown>[]) => {
+    totalCycles: number
+    completedCycles: number
+  }
+  getCircuitExerciseIndexesForCycle: (
     items: Record<string, unknown>[],
-  ) => { totalCycles: number; completedCycles: number }
-  getCircuitExerciseIndexesForCycle: (items: Record<string, unknown>[], cycleNumber: number) => number[]
+    cycleNumber: number,
+  ) => number[]
   circuitAutoPhase: CircuitPhase
   setCircuitAutoPhase: React.Dispatch<React.SetStateAction<CircuitPhase>>
   circuitAutoSeconds: number | null
@@ -80,21 +84,32 @@ export function CircuitFullscreenOverlay({
         )
         const hasCycleIndexesView = cycleIndexesView.length > 0
         const safeIndex =
-          totalExercises > 0 ? Math.min(Math.max(circuitFullscreenPreview.activeIndex, 0), totalExercises - 1) : 0
-        const safeCyclePosition = hasCycleIndexesView ? Math.max(0, cycleIndexesView.indexOf(safeIndex)) : -1
+          totalExercises > 0
+            ? Math.min(Math.max(circuitFullscreenPreview.activeIndex, 0), totalExercises - 1)
+            : 0
+        const safeCyclePosition = hasCycleIndexesView
+          ? Math.max(0, cycleIndexesView.indexOf(safeIndex))
+          : -1
         const activeItem = circuitFullscreenPreview.exercises[safeIndex]
         const activeExercise = ((activeItem?.exercise as Record<string, unknown> | undefined) ??
           {}) as Record<string, unknown>
         const activeName = (activeExercise.name as string | undefined) ?? 'Esercizio'
-        const activeVideoUrl = (activeExercise.video_url as string | undefined | null)?.trim() || undefined
-        const activeThumbUrl = (activeExercise.thumb_url as string | undefined | null)?.trim() || undefined
+        const activeVideoUrl =
+          (activeExercise.video_url as string | undefined | null)?.trim() || undefined
+        const activeThumbUrl =
+          (activeExercise.thumb_url as string | undefined | null)?.trim() || undefined
         const activeSets = ((activeItem?.sets as Record<string, unknown>[] | undefined) ??
           []) as Record<string, unknown>[]
         const activeSetIndex =
           activeSets.length > 0
             ? activeSets.findIndex((set) => Number(set?.set_number ?? 0) === currentCycleNumber)
             : -1
-        const activeSet = activeSets.length > 0 ? (activeSetIndex >= 0 ? activeSets[activeSetIndex] : activeSets[0]) : null
+        const activeSet =
+          activeSets.length > 0
+            ? activeSetIndex >= 0
+              ? activeSets[activeSetIndex]
+              : activeSets[0]
+            : null
 
         const valueWeight = (() => {
           const fromSet = activeSet?.weight_kg as number | null | undefined
@@ -128,7 +143,9 @@ export function CircuitFullscreenOverlay({
               ? Number(valueRestRaw)
               : null
         const circuitPrepareSecondsLeft =
-          circuitAutoPhase === 'prepare' ? (circuitAutoSeconds ?? CIRCUIT_FULLSCREEN_PREPARE_SECONDS) : null
+          circuitAutoPhase === 'prepare'
+            ? (circuitAutoSeconds ?? CIRCUIT_FULLSCREEN_PREPARE_SECONDS)
+            : null
         const circuitPrepareTierTextClass =
           circuitAutoPhase === 'prepare'
             ? circuitPrepareSecondsLeft != null && circuitPrepareSecondsLeft > 3
@@ -223,7 +240,9 @@ export function CircuitFullscreenOverlay({
           !circuitAutoRunning && (circuitAutoPhase === 'idle' || circuitAutoPhase === 'completed')
         const pauseLabel = circuitAutoRunning ? 'Pausa' : 'Riprendi'
         const pauseDisabled =
-          circuitAutoPhase === 'idle' || circuitAutoPhase === 'completed' || circuitAutoPhase === 'reps'
+          circuitAutoPhase === 'idle' ||
+          circuitAutoPhase === 'completed' ||
+          circuitAutoPhase === 'reps'
         const cycleTargetReached = circuitStats.completedCycles >= circuitStats.totalCycles
         const block = blocks[currentBlockIndex]
         const blockExercises = block
@@ -287,7 +306,9 @@ export function CircuitFullscreenOverlay({
                             ...prev,
                             activeIndex:
                               hasCycleIndexesView && safeCyclePosition >= 0
-                                ? cycleIndexesView[Math.min(cycleIndexesView.length - 1, safeCyclePosition + 1)]
+                                ? cycleIndexesView[
+                                    Math.min(cycleIndexesView.length - 1, safeCyclePosition + 1)
+                                  ]
                                 : Math.min(prev.exercises.length - 1, prev.activeIndex + 1),
                           }
                         : prev,
@@ -300,7 +321,10 @@ export function CircuitFullscreenOverlay({
 
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/15 bg-black">
                 {activeVideoUrl ? (
-                  <ModalAutoplayExerciseVideo videoSrc={activeVideoUrl} posterSrc={activeThumbUrl} />
+                  <ModalAutoplayExerciseVideo
+                    videoSrc={activeVideoUrl}
+                    posterSrc={activeThumbUrl}
+                  />
                 ) : activeThumbUrl ? (
                   <Image
                     src={activeThumbUrl}
@@ -359,17 +383,23 @@ export function CircuitFullscreenOverlay({
                     <div className="mt-1 text-sm font-bold text-white">{valueWeight}</div>
                   </div>
                   <div className="rounded-lg border border-white/10 bg-black p-2">
-                    <div className="text-[10px] uppercase tracking-wide text-zinc-400">Ripetizioni</div>
+                    <div className="text-[10px] uppercase tracking-wide text-zinc-400">
+                      Ripetizioni
+                    </div>
                     <div className="mt-1 text-sm font-bold text-white">{valueReps}</div>
                   </div>
                   <div className="rounded-lg border border-white/10 bg-black p-2">
-                    <div className="text-[10px] uppercase tracking-wide text-zinc-400">Esecuzione</div>
+                    <div className="text-[10px] uppercase tracking-wide text-zinc-400">
+                      Esecuzione
+                    </div>
                     <div className="mt-1 text-sm font-bold text-white">
                       {valueExecution != null && valueExecution > 0 ? valueExecution : '-'}
                     </div>
                   </div>
                   <div className="rounded-lg border border-white/10 bg-black p-2">
-                    <div className="text-[10px] uppercase tracking-wide text-zinc-400">Recupero</div>
+                    <div className="text-[10px] uppercase tracking-wide text-zinc-400">
+                      Recupero
+                    </div>
                     <div className="mt-1 text-sm font-bold text-white">
                       {valueRest != null && valueRest > 0 ? valueRest : '-'}
                     </div>
@@ -398,7 +428,8 @@ export function CircuitFullscreenOverlay({
                           Start
                         </Button>
                         <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                          Poi parte il countdown di preparazione ({CIRCUIT_FULLSCREEN_PREPARE_SECONDS} sec)
+                          Poi parte il countdown di preparazione (
+                          {CIRCUIT_FULLSCREEN_PREPARE_SECONDS} sec)
                         </p>
                       </div>
                     ) : circuitAutoPhase === 'reps' ? (
@@ -427,7 +458,9 @@ export function CircuitFullscreenOverlay({
                                 : `text-7xl font-black leading-none sm:text-8xl ${circuitTimerColorClass}`
                             }
                           >
-                            {circuitAutoPhase === 'completed' ? 'Congratulazione!' : circuitTimerMainValue}
+                            {circuitAutoPhase === 'completed'
+                              ? 'Congratulazione!'
+                              : circuitTimerMainValue}
                           </div>
                         ) : null}
                         {circuitAutoPhase !== 'completed' ? (
@@ -457,7 +490,8 @@ export function CircuitFullscreenOverlay({
 
               <div className="rounded-2xl border border-white/15 bg-zinc-950/95 px-4 py-3 text-center">
                 <div className="text-3xl font-black leading-none text-cyan-300 sm:text-4xl">
-                  {circuitStats.completedCycles} <span className="text-zinc-500">/</span> {circuitTotalCycles}
+                  {circuitStats.completedCycles} <span className="text-zinc-500">/</span>{' '}
+                  {circuitTotalCycles}
                 </div>
                 <div className="mt-1 text-xs font-medium uppercase tracking-wide text-zinc-400">
                   {circuitStats.completedCycles === 1 ? 'Ciclo completato' : 'Cicli completati'}

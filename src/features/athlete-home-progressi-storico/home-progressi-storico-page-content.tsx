@@ -49,9 +49,7 @@ export function HomeProgressiStoricoPageContent() {
   const stats = data?.stats ?? { solo_count: 0, coached_count: 0, total_hours: 0 }
   const userProfile = useMemo(
     () =>
-      user?.nome || user?.cognome
-        ? { nome: user?.nome ?? '', cognome: user?.cognome ?? '' }
-        : null,
+      user?.nome || user?.cognome ? { nome: user?.nome ?? '', cognome: user?.cognome ?? '' } : null,
     [user?.cognome, user?.nome],
   )
 
@@ -383,7 +381,9 @@ export function HomeProgressiStoricoPageContent() {
                                 </div>
                                 <div className="mt-1.5 flex items-center gap-2 text-text-secondary text-xs">
                                   <Calendar className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
-                                  <span>{formatDate(workout.completed_at ?? workout.started_at)}</span>
+                                  <span>
+                                    {formatDate(workout.completed_at ?? workout.started_at)}
+                                  </span>
                                 </div>
                                 {workout.note && (
                                   <p className="text-text-tertiary mt-1.5 line-clamp-1 text-xs italic">

@@ -4,10 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { createLogger } from '@/lib/logger'
-import {
-  fetchStaffPtProfile,
-  type StaffPtProfile,
-} from '@/lib/dashboard/fetch-staff-pt-profile'
+import { fetchStaffPtProfile, type StaffPtProfile } from '@/lib/dashboard/fetch-staff-pt-profile'
 import { queryKeys } from '@/lib/query-keys'
 import { syncAuthContextAfterOwnProfilesRowUpdate } from '@/lib/react-query/post-mutation-cache'
 import { useAuth } from '@/providers/auth-provider'

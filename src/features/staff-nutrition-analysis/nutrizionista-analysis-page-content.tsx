@@ -127,13 +127,8 @@ export function NutrizionistaAnalysisPageContent() {
   const { notify } = useNotify()
   const profileId = user?.id ?? null
 
-  const {
-    rows,
-    assignedAthletes,
-    loading,
-    error,
-    reload,
-  } = useNutrizionistaWeeklyAnalysis(profileId)
+  const { rows, assignedAthletes, loading, error, reload } =
+    useNutrizionistaWeeklyAnalysis(profileId)
 
   const [periodMode, setPeriodMode] = useState<'last4' | 'single' | 'custom'>('last4')
   const [rangeStart, setRangeStart] = useState(() => {

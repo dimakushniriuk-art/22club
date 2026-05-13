@@ -8,7 +8,9 @@ import {
   videoPosterAttr,
 } from '@/features/athlete-allenamenti/lib/giorno-preview-helpers'
 
-function row(partial: Partial<AthleteWorkoutDayExerciseRow> & { id: string }): AthleteWorkoutDayExerciseRow {
+function row(
+  partial: Partial<AthleteWorkoutDayExerciseRow> & { id: string },
+): AthleteWorkoutDayExerciseRow {
   return {
     order_index: null,
     target_sets: null,
@@ -49,9 +51,13 @@ describe('giorno preview helpers', () => {
   })
 
   it('formatGiornoExerciseTargets includes weight when present', () => {
-    expect(formatGiornoExerciseTargets(row({ id: 'a', target_sets: 3, target_reps: 10, target_weight: 40 }))).toBe(
-      '3×10 · 40 kg',
+    expect(
+      formatGiornoExerciseTargets(
+        row({ id: 'a', target_sets: 3, target_reps: 10, target_weight: 40 }),
+      ),
+    ).toBe('3×10 · 40 kg')
+    expect(formatGiornoExerciseTargets(row({ id: 'a', target_sets: 3, target_reps: 10 }))).toBe(
+      '3×10',
     )
-    expect(formatGiornoExerciseTargets(row({ id: 'a', target_sets: 3, target_reps: 10 }))).toBe('3×10')
   })
 })

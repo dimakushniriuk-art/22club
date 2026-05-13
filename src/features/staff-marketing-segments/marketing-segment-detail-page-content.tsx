@@ -23,11 +23,7 @@ import {
 } from '@/hooks/use-marketing-segments'
 import { formatMarketingDate } from '@/lib/marketing/format'
 
-export function MarketingSegmentDetailPageContent({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export function MarketingSegmentDetailPageContent({ params }: { params: Promise<{ id: string }> }) {
   const resolved = useResolvedParams(params)
   const id = typeof resolved.id === 'string' ? resolved.id : null
   const { showLoader, canAccess } = useMarketingDashboardGuard()

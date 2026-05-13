@@ -59,8 +59,7 @@ export function GiornoPreviewContent({
     'px-3 pt-4 pb-32 safe-area-inset-bottom sm:px-4 sm:pt-5 md:px-6 md:pb-28 md:pt-6',
   )
 
-  const invalidParams =
-    !planId || !isValidUUID(planId) || !dayId || !isValidUUID(dayId)
+  const invalidParams = !planId || !isValidUUID(planId) || !dayId || !isValidUUID(dayId)
   const {
     data: dayPreview,
     isLoading: previewLoading,
@@ -367,4 +366,3 @@ export function GiornoPreviewContent({
     </div>
   )
 }
-

@@ -39,10 +39,7 @@ import {
 } from '@/components/ui'
 import { createLogger } from '@/lib/logger'
 import { invalidateProgressAnalyticsQueries } from '@/lib/react-query/post-mutation-cache'
-import {
-  NUTRITION_TABLES,
-  nutritionFrom,
-} from '@/lib/nutrition-tables'
+import { NUTRITION_TABLES, nutritionFrom } from '@/lib/nutrition-tables'
 import { athleteIdForProgressLogsColumn } from '@/lib/nutrition-athlete-id'
 import type {
   NutrizionistaProgressAssignedAthlete,
@@ -114,14 +111,8 @@ export function NutrizionistaProgressPageContent() {
   const { user } = useAuth()
   const supabase = useSupabaseClient()
   const profileId = user?.id ?? null
-  const {
-    timelineRows,
-    athleteOverviewRows,
-    assignedAthletes,
-    loading,
-    error,
-    reload,
-  } = useNutrizionistaProgressOverview(profileId)
+  const { timelineRows, athleteOverviewRows, assignedAthletes, loading, error, reload } =
+    useNutrizionistaProgressOverview(profileId)
   const [saveError, setSaveError] = useState<string | null>(null)
   const displayError = saveError ?? error
   const {
@@ -160,7 +151,6 @@ export function NutrizionistaProgressPageContent() {
   const [extractingPdf, setExtractingPdf] = useState(false)
 
   const debouncedSearch = useDebounce(searchInput.trim().toLowerCase(), DEBOUNCE_MS)
-
 
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {

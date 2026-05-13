@@ -60,9 +60,7 @@ import {
   pickExerciseShareVideoUrl,
   repsForVolumeKgRep,
 } from '@/features/athlete-allenamenti/lib/riepilogo-helpers'
-import type {
-  WorkoutShareCardProps,
-} from '@/lib/workouts/workout-share-types'
+import type { WorkoutShareCardProps } from '@/lib/workouts/workout-share-types'
 import { buildWorkoutShareHighlights } from '@/lib/workouts/build-workout-share-highlights'
 
 const logger = createLogger('app:home:allenamenti:riepilogo:page')
@@ -180,8 +178,7 @@ export function RiepilogoPageContent({
       lastNotifiedSummaryRef.current = null
       return
     }
-    const errorMessage =
-      summaryError instanceof Error ? summaryError.message : 'Errore sconosciuto'
+    const errorMessage = summaryError instanceof Error ? summaryError.message : 'Errore sconosciuto'
     if (lastNotifiedSummaryRef.current === errorMessage) return
     lastNotifiedSummaryRef.current = errorMessage
     logger.error('Errore caricamento riepilogo workout', summaryError, {
@@ -340,7 +337,6 @@ export function RiepilogoPageContent({
     queryClient,
     user?.user_id,
   ])
-
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
@@ -1084,4 +1080,3 @@ export function RiepilogoPageContent({
     </div>
   )
 }
-

@@ -154,9 +154,7 @@ export default function StaffAthleteBookingsPage({ params }: { params: Promise<{
             <div className="flex items-baseline justify-between gap-3 mb-4">
               <p className="text-sm font-medium text-text-primary">Appuntamenti</p>
               <p className="text-xs text-text-tertiary">
-                {loading
-                  ? '—'
-                  : `${filteredAppointments.length}/${appointments.length}`}
+                {loading ? '—' : `${filteredAppointments.length}/${appointments.length}`}
               </p>
             </div>
 

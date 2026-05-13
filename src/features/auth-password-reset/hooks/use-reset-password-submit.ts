@@ -10,10 +10,7 @@ const logger = createLogger('auth-password-reset:submit')
 
 const PASSWORD_UPDATE_TIMEOUT_MS = 60_000
 
-export function useResetPasswordSubmit(
-  hasValidSession: boolean,
-  router: AppRouterInstance,
-) {
+export function useResetPasswordSubmit(hasValidSession: boolean, router: AppRouterInstance) {
   const supabase = useMemo(() => createClient(), [])
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -209,7 +206,9 @@ export function useResetPasswordSubmit(
         if (!data || !data.user) {
           console.error('[RESET PASSWORD] Dati non validi:', data)
           logger.error('Aggiornamento password completato ma dati non validi', { data })
-          setError("Errore durante l'aggiornamento della password. I dati ricevuti non sono validi.")
+          setError(
+            "Errore durante l'aggiornamento della password. I dati ricevuti non sono validi.",
+          )
           setLoading(false)
           return
         }

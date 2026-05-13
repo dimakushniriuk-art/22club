@@ -124,10 +124,7 @@ export function AdminUsersContent() {
   useEffect(() => {
     if (!error) return
     logger.error('Errore nel caricamento utenti', error)
-    notifyError(
-      'Errore',
-      error instanceof Error ? error.message : 'Errore nel caricamento utenti',
-    )
+    notifyError('Errore', error instanceof Error ? error.message : 'Errore nel caricamento utenti')
   }, [error])
 
   const filteredUsers = useMemo(() => {

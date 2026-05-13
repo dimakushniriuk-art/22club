@@ -34,9 +34,12 @@ export function useAthleteRegistration(codiceInvito: string, router: AppRouterIn
   const [resendLoading, setResendLoading] = useState(false)
   const [resendMessage, setResendMessage] = useState<ResendMessage | null>(null)
 
-  const handleInputChange = useCallback((field: keyof AthleteRegistrationFormValues, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }, [])
+  const handleInputChange = useCallback(
+    (field: keyof AthleteRegistrationFormValues, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }))
+    },
+    [],
+  )
 
   const handleRegister = useCallback(
     async (event: React.FormEvent) => {

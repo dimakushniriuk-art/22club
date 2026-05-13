@@ -198,13 +198,7 @@ export function MassaggiatoreClientiPageContent() {
   const { user } = useAuth()
   const { notify } = useNotify()
   const supabase = useSupabaseClient()
-  const {
-    unified,
-    profileById,
-    loading,
-    error,
-    reload,
-  } = useMassaggiatoreClientiList(user?.id)
+  const { unified, profileById, loading, error, reload } = useMassaggiatoreClientiList(user?.id)
   const [searchTerm, setSearchTerm] = useState('')
   const [statoFilter, setStatoFilter] = useState<MassaggiatoreClientiStatoFilter>('tutti')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid')

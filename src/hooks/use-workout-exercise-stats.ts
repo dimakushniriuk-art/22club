@@ -167,7 +167,9 @@ export function useWorkoutExerciseStats(
           try {
             athleteProfileId = await getProfileIdFromUserId(athleteUserId)
           } catch (conversionError) {
-            logger.warn('Errore conversione user_id a profile_id', conversionError, { athleteUserId })
+            logger.warn('Errore conversione user_id a profile_id', conversionError, {
+              athleteUserId,
+            })
             return {
               exercises: [],
               total_exercises: 0,

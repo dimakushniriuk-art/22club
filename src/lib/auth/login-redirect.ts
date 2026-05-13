@@ -10,10 +10,7 @@ export type LoginProfileForRedirect = {
   first_login: boolean | null
 }
 
-export function validateLoginForm(
-  email: string,
-  password: string,
-): LoginFormValidationErrors {
+export function validateLoginForm(email: string, password: string): LoginFormValidationErrors {
   const errors: LoginFormValidationErrors = {}
   if (!email.trim()) errors.email = 'Email è richiesta'
   if (!password) errors.password = 'Password è richiesta'
@@ -41,9 +38,7 @@ export function resolveAthleteRedirectFromLoginQuery(
   return path
 }
 
-export function resolvePostLoginRedirectPath(
-  profileData: LoginProfileForRedirect,
-): string | null {
+export function resolvePostLoginRedirectPath(profileData: LoginProfileForRedirect): string | null {
   return getPostLoginRedirectPath(profileData.role, profileData.first_login)
 }
 

@@ -15,9 +15,7 @@ describe('staff athlete progress path helpers', () => {
     expect(staffAthleteProgressTabBackHref(profileId)).toBe(
       '/dashboard/atleti/profile-abc?tab=progressi',
     )
-    expect(staffAthleteProgressBasePath(profileId)).toBe(
-      '/dashboard/atleti/profile-abc/progressi',
-    )
+    expect(staffAthleteProgressBasePath(profileId)).toBe('/dashboard/atleti/profile-abc/progressi')
   })
 
   it('formatta il nome atleta senza spazi superflui', () => {
@@ -93,10 +91,12 @@ describe('staff athlete progress query keys', () => {
     expect(shouldInvalidateQueryOnSessionResume(queryKeys.progressi.workoutsHub(profileId))).toBe(
       true,
     )
-    expect(shouldInvalidateQueryOnSessionResume(queryKeys.progressi.workoutHistory(profileId, 'all'))).toBe(
+    expect(
+      shouldInvalidateQueryOnSessionResume(queryKeys.progressi.workoutHistory(profileId, 'all')),
+    ).toBe(true)
+    expect(shouldInvalidateQueryOnSessionResume(queryKeys.athleteProfile.byId(profileId))).toBe(
       true,
     )
-    expect(shouldInvalidateQueryOnSessionResume(queryKeys.athleteProfile.byId(profileId))).toBe(true)
   })
 })
 

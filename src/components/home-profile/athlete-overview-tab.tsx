@@ -46,8 +46,7 @@ export function AthleteOverviewTab({
   calculateProgress,
   trainerQueryEnabled = true,
 }: AthleteOverviewTabProps) {
-  const { data: trainerRow, isPending: trainerLoading } =
-    useMyTrainerProfile(trainerQueryEnabled)
+  const { data: trainerRow, isPending: trainerLoading } = useMyTrainerProfile(trainerQueryEnabled)
   const trainer = useMemo((): TrainerProfile | null => {
     if (!trainerRow) return null
     return {

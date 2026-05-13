@@ -16,7 +16,9 @@ export function ResetPasswordCheckingView() {
                 aria-hidden
               />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">Verifica link...</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 text-text-primary">
+              Verifica link...
+            </h2>
             <p className="text-sm leading-relaxed max-w-sm mx-auto text-text-secondary">
               Stiamo verificando il tuo link di reset password.
             </p>

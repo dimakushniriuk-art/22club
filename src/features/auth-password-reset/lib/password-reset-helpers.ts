@@ -28,7 +28,10 @@ export function resolveResetPasswordUrlError(
   return 'Link non valido o scaduto'
 }
 
-export function validateResetPasswordForm(password: string, confirmPassword: string): string | null {
+export function validateResetPasswordForm(
+  password: string,
+  confirmPassword: string,
+): string | null {
   if (!password) return 'Inserisci una nuova password'
   if (password.length < 6) return 'La password deve essere di almeno 6 caratteri'
   if (password !== confirmPassword) return 'Le password non corrispondono'

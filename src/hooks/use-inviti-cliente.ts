@@ -53,11 +53,7 @@ export function useInvitiCliente(profileId: string | null, enabled = true) {
     inviti: query.data ?? [],
     loading: query.isPending,
     error:
-      query.error instanceof Error
-        ? query.error.message
-        : query.error
-          ? String(query.error)
-          : null,
+      query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
     refetch: async () => {
       await query.refetch()
     },

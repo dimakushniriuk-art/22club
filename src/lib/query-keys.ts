@@ -76,7 +76,15 @@ export const queryKeys = {
       role: string | null,
       profileId: string | null,
     ) =>
-      ['payments', 'abbonamenti-staff-list', serviceType, page, enablePagination, role, profileId] as const,
+      [
+        'payments',
+        'abbonamenti-staff-list',
+        serviceType,
+        page,
+        enablePagination,
+        role,
+        profileId,
+      ] as const,
     /** Dettaglio pagamenti/crediti atleta staff (`?service=`). */
     staffAthletePage: (athleteId: string, serviceType: string) =>
       ['payments', 'staff-athlete-page', athleteId, serviceType] as const,
@@ -102,8 +110,7 @@ export const queryKeys = {
   chat: {
     unreadReceiver: (scope: string, profileId: string) =>
       ['chat', 'unread', scope, profileId] as const,
-    staffUnreadPreview: (profileId: string) =>
-      ['chat', 'staff-unread-preview', profileId] as const,
+    staffUnreadPreview: (profileId: string) => ['chat', 'staff-unread-preview', profileId] as const,
   },
   notifications: {
     staffList: (userId: string) => ['notifications', 'staff-list', userId] as const,
@@ -114,7 +121,8 @@ export const queryKeys = {
       type: string | undefined,
       limit: number | undefined,
       offset: number | undefined,
-    ) => ['communications', 'staff-list', statusKey, type ?? '', limit ?? '', offset ?? ''] as const,
+    ) =>
+      ['communications', 'staff-list', statusKey, type ?? '', limit ?? '', offset ?? ''] as const,
   },
   dashboard: {
     widgets: (staffProfileId: string) => ['dashboard', 'widgets', staffProfileId] as const,
@@ -142,12 +150,8 @@ export const queryKeys = {
     legacy: (orgId: string | null, rangeDays: number) =>
       ['statistics', 'legacy', orgId ?? '', rangeDays] as const,
     trainerOptions: (orgId: string) => ['statistics', 'trainer-options', orgId] as const,
-    trainerReport: (
-      orgId: string,
-      trainerIdsKey: string,
-      startIso: string,
-      endIso: string,
-    ) => ['statistics', 'trainer-report', orgId, trainerIdsKey, startIso, endIso] as const,
+    trainerReport: (orgId: string, trainerIdsKey: string, startIso: string, endIso: string) =>
+      ['statistics', 'trainer-report', orgId, trainerIdsKey, startIso, endIso] as const,
   },
   nutrition: {
     settingsBootstrap: (staffProfileId: string) =>

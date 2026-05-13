@@ -7,9 +7,7 @@ import {
 
 describe('password reset helpers', () => {
   it('hasPasswordRecoveryHash detects recovery tokens', () => {
-    expect(
-      hasPasswordRecoveryHash('#access_token=abc&type=recovery'),
-    ).toBe(true)
+    expect(hasPasswordRecoveryHash('#access_token=abc&type=recovery')).toBe(true)
     expect(hasPasswordRecoveryHash('access_token=abc&type=recovery')).toBe(true)
     expect(hasPasswordRecoveryHash('#access_token=abc&type=signup')).toBe(false)
     expect(hasPasswordRecoveryHash('')).toBe(false)
@@ -19,9 +17,9 @@ describe('password reset helpers', () => {
     expect(resolveResetPasswordUrlError('access_denied', 'otp_expired', null)).toBe(
       'Il link di reset password è scaduto. Richiedi un nuovo link.',
     )
-    expect(
-      resolveResetPasswordUrlError('access_denied', 'access_denied', 'Invalid+link'),
-    ).toBe('Invalid link')
+    expect(resolveResetPasswordUrlError('access_denied', 'access_denied', 'Invalid+link')).toBe(
+      'Invalid link',
+    )
     expect(resolveResetPasswordUrlError('access_denied', null, null)).toBe(
       'Link non valido o scaduto',
     )

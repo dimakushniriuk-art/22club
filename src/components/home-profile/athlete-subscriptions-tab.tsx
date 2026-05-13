@@ -58,7 +58,12 @@ export function AthleteSubscriptionsTab({
     error: queryError,
     refetch,
   } = useAthletePayments(athleteProfileId, refreshKey)
-  const error = queryError instanceof Error ? queryError.message : queryError ? 'Errore nel caricamento dei pagamenti' : null
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : queryError
+        ? 'Errore nel caricamento dei pagamenti'
+        : null
   const {
     open: invoicePdfOpen,
     blob: invoicePdfBlob,

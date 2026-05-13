@@ -1,4 +1,9 @@
-import type { OnboardingFormState, ProfileRow, ProfileUpdate, WelcomeBrowserDraftPayload } from '@/features/welcome-onboarding/types'
+import type {
+  OnboardingFormState,
+  ProfileRow,
+  ProfileUpdate,
+  WelcomeBrowserDraftPayload,
+} from '@/features/welcome-onboarding/types'
 
 export function isMeaningfulWelcomeDraft(p: WelcomeBrowserDraftPayload): boolean {
   if (p.currentStep > 0) return true

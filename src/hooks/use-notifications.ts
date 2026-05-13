@@ -50,10 +50,7 @@ export function useNotifications({ userId, enabled = true }: UseNotificationsPro
   })
 
   const notifications = query.data ?? []
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read_at).length,
-    [notifications],
-  )
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
   const loading = Boolean(userId && query.isPending)
   const error = query.error instanceof Error ? query.error.message : null
 
@@ -78,9 +75,7 @@ export function useNotifications({ userId, enabled = true }: UseNotificationsPro
 
         queryClient.setQueryData<Notification[]>(queryKey, (prev) =>
           (prev ?? []).map((n) =>
-            n.id === notificationId
-              ? { ...n, read_at: n.read_at || new Date().toISOString() }
-              : n,
+            n.id === notificationId ? { ...n, read_at: n.read_at || new Date().toISOString() } : n,
           ),
         )
       } catch (err) {

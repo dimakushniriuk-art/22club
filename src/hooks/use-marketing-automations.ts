@@ -112,7 +112,9 @@ export function useMarketingAutomationMutations() {
   const invalidateAutomationQueries = async (automationId?: string) => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.marketing.automations })
     if (automationId) {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.marketing.automation(automationId) })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.marketing.automation(automationId),
+      })
     }
   }
 
@@ -161,18 +163,19 @@ export function useMarketingAutomationMutations() {
             : row,
         ),
       )
-      queryClient.setQueryData<{ automation: MarketingAutomationRow; segment: MarketingAutomationSegmentName | null }>(
-        queryKeys.marketing.automation(automationId),
-        (prev) =>
-          prev?.automation
-            ? {
-                ...prev,
-                automation: {
-                  ...prev.automation,
-                  last_run_at: data.last_run_at ?? prev.automation.last_run_at,
-                },
-              }
-            : prev,
+      queryClient.setQueryData<{
+        automation: MarketingAutomationRow
+        segment: MarketingAutomationSegmentName | null
+      }>(queryKeys.marketing.automation(automationId), (prev) =>
+        prev?.automation
+          ? {
+              ...prev,
+              automation: {
+                ...prev.automation,
+                last_run_at: data.last_run_at ?? prev.automation.last_run_at,
+              },
+            }
+          : prev,
       )
     },
   })

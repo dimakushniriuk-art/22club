@@ -16,8 +16,10 @@ export async function fetchStaffAppointmentsTableRows(
   staffId: string,
   staffName: string | null,
 ): Promise<AppointmentTable[]> {
-  const { data: appointmentsData, error: appointmentsError } =
-    await listStaffAppointmentsForTable(client, staffId)
+  const { data: appointmentsData, error: appointmentsError } = await listStaffAppointmentsForTable(
+    client,
+    staffId,
+  )
 
   if (appointmentsError) throw appointmentsError
   if (!appointmentsData) return []
@@ -55,9 +57,7 @@ export async function fetchStaffAppointmentsTableRows(
 
   return appointmentsData.map((apt) => {
     const athleteName = apt.athlete_id ? (nameByAthleteId.get(apt.athlete_id) ?? null) : null
-    const athleteAvatarUrl = apt.athlete_id
-      ? (avatarByAthleteId.get(apt.athlete_id) ?? null)
-      : null
+    const athleteAvatarUrl = apt.athlete_id ? (avatarByAthleteId.get(apt.athlete_id) ?? null) : null
     return {
       ...apt,
       athlete_name: athleteName,
@@ -80,12 +80,7 @@ export async function fetchStaffAppointmentsFormAthletes(
   if (error) throw error
 
   return (profiles ?? []).map(
-    (p: {
-      id: string
-      nome?: string | null
-      cognome?: string | null
-      email?: string | null
-    }) => ({
+    (p: { id: string; nome?: string | null; cognome?: string | null; email?: string | null }) => ({
       id: p.id,
       name: `${p.nome || ''} ${p.cognome || ''}`.trim() || 'Atleta',
       email: p.email || '',

@@ -93,61 +93,61 @@ export function MarketingKpiPageContent() {
 
           {data.length > 0 ? (
             deferSecondary ? (
-            <div className="rounded-xl border border-border overflow-hidden">
-              <div className="px-4 py-2 bg-background-tertiary/50 border-b border-border text-sm font-medium text-text-secondary">
-                Riepilogo per atleta ({data.length}) — ordinato per ultimo allenamento
-              </div>
-              <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-background-secondary border-b border-border">
-                    <tr className="text-left text-text-secondary">
-                      <th className="p-3 font-medium">Atleta</th>
-                      <th className="p-3 font-medium">Email</th>
-                      <th className="p-3 font-medium">Totale</th>
-                      <th className="p-3 font-medium">Solo</th>
-                      <th className="p-3 font-medium">Con trainer</th>
-                      <th className="p-3 font-medium">Ultimo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.map((row) => (
-                      <tr
-                        key={row.athlete_id}
-                        className="border-b border-border/50 hover:bg-background-tertiary/30"
-                      >
-                        <td className="p-3">
-                          {[row.nome, row.cognome].filter(Boolean).join(' ') || (
-                            <span
-                              className="font-mono text-xs text-text-muted"
-                              title={row.athlete_id}
-                            >
-                              {row.athlete_id.slice(0, 8)}…
-                            </span>
-                          )}
-                        </td>
-                        <td
-                          className="p-3 text-text-muted truncate max-w-[180px]"
-                          title={row.email ?? undefined}
-                        >
-                          {row.email ?? '-'}
-                        </td>
-                        <td className="p-3">{Number(row.workouts_total_count ?? 0)}</td>
-                        <td className="p-3">{Number(row.workouts_solo_count ?? 0)}</td>
-                        <td className="p-3">{Number(row.workouts_coached_count ?? 0)}</td>
-                        <td className="p-3 text-text-muted">
-                          {row.last_workout_at
-                            ? new Date(row.last_workout_at).toLocaleDateString('it-IT', {
-                                day: '2-digit',
-                                month: 'short',
-                              })
-                            : '-'}
-                        </td>
+              <div className="rounded-xl border border-border overflow-hidden">
+                <div className="px-4 py-2 bg-background-tertiary/50 border-b border-border text-sm font-medium text-text-secondary">
+                  Riepilogo per atleta ({data.length}) — ordinato per ultimo allenamento
+                </div>
+                <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-background-secondary border-b border-border">
+                      <tr className="text-left text-text-secondary">
+                        <th className="p-3 font-medium">Atleta</th>
+                        <th className="p-3 font-medium">Email</th>
+                        <th className="p-3 font-medium">Totale</th>
+                        <th className="p-3 font-medium">Solo</th>
+                        <th className="p-3 font-medium">Con trainer</th>
+                        <th className="p-3 font-medium">Ultimo</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {data.map((row) => (
+                        <tr
+                          key={row.athlete_id}
+                          className="border-b border-border/50 hover:bg-background-tertiary/30"
+                        >
+                          <td className="p-3">
+                            {[row.nome, row.cognome].filter(Boolean).join(' ') || (
+                              <span
+                                className="font-mono text-xs text-text-muted"
+                                title={row.athlete_id}
+                              >
+                                {row.athlete_id.slice(0, 8)}…
+                              </span>
+                            )}
+                          </td>
+                          <td
+                            className="p-3 text-text-muted truncate max-w-[180px]"
+                            title={row.email ?? undefined}
+                          >
+                            {row.email ?? '-'}
+                          </td>
+                          <td className="p-3">{Number(row.workouts_total_count ?? 0)}</td>
+                          <td className="p-3">{Number(row.workouts_solo_count ?? 0)}</td>
+                          <td className="p-3">{Number(row.workouts_coached_count ?? 0)}</td>
+                          <td className="p-3 text-text-muted">
+                            {row.last_workout_at
+                              ? new Date(row.last_workout_at).toLocaleDateString('it-IT', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                })
+                              : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
             ) : (
               <StaffMarketingDataBlockSkeleton />
             )

@@ -30,10 +30,7 @@ export const athleteFitnessKeys = {
  * Hook per ottenere dati fitness atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteFitness(
-  athleteId: string | null,
-  options?: { enabled?: boolean },
-) {
+export function useAthleteFitness(athleteId: string | null, options?: { enabled?: boolean }) {
   const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteFitnessKeys.detail(athleteId || ''),

@@ -281,10 +281,7 @@ export function AdminRolesContent() {
   useEffect(() => {
     if (!error) return
     logger.error('Errore nel caricamento ruoli', error)
-    notifyError(
-      'Errore',
-      error instanceof Error ? error.message : 'Errore nel caricamento ruoli',
-    )
+    notifyError('Errore', error instanceof Error ? error.message : 'Errore nel caricamento ruoli')
   }, [error])
 
   const handleEdit = (role: Role) => {

@@ -9,9 +9,7 @@ import { validateAthleteRegistrationForm } from '@/features/athlete-registration
 describe('athlete invite helpers', () => {
   it('readInviteCodiceFromSearchParams prefers codice then code', () => {
     expect(
-      readInviteCodiceFromSearchParams(
-        new URLSearchParams('codice=ABC12345&code=ignored'),
-      ),
+      readInviteCodiceFromSearchParams(new URLSearchParams('codice=ABC12345&code=ignored')),
     ).toBe('ABC12345')
     expect(readInviteCodiceFromSearchParams(new URLSearchParams('code=XYZ98765'))).toBe('XYZ98765')
     expect(readInviteCodiceFromSearchParams(new URLSearchParams(''))).toBe('')

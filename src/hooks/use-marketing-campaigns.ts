@@ -130,9 +130,7 @@ export function useMarketingCampaignMutations() {
         (prev) => (prev ? { ...prev, status } : prev),
       )
       queryClient.setQueryData<MarketingCampaignRow[]>(queryKeys.marketing.campaigns, (prev) =>
-        (prev ?? []).map((row) =>
-          row.id === variables.campaignId ? { ...row, status } : row,
-        ),
+        (prev ?? []).map((row) => (row.id === variables.campaignId ? { ...row, status } : row)),
       )
     },
   })

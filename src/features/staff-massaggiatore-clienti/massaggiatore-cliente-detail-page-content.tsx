@@ -19,10 +19,12 @@ export function MassaggiatoreClienteDetailPageContent({
   const id = typeof resolved.id === 'string' ? resolved.id : null
   const { showLoader } = useStaffDashboardGuard('massaggiatore')
   const { user } = useAuth()
-  const { profile, accessMode, loading, error: loadError } = useMassaggiatoreClienteDetail(
-    user?.id,
-    id,
-  )
+  const {
+    profile,
+    accessMode,
+    loading,
+    error: loadError,
+  } = useMassaggiatoreClienteDetail(user?.id, id)
 
   if (showLoader) {
     return <StaffDashboardGuardSkeleton />

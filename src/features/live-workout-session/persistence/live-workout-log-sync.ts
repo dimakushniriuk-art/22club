@@ -151,14 +151,7 @@ export function useLiveWorkoutLogSync({
       postEmbedSaveEvent({ type: STAFF_WORKOUTS_EMBED_SAVE_OK, scope: 'block' })
       void invalidateAfterWorkoutSessionWrite(queryClient, userId)
     },
-    [
-      clearEmbedDirty,
-      ensureActiveWorkoutLog,
-      postEmbedSaveEvent,
-      queryClient,
-      supabase,
-      userId,
-    ],
+    [clearEmbedDirty, ensureActiveWorkoutLog, postEmbedSaveEvent, queryClient, supabase, userId],
   )
 
   /** Alla chiusura sessione: allinea DB a tutta la sessione (non solo blocchi marcati completati). */

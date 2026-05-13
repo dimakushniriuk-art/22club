@@ -93,7 +93,11 @@ function EsercizioContent({
   )
 }
 
-function EsercizioBody({ routeParams }: { routeParams: Promise<{ id: string; exerciseId: string }> }) {
+function EsercizioBody({
+  routeParams,
+}: {
+  routeParams: Promise<{ id: string; exerciseId: string }>
+}) {
   const resolved = useResolvedParams(routeParams)
   const rawExerciseId = typeof resolved.exerciseId === 'string' ? resolved.exerciseId : ''
   const exerciseId = useMemo(() => {

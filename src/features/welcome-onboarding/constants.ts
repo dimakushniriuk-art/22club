@@ -74,7 +74,13 @@ export const OBIETTIVO_NUTRIZIONALE_OPTIONS = [
   { value: 'Altro', label: 'Altro' },
 ] as const
 
-export const INTOLLERANZE_PRESET = ['Lattosio', 'Glutine', 'Nichel', 'Istamina', 'Fruttosio'] as const
+export const INTOLLERANZE_PRESET = [
+  'Lattosio',
+  'Glutine',
+  'Nichel',
+  'Istamina',
+  'Fruttosio',
+] as const
 export const ALLERGIE_ALIMENTARI_PRESET = [
   'Frutta a guscio',
   'Arachidi',

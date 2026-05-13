@@ -84,7 +84,8 @@ export function HomePagamentiPageContent() {
   )
 
   const loadError =
-    error ?? (queryError instanceof Error ? queryError.message : queryError ? String(queryError) : null)
+    error ??
+    (queryError instanceof Error ? queryError.message : queryError ? String(queryError) : null)
 
   if (isLoading) {
     return (

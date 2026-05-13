@@ -19,9 +19,7 @@ export function buildWelcomeEmailRedirectTo(
 ): string | undefined {
   if (!origin) return undefined
   const trimmed = codice?.trim() || ''
-  return trimmed
-    ? `${origin}/welcome?codice=${encodeURIComponent(trimmed)}`
-    : `${origin}/welcome`
+  return trimmed ? `${origin}/welcome?codice=${encodeURIComponent(trimmed)}` : `${origin}/welcome`
 }
 
 export function storePendingInviteCodice(codice: string): void {

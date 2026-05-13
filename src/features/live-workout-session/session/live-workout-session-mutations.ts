@@ -38,10 +38,13 @@ export function useLiveWorkoutSessionMutations({
         const idx = prev.exercises.findIndex((ex) => workoutDayExerciseRowId(ex) === idNorm)
         if (idx < 0) {
           if (process.env.NODE_ENV === 'development') {
-            logger.warn('updateSet: id esercizio (workout_day_exercise) non trovato nella sessione', {
-              idNorm,
-              targetN: Number(setNumber),
-            })
+            logger.warn(
+              'updateSet: id esercizio (workout_day_exercise) non trovato nella sessione',
+              {
+                idNorm,
+                targetN: Number(setNumber),
+              },
+            )
           }
           return prev
         }

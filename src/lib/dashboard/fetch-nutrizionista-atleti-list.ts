@@ -56,13 +56,11 @@ export async function fetchNutrizionistaAtletiList(
   let invitesWarning: string | null = null
   if (invitesRes.error) {
     logger.warn('staff_requests inviti nutrizionista', invitesRes.error)
-    invitesWarning =
-      'Parte degli inviti non è stata caricata. Controlla la connessione e riprova.'
+    invitesWarning = 'Parte degli inviti non è stata caricata. Controlla la connessione e riprova.'
   }
   if (invitiClienteRes.error) {
     logger.warn('get_inviti_cliente_pendenti_staff', invitiClienteRes.error)
-    invitesWarning =
-      'Parte degli inviti non è stata caricata. Controlla la connessione e riprova.'
+    invitesWarning = 'Parte degli inviti non è stata caricata. Controlla la connessione e riprova.'
   }
 
   const inviteRows = (invitesRes.error ? [] : (invitesRes.data ?? [])) as Array<{

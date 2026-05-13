@@ -176,6 +176,9 @@ export function isStaffDashboardRoutePath(path: string): path is StaffDashboardR
   return (STAFF_DASHBOARD_ROUTE_PATHS as readonly string[]).includes(path)
 }
 
-export function workoutsPaneParamKey(slot: 'p1' | 'p2', field: 'view' | 'workoutPlanId' | 'dayId' | 'exerciseId' | 'workoutLogId'): string {
+export function workoutsPaneParamKey(
+  slot: 'p1' | 'p2',
+  field: 'view' | 'workoutPlanId' | 'dayId' | 'exerciseId' | 'workoutLogId',
+): string {
   return `${slot}${field}`
 }

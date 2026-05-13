@@ -34,10 +34,7 @@ export const athleteMedicalKeys = {
  * Hook per ottenere dati medici atleta
  * @param athleteId - UUID dell'atleta (user_id)
  */
-export function useAthleteMedical(
-  athleteId: string | null,
-  options?: { enabled?: boolean },
-) {
+export function useAthleteMedical(athleteId: string | null, options?: { enabled?: boolean }) {
   const queryEnabled = Boolean(athleteId) && (options?.enabled ?? true)
   return useQuery({
     queryKey: athleteMedicalKeys.detail(athleteId || ''),

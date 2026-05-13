@@ -49,8 +49,7 @@ export function useNutrizionistaCheckinList(
     })
   }, [queryClient, staffProfileId])
 
-  const errorMessage =
-    query.error != null ? mapNutrizionistaCheckinListError(query.error) : null
+  const errorMessage = query.error != null ? mapNutrizionistaCheckinListError(query.error) : null
 
   return {
     rows: query.data?.rows ?? EMPTY_ROWS,

@@ -50,272 +50,272 @@ export async function fetchNutrizionistaPlansList(
   const profileId = staffProfileId
   let assignedAthletes: NutrizionistaPlansAssignedAthlete[] = []
   let rows: NutrizionistaPlanVersionRow[] = []
-  
-        const { data: staffData, error: staffErr } = await supabase
-          .from('staff_atleti')
-          .select('atleta_id')
-          .eq('staff_id', profileId)
-          .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
-          .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
-        if (staffErr) throw staffErr
-        const athleteIds = (staffData ?? [])
-          .map((r) => (r as { atleta_id: string }).atleta_id)
-          .filter(Boolean)
-  
-        const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
-          .select('id, athlete_id')
-          .eq('nutrizionista_id', profileId)
-        if (groupsRes.error) {
-          logger.error('nutrition_plan_groups', groupsRes.error)
-          throw groupsRes.error
-        }
-        const groups = (groupsRes.data ?? []) as Array<{ id: string; athlete_id: string }>
-        const groupIds = groups.map((g) => g.id)
-  
-        const athleteIdsFromGroups = [...new Set(groups.map((g) => g.athlete_id).filter(Boolean))]
-        const allAthleteIds = [...new Set([...athleteIds, ...athleteIdsFromGroups])]
-        const profilesAccum: {
-          id: string
-          nome: string | null
-          cognome: string | null
-          email: string | null
-        }[] = []
-        for (const idChunk of chunkForSupabaseIn(allAthleteIds)) {
-          const { data: profilesData, error: profilesErr } = await supabase
-            .from('profiles')
-            .select('id, nome, cognome, email')
-            .in('id', idChunk)
-          if (profilesErr) {
-            logger.error('Piani nutrizionista: caricamento profili', profilesErr)
-            throw profilesErr
-          }
-          profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
-        }
-        const profilesMap = new Map(
-          profilesAccum.map((p) => [
-            p.id,
-            {
-              name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
-              email: p.email ?? null,
-            },
-          ]),
-        )
-        assignedAthletes = athleteIds.map((id) => ({
-          id,
-          name: profilesMap.get(id)?.name ?? id.slice(0, 8),
-        }))
 
-        let list: NutrizionistaPlanVersionRow[] = []
-        if (groupIds.length > 0) {
-          type Ver = {
-            id: string
-            plan_id?: string
-            version_number: number | null
-            status: string
-            start_date: string | null
-            end_date: string | null
-            created_at: string | null
-            calories_target?: number | null
-            macros?: Json | null
-            pdf_file_path?: string | null
-            protein_target?: number | null
-            carb_target?: number | null
-            fat_target?: number | null
-            auto_generated?: boolean | null
-            auto_adjustment_reason?: string | null
-          }
-          const versions: Ver[] = []
-          for (const gidChunk of chunkForSupabaseIn(groupIds)) {
-            const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
-              .select(
-                'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, pdf_file_path, macros',
-              )
-              .in('plan_id', gidChunk)
-              .order('created_at', { ascending: false })
-            if (verRes.error) {
-              logger.error('nutrition_plan_versions', verRes.error)
-              throw verRes.error
-            }
-            for (const row of (verRes.data ?? []) as Ver[]) {
-              const m = macroTargetsFromPlanMacros(row.macros)
-              versions.push({
-                ...row,
-                protein_target: m.protein_target,
-                carb_target: m.carb_target,
-                fat_target: m.fat_target,
-                auto_generated: null,
-                auto_adjustment_reason: null,
-              })
-            }
-          }
-          versions.sort(
-            (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
-          )
-          const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
-          list = versions.map((v) => {
-            const gid = v.plan_id ?? ''
-            const aid = athleteByGroupId.get(gid) ?? ''
-            const prof = profilesMap.get(aid)
-            return {
-              groupId: gid,
-              athleteId: aid,
-              athleteName: prof?.name ?? aid.slice(0, 8),
-              athleteEmail: prof?.email ?? null,
-              versionId: v.id,
-              versionNumber: v.version_number,
-              status: v.status,
-              startDate: v.start_date,
-              endDate: v.end_date,
-              createdAt: v.created_at,
-              caloriesTarget: v.calories_target ?? null,
-              proteinTarget: v.protein_target ?? null,
-              carbTarget: v.carb_target ?? null,
-              fatTarget: v.fat_target ?? null,
-              pdfFilePath: v.pdf_file_path ?? null,
-              autoGenerated: v.auto_generated ?? null,
-              autoAdjustmentReason: v.auto_adjustment_reason ?? null,
-            }
-          })
-        }
-  
-        const unassignedPath = `nutrition-plans/_unassigned/${profileId}`
-        const { data: storageFiles, error: unassignedStorageErr } = await supabase.storage
-          .from('documents')
-          .list(unassignedPath)
-        if (unassignedStorageErr) {
-          logger.warn('Piani: storage non assegnati', unassignedStorageErr)
-        }
-        const storageRows: NutrizionistaPlanVersionRow[] = (unassignedStorageErr ? [] : (storageFiles ?? []))
-          .filter(
-            (f) =>
-              (f as { name?: string }).name &&
-              (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
-          )
-          .map((f) => {
-            const name = (f as { name: string }).name
-            const updated =
-              (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
-            const path = `${unassignedPath}/${name}`
-            return {
-              groupId: '',
-              athleteId: '',
-              athleteName: 'Non assegnato',
-              athleteEmail: null,
-              versionId: `storage-${path}`,
-              versionNumber: null,
-              status: '—',
-              startDate: null,
-              endDate: null,
-              createdAt: updated ?? null,
-              caloriesTarget: null,
-              proteinTarget: null,
-              carbTarget: null,
-              fatTarget: null,
-              pdfFilePath: path,
-              autoGenerated: null,
-              autoAdjustmentReason: null,
-              isUnassigned: true,
-              fileName: name,
-              storagePath: path,
-            }
-          })
-  
-        const nutritionPlansPrefix = 'nutrition-plans'
-        const { data: planFolders, error: planFoldersErr } = await supabase.storage
-          .from('documents')
-          .list(nutritionPlansPrefix)
-        if (planFoldersErr) {
-          logger.warn('Piani: list cartelle nutrition-plans', planFoldersErr)
-        }
-        const assignedStorageRows: NutrizionistaPlanVersionRow[] = []
-        const folderNames = (planFoldersErr ? [] : (planFolders ?? []))
-          .map((f) => (f as { name?: string }).name)
-          .filter((n): n is string => !!n && n !== '_unassigned' && /^[0-9a-f-]{36}$/i.test(n))
-        if (folderNames.length > 0) {
-          const athleteProfilesMerged: {
-            id: string
-            nome: string | null
-            cognome: string | null
-            email: string | null
-          }[] = []
-          for (const idChunk of chunkForSupabaseIn(folderNames)) {
-            const { data: athleteProfiles, error: apErr } = await supabase
-              .from('profiles')
-              .select('id, nome, cognome, email')
-              .in('id', idChunk)
-            if (apErr) {
-              logger.warn('Piani: profili da cartelle storage', apErr)
-            } else {
-              athleteProfilesMerged.push(
-                ...((athleteProfiles ?? []) as (typeof athleteProfilesMerged)[number][]),
-              )
-            }
-          }
-          const athleteNameById = new Map(
-            athleteProfilesMerged.map(
-              (p: {
-                id: string
-                nome: string | null
-                cognome: string | null
-                email: string | null
-              }) => [p.id, [p.nome, p.cognome].filter(Boolean).join(' ').trim() || p.id.slice(0, 8)],
-            ),
-          )
-          const athleteEmailById = new Map(
-            athleteProfilesMerged.map((p: { id: string; email: string | null }) => [
-              p.id,
-              p.email ?? null,
-            ]),
-          )
-          for (const athleteId of folderNames) {
-            const { data: files, error: filesErr } = await supabase.storage
-              .from('documents')
-              .list(`${nutritionPlansPrefix}/${athleteId}`)
-            if (filesErr) {
-              logger.warn('Piani: list PDF atleta in storage', { athleteId, err: filesErr })
-            }
-            const pdfs = (filesErr ? [] : (files ?? [])).filter(
-              (f) =>
-                (f as { name?: string }).name &&
-                (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
-            )
-            for (const f of pdfs) {
-              const name = (f as { name: string }).name
-              const updated =
-                (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
-              const path = `${nutritionPlansPrefix}/${athleteId}/${name}`
-              assignedStorageRows.push({
-                groupId: '',
-                athleteId,
-                athleteName: athleteNameById.get(athleteId) ?? athleteId.slice(0, 8),
-                athleteEmail: athleteEmailById.get(athleteId) ?? null,
-                versionId: `storage-${path}`,
-                versionNumber: null,
-                status: '—',
-                startDate: null,
-                endDate: null,
-                createdAt: updated ?? null,
-                caloriesTarget: null,
-                proteinTarget: null,
-                carbTarget: null,
-                fatTarget: null,
-                pdfFilePath: path,
-                autoGenerated: null,
-                autoAdjustmentReason: null,
-                isUnassigned: false,
-                fileName: name,
-                storagePath: path,
-              })
-            }
-          }
-        }
-  
-        const merged = [...list, ...assignedStorageRows, ...storageRows].sort((a, b) => {
-          const ca = a.createdAt ?? ''
-          const cb = b.createdAt ?? ''
-          return cb.localeCompare(ca)
+  const { data: staffData, error: staffErr } = await supabase
+    .from('staff_atleti')
+    .select('atleta_id')
+    .eq('staff_id', profileId)
+    .eq('status', STAFF_ASSIGNMENT_STATUS_ACTIVE)
+    .eq('staff_type', STAFF_TYPE_NUTRIZIONISTA)
+  if (staffErr) throw staffErr
+  const athleteIds = (staffData ?? [])
+    .map((r) => (r as { atleta_id: string }).atleta_id)
+    .filter(Boolean)
+
+  const groupsRes = await nutritionFrom(supabase, NUTRITION_TABLES.planGroups)
+    .select('id, athlete_id')
+    .eq('nutrizionista_id', profileId)
+  if (groupsRes.error) {
+    logger.error('nutrition_plan_groups', groupsRes.error)
+    throw groupsRes.error
+  }
+  const groups = (groupsRes.data ?? []) as Array<{ id: string; athlete_id: string }>
+  const groupIds = groups.map((g) => g.id)
+
+  const athleteIdsFromGroups = [...new Set(groups.map((g) => g.athlete_id).filter(Boolean))]
+  const allAthleteIds = [...new Set([...athleteIds, ...athleteIdsFromGroups])]
+  const profilesAccum: {
+    id: string
+    nome: string | null
+    cognome: string | null
+    email: string | null
+  }[] = []
+  for (const idChunk of chunkForSupabaseIn(allAthleteIds)) {
+    const { data: profilesData, error: profilesErr } = await supabase
+      .from('profiles')
+      .select('id, nome, cognome, email')
+      .in('id', idChunk)
+    if (profilesErr) {
+      logger.error('Piani nutrizionista: caricamento profili', profilesErr)
+      throw profilesErr
+    }
+    profilesAccum.push(...((profilesData ?? []) as (typeof profilesAccum)[number][]))
+  }
+  const profilesMap = new Map(
+    profilesAccum.map((p) => [
+      p.id,
+      {
+        name: [p.nome, p.cognome].filter(Boolean).join(' ') || p.id.slice(0, 8),
+        email: p.email ?? null,
+      },
+    ]),
+  )
+  assignedAthletes = athleteIds.map((id) => ({
+    id,
+    name: profilesMap.get(id)?.name ?? id.slice(0, 8),
+  }))
+
+  let list: NutrizionistaPlanVersionRow[] = []
+  if (groupIds.length > 0) {
+    type Ver = {
+      id: string
+      plan_id?: string
+      version_number: number | null
+      status: string
+      start_date: string | null
+      end_date: string | null
+      created_at: string | null
+      calories_target?: number | null
+      macros?: Json | null
+      pdf_file_path?: string | null
+      protein_target?: number | null
+      carb_target?: number | null
+      fat_target?: number | null
+      auto_generated?: boolean | null
+      auto_adjustment_reason?: string | null
+    }
+    const versions: Ver[] = []
+    for (const gidChunk of chunkForSupabaseIn(groupIds)) {
+      const verRes = await nutritionFrom(supabase, NUTRITION_TABLES.planVersions)
+        .select(
+          'id, plan_id, version_number, status, start_date, end_date, created_at, calories_target, pdf_file_path, macros',
+        )
+        .in('plan_id', gidChunk)
+        .order('created_at', { ascending: false })
+      if (verRes.error) {
+        logger.error('nutrition_plan_versions', verRes.error)
+        throw verRes.error
+      }
+      for (const row of (verRes.data ?? []) as Ver[]) {
+        const m = macroTargetsFromPlanMacros(row.macros)
+        versions.push({
+          ...row,
+          protein_target: m.protein_target,
+          carb_target: m.carb_target,
+          fat_target: m.fat_target,
+          auto_generated: null,
+          auto_adjustment_reason: null,
         })
-        rows = merged
-      
+      }
+    }
+    versions.sort(
+      (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+    )
+    const athleteByGroupId = new Map(groups.map((g) => [g.id, g.athlete_id]))
+    list = versions.map((v) => {
+      const gid = v.plan_id ?? ''
+      const aid = athleteByGroupId.get(gid) ?? ''
+      const prof = profilesMap.get(aid)
+      return {
+        groupId: gid,
+        athleteId: aid,
+        athleteName: prof?.name ?? aid.slice(0, 8),
+        athleteEmail: prof?.email ?? null,
+        versionId: v.id,
+        versionNumber: v.version_number,
+        status: v.status,
+        startDate: v.start_date,
+        endDate: v.end_date,
+        createdAt: v.created_at,
+        caloriesTarget: v.calories_target ?? null,
+        proteinTarget: v.protein_target ?? null,
+        carbTarget: v.carb_target ?? null,
+        fatTarget: v.fat_target ?? null,
+        pdfFilePath: v.pdf_file_path ?? null,
+        autoGenerated: v.auto_generated ?? null,
+        autoAdjustmentReason: v.auto_adjustment_reason ?? null,
+      }
+    })
+  }
+
+  const unassignedPath = `nutrition-plans/_unassigned/${profileId}`
+  const { data: storageFiles, error: unassignedStorageErr } = await supabase.storage
+    .from('documents')
+    .list(unassignedPath)
+  if (unassignedStorageErr) {
+    logger.warn('Piani: storage non assegnati', unassignedStorageErr)
+  }
+  const storageRows: NutrizionistaPlanVersionRow[] = (
+    unassignedStorageErr ? [] : (storageFiles ?? [])
+  )
+    .filter(
+      (f) =>
+        (f as { name?: string }).name &&
+        (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
+    )
+    .map((f) => {
+      const name = (f as { name: string }).name
+      const updated =
+        (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
+      const path = `${unassignedPath}/${name}`
+      return {
+        groupId: '',
+        athleteId: '',
+        athleteName: 'Non assegnato',
+        athleteEmail: null,
+        versionId: `storage-${path}`,
+        versionNumber: null,
+        status: '—',
+        startDate: null,
+        endDate: null,
+        createdAt: updated ?? null,
+        caloriesTarget: null,
+        proteinTarget: null,
+        carbTarget: null,
+        fatTarget: null,
+        pdfFilePath: path,
+        autoGenerated: null,
+        autoAdjustmentReason: null,
+        isUnassigned: true,
+        fileName: name,
+        storagePath: path,
+      }
+    })
+
+  const nutritionPlansPrefix = 'nutrition-plans'
+  const { data: planFolders, error: planFoldersErr } = await supabase.storage
+    .from('documents')
+    .list(nutritionPlansPrefix)
+  if (planFoldersErr) {
+    logger.warn('Piani: list cartelle nutrition-plans', planFoldersErr)
+  }
+  const assignedStorageRows: NutrizionistaPlanVersionRow[] = []
+  const folderNames = (planFoldersErr ? [] : (planFolders ?? []))
+    .map((f) => (f as { name?: string }).name)
+    .filter((n): n is string => !!n && n !== '_unassigned' && /^[0-9a-f-]{36}$/i.test(n))
+  if (folderNames.length > 0) {
+    const athleteProfilesMerged: {
+      id: string
+      nome: string | null
+      cognome: string | null
+      email: string | null
+    }[] = []
+    for (const idChunk of chunkForSupabaseIn(folderNames)) {
+      const { data: athleteProfiles, error: apErr } = await supabase
+        .from('profiles')
+        .select('id, nome, cognome, email')
+        .in('id', idChunk)
+      if (apErr) {
+        logger.warn('Piani: profili da cartelle storage', apErr)
+      } else {
+        athleteProfilesMerged.push(
+          ...((athleteProfiles ?? []) as (typeof athleteProfilesMerged)[number][]),
+        )
+      }
+    }
+    const athleteNameById = new Map(
+      athleteProfilesMerged.map(
+        (p: { id: string; nome: string | null; cognome: string | null; email: string | null }) => [
+          p.id,
+          [p.nome, p.cognome].filter(Boolean).join(' ').trim() || p.id.slice(0, 8),
+        ],
+      ),
+    )
+    const athleteEmailById = new Map(
+      athleteProfilesMerged.map((p: { id: string; email: string | null }) => [
+        p.id,
+        p.email ?? null,
+      ]),
+    )
+    for (const athleteId of folderNames) {
+      const { data: files, error: filesErr } = await supabase.storage
+        .from('documents')
+        .list(`${nutritionPlansPrefix}/${athleteId}`)
+      if (filesErr) {
+        logger.warn('Piani: list PDF atleta in storage', { athleteId, err: filesErr })
+      }
+      const pdfs = (filesErr ? [] : (files ?? [])).filter(
+        (f) =>
+          (f as { name?: string }).name &&
+          (f as { name: string }).name.toLowerCase().endsWith('.pdf'),
+      )
+      for (const f of pdfs) {
+        const name = (f as { name: string }).name
+        const updated =
+          (f as { updated_at?: string }).updated_at ?? (f as { created_at?: string }).created_at
+        const path = `${nutritionPlansPrefix}/${athleteId}/${name}`
+        assignedStorageRows.push({
+          groupId: '',
+          athleteId,
+          athleteName: athleteNameById.get(athleteId) ?? athleteId.slice(0, 8),
+          athleteEmail: athleteEmailById.get(athleteId) ?? null,
+          versionId: `storage-${path}`,
+          versionNumber: null,
+          status: '—',
+          startDate: null,
+          endDate: null,
+          createdAt: updated ?? null,
+          caloriesTarget: null,
+          proteinTarget: null,
+          carbTarget: null,
+          fatTarget: null,
+          pdfFilePath: path,
+          autoGenerated: null,
+          autoAdjustmentReason: null,
+          isUnassigned: false,
+          fileName: name,
+          storagePath: path,
+        })
+      }
+    }
+  }
+
+  const merged = [...list, ...assignedStorageRows, ...storageRows].sort((a, b) => {
+    const ca = a.createdAt ?? ''
+    const cb = b.createdAt ?? ''
+    return cb.localeCompare(ca)
+  })
+  rows = merged
+
   return { rows, assignedAthletes }
 }

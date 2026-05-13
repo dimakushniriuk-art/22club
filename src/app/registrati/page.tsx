@@ -11,10 +11,7 @@ import { RegisterFormView } from '@/features/athlete-registration/ui/register-fo
 function RegisterContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const codiceInvito = useMemo(
-    () => readInviteCodiceFromSearchParams(searchParams),
-    [searchParams],
-  )
+  const codiceInvito = useMemo(() => readInviteCodiceFromSearchParams(searchParams), [searchParams])
   const {
     formData,
     loading,

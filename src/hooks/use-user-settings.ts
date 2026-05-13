@@ -99,143 +99,152 @@ export function useUserSettings(authUserId?: string | null) {
   )
 
   // Salva impostazioni notifiche
-  const saveNotifications = useCallback(async (notifications: NotificationSettings) => {
-    try {
-      setError(null)
+  const saveNotifications = useCallback(
+    async (notifications: NotificationSettings) => {
+      try {
+        setError(null)
 
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser()
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser()
 
-      if (!authUser) {
-        throw new Error('Utente non autenticato')
-      }
-
-      await withNetworkRetry(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-          {
-            user_id: authUser.id,
-            notification_settings: notifications,
-          },
-          {
-            onConflict: 'user_id',
-          },
-        )
-
-        if (updateError) {
-          if (updateError.code === '42703') {
-            throw new Error(
-              'Colonna notification_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
-            )
-          }
-          throw updateError
+        if (!authUser) {
+          throw new Error('Utente non autenticato')
         }
-      })
 
-      queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
-        prev ? { ...prev, notifications } : prev,
-      )
-      return { success: true }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
-      setError(errorMessage)
-      return { success: false, error: errorMessage }
-    }
-  }, [queryClient, queryKey])
+        await withNetworkRetry(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+            {
+              user_id: authUser.id,
+              notification_settings: notifications,
+            },
+            {
+              onConflict: 'user_id',
+            },
+          )
+
+          if (updateError) {
+            if (updateError.code === '42703') {
+              throw new Error(
+                'Colonna notification_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+              )
+            }
+            throw updateError
+          }
+        })
+
+        queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
+          prev ? { ...prev, notifications } : prev,
+        )
+        return { success: true }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
+        setError(errorMessage)
+        return { success: false, error: errorMessage }
+      }
+    },
+    [queryClient, queryKey],
+  )
 
   // Salva impostazioni privacy
-  const savePrivacy = useCallback(async (privacy: PrivacySettings) => {
-    try {
-      setError(null)
+  const savePrivacy = useCallback(
+    async (privacy: PrivacySettings) => {
+      try {
+        setError(null)
 
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser()
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser()
 
-      if (!authUser) {
-        throw new Error('Utente non autenticato')
-      }
-
-      await withNetworkRetry(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-          {
-            user_id: authUser.id,
-            privacy_settings: privacy,
-          },
-          {
-            onConflict: 'user_id',
-          },
-        )
-
-        if (updateError) {
-          if (updateError.code === '42703') {
-            throw new Error(
-              'Colonna privacy_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
-            )
-          }
-          throw updateError
+        if (!authUser) {
+          throw new Error('Utente non autenticato')
         }
-      })
 
-      queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
-        prev ? { ...prev, privacy } : prev,
-      )
-      return { success: true }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
-      setError(errorMessage)
-      return { success: false, error: errorMessage }
-    }
-  }, [queryClient, queryKey])
+        await withNetworkRetry(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+            {
+              user_id: authUser.id,
+              privacy_settings: privacy,
+            },
+            {
+              onConflict: 'user_id',
+            },
+          )
+
+          if (updateError) {
+            if (updateError.code === '42703') {
+              throw new Error(
+                'Colonna privacy_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+              )
+            }
+            throw updateError
+          }
+        })
+
+        queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
+          prev ? { ...prev, privacy } : prev,
+        )
+        return { success: true }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
+        setError(errorMessage)
+        return { success: false, error: errorMessage }
+      }
+    },
+    [queryClient, queryKey],
+  )
 
   // Salva impostazioni account
-  const saveAccount = useCallback(async (account: AccountSettings) => {
-    try {
-      setError(null)
+  const saveAccount = useCallback(
+    async (account: AccountSettings) => {
+      try {
+        setError(null)
 
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser()
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser()
 
-      if (!authUser) {
-        throw new Error('Utente non autenticato')
-      }
-
-      await withNetworkRetry(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
-          {
-            user_id: authUser.id,
-            account_settings: account,
-          },
-          {
-            onConflict: 'user_id',
-          },
-        )
-
-        if (updateError) {
-          if (updateError.code === '42703') {
-            throw new Error(
-              'Colonna account_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
-            )
-          }
-          throw updateError
+        if (!authUser) {
+          throw new Error('Utente non autenticato')
         }
-      })
 
-      queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
-        prev ? { ...prev, account } : prev,
-      )
-      return { success: true }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
-      setError(errorMessage)
-      logger.error('Errore salvataggio account', err)
-      return { success: false, error: errorMessage }
-    }
-  }, [queryClient, queryKey])
+        await withNetworkRetry(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: updateError } = await (supabase.from('user_settings') as any).upsert(
+            {
+              user_id: authUser.id,
+              account_settings: account,
+            },
+            {
+              onConflict: 'user_id',
+            },
+          )
+
+          if (updateError) {
+            if (updateError.code === '42703') {
+              throw new Error(
+                'Colonna account_settings non esiste. Eseguire la migration 20250130_create_user_settings.sql',
+              )
+            }
+            throw updateError
+          }
+        })
+
+        queryClient.setQueryData<UserSettings>(queryKey, (prev) =>
+          prev ? { ...prev, account } : prev,
+        )
+        return { success: true }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
+        setError(errorMessage)
+        logger.error('Errore salvataggio account', err)
+        return { success: false, error: errorMessage }
+      }
+    },
+    [queryClient, queryKey],
+  )
 
   // Salva impostazioni 2FA
   const saveTwoFactor = useCallback(

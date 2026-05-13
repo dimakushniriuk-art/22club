@@ -24,7 +24,12 @@ export function useStaffExercisesList() {
   return {
     items: query.data ?? [],
     loading: query.isLoading,
-    loadError: query.error instanceof Error ? query.error : query.error ? new Error(String(query.error)) : null,
+    loadError:
+      query.error instanceof Error
+        ? query.error
+        : query.error
+          ? new Error(String(query.error))
+          : null,
     reload,
     refetch: query.refetch,
   }

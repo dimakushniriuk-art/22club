@@ -14,11 +14,7 @@ import { useResolvedParams } from '@/lib/next/use-resolved-params'
 import { useMarketingDashboardGuard } from '@/hooks/use-marketing-dashboard-guard'
 import { useMarketingSegment, useMarketingSegmentMutations } from '@/hooks/use-marketing-segments'
 
-export function MarketingSegmentEditPageContent({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export function MarketingSegmentEditPageContent({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const resolved = useResolvedParams(params)
   const id = typeof resolved.id === 'string' ? resolved.id : null

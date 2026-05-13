@@ -40,7 +40,13 @@ export function NutrizionistaCheckinPageContent() {
   const { notify } = useNotify()
   const profileId = user?.id ?? null
 
-  const { rows, athletes, loading, error: listError, reload } = useNutrizionistaCheckinList(profileId)
+  const {
+    rows,
+    athletes,
+    loading,
+    error: listError,
+    reload,
+  } = useNutrizionistaCheckinList(profileId)
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)

@@ -1,6 +1,9 @@
 import type { AthleteWorkoutDayExerciseRow } from '@/hooks/use-athlete-workout-day-preview'
 
-export type GiornoPreviewBlock = { kind: 'single' | 'circuit'; rows: AthleteWorkoutDayExerciseRow[] }
+export type GiornoPreviewBlock = {
+  kind: 'single' | 'circuit'
+  rows: AthleteWorkoutDayExerciseRow[]
+}
 
 export function isRemoteOrPathImage(u: string | null | undefined): u is string {
   return (

@@ -45,10 +45,10 @@ describe('staff workouts slots session', () => {
   })
 
   it('merges missing pane params when athlete ids match', () => {
-    persistStaffWorkoutsFullQuery(`p1=${ATHLETE}&p1view=oggi&p1dayId=22222222-2222-4222-8222-222222222222`)
-    const merged = mergeMissingWorkoutsPaneParamsFromSaved(
-      new URLSearchParams(`p1=${ATHLETE}`),
+    persistStaffWorkoutsFullQuery(
+      `p1=${ATHLETE}&p1view=oggi&p1dayId=22222222-2222-4222-8222-222222222222`,
     )
+    const merged = mergeMissingWorkoutsPaneParamsFromSaved(new URLSearchParams(`p1=${ATHLETE}`))
     expect(merged).toContain('p1view=oggi')
     expect(merged).toContain('p1dayId=22222222-2222-4222-8222-222222222222')
     expect(readStaffWorkoutsFullQuery()).toBe(
@@ -58,8 +58,6 @@ describe('staff workouts slots session', () => {
 
   it('does not merge when athlete id differs', () => {
     persistStaffWorkoutsFullQuery(`p1=${ATHLETE}&p1view=oggi`)
-    expect(
-      mergeMissingWorkoutsPaneParamsFromSaved(new URLSearchParams(`p1=${OTHER}`)),
-    ).toBeNull()
+    expect(mergeMissingWorkoutsPaneParamsFromSaved(new URLSearchParams(`p1=${OTHER}`))).toBeNull()
   })
 })

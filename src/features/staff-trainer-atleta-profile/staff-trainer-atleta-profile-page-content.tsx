@@ -31,7 +31,11 @@ function formatDate(dateString: string | null): string {
   }
 }
 
-export function StaffTrainerAtletaProfilePageContent({ params }: { params: Promise<{ id: string }> }) {
+export function StaffTrainerAtletaProfilePageContent({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id: rawId } = useResolvedParams(params)
   const router = useRouter()
   const { role } = useAuth()

@@ -96,7 +96,12 @@ export function useProgressPhotos({
           page: pageParam,
         })
       } catch (err) {
-        logger.error('Error fetching progress photos', err, { userId, page: pageParam, angle, dateFilter })
+        logger.error('Error fetching progress photos', err, {
+          userId,
+          page: pageParam,
+          angle,
+          dateFilter,
+        })
         throw err
       }
     },

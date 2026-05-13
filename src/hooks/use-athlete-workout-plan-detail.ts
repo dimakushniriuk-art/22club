@@ -25,7 +25,9 @@ export type AthleteWorkoutPlanDetail = {
   dayCompletedById: Record<string, number>
 }
 
-function formatStaffName(row: { nome?: string | null; cognome?: string | null } | null): string | null {
+function formatStaffName(
+  row: { nome?: string | null; cognome?: string | null } | null,
+): string | null {
   if (!row) return null
   const name = `${row.nome ?? ''} ${row.cognome ?? ''}`.trim()
   return name || null
@@ -143,8 +145,7 @@ export function useAthleteWorkoutPlanDetail(
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const subjectProfileId = options?.athleteSubjectProfileId?.trim() ?? ''
-  const queryEnabled =
-    Boolean(athleteProfileId && planId) && (options?.enabled ?? true)
+  const queryEnabled = Boolean(athleteProfileId && planId) && (options?.enabled ?? true)
 
   return useQuery({
     queryKey: queryKeys.allenamenti.planDetail(athleteProfileId ?? '', planId ?? ''),

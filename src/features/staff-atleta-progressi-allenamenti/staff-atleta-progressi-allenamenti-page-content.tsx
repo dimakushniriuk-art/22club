@@ -91,7 +91,11 @@ function AllenamentiContent({
   displayName,
   tabBackHref,
 }: StaffAthleteProgressReadyContext) {
-  const { data, isLoading, error: statsError } = useWorkoutExerciseStats(athleteUserId, {
+  const {
+    data,
+    isLoading,
+    error: statsError,
+  } = useWorkoutExerciseStats(athleteUserId, {
     profileId,
   })
 

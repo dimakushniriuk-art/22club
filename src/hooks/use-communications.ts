@@ -7,9 +7,7 @@ import type { Tables } from '@/types/supabase'
 import type { Json } from '@/lib/supabase/types'
 import type { RecipientFilter } from '@/lib/communications/service'
 import { createLogger } from '@/lib/logger'
-import {
-  fetchStaffCommunicationsList,
-} from '@/lib/communications/fetch-staff-communications-list'
+import { fetchStaffCommunicationsList } from '@/lib/communications/fetch-staff-communications-list'
 import { queryKeys } from '@/lib/query-keys'
 import { invalidateStaffCommunicationsListQueries } from '@/lib/react-query/post-mutation-cache'
 
@@ -52,9 +50,7 @@ interface UseCommunicationsOptions {
 
 const STALE_MS = 90 * 1000
 
-function communicationsStatusKey(
-  status: UseCommunicationsOptions['status'],
-): string {
+function communicationsStatusKey(status: UseCommunicationsOptions['status']): string {
   if (!status) return ''
   return Array.isArray(status) ? status.join(',') : status
 }
@@ -66,12 +62,7 @@ export function useCommunications(options: UseCommunicationsOptions = {}) {
   const statusKey = communicationsStatusKey(options.status)
   const queryKey = useMemo(
     () =>
-      queryKeys.communications.staffList(
-        statusKey,
-        options.type,
-        options.limit,
-        options.offset,
-      ),
+      queryKeys.communications.staffList(statusKey, options.type, options.limit, options.offset),
     [statusKey, options.type, options.limit, options.offset],
   )
 

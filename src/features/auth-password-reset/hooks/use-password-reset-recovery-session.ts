@@ -33,11 +33,7 @@ export function usePasswordResetRecoverySession(
     const errorParam = searchParams.get('error')
     const errorCode = searchParams.get('error_code')
     const errorDescription = searchParams.get('error_description')
-    const urlErrorMessage = resolveResetPasswordUrlError(
-      errorParam,
-      errorCode,
-      errorDescription,
-    )
+    const urlErrorMessage = resolveResetPasswordUrlError(errorParam, errorCode, errorDescription)
 
     if (urlErrorMessage) {
       setUrlError(urlErrorMessage)
@@ -64,7 +60,9 @@ export function usePasswordResetRecoverySession(
         logger.info('Verifica autenticazione per reset password')
 
         const hasRecoveryHash = hasPasswordRecoveryHash(getLocationHash())
-        await new Promise((resolve) => setTimeout(resolve, hasRecoveryHash ? RECOVERY_HASH_WAIT_MS : 500))
+        await new Promise((resolve) =>
+          setTimeout(resolve, hasRecoveryHash ? RECOVERY_HASH_WAIT_MS : 500),
+        )
 
         const {
           data: { user },

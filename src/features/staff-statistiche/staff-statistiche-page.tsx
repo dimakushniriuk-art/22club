@@ -86,7 +86,7 @@ export function StaffStatistichePageContent() {
     trainerReportEnabled,
   )
 
-  const trainerReport = trainerReportEnabled ? trainerReportQuery.data ?? null : null
+  const trainerReport = trainerReportEnabled ? (trainerReportQuery.data ?? null) : null
   const trainerLoading = trainerReportEnabled && trainerReportQuery.isFetching
 
   const onToggleTrainerId = useCallback((id: string) => {

@@ -174,14 +174,7 @@ export function NutrizionistaSettingsPageContent() {
     } finally {
       setSaving(false)
     }
-  }, [
-    selectedVersionId,
-    profileId,
-    autoConfig,
-    adaptiveSettings,
-    supabase,
-    reloadVersionConfig,
-  ])
+  }, [selectedVersionId, profileId, autoConfig, adaptiveSettings, supabase, reloadVersionConfig])
 
   const handleResetDefaults = useCallback(() => {
     setAutoConfig(DEFAULT_NUTRIZIONISTA_AUTO_CONFIG)
@@ -355,11 +348,16 @@ export function NutrizionistaSettingsPageContent() {
         )}
       </section>
 
-      {!selectedVersionId && selectedPlanId && versions.length === 0 && !versionsLoading && !loading && (
-        <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
-          Nessuna versione per questo piano. Crea una versione dalla scheda Piani dell&apos;atleta.
-        </div>
-      )}
+      {!selectedVersionId &&
+        selectedPlanId &&
+        versions.length === 0 &&
+        !versionsLoading &&
+        !loading && (
+          <div className="rounded-xl border border-border bg-background-secondary/50 px-4 py-8 text-center text-text-secondary text-sm">
+            Nessuna versione per questo piano. Crea una versione dalla scheda Piani
+            dell&apos;atleta.
+          </div>
+        )}
 
       {selectedVersionId && (
         <>

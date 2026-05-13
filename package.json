@@ -1,6 +1,6 @@
 {
   "name": "22club-setup",
-  "version": "1.0.08",
+  "version": "1.0.09",
   "private": true,
   "type": "module",
   "scripts": {

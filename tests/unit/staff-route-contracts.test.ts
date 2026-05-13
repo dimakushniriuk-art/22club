@@ -31,7 +31,9 @@ describe('staff dashboard route contracts (Fase 0)', () => {
   })
 
   it('mantiene chiavi sessionStorage workouts allineate al modulo embed', () => {
-    expect(STAFF_DASHBOARD_SESSION_STORAGE_KEYS.workoutsSlots).toBe(STAFF_WORKOUTS_SLOTS_SESSION_KEY)
+    expect(STAFF_DASHBOARD_SESSION_STORAGE_KEYS.workoutsSlots).toBe(
+      STAFF_WORKOUTS_SLOTS_SESSION_KEY,
+    )
     expect(STAFF_DASHBOARD_SESSION_STORAGE_KEYS.workoutsFullQuery).toBe(
       STAFF_WORKOUTS_FULL_QUERY_SESSION_KEY,
     )
@@ -86,9 +88,9 @@ describe('staff dashboard route contracts (Fase 0)', () => {
     expect(STAFF_DASHBOARD_LAYOUT_INVALIDATION.clientiProfiles.postMutation).toBe(
       'invalidateClientiQueries',
     )
-    expect(STAFF_DASHBOARD_LAYOUT_INVALIDATION.clientiProfiles.windowEventDispatchedFromLayout).toBe(
-      false,
-    )
+    expect(
+      STAFF_DASHBOARD_LAYOUT_INVALIDATION.clientiProfiles.windowEventDispatchedFromLayout,
+    ).toBe(false)
   })
 
   it('documenta prefissi frequentQueryCache staff', () => {

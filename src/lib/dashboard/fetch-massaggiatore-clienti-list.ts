@@ -60,9 +60,7 @@ export async function fetchMassaggiatoreClientiList(
 
   const linkedIds = [
     ...new Set(
-      (linksRes.data ?? [])
-        .map((r: { atleta_id: string | null }) => r.atleta_id)
-        .filter(Boolean),
+      (linksRes.data ?? []).map((r: { atleta_id: string | null }) => r.atleta_id).filter(Boolean),
     ),
   ] as string[]
 

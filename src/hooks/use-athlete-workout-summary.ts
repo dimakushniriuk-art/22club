@@ -16,8 +16,7 @@ export function useAthleteWorkoutSummary(
 ) {
   const supabase = useSupabaseClient()
   const logKey = workoutLogId?.trim() ?? ''
-  const queryEnabled =
-    Boolean(athleteProfileId) && (options?.enabled ?? true)
+  const queryEnabled = Boolean(athleteProfileId) && (options?.enabled ?? true)
 
   return useQuery({
     queryKey: queryKeys.allenamenti.summary(athleteProfileId ?? '', logKey),

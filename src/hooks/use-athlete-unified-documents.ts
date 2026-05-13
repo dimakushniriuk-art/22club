@@ -7,10 +7,7 @@ import { queryKeys } from '@/lib/query-keys'
 /**
  * Lista unificata documenti atleta (`getAllAthleteDocuments`) con cache React Query.
  */
-export function useAthleteUnifiedDocuments(
-  profileId: string | null,
-  athleteUserId: string | null,
-) {
+export function useAthleteUnifiedDocuments(profileId: string | null, athleteUserId: string | null) {
   const userKey = athleteUserId ?? ''
   return useQuery({
     queryKey: queryKeys.documents.unifiedAthlete(profileId ?? '', userKey),
