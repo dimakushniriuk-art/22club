@@ -112,8 +112,7 @@ async function verifyNextServer(): Promise<void> {
   } catch (error) {
     const rawMsg = error instanceof Error ? error.message : 'Errore sconosciuto'
     const message =
-      rawMsg.trim() ||
-      'Server non in ascolto (es. ECONNREFUSED o timeout su /api/health)'
+      rawMsg.trim() || 'Server non in ascolto (es. ECONNREFUSED o timeout su /api/health)'
     results.push({
       service: 'Next.js Server',
       status: 'warning',
