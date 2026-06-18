@@ -83,7 +83,7 @@ jobs:
           git push --follow-tags origin main
 
       - name: 📋 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: '22Club v${{ github.ref_name }}'
           body_path: CHANGELOG.md
